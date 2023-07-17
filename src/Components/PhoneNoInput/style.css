@@ -1,0 +1,20 @@
+.react-tel-input .form-control{
+    width: 100% !important;
+    height: 46px !important;
+}
+.react-tel-input > input::placeholder{
+    font-weight: 400;
+    font-size: 14px;
+    color: #b8b8b8;
+    font-family: Segoe UI;
+}
+/* .react-tel-input > input{
+    padding-left: 65px !important;
+}
+.react-tel-input > div > div{
+    width: 55px !important;
+}
+.react-tel-input > div {
+    display: flex;
+    align-items: center;
+} */
