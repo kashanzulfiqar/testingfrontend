@@ -21,8 +21,6 @@
 // import Error404 from '../MainPage/Pages/ErrorPage/error404';
 // import Error500 from '../MainPage/Pages/ErrorPage/error500';
 
-
-
 // export default class App extends Component {
 //     componentDidMount(){
 //         if (location.pathname.includes("login") || location.pathname.includes("register") || location.pathname.includes("forgotpassword")
@@ -34,17 +32,15 @@
 //     }
 //        render(){
 //             const { location, match, user } = this.props;
-            
-            
-           
-//             if (location.pathname === '/') {                 
+
+//             if (location.pathname === '/') {
 //                 console.log(location, 'loc====');
-//                    return (<Navigate to={'/login'} />);                
-//                 //    return (<Navigate to={'/app/main/dashboard'} />);                
+//                    return (<Navigate to={'/login'} />);
+//                 //    return (<Navigate to={'/app/main/dashboard'} />);
 //              }
 //             return (
 //                 // <Routes>
-                 
+
 //                 //     <Route path="/login" component={LoginPage} />
 //                 //     <Route path="/forgotpassword" component={ForgotPassword} />
 //                 //     <Route path="/register" component={RegistrationPage} />
@@ -57,7 +53,7 @@
 //                 //     <Route path="/tasks" component={Tasklayout} />
 //                 //     <Route path="/email" component={Emaillayout} />
 //                 //     <Route path="/conversation" component={chatlayout} />
-                    
+
 //                 //     <Route path="/ui-components" component={uicomponents} />
 //                 //     <Route path="/error-404" component={Error404} />
 //                 //     <Route path="/error-500" component={Error500} />
@@ -83,9 +79,8 @@
 //                 </Routes>
 //             )
 //         }
-         
-// }
 
+// }
 
 import React, { useEffect, useState } from 'react';
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
@@ -113,63 +108,57 @@ import Sidebar from './Sidebar/sidebar';
 import Header from './Sidebar/header';
 import { useSelector } from 'react-redux';
 import Layout from '../SidebarLayout/Layout';
-import ResetPassword from './resetpassword';
+import { ResetPassword } from './resetpassword';
 import Employeeslist from '../MainPage/Employees/Employees/employeeslist';
 import Settings from '../MainPage/Administration/Settings/companysettings';
 import RolePermisson from '../MainPage/Administration/Settings/rolespermission';
 import 'antd/dist/antd.css';
 
-
 const App = () => {
-
   const login = useSelector((state) => state.user.loginvalue);
   const nav = useNavigate();
   const location = useLocation();
-//   useEffect(() => {
-//     if (
-//       location.pathname.includes('login') ||
-//       location.pathname.includes('register') ||
-//       location.pathname.includes('forgotpassword') ||
-//       location.pathname.includes('otp') ||
-//       location.pathname.includes('lockscreen')
-//     ) {
-//       // $('body').addClass('account-page');
-//     } else if (
-//       location.pathname.includes('error-404') ||
-//       location.pathname.includes('error-500')
-//     ) {
-//       $('body').addClass('error-page');
-//     }
-//   }, []);
+  //   useEffect(() => {
+  //     if (
+  //       location.pathname.includes('login') ||
+  //       location.pathname.includes('register') ||
+  //       location.pathname.includes('forgotpassword') ||
+  //       location.pathname.includes('otp') ||
+  //       location.pathname.includes('lockscreen')
+  //     ) {
+  //       // $('body').addClass('account-page');
+  //     } else if (
+  //       location.pathname.includes('error-404') ||
+  //       location.pathname.includes('error-500')
+  //     ) {
+  //       $('body').addClass('error-page');
+  //     }
+  //   }, []);
 
-const [menu, setMenu] = useState(false)
+  const [menu, setMenu] = useState(false);
 
-const toggleMobileMenu = () => {
-  setMenu(!menu)
-}
+  const toggleMobileMenu = () => {
+    setMenu(!menu);
+  };
 
-useEffect(() => {
-  // console.log('loc--------',location.pathname);
-if (!login) {
-  nav('/login') 
-}
-if ((location.pathname === '/' || location.pathname === '/login') && login) {
-      nav('/employee/dashboard')             
-        // nav('/login')               
-      //    return (<Navigate to={'/app/main/dashboard'} />);                
-      }
-      // else{
-      //   nav(`${location.pathname}`)
-      //   // nav('/employee/dashboard')
-      // }
-}, [])
-
-
-      
+  useEffect(() => {
+    // console.log('loc--------',location.pathname);
+    if (!login) {
+      nav('/login');
+    }
+    if ((location.pathname === '/' || location.pathname === '/login') && login) {
+      nav('/employee/dashboard');
+      // nav('/login')
+      //    return (<Navigate to={'/app/main/dashboard'} />);
+    }
+    // else{
+    //   nav(`${location.pathname}`)
+    //   // nav('/employee/dashboard')
+    // }
+  }, []);
 
   return (
     <>
-
       <Routes>
         {/* <Route path="/" element={<Navigate to="/login" />} /> */}
         <Route path="/login" element={<LoginPage />} />
@@ -181,32 +170,28 @@ if ((location.pathname === '/' || location.pathname === '/login') && login) {
         <Route path="/lockscreen" element={<LockScreen />} />
         <Route path="/applyjob" element={<ApplyJobs />} /> */}
 
-
         {/* <Route path="/app/*" element={<DefaultLayout />} /> */}
 
         {/* <Route element={<Layout />}> */}
         <Route path="/" element={<RequireAuth />}>
           {/* <Route> */}
-            {/* dashboard */}
-            <Route path={`main/dashboard`} element={<AdminDashboard />} />
-            <Route path={`employee/dashboard`} element={<EmployeeDashboard />} />
+          {/* dashboard */}
+          <Route path={`main/dashboard`} element={<AdminDashboard />} />
+          <Route path={`employee/dashboard`} element={<EmployeeDashboard />} />
 
+          {/* Employee */}
+          <Route path={`employee/allemployees`} element={<AllEmployees />} />
+          <Route path={`employee/employees-list`} element={<Employeeslist />} />
 
-            {/* Employee */}
-            <Route path={`employee/allemployees`} element={<AllEmployees />} />
-            <Route path={`employee/employees-list`} element={<Employeeslist />} />
-
-            {/* Settings  */}
+          {/* Settings  */}
           <Route path="/settings" element={<Settings />} />
           {/* <Route path="/settings/roles-permissions" element={<RolePermisson />} /> */}
-
         </Route>
-          <Route path="/404" element={<Error404 />}></Route>
-          <Route path="*" element={<Navigate to="/404" />}></Route>
+        <Route path="/404" element={<Error404 />}></Route>
+        <Route path="*" element={<Navigate to="/404" />}></Route>
 
         {/* </Route> */}
         {/* </Route> */}
-
 
         {/* <Route path="/settings/*" element={<Settinglayout />} /> */}
         <Route path="/tasks/*" element={<Tasklayout />} />
@@ -218,15 +203,18 @@ if ((location.pathname === '/' || location.pathname === '/login') && login) {
         <Route path="/error-500" element={<Error500 />} />
       </Routes>
 
-      {
-        (login && !location.pathname.includes('/login') && !location.pathname.includes('/login/:id') && !location.pathname.includes('/forget-password')
-        && !location.pathname.includes('/reset-password/:id') && !location.pathname.includes('/register') ) &&
-        // (login && (location.pathname.includes('/employee/') || location.pathname.includes('dashboard')) ) &&
-        <>
-          <Header onMenuClick={(value) => toggleMobileMenu()} />
-          <Sidebar />
-        </>
-      }
+      {login &&
+        !location.pathname.includes('/login') &&
+        !location.pathname.includes('/login/:id') &&
+        !location.pathname.includes('/forget-password') &&
+        !location.pathname.includes('/reset-password/:id') &&
+        !location.pathname.includes('/register') && (
+          // (login && (location.pathname.includes('/employee/') || location.pathname.includes('dashboard')) ) &&
+          <>
+            <Header onMenuClick={(value) => toggleMobileMenu()} />
+            <Sidebar />
+          </>
+        )}
     </>
   );
 };
