@@ -108,7 +108,7 @@ import Sidebar from './Sidebar/sidebar';
 import Header from './Sidebar/header';
 import { useSelector } from 'react-redux';
 import Layout from '../SidebarLayout/Layout';
-import { ResetPassword } from './resetpassword';
+import ResetPassword from './ResetPassword';
 import Employeeslist from '../MainPage/Employees/Employees/employeeslist';
 import Settings from '../MainPage/Administration/Settings/companysettings';
 import RolePermisson from '../MainPage/Administration/Settings/rolespermission';
