@@ -91,6 +91,7 @@
     "redux": "^4.2.1",
     "redux-persist": "^6.0.0",
     "redux-saga": "^1.2.2",
+    "serve": "^14.2.0",
     "slick-carousel": "^1.8.1",
     "slimscroll": "^0.9.1",
     "source-map-loader": "^4.0.1",
@@ -124,7 +125,7 @@
     "xml-loader": "^1.2.1"
   },
   "engines": {
-  "node": "18",
-  "npm": ">=8.5.5"
-}
+    "node": "18",
+    "npm": ">=8.5.5"
+  }
 }
