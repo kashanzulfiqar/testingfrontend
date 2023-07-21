@@ -555,23 +555,40 @@ const Registrationpage = (props) => {
               </div>
               </div>
               : 
-              <div className="account-box" style={{width: '100%',maxWidth: '560px', height: 'auto', paddingInline: '55px'}}>
+              <div className="account-box" style={{width: '100%', maxWidth: '630px', height: '505px', paddingInline: '20px'}}>
                   <div className="account-wrapper">
-                    <div style={{display: 'grid', justifyItems: 'center'}}>
-                      <img style={{padding: '17px 0px 30px 0px'}} src={SuccessIcon} alt="Success" />
-                      <h3 className="account-title" style={{padding: '0px 0px 15px 0px'}}>Congratulations!</h3>
+                    <h3 className="account-title" style={{padding: '30px 0px 20px 0px', fontSize: '32px'}}>Congratulations!</h3>
+                    {/* <p className="account-subtitle">Enter your email to get a password reset link</p> */}
+                    {/* Account Form */}
                       <div className="account-footer">
-                        <p style={{color: '#444444', padding: '0px 0px 20px 0px'}}>Your Company Registered Successfully. Admin Account Created.</p>
+                        <p style={{color: '#444444', fontSize: '18px'}}>Your Company Registered Successfully. Admin Account Created.</p>
+                        <p style={{color: '#6F6F6F', fontSize: '18px'}}>Confirm your email address. we have sent a verification email to</p>
+                        <p style={{fontWeight: '700', fontSize: '18px'}}>demo@gmail.com</p>
+                        <p style={{color: '#0097C7', fontSize: '18px'}}>Not your email address?</p>
+                        {/* <p style={{fontSize: '18px'}}>Please <a onClick={() => {setEmailNotVerified(false); setLoginValues({})}} style={{color: '#0097C7'}}>Click-Here</a> to Login again with the correct email address.</p> */}
+                        <p style={{color: '#6F6F6F', fontSize: '18px'}}>Make sure to check your inbox and your spam folder if you can't find the email.</p>
+                        <p style={{color: '#6F6F6F ', fontSize: '18px'}}>Still not Received? <a style={{color: '#0097C7'}}>Contact Us</a></p>
                       </div>
-
-                    </div>
-
-
-                    <div className="form-group text-center">
-                      <Link to='/login'><span className="account-btn" style={{color: 'white'}}>Login Now</span></Link>
-                    </div>  
-                </div>
+                    {/* /Account Form */}
+                  </div>
               </div>
+              // <div className="account-box" style={{width: '100%',maxWidth: '560px', height: 'auto', paddingInline: '55px'}}>
+              //     <div className="account-wrapper">
+              //       <div style={{display: 'grid', justifyItems: 'center'}}>
+              //         <img style={{padding: '17px 0px 30px 0px'}} src={SuccessIcon} alt="Success" />
+              //         <h3 className="account-title" style={{padding: '0px 0px 15px 0px'}}>Congratulations!</h3>
+              //         <div className="account-footer">
+              //           <p style={{color: '#444444', padding: '0px 0px 20px 0px'}}>Your Company Registered Successfully. Admin Account Created.</p>
+              //         </div>
+
+              //       </div>
+
+
+              //       <div className="form-group text-center">
+              //         <Link to='/login'><span className="account-btn" style={{color: 'white'}}>Login Now</span></Link>
+              //       </div>  
+              //   </div>
+              // </div>
             }
 
         </div>

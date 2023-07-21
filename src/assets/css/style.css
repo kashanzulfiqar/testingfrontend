@@ -2019,7 +2019,8 @@ input[type=file].form-control {
 .header .top-nav-search form {
   margin-top: 10px;
   position: relative;
-  width: 230px;
+  width: 209px;
+  /* width: 230px; */
 }
 @media (max-width: 991px) {
   .header .top-nav-search form {
@@ -6528,7 +6529,8 @@ textarea.form-control {
 }
 
 .error-page {
-  background-color: rgba(255, 155, 68, 0.2);
+  background-color: transparent;
+  /* background-color: rgba(255, 155, 68, 0.2); */
   color: #1f1f1f;
 }
 .error-page .main-wrapper {
@@ -7119,6 +7121,43 @@ textarea.form-control {
 }
 
 /* ................. custom css styling ................ */
+.invalidPhone{
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  height: 40px;
+  padding: 10px 50px 10px 15px;
+  border-radius: 50px;
+}
+
+.anticon{
+  top: -2px !important;
+}
+.ant-message-notice-content {
+  border-radius: 10px;
+}
+.ant-message{
+  top: 65px;
+}
+.ant-btn {
+height: auto;
+padding: 10px 20px !important;
+}
+.settings-icon {
+  display: none;
+}
+.cardStyle{
+  background-color: #ffffff;
+    border: 1px solid #ededed;
+    margin-bottom: 30px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 4px;
+    -webkit-box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.2);
+    -moz-box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.2);
+    box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.2);
+}
 .strength-bar-main{
   height: 19px;
   margin-top: 10px;
@@ -8468,6 +8507,7 @@ textarea.form-control {
 .roles-menu ul li.active a {
   border-color: #ff9b44;
   color: #ff9b44;
+  background-color: #f5f5f5;
 }
 .roles-menu ul li a {
   border-left: 3px solid transparent;

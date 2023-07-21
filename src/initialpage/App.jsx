@@ -114,6 +114,11 @@ import Header from './Sidebar/header';
 import { useSelector } from 'react-redux';
 import Layout from '../SidebarLayout/Layout';
 import ResetPassword from './resetpassword';
+import Employeeslist from '../MainPage/Employees/Employees/employeeslist';
+import Settings from '../MainPage/Administration/Settings/companysettings';
+import RolePermisson from '../MainPage/Administration/Settings/rolespermission';
+import 'antd/dist/antd.css';
+
 
 const App = () => {
 
@@ -144,13 +149,19 @@ const toggleMobileMenu = () => {
 }
 
 useEffect(() => {
-// if ((location.pathname === '/' || location.pathname === '/login') && !login) {
-//         nav('/login')               
-//       //    return (<Navigate to={'/app/main/dashboard'} />);                
-//       }
-//       else{
-//         nav('/employee/dashboard')
-//       }
+  // console.log('loc--------',location.pathname);
+if (!login) {
+  nav('/login') 
+}
+if ((location.pathname === '/' || location.pathname === '/login') && login) {
+      nav('/employee/dashboard')             
+        // nav('/login')               
+      //    return (<Navigate to={'/app/main/dashboard'} />);                
+      }
+      // else{
+      //   nav(`${location.pathname}`)
+      //   // nav('/employee/dashboard')
+      // }
 }, [])
 
 
@@ -166,15 +177,16 @@ useEffect(() => {
         <Route path="/forget-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:id" element={<ResetPassword />} />
         <Route path="/register" element={<RegistrationPage />} />
-        <Route path="/otp" element={<OTP />} />
+        {/* <Route path="/otp" element={<OTP />} />
         <Route path="/lockscreen" element={<LockScreen />} />
-        <Route path="/applyjob" element={<ApplyJobs />} />
+        <Route path="/applyjob" element={<ApplyJobs />} /> */}
+
 
         {/* <Route path="/app/*" element={<DefaultLayout />} /> */}
 
         {/* <Route element={<Layout />}> */}
         <Route path="/" element={<RequireAuth />}>
-          <Route>
+          {/* <Route> */}
             {/* dashboard */}
             <Route path={`main/dashboard`} element={<AdminDashboard />} />
             <Route path={`employee/dashboard`} element={<EmployeeDashboard />} />
@@ -182,14 +194,21 @@ useEffect(() => {
 
             {/* Employee */}
             <Route path={`employee/allemployees`} element={<AllEmployees />} />
+            <Route path={`employee/employees-list`} element={<Employeeslist />} />
 
-          </Route>
+            {/* Settings  */}
+          <Route path="/settings" element={<Settings />} />
+          {/* <Route path="/settings/roles-permissions" element={<RolePermisson />} /> */}
+
+        </Route>
+          <Route path="/404" element={<Error404 />}></Route>
+          <Route path="*" element={<Navigate to="/404" />}></Route>
 
         {/* </Route> */}
-        </Route>
+        {/* </Route> */}
 
 
-        <Route path="/settings/*" element={<Settinglayout />} />
+        {/* <Route path="/settings/*" element={<Settinglayout />} /> */}
         <Route path="/tasks/*" element={<Tasklayout />} />
         <Route path="/email/*" element={<Emaillayout />} />
         <Route path="/conversation/*" element={<Chatlayout />} />
@@ -200,7 +219,9 @@ useEffect(() => {
       </Routes>
 
       {
-        (login && (location.pathname.includes('/employee/') || location.pathname.includes('dashboard')) ) &&
+        (login && !location.pathname.includes('/login') && !location.pathname.includes('/login/:id') && !location.pathname.includes('/forget-password')
+        && !location.pathname.includes('/reset-password/:id') && !location.pathname.includes('/register') ) &&
+        // (login && (location.pathname.includes('/employee/') || location.pathname.includes('dashboard')) ) &&
         <>
           <Header onMenuClick={(value) => toggleMobileMenu()} />
           <Sidebar />

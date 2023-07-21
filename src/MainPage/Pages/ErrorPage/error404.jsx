@@ -17,7 +17,7 @@ const Error404 = () => {
          <>
          <div className='main-wrapper'>
             <Helmet>
-                <title>Error 404 - HRMS Admin Template</title>
+                <title>Error 404 - DaftarPro</title>
                 <meta name="description" content="Login page"/>					
             </Helmet>
          <div className="error-box">

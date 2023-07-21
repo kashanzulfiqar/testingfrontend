@@ -12,6 +12,7 @@ import  Addemployee from "../../../_components/modelbox/Addemployee"
 import Header from '../../../initialpage/Sidebar/header'
 import Sidebar from '../../../initialpage/Sidebar/sidebar';
 import Offcanvas from '../../../Entryfile/offcanvance';
+import favicon from '../../../files/Icons/DaftarProIcon.svg';
 
 const Employeeslist = () => {
 
@@ -111,7 +112,8 @@ const Employeeslist = () => {
            <div className="page-wrapper">
               <Helmet>
                   <title>Employeeslist - HRMS Admin Template</title>
-                  <meta name="description" content="Login page"/>					
+                  <meta name="description" content="Login page"/>
+                  <link rel="icon" type="image/x-icon" href={favicon} />				
               </Helmet>
            {/* Page Content */}
            <div className="content container-fluid">

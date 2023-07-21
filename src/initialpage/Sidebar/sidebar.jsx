@@ -660,8 +660,8 @@ const Sidebar = (props) => {
                 <li className={pathname.includes('administrator/users') ? "active" : ""}>
                   <Link to="/app/administrator/users"><i className="la la-user-plus" /> <span>Users</span></Link>
                 </li>
-                <li>
-                  <Link to="/settings/companysetting"><i className="la la-cog" /> <span>Settings</span></Link>
+                <li className={pathname.includes('/settings') ? "active" : ""}>
+                  <Link to="/settings"><i className="la la-cog" /> <span>Settings</span></Link>
                 </li>
                 <li className="menu-title">
                   <span>Pages</span>

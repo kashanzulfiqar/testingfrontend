@@ -243,7 +243,7 @@ const Header = (props) => {
   const { loginvalue } = useSelector((state) => state.user);
   const UserName = loginvalue?.email?.split('@')[0];
   const ProfileName = UserName?.charAt(0).toUpperCase() + UserName?.slice(1)
-  console.log(ProfileName, "loginvalue");
+  console.log(ProfileName, "headerLoginvalue=====");
 
 
   return (
@@ -384,7 +384,7 @@ const Header = (props) => {
         </li>
         {/* /Message Notifications */}
         <li className="nav-item dropdown has-arrow main-drop">
-          <a href="javascript:" className="dropdown-toggle nav-link" data-bs-toggle="dropdown">
+          <a href="#" className="dropdown-toggle nav-link" data-bs-toggle="dropdown">
             <span className="user-img me-1"><img src={Avatar_21} alt="" />
               <span className="status online" /></span>
             <span>{ProfileName ? ` ${ProfileName}` : "Admin"}</span>

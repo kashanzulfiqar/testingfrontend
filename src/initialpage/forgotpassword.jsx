@@ -60,19 +60,19 @@ const ForgotPassword = () => {
                 </div> :
                 <div className="account-box" style={{width: '100%', maxWidth: '630px', height: '460px', paddingInline: '20px'}}>
                 <div className="account-wrapper">
-                  <h3 className="account-title" style={{padding: '25px 0px 40px 0px'}}>All Done!</h3>
-                  {/* <p className="account-subtitle">Enter your email to get a password reset link</p> */}
-                  {/* Account Form */}
-                    <div className="account-footer">
-                      <p style={{color: '#6F6F6F'}}>We’ve emailed you with instructions to reset your password.</p>
-                      <p style={{fontWeight: '700'}}>{email}</p>
-                      <p>Not your email address?</p>
-                      <p>Please <a onClick={() => {setSuccessSection(false); setEmail('')}} style={{color: '#0097C7'}}>Click-Here</a> to Reset again with the correct email address.</p>
-                      <p style={{color: '#6F6F6F'}}>Make sure to check your inbox and your spam folder if you can't find the email.</p>
-                      <p style={{color: '#6F6F6F '}}>Still not Received? <a style={{color: '#0097C7'}}>Click here to Contact Us</a></p>
-                    </div>
-                  {/* /Account Form */}
-                </div>
+                    <h3 className="account-title" style={{padding: '30px 0px 20px 0px', fontSize: '32px'}}>All Done!</h3>
+                    {/* <p className="account-subtitle">Enter your email to get a password reset link</p> */}
+                    {/* Account Form */}
+                      <div className="account-footer">
+                        <p style={{color: '#6F6F6F', fontSize: '18px'}}>We’ve emailed you with instructions to reset your password.</p>
+                        <p style={{fontWeight: '700', fontSize: '18px'}}>{email}</p>
+                        <p style={{color: '#0097C7', fontSize: '18px'}}>Not your email address?</p>
+                        {/* <p style={{fontSize: '18px'}}>Please <a onClick={() => {setEmailNotVerified(false); setLoginValues({})}} style={{color: '#0097C7'}}>Click-Here</a> to Login again with the correct email address.</p> */}
+                        <p style={{color: '#6F6F6F', fontSize: '18px'}}>Make sure to check your inbox and your spam folder if you can't find the email.</p>
+                        <p style={{color: '#6F6F6F ', fontSize: '18px'}}>Still not Received? <a style={{color: '#0097C7'}}>Contact Us</a></p>
+                      </div>
+                    {/* /Account Form */}
+                  </div>
                 </div>
               }
             </div>
