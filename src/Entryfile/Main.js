@@ -86,7 +86,8 @@ const MainApp = () => (
   //    </Routes>
   // </Router>
   <React.StrictMode>
-    <Router basename={`${config.publicPath}`}>
+    <Router basename={`${process.env.REACT_APP_API_BASE_URL}`}>
+    {/* <Router basename={`${config.publicPath}`}> */}
       {/* <Router basename={config.publicPath}> */}
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>

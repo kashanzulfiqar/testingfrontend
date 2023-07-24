@@ -7121,6 +7121,32 @@ textarea.form-control {
 }
 
 /* ................. custom css styling ................ */
+.ant-picker-input {
+  height: 30px;
+}
+.ant-picker-dropdown {
+z-index: 1300;
+}
+/* for timepicker error border */
+.custom-border .ant-picker {
+  border-color: #e3e3e3 !important; 
+  box-shadow: none;
+  /* outline: none; */
+}
+/* for input error border */
+.custom-border .ant-input {
+  border-color: #e3e3e3 !important; 
+}
+/* for error message color */
+.custom-border .ant-form-item-explain-error {
+  /* color: red; */
+}
+.react-tel-input .form-control{
+  border-color: #e3e3e3;
+}
+.react-tel-input .flag-dropdown {
+  /* border-color: #e3e3e3; */
+}
 .invalidPhone{
   background-color: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -7470,6 +7496,8 @@ padding: 10px 20px !important;
 }
 .add-btn:hover {
   color: #ffffff;
+ background-color: #ffa557;
+ /* background-color: #FF9B44; */
 }
 
 .avatar-dropdown .dropdown-toggle:after {

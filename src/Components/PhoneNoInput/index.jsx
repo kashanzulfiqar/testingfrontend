@@ -4,7 +4,7 @@ import 'react-phone-input-2/lib/style.css'
 import './style.css'
 
 
-const PhoneNoInput = ({ phone, onChangePhone, onCountryChange, phoneError }) => {
+const PhoneNoInput = ({ phone, onChangePhone, onCountryChange }) => {
 
   // const [selectedCountryCode, setSelectedCountryCode] = useState()
   // const [selectedCountry, setSelectedCountry] = useState()
@@ -13,19 +13,12 @@ const PhoneNoInput = ({ phone, onChangePhone, onCountryChange, phoneError }) => 
   //   setSelectedCountryCode('92')
   //   setSelectedCountry('PK')
   // }, [])
-
-  useEffect(() => {
-    console.log(phoneError);
-  }, [])
   
   
 
   return (
     <>
           <PhoneInput
-          containerClass={phoneError ? "customPhoneSTyle========" : ''}
-          // inputStyle={{border: '1px solid red'}}
-          // containerStyle={{border: '1px solid #FF4D4F', borderTopLeftRadius: '4px', borderBottomLeftRadius: '4px', borderTopRightRadius: '6px', borderBottomRightRadius: '6px', }}
               placeholder="Enter phone number"
               country={'pk'}
               value={phone}

@@ -8,21 +8,6 @@ import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
 // import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 
-const layout = {
-  labelCol: {
-    span: 8,
-  },
-  wrapperCol: {
-    span: 16,
-  },
-};
-const tailLayout = {
-  wrapperCol: {
-    offset: 8,
-    span: 16,
-  },
-};
-
 const Leaves = () => {
   const [form] = Form.useForm();
 
@@ -446,6 +431,7 @@ const Leaves = () => {
                         message: "please enter leave days",
                       },
                     ]}
+                    
                   >
                     {/* <input
                       className="form-control"

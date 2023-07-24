@@ -166,9 +166,6 @@ const App = () => {
         <Route path="/forget-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:id" element={<ResetPassword />} />
         <Route path="/register" element={<RegistrationPage />} />
-        {/* <Route path="/otp" element={<OTP />} />
-        <Route path="/lockscreen" element={<LockScreen />} />
-        <Route path="/applyjob" element={<ApplyJobs />} /> */}
 
         {/* <Route path="/app/*" element={<DefaultLayout />} /> */}
 
@@ -187,6 +184,7 @@ const App = () => {
           <Route path="/settings" element={<Settings />} />
           {/* <Route path="/settings/roles-permissions" element={<RolePermisson />} /> */}
         </Route>
+        
         <Route path="/404" element={<Error404 />}></Route>
         <Route path="*" element={<Navigate to="/404" />}></Route>
 

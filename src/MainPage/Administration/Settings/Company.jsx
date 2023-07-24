@@ -1,14 +1,37 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import PhoneNoInput from "../../../Components/PhoneNoInput/index.jsx";
-import { Button, Form, Input } from "antd";
+import { Button, Form, Input, message } from "antd";
 
 const Company = () => {
-  const [form] = Form.useForm();
+  
+  const data1 = {
+    _id: 1, companyName: 'companyy', legalName: 'legalll', phoneNumber: '+92303000'
+  }
 
-  const onHandlePhoneChange = (type, value) => {
+  const [form] = Form.useForm();
+  const [allValues, setAllValues] = useState({})
+  const [data, setData] = useState(data1)
+
+  useEffect(() => {
+    form.setFieldsValue(data1);
+  }, [])
+  
+
+  const onHandleChange = (type, value) => {
       if (type === "phoneNumber" || type === "mobileNumber") {
       let newvalue = value ? "+" + value : "";
       console.log(newvalue);
+
+      const updatedValues = {
+        [type]: `${newvalue}`, // Replace 'New Value' with the desired new value
+      };
+  
+      // Set the updated values back to the form
+      form.setFieldsValue(updatedValues);
+      setAllValues({
+        ...allValues,
+        [type]: `${newvalue}`,
+      })
 
       // let newvalue = "+" + value
 
@@ -20,13 +43,25 @@ const Company = () => {
       //   newdata[`${id}`] = newvalue
       //   setformData(newdata)
       // }
+    }else{
+      const updatedValues = {
+        [type]: `${value}`, // Replace 'New Value' with the desired new value
+      };
+  
+      // Set the updated values back to the form
+      form.setFieldsValue(updatedValues);
+      setAllValues({
+        ...allValues,
+        [type]: `${value}`,
+      })
     }
   };
 
   const onFinish = (values) => {
-    console.log("submit", values);
+    console.log("onFinsish===", values);
+    console.log("All Values===", allValues);
     // handleClose();
-    message.success("Leave Added Successfully");
+    message.success("Company Settings Updated Successfully!");
   };
 
   // const phoneError = form.isFieldValidating("phoneNumber");
@@ -189,16 +224,7 @@ const Company = () => {
           form={form}
           name="control-hooks"
           onFinish={onFinish}
-          initialValues={
-            {
-              // leaveType: open ? open?.data?.leaveType : "",
-              // leaveDays: open ? open?.data?.leaveDays : "",
-            }
-          }
-          // onFinishFailed={() => message.error('ops')}
-          // style={{
-          //   maxWidth: 600,
-          // }}
+          onFinishFailed={() => message.error('Please Enter Required Fields!')}
         >
           <div className="row">
             <div className="col-sm-6">
@@ -216,7 +242,14 @@ const Company = () => {
                     },
                   ]}
                 >
-                  <Input className="form-control" />
+                  <Input style={{display: 'none'}} value={allValues?.companyName} />
+                  <input className="form-control"
+                    defaultValue={data ? data?.companyName : ''}
+                    onChange={(e) => {
+                      onHandleChange("companyName", e.target.value);
+                    }}
+                    autoFocus
+                  />
                 </Form.Item>
               </div>
             </div>
@@ -234,7 +267,13 @@ const Company = () => {
                     },
                   ]}
                 >
-                  <Input className="form-control" />
+                  <Input style={{display: 'none'}} value={allValues?.legalName} />
+                  <input className="form-control"
+                    defaultValue={data ? data?.legalName : ''}
+                    onChange={(e) => {
+                      onHandleChange("legalName", e.target.value);
+                    }}
+                  />
                 </Form.Item>
               </div>
             </div>
@@ -252,7 +291,12 @@ const Company = () => {
                     },
                   ]}
                 >
-                  <Input className="form-control" />
+                  <Input style={{display: 'none'}} value={allValues?.contactName} />
+                  <input className="form-control"
+                    onChange={(e) => {
+                      onHandleChange("contactName", e.target.value);
+                    }}
+                  />
                 </Form.Item>
               </div>
             </div>
@@ -270,7 +314,12 @@ const Company = () => {
                     },
                   ]}
                 >
-                  <Input className="form-control" />
+                  <Input style={{display: 'none'}} value={allValues?.address} />
+                  <input className="form-control"
+                    onChange={(e) => {
+                      onHandleChange("address", e.target.value);
+                    }}
+                  />
                 </Form.Item>
               </div>
             </div>
@@ -288,7 +337,12 @@ const Company = () => {
                     },
                   ]}
                 >
-                  <Input className="form-control" />
+                  <Input style={{display: 'none'}} value={allValues?.postalCode} />
+                  <input className="form-control"
+                    onChange={(e) => {
+                      onHandleChange("postalCode", e.target.value);
+                    }}
+                  />
                 </Form.Item>
               </div>
             </div>
@@ -306,7 +360,12 @@ const Company = () => {
                     },
                   ]}
                 >
-                  <Input className="form-control" />
+                  <Input style={{display: 'none'}} value={allValues?.city} />
+                  <input className="form-control"
+                    onChange={(e) => {
+                      onHandleChange("city", e.target.value);
+                    }}
+                  />
                 </Form.Item>
               </div>
             </div>
@@ -324,7 +383,12 @@ const Company = () => {
                     },
                   ]}
                 >
-                  <Input className="form-control" />
+                  <Input style={{display: 'none'}} value={allValues?.state} />
+                  <input className="form-control"
+                    onChange={(e) => {
+                      onHandleChange("state", e.target.value);
+                    }}
+                  />
                 </Form.Item>
               </div>
             </div>
@@ -342,7 +406,12 @@ const Company = () => {
                     },
                   ]}
                 >
-                  <Input className="form-control" />
+                  <Input style={{display: 'none'}} value={allValues?.country} />
+                  <input className="form-control"
+                    onChange={(e) => {
+                      onHandleChange("country", e.target.value);
+                    }}
+                  />
                 </Form.Item>
               </div>
             </div>
@@ -360,7 +429,12 @@ const Company = () => {
                     },
                   ]}
                 >
-                  <Input className="form-control" />
+                  <Input style={{display: 'none'}} value={allValues?.companyEmail} />
+                  <input className="form-control"
+                    onChange={(e) => {
+                      onHandleChange("companyEmail", e.target.value);
+                    }}
+                  />
                 </Form.Item>
               </div>
             </div>
@@ -378,7 +452,12 @@ const Company = () => {
                     },
                   ]}
                 >
-                  <Input className="form-control" />
+                  <Input style={{display: 'none'}} value={allValues?.registrationNo} />
+                  <input className="form-control"
+                    onChange={(e) => {
+                      onHandleChange("registrationNo", e.target.value);
+                    }}
+                  />
                 </Form.Item>
               </div>
             </div>
@@ -396,21 +475,16 @@ const Company = () => {
                     },
                   ]}
                 >
-                  <Input style={{ display: "none" }} />
+                  <Input style={{ display: "none"}} />
                   <PhoneNoInput
                     onChangePhone={(value) => {
-                      onHandlePhoneChange("phoneNumber", value);
+                      onHandleChange("phoneNumber", value);
                     }}
-                    // phone={state ? formData.contactNo : postformData.contactNo}
-                    // className="form-control========"
-                    // onChangePhone={(value) => {
-                    //   onHandleChange("contactNo", value)
-                    // }}
+                    phone={data ? data?.phoneNumber : ''}
                     // onCountryChange={(val) => {
                     //   onHandleChange("contactNo", `${val}`);
                     // }}
                     // phone={state ? formData.contactNo : postformData.contactNo}
-                    // phoneError={phoneError}
                   />
                 </Form.Item>
               </div>
@@ -432,7 +506,7 @@ const Company = () => {
                   <Input style={{ display: "none" }} />
                   <PhoneNoInput
                     onChangePhone={(value) => {
-                      onHandlePhoneChange("mobileNumber", value);
+                      onHandleChange("mobileNumber", value);
                     }}
                     // phone={state ? formData.contactNo : postformData.contactNo}
                     // onChangePhone={(value) => {
@@ -461,7 +535,12 @@ const Company = () => {
                     },
                   ]}
                 >
-                  <Input className="form-control" />
+                  <Input style={{display: 'none'}} value={allValues?.website} />
+                  <input className="form-control"
+                    onChange={(e) => {
+                      onHandleChange("website", e.target.value);
+                    }}
+                  />
                 </Form.Item>
               </div>
             </div>
@@ -479,7 +558,12 @@ const Company = () => {
                     },
                   ]}
                 >
-                  <Input className="form-control" />
+                  <Input style={{display: 'none'}} value={allValues?.fax} />
+                  <input className="form-control"
+                    onChange={(e) => {
+                      onHandleChange("fax", e.target.value);
+                    }}
+                  />
                 </Form.Item>
               </div>
             </div>
