@@ -135,11 +135,16 @@ const App = () => {
   //     }
   //   }, []);
 
-  const [menu, setMenu] = useState(false);
+  const [menu, setMenu] = useState(true);
 
   const toggleMobileMenu = () => {
     setMenu(!menu);
   };
+
+  useEffect(() => {
+    setMenu(!menu);
+  }, [location])
+  
 
   useEffect(() => {
     // console.log('loc--------',location.pathname);
@@ -158,7 +163,7 @@ const App = () => {
   }, []);
 
   return (
-    <>
+    <div>
       <Routes>
         {/* <Route path="/" element={<Navigate to="/login" />} /> */}
         <Route path="/login" element={<LoginPage />} />
@@ -207,13 +212,12 @@ const App = () => {
         !location.pathname.includes('/forget-password') &&
         !location.pathname.includes('/reset-password/:id') &&
         !location.pathname.includes('/register') && (
-          // (login && (location.pathname.includes('/employee/') || location.pathname.includes('dashboard')) ) &&
-          <>
-            <Header onMenuClick={(value) => toggleMobileMenu()} />
+          <div className={`main-wrapper ${menu ? 'slide-nav' : ''}`}>
+            <Header onMenuClick={toggleMobileMenu} />
             <Sidebar />
-          </>
+          </div>
         )}
-    </>
+    </div>
   );
 };
 

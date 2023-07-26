@@ -58,7 +58,7 @@ const Tasklayout = () => {
   return (
     <>
       <div className={`main-wrapper ${menu ? 'slide-nav' : ''}`}>
-        <Header onMenuClick={toggleMobileMenu} />
+        {/* <Header onMenuClick={toggleMobileMenu} /> */}
         {taskservice &&
           taskservice.map((route, key) => (
             <Route key={key} path={`${pathname}/${route.path}`} element={<route.component />} />

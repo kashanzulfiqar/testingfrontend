@@ -24,7 +24,7 @@ const Emaillayout = (props) => {
 			<>
 			 <div className={`main-wrapper ${menu ? 'slide-nav': ''}`}> 
           
-		 		<Header onMenuClick={(value) => toggleMobileMenu()} />
+		 		{/* <Header onMenuClick={(value) => toggleMobileMenu()} /> */}
 				<div>
 					{emailService && emailService.map((route,key)=>
 						<Route key={key} path={`${match.url}/${route.path}`} element={route.component} />

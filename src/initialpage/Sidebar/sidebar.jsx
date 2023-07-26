@@ -51,7 +51,7 @@ const Sidebar = (props) => {
   return (
 
     <React.Fragment>
-      <Header />
+      {/* <Header /> */}
       <div id="sidebar" className="sidebar">
         <Scrollbars>
           <div className="sidebar-inner slimscroll">

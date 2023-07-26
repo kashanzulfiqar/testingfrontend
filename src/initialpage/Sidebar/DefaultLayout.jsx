@@ -161,7 +161,7 @@ const DefaultLayout = () => {
   return (
     <>
       <div className={`main-wrapper ${menu ? 'slide-nav' : ''}`}>
-        <Header onMenuClick={toggleMobileMenu} />
+        {/* <Header onMenuClick={toggleMobileMenu} /> */}
         <div>
           <Routes>
             {routerService.map((route, key) => (
