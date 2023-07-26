@@ -46,7 +46,7 @@ td.ant-table-column-sort {
     font-size: 12px;
     margin-top: 3px;
 }
-.ant-table-thead > tr , .ant-table-tbody > tr > td, .ant-table tfoot > tr > th, .ant-table tfoot > tr > td {
+.ant-table-thead > tr , .ant-table-thead > tr > th , .ant-table-tbody > tr > td, .ant-table tfoot > tr > th, .ant-table tfoot > tr > td {
     padding: 10px 8px !important;
 }
 .ant-table.ant-table tr  {

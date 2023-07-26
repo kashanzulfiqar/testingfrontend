@@ -220,6 +220,7 @@ import notifications from '../../assets/json/notifications';
 import message from '../../assets/json/message';
 
 const Header = (props) => {
+  const { onMenuClick } = props;
   // console.log(Emails?.split('@')[0]);
   // const Emailss=Emails;
   //  console.log(loginvalue?.email,"ss");
@@ -266,7 +267,7 @@ const Header = (props) => {
         <h3>DaftarPro</h3>
       </div>
       {/* /Header Title */}
-      <a id="mobile_btn" className="mobile_btn" href="#" onClick={() => onMenuClik()}><i className="fa fa-bars" /></a>
+      <a id="mobile_btn" className="mobile_btn" href="javascript:void(0)" onClick={() => onMenuClik()}><i className="fa fa-bars" /></a>
       {/* Header Menu */}
       <ul className="nav user-menu">
         {/* Search */}
@@ -384,7 +385,7 @@ const Header = (props) => {
         </li>
         {/* /Message Notifications */}
         <li className="nav-item dropdown has-arrow main-drop">
-          <a href="#" className="dropdown-toggle nav-link" data-bs-toggle="dropdown">
+          <a href="javascript:void(0)" className="dropdown-toggle nav-link" data-bs-toggle="dropdown">
             <span className="user-img me-1"><img src={Avatar_21} alt="" />
               <span className="status online" /></span>
             <span>{ProfileName ? ` ${ProfileName}` : "Admin"}</span>
@@ -404,7 +405,7 @@ const Header = (props) => {
       {/* /Header Menu */}
       {/* Mobile Menu */}
       <div className="dropdown mobile-user-menu">
-        <a href="#" className="nav-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="fa fa-ellipsis-v" /></a>
+        <a href="javascript:void(0)" className="nav-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="fa fa-ellipsis-v" /></a>
         <div className="dropdown-menu dropdown-menu-end dropdown-menu-right">
           <Link className="dropdown-item" to="/app/profile/employee-profile">My Profile</Link>
           <Link className="dropdown-item" to="/settings/companysetting">Settings</Link>

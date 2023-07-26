@@ -799,6 +799,7 @@ ul {
 }
 .btn.btn-rounded {
   border-radius: 50px;
+  width: max-content;
 }
 
 .btn-white {
@@ -7121,22 +7122,68 @@ textarea.form-control {
 }
 
 /* ................. custom css styling ................ */
+.sidebar > div > div:nth-child(3), .sidebar > div > div:nth-child(2){
+  display: none;
+}
+.ant-input-number-handler-wrap .anticon{
+  top: 9px !important;
+}
+.ant-input-number-input{
+  padding: 0px !important;
+}
+.ant-picker-ok .ant-btn{
+  font-size: 14px;
+    height: 24px;
+    width: 45px;
+    padding: 0px 7px !important;
+    border-radius: 4px;
+}
+.ant-picker-time-panel {
+  min-width: 160px;
+}
+/* .ant-btn-primary{
+  border-color: #ff9b44;
+  background-color: #ff9b44;
+} */
+.btn-white:hover{
+  background-color: #ffffff;
+    border: 1px solid #cccccc;
+    color: #272b41;
+}
 .ant-picker-input {
   height: 30px;
 }
-.ant-picker-dropdown {
+.ant-picker-dropdown, .ant-select-dropdown {
 z-index: 1300;
 }
-/* for timepicker error border */
-.custom-border .ant-picker {
-  border-color: #e3e3e3 !important; 
-  box-shadow: none;
-  /* outline: none; */
+/* antd dropdown selected color to orange */
+.ant-select-item-option-selected:not(.ant-select-item-option-disabled){
+  color: #fff;
+    font-weight: 600;
+    background-color: #ff9b44;
 }
-/* for input error border */
-.custom-border .ant-input {
-  border-color: #e3e3e3 !important; 
+/* for antd slelct error border and height and padding */
+.ant-select-status-error.ant-select:not(.ant-select-disabled):not(.ant-select-customize-input):not(.ant-pagination-size-changer) .ant-select-selector{
+  border-color: #e3e3e3 !important;
 }
+.custom-border .ant-select-selector {
+  border-color: #e3e3e3 !important;
+  box-shadow: none !important;
+  height: 44px !important;
+  padding-top: 6px !important;
+}
+.ant-select-item{
+  padding: 8px 12px !important;
+}
+/* for antd timepicker error border */
+.custom-border .ant-picker, .custom-border .ant-input, .custom-border .ant-input-number {
+  border-color: #e3e3e3 !important; 
+  box-shadow: none !important;
+}
+/* for antd input error border */
+/* .custom-border .ant-input, .custom-border .ant-input-number {
+  border-color: #e3e3e3 !important; 
+} */
 /* for error message color */
 .custom-border .ant-form-item-explain-error {
   /* color: red; */
@@ -7164,6 +7211,7 @@ z-index: 1300;
 }
 .ant-message{
   top: 65px;
+  z-index: 5000 !important;
 }
 .ant-btn {
 height: auto;

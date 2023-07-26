@@ -60,7 +60,7 @@ const ChatLayout = () => {
   return (
     <>
       <div className={`main-wrapper ${menu ? 'slide-nav': ''}`}>
-        <Header onMenuClick={toggleMobileMenu} />
+        {/* <Header onMenuClick={toggleMobileMenu} /> */}
         <div>
           {chatService && chatService.map((route, key) => (
             <Route key={key} path={`${match.url}/${route.path}`} element={<route.component />} />

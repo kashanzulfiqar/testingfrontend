@@ -58,7 +58,7 @@ const SettingsLayout = () => {
   return (
     <>
       <div className={`main-wrapper ${menu ? 'slide-nav': ''}`}> 
-        <Header onMenuClick={toggleMobileMenu} />
+        {/* <Header onMenuClick={toggleMobileMenu} /> */}
         <div>
           {settingservice && settingservice.map((route, key) => (
             <Route key={key} path={`${match.url}/${route.path}`} element={<route.component />} />

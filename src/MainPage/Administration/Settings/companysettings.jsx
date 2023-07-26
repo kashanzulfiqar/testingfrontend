@@ -15,11 +15,12 @@ import Designation from "./Designation";
 import Shifts from "./Shifts";
 import TaxSlabs from "./TaxSlabs";
 
-const Settings = () => {
+const Settings = ({test}) => {
 
   const [editModal, setEditModal] = useState('')
   const [showComponent, setShowComponent] = useState('Company Settings')
 
+  console.log('logi====', test);
 
   useEffect(() => {
     if ($(".select").length > 0) {
@@ -31,7 +32,7 @@ const Settings = () => {
   });
 
   return (
-    <>
+    <div>
       <div className="page-wrapper">
         <Helmet>
           <title>{showComponent} - DaftarPro</title>
@@ -307,48 +308,48 @@ const Settings = () => {
                <div className="roles-menu" style={{margin: '0px'}}>
                  <ul>
                     <li className={showComponent === 'Company Settings' ? 'active' : ''}>
-                      <a href="#" onClick={() => setShowComponent('Company Settings')}>
+                      <a href="javascript:void(0)" onClick={() => setShowComponent('Company Settings')}>
                         <i className="fa fa-fw fa-info-circle" style={{marginRight: '8px'}}></i>
                         Company Settings
                       </a>
                    </li>
                    <li className={showComponent === 'Leaves Settings' ? 'active' : ''}>
-                      <a href="#" onClick={() => setShowComponent('Leaves Settings')}>
+                      <a href="javascript:void(0)" onClick={() => setShowComponent('Leaves Settings')}>
                         <i className="fa fa-fw fa-warning" style={{marginRight: '8px'}}></i>
                         Leaves Settings
                       </a>
                    </li>
                    <li className={showComponent === 'Roles' ? 'active' : ''}>
-                      <a href="#" onClick={() => setShowComponent('Roles')}>
+                      <a href="javascript:void(0)" onClick={() => setShowComponent('Roles')}>
                         <i className="fa fa-fw fa-list-alt" style={{marginRight: '8px'}}></i>
                         Roles
                       </a>
                    </li>
                    <li className={showComponent === 'Departments' ? 'active' : ''}>
-                      <a href="#" onClick={() => setShowComponent('Departments')}>
+                      <a href="javascript:void(0)" onClick={() => setShowComponent('Departments')}>
                         <i className="fa fa-fw fa-sitemap" style={{marginRight: '8px'}}></i>
                         Departments
                       </a>
                    </li>
                    <li className={showComponent === 'Designation' ? 'active' : ''}>
-                      <a href="#" onClick={() => setShowComponent('Designation')}>
+                      <a href="javascript:void(0)" onClick={() => setShowComponent('Designation')}>
                         <i className="fa fa-fw fa-users" style={{marginRight: '8px'}}></i>
                         Designation
                       </a>
                    </li>
                    <li className={showComponent === 'Shifts' ? 'active' : ''}>
-                      <a href="#" onClick={() => setShowComponent('Shifts')}>
+                      <a href="javascript:void(0)" onClick={() => setShowComponent('Shifts')}>
                         <i className="fa fa-fw fa-clock-o" style={{marginRight: '8px'}}></i>
                         Shifts
                       </a>
                    </li>
                    <li className={showComponent === 'Tax Slabs' ? 'active' : ''}>
-                      <a href="#" onClick={() => setShowComponent('Tax Slabs')}>
+                      <a href="javascript:void(0)" onClick={() => setShowComponent('Tax Slabs')}>
                         <i className="fa fa-fw fa-money" style={{marginRight: '8px'}}></i>
                         Tax Slabs
                       </a>
                    </li>
-                   <li className="">
+                   {/* <li className="">
                      <a href="#">Administrator
                        <span className="role-action">
                          <span className="action-circle large" data-bs-toggle="modal" data-bs-target="#edit_role">
@@ -383,7 +384,7 @@ const Settings = () => {
                          </span>
                        </span>
                      </a>
-                   </li>
+                   </li> */}
                  </ul>
                </div>
              </div>
@@ -485,7 +486,7 @@ const Settings = () => {
         {/* /Page Content */}
       </div>
       <Offcanvas />
-    </>
+    </div>
   );
 };
 

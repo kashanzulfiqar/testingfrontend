@@ -42,12 +42,13 @@ const Designation = () => {
   const columns = [
     {
       title: "#",
-      dataIndex: "id",
+      dataIndex: '',
+      render: (text, record, index) => index + 1,
     },
     {
       title: "Designation Name",
       dataIndex: "designationName",
-      sorter: (a, b) => a.departmentName.length - b.departmentName.length,
+      // sorter: (a, b) => a.departmentName.length - b.departmentName.length,
     },
     {
       title: "Actions",
@@ -81,8 +82,15 @@ const Designation = () => {
             <a
               className="dropdown-item"
               href="#"
-              data-bs-toggle="modal"
-              data-bs-target="#delete_leavetype"
+              onClick={() =>
+                {
+                  setOpen({
+                  isAddOpen: false,
+                  isDelOpen: true,
+                  data: record,
+                })
+                }
+              }
             >
               <i className="fa fa-trash-o m-r-5" /> Delete
             </a>
@@ -112,7 +120,7 @@ const Designation = () => {
   };
 
   return (
-    <>
+    <div>
       {/* Page Content */}
       <div>
         {/* <div className="content container-fluid"> */}
@@ -184,14 +192,14 @@ const Designation = () => {
               <div className="modal-btn delete-action">
                 <div className="row">
                   <div className="col-6">
-                    <a href="" className="btn btn-primary continue-btn">
+                    <a href="#" className="btn btn-primary continue-btn">
                       Delete
                     </a>
                   </div>
                   <div className="col-6">
                     <a
-                      href=""
-                      data-bs-dismiss="modal"
+                      href="#"
+                      onClick={handleClose}
                       className="btn btn-primary cancel-btn"
                     >
                       Cancel
@@ -269,7 +277,48 @@ const Designation = () => {
           </div>
         </div>
       </Modal>
-    </>
+
+            {/* delete modall */}
+            <Modal
+        open={open.isDelOpen}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+        disableRestoreFocus
+        BackdropProps={{
+          style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
+        }}
+      >
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content" style={{height: '280px'}}>
+            <div className="modal-body" style={{display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
+              <div className="form-header">
+                <h3 style={{marginBottom: '30px'}}>Delete Designation</h3>
+                <p>Are you sure you want to delete <b>{open?.data?.designationName}</b>?</p>
+              </div>
+              <div className="modal-btn delete-action">
+                <div className="row">
+                  <div className="col-6">
+                    <a href="" className="btn btn-primary continue-btn">
+                      Delete
+                    </a>
+                  </div>
+                  <div className="col-6">
+                    <a
+                      href=""
+                      data-bs-dismiss="modal"
+                      className="btn btn-primary submit-btn"
+                    >
+                      Cancel
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Modal>
+    </div>
   );
 };
 

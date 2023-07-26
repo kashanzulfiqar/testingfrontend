@@ -1,19 +1,16 @@
 import { Table, Button, Form, Input, message, TimePicker, Select } from "antd";
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
 import { itemRender, onShowSizeChange } from "../../paginationfunction";
 import "antd/dist/antd.css";
 import "../../antdstyle.css";
 import Modal from "@mui/material/Modal";
-import Box from "@mui/material/Box";
-// import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 import moment from "moment";
 
 
 const Shifts = () => {
-  const [form] = Form.useForm();
 
-  const [shiftValues, setShiftValues] = useState({});
+  const { Option } = Select;
+
   const [open, setOpen] = useState({
     isAddOpen: false,
     isDelOpen: false,
@@ -21,100 +18,54 @@ const Shifts = () => {
   });
 
   const [datas, setData] = useState([
-    { id: 1, shiftName: "Night", maxStartTime: '12:00', startTime: '13:00', endTime: '14:00'},
-    { id: 2, shiftName: "Morning", maxStartTime: '20:00', startTime: '21:00', endTime: '22:00'},
+    { id: 1, shiftName: "Night", maxStartTime: '12:00', startTime: '13:00', endTime: '14:00', status: 'active'},
+    { id: 2, shiftName: "Morning", maxStartTime: '20:00', startTime: '21:00', endTime: '22:00', status: 'in-active'},
   ]);
 
   const handleClose = () => {
     setOpen({ isAddOpen: false, isDelOpen: false, data: "" });
-    setShiftValues({});
-    form.resetFields();
-  };
-  const onHandleChange = (type, value) => {
-     setShiftValues({
-      ...shiftValues,
-      [type]: `${value}`,
-     })
   };
 
   const columns = [
     {
       title: "#",
-      dataIndex: "id",
+      dataIndex: '',
+      render: (text, record, index) => index + 1,
     },
     {
       title: "Shifts Name",
       dataIndex: "shiftName",
-      sorter: (a, b) => a.shiftName.length - b.shiftName.length,
+      // sorter: (a, b) => a.shiftName.length - b.shiftName.length,
     },
     {
       title: "Max Start Time",
       dataIndex: "maxStartTime",
-      sorter: (a, b) => a.maxStartTime.length - b.maxStartTime.length,
+      // sorter: (a, b) => a.maxStartTime.length - b.maxStartTime.length,
     },
     {
       title: "Start Time",
       dataIndex: "startTime",
-      sorter: (a, b) => a.startTime.length - b.startTime.length,
+      // sorter: (a, b) => a.startTime.length - b.startTime.length,
     },
     {
       title: "End Time",
       dataIndex: "endTime",
-      sorter: (a, b) => a.endTime.length - b.endTime.length,
+      // sorter: (a, b) => a.endTime.length - b.endTime.length,
     },
     {
       title: "Status",
-      render: (text, record) => (
+      dataIndex: "status",
+      render: (record, row) => (
         <>
-        <a
-            className="btn btn-white btn-sm btn-rounded"
-            href="#"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-          >
-            <i className="fa fa-dot-circle-o text-success" /> Active
-          </a>
-        <div className="dropdown action-label">
-          <a
-            className="btn btn-white btn-sm btn-rounded dropdown-toggle"
-            href="#"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-          >
-            <i className="fa fa-dot-circle-o text-success" /> Active
-          </a>
-          <div className="dropdown-menu dropdown-menu-right">
-            <a href="#" className="dropdown-item">
-              <i className="fa fa-dot-circle-o text-success" /> Active
-            </a>
-            <a href="#" className="dropdown-item">
-              <i className="fa fa-dot-circle-o text-danger" /> Inactive
-            </a>
-          </div>
-        </div>
-          {/* <Select
-      defaultValue=""
-      style={{
-        // width: 120,
-      }}
-      onChange={(value) => console.log(`selected ${value}`)}
-      options={[
-        {
-          value: 'active',
-          label: 'Active',
-        },
-        {
-          value: 'in-active',
-          label: 'In-Active',
-        },
-      ]}
-    /> */}
+        <span className="btn btn-white btn-sm btn-rounded" style={{textTransform: 'capitalize'}}>
+            <i className={`fa ${record === 'active' ? 'fa-dot-circle-o text-success' : 'fa-dot-circle-o text-danger'}`} /> {record}
+          </span>
         </>
       ),
     },
     {
       title: "Actions",
-      render: (text, record) => (
+      render: (record, row) => (
         <div className="dropdown dropdown-action text-end">
           <a
             href="#"
@@ -133,9 +84,8 @@ const Shifts = () => {
                   setOpen({
                   isAddOpen: true,
                   isDelOpen: false,
-                  data: record,
+                  data: row,
                 })
-                // form.setFieldsValue(record);
                 }
               }
             >
@@ -144,8 +94,15 @@ const Shifts = () => {
             <a
               className="dropdown-item"
               href="#"
-              data-bs-toggle="modal"
-              data-bs-target="#delete_leavetype"
+              onClick={() =>
+                {
+                  setOpen({
+                  isAddOpen: false,
+                  isDelOpen: true,
+                  data: row,
+                })
+                }
+              }
             >
               <i className="fa fa-trash-o m-r-5" /> Delete
             </a>
@@ -155,25 +112,13 @@ const Shifts = () => {
     },
   ];
 
-  const style = {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    width: 500,
-    height: 328,
-    bgcolor: "#fff",
-    borderRadius: "10px",
-    boxShadow: 24,
-    paddingTop: 5,
-  };
-
   const onFinish = (values) => {
     let data = {
       shiftName: values?.shiftName,
       maxStartTime: values?.maxStartTime.format('HH:mm'),
       startTime: values?.startTime.format('HH:mm'),
       endTime: values?.endTime.format('HH:mm'),
+      status: values?.status
     }
     console.log('submit',data);
     handleClose();
@@ -183,7 +128,7 @@ const Shifts = () => {
   const timeFormat = 'HH:mm';
 
   return (
-    <>
+    <div>
       {/* Page Content */}
       <div>
         {/* <div className="content container-fluid"> */}
@@ -255,14 +200,14 @@ const Shifts = () => {
               <div className="modal-btn delete-action">
                 <div className="row">
                   <div className="col-6">
-                    <a href="" className="btn btn-primary continue-btn">
+                    <a href="#" className="btn btn-primary continue-btn">
                       Delete
                     </a>
                   </div>
                   <div className="col-6">
                     <a
-                      href=""
-                      data-bs-dismiss="modal"
+                      href="#"
+                      onClick={handleClose}
                       className="btn btn-primary cancel-btn"
                     >
                       Cancel
@@ -280,7 +225,6 @@ const Shifts = () => {
         open={open.isAddOpen}
         onClose={handleClose}
         aria-labelledby="modal-modal-title"
-        // className="modal custom-modal fade"
         aria-describedby="modal-modal-description"
         disableRestoreFocus
         BackdropProps={{
@@ -300,11 +244,13 @@ const Shifts = () => {
                 // form={form}
                 name="control-hooks"
                 onFinish={onFinish}
+                onFinishFailed={() => message.error('Please Fill Required Fields!')}
                 initialValues={{
                   shiftName: open?.data ? open?.data?.shiftName : '',
                   maxStartTime: open?.data ? moment(open?.data?.maxStartTime, timeFormat) : '',
                   startTime: open?.data ? moment(open?.data?.startTime, timeFormat) : '',
                   endTime: open?.data ? moment(open?.data?.endTime, timeFormat) : '',
+                  status: open?.data ? open?.data?.status : '',
                 }}
               >
                 <div className="row">
@@ -326,14 +272,8 @@ const Shifts = () => {
                       >
                         <Input
                           className="form-control"
-                        />
-                        {/* <input className="form-control"
-                          defaultValue={open?.data ? open?.data?.shiftName : ''}
-                          onChange={(e) => {
-                            onHandleChange("shiftName", e.target.value);
-                          }}
                           autoFocus
-                        /> */}
+                        />
                       </Form.Item>
                     </div>
                   </div>
@@ -406,6 +346,36 @@ const Shifts = () => {
                       </Form.Item>
                     </div>
                   </div>
+                  <div className="col-12">
+                    <div className="form-group">
+                      <label>
+                        Status <span className="text-danger">*</span>
+                      </label>
+                      <Form.Item
+                        name="status"
+                        rules={[
+                          {
+                            required: true,
+                            message: "please select status",
+                          },
+                        ]}
+                        className="custom-border"
+                      >
+                        <Select
+                          options={[
+                            {
+                              value: 'active',
+                              label: 'Active',
+                            },
+                            {
+                              value: 'in-active',
+                              label: 'In-Active',
+                            },
+                          ]}
+                        />
+                      </Form.Item>
+                    </div>
+                  </div>
                   <div className="submit-section">
                     <Form.Item>
                       <Button
@@ -422,7 +392,48 @@ const Shifts = () => {
           </div>
         </div>
       </Modal>
-    </>
+
+            {/* delete modall */}
+            <Modal
+        open={open.isDelOpen}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+        disableRestoreFocus
+        BackdropProps={{
+          style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
+        }}
+      >
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content" style={{height: '280px'}}>
+            <div className="modal-body" style={{display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
+              <div className="form-header">
+                <h3 style={{marginBottom: '30px'}}>Delete Shift</h3>
+                <p>Are you sure you want to delete <b>{open?.data?.shiftName}</b>?</p>
+              </div>
+              <div className="modal-btn delete-action">
+                <div className="row">
+                  <div className="col-6">
+                    <a href="" className="btn btn-primary continue-btn">
+                      Delete
+                    </a>
+                  </div>
+                  <div className="col-6">
+                    <a
+                      href=""
+                      data-bs-dismiss="modal"
+                      className="btn btn-primary submit-btn"
+                    >
+                      Cancel
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Modal>
+    </div>
   );
 };
 

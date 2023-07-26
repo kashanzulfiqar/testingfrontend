@@ -5,7 +5,7 @@ import { Button, Form, Input, message } from "antd";
 const Company = () => {
   
   const data1 = {
-    _id: 1, companyName: 'companyy', legalName: 'legalll', phoneNumber: '+92303000'
+    _id: 1, companyName: 'companyy', legalName: 'legalll', phoneNumber: '+923333333333'
   }
 
   const [form] = Form.useForm();
@@ -20,7 +20,7 @@ const Company = () => {
   const onHandleChange = (type, value) => {
       if (type === "phoneNumber" || type === "mobileNumber") {
       let newvalue = value ? "+" + value : "";
-      console.log(newvalue);
+      // console.log(newvalue);
 
       const updatedValues = {
         [type]: `${newvalue}`, // Replace 'New Value' with the desired new value
@@ -67,8 +67,8 @@ const Company = () => {
   // const phoneError = form.isFieldValidating("phoneNumber");
 
   return (
-    <>
-      <>
+    <div>
+      <div>
         {/* <h6 className="card-title m-b-20">Module Access</h6>
                {/* Page Header */}
         <div className="page-header">
@@ -248,7 +248,6 @@ const Company = () => {
                     onChange={(e) => {
                       onHandleChange("companyName", e.target.value);
                     }}
-                    autoFocus
                   />
                 </Form.Item>
               </div>
@@ -581,7 +580,7 @@ const Company = () => {
           </div>
         </Form>
         {/* </form>  */}
-      </>
+      </div>
       {/* Add Role Modal */}
       <div id="add_role" className="modal custom-modal fade" role="dialog">
         <div className="modal-dialog modal-dialog-centered" role="document">
@@ -682,7 +681,7 @@ const Company = () => {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
