@@ -218,6 +218,7 @@ import {
 } from '../../Entryfile/imagepath'
 import notifications from '../../assets/json/notifications';
 import message from '../../assets/json/message';
+import DaftarProWhiteIcon from '../../files/Icons/DaftarProWhiteIcon.svg'
 
 const Header = (props) => {
   const { onMenuClick } = props;
@@ -252,7 +253,8 @@ const Header = (props) => {
       {/* Logo */}
       <div className="header-left">
         <Link to="/app/main/dashboard" className="logo">
-          <img src={headerlogo} width={40} height={40} alt="" />
+          <img src={DaftarProWhiteIcon} width={40} height={40} alt="" />
+          {/* <img src={headerlogo} width={40} height={40} alt="" /> */}
         </Link>
       </div>
       {/* /Logo */}

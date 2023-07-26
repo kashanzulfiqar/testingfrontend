@@ -299,14 +299,14 @@ const Designation = () => {
               <div className="modal-btn delete-action">
                 <div className="row">
                   <div className="col-6">
-                    <a href="" className="btn btn-primary continue-btn">
+                    <a href="javascript:void(0)" className="btn btn-primary continue-btn">
                       Delete
                     </a>
                   </div>
                   <div className="col-6">
                     <a
-                      href=""
-                      data-bs-dismiss="modal"
+                      href="javascript:void(0)"
+                      onClick={handleClose}
                       className="btn btn-primary submit-btn"
                     >
                       Cancel

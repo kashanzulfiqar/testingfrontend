@@ -109,7 +109,7 @@ const ResetPassword = () => {
                          <div className="pass-group password-eye">
                             <input
                               type={eye1 ? "password" : "text"}
-                              className={`form-control`}
+                              className={`form-control passwordStyle`}
                               onChange={(e) => onInputChange(e.target.value, 'password')}
                               value={passwords?.password}
                             />
@@ -130,7 +130,7 @@ const ResetPassword = () => {
                          <div className="pass-group password-eye">
                             <input
                               type={eye ? "password" : "text"}
-                              className={`form-control`}
+                              className={`form-control passwordStyle`}
                               onChange={(e) => onInputChange(e.target.value, 'confirm_password')}
                               value={passwords?.confirm_password}
                             />
