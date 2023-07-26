@@ -87,7 +87,7 @@ const TaxSlabs = () => {
       render: (record, row) => (
         <div className="dropdown dropdown-action text-end">
           <a
-            href="#"
+            href="javascript:void(0)"
             className="action-icon dropdown-toggle"
             data-bs-toggle="dropdown"
             aria-expanded="false"
@@ -97,7 +97,7 @@ const TaxSlabs = () => {
           <div className="dropdown-menu dropdown-menu-right">
             <a
               className="dropdown-item"
-              href="#"
+              href="javascript:void(0)"
               onClick={() =>
                 {
                   setOpen({
@@ -112,7 +112,7 @@ const TaxSlabs = () => {
             </a>
             <a
               className="dropdown-item"
-              href="#"
+              href="javascript:void(0)"
               onClick={() =>
                 {
                   setOpen({
@@ -150,7 +150,7 @@ const TaxSlabs = () => {
             </div>
             <div className="col-auto float-end ms-auto">
               <a
-                href="#"
+                href="javascript:void(0)"
                 className="btn add-btn"
                 onClick={() => {
                   setOpen({
@@ -433,13 +433,13 @@ const TaxSlabs = () => {
               <div className="modal-btn delete-action">
                 <div className="row">
                   <div className="col-6">
-                    <a href="#" className="btn btn-primary continue-btn">
+                    <a href="javascript:void(0)" className="btn btn-primary continue-btn">
                       Delete
                     </a>
                   </div>
                   <div className="col-6">
                     <a
-                      href="#"
+                      href="javascript:void(0)"
                       onClick={handleClose}
                       className="btn btn-primary submit-btn"
                     >
