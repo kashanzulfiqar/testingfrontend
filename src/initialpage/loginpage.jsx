@@ -156,7 +156,7 @@ const Loginpage = (props) => {
                         <div className="pass-group password-eye">
                           <input
                             type={eye ? "password" : "text"}
-                            className={`form-control`}
+                            className={`form-control passwordStyle`}
                             // className={`form-control ${passworderror ? 'is-invalid' : ''}`}
                             // className={`form-control ${errors.password ? 'is-invalid' : ''}`}
                             placeholder="Enter your password"

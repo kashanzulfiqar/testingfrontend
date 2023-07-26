@@ -387,7 +387,7 @@ const Registrationpage = (props) => {
                          <div className="pass-group password-eye">
                             <input
                               type={eye ? "password" : "text"}
-                              className={`form-control ${passworderror ? 'is-invalid' : ''}`}
+                              className={`form-control passwordStyle ${passworderror ? 'is-invalid' : ''}`}
                               onChange={(e) => onInputChange(e.target.value, 'password')}
                               value={adminRegister?.password}
                             />
