@@ -33,19 +33,19 @@ const Shifts = () => {
       render: (text, record, index) => index + 1,
     },
     {
-      title: "Shifts Name",
+      title: "Shift Name",
       dataIndex: "shiftName",
       // sorter: (a, b) => a.shiftName.length - b.shiftName.length,
-    },
-    {
-      title: "Max Start Time",
-      dataIndex: "maxStartTime",
-      // sorter: (a, b) => a.maxStartTime.length - b.maxStartTime.length,
     },
     {
       title: "Start Time",
       dataIndex: "startTime",
       // sorter: (a, b) => a.startTime.length - b.startTime.length,
+    },
+    {
+      title: "Max Start Time",
+      dataIndex: "maxStartTime",
+      // sorter: (a, b) => a.maxStartTime.length - b.maxStartTime.length,
     },
     {
       title: "End Time",
@@ -112,17 +112,30 @@ const Shifts = () => {
     },
   ];
 
-  const onFinish = (values) => {
-    let data = {
-      shiftName: values?.shiftName,
-      maxStartTime: values?.maxStartTime.format('HH:mm'),
-      startTime: values?.startTime.format('HH:mm'),
-      endTime: values?.endTime.format('HH:mm'),
-      status: values?.status
+  const onFinish = (values, row_data) => {
+    if(row_data){
+      let data = {
+        shiftName: values?.shiftName,
+        maxStartTime: values?.maxStartTime.format('HH:mm'),
+        startTime: values?.startTime.format('HH:mm'),
+        endTime: values?.endTime.format('HH:mm'),
+        status: values?.status
+      }
+      console.log('submit',data);
+      message.success('Shift Updated Successfully')
+      handleClose();
+    }else{
+      let data = {
+        shiftName: values?.shiftName,
+        maxStartTime: values?.maxStartTime.format('HH:mm'),
+        startTime: values?.startTime.format('HH:mm'),
+        endTime: values?.endTime.format('HH:mm'),
+        status: values?.status
+      }
+      console.log('submit',data);
+      handleClose();
+      message.success('Shift Added Successfully')
     }
-    console.log('submit',data);
-    handleClose();
-    message.success('Shift Added Successfully')
   };
 
   const timeFormat = 'HH:mm';
@@ -161,7 +174,7 @@ const Shifts = () => {
           <div className="col-md-12">
             <div className="table-responsive">
               <Table
-                className="table-striped"
+                className="table-striped antTableResponsive"
                 pagination={{
                   total: datas.length,
                   // pageSize: 1,
@@ -184,42 +197,6 @@ const Shifts = () => {
         </div>
       </div>
       {/* /Page Content */}
-      {/* Delete Leavetype Modal */}
-      <div
-        className="modal custom-modal fade"
-        id="delete_leavetype"
-        role="dialog"
-      >
-        <div className="modal-dialog modal-dialog-centered">
-          <div className="modal-content">
-            <div className="modal-body">
-              <div className="form-header">
-                <h3>Delete Leave Type</h3>
-                <p>Are you sure want to delete?</p>
-              </div>
-              <div className="modal-btn delete-action">
-                <div className="row">
-                  <div className="col-6">
-                    <a href="javascript:void(0)" className="btn btn-primary continue-btn">
-                      Delete
-                    </a>
-                  </div>
-                  <div className="col-6">
-                    <a
-                      href="javascript:void(0)"
-                      onClick={handleClose}
-                      className="btn btn-primary cancel-btn"
-                    >
-                      Cancel
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      {/* /Delete Leavetype Modal */}
 
       <Modal
         open={open.isAddOpen}
@@ -234,7 +211,7 @@ const Shifts = () => {
         <div className="modal-dialog modal-dialog-centered" role="document">
           <div className="modal-content">
             <div className="modal-header">
-              <h5 className="modal-title">Add Shift</h5>
+              <h5 className="modal-title">{open?.data ? 'Update' : 'Add'} Shift</h5>
               <button type="button" className="close" onClick={handleClose}>
                 <span aria-hidden="true">×</span>
               </button>
@@ -243,7 +220,7 @@ const Shifts = () => {
               <Form
                 // form={form}
                 name="control-hooks"
-                onFinish={onFinish}
+                onFinish={(val) => onFinish(val, open?.data)}
                 onFinishFailed={() => message.error('Please Fill Required Fields!')}
                 initialValues={{
                   shiftName: open?.data ? open?.data?.shiftName : '',
@@ -280,14 +257,14 @@ const Shifts = () => {
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>
-                        Max Start Time <span className="text-danger">*</span>
+                        Start Time <span className="text-danger">*</span>
                       </label>
                       <Form.Item
-                        name="maxStartTime"
+                        name="startTime"
                         rules={[
                           {
                             required: true,
-                            message: "please enter max start time",
+                            message: "please enter start time",
                           },
                         ]}
                         className="custom-border"
@@ -303,14 +280,14 @@ const Shifts = () => {
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>
-                        Start Time <span className="text-danger">*</span>
+                        Max Start Time <span className="text-danger">*</span>
                       </label>
                       <Form.Item
-                        name="startTime"
+                        name="maxStartTime"
                         rules={[
                           {
                             required: true,
-                            message: "please enter start time",
+                            message: "please enter max start time",
                           },
                         ]}
                         className="custom-border"

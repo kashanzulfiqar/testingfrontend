@@ -20,6 +20,7 @@ const TaxSlabs = () => {
   const [datas, setData] = useState([
     { id: 1, slabName: "slab name 1", yearlyPayLowerLimit: '120000', yearlyPayUpperLimit: '100', tax: '14', fixTax: '5'},
     { id: 2, slabName: "slab name 2", yearlyPayLowerLimit: '211100', yearlyPayUpperLimit: '5100', tax: '12', fixTax: '10'},
+    { id: 3, slabName: "slab name 3", yearlyPayLowerLimit: '2100', yearlyPayUpperLimit: '510', tax: '1', fixTax: '0'},
   ]);
 
   const handleClose = () => {
@@ -65,6 +66,7 @@ const TaxSlabs = () => {
       title: "Tax",
       dataIndex: "tax",
       // sorter: (a, b) => a.endTime.length - b.endTime.length,
+      width: '14%',
       render: (record, row) => {
         return ( 
         <span>
@@ -131,10 +133,16 @@ const TaxSlabs = () => {
     },
   ];
 
-  const onFinish = (values) => {
-    console.log('submit',values);
-    handleClose();
-    message.success('Tax Slab Added Successfully')
+  const onFinish = (values, data) => {
+    if(data){
+      console.log('submit',values);
+      handleClose();
+      message.success('Tax Slab Updated Successfully')
+    }else{
+      console.log('submit',values);
+      handleClose();
+      message.success('Tax Slab Added Successfully')
+    }
   };
 
   return (
@@ -171,7 +179,7 @@ const TaxSlabs = () => {
           <div className="col-md-12">
             <div className="table-responsive">
               <Table
-                className="table-striped"
+                className="table-striped antTableResponsive"
                 pagination={{
                   total: datas.length,
                   // pageSize: 1,
@@ -182,7 +190,7 @@ const TaxSlabs = () => {
                   onShowSizeChange: onShowSizeChange,
                   itemRender: itemRender,
                 }}
-                style={{ overflowX: "auto" }}
+                // style={{ overflowX: "auto" }}
                 columns={columns}
                 bordered
                 dataSource={datas}
@@ -244,7 +252,7 @@ const TaxSlabs = () => {
         <div className="modal-dialog modal-dialog-centered" role="document">
           <div className="modal-content">
             <div className="modal-header">
-              <h5 className="modal-title">Tax Slab</h5>
+              <h5 className="modal-title">{open?.data ? 'Update' : 'Add'}  Tax Slab</h5>
               <button type="button" className="close" onClick={handleClose}>
                 <span aria-hidden="true">×</span>
               </button>
@@ -253,7 +261,7 @@ const TaxSlabs = () => {
               <Form
                 // form={form}
                 name="control-hooks"
-                onFinish={onFinish}
+                onFinish={(val) => onFinish(val, open?.data)}
                 onFinishFailed={() => message.error('Please Fill Required Fields!')}
                 initialValues={{
                   slabName: open?.data ? open?.data?.slabName : '',

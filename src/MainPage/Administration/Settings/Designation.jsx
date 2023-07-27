@@ -29,20 +29,12 @@ const Designation = () => {
     setDesignationValue('');
     form.resetFields();
   };
-  const onHandleChange = (type, value) => {
-    const updatedValues = {
-      [type]: `${value}`, // Replace 'New Value' with the desired new value
-    };
-
-    // Set the updated values back to the form
-    form.setFieldsValue(updatedValues);
-    setDesignationValue(value)
-  };
 
   const columns = [
     {
       title: "#",
       dataIndex: '',
+      width: 50,
       render: (text, record, index) => index + 1,
     },
     {
@@ -73,7 +65,6 @@ const Designation = () => {
                   isDelOpen: false,
                   data: record,
                 })
-                form.setFieldsValue(record);
                 }
               }
             >
@@ -113,10 +104,16 @@ const Designation = () => {
     paddingTop: 5,
   };
 
-  const onFinish = (values) => {
-    console.log('submit',values);
-    handleClose();
-    message.success('Designation Added Successfully')
+  const onFinish = (values, data) => {
+    if(data){
+      console.log('submit',values);
+      handleClose();
+      message.success('Designation Updated Successfully', [9000])
+    }else{
+      console.log('submit',values);
+      handleClose();
+      message.success('Designation Added Successfully')
+    }
   };
 
   return (
@@ -227,16 +224,20 @@ const Designation = () => {
         <div className="modal-dialog modal-dialog-centered" role="document">
           <div className="modal-content">
             <div className="modal-header">
-              <h5 className="modal-title">Designation Name</h5>
+              <h5 className="modal-title">{open?.data ? 'Update' : 'Add'} Designation Name</h5>
               <button type="button" className="close" onClick={handleClose}>
                 <span aria-hidden="true">×</span>
               </button>
             </div>
             <div className="modal-body">
               <Form
-                form={form}
+                // form={form}
                 name="control-hooks"
-                onFinish={onFinish}
+                onFinish={(val) => onFinish(val, open?.data)}
+                onFinishFailed={() => message.error('Please Fill Required Fields!')}
+                initialValues={{
+                  designationName: open?.data ? open?.data?.designationName : ''
+                }}
               >
                 <div className="form-group">
                   <label>
@@ -252,14 +253,7 @@ const Designation = () => {
                     ]}
                     className="custom-border"
                   >
-                    <Input className="form-control" style={{display: 'none'}} value={designationValue} />
-                    <input className="form-control"
-                      defaultValue={open?.data ? open?.data?.designationName : ''}
-                      onChange={(e) => {
-                        onHandleChange("designationName", e.target.value);
-                      }}
-                      autoFocus
-                    />
+                    <Input className="form-control" autoFocus />
                   </Form.Item>
                 </div>
                 <div className="submit-section">

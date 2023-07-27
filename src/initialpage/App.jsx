@@ -175,7 +175,7 @@ const App = () => {
         {/* <Route path="/app/*" element={<DefaultLayout />} /> */}
 
         {/* <Route element={<Layout />}> */}
-        <Route path="/" element={<RequireAuth />}>
+        <Route path="/" element={<><RequireAuth /> <div className={`main-wrapper ${menu ? 'slide-nav' : ''}`}> <Header onMenuClick={toggleMobileMenu} /> <Sidebar /> </div> </>}>
           {/* <Route> */}
           {/* dashboard */}
           <Route path={`main/dashboard`} element={<AdminDashboard />} />
@@ -206,7 +206,7 @@ const App = () => {
         <Route path="/error-500" element={<Error500 />} />
       </Routes>
 
-      {login &&
+      {/* {login &&
         !location.pathname.includes('/login') &&
         !location.pathname.includes('/login/:id') &&
         !location.pathname.includes('/forget-password') &&
@@ -216,7 +216,7 @@ const App = () => {
             <Header onMenuClick={toggleMobileMenu} />
             <Sidebar />
           </div>
-        )}
+        )} */}
     </div>
   );
 };

@@ -29,20 +29,12 @@ const Departments = () => {
     setDepartmentValue('');
     form.resetFields();
   };
-  const onHandleChange = (type, value) => {
-    const updatedValues = {
-      [type]: `${value}`, // Replace 'New Value' with the desired new value
-    };
-
-    // Set the updated values back to the form
-    form.setFieldsValue(updatedValues);
-     setDepartmentValue(value)
-  };
 
   const columns = [
     {
       title: "#",
       dataIndex: '',
+      width: 50,
       render: (text, record, index) => index + 1,
     },
     {
@@ -73,7 +65,6 @@ const Departments = () => {
                   isDelOpen: false,
                   data: record,
                 })
-                form.setFieldsValue(record);
                 }
               }
             >
@@ -113,10 +104,16 @@ const Departments = () => {
     paddingTop: 5,
   };
 
-  const onFinish = (values) => {
-    console.log('submit',values);
-    handleClose();
-    message.success('Department Added Successfully')
+  const onFinish = (values, data) => {
+    if(data){
+      console.log('submit',values);
+      handleClose();
+      message.success('Department Updated Successfully')
+    }else{
+      console.log('submit',values);
+      handleClose();
+      message.success('Department Added Successfully')
+    }
   };
 
   return (
@@ -227,16 +224,20 @@ const Departments = () => {
         <div className="modal-dialog modal-dialog-centered" role="document">
           <div className="modal-content">
             <div className="modal-header">
-              <h5 className="modal-title">Department Name</h5>
+              <h5 className="modal-title">{open?.data ? 'Update' : 'Add'} Department Name</h5>
               <button type="button" className="close" onClick={handleClose}>
                 <span aria-hidden="true">×</span>
               </button>
             </div>
             <div className="modal-body">
               <Form
-                form={form}
+                // form={form}
                 name="control-hooks"
-                onFinish={onFinish}
+                onFinish={(val) => onFinish(val, open?.data)}
+                onFinishFailed={() => message.error('Please Fill Required Fields!')}
+                initialValues={{
+                  departmentName: open?.data ? open?.data?.departmentName : ''
+                }}
               >
                 <div className="form-group">
                   <label>
@@ -252,14 +253,7 @@ const Departments = () => {
                     ]}
                     className="custom-border"
                   >
-                    <Input className="form-control" style={{display: 'none'}} value={departmentValue} />
-                    <input className="form-control"
-                      defaultValue={open?.data ? open?.data?.departmentName : ''}
-                      onChange={(e) => {
-                        onHandleChange("departmentName", e.target.value);
-                      }}
-                      autoFocus
-                    />
+                    <Input className="form-control" autoFocus />
                   </Form.Item>
                 </div>
                 <div className="submit-section">

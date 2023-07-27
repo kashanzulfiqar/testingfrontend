@@ -112,3 +112,14 @@ td.ant-table-column-sort {
     height: 36px !important;
 }
 
+/* .............. custom ............ */
+.ant-table-wrapper{
+    min-width: 400px !important;
+}
+.antTableResponsive{
+    min-width: 770px !important;
+}
+table > thead > tr > th:last-child{
+ width: 73px !important;
+}
+
