@@ -53,6 +53,7 @@ const Roles = () => {
     {
       title: "#",
       dataIndex: '',
+      width: 50,
       render: (text, record, index) => index + 1,
     },
     {
@@ -122,7 +123,11 @@ const Roles = () => {
     console.log('submit',values);
     handleClose();
     setOpenPermissions({ isOpen: true, data: "" });
-    message.success('Tax Slab Added Successfully')
+    // message.success('Role and Permissions Added Successfully!')
+  };
+  const onFinish2 = (values) => {
+    handlePermClose();
+    message.success('Role and Permissions Added Successfully!')
   };
 
   return (
@@ -357,7 +362,7 @@ const Roles = () => {
               <Form
                 // form={form}
                 name="control-hooks"
-                onFinish={onFinish}
+                onFinish={onFinish2}
                 onFinishFailed={() => message.error('Please Fill Required Fields!')}
                 initialValues={{
                   // roleName: open?.data ? open?.data?.roleName : '',

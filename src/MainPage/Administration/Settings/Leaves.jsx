@@ -36,7 +36,7 @@ setData(data1)
         <div className="page-header">
           <div className="row pt-3 pb-3">
             <div className="col-sm-12">
-              <h3 className="page-title">Leaves Settings</h3>
+              <h3 className="page-title">Leave Settings</h3>
             </div>
           </div>
         </div>
@@ -249,7 +249,7 @@ setData(data1)
           <div className="submit-section">
             <Form.Item>
               <Button htmlType="submit" className="btn btn-primary submit-btn">
-                Save
+                Save Changes
               </Button>
             </Form.Item>
           </div>

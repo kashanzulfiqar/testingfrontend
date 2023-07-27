@@ -24,7 +24,7 @@ const Error404 = () => {
            <h1>404</h1>
            <h3><i className="fa fa-warning" /> Oops! Page not found!</h3>
            <p>The page you requested was not found.</p>
-           <Link onClick={()=>localStorage.setItem("firstload","true")} to="/app/main/dashboard" className="btn btn-custom">Back to Home</Link >
+           <Link onClick={()=>localStorage.setItem("firstload","true")} to="/main/dashboard" className="btn btn-custom">Back to Home</Link >
          </div>
          </div>
        </>

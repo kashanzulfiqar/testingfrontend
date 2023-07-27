@@ -574,7 +574,7 @@ const Company = () => {
             {/* <button className="btn btn-primary submit-btn">Save</button> */}
             <Form.Item>
               <Button htmlType="submit" className="btn btn-primary submit-btn">
-                Save
+                Save Changes
               </Button>
             </Form.Item>
           </div>

@@ -313,10 +313,10 @@ const Settings = ({test}) => {
                         Company Settings
                       </a>
                    </li>
-                   <li className={showComponent === 'Leaves Settings' ? 'active' : ''}>
-                      <a href="javascript:void(0)" onClick={() => setShowComponent('Leaves Settings')}>
+                   <li className={showComponent === 'Leave Settings' ? 'active' : ''}>
+                      <a href="javascript:void(0)" onClick={() => setShowComponent('Leave Settings')}>
                         <i className="fa fa-fw fa-warning" style={{marginRight: '8px'}}></i>
-                        Leaves Settings
+                        Leave Settings
                       </a>
                    </li>
                    <li className={showComponent === 'Roles' ? 'active' : ''}>
@@ -331,10 +331,10 @@ const Settings = ({test}) => {
                         Departments
                       </a>
                    </li>
-                   <li className={showComponent === 'Designation' ? 'active' : ''}>
-                      <a href="javascript:void(0)" onClick={() => setShowComponent('Designation')}>
+                   <li className={showComponent === 'Designations' ? 'active' : ''}>
+                      <a href="javascript:void(0)" onClick={() => setShowComponent('Designations')}>
                         <i className="fa fa-fw fa-users" style={{marginRight: '8px'}}></i>
-                        Designation
+                        Designations
                       </a>
                    </li>
                    <li className={showComponent === 'Shifts' ? 'active' : ''}>
@@ -391,10 +391,10 @@ const Settings = ({test}) => {
              <div className="cardStyle col-sm-8 col-md-8 col-lg-8 col-xl-9">
               {
                 showComponent === 'Company Settings' ? <Company /> :
-                showComponent === 'Leaves Settings' ? <Leaves /> :
+                showComponent === 'Leave Settings' ? <Leaves /> :
                 showComponent === 'Roles' ? <Roles /> :
                 showComponent === 'Departments' ? <Departments /> :
-                showComponent === 'Designation' ? <Designation /> :
+                showComponent === 'Designations' ? <Designation /> :
                 showComponent === 'Shifts' ? <Shifts /> : 
                 <TaxSlabs />
               }
