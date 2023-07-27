@@ -6,26 +6,24 @@ import "../../antdstyle.css";
 import Modal from "@mui/material/Modal";
 import moment from "moment";
 
-import Accordion from '@mui/material/Accordion';
-import AccordionDetails from '@mui/material/AccordionDetails';
-import AccordionSummary from '@mui/material/AccordionSummary';
-import Typography from '@mui/material/Typography';
+import Accordion from "@mui/material/Accordion";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import Typography from "@mui/material/Typography";
 // import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import Box from '@mui/material/Box';
-import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
+import Box from "@mui/material/Box";
+import Checkbox from "@mui/material/Checkbox";
+import FormControlLabel from "@mui/material/FormControlLabel";
 import { useSelector } from "react-redux";
-
+import AccordianCheckBox from "../../../Components/Accordian";
 
 const Roles = () => {
-
   const { Option } = Select;
 
   const login = useSelector((state) => state.user.loginvalue);
   useEffect(() => {
-    console.log( 'login==========',login);
-  }, [])
-  
+    console.log("login==========", login);
+  }, []);
 
   const [open, setOpen] = useState({
     isAddOpen: false,
@@ -38,21 +36,24 @@ const Roles = () => {
   });
 
   const [datas, setData] = useState([
-    { id: 1, roleName: "slab name 1", permissions: [ {all: true} ]  },
-    { id: 2, roleName: "slab name 2", permissions: [ {all: false} ]  },
+    { id: 1, roleName: "slab name 1", permissions: [{ all: true }] },
+    { id: 2, roleName: "slab name 2", permissions: [{ all: false }] },
   ]);
 
   const handleClose = () => {
-    setOpen({ isAddOpen: false, isDelOpen: false, data: "" });
+    setOpen({ isAddOpen: false, isDelOpen: false, isEditOpen: false, data: "" });
   };
   const handlePermClose = () => {
     setOpenPermissions({ isOpen: false, data: "" });
+  };
+  const handleEditClose = () => {
+    setOpen({ isAddOpen: false, isDelOpen: false, isEditOpen: false, data: "" });
   };
 
   const columns = [
     {
       title: "#",
-      dataIndex: '',
+      dataIndex: "",
       width: 50,
       render: (text, record, index) => index + 1,
     },
@@ -66,13 +67,14 @@ const Roles = () => {
       dataIndex: "permissions",
       // sorter: (a, b) => a.maxStartTime.length - b.maxStartTime.length,
       render: (record, row) => {
-        return ( 
-        <span>
-          {
-            record?.map(d => d?.all ? "Full Permissions" : "Custom Permissions")
-          }
-        </span>
-      )}
+        return (
+          <span>
+            {record?.map((d) =>
+              d?.all ? "Full Permissions" : "Custom Permissions"
+            )}
+          </span>
+        );
+      },
     },
     {
       title: "Actions",
@@ -91,12 +93,13 @@ const Roles = () => {
               className="dropdown-item"
               href="javascript:void(0)"
               onClick={() => {
-                  setOpen({
-                  isAddOpen: true,
+                setOpen({
+                  isAddOpen: false,
+                  isEditOpen: true,
                   isDelOpen: false,
                   data: row,
-                  })
-                }}
+                });
+              }}
             >
               <i className="fa fa-pencil m-r-5" /> Edit
             </a>
@@ -105,10 +108,10 @@ const Roles = () => {
               href="javascript:void(0)"
               onClick={() => {
                 setOpen({
-                isAddOpen: false,
-                isDelOpen: true,
-                data: row,
-                })
+                  isAddOpen: false,
+                  isDelOpen: true,
+                  data: row,
+                });
               }}
             >
               <i className="fa fa-trash-o m-r-5" /> Delete
@@ -120,14 +123,18 @@ const Roles = () => {
   ];
 
   const onFinish = (values) => {
-    console.log('submit',values);
-    handleClose();
+    console.log("submit", values);
     setOpenPermissions({ isOpen: true, data: "" });
+    handleClose();
     // message.success('Role and Permissions Added Successfully!')
   };
   const onFinish2 = (values) => {
     handlePermClose();
-    message.success('Role and Permissions Added Successfully!')
+    message.success("Role and Permissions Added Successfully!");
+  };
+  const onFinish3 = (values) => {
+    handleEditClose();
+    message.success("Role and Permissions Updated Successfully!");
   };
 
   return (
@@ -247,13 +254,14 @@ const Roles = () => {
                 // form={form}
                 name="control-hooks"
                 onFinish={onFinish}
-                onFinishFailed={() => message.error('Please Fill Required Fields!')}
+                onFinishFailed={() =>
+                  message.error("Please Fill Required Fields!")
+                }
                 initialValues={{
-                  roleName: open?.data ? open?.data?.roleName : '',
+                  roleName: open?.data ? open?.data?.roleName : "",
                 }}
               >
                 <div className="row">
-
                   <div className="col-12">
                     <div className="form-group">
                       <label>
@@ -269,10 +277,7 @@ const Roles = () => {
                         ]}
                         className="custom-border"
                       >
-                        <Input
-                          className="form-control"
-                          autoFocus
-                        />
+                        <Input className="form-control" autoFocus />
                       </Form.Item>
                     </div>
                   </div>
@@ -293,7 +298,6 @@ const Roles = () => {
         </div>
       </Modal>
 
-
       {/* delete modall */}
       <Modal
         open={open.isDelOpen}
@@ -306,16 +310,28 @@ const Roles = () => {
         }}
       >
         <div className="modal-dialog modal-dialog-centered">
-          <div className="modal-content" style={{height: '280px'}}>
-            <div className="modal-body" style={{display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
+          <div className="modal-content" style={{ height: "280px" }}>
+            <div
+              className="modal-body"
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+              }}
+            >
               <div className="form-header">
-                <h3 style={{marginBottom: '30px'}}>Delete Role</h3>
-                <p>Are you sure you want to delete <b>{open?.data?.roleName}</b>?</p>
+                <h3 style={{ marginBottom: "30px" }}>Delete Role</h3>
+                <p>
+                  Are you sure you want to delete <b>{open?.data?.roleName}</b>?
+                </p>
               </div>
               <div className="modal-btn delete-action">
                 <div className="row">
                   <div className="col-6">
-                    <a href="javascript:void(0)" className="btn btn-primary continue-btn">
+                    <a
+                      href="javascript:void(0)"
+                      className="btn btn-primary continue-btn"
+                    >
                       Delete
                     </a>
                   </div>
@@ -344,13 +360,16 @@ const Roles = () => {
         aria-describedby="modal-modal-description"
         disableRestoreFocus
         BackdropProps={{
-          style: { backgroundColor: "rgb(0 0 0 / 87%)"}, // Set the backdrop color here
+          style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
         }}
         sx={{
-          overflowY: "auto",
+          overflowY: "scroll",
         }}
       >
-        <div className="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div
+          className="modal-dialog modal-dialog-centered modal-lg"
+          role="document"
+        >
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">Permissions</h5>
@@ -363,47 +382,16 @@ const Roles = () => {
                 // form={form}
                 name="control-hooks"
                 onFinish={onFinish2}
-                onFinishFailed={() => message.error('Please Fill Required Fields!')}
-                initialValues={{
-                  // roleName: open?.data ? open?.data?.roleName : '',
-                }}
+                onFinishFailed={() =>
+                  message.error("Please Fill Required Fields!")
+                }
+                initialValues={
+                  {
+                    // roleName: open?.data ? open?.data?.roleName : '',
+                  }
+                }
               >
-                {/* <div className="row">
-
-                  <div className="col-12">
-                    <div className="form-group">
-                      <label>
-                        Role Name <span className="text-danger">*</span>
-                      </label>
-                      <Form.Item
-                        name="roleName"
-                        rules={[
-                          {
-                            required: true,
-                            message: "please enter role name",
-                          },
-                        ]}
-                        className="custom-border"
-                      >
-                        <Input
-                          className="form-control"
-                          autoFocus
-                        />
-                      </Form.Item>
-                    </div>
-                  </div>
-                  <div className="submit-section">
-                    <Form.Item>
-                      <Button
-                        htmlType="submit"
-                        className="btn btn-primary submit-btn"
-                      >
-                        Submit
-                      </Button>
-                    </Form.Item>
-                  </div>
-                </div> */}
-                <div className="table-responsive m-t-15">
+                {/* <div className="table-responsive m-t-15">
                      <table className="table table-striped custom-table">
                        <thead>
                          <tr>
@@ -587,60 +575,197 @@ const Roles = () => {
                          </tr>
                        </tbody>
                      </table>
-                   </div>
-                   {/* <Accordion >
-                                <AccordionSummary
-                                    // expandIcon={<ExpandMoreIcon />}
-                                    aria-controls="panel1bh-content"
-                                    id="panel1bh-header"
-                                    sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}
-                                >
-                                    <Typography sx={{ width: '33%', flexShrink: 0 }}>
-                                        <FormControlLabel
-                                            label={<span style={{ fontSize: '14px', fontWeight: '700', color: '#151515' }}>label</span> }
-                                            control={
-                                                <Checkbox
-                                                    id='1'
-                                                    checked={true}
-                                                    // indeterminate={item?.subPermissions?.every(subObj => subObj.checked === true ? true : false) ? false
-                                                    //     : item?.subPermissions?.some(subObj => subObj.checked === true ? true : false)}
-                                                    // onChange={(e) => handleCheckboxAll(e, item)}
-                                                />
-                                            }
-                                        />
-                                    </Typography>
-                                    <Typography sx={{ marginTop: '10px', fontSize: '14px', color: '#151515de' }}>description</Typography>
-                                </AccordionSummary>
-                                <AccordionDetails>
-                                    <Box sx={{ display: 'flex', flexDirection: 'column', ml: 3 }}>
-                                            <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                                                <Typography sx={{ width: '31%', flexShrink: 0 }}>
-                                                <FormControlLabel
-                                                        label={<span style={{ fontSize: '14px', color: '#151515' }}>title</span>}
-                                                        control={<Checkbox checked={false} />}
-                                                />
-                                                </Typography>
-                                                <Typography sx={{fontSize: '14px', color: '#151515de' }}>sub description</Typography>
-                                            </Box>
-                                    </Box>
-                                </AccordionDetails>
-                            </Accordion> */}
-                   <div className="submit-section">
-                    <Form.Item>
-                      <Button
-                        htmlType="submit"
-                        className="btn btn-primary submit-btn"
+                   </div> */}
+                {/* <Accordion>
+                  <AccordionSummary
+                    // expandIcon={<ExpandMoreIcon />}
+                    aria-controls="panel1bh-content"
+                    id="panel1bh-header"
+                    sx={{
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Typography sx={{ width: "33%", flexShrink: 0 }}>
+                      <FormControlLabel
+                        label={
+                          <span
+                            style={{
+                              fontSize: "14px",
+                              fontWeight: "700",
+                              color: "#151515",
+                            }}
+                          >
+                            label
+                          </span>
+                        }
+                        control={
+                          <Checkbox
+                            id="1"
+                            checked={true}
+                            // indeterminate={item?.subPermissions?.every(subObj => subObj.checked === true ? true : false) ? false
+                            //     : item?.subPermissions?.some(subObj => subObj.checked === true ? true : false)}
+                            // onChange={(e) => handleCheckboxAll(e, item)}
+                          />
+                        }
+                      />
+                    </Typography>
+                    <Typography
+                      sx={{
+                        marginTop: "10px",
+                        fontSize: "14px",
+                        color: "#151515de",
+                      }}
+                    >
+                      description
+                    </Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <Box
+                      sx={{ display: "flex", flexDirection: "column", ml: 3 }}
+                    >
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexDirection: "row",
+                          alignItems: "center",
+                        }}
                       >
-                        Submit
-                      </Button>
-                    </Form.Item>
-                  </div>
+                        <Typography sx={{ width: "31%", flexShrink: 0 }}>
+                          <FormControlLabel
+                            label={
+                              <span
+                                style={{ fontSize: "14px", color: "#151515" }}
+                              >
+                                title
+                              </span>
+                            }
+                            control={<Checkbox checked={false} />}
+                          />
+                        </Typography>
+                        <Typography
+                          sx={{ fontSize: "14px", color: "#151515de" }}
+                        >
+                          sub description
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </AccordionDetails>
+                </Accordion> */}
+
+                <AccordianCheckBox />
+
+
+                {/* <div className="submit-section">
+                  <Form.Item>
+                    <Button
+                      htmlType="submit"
+                      className="btn btn-primary submit-btn"
+                    >
+                      Submit
+                    </Button>
+                  </Form.Item>
+                </div> */}
               </Form>
             </div>
           </div>
         </div>
       </Modal>
 
+            {/* permissions modal */}
+            <Modal
+        open={open?.isEditOpen}
+        // open={openPermissions?.isOpen}
+        onClose={handleEditClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+        disableRestoreFocus
+        BackdropProps={{
+          style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
+        }}
+        sx={{
+          overflowY: "scroll",
+        }}
+      >
+        <div
+          className="modal-dialog modal-dialog-centered modal-lg"
+          role="document"
+        >
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">Edit Role & Permissions</h5>
+              <button type="button" className="close" onClick={handleEditClose}>
+                <span aria-hidden="true">×</span>
+              </button>
+            </div>
+            <div className="modal-body">
+              <Form
+                // form={form}
+                name="control-hooks"
+                onFinish={onFinish3}
+                onFinishFailed={() =>
+                  message.error("Please Fill Required Fields!")
+                }
+                initialValues={
+                  {
+                    roleName: open?.data ? open?.data?.roleName : '',
+                  }
+                }
+              >
+                <div className="row">
+                  <div className="col-12">
+                    <div className="form-group">
+                      <label>
+                        Role Name <span className="text-danger">*</span>
+                      </label>
+                      <Form.Item
+                        name="roleName"
+                        rules={[
+                          {
+                            required: true,
+                            message: "please enter role name",
+                          },
+                        ]}
+                        className="custom-border"
+                      >
+                        <Input className="form-control" autoFocus />
+                      </Form.Item>
+                    </div>
+                  </div>
+
+                  <AccordianCheckBox />
+
+                  {/* <div className="submit-section">
+                    <Form.Item>
+                      <Button
+                        htmlType="submit"
+                        className="btn btn-primary submit-btn"
+                      >
+                        Submitt
+                      </Button>
+                    </Form.Item>
+                  </div> */}
+                </div>
+
+                
+
+
+                {/* <div className="submit-section">
+                  <Form.Item>
+                    <Button
+                      htmlType="submit"
+                      className="btn btn-primary submit-btn"
+                    >
+                      Submit
+                    </Button>
+                  </Form.Item>
+                </div> */}
+              </Form>
+            </div>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
