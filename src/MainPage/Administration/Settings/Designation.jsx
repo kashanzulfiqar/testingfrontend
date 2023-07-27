@@ -108,7 +108,7 @@ const Designation = () => {
     if(data){
       console.log('submit',values);
       handleClose();
-      message.success('Designation Updated Successfully', [9000])
+      message.success('Designation Updated Successfully')
     }else{
       console.log('submit',values);
       handleClose();
