@@ -1,70 +1,111 @@
 import React, { useEffect, useState } from "react";
 import PhoneNoInput from "../../../Components/PhoneNoInput/index.jsx";
-import { Button, Form, Input, message } from "antd";
+import { Button, Form, Input, Spin, message } from "antd";
+import { useSelector } from "react-redux";
+import { apiServices } from "../../../Services/apiServices.js";
+import { LoadingOutlined } from '@ant-design/icons';
 
 const Company = () => {
-  
-  const data1 = {
-    _id: 1, companyName: 'companyy', legalName: 'legalll', phoneNumber: '+923333333333'
-  }
+  const user_state = useSelector((state) => state.user.loginvalue);
 
   const [form] = Form.useForm();
-  const [allValues, setAllValues] = useState({})
-  const [data, setData] = useState(data1)
+  const [allValues, setAllValues] = useState({});
+  const [data, setData] = useState({});
+  const [loader, setLoader] = useState(false)
 
   useEffect(() => {
-    form.setFieldsValue(data1);
-  }, [])
-  
+    getCompanyData();
+  }, []);
+
+  const getCompanyData = () => {
+    apiServices("GET", "company/viewmycompanyinfo", null, user_state)
+      .then((res) => {
+        if (res?.data?.success === true) {
+          form.setFieldsValue(res?.data?.companyInfo);
+          setData(res?.data?.companyInfo);
+        }
+      })
+      .catch((err) => {
+        // console.log(err);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Get Company Info"
+          } Error`
+        );
+      });
+  };
 
   const onHandleChange = (type, value) => {
-      if (type === "phoneNumber" || type === "mobileNumber") {
+    if (type === "companyPhoneNo" || type === "mobileNumber") {
       let newvalue = value ? "+" + value : "";
-      // console.log(newvalue);
 
       const updatedValues = {
-        [type]: `${newvalue}`, // Replace 'New Value' with the desired new value
+        [type]: `${newvalue}`,
       };
-  
-      // Set the updated values back to the form
+
       form.setFieldsValue(updatedValues);
       setAllValues({
         ...allValues,
         [type]: `${newvalue}`,
-      })
-
-      // let newvalue = "+" + value
-
-      // if (!state) {
-      //   postdata[`${id}`] = newvalue
-      //   setPostformData(postdata)
-      //   localStorage.setItem(`${id}`, JSON.stringify(newvalue));
-      // } else {
-      //   newdata[`${id}`] = newvalue
-      //   setformData(newdata)
-      // }
-    }else{
+      });
+    } else {
       const updatedValues = {
-        [type]: `${value}`, // Replace 'New Value' with the desired new value
+        [type]: `${value}`,
       };
-  
-      // Set the updated values back to the form
+
       form.setFieldsValue(updatedValues);
       setAllValues({
         ...allValues,
         [type]: `${value}`,
-      })
+      });
     }
   };
 
   const onFinish = (values) => {
-    console.log("onFinsish===", values);
-    console.log("All Values===", allValues);
-    // handleClose();
-    message.success("Company Settings Updated Successfully!");
+    setLoader(true)
+    let new_data = {
+      ...values,
+      _id: data?._id,
+      agreeTermsAndConditions: true,
+    };
+
+    apiServices("PUT", "company/updatecompany", new_data, user_state)
+    .then((res) => {
+      if (res?.data?.success === true) {
+        setLoader(false)
+        message.success("Company Settings Updated Successfully!");
+      }
+    })
+    .catch((err) => {
+      // console.log(err);
+      setLoader(false)
+      message.error(
+        `${
+          err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
+            ? err?.response?.data?.validation?.body?.message
+            : "Update Company Info"
+        } Error`
+      );
+    });
   };
 
-  // const phoneError = form.isFieldValidating("phoneNumber");
+  const antIcon = (
+    <LoadingOutlined
+      style={{
+        fontSize: 24,
+        color: '#fff'
+      }}
+      spin
+    />
+  );
+
+  const numericPattern = new RegExp(/^[0-9]*$/);
 
   return (
     <div>
@@ -78,153 +119,11 @@ const Company = () => {
             </div>
           </div>
         </div>
-        {/* /Page Header */}
-        {/* <form>
-          <div className="row">
-            <div className="col-sm-6">
-              <div className="form-group">
-                <label>
-                  Company Name <span className="text-danger">*</span>
-                </label>
-                <input
-                  className="form-control"
-                  type="text"
-                  defaultValue="Dreamguy's Technologies"
-                />
-              </div>
-            </div>
-            <div className="col-sm-6">
-              <div className="form-group">
-                <label>Contact Person</label>
-                <input
-                  className="form-control "
-                  defaultValue="Daniel Porter"
-                  type="text"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="row">
-            <div className="col-sm-12">
-              <div className="form-group">
-                <label>Address</label>
-                <input
-                  className="form-control "
-                  defaultValue="3864 Quiet Valley Lane, Sherman Oaks, CA, 91403"
-                  type="text"
-                />
-              </div>
-            </div>
-            <div className="col-sm-6 col-md-6 col-lg-3">
-              <div className="form-group">
-                <label>Country</label>
-                <select className="form-control select">
-                  <option>USA</option>
-                  <option>United Kingdom</option>
-                </select>
-              </div>
-            </div>
-            <div className="col-sm-6 col-md-6 col-lg-3">
-              <div className="form-group">
-                <label>City</label>
-                <input
-                  className="form-control"
-                  defaultValue="Sherman Oaks"
-                  type="text"
-                />
-              </div>
-            </div>
-            <div className="col-sm-6 col-md-6 col-lg-3">
-              <div className="form-group">
-                <label>State/Province</label>
-                <select className="form-control select">
-                  <option>California</option>
-                  <option>Alaska</option>
-                  <option>Alabama</option>
-                </select>
-              </div>
-            </div>
-            <div className="col-sm-6 col-md-6 col-lg-3">
-              <div className="form-group">
-                <label>Postal Code</label>
-                <input
-                  className="form-control"
-                  defaultValue={91403}
-                  type="text"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="row">
-            <div className="col-sm-6">
-              <div className="form-group">
-                <label>Email</label>
-                <input
-                  className="form-control"
-                  defaultValue="danielporter@example.com"
-                  type="email"
-                />
-              </div>
-            </div>
-            <div className="col-sm-6">
-              <div className="form-group">
-                <label>Phone Number</label>
-                <input
-                  className="form-control"
-                  defaultValue="818-978-7102"
-                  type="text"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="row">
-            <div className="col-sm-6">
-              <div className="form-group">
-                <label>Mobile Number</label>
-                <input
-                  className="form-control"
-                  defaultValue="818-635-5579"
-                  type="text"
-                />
-              </div>
-            </div>
-            <div className="col-sm-6">
-              <div className="form-group">
-                <label>Fax</label>
-                <input
-                  className="form-control"
-                  defaultValue="818-978-7102"
-                  type="text"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="row">
-            <div className="col-sm-12">
-              <div className="form-group">
-                <label>Website Url</label>
-                <input
-                  className="form-control"
-                  defaultValue="https://www.example.com"
-                  type="text"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="submit-section">
-            <button className="btn btn-primary submit-btn">Save</button>
-          </div>
-        </form> */}
-        {/* <form onSubmit={(e) => {
-            e.preventDefault();
-            console.log('clicked');
-          }}> */}
         <Form
-          // {...layout}
           form={form}
           name="control-hooks"
           onFinish={onFinish}
-          onFinishFailed={() => message.error('Please Enter Required Fields!')}
+          onFinishFailed={() => message.error("Please Enter Required Fields!")}
         >
           <div className="row">
             <div className="col-sm-6">
@@ -232,20 +131,28 @@ const Company = () => {
                 <label className="col-form-label">
                   Company Name <span className="text-danger">*</span>
                 </label>
-                {/* <input className="form-control" type="text" /> */}
                 <Form.Item
                   name="companyName"
                   rules={[
                     {
+                      whitespace: true,
                       required: true,
                       message: "please enter company name",
                     },
+                    {
+                      min: 3,
+                      message: "name length must be at least 3 characters long",
+                    },
                   ]}
                 >
-                  <Input style={{display: 'none'}} value={allValues?.companyName} />
-                  <input className="form-control"
-                    defaultValue={data ? data?.companyName : ''}
-                    onChange={(e) => {
+                  <Input
+                    style={{ display: "none" }}
+                    value={allValues?.companyName}
+                  />
+                  <input
+                    className="form-control"
+                    defaultValue={data ? data?.companyName : ""}
+                    onInput={(e) => {
                       onHandleChange("companyName", e.target.value);
                     }}
                   />
@@ -261,15 +168,24 @@ const Company = () => {
                   name="legalName"
                   rules={[
                     {
+                      whitespace: true,
                       required: true,
                       message: "please enter legal name",
                     },
+                    {
+                      min: 3,
+                      message: "name length must be at least 3 characters long",
+                    },
                   ]}
                 >
-                  <Input style={{display: 'none'}} value={allValues?.legalName} />
-                  <input className="form-control"
-                    defaultValue={data ? data?.legalName : ''}
-                    onChange={(e) => {
+                  <Input
+                    style={{ display: "none" }}
+                    value={allValues?.legalName}
+                  />
+                  <input
+                    className="form-control"
+                    defaultValue={data ? data?.legalName : ""}
+                    onInput={(e) => {
                       onHandleChange("legalName", e.target.value);
                     }}
                   />
@@ -282,18 +198,28 @@ const Company = () => {
                   Contact Person <span className="text-danger">*</span>
                 </label>
                 <Form.Item
-                  name="contactName"
+                  name="contactPerson"
                   rules={[
                     {
+                      whitespace: true,
                       required: true,
                       message: "please enter contact name",
                     },
+                    {
+                      min: 3,
+                      message: "person length must be at least 3 characters long",
+                    },
                   ]}
                 >
-                  <Input style={{display: 'none'}} value={allValues?.contactName} />
-                  <input className="form-control"
-                    onChange={(e) => {
-                      onHandleChange("contactName", e.target.value);
+                  <Input
+                    style={{ display: "none" }}
+                    value={allValues?.contactPerson}
+                  />
+                  <input
+                    className="form-control"
+                    defaultValue={data ? data?.contactPerson : ""}
+                    onInput={(e) => {
+                      onHandleChange("contactPerson", e.target.value);
                     }}
                   />
                 </Form.Item>
@@ -305,18 +231,28 @@ const Company = () => {
                   Address <span className="text-danger">*</span>
                 </label>
                 <Form.Item
-                  name="address"
+                  name="companyAddress"
                   rules={[
                     {
+                      whitespace: true,
                       required: true,
                       message: "please enter address name",
                     },
+                    {
+                      min: 5,
+                      message: "address length must be at least 5 characters long",
+                    },
                   ]}
                 >
-                  <Input style={{display: 'none'}} value={allValues?.address} />
-                  <input className="form-control"
-                    onChange={(e) => {
-                      onHandleChange("address", e.target.value);
+                  <Input
+                    style={{ display: "none" }}
+                    value={allValues?.companyAddress}
+                  />
+                  <input
+                    className="form-control"
+                    defaultValue={data ? data?.companyAddress : ""}
+                    onInput={(e) => {
+                      onHandleChange("companyAddress", e.target.value);
                     }}
                   />
                 </Form.Item>
@@ -331,15 +267,49 @@ const Company = () => {
                   name="postalCode"
                   rules={[
                     {
+                      whitespace: true,
                       required: true,
                       message: "please enter postal code",
                     },
+                    // ({ getFieldValue }) => ({
+                    //   validator(rule, value) {
+                    //     if (getFieldValue("postalCode")?.length <= 2) {
+                    //       if(numericPattern.test(getFieldValue("postalCode"))){
+                    //         return Promise.reject(
+                    //           "postal code length must be at least 3 characters long"
+                    //         );
+                    //       }
+                    //       return Promise.reject(
+                    //         "Please enter only numbers"
+                    //       );
+                    //     }else if(numericPattern.test(getFieldValue("postalCode"))) {
+                    //       return Promise.resolve();
+                    //     }
+                    //     return Promise.reject(
+                    //       "Please enter only numbers"
+                    //     );
+                    //   },
+                    // }),
+                    {
+                      min: 3,
+                      message: "postal code length must be at least 3 characters long",
+                    },
                   ]}
                 >
-                  <Input style={{display: 'none'}} value={allValues?.postalCode} />
-                  <input className="form-control"
-                    onChange={(e) => {
+                  <Input
+                    style={{ display: "none" }}
+                    value={allValues?.postalCode}
+                  />
+                  <input
+                    className="form-control"
+                    defaultValue={data ? data?.postalCode : ""}
+                    onInput={(e) => {
                       onHandleChange("postalCode", e.target.value);
+                    }}
+                    onKeyPress={(e) => {
+                      if ( ((e.which < 48 || e.which > 57)) ) {
+                        e.preventDefault();
+                      }
                     }}
                   />
                 </Form.Item>
@@ -354,14 +324,21 @@ const Company = () => {
                   name="city"
                   rules={[
                     {
+                      whitespace: true,
                       required: true,
                       message: "please enter city name",
                     },
+                    {
+                      min: 3,
+                      message: "city length must be at least 3 characters long",
+                    },
                   ]}
                 >
-                  <Input style={{display: 'none'}} value={allValues?.city} />
-                  <input className="form-control"
-                    onChange={(e) => {
+                  <Input style={{ display: "none" }} value={allValues?.city} />
+                  <input
+                    className="form-control"
+                    defaultValue={data ? data?.city : ""}
+                    onInput={(e) => {
                       onHandleChange("city", e.target.value);
                     }}
                   />
@@ -377,14 +354,21 @@ const Company = () => {
                   name="state"
                   rules={[
                     {
+                      whitespace: true,
                       required: true,
                       message: "please enter state name",
                     },
+                    {
+                      min: 3,
+                      message: "state length must be at least 3 characters long",
+                    },
                   ]}
                 >
-                  <Input style={{display: 'none'}} value={allValues?.state} />
-                  <input className="form-control"
-                    onChange={(e) => {
+                  <Input style={{ display: "none" }} value={allValues?.state} />
+                  <input
+                    className="form-control"
+                    defaultValue={data ? data?.state : ""}
+                    onInput={(e) => {
                       onHandleChange("state", e.target.value);
                     }}
                   />
@@ -400,14 +384,24 @@ const Company = () => {
                   name="country"
                   rules={[
                     {
+                      whitespace: true,
                       required: true,
                       message: "please enter country name",
                     },
+                    {
+                      min: 3,
+                      message: "country length must be at least 3 characters long",
+                    },
                   ]}
                 >
-                  <Input style={{display: 'none'}} value={allValues?.country} />
-                  <input className="form-control"
-                    onChange={(e) => {
+                  <Input
+                    style={{ display: "none" }}
+                    value={allValues?.country}
+                  />
+                  <input
+                    className="form-control"
+                    defaultValue={data ? data?.country : ""}
+                    onInput={(e) => {
                       onHandleChange("country", e.target.value);
                     }}
                   />
@@ -423,14 +417,24 @@ const Company = () => {
                   name="companyEmail"
                   rules={[
                     {
+                      whitespace: true,
                       required: true,
                       message: "please enter company email",
                     },
+                    {
+                      type: "email",
+                      message: "Please enter a valid email",
+                    },
                   ]}
                 >
-                  <Input style={{display: 'none'}} value={allValues?.companyEmail} />
-                  <input className="form-control"
-                    onChange={(e) => {
+                  <Input
+                    style={{ display: "none" }}
+                    value={allValues?.companyEmail}
+                  />
+                  <input
+                    className="form-control"
+                    defaultValue={data ? data?.companyEmail : ""}
+                    onInput={(e) => {
                       onHandleChange("companyEmail", e.target.value);
                     }}
                   />
@@ -443,18 +447,28 @@ const Company = () => {
                   Registration No <span className="text-danger">*</span>
                 </label>
                 <Form.Item
-                  name="registrationNo"
+                  name="companyRegistrationNo"
                   rules={[
                     {
+                      whitespace: true,
                       required: true,
                       message: "please enter registration no",
                     },
+                    {
+                      min: 3,
+                      message: "Registration length must be at least 3 characters long",
+                    },
                   ]}
                 >
-                  <Input style={{display: 'none'}} value={allValues?.registrationNo} />
-                  <input className="form-control"
-                    onChange={(e) => {
-                      onHandleChange("registrationNo", e.target.value);
+                  <Input
+                    style={{ display: "none" }}
+                    value={allValues?.companyRegistrationNo}
+                  />
+                  <input
+                    className="form-control"
+                    defaultValue={data ? data?.companyRegistrationNo : ""}
+                    onInput={(e) => {
+                      onHandleChange("companyRegistrationNo", e.target.value);
                     }}
                   />
                 </Form.Item>
@@ -466,24 +480,25 @@ const Company = () => {
                   Phone Number <span className="text-danger">*</span>
                 </label>
                 <Form.Item
-                  name="phoneNumber"
+                  name="companyPhoneNo"
                   rules={[
                     {
+                      whitespace: true,
                       required: true,
                       message: "please enter phone number",
                     },
+                    {
+                      min: 5,
+                      message: "phone length must be at least 5 characters long",
+                    },
                   ]}
                 >
-                  <Input style={{ display: "none"}} />
+                  <Input style={{ display: "none" }} />
                   <PhoneNoInput
                     onChangePhone={(value) => {
-                      onHandleChange("phoneNumber", value);
+                      onHandleChange("companyPhoneNo", value);
                     }}
-                    phone={data ? data?.phoneNumber : ''}
-                    // onCountryChange={(val) => {
-                    //   onHandleChange("contactNo", `${val}`);
-                    // }}
-                    // phone={state ? formData.contactNo : postformData.contactNo}
+                    phone={data ? data?.companyPhoneNo : ""}
                   />
                 </Form.Item>
               </div>
@@ -497,8 +512,13 @@ const Company = () => {
                   name="mobileNumber"
                   rules={[
                     {
+                      whitespace: true,
                       required: true,
                       message: "please enter mobile number",
+                    },
+                    {
+                      min: 5,
+                      message: "mobile length must be at least 5 characters long",
                     },
                   ]}
                 >
@@ -507,15 +527,7 @@ const Company = () => {
                     onChangePhone={(value) => {
                       onHandleChange("mobileNumber", value);
                     }}
-                    // phone={state ? formData.contactNo : postformData.contactNo}
-                    // onChangePhone={(value) => {
-                    //   onHandleChange("contactNo", value)
-                    // }}
-                    // onCountryChange={(val) => {
-                    //   onHandleChange("contactNo", `${val}`);
-                    // }}
-                    // phone={state ? formData.contactNo : postformData.contactNo}
-                    // phoneError={phoneError}
+                    phone={data ? data?.mobileNumber : ""}
                   />
                 </Form.Item>
               </div>
@@ -529,14 +541,24 @@ const Company = () => {
                   name="website"
                   rules={[
                     {
+                      whitespace: true,
                       required: true,
                       message: "please enter website",
                     },
+                    {
+                      min: 3,
+                      message: "website length must be at least 3 characters long",
+                    },
                   ]}
                 >
-                  <Input style={{display: 'none'}} value={allValues?.website} />
-                  <input className="form-control"
-                    onChange={(e) => {
+                  <Input
+                    style={{ display: "none" }}
+                    value={allValues?.website}
+                  />
+                  <input
+                    className="form-control"
+                    defaultValue={data ? data?.website : ""}
+                    onInput={(e) => {
                       onHandleChange("website", e.target.value);
                     }}
                   />
@@ -552,14 +574,21 @@ const Company = () => {
                   name="fax"
                   rules={[
                     {
+                      whitespace: true,
                       required: true,
                       message: "please enter fax",
                     },
+                    {
+                      min: 5,
+                      message: "Fax length must be at least 5 characters long",
+                    },
                   ]}
                 >
-                  <Input style={{display: 'none'}} value={allValues?.fax} />
-                  <input className="form-control"
-                    onChange={(e) => {
+                  <Input style={{ display: "none" }} value={allValues?.fax} />
+                  <input
+                    className="form-control"
+                    defaultValue={data ? data?.fax : ""}
+                    onInput={(e) => {
                       onHandleChange("fax", e.target.value);
                     }}
                   />
@@ -573,113 +602,15 @@ const Company = () => {
           <div className="submit-section">
             {/* <button className="btn btn-primary submit-btn">Save</button> */}
             <Form.Item>
-              <Button htmlType="submit" className="btn btn-primary submit-btn">
-                Save Changes
+              <Button htmlType="submit" className="btn btn-primary submit-btn" disabled={loader}>
+                {
+                  loader ? <Spin size="small" indicator={antIcon} />
+                    : 'Save Changes'
+                }
               </Button>
             </Form.Item>
           </div>
         </Form>
-        {/* </form>  */}
-      </div>
-      {/* Add Role Modal */}
-      <div id="add_role" className="modal custom-modal fade" role="dialog">
-        <div className="modal-dialog modal-dialog-centered" role="document">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title">Add Role</h5>
-              <button
-                type="button"
-                className="close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-              >
-                <span aria-hidden="true">×</span>
-              </button>
-            </div>
-            <div className="modal-body">
-              <form>
-                <div className="form-group">
-                  <label>
-                    Role Name <span className="text-danger">*</span>
-                  </label>
-                  <input className="form-control" type="text" />
-                </div>
-                <div className="submit-section">
-                  <button className="btn btn-primary submit-btn">Submit</button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-      {/* /Add Role Modal */}
-      {/* Edit Role Modal */}
-      <div id="edit_role" className="modal custom-modal fade" role="dialog">
-        <div className="modal-dialog modal-dialog-centered" role="document">
-          <div className="modal-content modal-md">
-            <div className="modal-header">
-              <h5 className="modal-title">Edit Role</h5>
-              {/* <h5 className="modal-title">Edit Role {editModal}</h5> */}
-              <button
-                type="button"
-                className="close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-              >
-                <span aria-hidden="true">×</span>
-              </button>
-            </div>
-            <div className="modal-body">
-              <form>
-                <div className="form-group">
-                  <label>
-                    Role Name <span className="text-danger">*</span>
-                  </label>
-                  <input
-                    className="form-control"
-                    // defaultValue={editModal ? editModal : ""}
-                    type="text"
-                  />
-                </div>
-                <div className="submit-section">
-                  <button className="btn btn-primary submit-btn">Save</button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-      {/* /Edit Role Modal */}
-      {/* Delete Role Modal */}
-      <div className="modal custom-modal fade" id="delete_role" role="dialog">
-        <div className="modal-dialog modal-dialog-centered">
-          <div className="modal-content">
-            <div className="modal-body">
-              <div className="form-header">
-                <h3>Delete Role</h3>
-                <p>Are you sure want to delete?</p>
-              </div>
-              <div className="modal-btn delete-action">
-                <div className="row">
-                  <div className="col-6">
-                    <a href="" className="btn btn-primary continue-btn">
-                      Delete
-                    </a>
-                  </div>
-                  <div className="col-6">
-                    <a
-                      href=""
-                      data-bs-dismiss="modal"
-                      className="btn btn-primary cancel-btn"
-                    >
-                      Cancel
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

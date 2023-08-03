@@ -244,7 +244,9 @@ const Header = (props) => {
   let pathname = location.pathname
   const { loginvalue } = useSelector((state) => state.user);
   const UserName = loginvalue?.email?.split('@')[0];
-  const ProfileName = UserName?.charAt(0).toUpperCase() + UserName?.slice(1)
+  const ProfileName = loginvalue?.user?.fullName
+  const imageURL = loginvalue?.user?.image
+  // const ProfileName = UserName?.charAt(0).toUpperCase() + UserName?.slice(1)
   console.log(ProfileName, "headerLoginvalue=====");
 
 
@@ -252,7 +254,7 @@ const Header = (props) => {
     <div className="header" style={{ right: "0px" }}>
       {/* Logo */}
       <div className="header-left">
-        <Link to="/app/main/dashboard" className="logo">
+        <Link to="/main/dashboard" className="logo">
           <img src={DaftarProWhiteIcon} width={40} height={40} alt="" />
           {/* <img src={headerlogo} width={40} height={40} alt="" /> */}
         </Link>
@@ -275,9 +277,9 @@ const Header = (props) => {
         {/* Search */}
         <li className="nav-item">
           <div className="top-nav-search">
-            <a href="" className="responsive-search">
+            {/* <a href="" className="responsive-search">
               <i className="fa fa-search" />
-            </a>
+            </a> */}
             <form>
               <input className="form-control" type="text" placeholder="Search here" />
               <button className="btn" type="submit"><i className="fa fa-search" /></button>
@@ -286,7 +288,7 @@ const Header = (props) => {
         </li>
         {/* /Search */}
         {/* Flag */}
-        <li className="nav-item dropdown has-arrow flag-nav">
+        {/* <li className="nav-item dropdown has-arrow flag-nav">
           <a className="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button">
             <img src={lnEnglish} alt="" height={20} /> <span>English</span>
           </a>
@@ -304,10 +306,10 @@ const Header = (props) => {
               <img src={lnGerman} alt="" height={16} /> German
             </a>
           </div>
-        </li>
+        </li> */}
         {/* /Flag */}
         {/* Notifications */}
-        <li className="nav-item dropdown">
+        {/* <li className="nav-item dropdown">
           <a href="#" className="dropdown-toggle nav-link" data-bs-toggle="dropdown" onClick={() => setNotifications(!notification)}>
             <i className="fa fa-bell-o" /> <span className="badge badge-pill">3</span>
           </a>
@@ -341,10 +343,10 @@ const Header = (props) => {
               <Link onClick={() => localStorage.setItem("minheight", "true")} to="/app/administrator/activities">View all Notifications</Link>
             </div>
           </div>
-        </li>
+        </li> */}
         {/* /Notifications */}
         {/* Message Notifications */}
-        <li className="nav-item dropdown">
+        {/* <li className="nav-item dropdown">
           <a href="#" className="dropdown-toggle nav-link" data-bs-toggle="dropdown">
             <i className="fa fa-comment-o" /> <span className="badge badge-pill">8</span>
           </a>
@@ -384,17 +386,18 @@ const Header = (props) => {
               <Link onClick={() => localStorage.setItem("minheight", "true")} to="/conversation/chat">View all Messages</Link>
             </div>
           </div>
-        </li>
+        </li> */}
         {/* /Message Notifications */}
         <li className="nav-item dropdown has-arrow main-drop">
           <a href="javascript:void(0)" className="dropdown-toggle nav-link" data-bs-toggle="dropdown">
-            <span className="user-img me-1"><img src={Avatar_21} alt="" />
+            <span className="user-img me-1"><img src={imageURL || Avatar_21} alt="" />
+            {/* <span className="user-img me-1"><img src={Avatar_21} alt="" /> */}
               <span className="status online" /></span>
-            <span>{ProfileName ? ` ${ProfileName}` : "Admin"}</span>
+            <span>{ProfileName ? ` ${ProfileName} ` : "Admin"}</span>
           </a>
-          <div className="dropdown-menu dropdown-menu-end">
-            <Link className="dropdown-item" to="/app/profile/employee-profile">My Profile</Link>
-            <Link className="dropdown-item" to="/settings/companysetting">Settings</Link>
+          <div className="dropdown-menu dropdown-menu-end" style={{marginLeft: '50px !important'}}>
+            <Link className="dropdown-item" to="#">My Profile</Link>
+            <Link className="dropdown-item" to="#">Settings</Link>
             {/* <Link className="dropdown-item" to="/login">Logout</Link> */}
             <a className="dropdown-item" onClick={() => {
               localStorage.clear();
@@ -409,9 +412,14 @@ const Header = (props) => {
       <div className="dropdown mobile-user-menu">
         <a href="javascript:void(0)" className="nav-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="fa fa-ellipsis-v" /></a>
         <div className="dropdown-menu dropdown-menu-end dropdown-menu-right">
-          <Link className="dropdown-item" to="/app/profile/employee-profile">My Profile</Link>
-          <Link className="dropdown-item" to="/settings/companysetting">Settings</Link>
-          <Link className="dropdown-item" to="/login">Logout</Link>
+          <Link className="dropdown-item" to="#">My Profile</Link>
+          <Link className="dropdown-item" to="#">Settings</Link>
+          {/* <Link className="dropdown-item" to="/login">Logout</Link> */}
+          <a className="dropdown-item" onClick={() => {
+              localStorage.clear();
+              sessionStorage.clear();
+              nav('/login');
+            }}>Logout</a>
         </div>
       </div>
       {/* /Mobile Menu */}
