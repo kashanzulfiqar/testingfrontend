@@ -42,6 +42,7 @@
     "@restart/hooks": "^0.4.9",
     "@types/summernote": "^0.8.7",
     "antd": "^4.23.3",
+    "axios": "^1.4.0",
     "bootstrap": "^5.1.3",
     "chart.js": "^3.7.0",
     "faker": "^5.5.3",

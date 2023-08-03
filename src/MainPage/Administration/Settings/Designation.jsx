@@ -247,6 +247,7 @@ const Designation = () => {
                     name="designationName"
                     rules={[
                       {
+                        whitespace: true,
                         required: true,
                         message: "please enter designation name",
                       },

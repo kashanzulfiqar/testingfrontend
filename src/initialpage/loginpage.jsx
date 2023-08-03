@@ -4,7 +4,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Helmet } from "react-helmet";
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import DaftarProLogo from '../files/Icons/DaftraProLogo.svg'
 // import { Applogo } from '../Entryfile/imagepath.jsx'
 import { useForm, Controller } from 'react-hook-form'
@@ -14,76 +14,143 @@ import { alphaNumericPattern, emailrgx } from '../constant'
 import { useDispatch, useSelector } from 'react-redux';
 import { login } from '../Entryfile/features/users.jsx';
 import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
+import { Form, Input, Spin, message } from 'antd';
+import { apiLoginEmployee } from "../Services/apiLogin";
+import { LoadingOutlined } from '@ant-design/icons';
 
 const Loginpage = (props) => {
+
   const nav = useNavigate();
-  const [emailerror, setEmailError] = useState("");
+  const location = useLocation();
+  const param = useParams();
+
+  // let verificationToken = location.pathname.split('/')[2]?.split('&token=')[1]
+  // let verificationEmail = location.pathname.split('/')[2]?.split('&token=')[0]
+
+  let verificationToken = param?.token?.replace(/^token=/, '')
+  let verificationEmail = param?.email
+
+  // console.log(verificationEmail, verificationToken);
+
+
   const [emailNotVerified, setEmailNotVerified] = useState(false);
+  const [emailVal, setEmailVal] = useState();
+  const [loader, setLoader] = useState(false)
   const [loginValues, setLoginValues] = useState({});
-  const [nameerror, setNameError] = useState("");
-  const [passworderror, setPasswordError] = useState("");
-  const [formgroup, setFormGroup] = useState("");
   const [inputValues, setInputValues] = useState({
     email: "admin@dreamguys.co.in",
     password: "123456",
   });
 
-  const validationSchema = Yup.object().shape({
-    email: Yup.string()
-      .required('Email is required')
-      .email('Email is invalid'),
-    password: Yup.string()
-      .required('Password is required')
-      .min(6, 'Password must be at least 6 characters')
-      .max(20, 'Password must not exceed 20 characters'),
-  });
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
-    resolver: yupResolver(validationSchema),
-  });
+  const onFinish = (values) => {
+    setLoader(true)
+    // console.log(values, ">>>")
 
-  const onInputHandle = (val, type) => {
-    setLoginValues({ ...loginValues, [type]: val})
-  }
+    let data = {
+      token: verificationToken,
+      email: values?.email,
+      password: values?.password,
+    };
 
-  const onSubmit = (data) => {
-    console.log(data, ">>>")
-    const { email, password } = data;
-    // setEmailNotVerified(!emailNotVerified);
-  
-    // Check if email and password match the expected values
-    if (email !== "admin@dreamguystech.com" || password !== "123456") {
-      // Show error message or handle invalid credentials
-      // For example, set an error state and display an error message
-      setEmailError("Invalid email or password");
-      setPasswordError("Invalid email or password");
-      return;
-    }
-  
-    // Clear any previous error messages
-    setEmailError("");
-    setPasswordError("");
-  
+    apiLoginEmployee( !verificationToken ? 'user/login-user' : `user/login-user?token=${verificationToken}` , data).then((res) => {
+      if (res?.data?.success === true) {
+        // console.log(res?.data?.result);
+        dispatch(login(res?.data?.result));
+        nav('/main/dashboard');
+        setLoader(false)
+        // dispatch(getPermissionList({ userId: res?.data?.result?.user?._id, athtoken: res?.data?.result?.access_token }))
+        if (res?.data?.result?.user?.role === 'Admin') {
+          // let acesstoken = res?.data?.result?.access_token;
+          // const role = res?.data?.result?.user?.role;
+          // const id = res?.data?.result?.user?._id;
+          // const companyID = res?.data?.result?.user.companyID;
+          // const { email, password } = data;
+          // const adminLogin = {
+          //   email: email,
+          //   userId: id,
+          //   password: password,
+          //   role: role,
+          //   acesstoken: acesstoken,
+          //   companyID: companyID,
+          //   img: res?.data?.result?.user?.image
+          // }
+          // localStorage.setItem("AuthObj", JSON.stringify(adminLogin));
+          // navigate('/company-management' || '/', { replace: true });
+          // setloader(false)
+        }
+        else{
+          // localStorage.clear("AuthObj")
+          // const name = res?.data?.result?.user?.name;
+          // const role = res?.data?.result?.user?.role;
+          // const companyID = res?.data?.result?.user?.companyID;
+          // const acesstoken = res?.data?.result?.access_token;
+          // const id = res?.data?.result?.user?._id;
+          // const { email, password } = data;
+          // const employLogin = {
+          //   name: name,
+          //   userId: id,
+          //   email: email,
+          //   password: password,
+          //   role: role,
+          //   acesstoken: acesstoken,
+          //   companyID: companyID,
+          //   img: res?.data?.result?.user?.image,
+          //   firstTimeLogin: res?.data?.result?.user?.firstTimeLogin
+          // }
+          // localStorage.setItem("AuthObj", JSON.stringify(employLogin))
+          // if (res?.data?.result?.user?.firstTimeLogin){
+          //   navigate('/employee-setting')
+          //   setloader(false)
+          // }else{
+          //   navigate('/overview')
+          //   setloader(false)
+          // }
+        }
+      }
+    }).catch((err)=>{
+      if (err.response.data.verified === false){
+        // setresendEmail(true)
+        // console.log(err);
+        setEmailNotVerified(true)
+        setEmailVal(data?.email)
+      }
+      setLoader(false)
+      message.error(
+        `${
+          err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
+            ? err?.response?.data?.validation?.body?.message
+            : "Login"
+        } Error`
+      );
+  })
+
     // Credentials are valid, proceed with login
-    dispatch(login(data));
-    nav('/main/dashboard');
+    // dispatch(login(data));
+    // nav('/main/dashboard');
   }
   const dispatch = useDispatch();
-  const [email, SetEmail] = useState("");
-  const [password, SetPassword] = useState(0);
   const [eye, seteye] = useState(true);
 
 
   const onEyeClick = () => {
     seteye(!eye)
   }
+
+  const antIcon = (
+    <LoadingOutlined
+      style={{
+        fontSize: 30,
+        color: '#fff'
+      }}
+      spin
+    />
+  );
+
+
   return (
-
-
     <>
       <Helmet>
         <title>Login - DaftarPro</title>
@@ -100,116 +167,117 @@ const Loginpage = (props) => {
           {/* /Account Logo */}
           {
             !emailNotVerified ?
-            <div className="account-box" style={{width: '100%', maxWidth: '514px', height: '510px', paddingInline: '55px'}}>
-              <div className="account-wrapper">
-                <h3 className="account-title" style={{padding: '17px 0px 40px 0px'}}>Login</h3>
-                {/* <p className="account-subtitle">Access to our dashboard</p> */}
-                {/* Account Form */}
-                <div>
-                  <form onSubmit={handleSubmit(onSubmit)}>
-                    <div className="form-group">
-                      <label>Email Address</label>
-                      {/* <Controller
-                        name="email"
-                        control={control}
-                        render={({ field: { value, onChange } }) => (
-                          <input   className={`form-control  ${errors?.email ? "error-input" : "" }`} type="text" value={value} onChange={onChange} autoComplete="false"   />
-
-                        )}
-                        defaultValue="admin@dreamguys.co.in"
-                      />											 */}
-                      <input
-                        type="text"
-                        {...register('email')}
-                        // className={`form-control ${errors.email ? 'is-invalid' : ''}`}
-                        className={`form-control ${emailerror ? 'is-invalid' : ''}`}
-                        placeholder="Enter your email address"
-                        defaultValue="admin@dreamguystech.com"
-                        onChange={(e) => onInputHandle(e.target.value, 'email')}
-                        value={loginValues?.email}
-                      />
-                      {/* <input name="email" className={`form-control  ${errors?.email ? "error-input" : ""}`} type="email" value={email} onChange={e => SetEmail(e.target.value)} autoComplete="false" /> */}
-                      {emailerror && <div className="invalid-feedback">{emailerror}</div>}
-                    </div>
-                    <div className="form-group">
-                      <div className="row">
-                        <div className="col">
-                          <label>Password</label>
-                        </div>
-                        <div className="col-auto">
-                          <Link className="text-muted" to="/forget-password">
-                            Forgot password?
-                          </Link>
-                        </div>
-                      </div>
-                      {/* <Controller
-                        name="password"
-                        control={control}
-                        render={({ field: { value, onChange } }) => (
-                          <div className="pass-group password-eye">
-                            <input type={eye ? "password" : "text"} className={`form-control  ${errors?.password ? "error-input" : ""}`} value={value} onChange={onChange} autoComplete="false" />
-                            <span onClick={onEyeClick} className={`fa toggle-password ${eye ? "fa-eye-slash" : "fa-eye"}`} />
-                          </div>
-                        )}
-                        defaultValue="123456"
-                        />											 */}
-                        <div className="pass-group password-eye">
-                          <input
-                            type={eye ? "password" : "text"}
-                            className={`form-control passwordStyle`}
-                            // className={`form-control ${passworderror ? 'is-invalid' : ''}`}
-                            // className={`form-control ${errors.password ? 'is-invalid' : ''}`}
-                            placeholder="Enter your password"
-                            {...register('password')}
-                            defaultValue={123456}
-                            value={loginValues?.password}
-                            onChange={(e) => onInputHandle(e.target.value, 'password')}
+              <div className="account-box" style={{ width: '100%', maxWidth: '514px', height: '510px', paddingInline: '55px' }}>
+                <div className="account-wrapper">
+                  <h3 className="account-title" style={{ padding: '17px 0px 40px 0px' }}>Login</h3>
+                  {/* <p className="account-subtitle">Access to our dashboard</p> */}
+                  {/* Account Form */}
+                  <div>
+                    <Form
+                      // form={form}
+                      name="control-hooks"
+                      onFinish={onFinish}
+                      onFinishFailed={() => message.error('Please Fill Required Fields!')}
+                      initialValues={{
+                        email: verificationEmail ? verificationEmail : ''
+                      }}
+                    >
+                      <div className="form-group">
+                        <label>Email Address</label>
+                        <Form.Item
+                          name="email"
+                          rules={[
+                            {
+                              whitespace: true,
+                              required: true,
+                              message: "please enter email address",
+                            },
+                            {
+                              type: "email",
+                              message: "Please enter a valid email",
+                            },
+                          ]}
+                          className="custom-border"
+                        >
+                          <Input
+                            className={`form-control`}
+                            disabled={verificationEmail ? true : false}
                           />
-                          {/* <input type={eye ? "password" : "text"} className={`form-control  ${errors?.password ? "error-input" : ""}`} value={password} onChange={e => SetPassword(e.target.value)} autoComplete="false" /> */}
-                          <span onClick={onEyeClick} style={{cursor: 'pointer', top: '12px'}} className={`toggles-password fa toggle-password`}>
-                          {
-                            eye ? <EyeInvisibleOutlined style={{color: '#666666', fontSize: '20px'}} /> :
-                            <EyeOutlined style={{color: '#666666', fontSize: '20px'}} />
-                          }
-                          </span>
-                          {/* <span onClick={onEyeClick} style={{cursor: 'pointer'}} className={`toggles-password fa toggle-password ${eye ? "fa-light fa-eye-slash" : "fa-light fa-eye"} `} /> */}
-                        </div>
-                        {console.log(passworderror)}
-                      {passworderror && <div className="invalid-feedback">{passworderror}</div>}
-                    </div>
-                    <div className="form-group text-center" style={{marginTop: '25px'}}>
-                      <button
-                        className="btn btn-primary account-btn"
-                        type="submit"
-                      >
-                        Login
-                      </button>
-
-                    </div>
-                  </form>
-                  <div className="account-footer">
-                    <p>Don't have an account yet? <Link to="/register">Register</Link></p>
-                  </div>
-                </div>
-                {/* /Account Form */}
-              </div>
-            </div> :
-            <div className="account-box" style={{width: '100%', maxWidth: '630px', height: '460px', paddingInline: '20px'}}>
-                  <div className="account-wrapper">
-                    <h3 className="account-title" style={{padding: '30px 0px 20px 0px', fontSize: '32px'}}>Email not verified yet!</h3>
-                    {/* <p className="account-subtitle">Enter your email to get a password reset link</p> */}
-                    {/* Account Form */}
-                      <div className="account-footer">
-                        <p style={{color: '#6F6F6F', fontSize: '18px'}}>Confirm your email address. we have sent a verification email to</p>
-                        <p style={{fontWeight: '700', fontSize: '18px'}}>{loginValues?.email}</p>
-                        <p style={{color: '#0097C7', fontSize: '18px'}}>Not your email address?</p>
-                        {/* <p style={{fontSize: '18px'}}>Please <a onClick={() => {setEmailNotVerified(false); setLoginValues({})}} style={{color: '#0097C7'}}>Click-Here</a> to Login again with the correct email address.</p> */}
-                        <p style={{color: '#6F6F6F', fontSize: '18px'}}>Make sure to check your inbox and your spam folder if you can't find the email.</p>
-                        <p style={{color: '#6F6F6F ', fontSize: '18px'}}>Still not Received? <a style={{color: '#0097C7'}}>Contact Us</a></p>
+                        </Form.Item>
                       </div>
-                    {/* /Account Form */}
+                      <div className="form-group">
+                        <div className="row">
+                          <div className="col">
+                            <label>Password</label>
+                          </div>
+                          <div className="col-auto">
+                            <Link className="text-muted" to="/forget-password">
+                              Forgot password?
+                            </Link>
+                          </div>
+                        </div>
+                        <Form.Item
+                          name="password"
+                          rules={[
+                            {
+                              whitespace: true,
+                              required: true,
+                              message: "please enter password",
+                            },
+                          ]}
+                          className="custom-border"
+                        >
+                          <div className="pass-group password-eye">
+                            <Input
+                              type={eye ? "password" : "text"}
+                              className={`form-control passwordStyle`}
+                            />
+                            <span onClick={onEyeClick} style={{ cursor: 'pointer', top: '12px' }} className={`toggles-password fa toggle-password`}>
+                              {
+                                eye ? <EyeInvisibleOutlined style={{ color: '#666666', fontSize: '20px' }} /> :
+                                  <EyeOutlined style={{ color: '#666666', fontSize: '20px' }} />
+                              }
+                            </span>
+                          </div>
+                        </Form.Item>
+                      </div>
+                      <div className="form-group text-center" style={{ marginTop: '35px' }}>
+                        <button
+                          className="btn btn-primary account-btn"
+                          type="submit"
+                          disabled={loader}
+                        >
+                          {
+                            loader ? <Spin size="small" indicator={antIcon} />
+                              : 'Login'
+                          }
+                        </button>
+
+                      </div>
+                    </Form>
+                    <div className="account-footer">
+                      <p>Don't have an account yet? <Link to="/register">Register</Link></p>
+                    </div>
                   </div>
-            </div>
+                  {/* /Account Form */}
+                </div>
+              </div> :
+              <div className="account-box" style={{ width: '100%', maxWidth: '630px', height: 'auto', paddingInline: '20px' }}>
+                <div className="account-wrapper">
+                  <h3 className="account-title" style={{ padding: '30px 0px 20px 0px', fontSize: '32px', wordSpacing: "-9px" }}>Email not verified yet!</h3>
+                  {/* <p className="account-subtitle">Enter your email to get a password reset link</p> */}
+                  {/* Account Form */}
+                  <div className="account-footer">
+                    <p style={{ color: '#6F6F6F', fontSize: '18px', wordSpacing: "-4.5px" }}>Confirm your email address. We have sent a verification <br /> email to</p>
+                    <p style={{ fontWeight: '700', fontSize: '18px' }}>{emailVal}</p>
+                    <p style={{ color: '#0097C7', fontSize: '18px', wordSpacing: "-4.5px" }}>Not your email address?</p>
+                    {/* <p style={{fontSize: '18px'}}>Please <a onClick={() => {setEmailNotVerified(false); setLoginValues({})}} style={{color: '#0097C7'}}>Click-Here</a> to Login again with the correct email address.</p> */}
+                    <p style={{ color: '#6F6F6F', fontSize: '18px', wordSpacing: "-4.5px" }}>Make sure to check your inbox and your spam folder if you can't find the email.</p>
+                    <p style={{ color: '#6F6F6F ', fontSize: '18px', wordSpacing: "-4.5px" }}>Still not Received? <a style={{ color: '#0097C7' }}>Contact Us</a></p>
+                  </div>
+                  {/* /Account Form */}
+                </div>
+              </div>
           }
         </div>
       </div>

@@ -115,6 +115,12 @@ span, p {
   word-spacing: 0px;
 }
 
+/* @media (max-width: 575px) {
+  h1, h2, h3, h4, h5, h6, span, p, label, a {
+    word-spacing: 0px;
+  }
+} */
+
 article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {
   display: block;
 }
@@ -6538,9 +6544,11 @@ textarea.form-control {
 }
 
 .error-page {
-  background-color: transparent;
+  /* background-color: transparent; */
+  background-color: #F7F7F7;
   /* background-color: rgba(255, 155, 68, 0.2); */
   color: #1f1f1f;
+  display: grid;
 }
 .error-page .main-wrapper {
   flex-wrap: wrap;
@@ -6553,7 +6561,8 @@ textarea.form-control {
   width: 100%;
   margin: 0 auto;
   padding: 40px 0;
-  margin-left: 640px;
+  margin-left: auto;
+  /* margin-left: 640px; */
 }
 .error-page .main-wrapper .error-box h1 {
   color: #ff9b44;
@@ -7130,6 +7139,9 @@ textarea.form-control {
 }
 
 /* ................. custom css styling ................ */
+.strengthErrorStyle .ant-form-item-explain-error{
+  margin-top: -9px !important;
+} 
 .passwordStyle{
   padding-right: 37px;
 }

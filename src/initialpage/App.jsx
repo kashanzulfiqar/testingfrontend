@@ -135,31 +135,29 @@ const App = () => {
   //     }
   //   }, []);
 
-  const [menu, setMenu] = useState(true);
+  const [menu, setMenu] = useState(false);
 
   const toggleMobileMenu = () => {
     setMenu(!menu);
   };
 
   useEffect(() => {
-    setMenu(!menu);
+    setMenu(false);
+    window.scrollTo(0, 0);
   }, [location])
   
 
   useEffect(() => {
     // console.log('loc--------',location.pathname);
     if (!login) {
-      nav('/login');
+      // nav('/login');
     }
-    if ((location.pathname === '/' || location.pathname === '/login') && login) {
+    if ((location.pathname === '/' || location.pathname === '/login' || location.pathname === '/login/:email/:token' 
+    || location.pathname === '/forget-password' || location.pathname === '/reset-password/:id'
+    || location.pathname === '/register') && login)
+    {
       nav('/employee/dashboard');
-      // nav('/login')
-      //    return (<Navigate to={'/app/main/dashboard'} />);
     }
-    // else{
-    //   nav(`${location.pathname}`)
-    //   // nav('/employee/dashboard')
-    // }
   }, []);
 
   return (
@@ -167,9 +165,9 @@ const App = () => {
       <Routes>
         {/* <Route path="/" element={<Navigate to="/login" />} /> */}
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/login/:id" element={<LoginPage />} />
+        <Route path="/login/:email/:token" element={<LoginPage />} />
         <Route path="/forget-password" element={<ForgotPassword />} />
-        <Route path="/reset-password/:id" element={<ResetPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/register" element={<RegistrationPage />} />
 
         {/* <Route path="/app/*" element={<DefaultLayout />} /> */}

@@ -1,602 +1,1177 @@
-/**
- * Signin Firebase
- */
-
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet";
-import { Link } from 'react-router-dom';
-import {Applogo} from '../Entryfile/imagepath.jsx'
-import { useForm, Controller } from 'react-hook-form'
-import { yupResolver } from '@hookform/resolvers/yup'
-import * as yup from 'yup';
-import  { alphaNumericPattern, emailrgx } from '../constant'
-import { Button, Steps, message } from 'antd';
-import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
-import DaftarProLogo from '../files/Icons/DaftraProLogo.svg'
-import SuccessIcon from '../files/Icons/SuccessIcon.svg'
-import PhoneNoInput from '../Components/PhoneNoInput/index.jsx';
+import { Link } from "react-router-dom";
+import { Applogo } from "../Entryfile/imagepath.jsx";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { alphaNumericPattern, emailrgx } from "../constant";
+import {
+  Button,
+  Checkbox,
+  DatePicker,
+  Form,
+  Input,
+  Spin,
+  Steps,
+  message,
+} from "antd";
+import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
+import DaftarProLogo from "../files/Icons/DaftraProLogo.svg";
+import SuccessIcon from "../files/Icons/SuccessIcon.svg";
+import PhoneNoInput from "../Components/PhoneNoInput/index.jsx";
+import { apiServices } from "../Services/apiServices";
+import Select from "react-select";
+import styled from "styled-components";
+import { LoadingOutlined } from '@ant-design/icons';
 
-import Select from 'react-select';
-import styled from 'styled-components';
 
 const options = [
-  { value: 'male', label: 'Male' },
-  { value: 'female', label: 'Female' },
+  { value: "Male", label: "Male" },
+  { value: "Female", label: "Female" },
 ];
 
-
-const schema = yup
-  .object({
-  
-    email: yup
-      .string()
-      .matches(emailrgx, 'Email is required')
-      .required('Email is required')
-      .trim(),
-	  password: yup.string() .min(6)
-	  .max(6) .required ('Password is required')
-	  .trim(),
-
-	  repeatPassword:  yup.string() .required('ConfirmPassword is required').trim(),
-  })
-  .required()
-
 const Registrationpage = (props) => {
+  const [form] = Form.useForm();
+  const [regValues, setRegValues] = useState({});
+  const [adminValues, setAdminValues] = useState({ password: "" });
+  const [current, setCurrent] = useState(0);
+  const [successSection, setSuccessSection] = useState(false);
+  const [eye, seteye] = useState(true);
+  const [compId, setCompId] = useState("");
+  const [loader, setLoader] = useState(false)
 
-	/**
-	 * On User Login
-	 */
-   const[eye,seteye]=useState(true);
-   const [emailerror,setEmailError] = useState("");
-  const [nameerror,setNameError] = useState("");
-   const [passworderror,setPasswordError] = useState("");
-   const [formgroup,setFormGroup] = useState("");
-   const [inputValues,setInputValues] = useState({
-   email:"admin@dreamguys.co.in",
-   password:"123456",
-   });
+  const next = () => {
+    setCurrent(current + 1);
+  };
+  const prev = () => {
+    setCurrent(current - 1);
+  };
 
-    const {
-      handleSubmit,
-      control,
-      setError,
-      clearErrors,
-      formState: { errors },
-      } = useForm({
-      resolver: yupResolver(schema),
-      })
-      
-    const  onSubmit = (data) => {
-    console.log("data", data)
-      
-    if(data.password != "123456") {
-    setError('password', {
-      message: 'password is mismatch',
-    })
+  const onEyeClick = () => {
+    seteye(!eye);
+  };
+
+  const onHandleRegChange = (type, value) => {
+    if (type === "companyPhoneNo" || type === "mobileNumber") {
+      let newvalue = value ? "+" + value : "";
+
+      const updatedValues = {
+        [type]: `${newvalue}`,
+      };
+
+      form.setFieldsValue(updatedValues);
+      setRegValues({
+        ...regValues,
+        [type]: `${newvalue}`,
+      });
     } else {
-    clearErrors('password')
-    props.history.push('login') 
-    
-    }
-    }
-    const onEyeClick = () =>{
-    seteye(!eye)
-    }
-      const onUserLogin = e => {
-          e.preventDefault();
-          
-          if (this.state.email !== '' && this.state.password !== '') {
-            this.props.signinUserInFirebase(this.state, this.props.history);
+      const updatedValues = {
+        [type]: `${value}`,
+      };
 
-            
-          }
-        }
-
-    const onApplyJob = e => {
-        e.preventDefault();
-        localStorage.removeItem('jobview')
-        this.props.history.push('/applyjob/joblist')
+      form.setFieldsValue(updatedValues);
+      setRegValues({
+        ...regValues,
+        [type]: `${value}`,
+      });
     }
-    const CompanyRegisterHandler = (e) => {
-      e.preventDefault();
-      console.log('e======',e);
-    }
+  };
 
-    const [adminRegister, setAdminRegister] = useState({ password: ''})
-    const onInputChange = (val, type) => {
-      setAdminRegister({ ...adminRegister, [type]: val })
-    }
+  const onHandleAdminChange = (type, value) => {
+    if (type === "phoneNo") {
+      let newvalue = value ? "+" + value : "";
 
-    const calculateStrength = () => {
-      // const strengthPercentage = (adminRegister?.password?.length / 10) * 100; // Example: Assume maximum strength is achieved when the password length is 10 characters
-      // return strengthPercentage;
-      let stre = 0;
+      const updatedValues = {
+        [type]: `${newvalue}`,
+      };
+
+      form.setFieldsValue(updatedValues);
+      setAdminValues({
+        ...adminValues,
+        [type]: `${newvalue}`,
+      });
+    } else {
+      const updatedValues = {
+        [type]: `${value}`,
+      };
+
+      form.setFieldsValue(updatedValues);
+      setAdminValues({
+        ...adminValues,
+        [type]: `${value}`,
+      });
+      if (type === "password") {
+        calculateStrength();
+      }
+    }
+  };
+
+  const calculateStrength = () => {
+    let stre = 0;
     const regexUpper = /[A-Z]/;
     const regexLower = /[a-z]/;
     const regexSpecialChar = /[!@#$%^&*()\-=_+[\]{};':"\\|,.<>/?]/;
     const regexNum = /\d/;
 
-    if(adminRegister?.password.length >= 8){
+    if (adminValues?.password.length >= 8) {
       stre += 20;
     }
-    if(regexLower.test(adminRegister?.password)){
+    if (regexLower.test(adminValues?.password)) {
       stre += 10;
     }
-    if(regexUpper.test(adminRegister?.password)){
+    if (regexUpper.test(adminValues?.password)) {
       stre += 20;
     }
-    if(regexSpecialChar.test(adminRegister?.password)){
+    if (regexSpecialChar.test(adminValues?.password)) {
       stre += 30;
     }
-    if(regexNum.test(adminRegister?.password)){
+    if (regexNum.test(adminValues?.password)) {
       stre += 20;
     }
     return stre;
+  };
+
+  // ----------------- custom select ------------------
+
+  const customStyles = {
+    control: (provided) => ({
+      ...provided,
+      backgroundColor: "#fbfbfb",
+      border: "1px solid #e3e3e3",
+      height: "46px",
+      borderRadius: "4px",
+      paddingInline: "2px",
+      boxShadow: "none",
+      cursor: "pointer",
+    }),
+    option: (provided, { isFocused, isSelected }) => ({
+      ...provided,
+      backgroundColor: isSelected ? "#ff9b44" : isFocused ? "white" : "white",
+      color: isSelected ? "white" : "black",
+      ":hover": {
+        backgroundColor: "#ffdbbb",
+        color: "black",
+        cursor: "pointer",
+      },
+    }),
+    singleValue: (provided) => ({
+      ...provided,
+      // padding: '70px',
+    }),
+    indicatorSeparator: () => ({ display: "none" }),
+    // Add any other custom styles as needed
+  };
+
+  const onRegFinish = (values) => {
+    setLoader(true)
+    apiServices("POST", "company/addcompany", values)
+      .then((res) => {
+        if (res?.data?.success) {
+          setLoader(false)
+          // console.log("values==", values, "handleChange----", regValues);
+          // console.log("res======", res?.data);
+          setCompId(res?.data?.Company?._id);
+          message.success("Company Registered Successfully!");
+          next();
+          window.scrollTo(0, 0);
+        }
+      })
+      .catch((err) => {
+        setLoader(false)
+        message.error(
+          `${
+            err.response.data.msg
+              ? err.response.data.msg
+              : err.response.data.validation.body.message
+              ? err.response.data.validation.body.message
+              : "Company Register"
+          } Error`
+        );
+      });
+  };
+  const onAdminFinish = (values) => {
+    setLoader(true)
+    let data = {
+      ...values,
+      role: 'admin',
+      companyId: `${compId}`,
     };
 
-    // ----------------- custom select ------------------
-    const [selectedOption, setSelectedOption] = useState(null);
-
-    const handleSelectChange = (selectedOption) => {
-      setSelectedOption(selectedOption);
-      console.log('selectedOption', selectedOption.value);
-    };
-
-    const customStyles = {
-      control: (provided) => ({
-        ...provided,
-        backgroundColor: '#fbfbfb',
-        border: '1px solid #e3e3e3',
-        height: '46px',
-        borderRadius: '4px',
-        paddingInline: '2px',
-        boxShadow: 'none',
-        cursor: 'pointer'
-      }),
-      option: (provided, { isFocused, isSelected }) => ({
-        ...provided,
-        backgroundColor: isSelected ? '#ff9b44' : isFocused ? 'white' : 'white',
-        color: isSelected ? 'white' : 'black',
-        ':hover': {
-          backgroundColor: '#ffdbbb',
-          color: 'black',
-          cursor: 'pointer',
-        },
-      }),
-      singleValue: (provided) => ({
-        ...provided,
-        // padding: '70px',
-      }),
-      indicatorSeparator: () => ({ display: 'none' }),
-      // Add any other custom styles as needed
-    };
+    apiServices("POST", "user/add-user", data)
+      .then((res) => {
+        if (res?.data?.success) {
+          setLoader(false)
+          message.success("Admin Account Created Successfully!");
+          setSuccessSection(true);
+        }
+      })
+      .catch((err) => {
+        setLoader(false)
+        message.error(
+          `${
+            err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
+            ? err?.response?.data?.validation?.body?.message
+              : "Company Register"
+          } Error`
+        );
+      });
+  };
 
 
+  const antIcon = (
+    <LoadingOutlined
+      style={{
+        fontSize: 30,
+        color: '#fff'
+      }}
+      spin
+    />
+  );
 
-    const steps = [
-      {
-        title: 'Enter Company Details',
-        content: 
-          <form className='mt-5' onSubmit={(e) => {
-            e.preventDefault();
-            console.log('clicked');
-          }}>
-            <div className="row">
-              <div className="col-sm-6">
-                <div className="form-group">
-                  <label className="col-form-label">Company Name <span className="text-danger">*</span></label>
-                  <input className="form-control" type="text" />
-                </div>
-              </div>
-              <div className="col-sm-6">
-                <div className="form-group">
-                  <label className="col-form-label">Legal Name <span className="text-danger">*</span></label>
-                  <input className="form-control" type="text" />
-                </div>
-              </div>
-              <div className="col-sm-6">
-                <div className="form-group">
-                  <label className="col-form-label">Contact Person <span className="text-danger">*</span></label>
-                  <input className="form-control" type="text" />
-                </div>
-              </div>
-              <div className="col-sm-6">
-                <div className="form-group">
-                  <label className="col-form-label">Address <span className="text-danger">*</span></label>
-                  <input className="form-control" type="email" />
-                </div>
-              </div>
-              <div className="col-sm-6">
-                <div className="form-group">
-                  <label className="col-form-label">Postal Code <span className="text-danger">*</span></label>
-                  <input className="form-control" type="text" />
-                </div>
-              </div>
-              <div className="col-sm-6">
-                <div className="form-group">
-                  <label className="col-form-label">City <span className="text-danger">*</span></label>
-                  <input className="form-control" type="text" />
-                </div>
-              </div>
-              <div className="col-sm-6">
-                <div className="form-group">
-                  <label className="col-form-label">State <span className="text-danger">*</span></label>
-                  <input className="form-control" type="text" />
-                </div>
-              </div>
-              <div className="col-sm-6">
-                <div className="form-group">
-                  <label className="col-form-label">Country <span className="text-danger">*</span></label>
-                  <input className="form-control" type="text" />
-                </div>
-              </div>
-              <div className="col-sm-6">
-                <div className="form-group">
-                  <label className="col-form-label">Company Email <span className="text-danger">*</span></label>
-                  <input className="form-control" type="text" />
-                </div>
-              </div>
-              <div className="col-sm-6">
-                <div className="form-group">
-                  <label className="col-form-label">Registration No <span className="text-danger">*</span></label>
-                  <input className="form-control" type="text" />
-                </div>
-              </div>
-              <div className="col-sm-6">
-                <div className="form-group">
-                  <label className="col-form-label">Phone Number <span className="text-danger">*</span></label>
-                  <PhoneNoInput
-                    // onChangePhone={(value) => {
-                    //   onHandleChange("contactNo", value)
-                    // }}
-                    // onCountryChange={(val) => {
-                    //   onHandleChange("contactNo", `${val}`);
-                    // }}
-                    // phone={state ? formData.contactNo : postformData.contactNo}
+  const steps = [
+    {
+      title: "Enter Company Details",
+      content: (
+        <Form
+          // {...layout}
+          form={form}
+          name="control-hooks"
+          onFinish={onRegFinish}
+          onFinishFailed={() => message.error("Please Enter Required Fields!")}
+        >
+          <div className="row mt-5">
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
+                  Company Name <span className="text-danger">*</span>
+                </label>
+                {/* <input className="form-control" type="text" /> */}
+                <Form.Item
+                  name="companyName"
+                  rules={[
+                    {
+                      whitespace: true,
+                      required: true,
+                      message: "please enter company name",
+                    },
+                    {
+                      min: 3,
+                      message: "name length must be at least 3 characters long",
+                    },
+                  ]}
+                >
+                  <Input
+                    style={{ display: "none" }}
+                    value={regValues?.companyName}
                   />
-                </div>
-              </div>
-              <div className="col-sm-6">
-                <div className="form-group">
-                  <label className="col-form-label">Mobile Number <span className="text-danger">*</span></label>
-                  <PhoneNoInput
-                    // onChangePhone={(value) => {
-                    //   onHandleChange("contactNo", value)
-                    // }}
-                    // onCountryChange={(val) => {
-                    //   onHandleChange("contactNo", `${val}`);
-                    // }}
-                    // phone={state ? formData.contactNo : postformData.contactNo}
+                  <input
+                    className="form-control"
+                    onChange={(e) => {
+                      onHandleRegChange("companyName", e.target.value);
+                    }}
                   />
-                </div>
-              </div>
-              <div className="col-sm-6">
-                <div className="form-group">
-                  <label className="col-form-label">Website <span className="text-danger">*</span></label>
-                  <input className="form-control" type="text" />
-                </div>
-              </div>
-              <div className="col-sm-6">
-                <div className="form-group">
-                  <label className="col-form-label">Fax <span className="text-danger">*</span></label>
-                  <input className="form-control" type="text" />
-                </div>
+                </Form.Item>
               </div>
             </div>
-            {/* <div className="submit-section">
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
+                  Legal Name <span className="text-danger">*</span>
+                </label>
+                <Form.Item
+                  name="legalName"
+                  rules={[
+                    {
+                      whitespace: true,
+                      required: true,
+                      message: "please enter legal name",
+                    },
+                    {
+                      min: 3,
+                      message: "legal length must be at least 3 characters long",
+                    },
+                  ]}
+                >
+                  <Input
+                    style={{ display: "none" }}
+                    value={regValues?.legalName}
+                  />
+                  <input
+                    className="form-control"
+                    onChange={(e) => {
+                      onHandleRegChange("legalName", e.target.value);
+                    }}
+                  />
+                </Form.Item>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
+                  Contact Person <span className="text-danger">*</span>
+                </label>
+                <Form.Item
+                  name="contactPerson"
+                  rules={[
+                    {
+                      whitespace: true,
+                      required: true,
+                      message: "please enter contact person",
+                    },
+                    {
+                      min: 3,
+                      message: "person length must be at least 3 characters long",
+                    },
+                  ]}
+                >
+                  <Input
+                    style={{ display: "none" }}
+                    value={regValues?.contactPerson}
+                  />
+                  <input
+                    className="form-control"
+                    onChange={(e) => {
+                      onHandleRegChange("contactPerson", e.target.value);
+                    }}
+                  />
+                </Form.Item>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
+                  Address <span className="text-danger">*</span>
+                </label>
+                <Form.Item
+                  name="companyAddress"
+                  rules={[
+                    {
+                      whitespace: true,
+                      required: true,
+                      message: "please enter company address",
+                    },
+                    {
+                      min: 5,
+                      message: "address length must be at least 5 characters long",
+                    },
+                  ]}
+                >
+                  <Input
+                    style={{ display: "none" }}
+                    value={regValues?.companyAddress}
+                  />
+                  <input
+                    className="form-control"
+                    onChange={(e) => {
+                      onHandleRegChange("companyAddress", e.target.value);
+                    }}
+                  />
+                </Form.Item>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
+                  Postal Code <span className="text-danger">*</span>
+                </label>
+                <Form.Item
+                  name="postalCode"
+                  rules={[
+                    {
+                      whitespace: true,
+                      required: true,
+                      message: "please enter postal code",
+                    },
+                    {
+                      min: 3,
+                      message: "postal code length must be at least 3 characters long",
+                    },
+                  ]}
+                >
+                  <Input
+                    style={{ display: "none" }}
+                    value={regValues?.postalCode}
+                  />
+                  <input
+                    className="form-control"
+                    onChange={(e) => {
+                      onHandleRegChange("postalCode", e.target.value);
+                    }}
+                    onKeyPress={(e) => {
+                      if ( ((e.which < 48 || e.which > 57)) ) {
+                        e.preventDefault();
+                      }
+                    }}
+                  />
+                </Form.Item>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
+                  City <span className="text-danger">*</span>
+                </label>
+                <Form.Item
+                  name="city"
+                  rules={[
+                    {
+                      whitespace: true,
+                      required: true,
+                      message: "please enter city name",
+                    },
+                    {
+                      min: 3,
+                      message: "city length must be at least 3 characters long",
+                    },
+                  ]}
+                >
+                  <Input style={{ display: "none" }} value={regValues?.city} />
+                  <input
+                    className="form-control"
+                    onChange={(e) => {
+                      onHandleRegChange("city", e.target.value);
+                    }}
+                  />
+                </Form.Item>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
+                  State <span className="text-danger">*</span>
+                </label>
+                <Form.Item
+                  name="state"
+                  rules={[
+                    {
+                      whitespace: true,
+                      required: true,
+                      message: "please enter state name",
+                    },
+                    {
+                      min: 3,
+                      message: "state length must be at least 3 characters long",
+                    },
+                  ]}
+                >
+                  <Input style={{ display: "none" }} value={regValues?.state} />
+                  <input
+                    className="form-control"
+                    onChange={(e) => {
+                      onHandleRegChange("state", e.target.value);
+                    }}
+                  />
+                </Form.Item>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
+                  Country <span className="text-danger">*</span>
+                </label>
+                <Form.Item
+                  name="country"
+                  rules={[
+                    {
+                      whitespace: true,
+                      required: true,
+                      message: "please enter country name",
+                    },
+                    {
+                      min: 3,
+                      message: "country length must be at least 3 characters long",
+                    },
+                  ]}
+                >
+                  <Input
+                    style={{ display: "none" }}
+                    value={regValues?.country}
+                  />
+                  <input
+                    className="form-control"
+                    onChange={(e) => {
+                      onHandleRegChange("country", e.target.value);
+                    }}
+                  />
+                </Form.Item>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
+                  Company Email <span className="text-danger">*</span>
+                </label>
+                <Form.Item
+                  name="companyEmail"
+                  rules={[
+                    {
+                      whitespace: true,
+                      required: true,
+                      message: "please enter company email",
+                    },
+                    {
+                      type: "email",
+                      message: "Please enter a valid email",
+                    },
+                  ]}
+                >
+                  <Input
+                    style={{ display: "none" }}
+                    value={regValues?.companyEmail}
+                  />
+                  <input
+                    className="form-control"
+                    onChange={(e) => {
+                      onHandleRegChange("companyEmail", e.target.value);
+                    }}
+                  />
+                </Form.Item>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
+                  Registration No <span className="text-danger">*</span>
+                </label>
+                <Form.Item
+                  name="companyRegistrationNo"
+                  rules={[
+                    {
+                      whitespace: true,
+                      required: true,
+                      message: "please enter registration no",
+                    },
+                    {
+                      min: 3,
+                      message: "Registration length must be at least 3 characters long",
+                    },
+                  ]}
+                >
+                  <Input
+                    style={{ display: "none" }}
+                    value={regValues?.companyRegistrationNo}
+                  />
+                  <input
+                    className="form-control"
+                    onChange={(e) => {
+                      onHandleRegChange(
+                        "companyRegistrationNo",
+                        e.target.value
+                      );
+                    }}
+                  />
+                </Form.Item>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
+                  Phone Number <span className="text-danger">*</span>
+                </label>
+                <Form.Item
+                  name="companyPhoneNo"
+                  rules={[
+                    {
+                      whitespace: true,
+                      required: true,
+                      message: "please enter phone number",
+                    },
+                    {
+                      min: 5,
+                      message: "phone length must be at least 5 characters long",
+                    },
+                  ]}
+                >
+                  <Input style={{ display: "none" }} />
+                  <PhoneNoInput
+                    onChangePhone={(value) => {
+                      onHandleRegChange("companyPhoneNo", value);
+                    }}
+                    // onCountryChange={(val) => {
+                    //   onHandleChange("contactNo", `${val}`);
+                    // }}
+                    // phone={state ? formData.contactNo : postformData.contactNo}
+                  />
+                </Form.Item>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
+                  Mobile Number <span className="text-danger">*</span>
+                </label>
+                <Form.Item
+                  name="mobileNumber"
+                  rules={[
+                    {
+                      whitespace: true,
+                      required: true,
+                      message: "please enter mobile number",
+                    },
+                    {
+                      min: 5,
+                      message: "mobile length must be at least 5 characters long",
+                    },
+                  ]}
+                >
+                  <Input style={{ display: "none" }} />
+                  <PhoneNoInput
+                    onChangePhone={(value) => {
+                      onHandleRegChange("mobileNumber", value);
+                    }}
+                    // phone={state ? formData.contactNo : postformData.contactNo}
+                    // onChangePhone={(value) => {
+                    //   onHandleChange("contactNo", value)
+                    // }}
+                    // onCountryChange={(val) => {
+                    //   onHandleChange("contactNo", `${val}`);
+                    // }}
+                    // phone={state ? formData.contactNo : postformData.contactNo}
+                    // phoneError={phoneError}
+                  />
+                </Form.Item>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
+                  Website <span className="text-danger">*</span>
+                </label>
+                <Form.Item
+                  name="website"
+                  rules={[
+                    {
+                      whitespace: true,
+                      required: true,
+                      message: "please enter website",
+                    },
+                    {
+                      min: 3,
+                      message: "website length must be at least 3 characters long",
+                    },
+                  ]}
+                >
+                  <Input
+                    style={{ display: "none" }}
+                    value={regValues?.website}
+                  />
+                  <input
+                    className="form-control"
+                    onChange={(e) => {
+                      onHandleRegChange("website", e.target.value);
+                    }}
+                  />
+                </Form.Item>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
+                  Fax <span className="text-danger">*</span>
+                </label>
+                <Form.Item
+                  name="fax"
+                  rules={[
+                    {
+                      whitespace: true,
+                      required: true,
+                      message: "please enter fax",
+                    },
+                    {
+                      min: 5,
+                      message: "Fax length must be at least 5 characters long",
+                    },
+                  ]}
+                >
+                  <Input style={{ display: "none" }} value={regValues?.fax} />
+                  <input
+                    className="form-control"
+                    onChange={(e) => {
+                      onHandleRegChange("fax", e.target.value);
+                    }}
+                  />
+                </Form.Item>
+              </div>
+            </div>
+            <div
+              className="col-sm-12"
+            >
+              <div
+                className="form-group"
+                style={{ marginBottom: "6px", marginTop: "0px" }}
+              >
+                <Form.Item
+                  name="agreeTermsAndConditions"
+                  rules={[
+                    {
+                      whitespace: true,
+                      required: true,
+                      message:
+                        "To proceed, you need to agree with our terms and conditions",
+                    },
+                  ]}
+                >
+                  <div style={{ display: "flex", gap: "15px", height: "25px" }}>
+                    <Input
+                      style={{ display: "none" }}
+                      value={regValues?.agreeTermsAndConditions === "false" ? "" : "true"}
+                    />
+                    <input
+                      // required
+                      className="form-check-input customCheckbox"
+                      type="checkbox"
+                      value={
+                        regValues?.agreeTermsAndConditions === "false"
+                          ? "true"
+                          : regValues?.agreeTermsAndConditions === undefined
+                          ? "true"
+                          : ""
+                      }
+                      onChange={(e) => {
+                        onHandleRegChange("agreeTermsAndConditions", e.target.checked);
+                      }}
+                      id="flexCheckChecked"
+                      style={{ width: "23px", height: "23px" }}
+                    ></input>
+                    <p style={{ marginTop: "5px" }}>
+                      I agree to the term of services and privacy policy
+                    </p>
+                  </div>
+                </Form.Item>
+              </div>
+            </div>
+          </div>
+          {/* <div className="submit-section">
               <button className="btn btn-primary submit-btn">Submit</button>
             </div> */}
-            <div className="form-group text-center mt-2">                  
-              <button className="btn btn-primary account-btn" type="submit" onClick={(e) => {
-                  e.preventDefault();
-                  console.log('clicked2');
-                  next()
-                }}>Next</button>
-            </div> 
-          </form>  
-      },
-      {
-        title: 'Create Admin Account',
-        content: 
-        <form className='mt-5'>
-                   <div className="row">
-                     <div className="col-sm-6">
-                       <div className="form-group">
-                         <label className="col-form-label">Full Name <span className="text-danger">*</span></label>
-                         <input className="form-control" type="text" />
-                       </div>
-                     </div>
-                     <div className="col-sm-6">  
-                       <div className="form-group">
-                         <label className="col-form-label">Date Of Birth <span className="text-danger">*</span></label>
-                         <div><input className="form-control datetimepicker" type="date" /></div>
-                       </div>
-                     </div>
-                     <div className="col-sm-6">
-                       <div className="form-group d-grid">
-                         <label className="col-form-label">Gender <span className="text-danger">*</span></label>
-                         {/* <select className="form-control"
+          <div className="submit-section" style={{marginTop: '5px'}}>
+            {/* <button className="btn btn-primary submit-btn">Save</button> */}
+            <Form.Item>
+              <div className="form-group text-center">
+                {/* <button className="btn btn-primary account-btn" type="submit">Register</button> */}
+                <Button
+                  htmlType="submit"
+                  className="btn btn-primary account-btn"
+                  disabled={loader}
+                >
+                  {
+                    loader ? <Spin size="small" indicator={antIcon} />
+                      : 'Next'
+                  }
+                </Button>
+              </div>
+            </Form.Item>
+          </div>
+        </Form>
+      ),
+      // </form>
+    },
+    {
+      title: "Create Admin Account",
+      content: (
+        <Form
+          // {...layout}
+          form={form}
+          name="control-hooks"
+          onFinish={onAdminFinish}
+          onFinishFailed={(val) => {
+            message.error("Please Enter Required Fields!");
+          }}
+        >
+          <div className="row mt-5">
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
+                  Full Name <span className="text-danger">*</span>
+                </label>
+                <Form.Item
+                  name="fullName"
+                  rules={[
+                    {
+                      whitespace: true,
+                      required: true,
+                      message: "please enter full name",
+                    },
+                  ]}
+                >
+                  <Input
+                    style={{ display: "none" }}
+                    value={adminValues?.fullName}
+                  />
+                  <input
+                    className="form-control"
+                    onChange={(e) => {
+                      onHandleAdminChange("fullName", e.target.value);
+                    }}
+                  />
+                </Form.Item>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
+                  Date Of Birth <span className="text-danger">*</span>
+                </label>
+                <Form.Item
+                  name="dateOfBirth"
+                  rules={[
+                    {
+                      whitespace: true,
+                      required: true,
+                      message: "please enter date of birth",
+                    },
+                  ]}
+                  className="custom-border"
+                >
+                  <Input
+                    style={{ display: "none" }}
+                    value={adminValues?.dateOfBirth}
+                  />
+                  <DatePicker
+                    className="form-control"
+                    onChange={(date, datestring) => {
+                      onHandleAdminChange("dateOfBirth", datestring);
+                    }}
+                  />
+                </Form.Item>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
+                  Gender <span className="text-danger">*</span>
+                </label>
+                <Form.Item
+                  name="gender"
+                  rules={[
+                    {
+                      whitespace: true,
+                      required: true,
+                      message: "please select gender",
+                    },
+                  ]}
+                >
+                  <Input
+                    style={{ display: "none" }}
+                    value={adminValues?.gender}
+                  />
+                  <Select
+                    // value={adminValues?.gender}
+                    onChange={(val) => {
+                      onHandleAdminChange("gender", val.value);
+                    }}
+                    options={options}
+                    isSearchable={false}
+                    styles={customStyles}
+                    placeholder="Select"
+                  />
+                </Form.Item>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
+                  Phone Number <span className="text-danger">*</span>
+                </label>
+                <Form.Item
+                  name="phoneNo"
+                  rules={[
+                    {
+                      whitespace: true,
+                      required: true,
+                      message: "please enter phone number",
+                    },
+                    {
+                      type: "Number",
+                      message: "Please enter a valid Contact Number",
+                    },
+                  ]}
+                >
+                  <Input
+                    style={{ display: "none" }}
+                    value={adminValues?.phoneNo}
+                  />
+                  <PhoneNoInput
+                    onChangePhone={(value) => {
+                      onHandleAdminChange("phoneNo", value);
+                    }}
+                  />
+                </Form.Item>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
+                  Email Address <span className="text-danger">*</span>
+                </label>
+                <Form.Item
+                  name="email"
+                  rules={[
+                    {
+                      whitespace: true,
+                      required: true,
+                      message: "please enter email address",
+                    },
+                    {
+                      type: "email",
+                      message: "Please enter a valid email",
+                    },
+                  ]}
+                >
+                  <Input
+                    style={{ display: "none" }}
+                    value={adminValues?.email}
+                  />
+                  <input
+                    className="form-control"
+                    onChange={(e) => {
+                      onHandleAdminChange("email", e.target.value);
+                    }}
+                  />
+                </Form.Item>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
+                  Password <span className="text-danger">*</span>
+                </label>
+                <Form.Item
+                  name="password"
+                  rules={[
+                    {
+                      whitespace: true,
+                      required: true,
+                      message: "please enter password",
+                    },
+                    {
+                      min: 8,
+                      message: "Password length should be more than 8",
+                    },
+                  ]}
+                  className="strengthErrorStyle"
+                >
+                  <Input
+                    style={{ display: "none" }}
+                    value={adminValues?.password}
+                  />
+                  <>
+                    <div className="pass-group password-eye">
+                      <input
+                        type={eye ? "password" : "text"}
+                        className={`form-control passwordStyle`}
+                        onChange={(e) => {
+                          onHandleAdminChange("password", e.target.value);
+                        }}
+                      />
+                      <span
+                        onClick={onEyeClick}
+                        style={{ cursor: "pointer", top: "12px" }}
+                        className={`toggles-password fa toggle-password`}
+                      >
+                        {eye ? (
+                          <EyeInvisibleOutlined
+                            style={{ color: "#666666", fontSize: "20px" }}
+                          />
+                        ) : (
+                          <EyeOutlined
+                            style={{ color: "#666666", fontSize: "20px" }}
+                          />
+                        )}
+                      </span>
+                      {/* <span onClick={onEyeClick} style={{cursor: 'pointer'}} className={`toggles-password fa toggle-password ${eye ? "fa-light fa-eye-slash" : "fa-light fa-eye"} `} /> */}
+                    </div>
+                    {/* {adminValues?.password && ( */}
+                      <>
+                        <div className="strength-bar-back"></div>
+                        <div
+                          className="strength-bar-main"
                           style={{
-                            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23333333'%3E%3Cpath d='M10 14l6-6H4l6 6z'/%3E%3C/svg%3E")`, // Replace with the URL of your custom arrow icon or use a data URI
-                            backgroundRepeat: 'no-repeat',
-                            backgroundPosition: 'right center',
-                            backgroundSize: '35px 17px',
-                            appearance: 'none', // Remove default select arrow icon
-                            cursor: 'pointer',
+                            width: `${
+                              calculateStrength() > 100
+                                ? 100
+                                : calculateStrength()
+                            }%`,
+                            backgroundImage: `linear-gradient(to right, #F3C652 0%, #F3C652 94%, transparent 50%)`,
                           }}
-                         >
-                           <option value="male">Male</option>
-                           <option value='female'>Female</option>
-                         </select> */}
-                         {/* <Select
-                          value={selectedOption}
-                          // className='form-control'
-                          onChange={handleSelectChange}
-                          options={options}
-                          isSearchable={false}
-                          styles={{
-                            control: (provided) => ({
-                              ...provided,
-                              padding: '10px',
-                              // Add other custom styles for the control component
-                            }),
-                            option: (provided) => ({
-                              ...provided,
-                              // Add custom styles for the options
-                            }),
-                            singleValue: (provided) => ({
-                              ...provided,
-                              // Add custom styles for the selected value
-                              // padding: '70px',
-                            }),
-                          }}
-                        /> */}
-                        <Select
-                          value={selectedOption}
-                          onChange={handleSelectChange}
-                          options={options}
-                          isSearchable={false}
-                          styles={customStyles}
-                          placeholder="Select"
-                        />
-                       </div>
-                     </div>
-                     <div className="col-sm-6">
-                       <div className="form-group">
-                         <label className="col-form-label">Phone Number <span className="text-danger">*</span></label>
-                         <PhoneNoInput
-                          // onChangePhone={(value) => {
-                          //   onHandleChange("contactNo", value)
-                          // }}
-                          // onCountryChange={(val) => {
-                          //   onHandleChange("contactNo", `${val}`);
-                          // }}
-                          // phone={state ? formData.contactNo : postformData.contactNo}
-                        />
-                       </div>
-                     </div>
-                     <div className="col-sm-6">
-                       <div className="form-group">
-                         <label className="col-form-label">Email Address <span className="text-danger">*</span></label>
-                        <input className="form-control" type="email" />
-                       </div>
-                     </div>
-                     <div className="col-sm-6">
-                       <div className="form-group">
-                         <label className="col-form-label">Password <span className="text-danger">*</span></label>
-                         <div className="pass-group password-eye">
-                            <input
-                              type={eye ? "password" : "text"}
-                              className={`form-control passwordStyle ${passworderror ? 'is-invalid' : ''}`}
-                              onChange={(e) => onInputChange(e.target.value, 'password')}
-                              value={adminRegister?.password}
-                            />
-                            {/* <input type={eye ? "password" : "text"} className={`form-control  ${errors?.password ? "error-input" : ""}`} value={password} onChange={e => SetPassword(e.target.value)} autoComplete="false" /> */}
-                            <span onClick={onEyeClick} style={{cursor: 'pointer', top: '12px'}} className={`toggles-password fa toggle-password`}>
-                            {
-                              eye ? <EyeInvisibleOutlined style={{color: '#666666', fontSize: '20px'}} /> :
-                              <EyeOutlined style={{color: '#666666', fontSize: '20px'}} />
-                            }
-                            </span>
-                            {/* <span onClick={onEyeClick} style={{cursor: 'pointer'}} className={`toggles-password fa toggle-password ${eye ? "fa-light fa-eye-slash" : "fa-light fa-eye"} `} /> */}
-                          </div>
-                          <div className="strength-bar-back"></div>
-                          <div className="strength-bar-main" style={{ width: `${calculateStrength() > 100 ? 100 : calculateStrength()}%`, backgroundImage: `linear-gradient(to right, #F3C652 0%, #F3C652 94%, transparent 50%)` }}></div>
-                          {/* <div className="strength-bar" style={{ width: `${calculateStrength()}%`, backgroundImage: 'linear-gradient(to right, #F3C652 0%, #F3C652 94%, transparent 50%)' }}></div> */}
-                       </div>
-                     </div>
-
-                     <div className="col-sm-12">
-                       <div className="form-group d-flex gap-3" style={{marginBottom: '15px', marginTop: '-10px'}}>
-                         <input className="form-check-input customCheckbox" type="checkbox" value="agreement" id="flexCheckChecked" style={{width: '23px', height: '23px'}}></input>
-                         <p style={{marginTop: '5px'}}>I agree to the term of services and privacy policy</p>
-                       </div>
-                     </div>
-                     
-                   </div>
-                   {/* <div className="submit-section">
+                        ></div>
+                      </>
+                    {/* )} */}
+                  </>
+                </Form.Item>
+              </div>
+            </div>
+          </div>
+          {/* <div className="submit-section">
                      <button className="btn btn-primary submit-btn">Submit</button>
                    </div> */}
-                   <div className="form-group text-center">                  
-                      <button className="btn btn-primary account-btn" type="submit">Register</button>
-                    </div> 
-                 </form>
-      },
-    ];
-  
-    const [current, setCurrent] = useState(0);
-    const [successSection, setSuccessSection] = useState(false);
-    const next = () => {
-      setCurrent(current + 1);
-    };
-    const prev = () => {
-      setCurrent(current - 1);
-    };
-
-    const items = steps.map((item, index) => ({
-      key: item.title,
-      title: item.title,
-      description: item.content,
-      status: index === current ? 'process' : index < current ? 'finish' : 'wait',
-    }));
-
-      const { loading } = props;
-      return (
-            
-            <>
-              <Helmet>
-                  <title>Register - DaftarPro</title>
-                  <meta name="description" content="Login page"/>					
-            </Helmet> 
-        <div className="account-content">
-          {/* <Link to="/applyjob/joblist" className="btn btn-primary apply-btn">Apply Job</Link> */}
-          <div className="container">
-            {/* Account Logo */}
-            <div className="account-logo pt-3 pb-2">
-              <Link to="/"><img src={DaftarProLogo} alt="DaftarPro" /></Link>
-            </div>
-            {/* /Account Logo */}
+          <div className="form-group text-center" style={{marginTop: '5px'}}>
+            <button className="btn btn-primary account-btn" type="submit" disabled={loader}>
             {
-              !successSection ? 
-              <div className="account-box" style={{width: '100%',maxWidth: '850px', height: 'auto', paddingInline: '55px'}}>
-                <div className="account-wrapper">
-                  <h3 className="account-title" style={{padding: '17px 0px 40px 0px'}}>Register</h3>
-                  {/* <p className="account-subtitle">Access to our dashboard</p> */}
-                  {/* Account Form */}
-                  <div>
+              loader ? <Spin size="small" indicator={antIcon} />
+                : 'Register'
+            }
+            </button>
+          </div>
+        </Form>
+      ),
+    },
+  ];
 
-                  <Steps current={current} labelPlacement="vertical" size='small'> 
+  const items = steps.map((item, index) => ({
+    key: item.title,
+    title: item.title,
+    description: item.content,
+    status: index === current ? "process" : index < current ? "finish" : "wait",
+  }));
+
+  return (
+    <>
+      <Helmet>
+        <title>Register - DaftarPro</title>
+        <meta name="description" content="Login page" />
+      </Helmet>
+      <div className="account-content">
+        {/* <Link to="/applyjob/joblist" className="btn btn-primary apply-btn">Apply Job</Link> */}
+        <div className="container">
+          {/* Account Logo */}
+          <div className="account-logo pt-3 pb-2">
+            <Link to="/">
+              <img src={DaftarProLogo} alt="DaftarPro" />
+            </Link>
+          </div>
+          {/* /Account Logo */}
+          {!successSection ? (
+            <div
+              className="account-box"
+              style={{
+                width: "100%",
+                maxWidth: "850px",
+                height: "auto",
+                paddingInline: "55px",
+              }}
+            >
+              <div className="account-wrapper">
+                <h3
+                  className="account-title"
+                  style={{ padding: "17px 0px 40px 0px" }}
+                >
+                  {current === 0 ? "Company" : "Admin"} Register
+                </h3>
+                {/* <p className="account-subtitle">Access to our dashboard</p> */}
+                {/* Account Form */}
+                <div>
+                  <Steps
+                    current={current}
+                    labelPlacement="vertical"
+                    size="small"
+                  >
                     {items.map((step, index) => (
-                      <Steps.Step key={step.title} title={step.title} className={step.status === 'process' ? 'process-step' : ''} />
+                      <Steps.Step
+                        key={step.title}
+                        title={step.title}
+                        className={
+                          step.status === "process" ? "process-step" : ""
+                        }
+                      />
                     ))}
                   </Steps>
                   <div>{steps[current].content}</div>
 
-                  {/* <div
-                    style={{
-                      marginTop: 24,
-                    }}
-                  >
-                    {current < steps.length - 1 && (
-                      <Button type="primary" onClick={() => next()}>
-                        Next
-                      </Button>
-                    )}
-                    {current === steps.length - 1 && (
-                      <Button type="primary" onClick={() => message.success('Processing complete!')}>
-                        Done
-                      </Button>
-                    )}
-                    {current > 0 && (
-                      <Button
-                        style={{
-                          margin: '0 8px',
-                        }}
-                        onClick={() => prev()}
-                      >
-                        Previous
-                      </Button>
-                    )}
-                  </div> */}
-
-
-                  {/* <form onSubmit={handleSubmit(onSubmit)}>
-                      <div className="form-group">
-                        <label>Email</label>
-                        <Controller
-                            name="email"
-                            control={control}
-                            render={({ field: { value, onChange } }) => (
-                              <input   className={`form-control  ${errors?.email ? "error-input" : "" }`} type="text" value={value} onChange={onChange} autoComplete="false"  />
-
-                            )}
-                            defaultValue="admin@dreamguys.co.in"
-                            />
-                          
-                          <small>{errors?.email?.message}</small>
-                      </div>
-                      <div className="form-group">
-                        <label>Password</label>
-                        <Controller
-                        name="password"
-                        control={control}
-                        render={({ field: { value, onChange } }) => (
-                          <div className="pass-group">
-                            <input  type={eye ? "password" : "text"}  className={`form-control  ${errors?.password? "error-input" : "" }`}  value={value} onChange={onChange} autoComplete="false"  />
-                            <span onClick={onEyeClick} className={`fa toggle-password" ${eye ? "fa-eye-slash" : "fa-eye" }`}/>
-                          </div>
-                        )}
-                        defaultValue="123456"
-                        />
-                          
-                        <small>{errors?.password?.message}</small>                   
-                      </div>
-                      <div className="form-group">
-                        <label>Repeat Password</label>
-                        <Controller
-                          name="repeatPassword"
-                          control={control}
-                          render={({ field: { value, onChange } }) => (
-                            <input   className={`form-control  ${errors?.repeatPassword? "error-input" : "" }`} type="text" value={value} onChange={onChange} autoComplete="false"  />
-                          )}
-                          defaultValue=""
-                          />											
-                        <small>{errors?.repeatPassword?.message}</small>
-                      </div>
-                      <div className="form-group text-center">                  
-                        <button className="btn btn-primary account-btn" type="submit">Register</button>
-                      </div>                 
-                  </form>                   */}
                   <div className="account-footer">
-                    <p>Already have an account? <Link to="/login">Login</Link></p>
+                    <p>
+                      Already have an account? <Link to="/login">Login</Link>
+                    </p>
                   </div>
                 </div>
                 {/* /Account Form */}
               </div>
+            </div>
+          ) : (
+            <div
+              className="account-box"
+              style={{
+                width: "100%",
+                maxWidth: "630px",
+                height: "auto",
+                paddingInline: "20px",
+              }}
+            >
+              <div className="account-wrapper">
+                <h3
+                  className="account-title"
+                  style={{ padding: "30px 0px 20px 0px", fontSize: "32px", wordSpacing: "-9px" }}
+                >
+                  Congratulations!
+                </h3>
+                {/* <p className="account-subtitle">Enter your email to get a password reset link</p> */}
+                {/* Account Form */}
+                <div className="account-footer">
+                  <p
+                    style={{
+                      color: "#444444",
+                      fontSize: "18px",
+                      wordSpacing: "-4.5px",
+                    }}
+                  >
+                    Your Company Registered Successfully. Admin Account Created.
+                  </p>
+                  <p
+                    style={{
+                      color: "#6F6F6F",
+                      fontSize: "18px",
+                      wordSpacing: "-4.5px",
+                    }}
+                  >
+                    Confirm your email address. We have sent a verification{" "}
+                    <br />
+                    email to
+                  </p>
+                  <p style={{ fontWeight: "700", fontSize: "18px" }}>
+                    {adminValues?.email}
+                  </p>
+                  <p
+                    style={{
+                      color: "#0097C7",
+                      fontSize: "18px",
+                      wordSpacing: "-4.5px",
+                    }}
+                  >
+                    Not your email address?
+                  </p>
+                  {/* <p style={{fontSize: '18px'}}>Please <a onClick={() => {setEmailNotVerified(false); setLoginValues({})}} style={{color: '#0097C7'}}>Click-Here</a> to Login again with the correct email address.</p> */}
+                  <p
+                    style={{
+                      color: "#6F6F6F",
+                      fontSize: "18px",
+                      wordSpacing: "-4.5px",
+                    }}
+                  >
+                    Make sure to check your inbox and your spam folder if you
+                    can't find the email.
+                  </p>
+                  <p
+                    style={{
+                      color: "#6F6F6F ",
+                      fontSize: "18px",
+                      wordSpacing: "-4.5px",
+                    }}
+                  >
+                    Still not Received?{" "}
+                    <a style={{ color: "#0097C7" }}>Contact Us</a>
+                  </p>
+                </div>
+                {/* /Account Form */}
               </div>
-              : 
-              <div className="account-box" style={{width: '100%', maxWidth: '630px', height: '505px', paddingInline: '20px'}}>
-                  <div className="account-wrapper">
-                    <h3 className="account-title" style={{padding: '30px 0px 20px 0px', fontSize: '32px'}}>Congratulations!</h3>
-                    {/* <p className="account-subtitle">Enter your email to get a password reset link</p> */}
-                    {/* Account Form */}
-                      <div className="account-footer">
-                        <p style={{color: '#444444', fontSize: '18px'}}>Your Company Registered Successfully. Admin Account Created.</p>
-                        <p style={{color: '#6F6F6F', fontSize: '18px'}}>Confirm your email address. we have sent a verification email to</p>
-                        <p style={{fontWeight: '700', fontSize: '18px'}}>demo@gmail.com</p>
-                        <p style={{color: '#0097C7', fontSize: '18px'}}>Not your email address?</p>
-                        {/* <p style={{fontSize: '18px'}}>Please <a onClick={() => {setEmailNotVerified(false); setLoginValues({})}} style={{color: '#0097C7'}}>Click-Here</a> to Login again with the correct email address.</p> */}
-                        <p style={{color: '#6F6F6F', fontSize: '18px'}}>Make sure to check your inbox and your spam folder if you can't find the email.</p>
-                        <p style={{color: '#6F6F6F ', fontSize: '18px'}}>Still not Received? <a style={{color: '#0097C7'}}>Contact Us</a></p>
-                      </div>
-                    {/* /Account Form */}
-                  </div>
-              </div>
-              // <div className="account-box" style={{width: '100%',maxWidth: '560px', height: 'auto', paddingInline: '55px'}}>
-              //     <div className="account-wrapper">
-              //       <div style={{display: 'grid', justifyItems: 'center'}}>
-              //         <img style={{padding: '17px 0px 30px 0px'}} src={SuccessIcon} alt="Success" />
-              //         <h3 className="account-title" style={{padding: '0px 0px 15px 0px'}}>Congratulations!</h3>
-              //         <div className="account-footer">
-              //           <p style={{color: '#444444', padding: '0px 0px 20px 0px'}}>Your Company Registered Successfully. Admin Account Created.</p>
-              //         </div>
-
-              //       </div>
-
-
-              //       <div className="form-group text-center">
-              //         <Link to='/login'><span className="account-btn" style={{color: 'white'}}>Login Now</span></Link>
-              //       </div>  
-              //   </div>
-              // </div>
-            }
-
+            </div>
+          )}
         </div>
       </div>
     </>
-      );
-   }
-
-
+  );
+};
 
 export default Registrationpage;
