@@ -1,39 +1,177 @@
-import { Table, Button, Form, Input, message } from "antd";
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Table, Button, Form, Input, message, Empty, Spin } from "antd";
+import React, { useState, useEffect } from "react";
 import { itemRender, onShowSizeChange } from "../../paginationfunction";
 import "antd/dist/antd.css";
 import "../../antdstyle.css";
 import Modal from "@mui/material/Modal";
-import Box from "@mui/material/Box";
+import { apiServices } from "../../../Services/apiServices";
+import { useSelector } from "react-redux";
 // import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
+import EmptyTable from "../../../files/Icons/EmptyTable.svg";
+import { LoadingOutlined } from '@ant-design/icons';
 
 const Designation = () => {
+  const user_state = useSelector((state) => state.user.loginvalue);
+
   const [form] = Form.useForm();
 
-  const [designationValue, setDesignationValue] = useState('');
   const [open, setOpen] = useState({
     isAddOpen: false,
     isDelOpen: false,
     data: "",
   });
+  const [data, setData] = useState([]);
+  const [tableLoader, setTableLoader] = useState(false);
+  const [pageSize, setPageSize] = useState(20);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [loader, setLoader] = useState(false)
+  
 
-  const [datas, setData] = useState([
-    { id: 1, designationName: "CEO"},
-    { id: 2, designationName: "Director"},
-    { id: 3, designationName: "Web Developer"},
-  ]);
+  useEffect(() => {
+    getDesignation();
+  }, []);
+
+  const getDesignation = () => {
+    setTableLoader(true);
+    apiServices("GET", "designation", null, user_state)
+      .then((res) => {
+        // console.log(res?.data);
+        if (res?.data?.success === true) {
+          setData(res?.data?.Designation);
+          setTableLoader(false);
+        }
+      })
+      .catch((err) => {
+        setTableLoader(false);
+        // console.log(err);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Get Designation Info"
+          } Error`
+        );
+      });
+  };
 
   const handleClose = () => {
     setOpen({ isAddOpen: false, isDelOpen: false, data: "" });
-    setDesignationValue('');
     form.resetFields();
+  };
+
+  const onHandleDelete = (id) => {
+    setLoader(true)
+    apiServices("DELETE", "designation", id, user_state)
+      .then((res) => {
+        // console.log(res?.data);
+        if (res?.data?.success === true) {
+          // console.log(data);
+          setData([...data.filter((designation) => designation._id !== id)]);
+          handleClose();
+          message.success("Designation Deleted Successfully!");
+          setLoader(false)
+        }
+      })
+      .catch((err) => {
+        setLoader(false)
+        // console.log(err);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Delete Designation"
+          } Error`
+        );
+      });
+  };
+
+  const onFinish = (values, info) => {
+    setLoader(true)
+    if (info) {
+      let updated_data = {
+        ...values,
+        companyId: info?.companyId,
+        _id: info?._id,
+      };
+      apiServices("PUT", "designation", updated_data, user_state)
+        .then((res) => {
+          // console.log(res?.data);
+          if (res?.data?.success === true) {
+            // console.log(data);
+            setData(
+              data.map((designation) => {
+                if (designation._id === info._id) {
+                  return {
+                    ...designation,
+                    designationName: values?.designationName,
+                  };
+                } else {
+                  return {
+                    ...designation,
+                  };
+                }
+              })
+            );
+            handleClose();
+            message.success("Designation Updated Successfully!");
+            setLoader(false)
+          }
+        })
+        .catch((err) => {
+          setLoader(false)
+          // console.log(err);
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : "Update Designation Info"
+            } Error`
+          );
+        });
+    } else {
+      apiServices("POST", "designation", values, user_state)
+        .then((res) => {
+          // console.log(res?.data);
+          if (res?.data?.success === true) {
+            // console.log(data);
+            setData([
+              ...data,
+              {
+                ...values,
+                _id: res?.data?.Designation?._id,
+              },
+            ]);
+            handleClose();
+            message.success("Designation Added Successfully!");
+            setLoader(false)
+          }
+        })
+        .catch((err) => {
+          setLoader(false)
+          // console.log(err);
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : "Add Designation Info"
+            } Error`
+          );
+        });
+    }
   };
 
   const columns = [
     {
       title: "#",
-      dataIndex: '',
+      dataIndex: "",
       width: 50,
       render: (text, record, index) => index + 1,
     },
@@ -58,30 +196,26 @@ const Designation = () => {
             <a
               className="dropdown-item"
               href="javascript:void(0)"
-              onClick={() =>
-                {
-                  setOpen({
+              onClick={() => {
+                setOpen({
                   isAddOpen: true,
                   isDelOpen: false,
                   data: record,
-                })
-                }
-              }
+                });
+              }}
             >
               <i className="fa fa-pencil m-r-5" /> Edit
             </a>
             <a
               className="dropdown-item"
               href="javascript:void(0)"
-              onClick={() =>
-                {
-                  setOpen({
+              onClick={() => {
+                setOpen({
                   isAddOpen: false,
                   isDelOpen: true,
                   data: record,
-                })
-                }
-              }
+                });
+              }}
             >
               <i className="fa fa-trash-o m-r-5" /> Delete
             </a>
@@ -91,30 +225,53 @@ const Designation = () => {
     },
   ];
 
-  const style = {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    width: 500,
-    height: 328,
-    bgcolor: "#fff",
-    borderRadius: "10px",
-    boxShadow: 24,
-    paddingTop: 5,
-  };
+  const customEmptyText = (
+    <Empty
+      image={<img src={EmptyTable} />}
+      // image={<InboxOutlined />}
+      imageStyle={
+        {
+          // fontSize: 48,
+          // color: '#1890ff',
+        }
+      }
+      style={{
+        height: "300px",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+      }}
+      description={
+        <div style={{ display: "" }}>
+          <div
+            style={{
+              color: "#34343F",
+              fontWeight: "500",
+              fontSize: "14px",
+              margin: "7px 0px 4px 0px",
+            }}
+          >
+            No designation added yet
+          </div>
+          <div
+            style={{ color: "#464665", fontWeight: "300", fontSize: "13px" }}
+          >
+            Click 'Add Designation' Button To Create <br /> A New Designation{" "}
+          </div>
+        </div>
+      }
+    />
+  );
 
-  const onFinish = (values, data) => {
-    if(data){
-      console.log('submit',values);
-      handleClose();
-      message.success('Designation Updated Successfully')
-    }else{
-      console.log('submit',values);
-      handleClose();
-      message.success('Designation Added Successfully')
-    }
-  };
+  const antIcon = (
+    <LoadingOutlined
+      style={{
+        fontSize: 24,
+        color: '#fff'
+      }}
+      spin
+    />
+  );
 
   return (
     <div>
@@ -150,21 +307,28 @@ const Designation = () => {
           <div className="col-md-12">
             <div className="table-responsive">
               <Table
-                className="table-striped"
+                loading={tableLoader}
+                className={data?.length > 0 ? "table-striped" : ""}
+                locale={{
+                  emptyText: tableLoader ? null : customEmptyText,
+                }}
                 pagination={{
-                  total: datas.length,
+                  total: data?.length,
+                  pageSize: pageSize,
+                  defaultCurrent: 1,
                   // pageSize: 1,
                   // hideOnSinglePage: true,
                   showTotal: (total, range) =>
                     `Showing ${range[0]} to ${range[1]} of ${total} entries`,
                   showSizeChanger: true,
-                  onShowSizeChange: onShowSizeChange,
+                  onShowSizeChange: (current, size) => { setPageSize(size); setCurrentPage(1) },
+                  pageSizeOptions: ['20', '30', '40', '50'],
                   itemRender: itemRender,
                 }}
                 style={{ overflowX: "auto" }}
                 columns={columns}
                 bordered
-                dataSource={datas}
+                dataSource={data}
                 rowKey={(record) => record.id}
                 // onChange={this.handleTableChange}
               />
@@ -173,43 +337,8 @@ const Designation = () => {
         </div>
       </div>
       {/* /Page Content */}
-      {/* Delete Leavetype Modal */}
-      <div
-        className="modal custom-modal fade"
-        id="delete_leavetype"
-        role="dialog"
-      >
-        <div className="modal-dialog modal-dialog-centered">
-          <div className="modal-content">
-            <div className="modal-body">
-              <div className="form-header">
-                <h3>Delete Leave Type</h3>
-                <p>Are you sure want to delete?</p>
-              </div>
-              <div className="modal-btn delete-action">
-                <div className="row">
-                  <div className="col-6">
-                    <a href="javascript:void(0)" className="btn btn-primary continue-btn">
-                      Delete
-                    </a>
-                  </div>
-                  <div className="col-6">
-                    <a
-                      href="javascript:void(0)"
-                      onClick={handleClose}
-                      className="btn btn-primary cancel-btn"
-                    >
-                      Cancel
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      {/* /Delete Leavetype Modal */}
 
+      {/* ----- Add Modal ----- */}
       <Modal
         open={open.isAddOpen}
         onClose={handleClose}
@@ -224,7 +353,9 @@ const Designation = () => {
         <div className="modal-dialog modal-dialog-centered" role="document">
           <div className="modal-content">
             <div className="modal-header">
-              <h5 className="modal-title">{open?.data ? 'Update' : 'Add'} Designation Name</h5>
+              <h5 className="modal-title">
+                {open?.data ? "Update" : "Add"} Designation Name
+              </h5>
               <button type="button" className="close" onClick={handleClose}>
                 <span aria-hidden="true">×</span>
               </button>
@@ -234,9 +365,13 @@ const Designation = () => {
                 // form={form}
                 name="control-hooks"
                 onFinish={(val) => onFinish(val, open?.data)}
-                onFinishFailed={() => message.error('Please Fill Required Fields!')}
+                onFinishFailed={() =>
+                  message.error("Please Fill Required Fields!")
+                }
                 initialValues={{
-                  designationName: open?.data ? open?.data?.designationName : ''
+                  designationName: open?.data
+                    ? open?.data?.designationName
+                    : "",
                 }}
               >
                 <div className="form-group">
@@ -262,8 +397,12 @@ const Designation = () => {
                     <Button
                       htmlType="submit"
                       className="btn btn-primary submit-btn"
+                      disabled={loader}
                     >
-                      Submit
+                      {
+                        loader ? <Spin size="small" indicator={antIcon} />
+                          : 'Submit'
+                      }
                     </Button>
                   </Form.Item>
                 </div>
@@ -273,8 +412,8 @@ const Designation = () => {
         </div>
       </Modal>
 
-            {/* delete modall */}
-            <Modal
+      {/* delete modall */}
+      <Modal
         open={open.isDelOpen}
         onClose={handleClose}
         aria-labelledby="modal-modal-title"
@@ -285,27 +424,46 @@ const Designation = () => {
         }}
       >
         <div className="modal-dialog modal-dialog-centered">
-          <div className="modal-content" style={{height: '280px'}}>
-            <div className="modal-body" style={{display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
+          <div className="modal-content" style={{ height: "280px" }}>
+            <div
+              className="modal-body"
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+              }}
+            >
               <div className="form-header">
-                <h3 style={{marginBottom: '30px'}}>Delete Designation</h3>
-                <p>Are you sure you want to delete <b>{open?.data?.designationName}</b>?</p>
+                <h3 style={{ marginBottom: "30px" }}>Delete Designation</h3>
+                <p>
+                  Are you sure you want to delete{" "}
+                  <b>{open?.data?.designationName}</b>?
+                </p>
               </div>
               <div className="modal-btn delete-action">
                 <div className="row">
                   <div className="col-6">
-                    <a href="javascript:void(0)" className="btn btn-primary continue-btn">
-                      Delete
-                    </a>
+                    <Button
+                      htmlType="submit"
+                      className="btn btn-primary continue-btn"
+                      onClick={() => onHandleDelete(open?.data?._id)}
+                      disabled={loader}
+                      style={{width: '100%'}}
+                    >
+                      {
+                        loader ? <Spin size="small" indicator={antIcon} />
+                          : 'Delete'
+                      }
+                    </Button>
                   </div>
                   <div className="col-6">
-                    <a
-                      href="javascript:void(0)"
+                    <Button
                       onClick={handleClose}
                       className="btn btn-primary submit-btn"
+                      style={{width: '100%'}}
                     >
                       Cancel
-                    </a>
+                    </Button>
                   </div>
                 </div>
               </div>

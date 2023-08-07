@@ -7139,6 +7139,11 @@ textarea.form-control {
 }
 
 /* ................. custom css styling ................ */
+
+/* antd empty table border */
+.ant-table-content > table {
+  border-right: 1px solid #f0f0f0;
+}
 .strengthErrorStyle .ant-form-item-explain-error{
   margin-top: -9px !important;
 } 
