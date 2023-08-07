@@ -1,45 +1,182 @@
-import { Table, Button, Form, Input, message } from "antd";
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Table, Button, Form, Input, message, Empty, Spin } from "antd";
+import React, { useEffect, useState } from "react";
 import { itemRender, onShowSizeChange } from "../../paginationfunction";
 import "antd/dist/antd.css";
 import "../../antdstyle.css";
 import Modal from "@mui/material/Modal";
-import Box from "@mui/material/Box";
 // import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
+import EmptyTable from "../../../files/Icons/EmptyTable.svg";
+import { apiServices } from "../../../Services/apiServices";
+import { useSelector } from "react-redux";
+import { LoadingOutlined } from "@ant-design/icons";
 
 const Departments = () => {
+  const user_state = useSelector((state) => state.user.loginvalue);
+
   const [form] = Form.useForm();
 
-  const [departmentValue, setDepartmentValue] = useState('');
   const [open, setOpen] = useState({
     isAddOpen: false,
     isDelOpen: false,
     data: "",
   });
+  const [tableLoader, setTableLoader] = useState(false);
+  const [loader, setLoader] = useState(false);
+  const [data, setData] = useState([]);
+  const [pageSize, setPageSize] = useState(20);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const [datas, setData] = useState([
-    { id: 1, departmentName: "HR"},
-    { id: 2, departmentName: "BI"},
-    { id: 3, departmentName: "Web"},
-  ]);
+  useEffect(() => {
+    getDepartment();
+  }, []);
+
+  const getDepartment = () => {
+    setTableLoader(true);
+    apiServices("GET", "team/view-team", null, user_state)
+      .then((res) => {
+        // console.log(res?.data);
+        if (res?.data?.success === true) {
+          setData(res?.data?.Team);
+          setTableLoader(false);
+        }
+      })
+      .catch((err) => {
+        setTableLoader(false);
+        // console.log(err);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Get Department Info"
+          } Error`
+        );
+      });
+  };
 
   const handleClose = () => {
     setOpen({ isAddOpen: false, isDelOpen: false, data: "" });
-    setDepartmentValue('');
     form.resetFields();
+  };
+
+  const onHandleDelete = (id) => {
+    setLoader(true);
+    apiServices("DELETE", "team/delete-team", id, user_state)
+      .then((res) => {
+        // console.log(res?.data);
+        if (res?.data?.success === true) {
+          // console.log(data);
+          setData([...data.filter((departemnt) => departemnt._id !== id)]);
+          handleClose();
+          message.success("Department Deleted Successfully!");
+          setLoader(false);
+        }
+      })
+      .catch((err) => {
+        setLoader(false);
+        // console.log(err);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Delete Department"
+          } Error`
+        );
+      });
+  };
+
+  const onFinish = (values, info) => {
+    setLoader(true);
+    if (info) {
+      let updated_data = {
+        ...values,
+        companyId: info?.companyId,
+        _id: info?._id,
+      };
+      apiServices("PUT", "team/update-team", updated_data, user_state)
+        .then((res) => {
+          // console.log(res?.data);
+          if (res?.data?.success === true) {
+            // console.log(data);
+            setData(
+              data.map((department) => {
+                if (department._id === info._id) {
+                  return {
+                    ...department,
+                    teamName: values?.teamName,
+                  };
+                } else {
+                  return {
+                    ...department,
+                  };
+                }
+              })
+            );
+            handleClose();
+            message.success("Department Updated Successfully!");
+            setLoader(false);
+          }
+        })
+        .catch((err) => {
+          setLoader(false);
+          // console.log(err);
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : "Update Department Info"
+            } Error`
+          );
+        });
+    } else {
+      apiServices("POST", "team/add-team", values, user_state)
+        .then((res) => {
+          // console.log(res?.data);
+          if (res?.data?.success === true) {
+            // console.log(data);
+            setData([
+              ...data,
+              {
+                ...values,
+                _id: res?.data?.Team?._id,
+              },
+            ]);
+            handleClose();
+            message.success("Department Added Successfully!");
+            setLoader(false);
+          }
+        })
+        .catch((err) => {
+          setLoader(false);
+          // console.log(err);
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : "Add Department Info"
+            } Error`
+          );
+        });
+    }
   };
 
   const columns = [
     {
       title: "#",
-      dataIndex: '',
+      dataIndex: "",
       width: 50,
       render: (text, record, index) => index + 1,
     },
     {
       title: "Department Name",
-      dataIndex: "departmentName",
+      dataIndex: "teamName",
       // sorter: (a, b) => a.departmentName.length - b.departmentName.length,
     },
     {
@@ -58,30 +195,26 @@ const Departments = () => {
             <a
               className="dropdown-item"
               href="javascript:void(0)"
-              onClick={() =>
-                {
-                  setOpen({
+              onClick={() => {
+                setOpen({
                   isAddOpen: true,
                   isDelOpen: false,
                   data: record,
-                })
-                }
-              }
+                });
+              }}
             >
               <i className="fa fa-pencil m-r-5" /> Edit
             </a>
             <a
               className="dropdown-item"
               href="javascript:void(0)"
-              onClick={() =>
-                {
-                  setOpen({
+              onClick={() => {
+                setOpen({
                   isAddOpen: false,
                   isDelOpen: true,
                   data: record,
-                })
-                }
-              }
+                });
+              }}
             >
               <i className="fa fa-trash-o m-r-5" /> Delete
             </a>
@@ -91,30 +224,53 @@ const Departments = () => {
     },
   ];
 
-  const style = {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    width: 500,
-    height: 328,
-    bgcolor: "#fff",
-    borderRadius: "10px",
-    boxShadow: 24,
-    paddingTop: 5,
-  };
+  const customEmptyText = (
+    <Empty
+      image={<img src={EmptyTable} />}
+      // image={<InboxOutlined />}
+      imageStyle={
+        {
+          // fontSize: 48,
+          // color: '#1890ff',
+        }
+      }
+      style={{
+        height: "300px",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+      }}
+      description={
+        <div style={{ display: "" }}>
+          <div
+            style={{
+              color: "#34343F",
+              fontWeight: "500",
+              fontSize: "14px",
+              margin: "7px 0px 4px 0px",
+            }}
+          >
+            No department added yet
+          </div>
+          <div
+            style={{ color: "#464665", fontWeight: "300", fontSize: "13px" }}
+          >
+            Click 'Add Department' Button To Create <br /> A New Department{" "}
+          </div>
+        </div>
+      }
+    />
+  );
 
-  const onFinish = (values, data) => {
-    if(data){
-      console.log('submit',values);
-      handleClose();
-      message.success('Department Updated Successfully')
-    }else{
-      console.log('submit',values);
-      handleClose();
-      message.success('Department Added Successfully')
-    }
-  };
+  const antIcon = (
+    <LoadingOutlined
+      style={{
+        fontSize: 24,
+        color: "#fff",
+      }}
+      spin
+    />
+  );
 
   return (
     <div>
@@ -150,21 +306,31 @@ const Departments = () => {
           <div className="col-md-12">
             <div className="table-responsive">
               <Table
-                className="table-striped"
+                loading={tableLoader}
+                className={data?.length > 0 ? "table-striped" : ""}
+                locale={{
+                  emptyText: tableLoader ? null : customEmptyText,
+                }}
                 pagination={{
-                  total: datas.length,
+                  total: data?.length,
+                  pageSize: pageSize,
+                  defaultCurrent: 1,
                   // pageSize: 1,
                   // hideOnSinglePage: true,
                   showTotal: (total, range) =>
                     `Showing ${range[0]} to ${range[1]} of ${total} entries`,
                   showSizeChanger: true,
-                  onShowSizeChange: onShowSizeChange,
+                  onShowSizeChange: (current, size) => {
+                    setPageSize(size);
+                    setCurrentPage(1);
+                  },
+                  pageSizeOptions: ["20", "30", "40", "50"],
                   itemRender: itemRender,
                 }}
                 style={{ overflowX: "auto" }}
                 columns={columns}
                 bordered
-                dataSource={datas}
+                dataSource={data}
                 rowKey={(record) => record.id}
                 // onChange={this.handleTableChange}
               />
@@ -173,42 +339,6 @@ const Departments = () => {
         </div>
       </div>
       {/* /Page Content */}
-      {/* Delete Leavetype Modal */}
-      <div
-        className="modal custom-modal fade"
-        id="delete_leavetype"
-        role="dialog"
-      >
-        <div className="modal-dialog modal-dialog-centered">
-          <div className="modal-content">
-            <div className="modal-body">
-              <div className="form-header">
-                <h3>Delete Leave Type</h3>
-                <p>Are you sure want to delete?</p>
-              </div>
-              <div className="modal-btn delete-action">
-                <div className="row">
-                  <div className="col-6">
-                    <a href="javascript:void(0)" className="btn btn-primary continue-btn">
-                      Delete
-                    </a>
-                  </div>
-                  <div className="col-6">
-                    <a
-                      href="javascript:void(0)"
-                      onClick={handleClose}
-                      className="btn btn-primary cancel-btn"
-                    >
-                      Cancel
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      {/* /Delete Leavetype Modal */}
 
       <Modal
         open={open.isAddOpen}
@@ -224,7 +354,9 @@ const Departments = () => {
         <div className="modal-dialog modal-dialog-centered" role="document">
           <div className="modal-content">
             <div className="modal-header">
-              <h5 className="modal-title">{open?.data ? 'Update' : 'Add'} Department Name</h5>
+              <h5 className="modal-title">
+                {open?.data ? "Update" : "Add"} Department Name
+              </h5>
               <button type="button" className="close" onClick={handleClose}>
                 <span aria-hidden="true">×</span>
               </button>
@@ -234,9 +366,11 @@ const Departments = () => {
                 // form={form}
                 name="control-hooks"
                 onFinish={(val) => onFinish(val, open?.data)}
-                onFinishFailed={() => message.error('Please Fill Required Fields!')}
+                onFinishFailed={() =>
+                  message.error("Please Fill Required Fields!")
+                }
                 initialValues={{
-                  departmentName: open?.data ? open?.data?.departmentName : ''
+                  teamName: open?.data ? open?.data?.teamName : "",
                 }}
               >
                 <div className="form-group">
@@ -244,7 +378,7 @@ const Departments = () => {
                     Department Name <span className="text-danger">*</span>
                   </label>
                   <Form.Item
-                    name="departmentName"
+                    name="teamName"
                     rules={[
                       {
                         required: true,
@@ -261,8 +395,13 @@ const Departments = () => {
                     <Button
                       htmlType="submit"
                       className="btn btn-primary submit-btn"
+                      disabled={loader}
                     >
-                      Submit
+                      {loader ? (
+                        <Spin size="small" indicator={antIcon} />
+                      ) : (
+                        "Submit"
+                      )}
                     </Button>
                   </Form.Item>
                 </div>
@@ -272,8 +411,8 @@ const Departments = () => {
         </div>
       </Modal>
 
-            {/* delete modall */}
-            <Modal
+      {/* delete modall */}
+      <Modal
         open={open.isDelOpen}
         onClose={handleClose}
         aria-labelledby="modal-modal-title"
@@ -284,27 +423,47 @@ const Departments = () => {
         }}
       >
         <div className="modal-dialog modal-dialog-centered">
-          <div className="modal-content" style={{height: '280px'}}>
-            <div className="modal-body" style={{display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
+          <div className="modal-content" style={{ height: "280px" }}>
+            <div
+              className="modal-body"
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+              }}
+            >
               <div className="form-header">
-                <h3 style={{marginBottom: '30px'}}>Delete Department</h3>
-                <p>Are you sure you want to delete <b>{open?.data?.departmentName}</b>?</p>
+                <h3 style={{ marginBottom: "30px" }}>Delete Department</h3>
+                <p>
+                  Are you sure you want to delete{" "}
+                  <b>{open?.data?.departmentName}</b>?
+                </p>
               </div>
               <div className="modal-btn delete-action">
                 <div className="row">
                   <div className="col-6">
-                    <a href="" className="btn btn-primary continue-btn">
-                      Delete
-                    </a>
+                    <Button
+                      htmlType="submit"
+                      className="btn btn-primary continue-btn"
+                      onClick={() => onHandleDelete(open?.data?._id)}
+                      disabled={loader}
+                      style={{ width: "100%" }}
+                    >
+                      {loader ? (
+                        <Spin size="small" indicator={antIcon} />
+                      ) : (
+                        "Delete"
+                      )}
+                    </Button>
                   </div>
                   <div className="col-6">
-                    <a
-                      href=""
-                      data-bs-dismiss="modal"
+                    <Button
+                      onClick={handleClose}
                       className="btn btn-primary submit-btn"
+                      style={{ width: "100%" }}
                     >
                       Cancel
-                    </a>
+                    </Button>
                   </div>
                 </div>
               </div>
