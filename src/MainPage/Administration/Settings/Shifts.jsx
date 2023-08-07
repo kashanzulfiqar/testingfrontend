@@ -107,7 +107,7 @@ const Shifts = () => {
         maxStartTime: values?.maxStartTime.format("HH:mm:ss"),
         startTime: values?.startTime.format("HH:mm:ss"),
         endTime: values?.endTime.format("HH:mm:ss"),
-        isActive: values?.isActive,
+        // isActive: values?.isActive,
       };
       let updated_data = {
         ...input_values,
@@ -157,7 +157,7 @@ const Shifts = () => {
         maxStartTime: values?.maxStartTime.format("HH:mm:ss"),
         startTime: values?.startTime.format("HH:mm:ss"),
         endTime: values?.endTime.format("HH:mm:ss"),
-        isActive: values?.isActive,
+        // isActive: values?.isActive,
       };
       apiServices("POST", "shift", data_formatted, user_state)
         .then((res) => {
@@ -218,28 +218,28 @@ const Shifts = () => {
       dataIndex: "endTime",
       // sorter: (a, b) => a.endTime.length - b.endTime.length,
     },
-    {
-      title: "Status",
-      dataIndex: "isActive",
-      width: 100,
-      render: (record, row) => (
-        <>
-          <span
-            className="btn btn-white btn-sm btn-rounded"
-            style={{ textTransform: "capitalize" }}
-          >
-            <i
-              className={`fa ${
-                record
-                  ? "fa-dot-circle-o text-success"
-                  : "fa-dot-circle-o text-danger"
-              }`}
-            />{" "}
-            {record ? "Active" : "In-Active"}
-          </span>
-        </>
-      ),
-    },
+    // {
+    //   title: "Status",
+    //   dataIndex: "isActive",
+    //   width: 100,
+    //   render: (record, row) => (
+    //     <>
+    //       <span
+    //         className="btn btn-white btn-sm btn-rounded"
+    //         style={{ textTransform: "capitalize" }}
+    //       >
+    //         <i
+    //           className={`fa ${
+    //             record
+    //               ? "fa-dot-circle-o text-success"
+    //               : "fa-dot-circle-o text-danger"
+    //           }`}
+    //         />{" "}
+    //         {record ? "Active" : "In-Active"}
+    //       </span>
+    //     </>
+    //   ),
+    // },
     {
       title: "Actions",
       render: (record, row) => (
@@ -444,7 +444,7 @@ const Shifts = () => {
                   endTime: open?.data
                     ? moment(open?.data?.endTime, timeFormat)
                     : "",
-                  isActive: open?.data ? open?.data?.isActive : "",
+                  // isActive: open?.data ? open?.data?.isActive : "",
                 }}
               >
                 <div className="row">
@@ -536,7 +536,7 @@ const Shifts = () => {
                       </Form.Item>
                     </div>
                   </div>
-                  <div className="col-12">
+                  {/* <div className="col-12">
                     <div className="form-group">
                       <label>
                         Status <span className="text-danger">*</span>
@@ -565,7 +565,7 @@ const Shifts = () => {
                         />
                       </Form.Item>
                     </div>
-                  </div>
+                  </div> */}
                   <div className="submit-section">
                     <Form.Item>
                       <Button
