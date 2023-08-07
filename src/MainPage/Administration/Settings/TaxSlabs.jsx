@@ -1,13 +1,27 @@
-import { Table, Button, Form, Input, message, TimePicker, Select } from "antd";
-import React, { useState } from "react";
+import {
+  Table,
+  Button,
+  Form,
+  Input,
+  message,
+  Empty,
+  TimePicker,
+  Select,
+  Spin,
+} from "antd";
+import React, { useEffect, useState } from "react";
 import { itemRender, onShowSizeChange } from "../../paginationfunction";
 import "antd/dist/antd.css";
 import "../../antdstyle.css";
 import Modal from "@mui/material/Modal";
-import moment from "moment";
-
+import { useSelector } from "react-redux";
+import { apiServices } from "../../../Services/apiServices";
+import EmptyTable from "../../../files/Icons/EmptyTable.svg";
+import { LoadingOutlined } from "@ant-design/icons";
 
 const TaxSlabs = () => {
+  const user_state = useSelector((state) => state.user.loginvalue);
+  let comp_id = user_state?.user?.companyId
 
   const { Option } = Select;
 
@@ -16,26 +30,162 @@ const TaxSlabs = () => {
     isDelOpen: false,
     data: "",
   });
+  const [tableLoader, setTableLoader] = useState(false);
+  const [pageSize, setPageSize] = useState(20);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [loader, setLoader] = useState(false);
 
-  const [datas, setData] = useState([
-    { id: 1, slabName: "slab name 1", yearlyPayLowerLimit: '120000', yearlyPayUpperLimit: '100', tax: '14', fixTax: '5'},
-    { id: 2, slabName: "slab name 2", yearlyPayLowerLimit: '211100', yearlyPayUpperLimit: '5100', tax: '12', fixTax: '10'},
-    { id: 3, slabName: "slab name 3", yearlyPayLowerLimit: '2100', yearlyPayUpperLimit: '510', tax: '1', fixTax: '0'},
-  ]);
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    getDesignation();
+  }, []);
+
+  const getDesignation = () => {
+    setTableLoader(true);
+    apiServices("GET", "tax-slab", null, user_state)
+      .then((res) => {
+        // console.log(res?.data);
+        if (res?.data?.success === true) {
+          setData(res?.data?.taxSlabs);
+          setTableLoader(false);
+        }
+      })
+      .catch((err) => {
+        setTableLoader(false);
+        // console.log(err);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Get Tax Slabs Info"
+          } Error`
+        );
+      });
+  };
 
   const handleClose = () => {
     setOpen({ isAddOpen: false, isDelOpen: false, data: "" });
   };
 
+  const onHandleDelete = (id) => {
+    setLoader(true);
+    apiServices("DELETE", "tax-slab", id, user_state)
+      .then((res) => {
+        // console.log(res?.data);
+        if (res?.data?.success === true) {
+          // console.log(data);
+          setData([...data.filter((tax) => tax._id !== id)]);
+          handleClose();
+          message.success("Tax Slab Deleted Successfully!");
+          setLoader(false);
+        }
+      })
+      .catch((err) => {
+        setLoader(false);
+        // console.log(err);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Delete Tax Slab"
+          } Error`
+        );
+      });
+  };
+
+  const onFinish = (values, info) => {
+    setLoader(true);
+    if (info) {
+      let updated_data = {
+        ...values,
+        companyId: info?.companyId || comp_id,
+        _id: info?._id,
+      };
+      apiServices("PUT", "tax-slab", updated_data, user_state)
+        .then((res) => {
+          // console.log(res?.data);
+          if (res?.data?.success === true) {
+            // console.log(data);
+            setData(
+              data.map((taxslab) => {
+                if (taxslab._id === info._id) {
+                  return {
+                    ...taxslab,
+                    ...values,
+                  };
+                } else {
+                  return {
+                    ...taxslab,
+                  };
+                }
+              })
+            );
+            handleClose();
+            message.success("Tax Slab Updated Successfully");
+            setLoader(false);
+          }
+        })
+        .catch((err) => {
+          setLoader(false);
+          // console.log(err);
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : "Update Tax Slab Info"
+            } Error`
+          );
+        });
+    } else {
+      apiServices("POST", "tax-slab", values, user_state)
+        .then((res) => {
+          // console.log(res?.data);
+          if (res?.data?.success === true) {
+            // console.log(data);
+            setData([
+              ...data,
+              {
+                ...values,
+                _id: res?.data?.taxSlab?._id,
+              },
+            ]);
+            handleClose();
+            message.success("Tax Slab Added Successfully");
+            setLoader(false);
+          }
+        })
+        .catch((err) => {
+          setLoader(false);
+          // console.log(err);
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : "Add Tax Slab Info"
+            } Error`
+          );
+        });
+    }
+  };
+
   const columns = [
     {
       title: "#",
-      dataIndex: '',
+      dataIndex: "",
       render: (text, record, index) => index + 1,
     },
     {
       title: "Slab Name",
-      dataIndex: "slabName",
+      dataIndex: "title",
       // sorter: (a, b) => a.shiftName.length - b.shiftName.length,
     },
     {
@@ -43,46 +193,38 @@ const TaxSlabs = () => {
       dataIndex: "yearlyPayLowerLimit",
       // sorter: (a, b) => a.maxStartTime.length - b.maxStartTime.length,
       render: (record, row) => {
-        const record_yearlyPayLowerLimit = record?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        return ( 
-        <span>
-          {record_yearlyPayLowerLimit}
-        </span>
-      )}
+        const record_yearlyPayLowerLimit = record
+          ?.toString()
+          .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        return <span>{record_yearlyPayLowerLimit}</span>;
+      },
     },
     {
       title: "Upper Limit",
       dataIndex: "yearlyPayUpperLimit",
       // sorter: (a, b) => a.startTime.length - b.startTime.length,
       render: (record, row) => {
-        const record_yearlyPayUpperLimit = record?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        return ( 
-        <span>
-          {record_yearlyPayUpperLimit}
-        </span>
-      )}
+        const record_yearlyPayUpperLimit = record
+          ?.toString()
+          .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        return <span>{record_yearlyPayUpperLimit}</span>;
+      },
     },
     {
       title: "Tax",
-      dataIndex: "tax",
+      dataIndex: "monthlyTaxInPercent",
       // sorter: (a, b) => a.endTime.length - b.endTime.length,
-      width: '14%',
+      width: "14%",
       render: (record, row) => {
-        return ( 
-        <span>
-          {record}%
-        </span>
-      )}
+        return <span>{record}%</span>;
+      },
     },
     {
       title: "Fix Tax",
-      dataIndex: "fixTax",
+      dataIndex: "fixedYearlyTax",
       render: (record, row) => {
-        return ( 
-        <span>
-          {record}%
-        </span>
-      )}
+        return <span>{record}%</span>;
+      },
     },
     {
       title: "Actions",
@@ -100,30 +242,26 @@ const TaxSlabs = () => {
             <a
               className="dropdown-item"
               href="javascript:void(0)"
-              onClick={() =>
-                {
-                  setOpen({
+              onClick={() => {
+                setOpen({
                   isAddOpen: true,
                   isDelOpen: false,
                   data: row,
-                })
-                }
-              }
+                });
+              }}
             >
               <i className="fa fa-pencil m-r-5" /> Edit
             </a>
             <a
               className="dropdown-item"
               href="javascript:void(0)"
-              onClick={() =>
-                {
-                  setOpen({
+              onClick={() => {
+                setOpen({
                   isAddOpen: false,
                   isDelOpen: true,
                   data: row,
-                })
-                }
-              }
+                });
+              }}
             >
               <i className="fa fa-trash-o m-r-5" /> Delete
             </a>
@@ -133,17 +271,53 @@ const TaxSlabs = () => {
     },
   ];
 
-  const onFinish = (values, data) => {
-    if(data){
-      console.log('submit',values);
-      handleClose();
-      message.success('Tax Slab Updated Successfully')
-    }else{
-      console.log('submit',values);
-      handleClose();
-      message.success('Tax Slab Added Successfully')
-    }
-  };
+  const customEmptyText = (
+    <Empty
+      image={<img src={EmptyTable} />}
+      // image={<InboxOutlined />}
+      imageStyle={
+        {
+          // fontSize: 48,
+          // color: '#1890ff',
+        }
+      }
+      style={{
+        height: "300px",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+      }}
+      description={
+        <div style={{ display: "" }}>
+          <div
+            style={{
+              color: "#34343F",
+              fontWeight: "500",
+              fontSize: "14px",
+              margin: "7px 0px 4px 0px",
+            }}
+          >
+            No tax slab added yet
+          </div>
+          <div
+            style={{ color: "#464665", fontWeight: "300", fontSize: "13px" }}
+          >
+            Click 'Add New Tax Slab' Button To Create <br /> A New Tax Slab{" "}
+          </div>
+        </div>
+      }
+    />
+  );
+
+  const antIcon = (
+    <LoadingOutlined
+      style={{
+        fontSize: 24,
+        color: "#fff",
+      }}
+      spin
+    />
+  );
 
   return (
     <div>
@@ -179,21 +353,33 @@ const TaxSlabs = () => {
           <div className="col-md-12">
             <div className="table-responsive">
               <Table
-                className="table-striped antTableResponsive"
+                loading={tableLoader}
+                className={
+                  data?.length > 0 ? "table-striped antTableResponsive" : ""
+                }
+                locale={{
+                  emptyText: tableLoader ? null : customEmptyText,
+                }}
                 pagination={{
-                  total: datas.length,
+                  total: data?.length,
+                  pageSize: pageSize,
+                  defaultCurrent: 1,
                   // pageSize: 1,
                   // hideOnSinglePage: true,
                   showTotal: (total, range) =>
                     `Showing ${range[0]} to ${range[1]} of ${total} entries`,
                   showSizeChanger: true,
-                  onShowSizeChange: onShowSizeChange,
+                  onShowSizeChange: (current, size) => {
+                    setPageSize(size);
+                    setCurrentPage(1);
+                  },
+                  pageSizeOptions: ["20", "30", "40", "50"],
                   itemRender: itemRender,
                 }}
                 // style={{ overflowX: "auto" }}
                 columns={columns}
                 bordered
-                dataSource={datas}
+                dataSource={data}
                 rowKey={(record) => record.id}
                 // onChange={this.handleTableChange}
               />
@@ -202,42 +388,6 @@ const TaxSlabs = () => {
         </div>
       </div>
       {/* /Page Content */}
-      {/* Delete Leavetype Modal */}
-      <div
-        className="modal custom-modal fade"
-        id="delete_leavetype"
-        role="dialog"
-      >
-        <div className="modal-dialog modal-dialog-centered">
-          <div className="modal-content">
-            <div className="modal-body">
-              <div className="form-header">
-                <h3>Delete Leave Type</h3>
-                <p>Are you sure want to delete?</p>
-              </div>
-              <div className="modal-btn delete-action">
-                <div className="row">
-                  <div className="col-6">
-                    <a href="" className="btn btn-primary continue-btn">
-                      Delete
-                    </a>
-                  </div>
-                  <div className="col-6">
-                    <a
-                      href=""
-                      data-bs-dismiss="modal"
-                      className="btn btn-primary cancel-btn"
-                    >
-                      Cancel
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      {/* /Delete Leavetype Modal */}
 
       <Modal
         open={open.isAddOpen}
@@ -252,7 +402,9 @@ const TaxSlabs = () => {
         <div className="modal-dialog modal-dialog-centered" role="document">
           <div className="modal-content">
             <div className="modal-header">
-              <h5 className="modal-title">{open?.data ? 'Update' : 'Add'}  Tax Slab</h5>
+              <h5 className="modal-title">
+                {open?.data ? "Update" : "Add"} Tax Slab
+              </h5>
               <button type="button" className="close" onClick={handleClose}>
                 <span aria-hidden="true">×</span>
               </button>
@@ -262,24 +414,31 @@ const TaxSlabs = () => {
                 // form={form}
                 name="control-hooks"
                 onFinish={(val) => onFinish(val, open?.data)}
-                onFinishFailed={() => message.error('Please Fill Required Fields!')}
+                onFinishFailed={() =>
+                  message.error("Please Fill Required Fields!")
+                }
                 initialValues={{
-                  slabName: open?.data ? open?.data?.slabName : '',
-                  yearlyPayLowerLimit: open?.data ? open?.data?.yearlyPayLowerLimit : '',
-                  yearlyPayUpperLimit: open?.data ? open?.data?.yearlyPayUpperLimit : '',
-                  tax: open?.data ? open?.data?.tax : '',
-                  fixTax: open?.data ? open?.data?.fixTax : '',
+                  title: open?.data ? open?.data?.title : "",
+                  yearlyPayLowerLimit: open?.data
+                    ? open?.data?.yearlyPayLowerLimit
+                    : "",
+                  yearlyPayUpperLimit: open?.data
+                    ? open?.data?.yearlyPayUpperLimit
+                    : "",
+                  monthlyTaxInPercent: open?.data
+                    ? open?.data?.monthlyTaxInPercent
+                    : "",
+                  fixedYearlyTax: open?.data ? open?.data?.fixedYearlyTax : "",
                 }}
               >
                 <div className="row">
-
                   <div className="col-12">
                     <div className="form-group">
                       <label>
                         Slab Name <span className="text-danger">*</span>
                       </label>
                       <Form.Item
-                        name="slabName"
+                        name="title"
                         rules={[
                           {
                             required: true,
@@ -288,17 +447,15 @@ const TaxSlabs = () => {
                         ]}
                         className="custom-border"
                       >
-                        <Input
-                          className="form-control"
-                          autoFocus
-                        />
+                        <Input className="form-control" autoFocus />
                       </Form.Item>
                     </div>
                   </div>
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>
-                        Yearly Pay Lower Limit <span className="text-danger">*</span>
+                        Yearly Pay Lower Limit{" "}
+                        <span className="text-danger">*</span>
                       </label>
                       <Form.Item
                         name="yearlyPayLowerLimit"
@@ -313,7 +470,10 @@ const TaxSlabs = () => {
                         <Input
                           className="form-control"
                           onKeyPress={(e) => {
-                            if ( (e.which !== 46 && (e.which < 48 || e.which > 57)) ) {
+                            if (
+                              e.which !== 46 &&
+                              (e.which < 48 || e.which > 57)
+                            ) {
                               e.preventDefault();
                             }
                           }}
@@ -325,7 +485,8 @@ const TaxSlabs = () => {
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>
-                      Yearly Pay Upper Limit <span className="text-danger">*</span>
+                        Yearly Pay Upper Limit{" "}
+                        <span className="text-danger">*</span>
                       </label>
                       <Form.Item
                         name="yearlyPayUpperLimit"
@@ -340,7 +501,10 @@ const TaxSlabs = () => {
                         <Input
                           className="form-control"
                           onKeyPress={(e) => {
-                            if ( (e.which !== 46 && (e.which < 48 || e.which > 57)) ) {
+                            if (
+                              e.which !== 46 &&
+                              (e.which < 48 || e.which > 57)
+                            ) {
                               e.preventDefault();
                             }
                           }}
@@ -355,7 +519,7 @@ const TaxSlabs = () => {
                         Tax (%) <span className="text-danger">*</span>
                       </label>
                       <Form.Item
-                        name="tax"
+                        name="monthlyTaxInPercent"
                         rules={[
                           {
                             required: true,
@@ -367,7 +531,10 @@ const TaxSlabs = () => {
                         <Input
                           className="form-control"
                           onKeyPress={(e) => {
-                            if ( (e.which !== 46 && (e.which < 48 || e.which > 57)) ) {
+                            if (
+                              e.which !== 46 &&
+                              (e.which < 48 || e.which > 57)
+                            ) {
                               e.preventDefault();
                             }
                           }}
@@ -382,7 +549,7 @@ const TaxSlabs = () => {
                         Fix Tax (Amount) <span className="text-danger">*</span>
                       </label>
                       <Form.Item
-                        name="fixTax"
+                        name="fixedYearlyTax"
                         rules={[
                           {
                             required: true,
@@ -394,7 +561,10 @@ const TaxSlabs = () => {
                         <Input
                           className="form-control"
                           onKeyPress={(e) => {
-                            if ( (e.which !== 46 && (e.which < 48 || e.which > 57)) ) {
+                            if (
+                              e.which !== 46 &&
+                              (e.which < 48 || e.which > 57)
+                            ) {
                               e.preventDefault();
                             }
                           }}
@@ -408,8 +578,13 @@ const TaxSlabs = () => {
                       <Button
                         htmlType="submit"
                         className="btn btn-primary submit-btn"
+                        disabled={loader}
                       >
-                        Submit
+                        {loader ? (
+                          <Spin size="small" indicator={antIcon} />
+                        ) : (
+                          "Submit"
+                        )}
                       </Button>
                     </Form.Item>
                   </div>
@@ -420,8 +595,8 @@ const TaxSlabs = () => {
         </div>
       </Modal>
 
-            {/* delete modall */}
-            <Modal
+      {/* delete modall */}
+      <Modal
         open={open.isDelOpen}
         onClose={handleClose}
         aria-labelledby="modal-modal-title"
@@ -432,27 +607,46 @@ const TaxSlabs = () => {
         }}
       >
         <div className="modal-dialog modal-dialog-centered">
-          <div className="modal-content" style={{height: '280px'}}>
-            <div className="modal-body" style={{display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
+          <div className="modal-content" style={{ height: "280px" }}>
+            <div
+              className="modal-body"
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+              }}
+            >
               <div className="form-header">
-                <h3 style={{marginBottom: '30px'}}>Delete Tax Slab</h3>
-                <p>Are you sure you want to delete <b>{open?.data?.slabName}</b>?</p>
+                <h3 style={{ marginBottom: "30px" }}>Delete Tax Slab</h3>
+                <p>
+                  Are you sure you want to delete <b>{open?.data?.slabName}</b>?
+                </p>
               </div>
               <div className="modal-btn delete-action">
                 <div className="row">
                   <div className="col-6">
-                    <a href="javascript:void(0)" className="btn btn-primary continue-btn">
-                      Delete
-                    </a>
+                    <Button
+                      htmlType="submit"
+                      className="btn btn-primary continue-btn"
+                      onClick={() => onHandleDelete(open?.data?._id)}
+                      disabled={loader}
+                      style={{ width: "100%" }}
+                    >
+                      {loader ? (
+                        <Spin size="small" indicator={antIcon} />
+                      ) : (
+                        "Delete"
+                      )}
+                    </Button>
                   </div>
                   <div className="col-6">
-                    <a
-                      href="javascript:void(0)"
+                    <Button
                       onClick={handleClose}
                       className="btn btn-primary submit-btn"
+                      style={{ width: "100%" }}
                     >
                       Cancel
-                    </a>
+                    </Button>
                   </div>
                 </div>
               </div>
