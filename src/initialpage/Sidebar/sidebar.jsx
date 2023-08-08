@@ -11,6 +11,14 @@ import Header from './header';
 const Sidebar = (props) => {
 
   const location = useLocation();
+
+  useEffect(() => {
+    if(location?.pathname !== '/settings'){
+      // clear active settings session
+      sessionStorage.clear();
+    }
+  }, [location])
+  
   const MenuMore = () => {
     document.getElementById("more-menu-hidden").classList.toggle("hidden");
   }

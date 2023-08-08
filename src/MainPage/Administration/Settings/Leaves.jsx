@@ -202,10 +202,19 @@ const Leaves = () => {
                       required: true,
                       message: "please enter sick leaves",
                     },
+                    {
+                      validator: (_, value) => {
+                        const maxLeaves = 365; // Maximum allowed value
+                        if (value > maxLeaves) {
+                          return Promise.reject("number must be less than or equal to 365");
+                        }
+                        return Promise.resolve();
+                      },
+                    },
                   ]}
                   className="custom-border"
                 >
-                  <InputNumber className="form-control" min={0} max={50}
+                  <InputNumber className="form-control" min={0}
                     onKeyPress={(e) => {
                       if (e.which > 31 && (e.which < 48 || e.which > 57)) {
                         event.preventDefault();
@@ -227,10 +236,19 @@ const Leaves = () => {
                       required: true,
                       message: "please enter casual leaves",
                     },
+                    {
+                      validator: (_, value) => {
+                        const maxLeaves = 365; // Maximum allowed value
+                        if (value > maxLeaves) {
+                          return Promise.reject("number must be less than or equal to 365");
+                        }
+                        return Promise.resolve();
+                      },
+                    },
                   ]}
                   className="custom-border"
                 >
-                  <InputNumber className="form-control" min={0} max={50}
+                  <InputNumber className="form-control" min={0}
                   onKeyPress={(e) => {
                     if (e.which > 31 && (e.which < 48 || e.which > 57)) {
                       event.preventDefault();
@@ -252,10 +270,19 @@ const Leaves = () => {
                       required: true,
                       message: "please enter work from home leaves",
                     },
+                    {
+                      validator: (_, value) => {
+                        const maxLeaves = 365; // Maximum allowed value
+                        if (value > maxLeaves) {
+                          return Promise.reject("number must be less than or equal to 365");
+                        }
+                        return Promise.resolve();
+                      },
+                    },
                   ]}
                   className="custom-border"
                 >
-                  <InputNumber className="form-control" min={0} max={50} 
+                  <InputNumber className="form-control" min={0}
                   onKeyPress={(e) => {
                     if (e.which > 31 && (e.which < 48 || e.which > 57)) {
                       event.preventDefault();
@@ -277,10 +304,19 @@ const Leaves = () => {
                       required: true,
                       message: "please enter bereavement leaves",
                     },
+                    {
+                      validator: (_, value) => {
+                        const maxLeaves = 365; // Maximum allowed value
+                        if (value > maxLeaves) {
+                          return Promise.reject("number must be less than or equal to 365");
+                        }
+                        return Promise.resolve();
+                      },
+                    },
                   ]}
                   className="custom-border"
                 >
-                  <InputNumber className="form-control" min={0} max={50} 
+                  <InputNumber className="form-control" min={0}
                   onKeyPress={(e) => {
                     if (e.which > 31 && (e.which < 48 || e.which > 57)) {
                       event.preventDefault();
@@ -302,10 +338,19 @@ const Leaves = () => {
                       required: true,
                       message: "please enter unpaid leaves",
                     },
+                    {
+                      validator: (_, value) => {
+                        const maxLeaves = 365; // Maximum allowed value
+                        if (value > maxLeaves) {
+                          return Promise.reject("number must be less than or equal to 365");
+                        }
+                        return Promise.resolve();
+                      },
+                    },
                   ]}
                   className="custom-border"
                 >
-                  <InputNumber className="form-control" min={0} max={50} 
+                  <InputNumber className="form-control" min={0} 
                   onKeyPress={(e) => {
                     if (e.which > 31 && (e.which < 48 || e.which > 57)) {
                       event.preventDefault();
@@ -327,10 +372,19 @@ const Leaves = () => {
                       required: true,
                       message: "please enter paternity leaves",
                     },
+                    {
+                      validator: (_, value) => {
+                        const maxLeaves = 365; // Maximum allowed value
+                        if (value > maxLeaves) {
+                          return Promise.reject("number must be less than or equal to 365");
+                        }
+                        return Promise.resolve();
+                      },
+                    },
                   ]}
                   className="custom-border"
                 >
-                  <InputNumber className="form-control" min={0} max={50} 
+                  <InputNumber className="form-control" min={0} 
                   onKeyPress={(e) => {
                     if (e.which > 31 && (e.which < 48 || e.which > 57)) {
                       event.preventDefault();
@@ -352,10 +406,19 @@ const Leaves = () => {
                       required: true,
                       message: "please enter maternity leaves",
                     },
+                    {
+                      validator: (_, value) => {
+                        const maxLeaves = 365; // Maximum allowed value
+                        if (value > maxLeaves) {
+                          return Promise.reject("number must be less than or equal to 365");
+                        }
+                        return Promise.resolve();
+                      },
+                    },
                   ]}
                   className="custom-border"
                 >
-                  <InputNumber className="form-control" min={0} max={50} 
+                  <InputNumber className="form-control" min={0}
                   onKeyPress={(e) => {
                     if (e.which > 31 && (e.which < 48 || e.which > 57)) {
                       event.preventDefault();
@@ -377,10 +440,19 @@ const Leaves = () => {
                       required: true,
                       message: "please enter marriage leaves",
                     },
+                    {
+                      validator: (_, value) => {
+                        const maxLeaves = 365; // Maximum allowed value
+                        if (value > maxLeaves) {
+                          return Promise.reject("number must be less than or equal to 365");
+                        }
+                        return Promise.resolve();
+                      },
+                    },
                   ]}
                   className="custom-border"
                 >
-                  <InputNumber className="form-control" min={0} max={50} 
+                  <InputNumber className="form-control" min={0}
                   onKeyPress={(e) => {
                     if (e.which > 31 && (e.which < 48 || e.which > 57)) {
                       event.preventDefault();
@@ -402,10 +474,19 @@ const Leaves = () => {
                       required: true,
                       message: "please enter half day leaves",
                     },
+                    {
+                      validator: (_, value) => {
+                        const maxLeaves = 365; // Maximum allowed value
+                        if (value > maxLeaves) {
+                          return Promise.reject("number must be less than or equal to 365");
+                        }
+                        return Promise.resolve();
+                      },
+                    },
                   ]}
                   className="custom-border"
                 >
-                  <InputNumber className="form-control" min={0} max={50} 
+                  <InputNumber className="form-control" min={0}
                   onKeyPress={(e) => {
                     if (e.which > 31 && (e.which < 48 || e.which > 57)) {
                       event.preventDefault();
@@ -427,10 +508,19 @@ const Leaves = () => {
                       required: true,
                       message: "please enter annual leaves",
                     },
+                    {
+                      validator: (_, value) => {
+                        const maxLeaves = 365; // Maximum allowed value
+                        if (value > maxLeaves) {
+                          return Promise.reject("number must be less than or equal to 365");
+                        }
+                        return Promise.resolve();
+                      },
+                    },
                   ]}
                   className="custom-border"
                 >
-                  <InputNumber className="form-control" min={0} max={50} 
+                  <InputNumber className="form-control" min={0}
                   onKeyPress={(e) => {
                     if (e.which > 31 && (e.which < 48 || e.which > 57)) {
                       event.preventDefault();
