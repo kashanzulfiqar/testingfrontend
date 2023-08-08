@@ -173,7 +173,7 @@ const Designation = () => {
       title: "#",
       dataIndex: "",
       width: 50,
-      render: (text, record, index) => index + 1,
+      render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
     },
     {
       title: "Designation Name",
@@ -316,6 +316,7 @@ const Designation = () => {
                   total: data?.length,
                   pageSize: pageSize,
                   defaultCurrent: 1,
+                  current: currentPage,
                   // pageSize: 1,
                   // hideOnSinglePage: true,
                   showTotal: (total, range) =>
@@ -323,6 +324,7 @@ const Designation = () => {
                   showSizeChanger: true,
                   onShowSizeChange: (current, size) => { setPageSize(size); setCurrentPage(1) },
                   pageSizeOptions: ['20', '30', '40', '50'],
+                  onChange: (page, size) => setCurrentPage(page),
                   itemRender: itemRender,
                 }}
                 style={{ overflowX: "auto" }}
@@ -365,9 +367,16 @@ const Designation = () => {
                 // form={form}
                 name="control-hooks"
                 onFinish={(val) => onFinish(val, open?.data)}
-                onFinishFailed={() =>
-                  message.error("Please Fill Required Fields!")
-                }
+                onFinishFailed={({errorFields}) => {
+                  console.log(errorFields.map(field => field.errors.toString().includes('consecutive')));
+                  console.log(errorFields);
+                  const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
+                  if(consecutiveSpacesError){
+                    message.error("Please Remove Consecutive Spaces!")
+                  }else{
+                    message.error("Please Fill Required Fields!")
+                  }
+                }}
                 initialValues={{
                   designationName: open?.data
                     ? open?.data?.designationName
@@ -384,7 +393,15 @@ const Designation = () => {
                       {
                         whitespace: true,
                         required: true,
-                        message: "please enter designation name",
+                        validator: (_, value) => {
+                          if(value.trim() === ''){
+                            return Promise.reject("please enter designation name");
+                          }
+                          else if (/\s{2,}/.test(value)) {
+                            return Promise.reject("please remove consecutive spaces");
+                          }
+                          return Promise.resolve();
+                        },
                       },
                     ]}
                     className="custom-border"
