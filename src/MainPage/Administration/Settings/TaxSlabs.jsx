@@ -181,7 +181,7 @@ const TaxSlabs = () => {
     {
       title: "#",
       dataIndex: "",
-      render: (text, record, index) => index + 1,
+      render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
     },
     {
       title: "Slab Name",
@@ -364,6 +364,7 @@ const TaxSlabs = () => {
                   total: data?.length,
                   pageSize: pageSize,
                   defaultCurrent: 1,
+                  current: currentPage,
                   // pageSize: 1,
                   // hideOnSinglePage: true,
                   showTotal: (total, range) =>
@@ -374,6 +375,7 @@ const TaxSlabs = () => {
                     setCurrentPage(1);
                   },
                   pageSizeOptions: ["20", "30", "40", "50"],
+                  onChange: (page, size) => setCurrentPage(page),
                   itemRender: itemRender,
                 }}
                 // style={{ overflowX: "auto" }}
@@ -414,9 +416,14 @@ const TaxSlabs = () => {
                 // form={form}
                 name="control-hooks"
                 onFinish={(val) => onFinish(val, open?.data)}
-                onFinishFailed={() =>
-                  message.error("Please Fill Required Fields!")
-                }
+                onFinishFailed={({errorFields}) => {
+                  const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
+                  if(consecutiveSpacesError){
+                    message.error("Please Remove Consecutive Spaces!")
+                  }else{
+                    message.error("Please Fill Required Fields!")
+                  }
+                }}
                 initialValues={{
                   title: open?.data ? open?.data?.title : "",
                   yearlyPayLowerLimit: open?.data
@@ -441,13 +448,22 @@ const TaxSlabs = () => {
                         name="title"
                         rules={[
                           {
+                            whitespace: true,
                             required: true,
-                            message: "please enter slab name",
+                            validator: (_, value) => {
+                              if(value.trim() === ''){
+                                return Promise.reject("please enter slab name");
+                              }
+                              else if (/\s{2,}/.test(value)) {
+                                return Promise.reject("please remove consecutive spaces");
+                              }
+                              return Promise.resolve();
+                            },
                           },
                         ]}
                         className="custom-border"
                       >
-                        <Input className="form-control" autoFocus />
+                        <Input className="form-control" maxLength={50} autoFocus />
                       </Form.Item>
                     </div>
                   </div>
@@ -471,6 +487,11 @@ const TaxSlabs = () => {
                           className="form-control"
                           onKeyPress={(e) => {
                             if (
+                              e.key === '.' &&
+                              e.target.value.includes('.')
+                            ) {
+                              e.preventDefault();
+                            } else if (
                               e.which !== 46 &&
                               (e.which < 48 || e.which > 57)
                             ) {
@@ -495,6 +516,22 @@ const TaxSlabs = () => {
                             required: true,
                             message: "please enter upper limit",
                           },
+                          ({ getFieldValue }) => ({
+                            validator: (_, value) => {
+                              const lowerLimit = getFieldValue(
+                                "yearlyPayLowerLimit"
+                              );
+                              if (!lowerLimit) {
+                                return Promise.resolve();
+                              }
+                              if (parseFloat(value) < parseFloat(lowerLimit)) {
+                                return Promise.reject(
+                                  "Yearly Pay Upper Limit must be greater than or equal to Yearly Pay Lower Limit"
+                                );
+                              }
+                              return Promise.resolve();
+                            },
+                          }),
                         ]}
                         className="custom-border"
                       >
@@ -502,6 +539,11 @@ const TaxSlabs = () => {
                           className="form-control"
                           onKeyPress={(e) => {
                             if (
+                              e.key === '.' &&
+                              e.target.value.includes('.')
+                            ) {
+                              e.preventDefault();
+                            } else if (
                               e.which !== 46 &&
                               (e.which < 48 || e.which > 57)
                             ) {
@@ -532,6 +574,11 @@ const TaxSlabs = () => {
                           className="form-control"
                           onKeyPress={(e) => {
                             if (
+                              e.key === '.' &&
+                              e.target.value.includes('.')
+                            ) {
+                              e.preventDefault();
+                            } else if (
                               e.which !== 46 &&
                               (e.which < 48 || e.which > 57)
                             ) {
@@ -562,6 +609,11 @@ const TaxSlabs = () => {
                           className="form-control"
                           onKeyPress={(e) => {
                             if (
+                              e.key === '.' &&
+                              e.target.value.includes('.')
+                            ) {
+                              e.preventDefault();
+                            } else if (
                               e.which !== 46 &&
                               (e.which < 48 || e.which > 57)
                             ) {
@@ -619,7 +671,7 @@ const TaxSlabs = () => {
               <div className="form-header">
                 <h3 style={{ marginBottom: "30px" }}>Delete Tax Slab</h3>
                 <p>
-                  Are you sure you want to delete <b>{open?.data?.slabName}</b>?
+                  Are you sure you want to delete <b>{open?.data?.title}</b>?
                 </p>
               </div>
               <div className="modal-btn delete-action">
