@@ -196,7 +196,7 @@ const Shifts = () => {
     {
       title: "#",
       dataIndex: "",
-      render: (text, record, index) => index + 1,
+      render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
     },
     {
       title: "Shift Name",
@@ -380,6 +380,7 @@ const Shifts = () => {
                   total: data?.length,
                   pageSize: pageSize,
                   defaultCurrent: 1,
+                  current: currentPage,
                   // pageSize: 1,
                   // hideOnSinglePage: true,
                   showTotal: (total, range) =>
@@ -390,6 +391,7 @@ const Shifts = () => {
                     setCurrentPage(1);
                   },
                   pageSizeOptions: ["20", "30", "40", "50"],
+                  onChange: (page, size) => setCurrentPage(page),
                   itemRender: itemRender,
                 }}
                 style={{ overflowX: "auto" }}
@@ -430,9 +432,14 @@ const Shifts = () => {
                 // form={form}
                 name="control-hooks"
                 onFinish={(val) => onFinish(val, open?.data)}
-                onFinishFailed={() =>
-                  message.error("Please Fill Required Fields!")
-                }
+                onFinishFailed={({errorFields}) => {
+                  const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
+                  if(consecutiveSpacesError){
+                    message.error("Please Remove Consecutive Spaces!")
+                  }else{
+                    message.error("Please Fill Required Fields!")
+                  }
+                }}
                 initialValues={{
                   title: open?.data ? open?.data?.title : "",
                   maxStartTime: open?.data
@@ -457,13 +464,22 @@ const Shifts = () => {
                         name="title"
                         rules={[
                           {
+                            whitespace: true,
                             required: true,
-                            message: "please enter shift name",
+                            validator: (_, value) => {
+                              if(value.trim() === ''){
+                                return Promise.reject("please enter shift name");
+                              }
+                              else if (/\s{2,}/.test(value)) {
+                                return Promise.reject("please remove consecutive spaces");
+                              }
+                              return Promise.resolve();
+                            },
                           },
                         ]}
                         className="custom-border"
                       >
-                        <Input className="form-control" autoFocus />
+                        <Input className="form-control" maxLength={50} autoFocus />
                       </Form.Item>
                     </div>
                   </div>
@@ -502,6 +518,18 @@ const Shifts = () => {
                             required: true,
                             message: "please enter max start time",
                           },
+                          ({ getFieldValue }) => ({
+                            validator: (_, value) => {
+                              const startTime = getFieldValue('startTime');
+                              if (!startTime) {
+                                return Promise.resolve();
+                              }
+                              if (startTime && value && value.isBefore(startTime)) {
+                                return Promise.reject("Max start time must be equal to or greater than start time");
+                              }
+                              return Promise.resolve();
+                            },
+                          }),
                         ]}
                         className="custom-border"
                       >
@@ -525,6 +553,22 @@ const Shifts = () => {
                             required: true,
                             message: "please enter end time",
                           },
+                          ({ getFieldValue }) => ({
+                            validator: (_, value) => {
+                              const maxStartTime = getFieldValue('maxStartTime');
+                              if (!maxStartTime) {
+                                return Promise.resolve();
+                              }
+                              if (value && value.isSameOrBefore(maxStartTime)) {
+                                if (value.isSame(maxStartTime, 'minute')) {
+                                  return Promise.reject("End time and max start time cannot be the same");
+                                } else {
+                                  return Promise.reject("End time must be greater than max start time");
+                                }
+                              }
+                              return Promise.resolve();
+                            },
+                          }),
                         ]}
                         className="custom-border"
                       >
