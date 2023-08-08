@@ -406,7 +406,7 @@ const Designation = () => {
                     ]}
                     className="custom-border"
                   >
-                    <Input className="form-control" autoFocus />
+                    <Input className="form-control" maxLength={50} autoFocus />
                   </Form.Item>
                 </div>
                 <div className="submit-section">
