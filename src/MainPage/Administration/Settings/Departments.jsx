@@ -172,7 +172,7 @@ const Departments = () => {
       title: "#",
       dataIndex: "",
       width: 50,
-      render: (text, record, index) => index + 1,
+      render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
     },
     {
       title: "Department Name",
@@ -315,6 +315,7 @@ const Departments = () => {
                   total: data?.length,
                   pageSize: pageSize,
                   defaultCurrent: 1,
+                  current: currentPage,
                   // pageSize: 1,
                   // hideOnSinglePage: true,
                   showTotal: (total, range) =>
@@ -325,6 +326,7 @@ const Departments = () => {
                     setCurrentPage(1);
                   },
                   pageSizeOptions: ["20", "30", "40", "50"],
+                  onChange: (page, size) => setCurrentPage(page),
                   itemRender: itemRender,
                 }}
                 style={{ overflowX: "auto" }}
@@ -366,12 +368,18 @@ const Departments = () => {
                 // form={form}
                 name="control-hooks"
                 onFinish={(val) => onFinish(val, open?.data)}
-                onFinishFailed={() =>
-                  message.error("Please Fill Required Fields!")
-                }
+                onFinishFailed={({errorFields}) => {
+                  const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
+                  if(consecutiveSpacesError){
+                    message.error("Please Remove Consecutive Spaces!")
+                  }else{
+                    message.error("Please Fill Required Fields!")
+                  }
+                }}
                 initialValues={{
                   teamName: open?.data ? open?.data?.teamName : "",
                 }}
+                autoComplete="off"
               >
                 <div className="form-group">
                   <label>
@@ -381,13 +389,22 @@ const Departments = () => {
                     name="teamName"
                     rules={[
                       {
+                        whitespace: true,
                         required: true,
-                        message: "please enter departemnt name",
+                        validator: (_, value) => {
+                          if(value.trim() === ''){
+                            return Promise.reject("please enter departemnt name");
+                          }
+                          else if (/\s{2,}/.test(value)) {
+                            return Promise.reject("please remove consecutive spaces");
+                          }
+                          return Promise.resolve();
+                        },
                       },
                     ]}
                     className="custom-border"
                   >
-                    <Input className="form-control" autoFocus />
+                    <Input className="form-control" maxLength={50} autoFocus />
                   </Form.Item>
                 </div>
                 <div className="submit-section">
@@ -436,7 +453,7 @@ const Departments = () => {
                 <h3 style={{ marginBottom: "30px" }}>Delete Department</h3>
                 <p>
                   Are you sure you want to delete{" "}
-                  <b>{open?.data?.departmentName}</b>?
+                  <b>{open?.data?.teamName}</b>?
                 </p>
               </div>
               <div className="modal-btn delete-action">
