@@ -123,7 +123,14 @@ const Company = () => {
           form={form}
           name="control-hooks"
           onFinish={onFinish}
-          onFinishFailed={() => message.error("Please Enter Required Fields!")}
+          onFinishFailed={({errorFields}) => {
+            const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
+            if(consecutiveSpacesError){
+              message.error("Please Remove Consecutive Spaces!")
+            }else{
+              message.error("Please Fill Required Fields!")
+            }
+          }}
         >
           <div className="row">
             <div className="col-sm-6">
@@ -137,7 +144,15 @@ const Company = () => {
                     {
                       whitespace: true,
                       required: true,
-                      message: "please enter company name",
+                      validator: (_, value) => {
+                        if(value.trim() === ''){
+                          return Promise.reject("please enter company name");
+                        }
+                        else if (/\s{2,}/.test(value)) {
+                          return Promise.reject("please remove consecutive spaces");
+                        }
+                        return Promise.resolve();
+                      },
                     },
                     {
                       min: 3,
@@ -155,6 +170,7 @@ const Company = () => {
                     onInput={(e) => {
                       onHandleChange("companyName", e.target.value);
                     }}
+                    maxLength={50}
                   />
                 </Form.Item>
               </div>
@@ -170,7 +186,15 @@ const Company = () => {
                     {
                       whitespace: true,
                       required: true,
-                      message: "please enter legal name",
+                      validator: (_, value) => {
+                        if(value.trim() === ''){
+                          return Promise.reject("please enter legal name");
+                        }
+                        else if (/\s{2,}/.test(value)) {
+                          return Promise.reject("please remove consecutive spaces");
+                        }
+                        return Promise.resolve();
+                      },
                     },
                     {
                       min: 3,
@@ -188,6 +212,7 @@ const Company = () => {
                     onInput={(e) => {
                       onHandleChange("legalName", e.target.value);
                     }}
+                    maxLength={50}
                   />
                 </Form.Item>
               </div>
@@ -203,7 +228,15 @@ const Company = () => {
                     {
                       whitespace: true,
                       required: true,
-                      message: "please enter contact name",
+                      validator: (_, value) => {
+                        if(value.trim() === ''){
+                          return Promise.reject("please enter contact name");
+                        }
+                        else if (/\s{2,}/.test(value)) {
+                          return Promise.reject("please remove consecutive spaces");
+                        }
+                        return Promise.resolve();
+                      },
                     },
                     {
                       min: 3,
@@ -221,6 +254,7 @@ const Company = () => {
                     onInput={(e) => {
                       onHandleChange("contactPerson", e.target.value);
                     }}
+                    maxLength={50}
                   />
                 </Form.Item>
               </div>
@@ -236,7 +270,15 @@ const Company = () => {
                     {
                       whitespace: true,
                       required: true,
-                      message: "please enter address name",
+                      validator: (_, value) => {
+                        if(value.trim() === ''){
+                          return Promise.reject("please enter address name");
+                        }
+                        else if (/\s{2,}/.test(value)) {
+                          return Promise.reject("please remove consecutive spaces");
+                        }
+                        return Promise.resolve();
+                      },
                     },
                     {
                       min: 5,
@@ -254,6 +296,7 @@ const Company = () => {
                     onInput={(e) => {
                       onHandleChange("companyAddress", e.target.value);
                     }}
+                    maxLength={50}
                   />
                 </Form.Item>
               </div>
@@ -292,7 +335,7 @@ const Company = () => {
                     // }),
                     {
                       min: 3,
-                      message: "postal code length must be at least 3 characters long",
+                      message: "postal code length must be at least 3 digits long",
                     },
                   ]}
                 >
@@ -311,6 +354,7 @@ const Company = () => {
                         e.preventDefault();
                       }
                     }}
+                    maxLength={50}
                   />
                 </Form.Item>
               </div>
@@ -326,7 +370,15 @@ const Company = () => {
                     {
                       whitespace: true,
                       required: true,
-                      message: "please enter city name",
+                      validator: (_, value) => {
+                        if(value.trim() === ''){
+                          return Promise.reject("please enter city name");
+                        }
+                        else if (/\s{2,}/.test(value)) {
+                          return Promise.reject("please remove consecutive spaces");
+                        }
+                        return Promise.resolve();
+                      },
                     },
                     {
                       min: 3,
@@ -341,6 +393,7 @@ const Company = () => {
                     onInput={(e) => {
                       onHandleChange("city", e.target.value);
                     }}
+                    maxLength={50}
                   />
                 </Form.Item>
               </div>
@@ -356,7 +409,15 @@ const Company = () => {
                     {
                       whitespace: true,
                       required: true,
-                      message: "please enter state name",
+                      validator: (_, value) => {
+                        if(value.trim() === ''){
+                          return Promise.reject("please enter state name");
+                        }
+                        else if (/\s{2,}/.test(value)) {
+                          return Promise.reject("please remove consecutive spaces");
+                        }
+                        return Promise.resolve();
+                      },
                     },
                     {
                       min: 3,
@@ -371,6 +432,7 @@ const Company = () => {
                     onInput={(e) => {
                       onHandleChange("state", e.target.value);
                     }}
+                    maxLength={50}
                   />
                 </Form.Item>
               </div>
@@ -386,7 +448,15 @@ const Company = () => {
                     {
                       whitespace: true,
                       required: true,
-                      message: "please enter country name",
+                      validator: (_, value) => {
+                        if(value.trim() === ''){
+                          return Promise.reject("please enter country name");
+                        }
+                        else if (/\s{2,}/.test(value)) {
+                          return Promise.reject("please remove consecutive spaces");
+                        }
+                        return Promise.resolve();
+                      },
                     },
                     {
                       min: 3,
@@ -404,6 +474,7 @@ const Company = () => {
                     onInput={(e) => {
                       onHandleChange("country", e.target.value);
                     }}
+                    maxLength={50}
                   />
                 </Form.Item>
               </div>
@@ -419,12 +490,37 @@ const Company = () => {
                     {
                       whitespace: true,
                       required: true,
-                      message: "please enter company email",
+                      validator: (_, value) => {
+                        if (value.trim() === '') {
+                          return Promise.reject('Please enter company email');
+                        } else if (/\s{2,}/.test(value)) {
+                          return Promise.reject('Please remove consecutive spaces');
+                        } else if (email => {
+                          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                          return emailRegex.test(email);
+                        }) {
+                          return Promise.reject('please enter a valid email');
+                        }
+                        return Promise.resolve();
+                      },
                     },
-                    {
-                      type: "email",
-                      message: "Please enter a valid email",
-                    },
+                    // {
+                    //   whitespace: true,
+                    //   required: true,
+                    //   validator: (_, value) => {
+                    //     if(value.trim() === ''){
+                    //       return Promise.reject("please enter company email");
+                    //     }
+                    //     else if (/\s{2,}/.test(value)) {
+                    //       return Promise.reject("please remove consecutive spaces");
+                    //     }
+                    //     return Promise.resolve();
+                    //   },
+                    // },
+                    // {
+                    //   type: "email",
+                    //   message: "Please enter a valid email",
+                    // },
                   ]}
                 >
                   <Input
@@ -437,6 +533,7 @@ const Company = () => {
                     onInput={(e) => {
                       onHandleChange("companyEmail", e.target.value);
                     }}
+                    maxLength={50}
                   />
                 </Form.Item>
               </div>
@@ -452,7 +549,15 @@ const Company = () => {
                     {
                       whitespace: true,
                       required: true,
-                      message: "please enter registration no",
+                      validator: (_, value) => {
+                        if(value.trim() === ''){
+                          return Promise.reject("please enter registration no");
+                        }
+                        else if (/\s{2,}/.test(value)) {
+                          return Promise.reject("please remove consecutive spaces");
+                        }
+                        return Promise.resolve();
+                      },
                     },
                     {
                       min: 3,
@@ -470,6 +575,7 @@ const Company = () => {
                     onInput={(e) => {
                       onHandleChange("companyRegistrationNo", e.target.value);
                     }}
+                    maxLength={50}
                   />
                 </Form.Item>
               </div>
@@ -489,7 +595,7 @@ const Company = () => {
                     },
                     {
                       min: 5,
-                      message: "phone length must be at least 5 characters long",
+                      message: "phone length must be at least 5 digits long",
                     },
                   ]}
                 >
@@ -518,7 +624,7 @@ const Company = () => {
                     },
                     {
                       min: 5,
-                      message: "mobile length must be at least 5 characters long",
+                      message: "mobile length must be at least 5 digits long",
                     },
                   ]}
                 >
@@ -543,7 +649,15 @@ const Company = () => {
                     {
                       whitespace: true,
                       required: true,
-                      message: "please enter website",
+                      validator: (_, value) => {
+                        if(value.trim() === ''){
+                          return Promise.reject("please enter website");
+                        }
+                        else if (/\s{2,}/.test(value)) {
+                          return Promise.reject("please remove consecutive spaces");
+                        }
+                        return Promise.resolve();
+                      },
                     },
                     {
                       min: 3,
@@ -561,6 +675,7 @@ const Company = () => {
                     onInput={(e) => {
                       onHandleChange("website", e.target.value);
                     }}
+                    maxLength={50}
                   />
                 </Form.Item>
               </div>
@@ -576,7 +691,15 @@ const Company = () => {
                     {
                       whitespace: true,
                       required: true,
-                      message: "please enter fax",
+                      validator: (_, value) => {
+                        if(value.trim() === ''){
+                          return Promise.reject("please enter fax");
+                        }
+                        else if (/\s{2,}/.test(value)) {
+                          return Promise.reject("please remove consecutive spaces");
+                        }
+                        return Promise.resolve();
+                      },
                     },
                     {
                       min: 5,
@@ -591,6 +714,7 @@ const Company = () => {
                     onInput={(e) => {
                       onHandleChange("fax", e.target.value);
                     }}
+                    maxLength={20}
                   />
                 </Form.Item>
               </div>
