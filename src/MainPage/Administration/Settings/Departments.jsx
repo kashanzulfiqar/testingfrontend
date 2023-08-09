@@ -49,8 +49,8 @@ const Departments = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Department Info"
-          } Error`
+              : "Get Department Info Error"
+          }!`
         );
       });
   };
@@ -82,8 +82,8 @@ const Departments = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Delete Department"
-          } Error`
+              : "Delete Department Error"
+          }!`
         );
       });
   };
@@ -129,8 +129,8 @@ const Departments = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Update Department Info"
-            } Error`
+                : "Update Department Info Error"
+            }!`
           );
         });
     } else {
@@ -160,8 +160,8 @@ const Departments = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Add Department Info"
-            } Error`
+                : "Add Department Info Error"
+            }!`
           );
         });
     }
