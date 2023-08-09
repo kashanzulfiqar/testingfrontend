@@ -185,8 +185,8 @@ const Registrationpage = (props) => {
               ? err.response.data.msg
               : err.response.data.validation.body.message
               ? err.response.data.validation.body.message
-              : "Company Register"
-          } Error`
+              : "Company Register Error"
+          }`
         );
       });
   };
@@ -214,8 +214,8 @@ const Registrationpage = (props) => {
             ? err?.response?.data?.msg
             : err?.response?.data?.validation?.body?.message
             ? err?.response?.data?.validation?.body?.message
-              : "Company Register"
-          } Error`
+              : "Admin Register Error"
+          }`
         );
       });
   };
@@ -231,6 +231,12 @@ const Registrationpage = (props) => {
     />
   );
 
+  const isValidEmail = (email) => {
+    // Regular expression to validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
   const steps = [
     {
       title: "Enter Company Details",
@@ -240,7 +246,14 @@ const Registrationpage = (props) => {
           form={form}
           name="control-hooks"
           onFinish={onRegFinish}
-          onFinishFailed={() => message.error("Please Enter Required Fields!")}
+          onFinishFailed={({errorFields}) => {
+                  const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
+                  if(consecutiveSpacesError){
+                    message.error("Please Remove Consecutive Spaces!")
+                  }else{
+                    message.error("Please Fill Required Fields!")
+                  }
+                }}
         >
           <div className="row mt-5">
             <div className="col-sm-6">
@@ -255,7 +268,15 @@ const Registrationpage = (props) => {
                     {
                       whitespace: true,
                       required: true,
-                      message: "please enter company name",
+                      validator: (_, value) => {
+                        if(!value || value?.trim() === ''){
+                          return Promise.reject("please enter company name");
+                        }
+                        else if (/\s{2,}/.test(value)) {
+                          return Promise.reject("please remove consecutive spaces");
+                        }
+                        return Promise.resolve();
+                      },
                     },
                     {
                       min: 3,
@@ -269,9 +290,10 @@ const Registrationpage = (props) => {
                   />
                   <input
                     className="form-control"
-                    onChange={(e) => {
+                    onInput={(e) => {
                       onHandleRegChange("companyName", e.target.value);
                     }}
+                    maxLength={50}
                   />
                 </Form.Item>
               </div>
@@ -287,7 +309,15 @@ const Registrationpage = (props) => {
                     {
                       whitespace: true,
                       required: true,
-                      message: "please enter legal name",
+                      validator: (_, value) => {
+                        if(!value || value?.trim() === ''){
+                          return Promise.reject("please enter legal name");
+                        }
+                        else if (/\s{2,}/.test(value)) {
+                          return Promise.reject("please remove consecutive spaces");
+                        }
+                        return Promise.resolve();
+                      },
                     },
                     {
                       min: 3,
@@ -301,9 +331,10 @@ const Registrationpage = (props) => {
                   />
                   <input
                     className="form-control"
-                    onChange={(e) => {
+                    onInput={(e) => {
                       onHandleRegChange("legalName", e.target.value);
                     }}
+                    maxLength={50}
                   />
                 </Form.Item>
               </div>
@@ -319,7 +350,15 @@ const Registrationpage = (props) => {
                     {
                       whitespace: true,
                       required: true,
-                      message: "please enter contact person",
+                      validator: (_, value) => {
+                        if(!value || value?.trim() === ''){
+                          return Promise.reject("please enter contact name");
+                        }
+                        else if (/\s{2,}/.test(value)) {
+                          return Promise.reject("please remove consecutive spaces");
+                        }
+                        return Promise.resolve();
+                      },
                     },
                     {
                       min: 3,
@@ -333,9 +372,10 @@ const Registrationpage = (props) => {
                   />
                   <input
                     className="form-control"
-                    onChange={(e) => {
+                    onInput={(e) => {
                       onHandleRegChange("contactPerson", e.target.value);
                     }}
+                    maxLength={50}
                   />
                 </Form.Item>
               </div>
@@ -351,7 +391,15 @@ const Registrationpage = (props) => {
                     {
                       whitespace: true,
                       required: true,
-                      message: "please enter company address",
+                      validator: (_, value) => {
+                        if(!value || value?.trim() === ''){
+                          return Promise.reject("please enter address");
+                        }
+                        else if (/\s{2,}/.test(value)) {
+                          return Promise.reject("please remove consecutive spaces");
+                        }
+                        return Promise.resolve();
+                      },
                     },
                     {
                       min: 5,
@@ -365,9 +413,10 @@ const Registrationpage = (props) => {
                   />
                   <input
                     className="form-control"
-                    onChange={(e) => {
+                    onInput={(e) => {
                       onHandleRegChange("companyAddress", e.target.value);
                     }}
+                    maxLength={50}
                   />
                 </Form.Item>
               </div>
@@ -387,7 +436,7 @@ const Registrationpage = (props) => {
                     },
                     {
                       min: 3,
-                      message: "postal code length must be at least 3 characters long",
+                      message: "postal code length must be at least 3 digits long",
                     },
                   ]}
                 >
@@ -397,7 +446,7 @@ const Registrationpage = (props) => {
                   />
                   <input
                     className="form-control"
-                    onChange={(e) => {
+                    onInput={(e) => {
                       onHandleRegChange("postalCode", e.target.value);
                     }}
                     onKeyPress={(e) => {
@@ -405,6 +454,7 @@ const Registrationpage = (props) => {
                         e.preventDefault();
                       }
                     }}
+                    maxLength={50}
                   />
                 </Form.Item>
               </div>
@@ -420,7 +470,15 @@ const Registrationpage = (props) => {
                     {
                       whitespace: true,
                       required: true,
-                      message: "please enter city name",
+                      validator: (_, value) => {
+                        if(!value || value?.trim() === ''){
+                          return Promise.reject("please enter city name");
+                        }
+                        else if (/\s{2,}/.test(value)) {
+                          return Promise.reject("please remove consecutive spaces");
+                        }
+                        return Promise.resolve();
+                      },
                     },
                     {
                       min: 3,
@@ -431,9 +489,10 @@ const Registrationpage = (props) => {
                   <Input style={{ display: "none" }} value={regValues?.city} />
                   <input
                     className="form-control"
-                    onChange={(e) => {
+                    onInput={(e) => {
                       onHandleRegChange("city", e.target.value);
                     }}
+                    maxLength={50}
                   />
                 </Form.Item>
               </div>
@@ -449,7 +508,15 @@ const Registrationpage = (props) => {
                     {
                       whitespace: true,
                       required: true,
-                      message: "please enter state name",
+                      validator: (_, value) => {
+                        if(!value || value?.trim() === ''){
+                          return Promise.reject("please enter state name");
+                        }
+                        else if (/\s{2,}/.test(value)) {
+                          return Promise.reject("please remove consecutive spaces");
+                        }
+                        return Promise.resolve();
+                      },
                     },
                     {
                       min: 3,
@@ -460,9 +527,10 @@ const Registrationpage = (props) => {
                   <Input style={{ display: "none" }} value={regValues?.state} />
                   <input
                     className="form-control"
-                    onChange={(e) => {
+                    onInput={(e) => {
                       onHandleRegChange("state", e.target.value);
                     }}
+                    maxLength={50}
                   />
                 </Form.Item>
               </div>
@@ -478,7 +546,15 @@ const Registrationpage = (props) => {
                     {
                       whitespace: true,
                       required: true,
-                      message: "please enter country name",
+                      validator: (_, value) => {
+                        if(!value || value?.trim() === ''){
+                          return Promise.reject("please enter country name");
+                        }
+                        else if (/\s{2,}/.test(value)) {
+                          return Promise.reject("please remove consecutive spaces");
+                        }
+                        return Promise.resolve();
+                      },
                     },
                     {
                       min: 3,
@@ -492,9 +568,10 @@ const Registrationpage = (props) => {
                   />
                   <input
                     className="form-control"
-                    onChange={(e) => {
+                    onInput={(e) => {
                       onHandleRegChange("country", e.target.value);
                     }}
+                    maxLength={50}
                   />
                 </Form.Item>
               </div>
@@ -510,11 +587,16 @@ const Registrationpage = (props) => {
                     {
                       whitespace: true,
                       required: true,
-                      message: "please enter company email",
-                    },
-                    {
-                      type: "email",
-                      message: "Please enter a valid email",
+                      validator: (_, value) => {
+                        if (!value || value?.trim() === '') {
+                          return Promise.reject('Please enter company email');
+                        } else if (/\s{2,}/.test(value)) {
+                          return Promise.reject('Please remove consecutive spaces');
+                        } else if (!isValidEmail(value)) {
+                          return Promise.reject('please enter a valid email');
+                        }
+                        return Promise.resolve();
+                      },
                     },
                   ]}
                 >
@@ -524,9 +606,10 @@ const Registrationpage = (props) => {
                   />
                   <input
                     className="form-control"
-                    onChange={(e) => {
+                    onInput={(e) => {
                       onHandleRegChange("companyEmail", e.target.value);
                     }}
+                    maxLength={50}
                   />
                 </Form.Item>
               </div>
@@ -542,7 +625,15 @@ const Registrationpage = (props) => {
                     {
                       whitespace: true,
                       required: true,
-                      message: "please enter registration no",
+                      validator: (_, value) => {
+                        if(!value || value?.trim() === ''){
+                          return Promise.reject("please enter registration no");
+                        }
+                        else if (/\s{2,}/.test(value)) {
+                          return Promise.reject("please remove consecutive spaces");
+                        }
+                        return Promise.resolve();
+                      },
                     },
                     {
                       min: 3,
@@ -556,12 +647,13 @@ const Registrationpage = (props) => {
                   />
                   <input
                     className="form-control"
-                    onChange={(e) => {
+                    onInput={(e) => {
                       onHandleRegChange(
                         "companyRegistrationNo",
                         e.target.value
                       );
                     }}
+                    maxLength={50}
                   />
                 </Form.Item>
               </div>
@@ -581,7 +673,7 @@ const Registrationpage = (props) => {
                     },
                     {
                       min: 5,
-                      message: "phone length must be at least 5 characters long",
+                      message: "phone length must be at least 5 digits long",
                     },
                   ]}
                 >
@@ -613,7 +705,7 @@ const Registrationpage = (props) => {
                     },
                     {
                       min: 5,
-                      message: "mobile length must be at least 5 characters long",
+                      message: "mobile length must be at least 5 digits long",
                     },
                   ]}
                 >
@@ -646,7 +738,15 @@ const Registrationpage = (props) => {
                     {
                       whitespace: true,
                       required: true,
-                      message: "please enter website",
+                      validator: (_, value) => {
+                        if(!value || value?.trim() === ''){
+                          return Promise.reject("please enter website");
+                        }
+                        else if (/\s{2,}/.test(value)) {
+                          return Promise.reject("please remove consecutive spaces");
+                        }
+                        return Promise.resolve();
+                      },
                     },
                     {
                       min: 3,
@@ -660,9 +760,10 @@ const Registrationpage = (props) => {
                   />
                   <input
                     className="form-control"
-                    onChange={(e) => {
+                    onInput={(e) => {
                       onHandleRegChange("website", e.target.value);
                     }}
+                    maxLength={50}
                   />
                 </Form.Item>
               </div>
@@ -678,7 +779,15 @@ const Registrationpage = (props) => {
                     {
                       whitespace: true,
                       required: true,
-                      message: "please enter fax",
+                      validator: (_, value) => {
+                        if(!value || value?.trim() === ''){
+                          return Promise.reject("please enter fax");
+                        }
+                        else if (/\s{2,}/.test(value)) {
+                          return Promise.reject("please remove consecutive spaces");
+                        }
+                        return Promise.resolve();
+                      },
                     },
                     {
                       min: 5,
@@ -689,9 +798,10 @@ const Registrationpage = (props) => {
                   <Input style={{ display: "none" }} value={regValues?.fax} />
                   <input
                     className="form-control"
-                    onChange={(e) => {
+                    onInput={(e) => {
                       onHandleRegChange("fax", e.target.value);
                     }}
+                    maxLength={20}
                   />
                 </Form.Item>
               </div>
@@ -730,7 +840,7 @@ const Registrationpage = (props) => {
                           ? "true"
                           : ""
                       }
-                      onChange={(e) => {
+                      onInput={(e) => {
                         onHandleRegChange("agreeTermsAndConditions", e.target.checked);
                       }}
                       id="flexCheckChecked"
@@ -777,8 +887,13 @@ const Registrationpage = (props) => {
           form={form}
           name="control-hooks"
           onFinish={onAdminFinish}
-          onFinishFailed={(val) => {
-            message.error("Please Enter Required Fields!");
+          onFinishFailed={({errorFields}) => {
+            const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
+            if(consecutiveSpacesError){
+              message.error("Please Remove Consecutive Spaces!")
+            }else{
+              message.error("Please Fill Required Fields!")
+            }
           }}
         >
           <div className="row mt-5">
@@ -793,7 +908,19 @@ const Registrationpage = (props) => {
                     {
                       whitespace: true,
                       required: true,
-                      message: "please enter full name",
+                      validator: (_, value) => {
+                        if(!value || value?.trim() === ''){
+                          return Promise.reject("please enter full name");
+                        }
+                        else if (/\s{2,}/.test(value)) {
+                          return Promise.reject("please remove consecutive spaces");
+                        }
+                        return Promise.resolve();
+                      },
+                    },
+                    {
+                      min: 3,
+                      message: "name length must be at least 3 characters long",
                     },
                   ]}
                 >
@@ -803,9 +930,10 @@ const Registrationpage = (props) => {
                   />
                   <input
                     className="form-control"
-                    onChange={(e) => {
+                    onInput={(e) => {
                       onHandleAdminChange("fullName", e.target.value);
                     }}
+                    maxLength={50}
                   />
                 </Form.Item>
               </div>
@@ -832,7 +960,7 @@ const Registrationpage = (props) => {
                   />
                   <DatePicker
                     className="form-control"
-                    onChange={(date, datestring) => {
+                    onInput={(date, datestring) => {
                       onHandleAdminChange("dateOfBirth", datestring);
                     }}
                   />
@@ -885,8 +1013,8 @@ const Registrationpage = (props) => {
                       message: "please enter phone number",
                     },
                     {
-                      type: "Number",
-                      message: "Please enter a valid Contact Number",
+                      min: 5,
+                      message: "phone length must be at least 5 digits long",
                     },
                   ]}
                 >
@@ -913,11 +1041,16 @@ const Registrationpage = (props) => {
                     {
                       whitespace: true,
                       required: true,
-                      message: "please enter email address",
-                    },
-                    {
-                      type: "email",
-                      message: "Please enter a valid email",
+                      validator: (_, value) => {
+                        if (!value || value?.trim() === '') {
+                          return Promise.reject('Please enter company email');
+                        } else if (/\s{2,}/.test(value)) {
+                          return Promise.reject('Please remove consecutive spaces');
+                        } else if (!isValidEmail(value)) {
+                          return Promise.reject('please enter a valid email');
+                        }
+                        return Promise.resolve();
+                      },
                     },
                   ]}
                 >
@@ -927,9 +1060,10 @@ const Registrationpage = (props) => {
                   />
                   <input
                     className="form-control"
-                    onChange={(e) => {
+                    onInput={(e) => {
                       onHandleAdminChange("email", e.target.value);
                     }}
+                    maxLength={50}
                   />
                 </Form.Item>
               </div>
@@ -963,9 +1097,10 @@ const Registrationpage = (props) => {
                       <input
                         type={eye ? "password" : "text"}
                         className={`form-control passwordStyle`}
-                        onChange={(e) => {
+                        onInput={(e) => {
                           onHandleAdminChange("password", e.target.value);
                         }}
+                        maxLength={50}
                       />
                       <span
                         onClick={onEyeClick}
