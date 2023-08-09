@@ -960,7 +960,7 @@ const Registrationpage = (props) => {
                   />
                   <DatePicker
                     className="form-control"
-                    onInput={(date, datestring) => {
+                    onChange={(date, datestring) => {
                       onHandleAdminChange("dateOfBirth", datestring);
                     }}
                   />
