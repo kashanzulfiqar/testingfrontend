@@ -50,8 +50,8 @@ const Designation = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Designation Info"
-          } Error`
+              : "Get Designation Info Error"
+          }!`
         );
       });
   };
@@ -83,8 +83,8 @@ const Designation = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Delete Designation"
-          } Error`
+              : "Delete Designation Error"
+          }!`
         );
       });
   };
@@ -130,8 +130,8 @@ const Designation = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Update Designation Info"
-            } Error`
+                : "Update Designation Info Error"
+            }!`
           );
         });
     } else {
@@ -161,8 +161,8 @@ const Designation = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Add Designation Info"
-            } Error`
+                : "Add Designation Info Error"
+            }!`
           );
         });
     }

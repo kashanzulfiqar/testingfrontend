@@ -60,8 +60,8 @@ const TaxSlabs = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Tax Slabs Info"
-          } Error`
+              : "Get Tax Slabs Info Error"
+          }!`
         );
       });
   };
@@ -92,8 +92,8 @@ const TaxSlabs = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Delete Tax Slab"
-          } Error`
+              : "Delete Tax Slab Error"
+          }!`
         );
       });
   };
@@ -139,8 +139,8 @@ const TaxSlabs = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Update Tax Slab Info"
-            } Error`
+                : "Update Tax Slab Info Error"
+            }!`
           );
         });
     } else {
@@ -170,8 +170,8 @@ const TaxSlabs = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Add Tax Slab Info"
-            } Error`
+                : "Add Tax Slab Info Error"
+            }!`
           );
         });
     }
@@ -223,7 +223,10 @@ const TaxSlabs = () => {
       title: "Fix Tax",
       dataIndex: "fixedYearlyTax",
       render: (record, row) => {
-        return <span>{record}%</span>;
+        const record_fixedYearlyTax = record
+          ?.toString()
+          .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        return <span>{record_fixedYearlyTax}</span>;
       },
     },
     {
@@ -565,7 +568,15 @@ const TaxSlabs = () => {
                         rules={[
                           {
                             required: true,
-                            message: "please enter tax percentage",
+                            validator: (_, value) => {
+                              if(value.trim() === ''){
+                                return Promise.reject("please enter tax percentage");
+                              }
+                              else if (value > 100) {
+                                return Promise.reject("tax percentage must not be more than 100");
+                              }
+                              return Promise.resolve();
+                            },
                           },
                         ]}
                         className="custom-border"

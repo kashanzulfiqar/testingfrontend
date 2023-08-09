@@ -44,8 +44,8 @@ const Leaves = () => {
             ? err?.response?.data?.msg
             : err?.response?.data?.validation?.body?.message
             ? err?.response?.data?.validation?.body?.message
-            : "Get Company Info"
-        } Error`
+            : "Get Company Info Error"
+        }!`
       );
     });
 
@@ -108,8 +108,8 @@ const Leaves = () => {
             ? err?.response?.data?.msg
             : err?.response?.data?.validation?.body?.message
             ? err?.response?.data?.validation?.body?.message
-            : "Adding Company Info"
-        } Error`
+            : "Adding Company Info Error"
+        }!`
       );
     });
 
@@ -139,8 +139,8 @@ const Leaves = () => {
             ? err?.response?.data?.msg
             : err?.response?.data?.validation?.body?.message
             ? err?.response?.data?.validation?.body?.message
-            : "Updating Company Info"
-        } Error`
+            : "Updating Company Info Error"
+        }!`
       );
     });
 
@@ -174,20 +174,43 @@ const Leaves = () => {
           // {...layout}
           form={form}
           name="control-hooks"
-          onFinish={onFinish}
+          onFinish={(values) => {
+            const {
+              sickLeaves,
+              casualLeaves,
+              workFromHomeLeaves,
+              bereavementLeaves,
+              unpaidLeaves,
+              paternityLeaves,
+              maternityLeaves,
+              marriageLeaves,
+              halfDayLeaves,
+              annualLeaves,
+            } = values;
+        
+            const total = (
+              +sickLeaves +
+              +casualLeaves +
+              +workFromHomeLeaves +
+              +bereavementLeaves +
+              +unpaidLeaves +
+              +paternityLeaves +
+              +maternityLeaves +
+              +marriageLeaves +
+              Math.ceil(+halfDayLeaves / 2) + // Convert half day leaves to full days
+              +annualLeaves
+            );
+        
+            if (total <= 365) {
+              // Handle form submission
+              onFinish(values)
+              // Your submit logic here
+            } else {
+              message.error("Total number of all leaves must not be more than 365");
+              console.log(total);
+            }
+          }}
           onFinishFailed={() => message.error("Please Enter Required Fields!")}
-          // initialValues={{
-          //   sickLeaves: data ? data?.sickLeaves : '0',
-          //   casualLeaves: data ? data?.casualLeaves : '12',
-          //   workFromHomeLeaves: data ? data?.workFromHomeLeaves : '12',
-          //   bereavementLeaves: data ? data?.bereavementLeaves : '12',
-          //   unpaidLeaves: data ? data?.unpaidLeaves : '12',
-          //   paternityLeaves: data ? data?.paternityLeaves : '12',
-          //   maternityLeaves: data ? data?.maternityLeaves : '12',
-          //   marriageLeaves: data ? data?.marriageLeaves : '12',
-          //   halfDayLeaves: data ? data?.halfDayLeaves : '12',
-          //   annualLeaves: data ? data?.annualLeaves : '12',
-          // }}
         >
           <div className="row">
             <div className="col-sm-6">
@@ -202,15 +225,15 @@ const Leaves = () => {
                       required: true,
                       message: "please enter sick leaves",
                     },
-                    {
-                      validator: (_, value) => {
-                        const maxLeaves = 365; // Maximum allowed value
-                        if (value > maxLeaves) {
-                          return Promise.reject("number must be less than or equal to 365");
-                        }
-                        return Promise.resolve();
-                      },
-                    },
+                    // {
+                    //   validator: (_, value) => {
+                    //     const maxLeaves = 365; // Maximum allowed value
+                    //     if (value > maxLeaves) {
+                    //       return Promise.reject("number must be less than or equal to 365");
+                    //     }
+                    //     return Promise.resolve();
+                    //   },
+                    // },
                   ]}
                   className="custom-border"
                 >
@@ -235,15 +258,6 @@ const Leaves = () => {
                     {
                       required: true,
                       message: "please enter casual leaves",
-                    },
-                    {
-                      validator: (_, value) => {
-                        const maxLeaves = 365; // Maximum allowed value
-                        if (value > maxLeaves) {
-                          return Promise.reject("number must be less than or equal to 365");
-                        }
-                        return Promise.resolve();
-                      },
                     },
                   ]}
                   className="custom-border"
@@ -270,15 +284,6 @@ const Leaves = () => {
                       required: true,
                       message: "please enter work from home leaves",
                     },
-                    {
-                      validator: (_, value) => {
-                        const maxLeaves = 365; // Maximum allowed value
-                        if (value > maxLeaves) {
-                          return Promise.reject("number must be less than or equal to 365");
-                        }
-                        return Promise.resolve();
-                      },
-                    },
                   ]}
                   className="custom-border"
                 >
@@ -303,15 +308,6 @@ const Leaves = () => {
                     {
                       required: true,
                       message: "please enter bereavement leaves",
-                    },
-                    {
-                      validator: (_, value) => {
-                        const maxLeaves = 365; // Maximum allowed value
-                        if (value > maxLeaves) {
-                          return Promise.reject("number must be less than or equal to 365");
-                        }
-                        return Promise.resolve();
-                      },
                     },
                   ]}
                   className="custom-border"
@@ -338,15 +334,6 @@ const Leaves = () => {
                       required: true,
                       message: "please enter unpaid leaves",
                     },
-                    {
-                      validator: (_, value) => {
-                        const maxLeaves = 365; // Maximum allowed value
-                        if (value > maxLeaves) {
-                          return Promise.reject("number must be less than or equal to 365");
-                        }
-                        return Promise.resolve();
-                      },
-                    },
                   ]}
                   className="custom-border"
                 >
@@ -371,15 +358,6 @@ const Leaves = () => {
                     {
                       required: true,
                       message: "please enter paternity leaves",
-                    },
-                    {
-                      validator: (_, value) => {
-                        const maxLeaves = 365; // Maximum allowed value
-                        if (value > maxLeaves) {
-                          return Promise.reject("number must be less than or equal to 365");
-                        }
-                        return Promise.resolve();
-                      },
                     },
                   ]}
                   className="custom-border"
@@ -406,15 +384,6 @@ const Leaves = () => {
                       required: true,
                       message: "please enter maternity leaves",
                     },
-                    {
-                      validator: (_, value) => {
-                        const maxLeaves = 365; // Maximum allowed value
-                        if (value > maxLeaves) {
-                          return Promise.reject("number must be less than or equal to 365");
-                        }
-                        return Promise.resolve();
-                      },
-                    },
                   ]}
                   className="custom-border"
                 >
@@ -439,15 +408,6 @@ const Leaves = () => {
                     {
                       required: true,
                       message: "please enter marriage leaves",
-                    },
-                    {
-                      validator: (_, value) => {
-                        const maxLeaves = 365; // Maximum allowed value
-                        if (value > maxLeaves) {
-                          return Promise.reject("number must be less than or equal to 365");
-                        }
-                        return Promise.resolve();
-                      },
                     },
                   ]}
                   className="custom-border"
@@ -474,15 +434,6 @@ const Leaves = () => {
                       required: true,
                       message: "please enter half day leaves",
                     },
-                    {
-                      validator: (_, value) => {
-                        const maxLeaves = 365; // Maximum allowed value
-                        if (value > maxLeaves) {
-                          return Promise.reject("number must be less than or equal to 365");
-                        }
-                        return Promise.resolve();
-                      },
-                    },
                   ]}
                   className="custom-border"
                 >
@@ -507,15 +458,6 @@ const Leaves = () => {
                     {
                       required: true,
                       message: "please enter annual leaves",
-                    },
-                    {
-                      validator: (_, value) => {
-                        const maxLeaves = 365; // Maximum allowed value
-                        if (value > maxLeaves) {
-                          return Promise.reject("number must be less than or equal to 365");
-                        }
-                        return Promise.resolve();
-                      },
                     },
                   ]}
                   className="custom-border"
