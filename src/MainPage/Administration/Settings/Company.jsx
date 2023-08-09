@@ -107,6 +107,12 @@ const Company = () => {
 
   const numericPattern = new RegExp(/^[0-9]*$/);
 
+  const isValidEmail = (email) => {
+    // Regular expression to validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
   return (
     <div>
       <div>
@@ -145,18 +151,15 @@ const Company = () => {
                       whitespace: true,
                       required: true,
                       validator: (_, value) => {
-                        if(value.trim() === ''){
-                          return Promise.reject("please enter company name");
-                        }
-                        else if (/\s{2,}/.test(value)) {
-                          return Promise.reject("please remove consecutive spaces");
+                        if (value.trim() === '') {
+                          return Promise.reject('Please enter company name');
+                        } else if (/\s{2,}/.test(value)) {
+                          return Promise.reject('Please remove consecutive spaces');
+                        } else if (value.length < 3) {
+                          return Promise.reject('Company name must be at least 3 characters long');
                         }
                         return Promise.resolve();
                       },
-                    },
-                    {
-                      min: 3,
-                      message: "name length must be at least 3 characters long",
                     },
                   ]}
                 >
@@ -495,10 +498,7 @@ const Company = () => {
                           return Promise.reject('Please enter company email');
                         } else if (/\s{2,}/.test(value)) {
                           return Promise.reject('Please remove consecutive spaces');
-                        } else if (email => {
-                          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                          return emailRegex.test(email);
-                        }) {
+                        } else if (!isValidEmail(value)) {
                           return Promise.reject('please enter a valid email');
                         }
                         return Promise.resolve();
