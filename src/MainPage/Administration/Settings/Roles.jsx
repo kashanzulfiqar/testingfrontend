@@ -1,30 +1,30 @@
-import { Table, Button, Form, Input, message, TimePicker, Select } from "antd";
+import { Table, Button, Form, Input, message, Empty, Select, Spin } from "antd";
 import React, { useEffect, useState } from "react";
 import { itemRender, onShowSizeChange } from "../../paginationfunction";
 import "antd/dist/antd.css";
 import "../../antdstyle.css";
 import Modal from "@mui/material/Modal";
-import moment from "moment";
-
-import Accordion from "@mui/material/Accordion";
-import AccordionDetails from "@mui/material/AccordionDetails";
-import AccordionSummary from "@mui/material/AccordionSummary";
-import Typography from "@mui/material/Typography";
 // import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import Box from "@mui/material/Box";
-import Checkbox from "@mui/material/Checkbox";
-import FormControlLabel from "@mui/material/FormControlLabel";
 import { useSelector } from "react-redux";
 import AccordianCheckBox from "../../../Components/Accordian";
+import { apiServices } from "../../../Services/apiServices";
+import EmptyTable from "../../../files/Icons/EmptyTable.svg";
+import { LoadingOutlined } from "@ant-design/icons";
 
 const Roles = () => {
   const { Option } = Select;
 
-  const login = useSelector((state) => state.user.loginvalue);
-  useEffect(() => {
-    console.log("login==========", login);
-  }, []);
+  const user_state = useSelector((state) => state.user.loginvalue);
+  let comp_id = user_state?.user?.companyId;
 
+  const [updatePermissions, setUpdatePermissions] = useState([]);
+  const [permissions, setPermissions] = useState([]);
+  const [pageSize, setPageSize] = useState(20);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [templateLoader, setTemplateLoader] = useState(false);
+  const [rolePermeLoader, setRolePermLoader] = useState(false);
+  const [tableLoader, setTableLoader] = useState(false);
+  const [loader, setLoader] = useState(false);
   const [open, setOpen] = useState({
     isAddOpen: false,
     isDelOpen: false,
@@ -34,20 +34,304 @@ const Roles = () => {
     isOpen: false,
     data: "",
   });
+  const [data, setData] = useState([]);
 
-  const [datas, setData] = useState([
-    { id: 1, roleName: "slab name 1", permissions: [{ all: true }] },
-    { id: 2, roleName: "slab name 2", permissions: [{ all: false }] },
-  ]);
+  useEffect(() => {
+    getRole();
+  }, []);
+
+  const getRole = () => {
+    setTableLoader(true);
+    apiServices("GET", "role/view-role", null, user_state)
+      .then((res) => {
+        // console.log(res?.data);
+        if (res?.data?.success === true) {
+          setData(res?.data?.Role);
+          setTableLoader(false);
+        }
+      })
+      .catch((err) => {
+        setTableLoader(false);
+        // console.log(err);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Get Role Info Error"
+          }`
+        );
+      });
+  };
+
+  const getPermissionsTemplate = () => {
+    setTemplateLoader(true);
+    apiServices("GET", "permissions-template", null, user_state)
+      .then((res) => {
+        console.log(res?.data);
+        if (res?.data?.success === true) {
+          setPermissions(res?.data?.PermissionsTemplate);
+          setTemplateLoader(false);
+        }
+      })
+      .catch((err) => {
+        setTemplateLoader(false);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Get Permissions Template Info Error"
+          }`
+        );
+      });
+  };
+
+  const getRolePermissions = (row_data) => {
+    setRolePermLoader(true);
+    apiServices("GET", `permissions/?roleId=${row_data?._id}`, null, user_state)
+      .then((res) => {
+        console.log(res?.data);
+        if (res?.data?.success === true) {
+          setPermissions(res?.data?.permissions?.permissions);
+          setUpdatePermissions(res?.data?.permissions);
+          setRolePermLoader(false);
+        }
+      })
+      .catch((err) => {
+        setRolePermLoader(false);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Get Permissions Template Info Error"
+          }`
+        );
+      });
+  };
 
   const handleClose = () => {
-    setOpen({ isAddOpen: false, isDelOpen: false, isEditOpen: false, data: "" });
+    setOpen({
+      isAddOpen: false,
+      isDelOpen: false,
+      isEditOpen: false,
+      data: "",
+    });
+    setPermissions([]);
   };
   const handlePermClose = () => {
     setOpenPermissions({ isOpen: false, data: "" });
+    setPermissions([]);
   };
   const handleEditClose = () => {
-    setOpen({ isAddOpen: false, isDelOpen: false, isEditOpen: false, data: "" });
+    setOpen({
+      isAddOpen: false,
+      isDelOpen: false,
+      isEditOpen: false,
+      data: "",
+    });
+    setPermissions([]);
+  };
+
+  const onFinish = (values) => {
+    setLoader(true)
+    apiServices("POST", "role/add-role", values, user_state)
+      .then((res) => {
+        if (res?.data?.success === true) {
+          // console.log(data);
+          setOpenPermissions({ isOpen: true, data: res?.data?.Role });
+          handleClose();
+          getPermissionsTemplate();
+          setLoader(false)
+        }
+      })
+      .catch((err) => {
+        setLoader(false)
+        // console.log(err);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Add Role Info Error"
+          }`
+        );
+      });
+  };
+  const onAddFinish = (info) => {
+    setLoader(true)
+    const allpermissions = permissions.every((item) =>
+      item.subPermissions.every((subObj) => subObj.checked === true)
+    );
+
+    let new_role = {
+      _id: info?._id,
+      companyId: info?.companyId,
+      roleName: info?.roleName,
+      customPermissions: allpermissions,
+    };
+
+    apiServices("PUT", "role/update-role", new_role, user_state)
+      .then((res) => {
+        // console.log(res?.data);
+        if (res?.data?.success === true) {
+        }
+      })
+      .catch((err) => {
+        setLoader(false)
+        // console.log(err);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Add Role Custom Permission Error"
+          }`
+        );
+      });
+
+    let perm_data = {
+      roleId: info?._id,
+      companyId: comp_id,
+      permissions: permissions,
+    };
+    apiServices("POST", "permissions", perm_data, user_state)
+      .then((res) => {
+        // console.log(res?.data);
+        if (res?.data?.success === true) {
+          setData([
+            ...data,
+            {
+              ...info,
+              customPermissions: allpermissions,
+            },
+          ]);
+          handlePermClose();
+          message.success("Role and Permissions Added Successfully!");
+          setLoader(false)
+        }
+      })
+      .catch((err) => {
+        setLoader(false)
+        // console.log(err);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Add Permissions Info Error"
+          }`
+        );
+      });
+  };
+  const onEditFinish = (values, info) => {
+    setLoader(true)
+    const allpermissions = permissions.every((item) =>
+      item.subPermissions.every((subObj) => subObj.checked === true)
+    );
+
+    let updated_data = {
+      ...updatePermissions,
+      permissions: permissions,
+    };
+    apiServices("PUT", "permissions", updated_data, user_state)
+      .then((res) => {
+        // console.log(res?.data);
+      })
+      .catch((err) => {
+        setLoader(false);
+        // console.log(err);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Update Permissions Info Error"
+          }`
+        );
+      });
+
+    let role_data = {
+      _id: info?._id,
+      companyId: info?.companyId,
+      roleName: values?.roleName,
+      customPermissions: allpermissions,
+    };
+
+    apiServices("PUT", "role/update-role", role_data, user_state)
+      .then((res) => {
+        // console.log(res?.data);
+        if (res?.data?.success === true) {
+          // console.log(data);
+          setData(
+            data.map((role) => {
+              if (role._id === info._id) {
+                return {
+                  ...role,
+                  roleName: values?.roleName,
+                  customPermissions: allpermissions,
+                };
+              } else {
+                return {
+                  ...role,
+                };
+              }
+            })
+          );
+          handleEditClose();
+          message.success("Role and Permissions Updated Successfully!");
+          setLoader(false);
+        }
+      })
+      .catch((err) => {
+        setLoader(false);
+        // console.log(err);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Update Role Info Error"
+          }`
+        );
+      });
+  };
+
+  const onHandleDelete = (id) => {
+    setLoader(true);
+    apiServices("DELETE", "role/delete-role", id, user_state)
+      .then((res) => {
+        // console.log(res?.data);
+        if (res?.data?.success === true) {
+          // console.log(data);
+          setData([...data.filter((role) => role._id !== id)]);
+          handleClose();
+          message.success("Role Deleted Successfully!");
+          setLoader(false);
+        }
+      })
+      .catch((err) => {
+        setLoader(false);
+        // console.log(err);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Delete role Error"
+          }`
+        );
+      });
   };
 
   const columns = [
@@ -55,7 +339,7 @@ const Roles = () => {
       title: "#",
       dataIndex: "",
       width: 50,
-      render: (text, record, index) => index + 1,
+      render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
     },
     {
       title: "Role Name",
@@ -64,16 +348,10 @@ const Roles = () => {
     },
     {
       title: "Module Access",
-      dataIndex: "permissions",
+      dataIndex: "customPermissions",
       // sorter: (a, b) => a.maxStartTime.length - b.maxStartTime.length,
       render: (record, row) => {
-        return (
-          <span>
-            {record?.map((d) =>
-              d?.all ? "Full Permissions" : "Custom Permissions"
-            )}
-          </span>
-        );
+        return <>{record ? "Full Permissions" : "Custom Permissions"}</>;
       },
     },
     {
@@ -99,6 +377,7 @@ const Roles = () => {
                   isDelOpen: false,
                   data: row,
                 });
+                getRolePermissions(row);
               }}
             >
               <i className="fa fa-pencil m-r-5" /> Edit
@@ -122,20 +401,53 @@ const Roles = () => {
     },
   ];
 
-  const onFinish = (values) => {
-    console.log("submit", values);
-    setOpenPermissions({ isOpen: true, data: "" });
-    handleClose();
-    // message.success('Role and Permissions Added Successfully!')
-  };
-  const onFinish2 = (values) => {
-    handlePermClose();
-    message.success("Role and Permissions Added Successfully!");
-  };
-  const onFinish3 = (values) => {
-    handleEditClose();
-    message.success("Role and Permissions Updated Successfully!");
-  };
+  const customEmptyText = (
+    <Empty
+      image={<img src={EmptyTable} />}
+      // image={<InboxOutlined />}
+      imageStyle={
+        {
+          // fontSize: 48,
+          // color: '#1890ff',
+        }
+      }
+      style={{
+        height: "300px",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+      }}
+      description={
+        <div style={{ display: "" }}>
+          <div
+            style={{
+              color: "#34343F",
+              fontWeight: "500",
+              fontSize: "14px",
+              margin: "7px 0px 4px 0px",
+            }}
+          >
+            No role added yet
+          </div>
+          <div
+            style={{ color: "#464665", fontWeight: "300", fontSize: "13px" }}
+          >
+            Click 'Add Role' Button To Create <br /> A New Role{" "}
+          </div>
+        </div>
+      }
+    />
+  );
+
+  const antIcon = (
+    <LoadingOutlined
+      style={{
+        fontSize: 24,
+        color: "#fff",
+      }}
+      spin
+    />
+  );
 
   return (
     <div>
@@ -171,21 +483,33 @@ const Roles = () => {
           <div className="col-md-12">
             <div className="table-responsive">
               <Table
-                className="table-striped"
+                loading={tableLoader}
+                className={data?.length > 0 ? "table-striped" : ""}
+                locale={{
+                  emptyText: tableLoader ? null : customEmptyText,
+                }}
                 pagination={{
-                  total: datas.length,
+                  total: data?.length,
+                  pageSize: pageSize,
+                  defaultCurrent: 1,
+                  current: currentPage,
                   // pageSize: 1,
                   // hideOnSinglePage: true,
                   showTotal: (total, range) =>
                     `Showing ${range[0]} to ${range[1]} of ${total} entries`,
                   showSizeChanger: true,
-                  onShowSizeChange: onShowSizeChange,
+                  onShowSizeChange: (current, size) => {
+                    setPageSize(size);
+                    setCurrentPage(1);
+                  },
+                  pageSizeOptions: ["20", "30", "40", "50"],
+                  onChange: (page, size) => setCurrentPage(page),
                   itemRender: itemRender,
                 }}
                 style={{ overflowX: "auto" }}
                 columns={columns}
                 bordered
-                dataSource={datas}
+                dataSource={data}
                 rowKey={(record) => record.id}
                 // onChange={this.handleTableChange}
               />
@@ -254,9 +578,16 @@ const Roles = () => {
                 // form={form}
                 name="control-hooks"
                 onFinish={onFinish}
-                onFinishFailed={() =>
-                  message.error("Please Fill Required Fields!")
-                }
+                onFinishFailed={({ errorFields }) => {
+                  const consecutiveSpacesError = errorFields.find((field) =>
+                    field.errors.toString().includes("consecutive spaces")
+                  );
+                  if (consecutiveSpacesError) {
+                    message.error("Please Remove Consecutive Spaces!");
+                  } else {
+                    message.error("Please Fill Required Fields!");
+                  }
+                }}
                 initialValues={{
                   roleName: open?.data ? open?.data?.roleName : "",
                 }}
@@ -271,13 +602,27 @@ const Roles = () => {
                         name="roleName"
                         rules={[
                           {
+                            whitespace: true,
                             required: true,
-                            message: "please enter role name",
+                            validator: (_, value) => {
+                              if (value.trim() === "") {
+                                return Promise.reject("please enter role name");
+                              } else if (/\s{2,}/.test(value)) {
+                                return Promise.reject(
+                                  "please remove consecutive spaces"
+                                );
+                              }
+                              return Promise.resolve();
+                            },
                           },
                         ]}
                         className="custom-border"
                       >
-                        <Input className="form-control" autoFocus />
+                        <Input
+                          className="form-control"
+                          maxLength={50}
+                          autoFocus
+                        />
                       </Form.Item>
                     </div>
                   </div>
@@ -286,8 +631,12 @@ const Roles = () => {
                       <Button
                         htmlType="submit"
                         className="btn btn-primary submit-btn"
+                        disabled={loader}
                       >
-                        Next
+                        {
+                          loader ? <Spin size="small" indicator={antIcon} />
+                            : 'Next'
+                        }
                       </Button>
                     </Form.Item>
                   </div>
@@ -328,21 +677,28 @@ const Roles = () => {
               <div className="modal-btn delete-action">
                 <div className="row">
                   <div className="col-6">
-                    <a
-                      href="javascript:void(0)"
+                    <Button
+                      htmlType="submit"
                       className="btn btn-primary continue-btn"
+                      onClick={() => onHandleDelete(open?.data?._id)}
+                      disabled={loader}
+                      style={{ width: "100%" }}
                     >
-                      Delete
-                    </a>
+                      {loader ? (
+                        <Spin size="small" indicator={antIcon} />
+                      ) : (
+                        "Delete"
+                      )}
+                    </Button>
                   </div>
                   <div className="col-6">
-                    <a
-                      href="javascript:void(0)"
+                    <Button
                       onClick={handleClose}
                       className="btn btn-primary submit-btn"
+                      style={{ width: "100%" }}
                     >
                       Cancel
-                    </a>
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -351,7 +707,7 @@ const Roles = () => {
         </div>
       </Modal>
 
-      {/* permissions modal */}
+      {/* Add permissions modal */}
       <Modal
         open={openPermissions?.isOpen}
         // open={openPermissions?.isOpen}
@@ -370,7 +726,7 @@ const Roles = () => {
           className="modal-dialog modal-dialog-centered modal-lg"
           role="document"
         >
-          <div className="modal-content">
+          <div className="modal-content" style={{ minHeight: "580px" }}>
             <div className="modal-header">
               <h5 className="modal-title">Permissions</h5>
               <button type="button" className="close" onClick={handlePermClose}>
@@ -378,303 +734,48 @@ const Roles = () => {
               </button>
             </div>
             <div className="modal-body">
-              <Form
-                // form={form}
-                name="control-hooks"
-                onFinish={onFinish2}
-                onFinishFailed={() =>
-                  message.error("Please Fill Required Fields!")
-                }
-                initialValues={
-                  {
-                    // roleName: open?.data ? open?.data?.roleName : '',
-                  }
-                }
-              >
-                {/* <div className="table-responsive m-t-15">
-                     <table className="table table-striped custom-table">
-                       <thead>
-                         <tr>
-                           <th>Module Permission</th>
-                           <th className="text-center">Read</th>
-                           <th className="text-center">Write</th>
-                           <th className="text-center">Create</th>
-                           <th className="text-center">Delete</th>
-                           <th className="text-center">Import</th>
-                           <th className="text-center">Export</th>
-                         </tr>
-                       </thead>
-                       <tbody>
-                         <tr key={1}>
-                           <td>Holidays</td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input type="checkbox" />
-                           </td>
-                         </tr>
-                         <tr key={2}>
-                           <td>Leaves</td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input type="checkbox" />
-                           </td>
-                         </tr>
-                         <tr key={3}>
-                           <td>Clients</td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input type="checkbox" />
-                           </td>
-                         </tr>
-                         <tr key={4}>
-                           <td>Projects</td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input type="checkbox" />
-                           </td>
-                         </tr>
-                         <tr key={5}>
-                           <td>Tasks</td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input type="checkbox" />
-                           </td>
-                         </tr>
-                         <tr key={6}>
-                           <td>Chats</td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input type="checkbox" />
-                           </td>
-                         </tr>
-                         <tr key={7}>
-                           <td>Assets</td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input type="checkbox" />
-                           </td>
-                         </tr>
-                         <tr key={8}>
-                           <td>Timing Sheets</td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input type="checkbox" />
-                           </td>
-                         </tr>
-                       </tbody>
-                     </table>
-                   </div> */}
-                {/* <Accordion>
-                  <AccordionSummary
-                    // expandIcon={<ExpandMoreIcon />}
-                    aria-controls="panel1bh-content"
-                    id="panel1bh-header"
-                    sx={{
-                      display: "flex",
-                      flexDirection: "row",
-                      alignItems: "center",
-                    }}
-                  >
-                    <Typography sx={{ width: "33%", flexShrink: 0 }}>
-                      <FormControlLabel
-                        label={
-                          <span
-                            style={{
-                              fontSize: "14px",
-                              fontWeight: "700",
-                              color: "#151515",
-                            }}
-                          >
-                            label
-                          </span>
-                        }
-                        control={
-                          <Checkbox
-                            id="1"
-                            checked={true}
-                            // indeterminate={item?.subPermissions?.every(subObj => subObj.checked === true ? true : false) ? false
-                            //     : item?.subPermissions?.some(subObj => subObj.checked === true ? true : false)}
-                            // onChange={(e) => handleCheckboxAll(e, item)}
-                          />
-                        }
-                      />
-                    </Typography>
-                    <Typography
-                      sx={{
-                        marginTop: "10px",
-                        fontSize: "14px",
-                        color: "#151515de",
-                      }}
-                    >
-                      description
-                    </Typography>
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    <Box
-                      sx={{ display: "flex", flexDirection: "column", ml: 3 }}
-                    >
-                      <Box
-                        sx={{
-                          display: "flex",
-                          flexDirection: "row",
-                          alignItems: "center",
-                        }}
+              {templateLoader ? (
+                <Spin
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    marginTop: "25%",
+                  }}
+                />
+              ) : (
+                <Form
+                  // form={form}
+                  name="control-hooks"
+                  onFinish={() => onAddFinish(openPermissions?.data)}
+                >
+                  <AccordianCheckBox
+                    permissions={permissions}
+                    setPermissions={setPermissions}
+                  />
+
+                  <div className="submit-section">
+                    <Form.Item>
+                      <Button
+                        htmlType="submit"
+                        className="btn btn-primary submit-btn"
+                        disabled={loader}
                       >
-                        <Typography sx={{ width: "31%", flexShrink: 0 }}>
-                          <FormControlLabel
-                            label={
-                              <span
-                                style={{ fontSize: "14px", color: "#151515" }}
-                              >
-                                title
-                              </span>
-                            }
-                            control={<Checkbox checked={false} />}
-                          />
-                        </Typography>
-                        <Typography
-                          sx={{ fontSize: "14px", color: "#151515de" }}
-                        >
-                          sub description
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </AccordionDetails>
-                </Accordion> */}
-
-                <AccordianCheckBox />
-
-
-                {/* <div className="submit-section">
-                  <Form.Item>
-                    <Button
-                      htmlType="submit"
-                      className="btn btn-primary submit-btn"
-                    >
-                      Submit
-                    </Button>
-                  </Form.Item>
-                </div> */}
-              </Form>
+                        {
+                          loader ? <Spin size="small" indicator={antIcon} />
+                            : 'Submit'
+                        }
+                      </Button>
+                    </Form.Item>
+                  </div>
+                </Form>
+              )}
             </div>
           </div>
         </div>
       </Modal>
 
-            {/* permissions modal */}
-            <Modal
+      {/* Edit permissions modal */}
+      <Modal
         open={open?.isEditOpen}
         // open={openPermissions?.isOpen}
         onClose={handleEditClose}
@@ -703,15 +804,20 @@ const Roles = () => {
               <Form
                 // form={form}
                 name="control-hooks"
-                onFinish={onFinish3}
-                onFinishFailed={() =>
-                  message.error("Please Fill Required Fields!")
-                }
-                initialValues={
-                  {
-                    roleName: open?.data ? open?.data?.roleName : '',
+                onFinish={(val) => onEditFinish(val, open?.data)}
+                onFinishFailed={({ errorFields }) => {
+                  const consecutiveSpacesError = errorFields.find((field) =>
+                    field.errors.toString().includes("consecutive spaces")
+                  );
+                  if (consecutiveSpacesError) {
+                    message.error("Please Remove Consecutive Spaces!");
+                  } else {
+                    message.error("Please Fill Required Fields!");
                   }
-                }
+                }}
+                initialValues={{
+                  roleName: open?.data ? open?.data?.roleName : "",
+                }}
               >
                 <div className="row">
                   <div className="col-12">
@@ -723,44 +829,61 @@ const Roles = () => {
                         name="roleName"
                         rules={[
                           {
+                            whitespace: true,
                             required: true,
-                            message: "please enter role name",
+                            validator: (_, value) => {
+                              if (value.trim() === "") {
+                                return Promise.reject("please enter role name");
+                              } else if (/\s{2,}/.test(value)) {
+                                return Promise.reject(
+                                  "please remove consecutive spaces"
+                                );
+                              }
+                              return Promise.resolve();
+                            },
                           },
                         ]}
                         className="custom-border"
                       >
-                        <Input className="form-control" autoFocus />
+                        <Input
+                          className="form-control"
+                          maxLength={50}
+                          autoFocus
+                        />
                       </Form.Item>
                     </div>
                   </div>
-
-                  <AccordianCheckBox />
-
-                  {/* <div className="submit-section">
-                    <Form.Item>
-                      <Button
-                        htmlType="submit"
-                        className="btn btn-primary submit-btn"
-                      >
-                        Submitt
-                      </Button>
-                    </Form.Item>
-                  </div> */}
+                  {rolePermeLoader ? (
+                    <Spin
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        marginTop: "20%",
+                        marginBottom: "20%",
+                      }}
+                    />
+                  ) : (
+                    <AccordianCheckBox
+                      permissions={permissions}
+                      setPermissions={setPermissions}
+                    />
+                  )}
                 </div>
 
-                
-
-
-                {/* <div className="submit-section">
+                <div className="submit-section">
                   <Form.Item>
                     <Button
                       htmlType="submit"
                       className="btn btn-primary submit-btn"
+                      disabled={loader}
                     >
-                      Submit
+                      {
+                        loader ? <Spin size="small" indicator={antIcon} />
+                          : 'Submit'
+                      }
                     </Button>
                   </Form.Item>
-                </div> */}
+                </div>
               </Form>
             </div>
           </div>
