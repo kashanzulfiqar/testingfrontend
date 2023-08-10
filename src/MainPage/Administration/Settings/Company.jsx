@@ -40,7 +40,7 @@ const Company = () => {
   };
 
   const onHandleChange = (type, value) => {
-    if (type === "companyPhoneNo" || type === "mobileNumber") {
+    if (type === "companyPhoneNo" || type === "mobileNumber" || type === "fax") {
       let newvalue = value ? "+" + value : "";
 
       const updatedValues = {
@@ -691,30 +691,20 @@ const Company = () => {
                     {
                       whitespace: true,
                       required: true,
-                      validator: (_, value) => {
-                        if(value.trim() === ''){
-                          return Promise.reject("please enter fax");
-                        }
-                        else if (/\s{2,}/.test(value)) {
-                          return Promise.reject("please remove consecutive spaces");
-                        }
-                        return Promise.resolve();
-                      },
+                      message: "please enter fax",
                     },
                     {
                       min: 5,
-                      message: "Fax length must be at least 5 characters long",
+                      message: "fax length must be at least 5 digits long",
                     },
                   ]}
                 >
-                  <Input style={{ display: "none" }} value={allValues?.fax} />
-                  <input
-                    className="form-control"
-                    defaultValue={data ? data?.fax : ""}
-                    onInput={(e) => {
-                      onHandleChange("fax", e.target.value);
+                  <Input style={{ display: "none" }} />
+                  <PhoneNoInput
+                    onChangePhone={(value) => {
+                      onHandleChange("fax", value);
                     }}
-                    maxLength={20}
+                    phone={data ? data?.fax : ""}
                   />
                 </Form.Item>
               </div>

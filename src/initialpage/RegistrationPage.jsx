@@ -53,7 +53,7 @@ const Registrationpage = (props) => {
   };
 
   const onHandleRegChange = (type, value) => {
-    if (type === "companyPhoneNo" || type === "mobileNumber") {
+    if (type === "companyPhoneNo" || type === "mobileNumber" || type === "fax") {
       let newvalue = value ? "+" + value : "";
 
       const updatedValues = {
@@ -779,29 +779,28 @@ const Registrationpage = (props) => {
                     {
                       whitespace: true,
                       required: true,
-                      validator: (_, value) => {
-                        if(!value || value?.trim() === ''){
-                          return Promise.reject("please enter fax");
-                        }
-                        else if (/\s{2,}/.test(value)) {
-                          return Promise.reject("please remove consecutive spaces");
-                        }
-                        return Promise.resolve();
-                      },
+                      message: "please enter fax",
                     },
                     {
                       min: 5,
-                      message: "Fax length must be at least 5 characters long",
+                      message: "fax length must be at least 5 digits long",
                     },
                   ]}
                 >
-                  <Input style={{ display: "none" }} value={regValues?.fax} />
-                  <input
-                    className="form-control"
-                    onInput={(e) => {
-                      onHandleRegChange("fax", e.target.value);
+                  <Input style={{ display: "none" }} />
+                  <PhoneNoInput
+                    onChangePhone={(value) => {
+                      onHandleRegChange("fax", value);
                     }}
-                    maxLength={20}
+                    // phone={state ? formData.contactNo : postformData.contactNo}
+                    // onChangePhone={(value) => {
+                    //   onHandleChange("contactNo", value)
+                    // }}
+                    // onCountryChange={(val) => {
+                    //   onHandleChange("contactNo", `${val}`);
+                    // }}
+                    // phone={state ? formData.contactNo : postformData.contactNo}
+                    // phoneError={phoneError}
                   />
                 </Form.Item>
               </div>
