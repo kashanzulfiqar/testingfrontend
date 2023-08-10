@@ -12,6 +12,8 @@ import { Form, Input, message, Spin } from "antd";
 import SuccessIcon from "../files/Icons/SuccessIcon.svg";
 import { LoadingOutlined } from "@ant-design/icons";
 import { apiServices } from "../Services/apiServices.js";
+import favicon from '../files/Icons/DaftarProIcon.svg';
+
 
 const ResetPassword = () => {
   const [form] = Form.useForm();
@@ -116,6 +118,7 @@ const ResetPassword = () => {
       <Helmet>
         <title>Reset Password - DaftarPro</title>
         <meta name="description" content="Login page" />
+        <link rel="icon" type="image/x-icon" href={favicon} />				
       </Helmet>
       <div className="account-content">
         {/* <Link to="/applyjob/joblist" className="btn btn-primary apply-btn">Apply Job</Link> */}
