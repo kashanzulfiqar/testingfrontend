@@ -7140,6 +7140,11 @@ textarea.form-control {
 
 /* ................. custom css styling ................ */
 
+/* antd placeholder color */
+.ant-input::placeholder {
+  color: #D1D1D1 !important;
+}
+
 /* antd empty table border */
 .ant-table-content > table {
   border-right: 1px solid #f0f0f0;
