@@ -51,16 +51,6 @@ const App = () => {
   //     }
   //   }, []);
 
-  const [menu, setMenu] = useState(false);
-
-  const toggleMobileMenu = () => {
-    setMenu(!menu);
-  };
-
-  useEffect(() => {
-    setMenu(false);
-    window.scrollTo(0, 0);
-  }, [location])
   
 
   useEffect(() => {
@@ -89,7 +79,7 @@ const App = () => {
         {/* <Route path="/app/*" element={<DefaultLayout />} /> */}
 
         {/* <Route element={<Layout />}> */}
-        <Route path="/" element={<><RequireAuth /> <div className={`main-wrapper ${menu ? 'slide-nav' : ''}`}> <Header onMenuClick={toggleMobileMenu} /> <Sidebar /> </div> </>}>
+        <Route path="/" element={<><RequireAuth /> </>}>
           {/* <Route> */}
           {/* dashboard */}
           <Route path={`main/dashboard`} element={<AdminDashboard />} />
