@@ -330,7 +330,7 @@ module.exports = {
   entry: path.join(__dirname, "src", "index.js"),
   output: {
     path:path.resolve(__dirname, "dist"),
-    // publicPath: publicPath, // base path where referenced files will be look for
+    publicPath: publicPath, // base path where referenced files will be look for
   },
   devServer: {
     // contentBase: path.join(__dirname, './'), // where dev server will look for static files, not compiled
