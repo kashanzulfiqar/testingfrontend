@@ -264,16 +264,16 @@ const Loginpage = (props) => {
               </div> :
               <div className="account-box" style={{ width: '100%', maxWidth: '630px', height: 'auto', paddingInline: '20px' }}>
                 <div className="account-wrapper">
-                  <h3 className="account-title" style={{ padding: '30px 0px 20px 0px', fontSize: '32px', wordSpacing: "-9px" }}>Email not verified yet!</h3>
+                  <h3 className="account-title" style={{ padding: '30px 0px 20px 0px', fontSize: '32px' }}>Email not verified yet!</h3>
                   {/* <p className="account-subtitle">Enter your email to get a password reset link</p> */}
                   {/* Account Form */}
                   <div className="account-footer">
-                    <p style={{ color: '#6F6F6F', fontSize: '18px', wordSpacing: "-4.5px" }}>Confirm your email address. We have sent a verification <br /> email to</p>
+                    <p style={{ color: '#6F6F6F', fontSize: '18px' }}>Confirm your email address. We have sent a verification <br /> email to</p>
                     <p style={{ fontWeight: '700', fontSize: '18px' }}>{emailVal}</p>
-                    <p style={{ color: '#0097C7', fontSize: '18px', wordSpacing: "-4.5px" }}>Not your email address?</p>
+                    <p style={{ color: '#0097C7', fontSize: '18px' }}>Not your email address?</p>
                     {/* <p style={{fontSize: '18px'}}>Please <a onClick={() => {setEmailNotVerified(false); setLoginValues({})}} style={{color: '#0097C7'}}>Click-Here</a> to Login again with the correct email address.</p> */}
-                    <p style={{ color: '#6F6F6F', fontSize: '18px', wordSpacing: "-4.5px" }}>Make sure to check your inbox and your spam folder if you can't find the email.</p>
-                    <p style={{ color: '#6F6F6F ', fontSize: '18px', wordSpacing: "-4.5px" }}>Still not Received? <a style={{ color: '#0097C7' }}>Contact Us</a></p>
+                    <p style={{ color: '#6F6F6F', fontSize: '18px' }}>Make sure to check your inbox and your spam folder if you can't find the email.</p>
+                    <p style={{ color: '#6F6F6F ', fontSize: '18px' }}>Still not Received? <a style={{ color: '#0097C7' }}>Contact Us</a></p>
                   </div>
                   {/* /Account Form */}
                 </div>

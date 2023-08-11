@@ -163,7 +163,6 @@ const ForgotPassword = () => {
                   style={{
                     padding: "30px 0px 20px 0px",
                     fontSize: "32px",
-                    wordSpacing: "-9px",
                   }}
                 >
                   All Done!
@@ -175,7 +174,6 @@ const ForgotPassword = () => {
                     style={{
                       color: "#6F6F6F",
                       fontSize: "18px",
-                      wordSpacing: "-4.5px",
                     }}
                   >
                     We’ve emailed you with instructions to reset your password.
@@ -185,7 +183,6 @@ const ForgotPassword = () => {
                     style={{
                       color: "#0097C7",
                       fontSize: "18px",
-                      wordSpacing: "-4.5px",
                     }}
                   >
                     Not your email address?
@@ -195,7 +192,6 @@ const ForgotPassword = () => {
                     style={{
                       color: "#6F6F6F",
                       fontSize: "18px",
-                      wordSpacing: "-4.5px",
                     }}
                   >
                     Make sure to check your inbox and your spam folder if you
@@ -205,7 +201,6 @@ const ForgotPassword = () => {
                     style={{
                       color: "#6F6F6F ",
                       fontSize: "18px",
-                      wordSpacing: "-4.5px",
                     }}
                   >
                     Still not Received?{" "}

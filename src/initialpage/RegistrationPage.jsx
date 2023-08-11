@@ -1237,7 +1237,7 @@ const Registrationpage = (props) => {
               <div className="account-wrapper">
                 <h3
                   className="account-title"
-                  style={{ padding: "30px 0px 20px 0px", fontSize: "32px", wordSpacing: "-9px" }}
+                  style={{ padding: "30px 0px 20px 0px", fontSize: "32px" }}
                 >
                   Congratulations!
                 </h3>
@@ -1248,7 +1248,6 @@ const Registrationpage = (props) => {
                     style={{
                       color: "#444444",
                       fontSize: "18px",
-                      wordSpacing: "-4.5px",
                     }}
                   >
                     Your Company Registered Successfully. Admin Account Created.
@@ -1257,7 +1256,6 @@ const Registrationpage = (props) => {
                     style={{
                       color: "#6F6F6F",
                       fontSize: "18px",
-                      wordSpacing: "-4.5px",
                     }}
                   >
                     Confirm your email address. We have sent a verification{" "}
@@ -1271,7 +1269,6 @@ const Registrationpage = (props) => {
                     style={{
                       color: "#0097C7",
                       fontSize: "18px",
-                      wordSpacing: "-4.5px",
                     }}
                   >
                     Not your email address?
@@ -1281,7 +1278,6 @@ const Registrationpage = (props) => {
                     style={{
                       color: "#6F6F6F",
                       fontSize: "18px",
-                      wordSpacing: "-4.5px",
                     }}
                   >
                     Make sure to check your inbox and your spam folder if you
@@ -1291,7 +1287,6 @@ const Registrationpage = (props) => {
                     style={{
                       color: "#6F6F6F ",
                       fontSize: "18px",
-                      wordSpacing: "-4.5px",
                     }}
                   >
                     Still not Received?{" "}
