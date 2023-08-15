@@ -127,9 +127,10 @@ a{
     word-spacing: 0px;
   }
 }
-.macbook-found > body * {
+/* .macbook-found > body * {
   word-spacing: 0px !important;
-}
+  color: red !important;
+} */
 
 /* @supports (background: -webkit-named-image(i)) {
   body *{
@@ -7166,6 +7167,19 @@ textarea.form-control {
 }
 
 /* ................. custom css styling ................ */
+
+@media (max-width: 500px) {
+  .account-box{
+    padding-inline: 0px !important;
+  }
+  .ant-steps-vertical {
+    padding-inline: 0px !important;
+    align-items: center !important;
+}
+.ant-steps{
+  padding-inline: 0px !important;
+}
+}
 
 
 /* antd table no padding */
