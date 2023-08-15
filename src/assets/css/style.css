@@ -127,6 +127,16 @@ a{
     word-spacing: 0px;
   }
 }
+.macbook-found > body * {
+  word-spacing: 0px !important;
+}
+
+/* @supports (background: -webkit-named-image(i)) {
+  body *{
+    word-spacing: 0px !important;
+    color: red !important;
+  }
+} */
 
 /* @media (max-width: 575px) {
   h1, h2, h3, h4, h5, h6, span, p, label, a {
@@ -1061,6 +1071,10 @@ a.bg-danger:focus, a.bg-danger:hover, button.bg-danger:focus, button.bg-danger:h
 }
 
 .btn-success {
+  background-color: #55ce63;
+  border: 1px solid #55ce63;
+}
+.btn-success:focus  {
   background-color: #55ce63;
   border: 1px solid #55ce63;
 }
@@ -7153,6 +7167,40 @@ textarea.form-control {
 
 /* ................. custom css styling ................ */
 
+
+/* antd table no padding */
+.noPaddingStyle .ant-table{
+  padding: 0px 1px 0px 2px !important;
+}
+
+/* select drop down styles */
+.custom-select > div {
+  display: flex;
+  align-items: center;
+  min-height: 50px;
+}
+.custom-select .ant-select-selection-placeholder, .custom-select .ant-select-selection-item  {
+  /* line-height: 50px; */  
+  font-size: 15px;
+}
+.custom-select input  {
+  /* height: 48px !important; */
+  font-size: 15px;
+}
+.custom-select .ant-select-selector  {
+  border-color: #e3e3e3 !important;
+  box-shadow: none !important;
+  border-radius: 0.25rem !important;
+  padding-bottom: 6px !important;
+}
+.custom-select .ant-select-selection-placeholder  {
+  color: #D1D1D1 !important;
+}
+
+
+.form-control:hover, .form-control:active, .form-control:focus{
+  border-color: #e3e3e3 !important;
+}
 /* antd placeholder color */
 .ant-input::placeholder {
   color: #D1D1D1 !important;
