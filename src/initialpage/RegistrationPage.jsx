@@ -198,7 +198,7 @@ const Registrationpage = (props) => {
       companyId: `${compId}`,
     };
 
-    apiServices("POST", "user/add-user", data)
+    apiServices("POST", "user/admin-signup", data, null)
       .then((res) => {
         if (res?.data?.success) {
           setLoader(false)
@@ -966,6 +966,47 @@ const Registrationpage = (props) => {
                 </Form.Item>
               </div>
             </div>
+            <div className="col-12">
+              <div className="form-group">
+                <label className="col-form-label">
+                  Address <span className="text-danger">*</span>
+                </label>
+                <Form.Item
+                  name="address"
+                  rules={[
+                    {
+                      whitespace: true,
+                      required: true,
+                      validator: (_, value) => {
+                        if(!value || value?.trim() === ''){
+                          return Promise.reject("please enter address");
+                        }
+                        else if (/\s{2,}/.test(value)) {
+                          return Promise.reject("please remove consecutive spaces");
+                        }
+                        return Promise.resolve();
+                      },
+                    },
+                    {
+                      min: 5,
+                      message: "address length must be at least 5 characters long",
+                    },
+                  ]}
+                >
+                  <Input
+                    style={{ display: "none" }}
+                    value={adminValues?.address}
+                  />
+                  <input
+                    className="form-control"
+                    onInput={(e) => {
+                      onHandleAdminChange("address", e.target.value);
+                    }}
+                    maxLength={50}
+                  />
+                </Form.Item>
+              </div>
+            </div>
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
@@ -1162,6 +1203,29 @@ const Registrationpage = (props) => {
     status: index === current ? "process" : index < current ? "finish" : "wait",
   }));
 
+  const ResendEmail = (email) => {
+    let data1 = {
+      email: email
+    }
+    apiServices("PUT", "user/resend-verification-mail", data1, null)
+    .then((res) => {
+      if (res?.data?.success === true) {
+        message.success('Email has been sent Successfully!')
+      }
+    })
+    .catch((err) => {
+      message.error(
+        `${
+          err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
+            ? err?.response?.data?.validation?.body?.message
+            : "Resend Email Error"
+        }!`
+      );
+    });
+  }
+
   return (
     <>
       <Helmet>
@@ -1244,54 +1308,59 @@ const Registrationpage = (props) => {
                 {/* <p className="account-subtitle">Enter your email to get a password reset link</p> */}
                 {/* Account Form */}
                 <div className="account-footer">
-                  <p
+                  <label
                     style={{
                       color: "#444444",
                       fontSize: "18px",
+                      margin: '4px 0px'
                     }}
                   >
                     Your Company Registered Successfully. Admin Account Created.
-                  </p>
-                  <p
+                  </label>
+                  <label
                     style={{
                       color: "#6F6F6F",
                       fontSize: "18px",
+                      margin: '12px 0px 4px 0px'
                     }}
                   >
                     Confirm your email address. We have sent a verification{" "}
                     <br />
                     email to
-                  </p>
-                  <p style={{ fontWeight: "700", fontSize: "18px" }}>
+                  </label>
+                  <div style={{ fontWeight: "700", fontSize: "18px", margin: '15px 0px 11px 0px' }}>
                     {adminValues?.email}
-                  </p>
-                  <p
+                  </div>
+                  <label
                     style={{
                       color: "#0097C7",
                       fontSize: "18px",
+                      margin: '8px 0px'
                     }}
                   >
                     Not your email address?
-                  </p>
+                  </label>
                   {/* <p style={{fontSize: '18px'}}>Please <a onClick={() => {setEmailNotVerified(false); setLoginValues({})}} style={{color: '#0097C7'}}>Click-Here</a> to Login again with the correct email address.</p> */}
-                  <p
+                  <label
                     style={{
                       color: "#6F6F6F",
                       fontSize: "18px",
+                      margin: '8px 0px'
                     }}
                   >
                     Make sure to check your inbox and your spam folder if you
                     can't find the email.
-                  </p>
-                  <p
+                  </label>
+                  <label
                     style={{
                       color: "#6F6F6F ",
                       fontSize: "18px",
+                      margin: '8px 0px'
                     }}
                   >
                     Still not Received?{" "}
-                    <a style={{ color: "#0097C7" }}>Contact Us</a>
-                  </p>
+                    <a onClick={() => ResendEmail(adminValues?.email)} style={{ color: "#0097C7" }}>Resend Email</a>
+                  </label>
                 </div>
                 {/* /Account Form */}
               </div>

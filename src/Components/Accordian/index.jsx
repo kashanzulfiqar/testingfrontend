@@ -8,7 +8,7 @@ import Box from '@mui/material/Box';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 
-const AccordianCheckBox = ({ permissions, setPermissions }) => {
+const AccordianCheckBox = ({ permissions, setPermissions, disabled }) => {
 
   const [loader, setLoader] = useState(false);
   const [expandedIndex, setExpandedIndex] = useState(null);
@@ -98,6 +98,7 @@ const AccordianCheckBox = ({ permissions, setPermissions }) => {
                 )
               }
               onChange={handleMasterCheckbox}
+              disabled={disabled}
             />
             Name
           </p>
@@ -138,8 +139,9 @@ const AccordianCheckBox = ({ permissions, setPermissions }) => {
                     alignItems: "center",
                   }}
                 >
-                  <Typography sx={{ width: "33%", flexShrink: 0 }}>
+                  <Typography sx={{ width: '33%', minWidth: "130px", flexShrink: 0 }}>
                     <FormControlLabel
+                      style={{cursor: 'pointer'}}
                       label={
                         <span
                           style={{
@@ -168,6 +170,7 @@ const AccordianCheckBox = ({ permissions, setPermissions }) => {
                                 )
                           }
                           onChange={(e) => handleCheckboxAll(e, item)}
+                          disabled={disabled}
                         />
                       }
                     />
@@ -192,7 +195,7 @@ const AccordianCheckBox = ({ permissions, setPermissions }) => {
                           alignItems: "center",
                         }}
                       >
-                        <Typography sx={{ width: "31%", flexShrink: 0 }}>
+                        <Typography sx={{ width: "31%", minWidth: "130px", flexShrink: 0 }}>
                           <FormControlLabel
                             label={
                               <span
@@ -205,6 +208,7 @@ const AccordianCheckBox = ({ permissions, setPermissions }) => {
                               <Checkbox
                                 checked={sub?.checked}
                                 onChange={() => handleSingleCheckbox(item, sub)}
+                                disabled={disabled}
                               />
                             }
                           />

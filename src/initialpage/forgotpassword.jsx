@@ -54,6 +54,27 @@ const ForgotPassword = () => {
     />
   );
 
+  const ResendEmail = (email) => {
+    let data1 = {
+      email: email
+    } 
+    apiServices("POST", "user/forgot-password", data1, null).then((res) => {
+      if (res?.data?.return?.success === true) {
+        message.success('Reset Link has been sent Successfully!')
+      }
+   }).catch((err)=>{
+       message.error(
+        `${
+          err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
+            ? err?.response?.data?.validation?.body?.message
+            : "Reset Link Error!"
+        }!`
+      );
+   })
+  }
+
   return (
     <>
       <Helmet>
@@ -170,42 +191,46 @@ const ForgotPassword = () => {
                 {/* <p className="account-subtitle">Enter your email to get a password reset link</p> */}
                 {/* Account Form */}
                 <div className="account-footer">
-                  <p
+                  <label
                     style={{
                       color: "#6F6F6F",
                       fontSize: "18px",
+                      margin: '4px 0px',
                     }}
                   >
                     We’ve emailed you with instructions to reset your password.
-                  </p>
-                  <p style={{ fontWeight: "700", fontSize: "18px" }}>{email}</p>
-                  <p
+                  </label>
+                  <div style={{ fontWeight: "700", fontSize: "18px", margin: '15px 0px 11px 0px' }}>{email}</div>
+                  <label
                     style={{
                       color: "#0097C7",
                       fontSize: "18px",
+                      margin: '8px 0px'
                     }}
                   >
                     Not your email address?
-                  </p>
+                  </label>
                   {/* <p style={{fontSize: '18px'}}>Please <a onClick={() => {setEmailNotVerified(false); setLoginValues({})}} style={{color: '#0097C7'}}>Click-Here</a> to Login again with the correct email address.</p> */}
-                  <p
+                  <label
                     style={{
                       color: "#6F6F6F",
                       fontSize: "18px",
+                      margin: '8px 0px'
                     }}
                   >
                     Make sure to check your inbox and your spam folder if you
                     can't find the email.
-                  </p>
-                  <p
+                  </label>
+                  <label
                     style={{
                       color: "#6F6F6F ",
                       fontSize: "18px",
+                      margin: '8px 0px'
                     }}
                   >
                     Still not Received?{" "}
-                    <a style={{ color: "#0097C7" }}>Contact Us</a>
-                  </p>
+                    <a onClick={() => ResendEmail(email)} style={{ color: "#0097C7" }}>Resend Email</a>
+                  </label>
                 </div>
                 {/* /Account Form */}
               </div>
