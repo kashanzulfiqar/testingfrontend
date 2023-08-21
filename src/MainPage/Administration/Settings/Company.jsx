@@ -168,7 +168,7 @@ const Company = () => {
                     value={allValues?.companyName}
                   />
                   <input
-                    className="form-control"
+                    className="form-control inputWordSpacing"
                     defaultValue={data ? data?.companyName : ""}
                     onInput={(e) => {
                       onHandleChange("companyName", e.target.value);
@@ -210,7 +210,7 @@ const Company = () => {
                     value={allValues?.legalName}
                   />
                   <input
-                    className="form-control"
+                    className="form-control inputWordSpacing"
                     defaultValue={data ? data?.legalName : ""}
                     onInput={(e) => {
                       onHandleChange("legalName", e.target.value);
@@ -252,7 +252,7 @@ const Company = () => {
                     value={allValues?.contactPerson}
                   />
                   <input
-                    className="form-control"
+                    className="form-control inputWordSpacing"
                     defaultValue={data ? data?.contactPerson : ""}
                     onInput={(e) => {
                       onHandleChange("contactPerson", e.target.value);
@@ -294,7 +294,7 @@ const Company = () => {
                     value={allValues?.companyAddress}
                   />
                   <input
-                    className="form-control"
+                    className="form-control inputWordSpacing"
                     defaultValue={data ? data?.companyAddress : ""}
                     onInput={(e) => {
                       onHandleChange("companyAddress", e.target.value);
@@ -347,7 +347,7 @@ const Company = () => {
                     value={allValues?.postalCode}
                   />
                   <input
-                    className="form-control"
+                    className="form-control inputWordSpacing"
                     defaultValue={data ? data?.postalCode : ""}
                     onInput={(e) => {
                       onHandleChange("postalCode", e.target.value);
@@ -391,7 +391,7 @@ const Company = () => {
                 >
                   <Input style={{ display: "none" }} value={allValues?.city} />
                   <input
-                    className="form-control"
+                    className="form-control inputWordSpacing"
                     defaultValue={data ? data?.city : ""}
                     onInput={(e) => {
                       onHandleChange("city", e.target.value);
@@ -430,7 +430,7 @@ const Company = () => {
                 >
                   <Input style={{ display: "none" }} value={allValues?.state} />
                   <input
-                    className="form-control"
+                    className="form-control inputWordSpacing"
                     defaultValue={data ? data?.state : ""}
                     onInput={(e) => {
                       onHandleChange("state", e.target.value);
@@ -472,7 +472,7 @@ const Company = () => {
                     value={allValues?.country}
                   />
                   <input
-                    className="form-control"
+                    className="form-control inputWordSpacing"
                     defaultValue={data ? data?.country : ""}
                     onInput={(e) => {
                       onHandleChange("country", e.target.value);
@@ -528,7 +528,7 @@ const Company = () => {
                     value={allValues?.companyEmail}
                   />
                   <input
-                    className="form-control"
+                    className="form-control inputWordSpacing"
                     defaultValue={data ? data?.companyEmail : ""}
                     onInput={(e) => {
                       onHandleChange("companyEmail", e.target.value);
@@ -570,7 +570,7 @@ const Company = () => {
                     value={allValues?.companyRegistrationNo}
                   />
                   <input
-                    className="form-control"
+                    className="form-control inputWordSpacing"
                     defaultValue={data ? data?.companyRegistrationNo : ""}
                     onInput={(e) => {
                       onHandleChange("companyRegistrationNo", e.target.value);
@@ -670,7 +670,7 @@ const Company = () => {
                     value={allValues?.website}
                   />
                   <input
-                    className="form-control"
+                    className="form-control inputWordSpacing"
                     defaultValue={data ? data?.website : ""}
                     onInput={(e) => {
                       onHandleChange("website", e.target.value);

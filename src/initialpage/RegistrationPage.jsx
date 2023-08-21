@@ -823,7 +823,7 @@ const Registrationpage = (props) => {
                     },
                   ]}
                 >
-                  <div style={{ display: "flex", gap: "15px", height: "25px" }}>
+                  <div style={{ display: "flex", height: "25px" }}>
                     <Input
                       style={{ display: "none" }}
                       value={regValues?.agreeTermsAndConditions === "false" ? "" : "true"}
@@ -845,7 +845,7 @@ const Registrationpage = (props) => {
                       id="flexCheckChecked"
                       style={{ width: "23px", height: "23px" }}
                     ></input>
-                    <p style={{ marginTop: "5px" }}>
+                    <p style={{ marginTop: "5px", marginLeft: '15px' }}>
                       I agree to the term of services and privacy policy
                     </p>
                   </div>

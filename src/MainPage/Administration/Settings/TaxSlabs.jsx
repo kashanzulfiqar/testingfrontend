@@ -38,10 +38,10 @@ const TaxSlabs = () => {
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    getDesignation();
+    getTaxSlab();
   }, []);
 
-  const getDesignation = () => {
+  const getTaxSlab = () => {
     setTableLoader(true);
     apiServices("GET", "tax-slab", null, user_state)
       .then((res) => {

@@ -14,6 +14,7 @@ export {default as lnSpanish} from 'Assets/img/flags/es.png';
 export {default as lnGerman} from 'Assets/img/flags/de.png';
 export {default as Avatar_01} from 'Assets/img/profiles/avatar-01.jpg';
 export {default as Avatar_02} from 'Assets/img/profiles/avatar-02.jpg';
+export {default as user} from 'Assets/img/profiles/user.jpg';
 export {default as Avatar_03} from 'Assets/img/profiles/avatar-03.jpg';
 export {default as Avatar_04} from 'Assets/img/profiles/avatar-04.jpg';
 export {default as Avatar_05} from 'Assets/img/profiles/avatar-05.jpg';
