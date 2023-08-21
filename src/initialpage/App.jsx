@@ -96,8 +96,8 @@ const App = () => {
           {/* <Route path="/settings/roles-permissions" element={<RolePermisson />} /> */}
 
           {/* Settings  */}
-          <Route path="employee/attendance-employee" element={<AttendanceEmployee />} />
-          <Route path="employee/attendance-admin" element={<AttendanceAdmin />} />
+          <Route path="/employee/attendance-employee" element={<AttendanceEmployee />} />
+          <Route path="/employee/attendance-admin" element={<AttendanceAdmin />} />
         </Route>
         
         <Route path="/404" element={<Error404 />}></Route>
