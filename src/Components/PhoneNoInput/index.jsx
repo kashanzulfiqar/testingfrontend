@@ -25,7 +25,7 @@ const PhoneNoInput = ({ phone, onChangePhone, onCountryChange }) => {
               onChange={phone => {
                   onChangePhone(phone)
               }}
-              inputStyle={{fontFamily: 'CircularStd'}}
+              inputStyle={{fontFamily: 'CircularStd', wordSpacing: 'normal'}}
           />
 
           {/* <PhoneInput

@@ -17,6 +17,7 @@ import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 import { Form, Input, Spin, message } from 'antd';
 import { apiLoginEmployee } from "../Services/apiLogin";
 import { LoadingOutlined } from '@ant-design/icons';
+import { apiServices } from '../Services/apiServices';
 
 const Loginpage = (props) => {
 
@@ -149,6 +150,29 @@ const Loginpage = (props) => {
     />
   );
 
+  const ResendEmail = (email) => {
+    let data1 = {
+      email: email
+    }
+    apiServices("PUT", "user/resend-verification-mail", data1, null)
+    .then((res) => {
+      if (res?.data?.success === true) {
+        message.success('Email has been sent Successfully!')
+      }
+    })
+    .catch((err) => {
+      message.error(
+        `${
+          err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
+            ? err?.response?.data?.validation?.body?.message
+            : "Resend Email Error"
+        }!`
+      );
+    });
+  }
+
 
   return (
     <>
@@ -268,12 +292,12 @@ const Loginpage = (props) => {
                   {/* <p className="account-subtitle">Enter your email to get a password reset link</p> */}
                   {/* Account Form */}
                   <div className="account-footer">
-                    <p style={{ color: '#6F6F6F', fontSize: '18px' }}>Confirm your email address. We have sent a verification <br /> email to</p>
-                    <p style={{ fontWeight: '700', fontSize: '18px' }}>{emailVal}</p>
-                    <p style={{ color: '#0097C7', fontSize: '18px' }}>Not your email address?</p>
+                    <label style={{ color: '#6F6F6F', fontSize: '18px', margin: '4px 0px'}}>Confirm your email address. We have sent a verification <br /> email to</label>
+                    <div style={{ fontWeight: '700', fontSize: '18px', margin: '15px 0px 11px 0px' }}>{emailVal}</div>
+                    <label style={{ color: '#0097C7', fontSize: '18px', margin: '8px 0px' }}>Not your email address?</label>
                     {/* <p style={{fontSize: '18px'}}>Please <a onClick={() => {setEmailNotVerified(false); setLoginValues({})}} style={{color: '#0097C7'}}>Click-Here</a> to Login again with the correct email address.</p> */}
-                    <p style={{ color: '#6F6F6F', fontSize: '18px' }}>Make sure to check your inbox and your spam folder if you can't find the email.</p>
-                    <p style={{ color: '#6F6F6F ', fontSize: '18px' }}>Still not Received? <a style={{ color: '#0097C7' }}>Contact Us</a></p>
+                    <label style={{ color: '#6F6F6F', fontSize: '18px', margin: '8px 0px' }}>Make sure to check your inbox and your spam folder if you can't find the email.</label>
+                    <label style={{ color: '#6F6F6F ', fontSize: '18px', margin: '8px 0px' }}>Still not Received? <a onClick={() => ResendEmail(emailVal)} style={{ color: '#0097C7' }}>Resend Email</a></label>
                   </div>
                   {/* /Account Form */}
                 </div>
