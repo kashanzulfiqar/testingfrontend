@@ -70,6 +70,7 @@
     "react-dom": "^18.2.0",
     "react-helmet": "^6.1.0",
     "react-hook-form": "^7.43.3",
+    "react-infinite-scroll-component": "^6.1.0",
     "react-input-mask": "^2.0.4",
     "react-owl-carousel": "^2.3.1",
     "react-phone-input-2": "^2.15.1",
