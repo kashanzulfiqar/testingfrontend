@@ -39,10 +39,10 @@ const Shifts = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
-    getDesignation();
+    getShift();
   }, []);
 
-  const getDesignation = () => {
+  const getShift = () => {
     setTableLoader(true);
     apiServices("GET", "shift", null, user_state)
       .then((res) => {
@@ -61,8 +61,8 @@ const Shifts = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Shift Info"
-          } Error`
+              : "Get Shift Info Error"
+          }!`
         );
       });
   };

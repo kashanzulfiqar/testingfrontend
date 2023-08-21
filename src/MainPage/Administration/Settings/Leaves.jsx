@@ -12,9 +12,6 @@ const Leaves = () => {
 
   const [form] = Form.useForm();
 
-  const data1 = { _id: 1, sickLeaves: "1", casualLeaves: '2', workFromHomeLeaves: '3', bereavementLeaves: '4', unpaidLeaves: '5',}
-  // const data1 = null;
-    // paternityLeaves: '6', maternityLeaves: '7', marriageLeaves: '8', halfDayLeaves: '9', annualLeaves: '10'};
   const [data, setData] = useState();
   const [firstLeaves, setFirstLeaves] = useState();
   const [firstFlag, setFirstFlag] = useState(true);

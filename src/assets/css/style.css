@@ -115,10 +115,16 @@ div {
   word-spacing: -2px;
 }
 span, p {
-  /* word-spacing: 0px; */
+  word-spacing: 0px;
 }
 a{
   word-spacing: -4px;
+}
+input{
+  /* word-spacing: -3.5px; */
+}
+.inputWordSpacing{
+  /* word-spacing: normal; */
 }
 
 /* --- adjust space on safari browser and small screens--- */
@@ -6581,7 +6587,7 @@ textarea.form-control {
 .error-page .main-wrapper {
   flex-wrap: wrap;
   width: 100%;
-  height: 100vh;
+  height: 82vh;
 }
 .error-page .main-wrapper .error-box {
   max-width: 480px;
@@ -7168,6 +7174,78 @@ textarea.form-control {
 
 /* ................. custom css styling ................ */
 
+/* //antd crop modal */
+.CropImageModalStyle .ant-modal-close-icon > svg{
+  display: none;
+  }
+  .CropImageModalStyle .ant-modal-close-x{
+  margin: -5px;
+  }
+  .CropImageModalStyle .ant-modal-close-icon::after{
+    content: "×";
+    font-size: 14px;
+    background-color: #a0a0a0;
+    color: white;
+    border-radius: 50px;
+    padding: 4.5px 7px;
+    margin-top: -20px !important;
+  }
+  .CropImageModalStyle {
+    background: black;
+    z-index: 3000;
+  }
+  .CropImageModalStyle .ant-modal-content {
+    border-radius: 10px;
+  }
+  .CropImageModalStyle .ant-modal-header {
+    border-radius: 10px 10px 0 0;
+  }
+  .ant-modal-body{
+    padding-bottom: 0px;
+  }
+  .ant-modal-body section::before{
+    content: 'Zoom';
+  }
+  .ant-modal-body section{
+    margin: 30px auto !important;
+  }
+  .ant-modal-footer{
+    padding: 15px 16px;
+  }
+  .ant-modal-footer button:nth-child(2){
+    background-color: #ff9b44;
+    border-color: #ff9b44;
+    border-radius: 50px;
+    width: 100px;
+  }
+  .ant-modal-footer button:nth-child(1){
+    border-radius: 50px;
+    width: 100px;
+  }
+  .ant-modal-footer button:nth-child(1):hover{
+    border-color: #ff9b44;
+    color: #ff9b44;
+  }
+
+
+
+.uploadImgSpinContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8px;
+  width: 120px;
+  height: 120px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 50%;
+}
+
+@media (min-width: 767px){
+.modal-dialog-md {
+    max-width: 560px;
+}
+}
+
 @media (max-width: 500px) {
   .account-box{
     padding-inline: 0px !important;
@@ -7280,13 +7358,22 @@ z-index: 1300;
   height: 44px !important;
   padding-top: 6px !important;
 }
+.custom-normal .ant-select-selector, .custom-normal input {
+  min-height: 42px !important;
+}
 .ant-select-item{
   padding: 8px 12px !important;
 }
 /* for antd timepicker error border */
-.custom-border .ant-picker, .custom-border .ant-input, .custom-border .ant-input-number {
+.custom-border .ant-picker, .custom-border .ant-input, .custom-border .ant-input-number, .custom-border .ant-input-password {
   border-color: #e3e3e3 !important; 
   box-shadow: none !important;
+}
+.custom-border .ant-input-password {
+  display: flex;
+}
+.custom-border .ant-input-suffix {
+  font-size: 20px;
 }
 /* for antd input error border */
 /* .custom-border .ant-input, .custom-border .ant-input-number {

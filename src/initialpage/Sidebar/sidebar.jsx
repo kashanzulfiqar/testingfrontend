@@ -12,6 +12,8 @@ const Sidebar = (props) => {
 
   const location = useLocation();
 
+  const beta = 'Beta'
+
   useEffect(() => {
     if(location?.pathname !== '/settings'){
       // clear active settings session
@@ -70,7 +72,7 @@ const Sidebar = (props) => {
                     <span>Main</span>
                   </li>
                   <li className="submenu">
-                    <a href="javascript:" className={isSideMenu == "dashboard" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "dashboard" ? "" : "dashboard")}><i className="la la-dashboard" /> <span> Dashboard</span> <span className="menu-arrow" /></a>
+                    <a href="javascript:" className={isSideMenu == "dashboard" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "dashboard" ? "" : "dashboard")}><i className="la la-dashboard" /> <span> Dashboard</span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
                     {isSideMenu == "dashboard" ?
                       <ul style={{ display: isSideMenu == "dashboard" ? "block" : "none" }} >
                         <li><Link className={pathname.includes('main/dashboard') ? "active" : ""} to="/app/main/dashboard">Admin Dashboard</Link></li>
@@ -81,7 +83,7 @@ const Sidebar = (props) => {
                     }
                   </li>
                   <li className="submenu">
-                    <a href="javascript:" className={isSideMenu == "apps" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "apps" ? "" : "apps")} ><i className="la la-cube" /> <span> Apps</span> <span className="menu-arrow" /></a>
+                    <a href="javascript:" className={isSideMenu == "apps" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "apps" ? "" : "apps")} ><i className="la la-cube" /> <span> Apps</span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
                     {isSideMenu == "apps" ?
                       <ul>
                         <li><Link onClick={() => localStorage.setItem("minheight", "true")} to="/conversation/chat">Chat</Link></li>
@@ -115,27 +117,27 @@ const Sidebar = (props) => {
                       <ul >
                         <li><Link className={pathname.includes('allemployees') ? "active" : pathname.includes('employees-list') ? "active" : ""}
                           to="/app/employee/allemployees">All Employees</Link></li>
-                        <li><Link className={pathname.includes('holidays') ? "active" : ""} to="/app/employee/holidays">Holidays</Link></li>
-                        <li><Link className={pathname.includes('es-admin') ? "active" : ""} to="/app/employee/leaves-admin">Leaves (Admin) <span className="badge badge-pill bg-primary float-end">1</span></Link></li>
-                        <li><Link className={pathname.includes('ves-employee') ? "active" : ""} to="/app/employee/leaves-employee">Leaves (Employee)</Link></li>
-                        <li><Link className={pathname.includes('e-settings') ? "active" : ""} to="/app/employee/leave-settings">Leave Settings</Link></li>
+                        {/* <li><Link className={pathname.includes('holidays') ? "active" : ""} to="/app/employee/holidays">Holidays</Link></li> */}
+                        {/* <li><Link className={pathname.includes('es-admin') ? "active" : ""} to="/app/employee/leaves-admin">Leaves (Admin) <span className="badge badge-pill bg-primary float-end">1</span></Link></li> */}
+                        {/* <li><Link className={pathname.includes('ves-employee') ? "active" : ""} to="/app/employee/leaves-employee">Leaves (Employee)</Link></li> */}
+                        {/* <li><Link className={pathname.includes('e-settings') ? "active" : ""} to="/app/employee/leave-settings">Leave Settings</Link></li> */}
                         <li><Link className={pathname.includes('nce-admin') ? "active" : ""} to="/app/employee/attendance-admin">Attendance (Admin)</Link></li>
                         <li><Link className={pathname.includes('ce-employee') ? "active" : ""} to="/app/employee/attendance-employee">Attendance (Employee)</Link></li>
-                        <li><Link className={pathname.includes('departments') ? "active" : ""} to="/app/employee/departments">Departments</Link></li>
-                        <li><Link className={pathname.includes('designations') ? "active" : ""} to="/app/employee/designations">Designations</Link></li>
-                        <li><Link className={pathname.includes('timesheet') ? "active" : ""} to="/app/employee/timesheet">Timesheet</Link></li>
-                        <li><Link className={pathname.includes('shift-scheduling') || pathname.includes('shift-list') ? "active" : ""}
-                          to="/app/employee/shift-scheduling">Shift &amp; Schedule</Link></li>
-                        <li><Link className={pathname.includes('overtime') ? "active" : ""} to="/app/employee/overtime">Overtime</Link></li>
+                        {/* <li><Link className={pathname.includes('departments') ? "active" : ""} to="/app/employee/departments">Departments</Link></li> */}
+                        {/* <li><Link className={pathname.includes('designations') ? "active" : ""} to="/app/employee/designations">Designations</Link></li> */}
+                        {/* <li><Link className={pathname.includes('timesheet') ? "active" : ""} to="/app/employee/timesheet">Timesheet</Link></li> */}
+                        {/* <li><Link className={pathname.includes('shift-scheduling') || pathname.includes('shift-list') ? "active" : ""}
+                          to="/app/employee/shift-scheduling">Shift &amp; Schedule</Link></li> */}
+                        {/* <li><Link className={pathname.includes('overtime') ? "active" : ""} to="/app/employee/overtime">Overtime</Link></li> */}
                       </ul>
                       : ""
                     }
                   </li>
                   <li className={pathname.includes('clients') ? "active" : ""}>
-                    <Link to="/app/employees/clients"><i className="la la-users" /> <span>Clients</span></Link>
+                    <Link to="/app/employees/clients"><i className="la la-users" /> <span>Clients</span> <span className="badge badge-primary ms-auto">{beta}</span></Link>
                   </li>
                   <li className="submenu">
-                    <a href="javascript:" className={isSideMenu == "projects" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "projects" ? "" : "projects")}><i className="la la-rocket" /> <span> Projects</span> <span className="menu-arrow" /></a>
+                    <a href="javascript:" className={isSideMenu == "projects" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "projects" ? "" : "projects")}><i className="la la-rocket" /> <span> Projects</span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
                     {isSideMenu == "projects" ?
                       <ul>
                         <li><Link className={pathname.includes('t_dashboard') ? "active" : pathname.includes('projects-list') ?
@@ -148,16 +150,16 @@ const Sidebar = (props) => {
                     }
                   </li>
                   <li className={pathname.includes('leads') ? "active" : ""}>
-                    <Link to="/app/employees/leads"><i className="la la-user-secret" /> <span>Leads</span></Link>
+                    <Link to="/app/employees/leads"><i className="la la-user-secret" /> <span>Leads</span> <span className="badge badge-primary ms-auto">{beta}</span></Link>
                   </li>
                   <li className={pathname.includes('tickets') ? "active" : pathname.includes('ticket-view') ? "active" : ""}>
-                    <Link to="/app/employees/tickets"><i className="la la-ticket" /> <span>Tickets</span></Link>
+                    <Link to="/app/employees/tickets"><i className="la la-ticket" /> <span>Tickets</span> <span className="badge badge-primary ms-auto">{beta}</span></Link>
                   </li>
                   <li className="menu-title">
                     <span>HR</span>
                   </li>
                   <li className="submenu">
-                    <a href="javascript:" className={isSideMenu == "sales" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "sales" ? "" : "sales")}><i className="la la-files-o" /> <span> Sales </span> <span className="menu-arrow" /></a>
+                    <a href="javascript:" className={isSideMenu == "sales" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "sales" ? "" : "sales")}><i className="la la-files-o" /> <span> Sales </span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
                     {isSideMenu == "sales" ?
                       <ul>
                         <li><Link className={pathname.includes('estimates') ? "active" : ""} to="/app/sales/estimates">Estimates</Link></li>
@@ -175,7 +177,7 @@ const Sidebar = (props) => {
                 <button className="viewmoremenu" id="more-menu" onClick={() => MenuMore()}>More Menu</button>
                 <ul className="hidden-links hidden" id="more-menu-hidden">
                   <li className="submenu">
-                    <a href="javascript:" className={isSideMenu == "accounting" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "accounting" ? "" : "accounting")}><i className="la la-files-o" /> <span> Accounting </span> <span className="menu-arrow" /></a>
+                    <a href="javascript:" className={isSideMenu == "accounting" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "accounting" ? "" : "accounting")}><i className="la la-files-o" /> <span> Accounting </span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
                     {isSideMenu == "accounting" ?
                       <ul>
                         <li><Link className={pathname.includes('categories') || pathname.includes('sub-category') ? "active" : ""} to="/app/accounts/categories">Categories</Link></li>
@@ -187,7 +189,7 @@ const Sidebar = (props) => {
                     }
                   </li>
                   <li className="submenu">
-                    <a href="javascript:" className={isSideMenu == "payroll" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "payroll" ? "" : "payroll")}><i className="la la-money" /> <span> Payroll </span> <span className="menu-arrow" /></a>
+                    <a href="javascript:" className={isSideMenu == "payroll" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "payroll" ? "" : "payroll")}><i className="la la-money" /> <span> Payroll </span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
                     {isSideMenu == "payroll" ?
                       <ul>
                         <li><Link className={pathname.includes('_salary') ? "active" : ""} to="/app/payroll/_salary"> Employee Salary </Link></li>
@@ -198,10 +200,10 @@ const Sidebar = (props) => {
                     }
                   </li>
                   <li className={pathname.includes('policies') ? "active" : ""}>
-                    <Link to="/app/hr/policies"><i className="la la-file-pdf-o" /> <span>Policies</span></Link>
+                    <Link to="/app/hr/policies"><i className="la la-file-pdf-o" /> <span>Policies</span> <span className="badge badge-primary ms-auto">{beta}</span></Link>
                   </li>
                   <li className="submenu">
-                    <a href="javascript:" className={isSideMenu == "reports" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "reports" ? "" : "reports")}><i className="la la-pie-chart" /> <span> Reports </span> <span className="menu-arrow" /></a>
+                    <a href="javascript:" className={isSideMenu == "reports" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "reports" ? "" : "reports")}><i className="la la-pie-chart" /> <span> Reports </span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
                     {isSideMenu == "reports" ?
                       <ul>
                         <li><Link className={pathname.includes('expense-') ? "active" : ""} to="/app/reports/expense-reports"> Expense Report </Link></li>
@@ -223,7 +225,7 @@ const Sidebar = (props) => {
                     <span>Performance</span>
                   </li>
                   <li className="submenu">
-                    <a href="javascript:" className={isSideMenu == "performance" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "performance" ? "" : "performance")}><i className="la la-graduation-cap" /> <span> Performance </span> <span className="menu-arrow" /></a>
+                    <a href="javascript:" className={isSideMenu == "performance" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "performance" ? "" : "performance")}><i className="la la-graduation-cap" /> <span> Performance </span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
                     {isSideMenu == "performance" ?
                       <ul>
                         <li><Link className={pathname.includes('-indicator') ? "active" : ""} to="/app/performances/performance-indicator"> Performance Indicator </Link></li>
@@ -234,7 +236,7 @@ const Sidebar = (props) => {
                     }
                   </li>
                   <li className="submenu">
-                    <a href="javascript:" className={isSideMenu == "goals" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "goals" ? "" : "goals")}><i className="la la-crosshairs" /> <span> Goals </span> <span className="menu-arrow" /></a>
+                    <a href="javascript:" className={isSideMenu == "goals" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "goals" ? "" : "goals")}><i className="la la-crosshairs" /> <span> Goals </span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
                     {isSideMenu == "goals" ?
                       <ul>
                         <li><Link className={pathname.includes('-tracking') ? "active" : ""} to="/app/goals/goal-tracking"> Goal List </Link></li>
@@ -244,7 +246,7 @@ const Sidebar = (props) => {
                     }
                   </li>
                   <li className="submenu">
-                    <a href="javascript:" className={isSideMenu == "training" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "training" ? "" : "training")}><i className="la la-edit" /> <span> Training </span> <span className="menu-arrow" /></a>
+                    <a href="javascript:" className={isSideMenu == "training" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "training" ? "" : "training")}><i className="la la-edit" /> <span> Training </span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
                     {isSideMenu == "training" ?
                       <ul>
                         <li><Link className={pathname.includes('training-list') ? "active" : ""} to="/app/training/training-list"> Training List </Link></li>
@@ -254,9 +256,9 @@ const Sidebar = (props) => {
                       : ""
                     }
                   </li>
-                  <li className={pathname.includes('promotion') ? "active" : ""}><Link to="/app/performance/promotion"><i className="la la-bullhorn" /> <span>Promotion</span></Link></li>
-                  <li className={pathname.includes('resignation') ? "active" : ""}><Link to="/app/performance/resignation"><i className="la la-external-link-square" /> <span>Resignation</span></Link></li>
-                  <li className={pathname.includes('termination') ? "active" : ""}><Link to="/app/performance/termination"><i className="la la-times-circle" /> <span>Termination</span></Link></li>
+                  <li className={pathname.includes('promotion') ? "active" : ""}><Link to="/app/performance/promotion"><i className="la la-bullhorn" /> <span>Promotion</span> <span className="badge badge-primary ms-auto">{beta}</span></Link></li>
+                  <li className={pathname.includes('resignation') ? "active" : ""}><Link to="/app/performance/resignation"><i className="la la-external-link-square" /> <span>Resignation</span> <span className="badge badge-primary ms-auto">{beta}</span></Link></li>
+                  <li className={pathname.includes('termination') ? "active" : ""}><Link to="/app/performance/termination"><i className="la la-times-circle" /> <span>Termination</span> <span className="badge badge-primary ms-auto">{beta}</span></Link></li>
                   <li className="menu-title">
                     <span>Administration</span>
                   </li>
@@ -303,7 +305,7 @@ const Sidebar = (props) => {
                     <span>Pages</span>
                   </li>
                   <li className="submenu">
-                    <a href="javascript:" className={isSideMenu == "profile" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "profile" ? "" : "profile")}><i className="la la-user" /> <span> Profile </span> <span className="menu-arrow" /></a>
+                    <a href="javascript:" className={isSideMenu == "profile" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "profile" ? "" : "profile")}><i className="la la-user" /> <span> Profile </span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
                     {isSideMenu == "profile" ?
                       <ul>
                         <li><Link className={pathname.includes('profile/employee-') ? "active" : ""} to="/app/profile/employee-profile"> Employee Profile </Link></li>
@@ -313,7 +315,7 @@ const Sidebar = (props) => {
                     }
                   </li>
                   <li className="submenu">
-                    <a href="javascript:" className={isSideMenu == "authentication" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "authentication" ? "" : "authentication")} ><i className="la la-key" /> <span> Authentication </span> <span className="menu-arrow" /></a>
+                    <a href="javascript:" className={isSideMenu == "authentication" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "authentication" ? "" : "authentication")} ><i className="la la-key" /> <span> Authentication </span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
                     {isSideMenu == "authentication" ?
                       <ul>
                         <li><Link to="/login"> Login </Link></li>
@@ -326,7 +328,7 @@ const Sidebar = (props) => {
                     }
                   </li>
                   <li className="submenu">
-                    <a href="javascript:" className={isSideMenu == "error pages" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "error pages" ? "" : "error pages")}><i className="la la-exclamation-triangle" /> <span> Error Pages </span> <span className="menu-arrow" /></a>
+                    <a href="javascript:" className={isSideMenu == "error pages" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "error pages" ? "" : "error pages")}><i className="la la-exclamation-triangle" /> <span> Error Pages </span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
                     {isSideMenu == "error pages" ?
                       <ul>
                         <li><Link to="/error-404">404 Error </Link></li>
@@ -336,7 +338,7 @@ const Sidebar = (props) => {
                     }
                   </li>
                   <li className="submenu">
-                    <a href="javascript:" className={isSideMenu == "subscriptions" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "subscriptions" ? "" : "subscriptions")}><i className="la la-hand-o-up" /> <span> Subscriptions </span> <span className="menu-arrow" /></a>
+                    <a href="javascript:" className={isSideMenu == "subscriptions" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "subscriptions" ? "" : "subscriptions")}><i className="la la-hand-o-up" /> <span> Subscriptions </span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
                     {isSideMenu == "subscriptions" ?
                       <ul>
                         <li><Link className={pathname.includes('subscriptionadmin') ? "active" : ""} to="/app/subscription/subscriptionadmin">
@@ -350,7 +352,7 @@ const Sidebar = (props) => {
                     }
                   </li>
                   <li className="submenu">
-                    <a href="javascript:" className={isSideMenu == "pages" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "pages" ? "" : "pages")}><i className="la la-columns" /> <span> Pages </span> <span className="menu-arrow" /></a>
+                    <a href="javascript:" className={isSideMenu == "pages" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "pages" ? "" : "pages")}><i className="la la-columns" /> <span> Pages </span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
                     {isSideMenu == "pages" ?
                       <ul>
                         <li><Link className={pathname.includes('pages/search') ? "active" : ""} to="/app/pages/search"> Search </Link></li>
@@ -366,10 +368,10 @@ const Sidebar = (props) => {
                     <span>UI Interface</span>
                   </li>
                   <li>
-                    <Link to="/ui-components"><i className="la la-puzzle-piece" /> <span>Components</span></Link>
+                    <Link to="/ui-components"><i className="la la-puzzle-piece" /> <span>Components</span> <span className="badge badge-primary ms-auto">{beta}</span></Link>
                   </li>
                   <li className="submenu">
-                    <a href="javascript:" className={isSideMenu == "forms" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "forms" ? "" : "forms")}><i className="la la-object-group" /> <span> Forms </span> <span className="menu-arrow" /></a>
+                    <a href="javascript:" className={isSideMenu == "forms" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "forms" ? "" : "forms")}><i className="la la-object-group" /> <span> Forms </span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
                     {isSideMenu == "forms" ?
                       <ul>
                         <li><Link className={pathname.includes('basicinputs') ? "active" : ""}
@@ -389,7 +391,7 @@ const Sidebar = (props) => {
                     }
                   </li>
                   <li className="submenu">
-                    <Link to="/app/ui-interface/tables/basic" className={isSideMenu == "tables" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "tables" ? "" : "tables")}><i className="la la-table" /> <span> Tables </span> <span className="menu-arrow" /></Link>
+                    <Link to="/app/ui-interface/tables/basic" className={isSideMenu == "tables" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "tables" ? "" : "tables")}><i className="la la-table" /> <span> Tables </span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></Link>
                     {isSideMenu == "tables" ?
                       <ul>
                         <li><Link className={pathname.includes('tables/basic') ? "active" : ""} to="/app/ui-interface/tables/basic">Basic Tables </Link></li>
@@ -402,13 +404,13 @@ const Sidebar = (props) => {
                     <span>Extras</span>
                   </li>
                   <li>
-                    <a href="javascript:"><i className="la la-file-text" /> <span>Documentation</span></a>
+                    <a href="javascript:"><i className="la la-file-text" /> <span>Documentation</span> <span className="badge badge-primary ms-auto">{beta}</span></a>
                   </li>
                   <li>
-                    <a href=""><i className="la la-info" /> <span>Change Log</span> <span className="badge badge-primary ms-auto">v3.4</span></a>
+                    <a href=""><i className="la la-info" /> <span>Change Log</span> <span className="badge badge-primary ms-auto">{beta}</span></a>
                   </li>
                   <li className="submenu">
-                    <a href="javascript:" className={isSideMenu == "multi Level" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "multi Level" ? "" : "multi Level")}><i className="la la-share-alt" /> <span>Multi Level</span> <span className="menu-arrow" /></a>
+                    <a href="javascript:" className={isSideMenu == "multi Level" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "multi Level" ? "" : "multi Level")}><i className="la la-share-alt" /> <span>Multi Level</span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
                     {isSideMenu == "multi Level" ?
                       <ul>
                         <li className="submenu">
@@ -445,7 +447,7 @@ const Sidebar = (props) => {
                   <span>Main</span>
                 </li>
                 <li className="submenu">
-                  <a href="javascript:" className={isSideMenu == "dashboard" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "dashboard" ? "" : "dashboard")}><i className="la la-dashboard" /> <span> Dashboard</span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" className={isSideMenu == "dashboard" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "dashboard" ? "" : "dashboard")}><i className="la la-dashboard" /> <span> Dashboard</span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
                   {isSideMenu == "dashboard" ?
                     <ul >
                       <li><Link className={pathname.includes('main/dashboard') ? "active" : ""} to="/main/dashboard">Admin Dashboard</Link></li>
@@ -456,7 +458,7 @@ const Sidebar = (props) => {
                   }
                 </li>
                 <li className="submenu">
-                  <a href="javascript:" className={isSideMenu == "apps" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "apps" ? "" : "apps")} ><i className="la la-cube" /> <span> Apps</span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" className={isSideMenu == "apps" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "apps" ? "" : "apps")} ><i className="la la-cube" /> <span> Apps</span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
                   {isSideMenu == "apps" ?
                     <ul>
                       <li><Link onClick={() => localStorage.setItem("minheight", "true")} to="/conversation/chat">Chat</Link></li>
@@ -484,34 +486,34 @@ const Sidebar = (props) => {
                   <span>Employees</span>
                 </li>
                 <li className="submenu" >
-                  <a href="javascript:" className={pathname.includes('/employee/') ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "employee" ? "" : "employee")}><i className="la la-user" /> <span className="noti-dot"> Employees</span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" className={pathname.includes('/employee/') && (isSideMenu == "employee") ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "employee" ? "" : "employee")}><i className="la la-user" /> <span className="noti-dot"> Employees</span> <span className="menu-arrow" /></a>
                   {/* <a href="javascript:" className={isSideMenu == "employee" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "employee" ? "" : "employee")}><i className="la la-user" /> <span className="noti-dot"> Employees</span> <span className="menu-arrow" /></a> */}
                   {isSideMenu == "employee" ?
 
                     <ul >
                       <li><Link className={pathname.includes('allemployees') ? "active" : pathname.includes('employees-list') ? "active" : ""}
                         to="/employee/allemployees">All Employees</Link></li>
-                      <li><Link className={pathname.includes('holidays') ? "active" : ""} to="/app/employee/holidays">Holidays</Link></li>
-                      <li><Link className={pathname.includes('es-admin') ? "active" : ""} to="/app/employee/leaves-admin">Leaves (Admin) <span className="badge badge-pill bg-primary float-end">1</span></Link></li>
-                      <li><Link className={pathname.includes('ves-employee') ? "active" : ""} to="/app/employee/leaves-employee">Leaves (Employee)</Link></li>
-                      <li><Link className={pathname.includes('e-settings') ? "active" : ""} to="/app/employee/leave-settings">Leave Settings</Link></li>
+                      {/* <li><Link className={pathname.includes('holidays') ? "active" : ""} to="/app/employee/holidays">Holidays</Link></li> */}
+                      {/* <li><Link className={pathname.includes('es-admin') ? "active" : ""} to="/app/employee/leaves-admin">Leaves (Admin) <span className="badge badge-pill bg-primary float-end">1</span></Link></li> */}
+                      {/* <li><Link className={pathname.includes('ves-employee') ? "active" : ""} to="/app/employee/leaves-employee">Leaves (Employee)</Link></li> */}
+                      {/* <li><Link className={pathname.includes('e-settings') ? "active" : ""} to="/app/employee/leave-settings">Leave Settings</Link></li> */}
                       <li><Link className={pathname.includes('nce-admin') ? "active" : ""} to="/app/employee/attendance-admin">Attendance (Admin)</Link></li>
                       <li><Link className={pathname.includes('ce-employee') ? "active" : ""} to="/app/employee/attendance-employee">Attendance (Employee)</Link></li>
-                      <li><Link className={pathname.includes('departments') ? "active" : ""} to="/app/employee/departments">Departments</Link></li>
-                      <li><Link className={pathname.includes('designations') ? "active" : ""} to="/app/employee/designations">Designations</Link></li>
-                      <li><Link className={pathname.includes('timesheet') ? "active" : ""} to="/app/employee/timesheet">Timesheet</Link></li>
-                      <li><Link className={pathname.includes('shift-scheduling') || pathname.includes('shift-list') ? "active" : ""}
-                        to="/app/employee/shift-scheduling">Shift &amp; Schedule</Link></li>
-                      <li><Link className={pathname.includes('overtime') ? "active" : ""} to="/app/employee/overtime">Overtime</Link></li>
+                      {/* <li><Link className={pathname.includes('departments') ? "active" : ""} to="/app/employee/departments">Departments</Link></li> */}
+                      {/* <li><Link className={pathname.includes('designations') ? "active" : ""} to="/app/employee/designations">Designations</Link></li> */}
+                      {/* <li><Link className={pathname.includes('timesheet') ? "active" : ""} to="/app/employee/timesheet">Timesheet</Link></li> */}
+                      {/* <li><Link className={pathname.includes('shift-scheduling') || pathname.includes('shift-list') ? "active" : ""}
+                        to="/app/employee/shift-scheduling">Shift &amp; Schedule</Link></li> */}
+                      {/* <li><Link className={pathname.includes('overtime') ? "active" : ""} to="/app/employee/overtime">Overtime</Link></li> */}
                     </ul>
                     : ""
                   }
                 </li>
                 <li className={pathname.includes('clients') ? "active" : ""}>
-                  <Link to="/app/employees/clients"><i className="la la-users" /> <span>Clients</span></Link>
+                  <Link to="/app/employees/clients"><i className="la la-users" /> <span>Clients</span> <span className="badge badge-primary ms-auto">{beta}</span></Link>
                 </li>
                 <li className="submenu">
-                  <a href="javascript:" className={isSideMenu == "projects" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "projects" ? "" : "projects")}><i className="la la-rocket" /> <span> Projects</span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" className={isSideMenu == "projects" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "projects" ? "" : "projects")}><i className="la la-rocket" /> <span> Projects</span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
                   {isSideMenu == "projects" ?
                     <ul>
                       <li><Link className={pathname.includes('t_dashboard') ? "active" : pathname.includes('projects-list') ?
@@ -524,16 +526,16 @@ const Sidebar = (props) => {
                   }
                 </li>
                 <li className={pathname.includes('leads') ? "active" : ""}>
-                  <Link to="/app/employees/leads"><i className="la la-user-secret" /> <span>Leads</span></Link>
+                  <Link to="/app/employees/leads"><i className="la la-user-secret" /> <span>Leads</span> <span className="badge badge-primary ms-auto">{beta}</span></Link>
                 </li>
                 <li className={pathname.includes('tickets') ? "active" : pathname.includes('ticket-view') ? "active" : ""}>
-                  <Link to="/app/employees/tickets"><i className="la la-ticket" /> <span>Tickets</span></Link>
+                  <Link to="/app/employees/tickets"><i className="la la-ticket" /> <span>Tickets</span> <span className="badge badge-primary ms-auto">{beta}</span></Link>
                 </li>
                 <li className="menu-title">
                   <span>HR</span>
                 </li>
                 <li className="submenu">
-                  <a href="javascript:" className={isSideMenu == "sales" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "sales" ? "" : "sales")}><i className="la la-files-o" /> <span> Sales </span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" className={isSideMenu == "sales" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "sales" ? "" : "sales")}><i className="la la-files-o" /> <span> Sales </span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
                   {isSideMenu == "sales" ?
                     <ul>
                       <li><Link className={pathname.includes('estimates') ? "active" : ""} to="/app/sales/estimates">Estimates</Link></li>
@@ -547,7 +549,7 @@ const Sidebar = (props) => {
                   }
                 </li>
                 <li className="submenu">
-                  <a href="javascript:" className={isSideMenu == "accounting" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "accounting" ? "" : "accounting")}><i className="la la-files-o" /> <span> Accounting </span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" className={isSideMenu == "accounting" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "accounting" ? "" : "accounting")}><i className="la la-files-o" /> <span> Accounting </span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
                   {isSideMenu == "accounting" ?
                     <ul>
                       <li><Link className={pathname.includes('categories') || pathname.includes('sub-category') ? "active" : ""} to="/app/accounts/categories">Categories</Link></li>
@@ -559,7 +561,7 @@ const Sidebar = (props) => {
                   }
                 </li>
                 <li className="submenu">
-                  <a href="javascript:" className={isSideMenu == "payroll" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "payroll" ? "" : "payroll")}><i className="la la-money" /> <span> Payroll </span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" className={isSideMenu == "payroll" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "payroll" ? "" : "payroll")}><i className="la la-money" /> <span> Payroll </span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
                   {isSideMenu == "payroll" ?
                     <ul>
                       <li><Link className={pathname.includes('_salary') ? "active" : ""} to="/app/payroll/_salary"> Employee Salary </Link></li>
@@ -570,10 +572,10 @@ const Sidebar = (props) => {
                   }
                 </li>
                 <li className={pathname.includes('policies') ? "active" : ""}>
-                  <Link to="/app/hr/policies"><i className="la la-file-pdf-o" /> <span>Policies</span></Link>
+                  <Link to="/app/hr/policies"><i className="la la-file-pdf-o" /> <span>Policies</span> <span className="badge badge-primary ms-auto">{beta}</span></Link>
                 </li>
                 <li className="submenu">
-                  <a href="javascript:" className={isSideMenu == "reports" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "reports" ? "" : "reports")}><i className="la la-pie-chart" /> <span> Reports </span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" className={isSideMenu == "reports" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "reports" ? "" : "reports")}><i className="la la-pie-chart" /> <span> Reports </span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
                   {isSideMenu == "reports" ?
                     <ul>
                       <li><Link className={pathname.includes('expense-') ? "active" : ""} to="/app/reports/expense-reports"> Expense Report </Link></li>
@@ -595,7 +597,7 @@ const Sidebar = (props) => {
                   <span>Performance</span>
                 </li>
                 <li className="submenu">
-                  <a href="javascript:" className={isSideMenu == "performance" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "performance" ? "" : "performance")}><i className="la la-graduation-cap" /> <span> Performance </span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" className={isSideMenu == "performance" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "performance" ? "" : "performance")}><i className="la la-graduation-cap" /> <span> Performance </span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
                   {isSideMenu == "performance" ?
                     <ul>
                       <li><Link className={pathname.includes('-indicator') ? "active" : ""} to="/app/performances/performance-indicator"> Performance Indicator </Link></li>
@@ -606,7 +608,7 @@ const Sidebar = (props) => {
                   }
                 </li>
                 <li className="submenu">
-                  <a href="javascript:" className={isSideMenu == "goals" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "goals" ? "" : "goals")}><i className="la la-crosshairs" /> <span> Goals </span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" className={isSideMenu == "goals" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "goals" ? "" : "goals")}><i className="la la-crosshairs" /> <span> Goals </span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
                   {isSideMenu == "goals" ?
                     <ul>
                       <li><Link className={pathname.includes('-tracking') ? "active" : ""} to="/app/goals/goal-tracking"> Goal List </Link></li>
@@ -616,7 +618,7 @@ const Sidebar = (props) => {
                   }
                 </li>
                 <li className="submenu">
-                  <a href="javascript:" className={isSideMenu == "training" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "training" ? "" : "training")}><i className="la la-edit" /> <span> Training </span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" className={isSideMenu == "training" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "training" ? "" : "training")}><i className="la la-edit" /> <span> Training </span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
                   {isSideMenu == "training" ?
                     <ul>
                       <li><Link className={pathname.includes('training-list') ? "active" : ""} to="/app/training/training-list"> Training List </Link></li>
@@ -626,17 +628,17 @@ const Sidebar = (props) => {
                     : ""
                   }
                 </li>
-                <li className={pathname.includes('promotion') ? "active" : ""}><Link to="/app/performance/promotion"><i className="la la-bullhorn" /> <span>Promotion</span></Link></li>
-                <li className={pathname.includes('resignation') ? "active" : ""}><Link to="/app/performance/resignation"><i className="la la-external-link-square" /> <span>Resignation</span></Link></li>
-                <li className={pathname.includes('termination') ? "active" : ""}><Link to="/app/performance/termination"><i className="la la-times-circle" /> <span>Termination</span></Link></li>
+                <li className={pathname.includes('promotion') ? "active" : ""}><Link to="/app/performance/promotion"><i className="la la-bullhorn" /> <span>Promotion</span> <span className="badge badge-primary ms-auto">{beta}</span></Link></li>
+                <li className={pathname.includes('resignation') ? "active" : ""}><Link to="/app/performance/resignation"><i className="la la-external-link-square" /> <span>Resignation</span> <span className="badge badge-primary ms-auto">{beta}</span></Link></li>
+                <li className={pathname.includes('termination') ? "active" : ""}><Link to="/app/performance/termination"><i className="la la-times-circle" /> <span>Termination</span> <span className="badge badge-primary ms-auto">{beta}</span></Link></li>
                 <li className="menu-title">
                   <span>Administration</span>
                 </li>
                 <li className={pathname.includes('assets') ? "active" : ""}>
-                  <Link to="/app/administrator/assets"><i className="la la-object-ungroup" /> <span>Assets</span></Link>
+                  <Link to="/app/administrator/assets"><i className="la la-object-ungroup" /> <span>Assets</span> <span className="badge badge-primary ms-auto">{beta}</span></Link>
                 </li>
                 <li className="submenu">
-                  <a href="javascript:" className={isSideMenu == "jobs" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "jobs" ? "" : "jobs")}><i className="la la-briefcase" /> <span> Jobs </span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" className={isSideMenu == "jobs" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "jobs" ? "" : "jobs")}><i className="la la-briefcase" /> <span> Jobs </span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
                   {isSideMenu == "jobs" ?
                     <ul>
                       <li><Link className={pathname.includes('user-dashboard') || pathname.includes('user-all-jobs') || pathname.includes('saved-jobs')
@@ -660,13 +662,13 @@ const Sidebar = (props) => {
                   }
                 </li>
                 <li className={pathname.includes('knowledgebase') ? "active" : ""}>
-                  <Link to="/app/administrator/knowledgebase"><i className="la la-question" /> <span>Knowledgebase</span></Link>
+                  <Link to="/app/administrator/knowledgebase"><i className="la la-question" /> <span>Knowledgebase</span> <span className="badge badge-primary ms-auto">{beta}</span></Link>
                 </li>
                 <li className={pathname.includes('activities') ? "active" : ""}>
-                  <Link to="/app/administrator/activities"><i className="la la-bell" /> <span>Activities</span></Link>
+                  <Link to="/app/administrator/activities"><i className="la la-bell" /> <span>Activities</span> <span className="badge badge-primary ms-auto">{beta}</span></Link>
                 </li>
                 <li className={pathname.includes('administrator/users') ? "active" : ""}>
-                  <Link to="/app/administrator/users"><i className="la la-user-plus" /> <span>Users</span></Link>
+                  <Link to="/app/administrator/users"><i className="la la-user-plus" /> <span>Users</span> <span className="badge badge-primary ms-auto">{beta}</span></Link>
                 </li>
                 <li className={pathname.includes('/settings') ? "active" : ""}>
                   <Link to="/settings"><i className="la la-cog" /> <span>Settings</span></Link>
@@ -675,7 +677,7 @@ const Sidebar = (props) => {
                   <span>Pages</span>
                 </li>
                 <li className="submenu">
-                  <a href="javascript:" className={isSideMenu == "profile" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "profile" ? "" : "profile")}><i className="la la-user" /> <span> Profile </span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" className={isSideMenu == "profile" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "profile" ? "" : "profile")}><i className="la la-user" /> <span> Profile </span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
                   {isSideMenu == "profile" ?
                     <ul>
                       <li><Link className={pathname.includes('profile/employee-') ? "active" : ""} to="/app/profile/employee-profile"> Employee Profile </Link></li>
@@ -685,7 +687,7 @@ const Sidebar = (props) => {
                   }
                 </li>
                 <li className="submenu">
-                  <a href="javascript:" className={isSideMenu == "authentication" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "authentication" ? "" : "authentication")} ><i className="la la-key" /> <span> Authentication </span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" className={isSideMenu == "authentication" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "authentication" ? "" : "authentication")} ><i className="la la-key" /> <span> Authentication </span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
                   {isSideMenu == "authentication" ?
                     <ul>
                       <li><Link to="/login"> Login </Link></li>
@@ -698,7 +700,7 @@ const Sidebar = (props) => {
                   }
                 </li>
                 <li className="submenu">
-                  <a href="javascript:" className={isSideMenu == "error pages" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "error pages" ? "" : "error pages")}><i className="la la-exclamation-triangle" /> <span> Error Pages </span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" className={isSideMenu == "error pages" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "error pages" ? "" : "error pages")}><i className="la la-exclamation-triangle" /> <span> Error Pages </span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
                   {isSideMenu == "error pages" ?
                     <ul>
                       <li><Link to="/error-404">404 Error </Link></li>
@@ -708,7 +710,7 @@ const Sidebar = (props) => {
                   }
                 </li>
                 <li className="submenu">
-                  <a href="javascript:" className={isSideMenu == "subscriptions" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "subscriptions" ? "" : "subscriptions")}><i className="la la-hand-o-up" /> <span> Subscriptions </span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" className={isSideMenu == "subscriptions" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "subscriptions" ? "" : "subscriptions")}><i className="la la-hand-o-up" /> <span> Subscriptions </span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
                   {isSideMenu == "subscriptions" ?
                     <ul>
                       <li><Link className={pathname.includes('subscriptionadmin') ? "active" : ""} to="/app/subscription/subscriptionadmin">
@@ -722,7 +724,7 @@ const Sidebar = (props) => {
                   }
                 </li>
                 <li className="submenu">
-                  <a href="javascript:" className={isSideMenu == "pages" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "pages" ? "" : "pages")}><i className="la la-columns" /> <span> Pages </span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" className={isSideMenu == "pages" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "pages" ? "" : "pages")}><i className="la la-columns" /> <span> Pages </span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
                   {isSideMenu == "pages" ?
                     <ul>
                       <li><Link className={pathname.includes('pages/search') ? "active" : ""} to="/app/pages/search"> Search </Link></li>
@@ -738,10 +740,10 @@ const Sidebar = (props) => {
                   <span>UI Interface</span>
                 </li>
                 <li>
-                  <Link to="/ui-components"><i className="la la-puzzle-piece" /> <span>Components</span></Link>
+                  <Link to="/ui-components"><i className="la la-puzzle-piece" /> <span>Components</span> <span className="badge badge-primary ms-auto">{beta}</span></Link>
                 </li>
                 <li className="submenu">
-                  <a href="javascript:" className={isSideMenu == "forms" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "forms" ? "" : "forms")}><i className="la la-object-group" /> <span> Forms </span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" className={isSideMenu == "forms" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "forms" ? "" : "forms")}><i className="la la-object-group" /> <span> Forms </span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
                   {isSideMenu == "forms" ?
                     <ul>
                       <li><Link className={pathname.includes('basicinputs') ? "active" : ""}
@@ -761,7 +763,7 @@ const Sidebar = (props) => {
                   }
                 </li>
                 <li className="submenu">
-                  <Link to="/app/ui-interface/tables/basic" className={isSideMenu == "tables" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "tables" ? "" : "tables")}><i className="la la-table" /> <span> Tables </span> <span className="menu-arrow" /></Link>
+                  <Link to="/app/ui-interface/tables/basic" className={isSideMenu == "tables" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "tables" ? "" : "tables")}><i className="la la-table" /> <span> Tables </span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></Link>
                   {isSideMenu == "tables" ?
                     <ul>
                       <li><Link className={pathname.includes('tables/basic') ? "active" : ""} to="/app/ui-interface/tables/basic">Basic Tables </Link></li>
@@ -774,13 +776,13 @@ const Sidebar = (props) => {
                   <span>Extras</span>
                 </li>
                 <li>
-                  <a href="javascript:"><i className="la la-file-text" /> <span>Documentation</span></a>
+                  <a href="javascript:"><i className="la la-file-text" /> <span>Documentation</span> <span className="badge badge-primary ms-auto">{beta}</span></a>
                 </li>
                 <li>
-                  <a href=""><i className="la la-info" /> <span>Change Log</span> <span className="badge badge-primary ms-auto">v3.4</span></a>
+                  <a href=""><i className="la la-info" /> <span>Change Log</span> <span className="badge badge-primary ms-auto">{beta}</span></a>
                 </li>
                 <li className="submenu">
-                  <a href="javascript:" className={isSideMenu == "multi Level" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "multi Level" ? "" : "multi Level")}><i className="la la-share-alt" /> <span>Multi Level</span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" className={isSideMenu == "multi Level" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "multi Level" ? "" : "multi Level")}><i className="la la-share-alt" /> <span>Multi Level</span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
                   {isSideMenu == "multi Level" ?
                     <ul>
                       <li className="submenu">
@@ -1002,7 +1004,7 @@ const Sidebar = (props) => {
               <div className="tab-content" id="v-pills-tabContent">
                 {isSideMenunew == "dashboard" ?
                   <div className="tab-pane fade active show" id="v-pills-dashboard" role="tabpanel" aria-labelledby="v-pills-dashboard-tab">
-                    <p>Dashboard</p>
+                    <p>Dashboard</p> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span>
                     <ul>
                       <li><Link className={pathname.includes('main/dashboard') ? "active" : ""} to="/app/main/dashboard">Admin Dashboard</Link></li>
                       <li><Link className={pathname.includes('main/employee-') ? "active" : ""}
@@ -1013,7 +1015,7 @@ const Sidebar = (props) => {
                 }
                 {isSideMenu == "apps" ?
                   <div className="tab-pane fade active show" id="v-pills-apps" role="tabpanel" aria-labelledby="v-pills-apps-tab">
-                    <p>App</p>
+                    <p>Apps</p> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span>
                     <ul>
                       <li><Link onClick={() => localStorage.setItem("minheight", "true")} to="/conversation/chat">Chat</Link></li>
                       <li className="submenu">
@@ -1042,25 +1044,25 @@ const Sidebar = (props) => {
                     <ul >
                       <li><Link className={pathname.includes('allemployees') ? "active" : pathname.includes('employees-list') ? "active" : ""}
                         to="/app/employee/allemployees">All Employees</Link></li>
-                      <li><Link className={pathname.includes('holidays') ? "active" : ""} to="/app/employee/holidays">Holidays</Link></li>
-                      <li><Link className={pathname.includes('es-admin') ? "active" : ""} to="/app/employee/leaves-admin">Leaves (Admin) <span className="badge badge-pill bg-primary float-end">1</span></Link></li>
-                      <li><Link className={pathname.includes('ves-employee') ? "active" : ""} to="/app/employee/leaves-employee">Leaves (Employee)</Link></li>
-                      <li><Link className={pathname.includes('e-settings') ? "active" : ""} to="/app/employee/leave-settings">Leave Settings</Link></li>
+                      {/* <li><Link className={pathname.includes('holidays') ? "active" : ""} to="/app/employee/holidays">Holidays</Link></li> */}
+                      {/* <li><Link className={pathname.includes('es-admin') ? "active" : ""} to="/app/employee/leaves-admin">Leaves (Admin) <span className="badge badge-pill bg-primary float-end">1</span></Link></li> */}
+                      {/* <li><Link className={pathname.includes('ves-employee') ? "active" : ""} to="/app/employee/leaves-employee">Leaves (Employee)</Link></li> */}
+                      {/* <li><Link className={pathname.includes('e-settings') ? "active" : ""} to="/app/employee/leave-settings">Leave Settings</Link></li> */}
                       <li><Link className={pathname.includes('nce-admin') ? "active" : ""} to="/app/employee/attendance-admin">Attendance (Admin)</Link></li>
                       <li><Link className={pathname.includes('ce-employee') ? "active" : ""} to="/app/employee/attendance-employee">Attendance (Employee)</Link></li>
-                      <li><Link className={pathname.includes('departments') ? "active" : ""} to="/app/employee/departments">Departments</Link></li>
-                      <li><Link className={pathname.includes('designations') ? "active" : ""} to="/app/employee/designations">Designations</Link></li>
-                      <li><Link className={pathname.includes('timesheet') ? "active" : ""} to="/app/employee/timesheet">Timesheet</Link></li>
-                      <li><Link className={pathname.includes('shift-scheduling') || pathname.includes('shift-list') ? "active" : ""}
-                        to="/app/employee/shift-scheduling">Shift &amp; Schedule</Link></li>
-                      <li><Link className={pathname.includes('overtime') ? "active" : ""} to="/app/employee/overtime">Overtime</Link></li>
+                      {/* <li><Link className={pathname.includes('departments') ? "active" : ""} to="/app/employee/departments">Departments</Link></li> */}
+                      {/* <li><Link className={pathname.includes('designations') ? "active" : ""} to="/app/employee/designations">Designations</Link></li> */}
+                      {/* <li><Link className={pathname.includes('timesheet') ? "active" : ""} to="/app/employee/timesheet">Timesheet</Link></li> */}
+                      {/* <li><Link className={pathname.includes('shift-scheduling') || pathname.includes('shift-list') ? "active" : ""}
+                        to="/app/employee/shift-scheduling">Shift &amp; Schedule</Link></li> */}
+                      {/* <li><Link className={pathname.includes('overtime') ? "active" : ""} to="/app/employee/overtime">Overtime</Link></li> */}
                     </ul>
                   </div>
                   : ""
                 }
                 {isSideMenu == "clients" ?
                   <div className="tab-pane fade active show" id="v-pills-clients" role="tabpanel" aria-labelledby="v-pills-clients-tab">
-                    <p>Clients</p>
+                    <p>Clients</p> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span>
                     <ul>
                       <li className={pathname.includes('clients') ? "active" : ""}>
                         <Link to="/app/employees/clients"><i className="la la-users" /> <span>Clients</span></Link>
@@ -1071,7 +1073,7 @@ const Sidebar = (props) => {
                 }
                 {isSideMenu == "projects" ?
                   <div className="tab-pane fade active show" id="v-pills-projects" role="tabpanel" aria-labelledby="v-pills-projects-tab">
-                    <p>Projects</p>
+                    <p>Projects</p> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span>
                     <ul>
                       <li><Link className={pathname.includes('t_dashboard') ? "active" : pathname.includes('projects-list') ?
                         "active" : pathname.includes('cts-view') ? "active" : ""}
@@ -1087,7 +1089,7 @@ const Sidebar = (props) => {
                     <p>Leads</p>
                     <ul>
                       <li className={pathname.includes('leads') ? "active" : ""}>
-                        <Link to="/app/employees/leads"><i className="la la-user-secret" /> <span>Leads</span></Link>
+                        <Link to="/app/employees/leads"><i className="la la-user-secret" /> <span>Leads</span> <span className="badge badge-primary ms-auto">{beta}</span></Link>
                       </li>
                     </ul>
                   </div>
@@ -1098,7 +1100,7 @@ const Sidebar = (props) => {
                     <p>Tickets</p>
                     <ul>
                       <li className={pathname.includes('tickets') ? "active" : pathname.includes('ticket-view') ? "active" : ""}>
-                        <Link to="/app/employees/tickets"><i className="la la-ticket" /> <span>Tickets</span></Link>
+                        <Link to="/app/employees/tickets"><i className="la la-ticket" /> <span>Tickets</span> <span className="badge badge-primary ms-auto">{beta}</span></Link>
                       </li>
                     </ul>
                   </div>
@@ -1235,7 +1237,7 @@ const Sidebar = (props) => {
                     <p>Assets</p>
                     <ul>
                       <li className={pathname.includes('assets') ? "active" : ""}>
-                        <Link to="/app/administrator/assets"><i className="la la-object-ungroup" /> <span>Assets</span></Link>
+                        <Link to="/app/administrator/assets"><i className="la la-object-ungroup" /> <span>Assets</span> <span className="badge badge-primary ms-auto">{beta}</span></Link>
                       </li>
                     </ul>
                   </div>
@@ -1243,7 +1245,7 @@ const Sidebar = (props) => {
                 }
                 {isSideMenu == "jobs" ?
                   <div className="tab-pane fade show active" id="v-pills-jobs" role="tabpanel" aria-labelledby="v-pills-jobs-tab">
-                    <p>Jobs</p>
+                    <p>Jobs</p> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span>
                     <ul>
                       <li><Link className={pathname.includes('user-dashboard') || pathname.includes('user-all-jobs') || pathname.includes('saved-jobs')
                         || pathname.includes('applied-jobs') || pathname.includes('interviewing') || pathname.includes('offered-jobs') ||
@@ -1270,7 +1272,7 @@ const Sidebar = (props) => {
                     <p>Knowledgebase</p>
                     <ul>
                       <li className={pathname.includes('knowledgebase') ? "active" : ""}>
-                        <Link to="/app/administrator/knowledgebase"><i className="la la-question" /> <span>Knowledgebase</span></Link>
+                        <Link to="/app/administrator/knowledgebase"><i className="la la-question" /> <span>Knowledgebase</span> <span className="badge badge-primary ms-auto">{beta}</span></Link>
                       </li>
                     </ul>
                   </div>
@@ -1281,7 +1283,7 @@ const Sidebar = (props) => {
                     <p>Activities</p>
                     <ul>
                       <li className={pathname.includes('activities') ? "active" : ""}>
-                        <Link to="/app/administrator/activities"><i className="la la-bell" /> <span>Activities</span></Link>
+                        <Link to="/app/administrator/activities"><i className="la la-bell" /> <span>Activities</span> <span className="badge badge-primary ms-auto">{beta}</span></Link>
                       </li>
                     </ul>
                   </div>
@@ -1292,7 +1294,7 @@ const Sidebar = (props) => {
                     <p>Users</p>
                     <ul>
                       <li className={pathname.includes('administrator/users') ? "active" : ""}>
-                        <Link to="/app/administrator/users"><i className="la la-user-plus" /> <span>Users</span></Link>
+                        <Link to="/app/administrator/users"><i className="la la-user-plus" /> <span>Users</span> <span className="badge badge-primary ms-auto">{beta}</span></Link>
                       </li>
                     </ul>
                   </div>
