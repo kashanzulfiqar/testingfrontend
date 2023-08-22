@@ -121,8 +121,8 @@ const Sidebar = (props) => {
                         <li><Link className={pathname.includes('employee/leaves-admin') ? "active" : ""} to="/employee/leaves-admin">Leaves (Admin) <span className="badge badge-pill bg-primary float-end">1</span></Link></li>
                         <li><Link className={pathname.includes('employee/leaves') ? "active" : ""} to="/employee/leaves">Leaves (Employee)</Link></li>
                         {/* <li><Link className={pathname.includes('e-settings') ? "active" : ""} to="/app/employee/leave-settings">Leave Settings</Link></li> */}
-                        <li><Link className={pathname.includes('nce-admin') ? "active" : ""} to="/app/employee/attendance-admin">Attendance (Admin)</Link></li>
-                        <li><Link className={pathname.includes('ce-employee') ? "active" : ""} to="/app/employee/attendance-employee">Attendance (Employee)</Link></li>
+                        <li><Link className={pathname.includes('nce-admin') ? "active" : ""} to="/employee/attendance-admin">Attendance (Admin)</Link></li>
+                        <li><Link className={pathname.includes('ce-employee') ? "active" : ""} to="/employee/attendance-employee">Attendance (Employee)</Link></li>
                         {/* <li><Link className={pathname.includes('departments') ? "active" : ""} to="/app/employee/departments">Departments</Link></li> */}
                         {/* <li><Link className={pathname.includes('designations') ? "active" : ""} to="/app/employee/designations">Designations</Link></li> */}
                         <li><Link className={pathname.includes('employee/timesheet') ? "active" : ""} to="/employee/timesheet">Timesheet</Link></li>
@@ -497,8 +497,8 @@ const Sidebar = (props) => {
                       <li><Link className={pathname.includes('employee/leaves-admin') ? "active" : ""} to="/employee/leaves-admin">Leaves (Admin) <span className="badge badge-pill bg-primary float-end">1</span></Link></li>
                       <li><Link className={pathname.includes('employee/leaves') ? "active" : ""} to="/employee/leaves">Leaves (Employee)</Link></li>
                       {/* <li><Link className={pathname.includes('e-settings') ? "active" : ""} to="/app/employee/leave-settings">Leave Settings</Link></li> */}
-                      <li><Link className={pathname.includes('nce-admin') ? "active" : ""} to="/app/employee/attendance-admin">Attendance (Admin)</Link></li>
-                      <li><Link className={pathname.includes('ce-employee') ? "active" : ""} to="/app/employee/attendance-employee">Attendance (Employee)</Link></li>
+                      <li><Link className={pathname.includes('nce-admin') ? "active" : ""} to="/employee/attendance-admin">Attendance (Admin)</Link></li>
+                      <li><Link className={pathname.includes('ce-employee') ? "active" : ""} to="/employee/attendance-employee">Attendance (Employee)</Link></li>
                       {/* <li><Link className={pathname.includes('departments') ? "active" : ""} to="/app/employee/departments">Departments</Link></li> */}
                       {/* <li><Link className={pathname.includes('designations') ? "active" : ""} to="/app/employee/designations">Designations</Link></li> */}
                       <li><Link className={pathname.includes('employee/timesheet') ? "active" : ""} to="/employee/timesheet">Timesheet</Link></li>
@@ -1048,8 +1048,8 @@ const Sidebar = (props) => {
                       <li><Link className={pathname.includes('employee/leaves-admin') ? "active" : ""} to="/employee/leaves-admin">Leaves (Admin) <span className="badge badge-pill bg-primary float-end">1</span></Link></li>
                       <li><Link className={pathname.includes('employee/leaves') ? "active" : ""} to="/employee/leaves">Leaves (Employee)</Link></li>
                       {/* <li><Link className={pathname.includes('e-settings') ? "active" : ""} to="/app/employee/leave-settings">Leave Settings</Link></li> */}
-                      <li><Link className={pathname.includes('nce-admin') ? "active" : ""} to="/app/employee/attendance-admin">Attendance (Admin)</Link></li>
-                      <li><Link className={pathname.includes('ce-employee') ? "active" : ""} to="/app/employee/attendance-employee">Attendance (Employee)</Link></li>
+                      <li><Link className={pathname.includes('nce-admin') ? "active" : ""} to="/employee/attendance-admin">Attendance (Admin)</Link></li>
+                      <li><Link className={pathname.includes('ce-employee') ? "active" : ""} to="/employee/attendance-employee">Attendance (Employee)</Link></li>
                       {/* <li><Link className={pathname.includes('departments') ? "active" : ""} to="/app/employee/departments">Departments</Link></li> */}
                       {/* <li><Link className={pathname.includes('designations') ? "active" : ""} to="/app/employee/designations">Designations</Link></li> */}
                       <li><Link className={pathname.includes('employee/timesheet') ? "active" : ""} to="/employee/timesheet">Timesheet</Link></li>

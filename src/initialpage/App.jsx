@@ -33,6 +33,9 @@ import EmployeeProfile from '../MainPage/Pages/Profile/employeeprofile';
 import Holidays from '../MainPage/Employees/Employees/holidays';
 import LeaveEmployee from '../MainPage/Employees/Employees/leaveemployee';
 import Timesheet from '../MainPage/Employees/Employees/timesheet';
+import AttendanceEmployee from '../MainPage/Employees/Employees/attendanceemployee';
+import AttendanceAdmin from '../MainPage/Employees/Employees/attendanceadmin';
+
 
 const App = () => {
   const login = useSelector((state) => state.user.loginvalue);
@@ -107,6 +110,10 @@ const App = () => {
           {/* Settings  */}
           <Route path="/settings" element={<Settings />} />
           {/* <Route path="/settings/roles-permissions" element={<RolePermisson />} /> */}
+
+          {/* Settings  */}
+          <Route path="/employee/attendance-employee" element={<AttendanceEmployee />} />
+          <Route path="/employee/attendance-admin" element={<AttendanceAdmin />} />
         </Route>
         
         {/* <Route path="/404" element={<Error404 />}></Route> */}
