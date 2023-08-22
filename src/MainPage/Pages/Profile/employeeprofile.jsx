@@ -1,21 +1,59 @@
 /**
  * TermsCondition Page
  */
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Helmet } from "react-helmet";
 import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Avatar_02, Avatar_05, Avatar_09, Avatar_10, Avatar_16, eye } from '../../../Entryfile/imagepath'
 import { keyboard, mouse, laptop } from '../../../Entryfile/imagepath';
 import Offcanvas from '../../../Entryfile/offcanvance';
+import { DatePicker, Empty, Form, Input, Select, Spin, Table, message, InputNumber } from 'antd';
+import Modal from "@mui/material/Modal";
+import { itemRender } from '../../paginationfunction';
+import PhoneNoInput from '../../../Components/PhoneNoInput';
+import moment from 'moment';
+import ProfileInfoModal from './modals/ProfileInfoModal';
+import { apiServices } from '../../../Services/apiServices';
+import { LoadingOutlined } from '@ant-design/icons';
 
 
 const EmployeeProfile = () => {
+  const moment = require('moment');
+  const location = useLocation();
+  const user_data = location?.state?.user_data;
+  const allDataLocal = JSON.parse(localStorage.getItem("allDataLocal"));
+
   const { loginvalue } = useSelector((state) => state.user);
+  const user_state = useSelector((state) => state.user.loginvalue);
+  const role = user_state?.user?.role
+  const company_id = user_state?.user?.companyId
+  const [form] = Form.useForm();
 
   const UserName = loginvalue?.email?.split('@')[0];
   const ProfileName = UserName?.charAt(0).toUpperCase() + UserName?.slice(1)
   console.log(loginvalue, "loginvalue");
+
+  const [loader, setLoader] = useState(false)
+  const [emergValue, setEmergValue] = useState(null)
+  const [allData, setAllData] = useState(allDataLocal ? allDataLocal : user_data)
+  const [phoneLengthError, setPhoneLengthError] = useState(false);
+  const [deptInfo, setDeptInfo] = useState([])
+  const [desigInfo, setDesigInfo] = useState([])
+  const [repInfo, setRepInfo] = useState([])
+  const [eduInfo, setEduInfo] = useState([])
+  const [expInfo, setExpInfo] = useState([])
+  const [emergInfo, setEmergInfo] = useState([])
+  const [bankInfo, setBankInfo] = useState({})
+  const [open, setOpen] = useState({
+  isFamilyInfoOpen: false,
+  isEduInfoOpen: false,
+  isExpInfoOpen: false,
+  isBankInfoOpen: false,
+  isEmergInfoOpen: false, 
+  isprofileInfoOpen: false,
+  data: '' 
+  });
 
   useEffect(() => {
     if ($('.select').length > 0) {
@@ -25,13 +63,362 @@ const EmployeeProfile = () => {
       });
     }
   });
+  
+  useEffect(() => {
+    getReportsTo()
+    getDepartment();
+    getDesignation();
+  }, [])
+
+  const getReportsTo = () => {
+    apiServices("GET", "user/view-team-lead", null, user_state)
+    .then((res) => {
+      if (res?.data?.success === true) {
+        res?.data?.User?.map((rep)=> {
+          setRepInfo((prevRep) => ({
+            ...prevRep,
+            [rep?._id]: rep?.fullName,
+          }));
+        })
+      }
+    })
+    .catch((err) => {
+      message.error(
+        `${
+          err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
+            ? err?.response?.data?.validation?.body?.message
+            : "Get Department Info Error"
+        }!`
+      );
+    });
+  }
+
+  const getDepartment = () => {
+  apiServices("GET", "team/view-team", null, user_state)
+      .then((res) => {
+        if (res?.data?.success === true) {
+          console.log(res?.data?.Team);
+          res?.data?.Team?.map((dept)=> {
+            setDeptInfo((prevDept) => ({
+              ...prevDept,
+              [dept?._id]: dept?.teamName,
+            }));
+          })
+        }
+      })
+      .catch((err) => {
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Get Department Info Error"
+          }!`
+        );
+      });
+    }
+  const getDesignation = () => {
+  apiServices("GET", "designation", null, user_state)
+      .then((res) => {
+        if (res?.data?.success === true) {
+          res?.data?.Designation?.map((desig)=> {
+            setDesigInfo((prevDesig) => ({
+              ...prevDesig,
+              [desig?._id]: desig?.designationName,
+            }));
+          })
+        }
+      })
+      .catch((err) => {
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Get Designation Info Error"
+          }!`
+        );
+      });
+    }
+  
+
+const handleClose = () => {
+  setOpen({ 
+    isFamilyInfoOpen: false,
+    isEduInfoOpen: false,
+    isExpInfoOpen: false,
+    isBankInfoOpen: false,
+    isEmergInfoOpen: false, 
+    isprofileInfoOpen: false,
+    data: '',
+  });
+  setPhoneLengthError(false)
+  setEmergValue(null)
+  form.resetFields()
+};
+
+  const onHandleEmergChange = (type, value) => {
+    if (!value) {
+      setPhoneLengthError({emp: true});
+    }
+    else if (value && value.length < 4) {
+      setPhoneLengthError({len: true});
+    } else {
+      setPhoneLengthError(false);
+    }
+
+      let newvalue = value ? "+" + value : "";
+
+      const updatedValues = {
+        [type]: `${newvalue}`,
+      };
+      form.setFieldsValue(updatedValues)
+      setEmergValue({
+        [type]: `${newvalue}`,
+      });
+  };
+
+  const onFinish = (values) => {
+
+    const replacer = (key, value) => {
+        if (typeof value === 'number') {
+            return String(value);
+        }else if(value === undefined || value === '' || value === null || !value){
+            return ''
+        }else if(key === 'dateOfBirth' || key === 'joiningDate'){
+            return moment(value).format('YYYY-MM-DD');
+        }
+        return value;
+        };
+        const d = JSON.parse(JSON.stringify(values, replacer));
+        // Remove keys with empty values
+        Object.keys(d).forEach((key) => {
+          if (key === 'password' || d[key] === '') {
+            delete d[key];
+          }
+        });
+        const newData = { ...allData };
+        delete newData.password;
+        let new_values = {
+          ...newData,
+          ...d,
+          }
+          setLoader(true)
+          apiServices("PUT", "user/update-user", new_values, user_state)
+          .then((res) => {
+            if (res?.data?.success === true) {
+              setAllData((prev) => ({
+                ...prev,
+                ...d,
+              }))
+              localStorage.setItem('allDataLocal', JSON.stringify({...new_values, password: user_data?.password}));
+              message.success('Profile Details Updated Successfully!')
+              handleClose()
+              setLoader(false)
+            }
+          })
+          .catch((err) => {
+            setLoader(false)
+            message.error(
+              `${
+                err?.response?.data?.msg
+                  ? err?.response?.data?.msg
+                  : err?.response?.data?.validation?.body?.message
+                  ? err?.response?.data?.validation?.body?.message
+                  : "Update Profile Details Error"
+              }!`
+            );
+          });
+  }
+
+  const onBankFinish = (values) => {
+    let d1 = {
+      ...allData,
+      ...values
+    }
+    Object.keys(d1).forEach((key) => {
+      if (key === 'password') {
+        delete d1[key];
+      }
+    });
+    setLoader(true)
+    apiServices("PUT", "user/update-user", d1, user_state)
+    .then((res) => {
+      if (res?.data?.success === true) {
+        setAllData((prev) => ({
+          ...prev,
+          ...values
+        }))
+        localStorage.setItem('allDataLocal', JSON.stringify({...d1, password: user_data?.password}));
+        message.success('Bank Details Updated Successfully!')
+        handleClose()
+        setLoader(false)
+      }
+    })
+    .catch((err) => {
+      setLoader(false)
+      message.error(
+        `${
+          err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
+            ? err?.response?.data?.validation?.body?.message
+            : "Update Bank Details Error"
+        }!`
+      );
+    });
+  }
+  const onEmergencyFinish = (values) => {
+    let d1 = {
+      ...allData,
+      emergencyContacts: [values]
+    }
+    Object.keys(d1).forEach((key) => {
+      if (key === 'password') {
+        delete d1[key];
+      }
+    });
+    setLoader(true)
+    apiServices("PUT", "user/update-user", d1, user_state)
+    .then((res) => {
+      if (res?.data?.success === true) {
+        setAllData((prev) => ({
+          ...prev,
+          emergencyContacts: [values]
+        }))
+        localStorage.setItem('allDataLocal', JSON.stringify({...d1, password: user_data?.password}));
+        message.success('Emergency Contact Updated Successfully!')
+        handleClose()
+        setLoader(false)
+      }
+    })
+    .catch((err) => {
+      setLoader(false)
+      message.error(
+        `${
+          err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
+            ? err?.response?.data?.validation?.body?.message
+            : "Update Emergency Contact Error"
+        }!`
+      );
+    });
+  }
+  const onEducationFinish = (values) => {
+    let d1 = {
+      ...allData,
+      education: values?.education
+    }
+    Object.keys(d1).forEach((key) => {
+      if (key === 'password') {
+        delete d1[key];
+      }
+    });
+    setLoader(true)
+    apiServices("PUT", "user/update-user", d1, user_state)
+    .then((res) => {
+      if (res?.data?.success === true) {
+        setAllData((prev) => ({
+          ...prev,
+          education: values?.education
+        }))
+        localStorage.setItem('allDataLocal', JSON.stringify({...d1, password: user_data?.password}));
+        message.success('Education Details Updated Successfully!')
+        handleClose()
+        setLoader(false)
+      }
+    })
+    .catch((err) => {
+      setLoader(false)
+      message.error(
+        `${
+          err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
+            ? err?.response?.data?.validation?.body?.message
+            : "Update Education Details Error"
+        }!`
+      );
+    });
+  }
+  const onExperienceFinish = (values) => {
+    let d1 = {
+      ...allData,
+      experience: values?.experience
+    }
+    Object.keys(d1).forEach((key) => {
+      if (key === 'password') {
+        delete d1[key];
+      }
+    });
+    setLoader(true)
+    apiServices("PUT", "user/update-user", d1, user_state)
+    .then((res) => {
+      if (res?.data?.success === true) {
+        setAllData((prev) => ({
+          ...prev,
+          experience: values?.experience
+        }))
+        localStorage.setItem('allDataLocal', JSON.stringify({...d1, password: user_data?.password}));
+        message.success('Experience Details Updated Successfully!')
+        handleClose()
+        setLoader(false)
+      }
+    })
+    .catch((err) => {
+      setLoader(false)
+      message.error(
+        `${
+          err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
+            ? err?.response?.data?.validation?.body?.message
+            : "Update Experience Details Error"
+        }!`
+      );
+    });
+  }
+
+  const formatDate = (inputDate) => {
+    const date = new Date(inputDate);
+    const day = date.getDate();
+    const month = date.toLocaleString('default', { month: 'short' });
+    const year = date.getFullYear();
+
+    let daySuffix = "th";
+    if (day === 1 || day === 21 || day === 31) {
+        daySuffix = "st";
+    } else if (day === 2 || day === 22) {
+        daySuffix = "nd";
+    } else if (day === 3 || day === 23) {
+        daySuffix = "rd";
+    }
+
+    const formattedDate = `${day}${daySuffix} ${month}, ${year}`;
+    return formattedDate;
+}
+
+const antIcon = (
+  <LoadingOutlined
+    style={{
+      fontSize: 24,
+      color: '#fff'
+    }}
+    spin
+  />
+);
 
 
   return (
     <>
       <div className="page-wrapper">
         <Helmet>
-          <title>Employee Profile - HRMS admin Template</title>
+          <title>Employee Profile - DaftarPro</title>
           <meta name="description" content="Reactify Blank Page" />
         </Helmet>
         {/* Page Content */}
@@ -42,7 +429,7 @@ const EmployeeProfile = () => {
               <div className="col-sm-12">
                 <h3 className="page-title">Profile</h3>
                 <ul className="breadcrumb">
-                  <li className="breadcrumb-item"><Link to="/app/main/dashboard">Dashboard</Link></li>
+                  <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>Dashboard</Link></li>
                   <li className="breadcrumb-item active">Profile</li>
                 </ul>
               </div>
@@ -56,61 +443,63 @@ const EmployeeProfile = () => {
                   <div className="profile-view">
                     <div className="profile-img-wrap">
                       <div className="profile-img">
-                        <a href="#"><img alt="" src={Avatar_02} /></a>
+                        <a href="#"><img alt="" src={allData?.imageUrl} /></a>
                       </div>
                     </div>
                     <div className="profile-basic">
                       <div className="row">
                         <div className="col-md-5">
                           <div className="profile-info-left">
-                            <h3 className="user-name m-t-0 mb-0">{ProfileName ? `${ProfileName}` : "John Doe"}</h3>
-                            <h6 className="text-muted">UI/UX Design Team</h6>
-                            <small className="text-muted">Web Designer</small>
-                            <div className="staff-id">Employee ID : FT-0001</div>
-                            <div className="small doj text-muted">Date of Join : 1st Jan 2013</div>
-                            <div className="staff-msg"><Link onClick={() => localStorage.setItem("minheight", "true")} className="btn btn-custom" to="/conversation/chat">Send Message</Link></div>
+                            <h3 className="user-name m-t-0 mb-0">{allData?.fullName}</h3>
+                            <div className="small doj text-muted" style={{fontSize: '12px', fontWeight: '500'}}>{deptInfo[allData?.teamId]}</div>
+                            <small className="text-muted">{desigInfo[allData?.designationId]}</small>
+                            <div className="staff-id">Employee ID: {allData?.employeeId}</div>
+                            <div className="small doj text-muted">Date of Join: {formatDate(allData?.joiningDate || '')}</div>
+                            <div style={{color: 'transparent', height: '98px'}}>.</div>
+                            {/* <div className="staff-msg"><Link onClick={() => localStorage.setItem("minheight", "true")} className="btn btn-custom" to="/conversation/chat">Send Message</Link></div> */}
                           </div>
                         </div>
                         <div className="col-md-7">
                           <ul className="personal-info">
                             <li>
                               <div className="title">Phone:</div>
-                              <div className="text"><a href="">9876543210</a></div>
+                              <div className="text"><a href="javascript:void(0)">{allData?.phoneNo}</a></div>
                             </li>
                             <li>
                               <div className="title">Email:</div>
-                              <div className="text"><a href="">{loginvalue?.email ? ` ${loginvalue?.email}` : "admin@dreamguystech.com"}</a></div>
+                              <div className="text"><a href="javascript:void(0)">{allData?.email}</a></div>
                             </li>
                             <li>
                               <div className="title">Birthday:</div>
-                              <div className="text">24th July</div>
+                              <div className="text">{formatDate(allData?.dateOfBirth || '')}</div>
                             </li>
                             <li>
                               <div className="title">Address:</div>
-                              <div className="text">1861 Bayonne Ave, Manchester Township, NJ, 08759</div>
+                              <div className="text">{allData?.address}</div>
                             </li>
                             <li>
                               <div className="title">Gender:</div>
-                              <div className="text">Male</div>
+                              <div className="text">{allData?.gender}</div>
                             </li>
                             <li>
                               <div className="title">Reports to:</div>
                               <div className="text">
-                                <div className="avatar-box">
+                              {repInfo[allData?.reportsTo] || ''}
+                                {/* <div className="avatar-box">
                                   <div className="avatar avatar-xs">
                                     <img src={Avatar_16} alt="" />
                                   </div>
                                 </div>
                                 <Link to="/app/profile/employee-profile">
-                                  Jeffery Lalor
-                                </Link>
+                                  {user_data?.reportsTo || ''}
+                                </Link> */}
                               </div>
                             </li>
                           </ul>
                         </div>
                       </div>
                     </div>
-                    <div className="pro-edit"><a data-bs-target="#profile_info" data-bs-toggle="modal" className="edit-icon" href="#"><i className="fa fa-pencil" /></a></div>
+                    <div className="pro-edit"><a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: true, data: '' })}><i className="fa fa-pencil" /></a></div>
                   </div>
                 </div>
               </div>
@@ -135,64 +524,56 @@ const EmployeeProfile = () => {
                 <div className="col-md-6 d-flex">
                   <div className="card profile-box flex-fill">
                     <div className="card-body">
-                      <h3 className="card-title">Personal Informations <a href="#" className="edit-icon" data-bs-toggle="modal" data-bs-target="#personal_info_modal"><i className="fa fa-pencil" /></a></h3>
+                      <h3 className="card-title">Bank Information <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: false, isBankInfoOpen: true , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a></h3>
+                      { allData?.bankName ?
                       <ul className="personal-info">
-                        <li>
-                          <div className="title">Passport No.</div>
-                          <div className="text">9876543210</div>
-                        </li>
-                        <li>
-                          <div className="title">Passport Exp Date.</div>
-                          <div className="text">9876543210</div>
-                        </li>
-                        <li>
-                          <div className="title">Tel</div>
-                          <div className="text"><a href="">9876543210</a></div>
-                        </li>
-                        <li>
-                          <div className="title">Nationality</div>
-                          <div className="text">Indian</div>
-                        </li>
-                        <li>
-                          <div className="title">Religion</div>
-                          <div className="text">Christian</div>
-                        </li>
-                        <li>
-                          <div className="title">Marital status</div>
-                          <div className="text">Married</div>
-                        </li>
-                        <li>
-                          <div className="title">Employment of spouse</div>
-                          <div className="text">No</div>
-                        </li>
-                        <li>
-                          <div className="title">No. of children</div>
-                          <div className="text">2</div>
-                        </li>
-                      </ul>
+                            <li>
+                              <div className="title">Bank Name</div>
+                              <div className="text">{allData?.bankName}</div>
+                            </li>
+                            <li>
+                              <div className="title">Bank Account No.</div>
+                              <div className="text">{allData?.bankAccountNumber}</div>
+                            </li>
+                            <li>
+                              <div className="title">Salary</div>
+                              <div className="text">{allData?.salary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</div>
+                            </li>
+                      </ul> :
+                        <Empty style={{marginTop: '12%'}} image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                      }
                     </div>
                   </div>
                 </div>
                 <div className="col-md-6 d-flex">
                   <div className="card profile-box flex-fill">
                     <div className="card-body">
-                      <h3 className="card-title">Emergency Contact <a href="#" className="edit-icon" data-bs-toggle="modal" data-bs-target="#emergency_contact_modal"><i className="fa fa-pencil" /></a></h3>
-                      <h5 className="section-title">Primary</h5>
-                      <ul className="personal-info">
-                        <li>
-                          <div className="title">Name</div>
-                          <div className="text">John Doe</div>
-                        </li>
-                        <li>
-                          <div className="title">Relationship</div>
-                          <div className="text">Father</div>
-                        </li>
-                        <li>
-                          <div className="title">Phone </div>
-                          <div className="text">9876543210, 9876543210</div>
-                        </li>
-                      </ul>
-                      <hr />
+                      <h3 className="card-title">Emergency Contact <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: true, isprofileInfoOpen: false, data: allData?.emergencyContacts?.length > 0 ? allData.emergencyContacts[0] : {} })}><i className="fa fa-pencil" /></a></h3>
+                      {/* <h5 className="section-title">Primary</h5> */}
+                      { allData?.emergencyContacts?.length > 0 ?
+                        <ul className="personal-info">
+                          {
+                            allData?.emergencyContacts?.map((emerg) => (
+                              <>
+                                <li>
+                                  <div className="title">Name</div>
+                                  <div className="text">{emerg?.name}</div>
+                                </li>
+                                <li>
+                                  <div className="title">Relationship</div>
+                                  <div className="text">{emerg?.relationship}</div>
+                                </li>
+                                <li>
+                                  <div className="title">Phone No. </div>
+                                  <div className="text">{emerg?.phoneNo}</div>
+                                </li>
+                              </>
+                            ))
+                          }
+                        </ul> :
+                        <Empty style={{marginTop: '12%'}} image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                      }
+                      {/* <hr />
                       <h5 className="section-title">Secondary</h5>
                       <ul className="personal-info">
                         <li>
@@ -207,107 +588,40 @@ const EmployeeProfile = () => {
                           <div className="title">Phone </div>
                           <div className="text">9876543210, 9876543210</div>
                         </li>
-                      </ul>
+                      </ul> */}
                     </div>
                   </div>
                 </div>
               </div>
               <div className="row">
+              </div>
+              <div className="row">
                 <div className="col-md-6 d-flex">
                   <div className="card profile-box flex-fill">
                     <div className="card-body">
-                      <h3 className="card-title">Bank information</h3>
-                      <ul className="personal-info">
-                        <li>
-                          <div className="title">Bank name</div>
-                          <div className="text">ICICI Bank</div>
-                        </li>
-                        <li>
-                          <div className="title">Bank account No.</div>
-                          <div className="text">159843014641</div>
-                        </li>
-                        <li>
-                          <div className="title">IFSC Code</div>
-                          <div className="text">ICI24504</div>
-                        </li>
-                        <li>
-                          <div className="title">PAN No</div>
-                          <div className="text">TC000Y56</div>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-md-6 d-flex">
-                  <div className="card profile-box flex-fill">
-                    <div className="card-body">
-                      <h3 className="card-title">Family Informations <a href="#" className="edit-icon" data-bs-toggle="modal" data-bs-target="#family_info_modal"><i className="fa fa-pencil" /></a></h3>
-                      <div className="table-responsive">
-                        <table className="table table-nowrap">
-                          <thead>
-                            <tr>
-                              <th>Name</th>
-                              <th>Relationship</th>
-                              <th>Date of Birth</th>
-                              <th>Phone</th>
-                              <th />
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr>
-                              <td>Leo</td>
-                              <td>Brother</td>
-                              <td>Feb 16th, 2019</td>
-                              <td>9876543210</td>
-                              <td className="text-end">
-                                <div className="dropdown dropdown-action">
-                                  <a aria-expanded="false" data-bs-toggle="dropdown" className="action-icon dropdown-toggle" href="#"><i className="material-icons">more_vert</i></a>
-                                  <div className="dropdown-menu dropdown-menu-right">
-                                    <a href="#" className="dropdown-item"><i className="fa fa-pencil m-r-5" /> Edit</a>
-                                    <a href="#" className="dropdown-item"><i className="fa fa-trash-o m-r-5" /> Delete</a>
+                      <h3 className="card-title">Education Informations <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: true, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a></h3>
+                      <div className="experience-box">
+                        { allData?.education?.length > 0 ?
+                        <ul className="experience-list">
+                          {
+                            allData?.education?.map((edu) => (
+                              <li>
+                                <div className="experience-user">
+                                  <div className="before-circle" />
+                                </div>
+                                <div className="experience-content">
+                                  <div className="timeline-content">
+                                    <a href="javascript:void(0)" className="name" style={{cursor: 'text'}}>{edu?.institute}</a>
+                                    <div>{edu?.degree}</div>
+                                    <span className="time">{edu?.year}</span>
                                   </div>
                                 </div>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="row">
-                <div className="col-md-6 d-flex">
-                  <div className="card profile-box flex-fill">
-                    <div className="card-body">
-                      <h3 className="card-title">Education Informations <a href="#" className="edit-icon" data-bs-toggle="modal" data-bs-target="#education_info"><i className="fa fa-pencil" /></a></h3>
-                      <div className="experience-box">
-                        <ul className="experience-list">
-                          <li>
-                            <div className="experience-user">
-                              <div className="before-circle" />
-                            </div>
-                            <div className="experience-content">
-                              <div className="timeline-content">
-                                <a href="/" className="name">International College of Arts and Science (UG)</a>
-                                <div>Bsc Computer Science</div>
-                                <span className="time">2000 - 2003</span>
-                              </div>
-                            </div>
-                          </li>
-                          <li>
-                            <div className="experience-user">
-                              <div className="before-circle" />
-                            </div>
-                            <div className="experience-content">
-                              <div className="timeline-content">
-                                <a href="/" className="name">International College of Arts and Science (PG)</a>
-                                <div>Msc Computer Science</div>
-                                <span className="time">2000 - 2003</span>
-                              </div>
-                            </div>
-                          </li>
-                        </ul>
+                              </li>
+                            ))
+                          }
+                        </ul> :
+                        <Empty style={{marginTop: '12%'}} image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                        }
                       </div>
                     </div>
                   </div>
@@ -315,43 +629,29 @@ const EmployeeProfile = () => {
                 <div className="col-md-6 d-flex">
                   <div className="card profile-box flex-fill">
                     <div className="card-body">
-                      <h3 className="card-title">Experience <a href="#" className="edit-icon" data-bs-toggle="modal" data-bs-target="#experience_info"><i className="fa fa-pencil" /></a></h3>
+                      <h3 className="card-title">Experience <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: true, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a></h3>
                       <div className="experience-box">
+                        {
+                          allData?.experience?.length > 0 ?
                         <ul className="experience-list">
-                          <li>
-                            <div className="experience-user">
-                              <div className="before-circle" />
-                            </div>
-                            <div className="experience-content">
-                              <div className="timeline-content">
-                                <a href="/" className="name">Web Designer at Zen Corporation</a>
-                                <span className="time">Jan 2013 - Present (5 years 2 months)</span>
-                              </div>
-                            </div>
-                          </li>
-                          <li>
-                            <div className="experience-user">
-                              <div className="before-circle" />
-                            </div>
-                            <div className="experience-content">
-                              <div className="timeline-content">
-                                <a href="/" className="name">Web Designer at Ron-tech</a>
-                                <span className="time">Jan 2013 - Present (5 years 2 months)</span>
-                              </div>
-                            </div>
-                          </li>
-                          <li>
-                            <div className="experience-user">
-                              <div className="before-circle" />
-                            </div>
-                            <div className="experience-content">
-                              <div className="timeline-content">
-                                <a href="/" className="name">Web Designer at Dalt Technology</a>
-                                <span className="time">Jan 2013 - Present (5 years 2 months)</span>
-                              </div>
-                            </div>
-                          </li>
+                          {
+                            allData?.experience?.map((exp) => (
+                              <li>
+                                <div className="experience-user">
+                                  <div className="before-circle" />
+                                </div>
+                                <div className="experience-content">
+                                  <div className="timeline-content">
+                                    <a href="/" className="name">{exp?.designation} at {exp?.company}</a>
+                                    <span className="time">{exp?.duration}</span>
+                                  </div>
+                                </div>
+                              </li>
+                            ))
+                          }
                         </ul>
+                        : <Empty style={{marginTop: '12%'}} image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                        }
                       </div>
                     </div>
                   </div>
@@ -1008,613 +1308,709 @@ const EmployeeProfile = () => {
         </div>
         {/* /Page Content */}
         {/* Profile Modal */}
-        <div id="profile_info" className="modal custom-modal fade" role="dialog">
-          <div className="modal-dialog modal-dialog-centered modal-lg" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Profile Information</h5>
-                <button type="button" className="close" data-bs-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">×</span>
-                </button>
-              </div>
-              <div className="modal-body">
-                <form>
-                  <div className="row">
-                    <div className="col-md-12">
-                      <div className="profile-img-wrap edit-img">
-                        <img className="inline-block" src={Avatar_02} alt="user" />
-                        <div className="fileupload btn">
-                          <span className="btn-text">edit</span>
-                          <input className="upload" type="file" />
-                        </div>
-                      </div>
-                      <div className="row">
-                        <div className="col-md-6">
-                          <div className="form-group">
-                            <label>First Name</label>
-                            <input type="text" className="form-control" defaultValue="John" />
-                          </div>
-                        </div>
-                        <div className="col-md-6">
-                          <div className="form-group">
-                            <label>Last Name</label>
-                            <input type="text" className="form-control" defaultValue="Doe" />
-                          </div>
-                        </div>
-                        <div className="col-md-6">
-                          <div className="form-group">
-                            <label>Birth Date</label>
-                            <div>
-                              <input className="form-control datetimepicker" type="date" defaultValue="05/06/1985" />
-                            </div>
-                          </div>
-                        </div>
-                        <div className="col-md-6">
-                          <div className="form-group">
-                            <label>Gender</label>
-                            <select className="select form-control">
-                              <option value="male selected">Male</option>
-                              <option value="female">Female</option>
-                            </select>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="row">
-                    <div className="col-md-12">
-                      <div className="form-group">
-                        <label>Address</label>
-                        <input type="text" className="form-control" defaultValue="4487 Snowbird Lane" />
-                      </div>
-                    </div>
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label>State</label>
-                        <input type="text" className="form-control" defaultValue="New York" />
-                      </div>
-                    </div>
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label>Country</label>
-                        <input type="text" className="form-control" defaultValue="United States" />
-                      </div>
-                    </div>
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label>Pin Code</label>
-                        <input type="text" className="form-control" defaultValue={10523} />
-                      </div>
-                    </div>
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label>Phone Number</label>
-                        <input type="text" className="form-control" defaultValue="631-889-3206" />
-                      </div>
-                    </div>
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label>Department <span className="text-danger">*</span></label>
-                        <select className="select">
-                          <option>Select Department</option>
-                          <option>Web Development</option>
-                          <option>IT Management</option>
-                          <option>Marketing</option>
-                        </select>
-                      </div>
-                    </div>
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label>Designation <span className="text-danger">*</span></label>
-                        <select className="select">
-                          <option>Select Designation</option>
-                          <option>Web Designer</option>
-                          <option>Web Developer</option>
-                          <option>Android Developer</option>
-                        </select>
-                      </div>
-                    </div>
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label>Reports To <span className="text-danger">*</span></label>
-                        <select className="select">
-                          <option>-</option>
-                          <option>Wilmer Deluna</option>
-                          <option>Lesley Grauer</option>
-                          <option>Jeffery Lalor</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="submit-section">
-                    <button className="btn btn-primary submit-btn">Submit</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
+        {
+          open?.isprofileInfoOpen &&
+        
+          <ProfileInfoModal
+            open={open}
+            handleClose={handleClose}
+            user_data={allData}
+            onFinish={onFinish}
+            loader={loader}
+          />
+          // <ProfileInfoModal
+          //   open={open}
+          //   handleClose={handleClose}
+          //   setPhoneLengthError={setPhoneLengthError}
+          //   onHandleEmergChange={onHandleEmergChange}
+          //   emergValue={emergValue}
+          //   phoneLengthError={phoneLengthError}
+          //   form={form}
+          // />
+        }
         {/* /Profile Modal */}
-        {/* Personal Info Modal */}
-        <div id="personal_info_modal" className="modal custom-modal fade" role="dialog">
-          <div className="modal-dialog modal-dialog-centered modal-lg" role="document">
+
+      {/* /Bank Info Modal */}
+      <Modal
+        open={open?.isBankInfoOpen}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        // className="modal custom-modal fade"
+        aria-describedby="modal-modal-description"
+        disableRestoreFocus
+        BackdropProps={{
+          style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
+        }}
+        sx={{
+          overflowY: "scroll",
+        }}
+      >
+        {/* <div className="modal-dialog modal-dialog-centered modal-lg" role="document"> */}
+        <div className="modal-dialog modal-dialog-centered modal-dialog-md" role="document">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title">Personal Information</h5>
-                <button type="button" className="close" data-bs-dismiss="modal" aria-label="Close">
+                <h5 className="modal-title"> Bank Information</h5>
+                <button type="button" className="close" onClick={handleClose}>
                   <span aria-hidden="true">×</span>
                 </button>
               </div>
               <div className="modal-body">
-                <form>
-                  <div className="row">
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label>Passport No</label>
-                        <input type="text" className="form-control" />
+              <Form
+                onFinish={onBankFinish}
+                onFinishFailed={({errorFields}) => {
+                  const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
+                  if(consecutiveSpacesError){
+                    message.error("Please Remove Consecutive Spaces!")
+                  }else{
+                    message.error("Please Fill Required Fields!")
+                  }
+                }}
+                initialValues={{
+                  bankName: allData?.bankName ? allData?.bankName : '',
+                  bankAccountNumber: allData?.bankAccountNumber ? allData?.bankAccountNumber : '',
+                  salary: allData?.salary ? allData?.salary : '',
+                }}
+              >
+                    <>
+                          <div className="card">
+                            <div className="card-body">
+                              <h3 className="card-title">
+                              </h3>
+                              <div className="row">
+                                <div className="col-12">
+                                  <div className="form-group">
+                                    <label>
+                                      Bank Name <span className="text-danger">*</span>
+                                    </label>
+                                    <Form.Item
+                                      name='bankName'
+                                      className='custom-border'
+                                      rules={[
+                                        {
+                                          whitespace: true,
+                                          required: true,
+                                          validator: (_, value) => {
+                                            if (!value || value.trim() === '') {
+                                              return Promise.reject('please enter bank name');
+                                            } else if (/\s{2,}/.test(value)) {
+                                              return Promise.reject('please remove consecutive spaces');
+                                            } else if (value.length < 3) {
+                                              return Promise.reject('name must be at least 3 characters long');
+                                            }
+                                            return Promise.resolve();
+                                          },
+                                        },
+                                      ]}
+                                    >
+                                      <Input className='form-control' maxLength={50} />
+                                    </Form.Item>
+                                  </div>
+                                </div>
+                                <div className="col-12">
+                                  <div className="form-group">
+                                    <label>
+                                    Bank Account Number <span className="text-danger">*</span>
+                                    </label>
+                                    <Form.Item
+                                      name='bankAccountNumber'
+                                      className='custom-border'
+                                      rules={[
+                                        {
+                                          whitespace: true,
+                                          required: true,
+                                          validator: (_, value) => {
+                                            if (!value || value.trim() === '') {
+                                              return Promise.reject('please enter bank account number');
+                                            } else if (/\s{2,}/.test(value)) {
+                                              return Promise.reject('please remove consecutive spaces');
+                                            } else if (value.length < 3) {
+                                              return Promise.reject('length must be at least 3 characters long');
+                                            }
+                                            return Promise.resolve();
+                                          },
+                                        },
+                                      ]}
+                                    >
+                                      <Input className='form-control' maxLength={50}
+                                        onKeyPress={(e) => {
+                                          if ((e.which >= 65 && e.which <= 90) || (e.which >= 97 && e.which <= 122) || (e.which >= 33 &&  e.which <= 47) || (e.which >= 58 && e.which <= 64) || (e.which >= 91 && e.which <= 96) || (e.which >= 123 && e.which <= 126) ) {
+                                            e.preventDefault();
+                                          }
+                                        }}
+                                      />
+                                    </Form.Item>
+                                  </div>
+                                </div>
+                                <div className="col-12">
+                                  <div className="form-group">
+                                    <label>
+                                     Salary <span className="text-danger">*</span>
+                                    </label>
+                                    <Form.Item
+                                      name='salary'
+                                      className='custom-border'
+                                      rules={[
+                                        {
+                                          whitespace: true,
+                                          required: true,
+                                          validator: (_, value) => {
+                                            if (!value || value.trim() === '') {
+                                              return Promise.reject('please enter salary');
+                                            } else if (/\s{2,}/.test(value)) {
+                                              return Promise.reject('please remove consecutive spaces');
+                                            } else if (value.length < 3) {
+                                              return Promise.reject('length must be at least 3 characters long');
+                                            }
+                                            return Promise.resolve();
+                                          },
+                                        },
+                                      ]}
+                                    >
+                                      <Input className='form-control' maxLength={50}
+                                        onKeyPress={(e) => {
+                                          if ((e.which >= 65 && e.which <= 90) || (e.which >= 97 && e.which <= 122) || (e.which >= 33 &&  e.which <= 47) || (e.which >= 58 && e.which <= 64) || (e.which >= 91 && e.which <= 96) || (e.which >= 123 && e.which <= 126) ) {
+                                            e.preventDefault();
+                                          }
+                                        }}
+                                      />
+                                    </Form.Item>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                      <div className="submit-section">
+                        <button type='submit' className="btn btn-primary submit-btn" disabled={loader}>
+                        {
+                          loader ? <Spin size="small" indicator={antIcon} />
+                            : 'Submit'
+                        }
+                        </button>
                       </div>
-                    </div>
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label>Passport Expiry Date</label>
-                        <div>
-                          <input className="form-control datetimepicker" type="date" />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label>Tel</label>
-                        <input className="form-control" type="text" />
-                      </div>
-                    </div>
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label>Nationality <span className="text-danger">*</span></label>
-                        <input className="form-control" type="text" />
-                      </div>
-                    </div>
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label>Religion</label>
-                        <div>
-                          <input className="form-control" type="date" />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label>Marital status <span className="text-danger">*</span></label>
-                        <select className="select form-control">
-                          <option>-</option>
-                          <option>Single</option>
-                          <option>Married</option>
-                        </select>
-                      </div>
-                    </div>
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label>Employment of spouse</label>
-                        <input className="form-control" type="text" />
-                      </div>
-                    </div>
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label>No. of children </label>
-                        <input className="form-control" type="text" />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="submit-section">
-                    <button className="btn btn-primary submit-btn">Submit</button>
-                  </div>
-                </form>
+                    </>
+              </Form>
               </div>
             </div>
           </div>
-        </div>
-        {/* /Personal Info Modal */}
-        {/* Family Info Modal */}
-        <div id="family_info_modal" className="modal custom-modal fade" role="dialog">
-          <div className="modal-dialog modal-dialog-centered modal-lg" role="document">
+      </Modal>
+      {/* /Bank Info Modal */}
+
+      {/* Emergency Contact Modal */}
+      <Modal
+        open={open?.isEmergInfoOpen}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        // className="modal custom-modal fade"
+        aria-describedby="modal-modal-description"
+        disableRestoreFocus
+        BackdropProps={{
+          style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
+        }}
+        sx={{
+          overflowY: "scroll",
+        }}
+      >
+        {/* <div className="modal-dialog modal-dialog-centered modal-lg" role="document"> */}
+        <div className="modal-dialog modal-dialog-centered modal-dialog-md" role="document">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title"> Family Informations</h5>
-                <button type="button" className="close" data-bs-dismiss="modal" aria-label="Close">
+                <h5 className="modal-title"> Emergency Contact</h5>
+                <button type="button" className="close" onClick={handleClose}>
                   <span aria-hidden="true">×</span>
                 </button>
               </div>
               <div className="modal-body">
-                <form>
-                  <div className="form-scroll">
-                    <div className="card">
-                      <div className="card-body">
-                        <h3 className="card-title">Family Member <a href="" className="delete-icon"><i className="fa fa-trash-o" /></a></h3>
-                        <div className="row">
-                          <div className="col-md-6">
-                            <div className="form-group">
-                              <label>Name <span className="text-danger">*</span></label>
-                              <input className="form-control" type="text" />
+              <Form
+              form={form}
+                onFinish={onEmergencyFinish}
+                onFinishFailed={({errorFields}) => {
+                  const phoneErrorExists = errorFields.find(field => field.errors.toString().includes('please enter phone number'));
+                  if(phoneErrorExists){
+                    setPhoneLengthError({emp: true})
+                  }
+                  const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
+                  if(consecutiveSpacesError){
+                    message.error("Please Remove Consecutive Spaces!")
+                  }else{
+                    message.error("Please Fill Required Fields!")
+                  }
+                }}
+                initialValues={{
+                  name: open?.data?.name ? open?.data?.name : '',
+                  relationship: open?.data?.relationship ? open?.data?.relationship : '',
+                  phoneNo: open?.data?.phoneNo ? open?.data?.phoneNo : '',
+                }}
+              >
+                    <>
+                          <div className="card">
+                            <div className="card-body">
+                              <h3 className="card-title">
+                              </h3>
+                              <div className="row">
+                                <div className="col-md-6">
+                                  <div className="form-group">
+                                    <label>
+                                      Name <span className="text-danger">*</span>
+                                    </label>
+                                    <Form.Item
+                                      name='name'
+                                      className='custom-border'
+                                      rules={[
+                                        {
+                                          whitespace: true,
+                                          required: true,
+                                          validator: (_, value) => {
+                                            if (!value || value.trim() === '') {
+                                              return Promise.reject('please enter name');
+                                            } else if (/\s{2,}/.test(value)) {
+                                              return Promise.reject('please remove consecutive spaces');
+                                            } else if (value.length < 3) {
+                                              return Promise.reject('name must be at least 3 characters long');
+                                            }
+                                            return Promise.resolve();
+                                          },
+                                        },
+                                      ]}
+                                    >
+                                      <Input className='form-control' maxLength={50} />
+                                    </Form.Item>
+                                  </div>
+                                </div>
+                                <div className="col-md-6">
+                                <div className="form-group">
+                                    <label>
+                                      Relationship <span className="text-danger">*</span>
+                                    </label>
+                                    <Form.Item
+                                      name='relationship'
+                                      className='custom-border'
+                                      rules={[
+                                        {
+                                          whitespace: true,
+                                          required: true,
+                                          validator: (_, value) => {
+                                            if (!value || value.trim() === '') {
+                                              return Promise.reject('please enter relationship');
+                                            } else if (/\s{2,}/.test(value)) {
+                                              return Promise.reject('please remove consecutive spaces');
+                                            } else if (value.length < 3) {
+                                              return Promise.reject('relationship length must be at least 3 characters long');
+                                            }
+                                            return Promise.resolve();
+                                          },
+                                        },
+                                      ]}
+                                    >
+                                      <Input className='form-control' maxLength={50} />
+                                    </Form.Item>
+                                  </div>
+                                </div>
+                                <div className="col-12">
+                                <div className="form-group">
+                                    <label>
+                                      Phone No <span className="text-danger">*</span>
+                                    </label>
+                                    <Form.Item
+                                      name='phoneNo'
+                                      className='custom-border'
+                                      rules={[
+                                        {
+                                          whitespace: true,
+                                          required: true,
+                                          message: "please enter phone number",
+                                        },
+                                        {
+                                          min: 5,
+                                          message: "phone length must be at least 5 digits long",
+                                        },
+                                      ]}
+                                      validateStatus={phoneLengthError ? 'error' : ''}
+                                      help={phoneLengthError?.emp ? 'please enter phone number' : phoneLengthError?.len ? "phone length must be at least 5 digits long" : ''}
+                                      // validateStatus="error"
+                                      // help={open?.data[0]?.phoneNo?.length !== emergValue?.phoneNo?.length ? '' : !emergValue?.phoneNo ? 'please enter phone number' : emergValue?.phoneNo?.length < 6 ? "phone length must be at least 5 digits long" : ''}
+                                    >
+                                      <Input style={{ display: "none" }} value={emergValue?.phoneNo} />
+                                      <PhoneNoInput
+                                        onChangePhone={(value) => {
+                                          onHandleEmergChange("phoneNo", value);
+                                        }}
+                                        phone={open?.data?.phoneNo ? open?.data?.phoneNo : ""}
+                                      />
+                                    </Form.Item>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
                           </div>
-                          <div className="col-md-6">
-                            <div className="form-group">
-                              <label>Relationship <span className="text-danger">*</span></label>
-                              <input className="form-control" type="text" />
-                            </div>
-                          </div>
-                          <div className="col-md-6">
-                            <div className="form-group">
-                              <label>Date of birth <span className="text-danger">*</span></label>
-                              <input className="form-control" type="text" />
-                            </div>
-                          </div>
-                          <div className="col-md-6">
-                            <div className="form-group">
-                              <label>Phone <span className="text-danger">*</span></label>
-                              <input className="form-control" type="text" />
-                            </div>
-                          </div>
-                        </div>
+                      <div className="submit-section">
+                        <button type='submit' className="btn btn-primary submit-btn" disabled={loader}>
+                        {
+                          loader ? <Spin size="small" indicator={antIcon} />
+                            : 'Submit'
+                        }
+                        </button>
                       </div>
-                    </div>
-                    <div className="card">
-                      <div className="card-body">
-                        <h3 className="card-title">Education Informations <a href="" className="delete-icon"><i className="fa fa-trash-o" /></a></h3>
-                        <div className="row">
-                          <div className="col-md-6">
-                            <div className="form-group">
-                              <label>Name <span className="text-danger">*</span></label>
-                              <input className="form-control" type="text" />
-                            </div>
-                          </div>
-                          <div className="col-md-6">
-                            <div className="form-group">
-                              <label>Relationship <span className="text-danger">*</span></label>
-                              <input className="form-control" type="text" />
-                            </div>
-                          </div>
-                          <div className="col-md-6">
-                            <div className="form-group">
-                              <label>Date of birth <span className="text-danger">*</span></label>
-                              <input className="form-control" type="text" />
-                            </div>
-                          </div>
-                          <div className="col-md-6">
-                            <div className="form-group">
-                              <label>Phone <span className="text-danger">*</span></label>
-                              <input className="form-control" type="text" />
-                            </div>
-                          </div>
-                        </div>
-                        <div className="add-more">
-                          <a href=""><i className="fa fa-plus-circle" /> Add More</a>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="submit-section">
-                    <button className="btn btn-primary submit-btn">Submit</button>
-                  </div>
-                </form>
+                    </>
+              </Form>
               </div>
             </div>
           </div>
-        </div>
-        {/* /Family Info Modal */}
-        {/* Emergency Contact Modal */}
-        <div id="emergency_contact_modal" className="modal custom-modal fade" role="dialog">
-          <div className="modal-dialog modal-dialog-centered modal-lg" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Personal Information</h5>
-                <button type="button" className="close" data-bs-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">×</span>
-                </button>
-              </div>
-              <div className="modal-body">
-                <form>
-                  <div className="card">
-                    <div className="card-body">
-                      <h3 className="card-title">Primary Contact</h3>
-                      <div className="row">
-                        <div className="col-md-6">
-                          <div className="form-group">
-                            <label>Name <span className="text-danger">*</span></label>
-                            <input type="text" className="form-control" />
-                          </div>
-                        </div>
-                        <div className="col-md-6">
-                          <div className="form-group">
-                            <label>Relationship <span className="text-danger">*</span></label>
-                            <input className="form-control" type="text" />
-                          </div>
-                        </div>
-                        <div className="col-md-6">
-                          <div className="form-group">
-                            <label>Phone <span className="text-danger">*</span></label>
-                            <input className="form-control" type="text" />
-                          </div>
-                        </div>
-                        <div className="col-md-6">
-                          <div className="form-group">
-                            <label>Phone 2</label>
-                            <input className="form-control" type="text" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="card">
-                    <div className="card-body">
-                      <h3 className="card-title">Primary Contact</h3>
-                      <div className="row">
-                        <div className="col-md-6">
-                          <div className="form-group">
-                            <label>Name <span className="text-danger">*</span></label>
-                            <input type="text" className="form-control" />
-                          </div>
-                        </div>
-                        <div className="col-md-6">
-                          <div className="form-group">
-                            <label>Relationship <span className="text-danger">*</span></label>
-                            <input className="form-control" type="text" />
-                          </div>
-                        </div>
-                        <div className="col-md-6">
-                          <div className="form-group">
-                            <label>Phone <span className="text-danger">*</span></label>
-                            <input className="form-control" type="text" />
-                          </div>
-                        </div>
-                        <div className="col-md-6">
-                          <div className="form-group">
-                            <label>Phone 2</label>
-                            <input className="form-control" type="text" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="submit-section">
-                    <button className="btn btn-primary submit-btn">Submit</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* /Emergency Contact Modal */}
-        {/* Education Modal */}
-        <div id="education_info" className="modal custom-modal fade" role="dialog">
-          <div className="modal-dialog modal-dialog-centered modal-lg" role="document">
+      </Modal>
+      {/* /Emergency Contact Modal */}
+
+      {/* Education Modal */}
+      <Modal
+        open={open?.isEduInfoOpen}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        // className="modal custom-modal fade"
+        aria-describedby="modal-modal-description"
+        disableRestoreFocus
+        BackdropProps={{
+          style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
+        }}
+        sx={{
+          overflowY: "scroll",
+        }}
+      >
+        {/* <div className="modal-dialog modal-dialog-centered modal-lg" role="document"> */}
+        <div className="modal-dialog modal-dialog-centered modal-dialog-md" role="document">
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title"> Education Informations</h5>
-                <button type="button" className="close" data-bs-dismiss="modal" aria-label="Close">
+                <button type="button" className="close" onClick={handleClose}>
                   <span aria-hidden="true">×</span>
                 </button>
               </div>
               <div className="modal-body">
-                <form>
-                  <div className="form-scroll">
-                    <div className="card">
-                      <div className="card-body">
-                        <h3 className="card-title">Education Informations <a href="" className="delete-icon"><i className="fa fa-trash-o" /></a></h3>
-                        <div className="row">
-                          <div className="col-md-6">
-                            <div className="form-group form-focus focused">
-                              <input type="text" defaultValue="Oxford University" className="form-control floating" />
-                              <label className="focus-label">Institution</label>
-                            </div>
-                          </div>
-                          <div className="col-md-6">
-                            <div className="form-group form-focus focused">
-                              <input type="text" defaultValue="Computer Science" className="form-control floating" />
-                              <label className="focus-label">Subject</label>
-                            </div>
-                          </div>
-                          <div className="col-md-6">
-                            <div className="form-group form-focus focused">
-                              <div>
-                                <input type="date" defaultValue="01/06/2002" className="form-control floating datetimepicker" />
+              <Form
+                onFinish={onEducationFinish}
+                onFinishFailed={({errorFields}) => {
+                  const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
+                  if(consecutiveSpacesError){
+                    message.error("Please Remove Consecutive Spaces!")
+                  }else{
+                    message.error("Please Fill Required Fields!")
+                  }
+                }}
+                initialValues={{
+                  education: allData?.education?.length > 0 ? allData?.education : [{}],
+                }}
+              >
+                <Form.List name="education">
+                  {(fields, { add, remove }) => (
+                    <>
+                      {fields.map((field, index) => (
+                        <div key={field.key}>
+                          <div className="card">
+                            <div className="card-body">
+                              <h3 className="card-title">
+                                {fields?.length > 1 ? `${index+1}.` : ''} Education Information{' '}
+                                {index > 0 && (
+                                  <a href="javascript:void(0)" onClick={() => remove(field.name)} className="delete-icon">
+                                    <i className="fa fa-trash-o" />
+                                  </a>
+                                )}
+                              </h3>
+                              <div className="row">
+                                <div className="col-md-6">
+                                  <div className="form-group">
+                                    <label>
+                                      Institution <span className="text-danger">*</span>
+                                    </label>
+                                    <Form.Item
+                                      {...field}
+                                      name={[field.name, 'institute']}
+                                      className='custom-border'
+                                      fieldKey={[field.fieldKey, 'institute']}
+                                      rules={[
+                                        {
+                                          whitespace: true,
+                                          required: true,
+                                          validator: (_, value) => {
+                                            if (!value || value.trim() === '') {
+                                              return Promise.reject('please enter institute name');
+                                            } else if (/\s{2,}/.test(value)) {
+                                              return Promise.reject('please remove consecutive spaces');
+                                            } else if (value.length < 3) {
+                                              return Promise.reject('institute name must be at least 3 characters long');
+                                            }
+                                            return Promise.resolve();
+                                          },
+                                        },
+                                      ]}
+                                    >
+                                      <Input className='form-control' maxLength={50} />
+                                    </Form.Item>
+                                  </div>
+                                </div>
+                                <div className="col-md-6">
+                                <div className="form-group">
+                                    <label>
+                                      Degree <span className="text-danger">*</span>
+                                    </label>
+                                    <Form.Item
+                                      {...field}
+                                      name={[field.name, 'degree']}
+                                      className='custom-border'
+                                      fieldKey={[field.fieldKey, 'degree']}
+                                      rules={[
+                                        {
+                                          whitespace: true,
+                                          required: true,
+                                          validator: (_, value) => {
+                                            if (!value || value.trim() === '') {
+                                              return Promise.reject('please enter degree name');
+                                            } else if (/\s{2,}/.test(value)) {
+                                              return Promise.reject('please remove consecutive spaces');
+                                            } else if (value.length < 3) {
+                                              return Promise.reject('degree name must be at least 3 characters long');
+                                            }
+                                            return Promise.resolve();
+                                          },
+                                        },
+                                      ]}
+                                    >
+                                      <Input className='form-control' maxLength={50} />
+                                    </Form.Item>
+                                  </div>
+                                </div>
+                                <div className="col-12">
+                                <div className="form-group">
+                                    <label>
+                                      Year <span className="time" style={{fontSize: '12px', color: '#9e9e9e'}}>(Start - End) </span><span className="text-danger">*</span>
+                                    </label>
+                                    <Form.Item
+                                      {...field}
+                                      name={[field.name, 'year']}
+                                      className='custom-border'
+                                      fieldKey={[field.fieldKey, 'year']}
+                                      rules={[{ required: true, message: 'please enter year' }]}
+                                    >
+                                      <Input className='form-control' maxLength={50} placeholder='2023 - 2027'
+                                        onKeyPress={(e) => {
+                                          if (
+                                            e.key === '-' &&
+                                            e.target.value.includes('-')
+                                          ) {
+                                            e.preventDefault();
+                                          } else if (
+                                            (e.which >= 48 && e.which <= 57) ||
+                                            e.which === 45
+                                          ) {
+                                            return
+                                          }
+                                          e.preventDefault();
+                                        }}
+                                      />
+                                    </Form.Item>
+                                  </div>
+                                </div>
                               </div>
-                              <label className="focus-label">Starting Date</label>
-                            </div>
-                          </div>
-                          <div className="col-md-6">
-                            <div className="form-group form-focus focused">
-                              <div>
-                                <input type="date" defaultValue="31/05/2006" className="form-control floating datetimepicker" />
-                              </div>
-                              <label className="focus-label">Complete Date</label>
-                            </div>
-                          </div>
-                          <div className="col-md-6">
-                            <div className="form-group form-focus focused">
-                              <input type="text" defaultValue="BE Computer Science" className="form-control floating" />
-                              <label className="focus-label">Degree</label>
-                            </div>
-                          </div>
-                          <div className="col-md-6">
-                            <div className="form-group form-focus focused">
-                              <input type="text" defaultValue="Grade A" className="form-control floating" />
-                              <label className="focus-label">Grade</label>
+                              {index === fields.length - 1 && (
+                                <div className="add-more">
+                                  <a href="javascript:void(0)" onClick={() => add()}><i className="fa fa-plus-circle" /> Add More</a>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
+                      ))}
+                      <div className="submit-section">
+                        <button type='submit' className="btn btn-primary submit-btn" disabled={loader}>
+                        {
+                          loader ? <Spin size="small" indicator={antIcon} />
+                            : 'Submit'
+                        }
+                        </button>
                       </div>
-                    </div>
-                    <div className="card">
-                      <div className="card-body">
-                        <h3 className="card-title">Education Informations <a href="" className="delete-icon"><i className="fa fa-trash-o" /></a></h3>
-                        <div className="row">
-                          <div className="col-md-6">
-                            <div className="form-group form-focus focused">
-                              <input type="text" defaultValue="Oxford University" className="form-control floating" />
-                              <label className="focus-label">Institution</label>
-                            </div>
-                          </div>
-                          <div className="col-md-6">
-                            <div className="form-group form-focus focused">
-                              <input type="text" defaultValue="Computer Science" className="form-control floating" />
-                              <label className="focus-label">Subject</label>
-                            </div>
-                          </div>
-                          <div className="col-md-6">
-                            <div className="form-group form-focus focused">
-                              <div>
-                                <input type="date" defaultValue="01/06/2002" className="form-control floating datetimepicker" />
-                              </div>
-                              <label className="focus-label">Starting Date</label>
-                            </div>
-                          </div>
-                          <div className="col-md-6">
-                            <div className="form-group form-focus focused">
-                              <div>
-                                <input type="date" defaultValue="31/05/2006" className="form-control floating datetimepicker" />
-                              </div>
-                              <label className="focus-label">Complete Date</label>
-                            </div>
-                          </div>
-                          <div className="col-md-6">
-                            <div className="form-group form-focus focused">
-                              <input type="text" defaultValue="BE Computer Science" className="form-control floating" />
-                              <label className="focus-label">Degree</label>
-                            </div>
-                          </div>
-                          <div className="col-md-6">
-                            <div className="form-group form-focus focused">
-                              <input type="text" defaultValue="Grade A" className="form-control floating" />
-                              <label className="focus-label">Grade</label>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="add-more">
-                          <a href=""><i className="fa fa-plus-circle" /> Add More</a>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="submit-section">
-                    <button className="btn btn-primary submit-btn">Submit</button>
-                  </div>
-                </form>
+                    </>
+                  )}
+                </Form.List>
+              </Form>
               </div>
             </div>
           </div>
-        </div>
+      </Modal>
         {/* /Education Modal */}
-        {/* Experience Modal */}
-        <div id="experience_info" className="modal custom-modal fade" role="dialog">
-          <div className="modal-dialog modal-dialog-centered modal-lg" role="document">
+
+      {/* Experience Modal */}
+      <Modal
+        open={open?.isExpInfoOpen}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        // className="modal custom-modal fade"
+        aria-describedby="modal-modal-description"
+        disableRestoreFocus
+        BackdropProps={{
+          style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
+        }}
+        sx={{
+          overflowY: "scroll",
+        }}
+      >
+        {/* <div className="modal-dialog modal-dialog-centered modal-lg" role="document"> */}
+        <div className="modal-dialog modal-dialog-centered modal-dialog-md" role="document">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title">Experience Informations</h5>
-                <button type="button" className="close" data-bs-dismiss="modal" aria-label="Close">
+                <h5 className="modal-title"> Experience Informations</h5>
+                <button type="button" className="close" onClick={handleClose}>
                   <span aria-hidden="true">×</span>
                 </button>
               </div>
               <div className="modal-body">
-                <form>
-                  <div className="form-scroll">
-                    <div className="card">
-                      <div className="card-body">
-                        <h3 className="card-title">Experience Informations <a href="" className="delete-icon"><i className="fa fa-trash-o" /></a></h3>
-                        <div className="row">
-                          <div className="col-md-6">
-                            <div className="form-group form-focus">
-                              <input type="text" className="form-control floating" defaultValue="Digital Devlopment Inc" />
-                              <label className="focus-label">Company Name</label>
-                            </div>
-                          </div>
-                          <div className="col-md-6">
-                            <div className="form-group form-focus">
-                              <input type="text" className="form-control floating" defaultValue="United States" />
-                              <label className="focus-label">Location</label>
-                            </div>
-                          </div>
-                          <div className="col-md-6">
-                            <div className="form-group form-focus">
-                              <input type="text" className="form-control floating" defaultValue="Web Developer" />
-                              <label className="focus-label">Job Position</label>
-                            </div>
-                          </div>
-                          <div className="col-md-6">
-                            <div className="form-group form-focus">
-                              <div>
-                                <input type="date" className="form-control floating datetimepicker" defaultValue="01/07/2007" />
+              <Form
+                onFinish={onExperienceFinish}
+                onFinishFailed={({errorFields}) => {
+                  const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
+                  if(consecutiveSpacesError){
+                    message.error("Please Remove Consecutive Spaces!")
+                  }else{
+                    message.error("Please Fill Required Fields!")
+                  }
+                }}
+                initialValues={{
+                  experience: allData?.experience?.length > 0 ? allData?.experience : [{}],
+                }}
+              >
+                <Form.List name="experience">
+                  {(fields, { add, remove }) => (
+                    <>
+                      {fields.map((field, index) => (
+                        <div key={field.key}>
+                          <div className="card">
+                            <div className="card-body">
+                              <h3 className="card-title">
+                                {fields?.length > 1 ? `${index+1}.` : ''} Experience Information{' '}
+                                {index > 0 && (
+                                  <a href="javascript:void(0)" onClick={() => remove(field.name)} className="delete-icon">
+                                    <i className="fa fa-trash-o" />
+                                  </a>
+                                )}
+                              </h3>
+                              <div className="row">
+                                <div className="col-md-6">
+                                  <div className="form-group">
+                                    <label>
+                                      Company <span className="text-danger">*</span>
+                                    </label>
+                                    <Form.Item
+                                      {...field}
+                                      name={[field.name, 'company']}
+                                      className='custom-border'
+                                      fieldKey={[field.fieldKey, 'company']}
+                                      rules={[
+                                        {
+                                          whitespace: true,
+                                          required: true,
+                                          validator: (_, value) => {
+                                            if (!value || value.trim() === '') {
+                                              return Promise.reject('please enter company name');
+                                            } else if (/\s{2,}/.test(value)) {
+                                              return Promise.reject('please remove consecutive spaces');
+                                            } else if (value.length < 3) {
+                                              return Promise.reject('company name must be at least 3 characters long');
+                                            }
+                                            return Promise.resolve();
+                                          },
+                                        },
+                                      ]}
+                                    >
+                                      <Input className='form-control' maxLength={50} />
+                                    </Form.Item>
+                                  </div>
+                                </div>
+                                <div className="col-md-6">
+                                <div className="form-group">
+                                    <label>
+                                      Designation <span className="text-danger">*</span>
+                                    </label>
+                                    <Form.Item
+                                      {...field}
+                                      name={[field.name, 'designation']}
+                                      className='custom-border'
+                                      fieldKey={[field.fieldKey, 'designation']}
+                                      rules={[
+                                        {
+                                          whitespace: true,
+                                          required: true,
+                                          validator: (_, value) => {
+                                            if (!value || value.trim() === '') {
+                                              return Promise.reject('please enter designation');
+                                            } else if (/\s{2,}/.test(value)) {
+                                              return Promise.reject('please remove consecutive spaces');
+                                            } else if (value.length < 3) {
+                                              return Promise.reject('designation must be at least 3 characters long');
+                                            }
+                                            return Promise.resolve();
+                                          },
+                                        },
+                                      ]}
+                                    >
+                                      <Input className='form-control' maxLength={50} />
+                                    </Form.Item>
+                                  </div>
+                                </div>
+                                <div className="col-12">
+                                <div className="form-group">
+                                    <label>
+                                      Duration <span className="time" style={{fontSize: '12px', color: '#9e9e9e'}}>(Start - End) </span><span className="text-danger">*</span>
+                                    </label>
+                                    <Form.Item
+                                      {...field}
+                                      name={[field.name, 'duration']}
+                                      className='custom-border'
+                                      fieldKey={[field.fieldKey, 'duration']}
+                                      rules={[{ required: true, message: 'please enter duration' }]}
+                                    >
+                                      <Input className='form-control' maxLength={50} placeholder='2023 - 2027'
+                                        onKeyPress={(e) => {
+                                          if (
+                                            e.key === '-' &&
+                                            e.target.value.includes('-')
+                                          ) {
+                                            e.preventDefault();
+                                          } else if (
+                                            (e.which >= 48 && e.which <= 57) ||
+                                            e.which === 45
+                                          ) {
+                                            return
+                                          }
+                                          e.preventDefault();
+                                        }}
+                                      />
+                                    </Form.Item>
+                                  </div>
+                                </div>
                               </div>
-                              <label className="focus-label">Period From</label>
-                            </div>
-                          </div>
-                          <div className="col-md-6">
-                            <div className="form-group form-focus">
-                              <div>
-                                <input type="date" className="form-control floating datetimepicker" defaultValue="08/06/2018" />
-                              </div>
-                              <label className="focus-label">Period To</label>
+                              {index === fields.length - 1 && (
+                                <div className="add-more">
+                                  <a href="javascript:void(0)" onClick={() => add()}><i className="fa fa-plus-circle" /> Add More</a>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
+                      ))}
+                      <div className="submit-section">
+                        <button type='submit' className="btn btn-primary submit-btn" disabled={loader}>
+                        {
+                          loader ? <Spin size="small" indicator={antIcon} />
+                            : 'Submit'
+                        }
+                        </button>
                       </div>
-                    </div>
-                    <div className="card">
-                      <div className="card-body">
-                        <h3 className="card-title">Experience Informations <a href="" className="delete-icon"><i className="fa fa-trash-o" /></a></h3>
-                        <div className="row">
-                          <div className="col-md-6">
-                            <div className="form-group form-focus">
-                              <input type="text" className="form-control floating" defaultValue="Digital Devlopment Inc" />
-                              <label className="focus-label">Company Name</label>
-                            </div>
-                          </div>
-                          <div className="col-md-6">
-                            <div className="form-group form-focus">
-                              <input type="text" className="form-control floating" defaultValue="United States" />
-                              <label className="focus-label">Location</label>
-                            </div>
-                          </div>
-                          <div className="col-md-6">
-                            <div className="form-group form-focus">
-                              <input type="text" className="form-control floating" defaultValue="Web Developer" />
-                              <label className="focus-label">Job Position</label>
-                            </div>
-                          </div>
-                          <div className="col-md-6">
-                            <div className="form-group form-focus">
-                              <div>
-                                <input type="date" className="form-control floating datetimepicker" defaultValue="01/07/2007" />
-                              </div>
-                              <label className="focus-label">Period From</label>
-                            </div>
-                          </div>
-                          <div className="col-md-6">
-                            <div className="form-group form-focus">
-                              <div>
-                                <input type="date" className="form-control floating datetimepicker" defaultValue="08/06/2018" />
-                              </div>
-                              <label className="focus-label">Period To</label>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="add-more">
-                          <a href=""><i className="fa fa-plus-circle" /> Add More</a>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="submit-section">
-                    <button className="btn btn-primary submit-btn">Submit</button>
-                  </div>
-                </form>
+                    </>
+                  )}
+                </Form.List>
+              </Form>
               </div>
             </div>
           </div>
-        </div>
+      </Modal>
         {/* /Experience Modal */}
       </div>
-      <Offcanvas />
+      {/* <Offcanvas /> */}
     </>
 
 

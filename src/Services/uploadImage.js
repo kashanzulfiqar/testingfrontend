@@ -1,5 +1,5 @@
 //Api Upload to s3
-import {post} from "axios"
+import axios from "axios"
 
 
 export const apiUploadToS3 = (imagedata) => {
@@ -11,7 +11,11 @@ export const apiUploadToS3 = (imagedata) => {
 
     // const PRD_BASE_URL = "https://hrms.herokuapp.com";
 
-    let BASE_URL = (location === "https://www.daftarpro.com" || location === "https://daftarpro.com" || location === "http://daftarpro.com" || location === "http://daftarpro.com") ? PRD_BASE_URL : DEV_BASE_URL
+    // let BASE_URL = (location === "https://www.daftarpro.com" || location === "https://daftarpro.com" || location === "http://daftarpro.com" || location === "http://daftarpro.com") ? PRD_BASE_URL : DEV_BASE_URL
+    let BASE_URL = PRD_BASE_URL
+    
+    
+    
     // let BASE_URL = (location === "https://www.daftarpro.com" || location === "https://daftarpro.com") ? PRD_BASE_URL : DEV_BASE_URL
 
     const url = `${BASE_URL}/user/uploadfile`;
@@ -30,7 +34,7 @@ export const apiUploadToS3 = (imagedata) => {
 
     };
 
-    return post(url, formData, config);
+    return axios.post(url, formData, config);
 
 
 
