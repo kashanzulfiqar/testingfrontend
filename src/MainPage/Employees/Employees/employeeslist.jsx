@@ -1,7 +1,7 @@
 
 import React, { useState,useEffect } from 'react';
 import { Helmet } from "react-helmet";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Form, Input, Table, Select, DatePicker, message, Button, Spin, Empty, Pagination } from 'antd';
 import Modal from "@mui/material/Modal";
 import 'antd/dist/antd.css';
@@ -21,7 +21,7 @@ const Employeeslist = () => {
 
   const moment = require('moment');
   const [form] = Form.useForm();
-
+  const nav = useNavigate();
   const user_state = useSelector((state) => state.user.loginvalue);
   const company_id = user_state?.user?.companyId
   const role = user_state?.user?.role
@@ -180,12 +180,12 @@ const Employeeslist = () => {
       .then((res) => {
         if (res?.data?.success === true) {
           setUsers((prev) => ([
-            ...prev,
             {
               ...d,
               _id: res?.data?.User?._id,
               companyId: company_id,
             },
+            ...prev,
           ]))
           handleClose();
           message.success('Employee Added Successfully!')
@@ -225,6 +225,10 @@ const Employeeslist = () => {
             delete d[key];
           }
         });
+        if(open?.data?._id === user_state?.user?._id){
+          localStorage.setItem('updated_user', JSON.stringify({imageUrl: d?.imageUrl, fullName: d?.fullName}))
+          nav('/employee/employees-list', {state: {updated_user: {imageUrl: d?.imageUrl, fullName: d?.fullName}}})
+        }
         
         let new_values = {
           ...d,

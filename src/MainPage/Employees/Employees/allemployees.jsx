@@ -1,6 +1,6 @@
 import React, {useEffect,useState } from 'react';
 import { Helmet } from "react-helmet";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useNavigation } from 'react-router-dom';
 import { Avatar_01,Avatar_02,Avatar_03,Avatar_04,Avatar_05,Avatar_11, Avatar_12,Avatar_09,
     Avatar_10, Avatar_08,Avatar_13,Avatar_16, user_icon } from "../../../Entryfile/imagepath"
 import Offcanvas from '../../../Entryfile/offcanvance';
@@ -19,6 +19,7 @@ const AllEmployees = () => {
   const moment = require('moment');
   const [form] = Form.useForm();
 
+  const nav = useNavigate();
   const user_state = useSelector((state) => state.user.loginvalue);
   const company_id = user_state?.user?.companyId
   const role = user_state?.user?.role
@@ -152,12 +153,12 @@ const AllEmployees = () => {
         .then((res) => {
           if (res?.data?.success === true) {
             setUsers((prev) => ([
-              ...prev,
               {
                 ...d,
                 _id: res?.data?.User?._id,
                 companyId: company_id,
               },
+              ...prev,
             ]))
             handleClose();
             message.success('Employee Added Successfully!')
@@ -197,6 +198,10 @@ const AllEmployees = () => {
               delete d[key];
             }
           });
+          if(open?.data?._id === user_state?.user?._id){
+            localStorage.setItem('updated_user', JSON.stringify({imageUrl: d?.imageUrl, fullName: d?.fullName}))
+            nav('/employee/allemployees', {state: {updated_user: {imageUrl: d?.imageUrl, fullName: d?.fullName}}})
+          }
           
           let new_values = {
             ...d,

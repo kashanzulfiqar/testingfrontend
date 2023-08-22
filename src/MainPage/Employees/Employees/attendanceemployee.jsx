@@ -8,7 +8,7 @@ import moment from "moment";
 import { useSelector } from "react-redux";
 import { apiServices } from "../../../Services/apiServices";
 import { message } from "antd";
-import InfiniteScroll from "react-infinite-scroll-component";
+// import InfiniteScroll from "react-infinite-scroll-component";
 import { ItemRender } from "antd/lib/upload/interface";
 import { Table, Form, Input, DatePicker, Select, Button, Spin } from "antd";
 import { itemRender } from "../../paginationfunction";
