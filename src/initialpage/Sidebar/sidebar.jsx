@@ -117,15 +117,15 @@ const Sidebar = (props) => {
                       <ul >
                         <li><Link className={pathname.includes('allemployees') ? "active" : pathname.includes('employees-list') ? "active" : ""}
                           to="/app/employee/allemployees">All Employees</Link></li>
-                        {/* <li><Link className={pathname.includes('holidays') ? "active" : ""} to="/app/employee/holidays">Holidays</Link></li> */}
-                        {/* <li><Link className={pathname.includes('es-admin') ? "active" : ""} to="/app/employee/leaves-admin">Leaves (Admin) <span className="badge badge-pill bg-primary float-end">1</span></Link></li> */}
-                        {/* <li><Link className={pathname.includes('ves-employee') ? "active" : ""} to="/app/employee/leaves-employee">Leaves (Employee)</Link></li> */}
+                        <li><Link className={pathname.includes('employee/holidays') ? "active" : ""} to="/employee/holidays">Holidays</Link></li>
+                        <li><Link className={pathname.includes('employee/leaves-admin') ? "active" : ""} to="/employee/leaves-admin">Leaves (Admin) <span className="badge badge-pill bg-primary float-end">1</span></Link></li>
+                        <li><Link className={pathname.includes('employee/leaves') ? "active" : ""} to="/employee/leaves">Leaves (Employee)</Link></li>
                         {/* <li><Link className={pathname.includes('e-settings') ? "active" : ""} to="/app/employee/leave-settings">Leave Settings</Link></li> */}
                         <li><Link className={pathname.includes('nce-admin') ? "active" : ""} to="/app/employee/attendance-admin">Attendance (Admin)</Link></li>
                         <li><Link className={pathname.includes('ce-employee') ? "active" : ""} to="/app/employee/attendance-employee">Attendance (Employee)</Link></li>
                         {/* <li><Link className={pathname.includes('departments') ? "active" : ""} to="/app/employee/departments">Departments</Link></li> */}
                         {/* <li><Link className={pathname.includes('designations') ? "active" : ""} to="/app/employee/designations">Designations</Link></li> */}
-                        {/* <li><Link className={pathname.includes('timesheet') ? "active" : ""} to="/app/employee/timesheet">Timesheet</Link></li> */}
+                        <li><Link className={pathname.includes('employee/timesheet') ? "active" : ""} to="/employee/timesheet">Timesheet</Link></li>
                         {/* <li><Link className={pathname.includes('shift-scheduling') || pathname.includes('shift-list') ? "active" : ""}
                           to="/app/employee/shift-scheduling">Shift &amp; Schedule</Link></li> */}
                         {/* <li><Link className={pathname.includes('overtime') ? "active" : ""} to="/app/employee/overtime">Overtime</Link></li> */}
@@ -493,15 +493,15 @@ const Sidebar = (props) => {
                     <ul >
                       <li><Link className={pathname.includes('allemployees') ? "active" : pathname.includes('employees-list') ? "active" : ""}
                         to="/employee/allemployees">All Employees</Link></li>
-                      {/* <li><Link className={pathname.includes('holidays') ? "active" : ""} to="/app/employee/holidays">Holidays</Link></li> */}
-                      {/* <li><Link className={pathname.includes('es-admin') ? "active" : ""} to="/app/employee/leaves-admin">Leaves (Admin) <span className="badge badge-pill bg-primary float-end">1</span></Link></li> */}
-                      {/* <li><Link className={pathname.includes('ves-employee') ? "active" : ""} to="/app/employee/leaves-employee">Leaves (Employee)</Link></li> */}
+                      <li><Link className={pathname.includes('employee/holidays') ? "active" : ""} to="/employee/holidays">Holidays</Link></li>
+                      <li><Link className={pathname.includes('employee/leaves-admin') ? "active" : ""} to="/employee/leaves-admin">Leaves (Admin) <span className="badge badge-pill bg-primary float-end">1</span></Link></li>
+                      <li><Link className={pathname.includes('employee/leaves') ? "active" : ""} to="/employee/leaves">Leaves (Employee)</Link></li>
                       {/* <li><Link className={pathname.includes('e-settings') ? "active" : ""} to="/app/employee/leave-settings">Leave Settings</Link></li> */}
                       <li><Link className={pathname.includes('nce-admin') ? "active" : ""} to="/app/employee/attendance-admin">Attendance (Admin)</Link></li>
                       <li><Link className={pathname.includes('ce-employee') ? "active" : ""} to="/app/employee/attendance-employee">Attendance (Employee)</Link></li>
                       {/* <li><Link className={pathname.includes('departments') ? "active" : ""} to="/app/employee/departments">Departments</Link></li> */}
                       {/* <li><Link className={pathname.includes('designations') ? "active" : ""} to="/app/employee/designations">Designations</Link></li> */}
-                      {/* <li><Link className={pathname.includes('timesheet') ? "active" : ""} to="/app/employee/timesheet">Timesheet</Link></li> */}
+                      <li><Link className={pathname.includes('employee/timesheet') ? "active" : ""} to="/employee/timesheet">Timesheet</Link></li>
                       {/* <li><Link className={pathname.includes('shift-scheduling') || pathname.includes('shift-list') ? "active" : ""}
                         to="/app/employee/shift-scheduling">Shift &amp; Schedule</Link></li> */}
                       {/* <li><Link className={pathname.includes('overtime') ? "active" : ""} to="/app/employee/overtime">Overtime</Link></li> */}
@@ -1044,15 +1044,15 @@ const Sidebar = (props) => {
                     <ul >
                       <li><Link className={pathname.includes('allemployees') ? "active" : pathname.includes('employees-list') ? "active" : ""}
                         to="/app/employee/allemployees">All Employees</Link></li>
-                      {/* <li><Link className={pathname.includes('holidays') ? "active" : ""} to="/app/employee/holidays">Holidays</Link></li> */}
-                      {/* <li><Link className={pathname.includes('es-admin') ? "active" : ""} to="/app/employee/leaves-admin">Leaves (Admin) <span className="badge badge-pill bg-primary float-end">1</span></Link></li> */}
-                      {/* <li><Link className={pathname.includes('ves-employee') ? "active" : ""} to="/app/employee/leaves-employee">Leaves (Employee)</Link></li> */}
+                      <li><Link className={pathname.includes('employee/holidays') ? "active" : ""} to="/employee/holidays">Holidays</Link></li>
+                      <li><Link className={pathname.includes('employee/leaves-admin') ? "active" : ""} to="/employee/leaves-admin">Leaves (Admin) <span className="badge badge-pill bg-primary float-end">1</span></Link></li>
+                      <li><Link className={pathname.includes('employee/leaves') ? "active" : ""} to="/employee/leaves">Leaves (Employee)</Link></li>
                       {/* <li><Link className={pathname.includes('e-settings') ? "active" : ""} to="/app/employee/leave-settings">Leave Settings</Link></li> */}
                       <li><Link className={pathname.includes('nce-admin') ? "active" : ""} to="/app/employee/attendance-admin">Attendance (Admin)</Link></li>
                       <li><Link className={pathname.includes('ce-employee') ? "active" : ""} to="/app/employee/attendance-employee">Attendance (Employee)</Link></li>
                       {/* <li><Link className={pathname.includes('departments') ? "active" : ""} to="/app/employee/departments">Departments</Link></li> */}
                       {/* <li><Link className={pathname.includes('designations') ? "active" : ""} to="/app/employee/designations">Designations</Link></li> */}
-                      {/* <li><Link className={pathname.includes('timesheet') ? "active" : ""} to="/app/employee/timesheet">Timesheet</Link></li> */}
+                      <li><Link className={pathname.includes('employee/timesheet') ? "active" : ""} to="/employee/timesheet">Timesheet</Link></li>
                       {/* <li><Link className={pathname.includes('shift-scheduling') || pathname.includes('shift-list') ? "active" : ""}
                         to="/app/employee/shift-scheduling">Shift &amp; Schedule</Link></li> */}
                       {/* <li><Link className={pathname.includes('overtime') ? "active" : ""} to="/app/employee/overtime">Overtime</Link></li> */}

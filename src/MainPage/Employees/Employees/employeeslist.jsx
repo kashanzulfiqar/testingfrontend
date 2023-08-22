@@ -2,19 +2,272 @@
 import React, { useState,useEffect } from 'react';
 import { Helmet } from "react-helmet";
 import { Link } from 'react-router-dom';
-import { Table } from 'antd';
+import { Form, Input, Table, Select, DatePicker, message, Button, Spin, Empty, Pagination } from 'antd';
+import Modal from "@mui/material/Modal";
 import 'antd/dist/antd.css';
 import {itemRender,onShowSizeChange} from "../../paginationfunction"
 import "../../antdstyle.css"
-import { Avatar_02,Avatar_05,Avatar_11, Avatar_12,Avatar_09,Avatar_10, Avatar_13 } from "../../../Entryfile/imagepath"
-import  Editemployee from "../../../_components/modelbox/Editemployee"
-import  Addemployee from "../../../_components/modelbox/Addemployee"
-import Header from '../../../initialpage/Sidebar/header'
+import { Avatar_02,Avatar_05,Avatar_11, Avatar_12,Avatar_09,Avatar_10, Avatar_13, user_icon } from "../../../Entryfile/imagepath"
 import Sidebar from '../../../initialpage/Sidebar/sidebar';
 import Offcanvas from '../../../Entryfile/offcanvance';
 import favicon from '../../../files/Icons/DaftarProIcon.svg';
+import { useSelector } from 'react-redux';
+import { apiServices } from '../../../Services/apiServices';
+import ProfileInfoModal from '../../Pages/Profile/modals/ProfileInfoModal';
+import { LoadingOutlined } from '@ant-design/icons';
+import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 
 const Employeeslist = () => {
+
+  const moment = require('moment');
+  const [form] = Form.useForm();
+
+  const user_state = useSelector((state) => state.user.loginvalue);
+  const company_id = user_state?.user?.companyId
+  const role = user_state?.user?.role
+
+  const [allDesignations, setAllDesignations] = useState([])
+  const [desigInfo, setDesigInfo] = useState({})
+  const [roleInfo, setRoleInfo] = useState({})
+  const [loader, setLoader] = useState(false)
+  const [tableLoader, setTableLoader] = useState(false);
+  const [pageSize, setPageSize] = useState(20);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [paginationDetail, setPaginationDetail] = useState();
+  const [filterValues, setFilterValues] = useState();
+  const [repInfo, setRepInfo] = useState([])
+
+  const [open, setOpen] = useState({ isAddOpen: false, isEditOpen: false, data: '' })
+  const [users, setUsers] = useState([])
+
+  useEffect(() => {
+    getEmployees();
+    getAllDesignations();
+    getAllRoles();
+    getReportsTo();
+  }, [])
+
+  const getReportsTo = () => {
+    apiServices("GET", "user/view-team-lead", null, user_state)
+    .then((res) => {
+      if (res?.data?.success === true) {
+        res?.data?.User?.map((rep)=> {
+          setRepInfo((prevRep) => ({
+            ...prevRep,
+            [rep?._id]: rep?.fullName,
+          }));
+        })
+      }
+    })
+    .catch((err) => {
+      message.error(
+        `${
+          err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
+            ? err?.response?.data?.validation?.body?.message
+            : "Get Department Info Error"
+        }!`
+      );
+    });
+  }
+
+  const getEmployees = (values, current_page, page_size) => {
+    setTableLoader(true);
+    apiServices("GET", `user/view-user?deleted=false${values === '' ? '' : values?.employeeName ? `&employeeName=${values?.employeeName}` : filterValues?.employeeName ? `&employeeName=${filterValues?.employeeName}` : ''}${values === '' ? '' : values?.employeeId ? `&employeeId=${values?.employeeId}` : filterValues?.employeeId ? `&employeeId=${filterValues?.employeeId}` : ''}${values === '' ? '' : values?.designation ? `&designation=${values?.designation}` : filterValues?.designation ? `&designation=${filterValues?.designation}` : ''}&page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}`, null, user_state)
+      .then((res) => {
+        if (res?.data?.success === true) {
+          setUsers(res?.data?.users?.docs);
+          setPaginationDetail(res?.data?.users)
+          setTableLoader(false);
+        }
+      })
+      .catch((err) => {
+        setTableLoader(false);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Get All Employees Error"
+          }!`
+        );
+      });
+  }
+
+  const getAllRoles = () => {
+    apiServices("GET", "role/view-role", null, user_state)
+    .then((res) => {
+      if (res?.data?.success === true) {
+        res?.data?.Role?.map((role)=> {
+          setRoleInfo((prevRole) => ({
+            ...prevRole,
+            [role?._id]: role?.roleName,
+          }));
+        })
+      }
+    })
+    .catch((err) => {
+      message.error(
+        `${
+          err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
+            ? err?.response?.data?.validation?.body?.message
+            : "Get Role Info Error"
+        }`
+      );
+    });
+  }
+  const getAllDesignations = () => {
+    apiServices("GET", "designation", null, user_state)
+    .then((res) => {
+      if (res?.data?.success === true) {
+        setAllDesignations(res?.data?.Designation);
+        res?.data?.Designation?.map((desig)=> {
+          setDesigInfo((prevDesig) => ({
+            ...prevDesig,
+            [desig?._id]: desig?.designationName,
+          }));
+        })
+      }
+    })
+    .catch((err) => {
+      message.error(
+        `${
+          err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
+            ? err?.response?.data?.validation?.body?.message
+            : "Get Designation Info Error"
+        }`
+      );
+    });
+  }
+  
+
+  const handleClose = () => {
+    setOpen({ isAddOpen: false, isEditOpen: false, data: '' });
+  };
+
+  const onFinishAdd = (values) => {
+
+    const replacer = (key, value) => {
+        if (typeof value === 'number') {
+            return String(value);
+        }else if(value === undefined || value === '' || value === null || !value){
+            return ''
+        }else if(key === 'dateOfBirth' || key === 'joiningDate'){
+            return moment(value).format('YYYY-MM-DD');
+        }
+        return value;
+        };
+        const d = JSON.parse(JSON.stringify(values, replacer));
+        // Remove keys with empty values
+        Object.keys(d).forEach((key) => {
+          if (d[key] === '') {
+            delete d[key];
+          }
+        });
+
+        let new_values = {
+          ...d,
+          companyId: company_id,
+        }
+        setLoader(true)
+        apiServices("POST", "user/add-user", new_values, user_state)
+      .then((res) => {
+        if (res?.data?.success === true) {
+          setUsers((prev) => ([
+            ...prev,
+            {
+              ...d,
+              _id: res?.data?.User?._id,
+              companyId: company_id,
+            },
+          ]))
+          handleClose();
+          message.success('Employee Added Successfully!')
+          setLoader(false);
+        }
+      })
+      .catch((err) => {
+        setLoader(false);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Add User Info Error"
+          }!`
+        );
+      });
+  }
+
+  const onFinishEdit = (values) => {
+
+    const replacer = (key, value) => {
+        if (typeof value === 'number') {
+            return String(value);
+        }else if(value === undefined || value === '' || value === null || !value){
+            return ''
+        }else if(key === 'dateOfBirth' || key === 'joiningDate'){
+            return moment(value).format('YYYY-MM-DD');
+        }
+        return value;
+        };
+        const d = JSON.parse(JSON.stringify(values, replacer));
+        // Remove keys with empty values
+        Object.keys(d).forEach((key) => {
+          if (key === 'password' || d[key] === '') {
+            delete d[key];
+          }
+        });
+        
+        let new_values = {
+          ...d,
+          _id: open?.data?._id,
+          companyId: open?.data?.companyId
+        }
+        setLoader(true)
+        apiServices("PUT", "user/update-user", new_values, user_state)
+        .then((res) => {
+          if (res?.data?.success === true) {
+            setUsers(
+              users.map((user) => {
+                  if (user._id === open?.data?._id) {
+                return {
+                  ...user,
+                  ...d,
+                };
+              } else {
+                return {
+                    ...user,
+                  };
+                }
+              })
+            );
+            handleClose()
+            message.success('Employee Updated Successfully!')
+            setLoader(false)
+          }
+        })
+        .catch((err) => {
+          setLoader(false)
+          // console.log(err);
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : "Update Employee Info Error"
+            }!`
+          );
+        });
+  }
 
   const [menu, setMenu] = useState(false)
 
@@ -44,65 +297,151 @@ const Employeeslist = () => {
             
             {
               title: 'Name',
-              dataIndex: 'name',
+              dataIndex: 'fullName',
               render: (text, record) => (            
                   <h2 className="table-avatar">
-                    <Link to="/app/profile/employee-profile" className="avatar"><img alt="" src={record.image} /></Link>
-                    <Link to="/app/profile/employee-profile">{text} <span>{record.role}</span></Link>
+                    <Link to="/profile/employee-profile" state={{user_data: record}} className="avatar"><img alt="" src={record?.imageUrl ? record?.imageUrl : user_icon} /></Link>
+                    <Link to="/profile/employee-profile" state={{user_data: record}}>{text} <span> <label>{desigInfo[record?.designationId]}</label> </span></Link>
                   </h2>
-                ), 
-                sorter: (a, b) => a.name.length - b.name.length,
+                ),
             },
             {
               title: 'Employee ID',
-              dataIndex: 'employee_id',
-              sorter: (a, b) => a.employee_id.length - b.employee_id.length,
+              dataIndex: 'employeeId',
             },
-
             {
               title: 'Email',
               dataIndex: 'email',
-              sorter: (a, b) => a.email.length - b.email.length,
             },
-
-            {
-              title: 'Mobile',
-              dataIndex: 'mobile', 
-              sorter: (a, b) => a.mobile.length - b.mobile.length,
-            },
-          
             {
               title: 'Join Date',
-              dataIndex: 'joindate',
-              sorter: (a, b) => a.joindate.length - b.joindate.length,
+              dataIndex: 'joiningDate',
             },
             {
               title: 'Role',
-              render: (text, record) => (
-                <div className="dropdown">
-                <a href="" className="btn btn-white btn-sm btn-rounded dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Web Developer </a>
-                <div className="dropdown-menu">
-                  <a className="dropdown-item" href="#">Software Engineer</a>
-                  <a className="dropdown-item" href="#">Software Tester</a>
-                  <a className="dropdown-item" href="#">Frontend Developer</a>
-                  <a className="dropdown-item" href="#">UI/UX Developer</a>
-                </div>
-              </div>
-                ),
+              dataIndex: 'roleId',
+              render: (text, record) => (            
+                  <>{roleInfo[text]}</>
+              ),
             },
+            {
+              title: 'Reports To',
+              dataIndex: 'reportsTo',
+              render: (text, record) => (            
+                <>{repInfo[text] || ''}</>
+            ),
+            },
+            // {
+            //   title: 'Role',
+            //   render: (text, record) => (
+            //     <div className="dropdown">
+            //     <a href="" className="btn btn-white btn-sm btn-rounded dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Web Developer </a>
+            //     <div className="dropdown-menu">
+            //       <a className="dropdown-item" href="#">Software Engineer</a>
+            //       <a className="dropdown-item" href="#">Software Tester</a>
+            //       <a className="dropdown-item" href="#">Frontend Developer</a>
+            //       <a className="dropdown-item" href="#">UI/UX Developer</a>
+            //     </div>
+            //   </div>
+            //     ),
+            // },
             {
               title: 'Action',
               render: (text, record) => (
                   <div className="dropdown dropdown-action text-end">
                     <a href="#" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
                     <div className="dropdown-menu dropdown-menu-right">
-                      <a className="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#edit_employee"><i className="fa fa-pencil m-r-5" /> Edit</a>
-                      <a className="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#delete_employee"><i className="fa fa-trash-o m-r-5" /> Delete</a>
+                      <a className="dropdown-item" href="javascript:void(0)" onClick={() => setOpen({ isAddOpen: false, isEditOpen: true, data: record })}><i className="fa fa-pencil m-r-5" /> Edit</a>
+                      <a className="dropdown-item" href="javascript:void(0)" onClick={() => setOpen({ isAddOpen: false, isEditOpen: false, isDelOpen: true, data: record })}><i className="fa fa-trash-o m-r-5" /> Delete</a>
                     </div>
                   </div>
                 ),
             },
           ]
+
+          const onFinishDelete = (id) => {
+            setLoader(true)
+            apiServices("DELETE", "user/delete-user", id, user_state)
+              .then((res) => {
+                if (res?.data?.success === true) {
+                  setUsers([...users.filter((user) => user._id !== id)]);
+                  handleClose();
+                  message.success("Employee Deleted Successfully!");
+                  setLoader(false)
+                }
+              })
+              .catch((err) => {
+                setLoader(false)
+                message.error(
+                  `${
+                    err?.response?.data?.msg
+                      ? err?.response?.data?.msg
+                      : err?.response?.data?.validation?.body?.message
+                      ? err?.response?.data?.validation?.body?.message
+                      : "Delete Employee Error"
+                  }!`
+                );
+              });
+          } 
+
+          const onFilterFinish = (values) => {
+            for (const key in values) {
+              if (values[key]) {
+                getEmployees(values, currentPage, pageSize);
+                console.log(values);
+                setFilterValues(values)
+              }
+            }
+          }
+
+          const antIcon = (
+            <LoadingOutlined
+              style={{
+                fontSize: 24,
+                color: '#fff'
+              }}
+              spin
+            />
+          );
+
+          const customEmptyText = (
+            <Empty
+              image={<img src={EmptyTable} />}
+              // image={<InboxOutlined />}
+              imageStyle={
+                {
+                  // fontSize: 48,
+                  // color: '#1890ff',
+                }
+              }
+              style={{
+                height: "300px",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+              }}
+              description={
+                <div style={{ display: "" }}>
+                  <div
+                    style={{
+                      color: "#34343F",
+                      fontWeight: "500",
+                      fontSize: "14px",
+                      margin: "7px 0px 4px 0px",
+                    }}
+                  >
+                   No Employee Record found!
+                  </div>
+                  {/* <div
+                    style={{ color: "#464665", fontWeight: "300", fontSize: "13px" }}
+                  >
+                    Click 'Add Employees' Button To Create <br /> A New Employee{" "}
+                  </div> */}
+                </div>
+              }
+            />
+          );
+
       return ( 
         <>
         <div className={`main-wrapper ${menu ? 'slide-nav': ''}`}> 
@@ -111,7 +450,7 @@ const Employeeslist = () => {
           <Sidebar />  
            <div className="page-wrapper">
               <Helmet>
-                  <title>Employeeslist - HRMS Admin Template</title>
+                  <title>Employees List - DaftarPro</title>
                   <meta name="description" content="Login page"/>
                   <link rel="icon" type="image/x-icon" href={favicon} />				
               </Helmet>
@@ -123,103 +462,234 @@ const Employeeslist = () => {
                  <div className="col">
                    <h3 className="page-title">Employee</h3>
                    <ul className="breadcrumb">
-                     <li className="breadcrumb-item"><Link to="/app/main/dashboard">Dashboard</Link></li>
+                     <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>Dashboard</Link></li>
                      <li className="breadcrumb-item active">Employee</li>
                    </ul>
                  </div>
                  <div className="col-auto float-end ms-auto">
-                   <a href="#" className="btn add-btn" data-bs-toggle="modal" data-bs-target="#add_employee"><i className="fa fa-plus" /> Add Employee</a>
+                   <a href="javascript:void(0)" className="btn add-btn" onClick={() => setOpen({ isAddOpen: true, isEditOpen: false, data: '' })}><i className="fa fa-plus" /> Add Employee</a>
                    <div className="view-icons">
-                     <Link to="/app/employee/allemployees" className="grid-view btn btn-link"><i className="fa fa-th" /></Link>
-                     <Link to="/app/employee/employees-list" className="list-view btn btn-link active"><i className="fa fa-bars" /></Link>
+                     <Link to="/employee/allemployees" className="grid-view btn btn-link"><i className="fa fa-th" /></Link>
+                     <Link to="/employee/employees-list" className="list-view btn btn-link active"><i className="fa fa-bars" /></Link>
                    </div>
                  </div>
                </div>
              </div>
              {/* /Page Header */}
              {/* Search Filter */}
-             <div className="row filter-row">
-               <div className="col-sm-6 col-md-3">  
-                 <div className="form-group form-focus">
-                   <input type="text" className="form-control floating" />
-                   <label className="focus-label">Employee ID</label>
-                 </div>
-               </div>
-               <div className="col-sm-6 col-md-3">  
-                 <div className="form-group form-focus">
-                   <input type="text" className="form-control floating" />
-                   <label className="focus-label">Employee Name</label>
-                 </div>
-               </div>
-               <div className="col-sm-6 col-md-3"> 
-                 <div className="form-group form-focus select-focus">
-                   <select className="select floating"> 
-                     <option>Select Designation</option>
-                     <option>Web Developer</option>
-                     <option>Web Designer</option>
-                     <option>Android Developer</option>
-                     <option>Ios Developer</option>
-                   </select>
-                   <label className="focus-label">Designation</label>
-                 </div>
-               </div>
-               <div className="col-sm-6 col-md-3">  
-                 <a href="#" className="btn btn-success btn-block w-100"> Search </a>  
-               </div>     
-             </div>
+              <Form
+                form={form}
+                onFinish={onFilterFinish}
+              >
+              <div className="row filter-row">
+                <div className="col-sm-6 col-md-3">  
+                  <div className="form-group">
+                  <Form.Item
+                      name="id"
+                      className="custom-border"
+                    >
+                    <Input
+                      className="form-control"
+                      style={{height:'50px'}}
+                      placeholder='Employee ID'
+                    />
+                    </Form.Item>
+                  </div>
+                </div>
+                <div className="col-sm-6 col-md-3">  
+                  <div className="form-group">
+                  <Form.Item
+                      name="employeeName"
+                      className="custom-border"
+                    >
+                  <Input
+                      className="form-control"
+                      style={{height:'50px'}}
+                      placeholder='Employee Name'
+                    />
+                    </Form.Item>
+                  </div>
+                </div>
+                <div className="col-sm-6 col-md-3">
+                <div style={{ position: 'relative' }} id='area'>
+                    <Form.Item
+                      name="designation"
+                      className="custom-border"
+                    >
+                      <Select
+                        className="custom-select"
+                        style={{
+                          width: '100%',
+                        }}
+                        placeholder='Select Designation'
+                        size='large'
+                        getPopupContainer={() => document.getElementById('area')}
+                      >
+                        {allDesignations?.map((item, index) => {
+                        return (
+                            <Option key={index} value={item?._id}>{item?.designationName}</Option>
+                        )
+                        })}
+                      </Select>
+                    </Form.Item>
+                  </div>
+                </div>
+                <div className="col-sm-6 col-md-3" style={{display: 'flex', alignItems: 'flex-start', gap: '13px'}}>  
+                  <button href="javascript:void(0)" type="submit" className="btn btn-success btn-block w-50"> Search </button>  
+                  <button href="javascript:void(0)" type="reset" onClick={() => { form.resetFields(); getEmployees('', 1, pageSize); setFilterValues(null); setCurrentPage(1)}} className="btn btn-success btn-block w-50" style={{backgroundColor: '#b9b9b9', color: 'white', borderColor: '#aeaeae'}}> Reset </button>  
+                </div>
+              </div>
+              </Form>
              {/* /Search Filter */}
              <div className="row">
                <div className="col-md-12">
                  <div className="table-responsive">
-                 <Table className="table-striped"
-                    pagination= { {total : data.length,
-                      showTotal : (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                      showSizeChanger : true,onShowSizeChange: onShowSizeChange ,itemRender : itemRender } }
+                 <Table
+                    loading={tableLoader}
+                    className={users?.length > 0 ? "table-striped" : ""}
+                    locale={{
+                      emptyText: tableLoader ? null : customEmptyText,
+                    }}
+                    // pagination= { {total : users?.length,
+                    //   showTotal : (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+                    //   showSizeChanger : true,onShowSizeChange: onShowSizeChange ,itemRender : itemRender } }
                     style = {{overflowX : 'auto'}}
                     columns={columns}                 
                     // bordered
-                    dataSource={data}
-                    rowKey={record => record.id}
-                    onChange={console.log("change")}
+                    dataSource={users}
+                    // rowKey={record => record.id}
+                    // onChange={console.log("change")}
+                    pagination={false}
+                    // pagination={{
+                    //   total: paginationDetail?.total,
+                    //     pageSize: pageSize,
+                    //     defaultCurrent:1,
+                    //     current: currentPage,
+                    //     showTotal: (total, range) =>
+                    //       `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+                    //     onChange: (page, size) => {
+                    //       console.log(page, size);
+                    //       setPageSize(size); setCurrentPage(page);
+                    //       getEmployees(filterValues, page, size)
+                    //     },
+                    //     showSizeChanger: true,
+                    //     pageSizeOptions: ['20', '30', '40', '50'],
+                    //     itemRender: itemRender,
+                    // }}
                   />
+                  {
+                    users?.length > 0 &&
+                    <div>
+                      <Pagination
+                        style={{display: 'flex', float: 'right'}}
+                        total={paginationDetail?.total}
+                        pageSize={pageSize}
+                        defaultCurrent={1}
+                        current={currentPage}
+                        showTotal={(total, range) =>
+                          `Showing ${range[0]} to ${range[1]} of ${total} entries`}
+                        onChange={(page, size) => {
+                          console.log(page, size);
+                          setPageSize(size); setCurrentPage(page);
+                          getEmployees(filterValues, page, size)
+                        }}
+                        showSizeChanger={true}
+                        pageSizeOptions={['20', '30', '40', '50']}
+                        itemRender={itemRender}
+                      />
+                    </div>
+                  }
                  </div>
                </div>
              </div>
            </div>
            {/* /Page Content */}
            {/* Add Employee Modal */}
-          <Addemployee/>
+           {
+              open?.isAddOpen &&
+              <ProfileInfoModal
+                open={open}
+                handleClose={handleClose}
+                onFinishAdd={onFinishAdd}
+                loader={loader}
+              />
+            }
            {/* /Add Employee Modal */}
            {/* Edit Employee Modal */}
-           <Editemployee/>
+           {
+              open?.isEditOpen &&
+              <ProfileInfoModal
+                open={open}
+                handleClose={handleClose}
+                user_data={open?.data}
+                onFinishEdit={onFinishEdit}
+                loader={loader}
+              />
+            }
            {/* /Edit Employee Modal */}
            {/* Delete Employee Modal */}
-           <div className="modal custom-modal fade" id="delete_employee" role="dialog">
-             <div className="modal-dialog modal-dialog-centered">
-               <div className="modal-content">
-                 <div className="modal-body">
-                   <div className="form-header">
-                     <h3>Delete Employee</h3>
-                     <p>Are you sure want to delete?</p>
-                   </div>
-                   <div className="modal-btn delete-action">
-                     <div className="row">
-                       <div className="col-6">
-                         <a href="" className="btn btn-primary continue-btn">Delete</a>
-                       </div>
-                       <div className="col-6">
-                         <a href="" data-bs-dismiss="modal" className="btn btn-primary cancel-btn">Cancel</a>
-                       </div>
-                     </div>
-                   </div>
-                 </div>
-               </div>
-             </div>
-           </div>
+           <Modal
+              open={open.isDelOpen}
+              onClose={handleClose}
+              aria-labelledby="modal-modal-title"
+              aria-describedby="modal-modal-description"
+              disableRestoreFocus
+              BackdropProps={{
+                style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
+              }}
+            >
+              <div className="modal-dialog modal-dialog-centered">
+                <div className="modal-content" style={{ height: "280px" }}>
+                  <div
+                    className="modal-body"
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <div className="form-header">
+                      <h3 style={{ marginBottom: "30px" }}>Delete Employee</h3>
+                      <p>
+                        Are you sure you want to delete{" "}
+                        <b>{open?.data?.fullName}</b>?
+                      </p>
+                    </div>
+                    <div className="modal-btn delete-action">
+                      <div className="row">
+                        <div className="col-6">
+                          <Button
+                            htmlType="submit"
+                            className="btn btn-primary continue-btn"
+                            onClick={() => onFinishDelete(open?.data?._id)}
+                            disabled={loader}
+                            style={{width: '100%'}}
+                          >
+                            {
+                              loader ? <Spin size="small" indicator={antIcon} />
+                                : 'Delete'
+                            }
+                          </Button>
+                        </div>
+                        <div className="col-6">
+                          <Button
+                            onClick={handleClose}
+                            className="btn btn-primary submit-btn"
+                            style={{width: '100%'}}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Modal>
            {/* /Delete Employee Modal */}
          </div>
         </div>
-        <Offcanvas/>
+        {/* <Offcanvas/> */}
         </>
 
     

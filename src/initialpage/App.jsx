@@ -29,6 +29,10 @@ import Employeeslist from '../MainPage/Employees/Employees/employeeslist';
 import Settings from '../MainPage/Administration/Settings/companysettings';
 import RolePermisson from '../MainPage/Administration/Settings/rolespermission';
 import 'antd/dist/antd.css';
+import EmployeeProfile from '../MainPage/Pages/Profile/employeeprofile';
+import Holidays from '../MainPage/Employees/Employees/holidays';
+import LeaveEmployee from '../MainPage/Employees/Employees/leaveemployee';
+import Timesheet from '../MainPage/Employees/Employees/timesheet';
 
 const App = () => {
   const login = useSelector((state) => state.user.loginvalue);
@@ -66,6 +70,12 @@ const App = () => {
     }
   }, []);
 
+  useEffect(() => {
+    if(location?.pathname !== "/profile/employee-profile")
+    localStorage.removeItem('allDataLocal');
+  }, [location])
+  
+
   return (
     <div>
       <Routes>
@@ -88,26 +98,31 @@ const App = () => {
           {/* Employee */}
           <Route path={`employee/allemployees`} element={<AllEmployees />} />
           <Route path={`employee/employees-list`} element={<Employeeslist />} />
+          <Route path={`employee/holidays`} element={<Holidays />} />
+          <Route path={`employee/leaves`} element={<LeaveEmployee />} />
+          <Route path={`employee/leaves-admin`} element={<LeaveAdmin />} />
+          <Route path={`employee/timesheet`} element={<Timesheet />} />
+          <Route path={`/profile/employee-profile`} element={<EmployeeProfile />} />
 
           {/* Settings  */}
           <Route path="/settings" element={<Settings />} />
           {/* <Route path="/settings/roles-permissions" element={<RolePermisson />} /> */}
         </Route>
         
-        <Route path="/404" element={<Error404 />}></Route>
-        <Route path="*" element={<Navigate to="/404" />}></Route>
+        {/* <Route path="/404" element={<Error404 />}></Route> */}
+        <Route path="*" element={<Error404 />}></Route>
 
         {/* </Route> */}
         {/* </Route> */}
 
         {/* <Route path="/settings/*" element={<Settinglayout />} /> */}
-        <Route path="/tasks/*" element={<Tasklayout />} />
+        {/* <Route path="/tasks/*" element={<Tasklayout />} />
         <Route path="/email/*" element={<Emaillayout />} />
         <Route path="/conversation/*" element={<Chatlayout />} />
 
         <Route path="/ui-components" element={<Uicomponents />} />
         <Route path="/error-404" element={<Error404 />} />
-        <Route path="/error-500" element={<Error500 />} />
+        <Route path="/error-500" element={<Error500 />} /> */}
       </Routes>
 
       {/* {login &&

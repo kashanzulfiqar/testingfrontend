@@ -7340,7 +7340,7 @@ textarea.form-control {
   height: 30px;
 }
 .ant-picker-dropdown, .ant-select-dropdown {
-z-index: 1300;
+z-index: 3300;
 }
 /* antd dropdown selected color to orange */
 .ant-select-item-option-selected:not(.ant-select-item-option-disabled){

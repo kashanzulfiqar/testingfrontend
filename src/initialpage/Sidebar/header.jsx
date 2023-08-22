@@ -241,11 +241,13 @@ const Header = (props) => {
     props.onMenuClick()
   }
 
+  
   let pathname = location.pathname
-  const { loginvalue } = useSelector((state) => state.user);
-  const UserName = loginvalue?.email?.split('@')[0];
-  const ProfileName = loginvalue?.user?.fullName
-  const imageURL = loginvalue?.user?.image
+  // const { loginvalue } = useSelector((state) => state.user);
+  const user_state = useSelector((state) => state.user.loginvalue);
+  const UserName = user_state?.email?.split('@')[0];
+  const ProfileName = user_state?.user?.fullName
+  const imageURL = user_state?.user?.imageURL
   // const ProfileName = UserName?.charAt(0).toUpperCase() + UserName?.slice(1)
   console.log(ProfileName, "headerLoginvalue=====");
 
