@@ -214,7 +214,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import {
   headerlogo, lnEnglish, lnFrench, lnSpanish, lnGerman, Avatar_02, Avatar_03, Avatar_05,
-  Avatar_06, Avatar_08, Avatar_09, Avatar_13, Avatar_17, Avatar_21
+  Avatar_06, Avatar_08, Avatar_09, Avatar_13, Avatar_17, Avatar_21, user_icon
 } from '../../Entryfile/imagepath'
 import notifications from '../../assets/json/notifications';
 import message from '../../assets/json/message';
@@ -228,6 +228,8 @@ const Header = (props) => {
 
   const location = useLocation();
   const nav = useNavigate();
+  const updated_user = JSON.parse(localStorage.getItem("updated_user"));
+
 
   const data = notifications.notifications;
   const datas = message.message;
@@ -247,7 +249,7 @@ const Header = (props) => {
   const user_state = useSelector((state) => state.user.loginvalue);
   const UserName = user_state?.email?.split('@')[0];
   const ProfileName = user_state?.user?.fullName
-  const imageURL = user_state?.user?.imageURL
+  const imageURL = user_state?.user?.image
   // const ProfileName = UserName?.charAt(0).toUpperCase() + UserName?.slice(1)
   console.log(ProfileName, "headerLoginvalue=====");
 
@@ -392,10 +394,10 @@ const Header = (props) => {
         {/* /Message Notifications */}
         <li className="nav-item dropdown has-arrow main-drop">
           <a href="javascript:void(0)" className="dropdown-toggle nav-link" data-bs-toggle="dropdown">
-            <span className="user-img me-1"><img src={imageURL || Avatar_21} alt="" />
+            <span className="user-img me-1"><img src={location?.state?.updated_user?.imageUrl ? location?.state?.updated_user?.imageUrl : updated_user?.imageUrl ? updated_user?.imageUrl : imageURL ? imageURL : user_icon} alt="profile" style={{width: '30px', height: '30px'}} />
             {/* <span className="user-img me-1"><img src={Avatar_21} alt="" /> */}
               <span className="status online" /></span>
-            <span>{ProfileName ? ` ${ProfileName} ` : "Admin"}</span>
+            <span>{location?.state?.updated_user?.fullName ? ` ${location?.state?.updated_user?.fullName} ` : updated_user?.fullName ? ` ${updated_user?.fullName} ` : ProfileName ? ` ${ProfileName} ` : "Admin"}</span>
           </a>
           <div className="dropdown-menu dropdown-menu-end" style={{marginLeft: '50px !important'}}>
             <Link className="dropdown-item" to="#">My Profile</Link>

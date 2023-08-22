@@ -4,8 +4,8 @@
 import React, { useEffect, useState } from 'react';
 import { Helmet } from "react-helmet";
 import { useSelector } from 'react-redux';
-import { Link, useLocation } from 'react-router-dom';
-import { Avatar_02, Avatar_05, Avatar_09, Avatar_10, Avatar_16, eye } from '../../../Entryfile/imagepath'
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Avatar_02, Avatar_05, Avatar_09, Avatar_10, Avatar_16, eye, user_icon } from '../../../Entryfile/imagepath'
 import { keyboard, mouse, laptop } from '../../../Entryfile/imagepath';
 import Offcanvas from '../../../Entryfile/offcanvance';
 import { DatePicker, Empty, Form, Input, Select, Spin, Table, message, InputNumber } from 'antd';
@@ -18,9 +18,11 @@ import { apiServices } from '../../../Services/apiServices';
 import { LoadingOutlined } from '@ant-design/icons';
 
 
+
 const EmployeeProfile = () => {
   const moment = require('moment');
   const location = useLocation();
+  const nav = useNavigate();
   const user_data = location?.state?.user_data;
   const allDataLocal = JSON.parse(localStorage.getItem("allDataLocal"));
 
@@ -201,6 +203,10 @@ const handleClose = () => {
             delete d[key];
           }
         });
+        if(allData?._id === user_state?.user?._id){
+          localStorage.setItem('updated_user', JSON.stringify({imageUrl: d?.imageUrl, fullName: d?.fullName}))
+          nav('/profile/employee-profile', {state: {updated_user: {imageUrl: d?.imageUrl, fullName: d?.fullName}, user_data: user_data}})
+        }
         const newData = { ...allData };
         delete newData.password;
         let new_values = {
@@ -443,7 +449,7 @@ const antIcon = (
                   <div className="profile-view">
                     <div className="profile-img-wrap">
                       <div className="profile-img">
-                        <a href="#"><img alt="" src={allData?.imageUrl} /></a>
+                        <a href="javascript:void(0)"><img alt="" src={allData?.imageUrl || user_icon} /></a>
                       </div>
                     </div>
                     <div className="profile-basic">
