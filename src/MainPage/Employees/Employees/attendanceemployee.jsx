@@ -9,16 +9,15 @@ import { useSelector } from "react-redux";
 import { apiServices } from "../../../Services/apiServices";
 import { message } from "antd";
 import InfiniteScroll from "react-infinite-scroll-component";
-import { Form, Input, DatePicker, Select, Button } from "antd";
-
-const { Option } = Select;
-
-
-
+import { ItemRender } from "antd/lib/upload/interface";
+import { Table, Form, Input, DatePicker, Select, Button, Spin } from "antd";
+import { itemRender } from "../../paginationfunction";
 
 
 const AttendanceEmployee = () => {
   const [form] = Form.useForm();
+  const [isLoading, setIsLoading] = useState(false);
+
 
   const user_state = useSelector((state) => state.user.loginvalue);
 
@@ -125,7 +124,7 @@ const AttendanceEmployee = () => {
     const moment = require("moment");
     let datebn = new Date(Date.now());
     let checkInTime = moment(datebn).format("HH:mm");
-    //let attendanceDate = "2023-08-21"
+    //let attendanceDate = "2023-08-31" for testing
     let attendanceDate = moment(datebn).format("YYYY-MM-DD");
     try {
       let data = {
@@ -142,10 +141,21 @@ const AttendanceEmployee = () => {
             attendanceDate: res?.data?.Attendance?.attendanceDate,
             status:res?.data?.Attendance?.status
           });
-          setFetchattend([]);
-          setPage(1);
-          setReachedEnd(false);
         }
+        setPagination({
+          ...pagination,
+          current: 1,
+        });
+        setSelectedFilters({
+          date: "",
+          month: "",
+          year: "",
+        });
+        setFilters({
+          date: "",
+          month: "",
+          year: "",
+        });
         setIsCheckedIn(true);
         setIsCheckedOut(false);
       }).catch(err=>{
@@ -162,7 +172,7 @@ const AttendanceEmployee = () => {
 
               ? err?.response?.data?.validation?.body?.message
 
-              : "Get Role Info Error"
+              : "Get Check In Time Error"
 
           }`
 
@@ -199,9 +209,6 @@ const AttendanceEmployee = () => {
           hoursWorked: res?.data?.Attendance?.hoursWorked,
           overTime: res?.data?.Attendance?.overTime,
         });
-        setFetchattend([]);
-        setPage(1);
-        setReachedEnd(false)
       }
 
       }).catch(err=>{
@@ -218,11 +225,25 @@ const AttendanceEmployee = () => {
 
               ? err?.response?.data?.validation?.body?.message
 
-              : "Get Role Info Error"
+              : "Get Check Out time error"
 
           }`
 
         );
+      });
+      setPagination({
+        ...pagination,
+        current: 1,
+      });
+      setSelectedFilters({
+        date: "",
+        month: "",
+        year: "",
+      });
+      setFilters({
+        date: "",
+        month: "",
+        year: "",
       });
       setIsCheckedIn(false);
       setIsCheckedOut(true);
@@ -237,76 +258,13 @@ const AttendanceEmployee = () => {
 
   
   const formatHoursMinutes = (timeString) => {
-    if (!timeString) return "Loading..";
+    if (!timeString) return "None";
   
     const totalMinutes = parseFloat(timeString);
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
   
-    return `${hours} hrs ${minutes} m`;
-  };
-
-  // const [filterDate, setFilterDate] = useState("");
-  // const [filterMonth, setFilterMonth] = useState("");
-  // const [filterYear, setFilterYear] = useState("");
-  // const [filteredAttendance, setFilteredAttendance] = useState([]);
-  // const [page, setPage] = useState(1);
-  // const [limit, setLimit] = useState(10);
-  // const [hasMore, setHasMore] = useState(true);
-  
-
-  // const fetchFilteredAttendance = (event) => {
-  //   //e.preventDefault();
-  //   if (event) {
-  //     event.preventDefault();
-  //   }
-    
-
-  //   const filters = [];
-
-  //   if (filterDate) filters.push(`attendanceDate=${filterDate}`);
-  //   if (filterMonth) filters.push(`attendanceMonth=${filterMonth}`);
-  //   if (filterYear) filters.push(`attendanceYear=${filterYear}`);
-
-  //   const queryParams = filters.join("&");
-
-  //   apiServices("GET", `attendance/?${queryParams}&page=${page}&limit=${limit}`, null, user_state)
-  //     .then((res) => {
-  //       if (res.data.success === true) {
-  //         // setFilteredAttendance(res.data.Attendance.docs);
-  //         setFilteredAttendance([...filteredAttendance, ...res.data.Attendance.docs]);
-  //         if (page >= res.data.Attendance.pages) {
-  //           setHasMore(false);
-  //         } else {
-  //           setPage(page + 1);
-  //         }
-  //       }
-  //     })
-  //     .catch((error) => {
-  //       console.log("error", error);
-  //     });
-  // };
-
-  // Update the useEffect to fetch initial attendance records
-  // useEffect(() => {
-  //   console.log("jelo")
-  //   fetchFilteredAttendance();
-  // }, [checkIn,checkOut]);
-
-  const generateYearOptions = () => {
-    const currentYear = new Date().getFullYear();
-    const startYear = 2010;
-    const yearOptions = [];
-  
-    for (let year = currentYear; year >= startYear; year--) {
-      yearOptions.push(
-        <option key={year} value={year}>
-          {year}
-        </option>
-      );
-    }
-  
-    return yearOptions;
+    return `${hours}h ${minutes}m`;
   };
 
   const [filters, setFilters] = useState({
@@ -314,151 +272,157 @@ const AttendanceEmployee = () => {
     month: "",
     year: "",
   });
-  const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
-  const [fetchattend,setFetchattend]=useState([])
-  const [totalPages, setTotalPages] = useState(1);
-  const [reachedEnd, setReachedEnd] = useState(false);
-
-  const [pageRefreshed, setPageRefreshed] = useState(true);
-
-  useEffect(() => {
-    // Fetch the first page of data when the page refreshes
-    if (pageRefreshed) {
-      console.log("refresh load")
-      apiServices("GET", 'attendance/', null, user_state)
-        .then((res) => {
-          if (res.data.success === true) {
-            const attendanceData = res.data.Attendance.docs;
-            setFetchattend(attendanceData); // Store the data without rendering
-            setPageRefreshed(false);
-            console.log("refresh set false") // Set pageRefreshed to false
-          }
-        })
-        .catch((error) => {
-          console.log("error", error);
-        });
-    }
-  }, [pageRefreshed]);
-
-  useEffect(() => {
-    // Automatically trigger the reset function after fetching the initial data
-    if (!pageRefreshed) {
-      console.log("refresh reset")
-      handleReset();
-    }
-  }, [pageRefreshed]);
-
-  useEffect(() => {
-    if (!pageRefreshed){
-      console.log("main executed")
-    // Create an API request URL based on the selected filters and pagination.
-    let apiUrl = `attendance/?page=${page}&limit=10`;
-    if (filters.date) apiUrl += `&attendanceDate=${filters.date}`;
-    if (filters.month) apiUrl += `&attendanceMonth=${filters.month}`;
-    if (filters.year) apiUrl += `&attendanceYear=${filters.year}`;
-
-    setLoading(true);
-  
-    apiServices("GET", apiUrl, null, user_state)
-      .then((res) => {
-        if (res.data.success === true) {
-          const { Attendance } = res.data;
-          const newAttendanceData = [...fetchattend, ...Attendance.docs];
-          setFetchattend(newAttendanceData);
-          setTotalPages(Attendance.pages);
-  
-          if (page >= Attendance.pages) {
-            setReachedEnd(true);
-          }
-        }
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.log("error", error);
-        setLoading(false);
-      });
-    }
-  }, [filters, page, checkIn, checkOut]);
-
-  useEffect(() => {
-    setReachedEnd(false);
-  }, [filters]);
-
-  const debounce = (func, delay) => {
-    let timeout;
-    return (...args) => {
-      clearTimeout(timeout);
-      timeout = setTimeout(() => func(...args), delay);
-    };
-  };
-  
-  
-  useEffect(() => {
-    if(!pageRefreshed){
-    const handleScroll = debounce(() => {
-      if (
-        window.innerHeight + window.scrollY >=
-          document.documentElement.offsetHeight &&
-        !loading &&
-        !reachedEnd &&
-        totalPages>=page
-      ) {
-        console.log("current page", page );
-        console.log("Scrolling to page", page + 1);
-        setPage(page + 1);
-      }
-    }, 500); // Adjust the debounce delay as needed
-  
-    window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }
-  }, [page, loading, reachedEnd, totalPages, selectedFilters]);
-
-
   const [selectedFilters, setSelectedFilters] = useState({
     date: "",
     month: "",
     year: "",
   });
+  const[fetchattend,setFetchattend]=useState([]);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10, 
+    total: 0, 
+  });
+  
+  useEffect(() => {
+    setIsLoading(true);
+    
+    fetchattendance();
+  }, [filters, pagination.current, pagination.pageSize,checkIn, checkOut]);
 
+  const fetchattendance=()=>{
+    const params = {
+      ...filters,
+      page: pagination.current,
+      limit: pagination.pageSize,
+    };
+
+    let apiUrl = `attendance/?page=${params.page}&limit=${params.limit}`;
+    if (filters.date) apiUrl += `&attendanceDate=${filters.date}`;
+    if (filters.month) apiUrl += `&attendanceMonth=${filters.month}`;
+    if (filters.year) apiUrl += `&attendanceYear=${filters.year}`;
+  
+    apiServices("GET", apiUrl, null, user_state)
+      .then((res) => {
+        if (res.data.success === true) {
+          const attendanceData = res.data.Attendance.docs;
+          setFetchattend(attendanceData);
+          setPagination({
+            ...pagination,
+            total: res.data.Attendance.total ,
+          });
+        }
+      })
+      .catch((error) => {
+        console.log("error", error);
+      }).finally(()=>{
+        setIsLoading(false);
+      });
+  }
+  
+  const [monthPickerValue, setMonthPickerValue] = useState(null);
+
+  
   const handleFilterChange = (value, filterType) => {
-    // Update the selected filter temporarily
-    setSelectedFilters({
-      ...selectedFilters,
-      [filterType]: value,
-    });
+    
+    if (filterType === "month") {
+      
+      const monthName = moment(value, "YYYY-MM").format("MMMM");
+      
+      setSelectedFilters({
+        ...selectedFilters,
+        [filterType]: monthName ? monthName : '',
+      });
+    } else {
+      
+      setSelectedFilters({
+        ...selectedFilters,
+        [filterType]: value,
+      });
+    }
   };
 
-  
-  
-
   const handleSearch = () => {
-    // Apply the selected filters, reset page, and clear the table
-    setFetchattend([]);
-    setPage(1);
+    console.log(filters)
     setFilters(selectedFilters);
+    setPagination({
+      ...pagination,
+      current: 1,
+    });
+    //fetchattendance();
   };
 
   const handleReset = () => {
-    // Reset filters, fetch default records, and clear the table
-    form.resetFields();
-
     setSelectedFilters({
       date: "",
       month: "",
       year: "",
     });
-    setFetchattend([]);
-    setPage(1);
-    setFilters({});
+    setFilters({
+      date: "",
+      month: "",
+      year: "",
+    });
+    setPagination({
+      ...pagination,
+      current: 1, 
+    });
+
+    form.resetFields();
+    //fetchattendance();
+
   };
 
-  // useEffect(()=>{
-  //   handleReset();
-  // },[])
+  const columns = [
+    {
+      title: "#",
+      dataIndex: "index",
+      key: "index",
+      render: (text, record, index) => index + 1,
+    },
+    {
+      title: "Date",
+      dataIndex: "attendanceDate",
+      key: "attendanceDate",
+    },
+    {
+      title: "Check In",
+      dataIndex: "checkInTime",
+      key: "checkInTime",
+      render: (checkInTime) => moment(checkInTime, "HH:mm").format("h:mm A"),
+    },
+    {
+      title: "Check Out",
+      dataIndex: "checkOutTime",
+      key: "checkOutTime",
+      render: (checkOutTime) => checkOutTime? moment(checkOutTime, "HH:mm").format("h:mm A"):"--",
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (status) => (
+        <span style={{ color: status === "Late" ? "red" : status === "Present" ? "green" : "black" }}>
+          {status}
+        </span>
+      ),
+    },
+    {
+      title: "Duration",
+      dataIndex: "hoursWorked",
+      key: "hoursWorked",
+      render: (hoursWorked) => formatHoursMinutes(hoursWorked),
+    },
+    {
+      title: "Overtime",
+      dataIndex: "overTime",
+      key: "overTime",
+      render: (overTime) => overTime?
+        formatHoursMinutes(overTime):"None",
+    },
+  ];
+  
+  
   
 
   return (
@@ -540,16 +504,22 @@ const AttendanceEmployee = () => {
                         <div className="col-md-6 col-6 text-center">
                             <div className="stats-box">
                               <p>Status</p>
-                              <h6><label>{isCheckedIn || isCheckedOut ? checkIn.status : "--"}</label></h6>
+                              
+                              <h6><label
+                              style={{
+                                color:
+                                  (isCheckedIn || isCheckedOut) &&
+                                  (checkIn.status === "Late" ? "red" : checkIn.status === "Present" ? "green" : "black"),
+                              }}>{isCheckedIn || isCheckedOut ? checkIn.status : "--"}</label></h6>
                             </div>
                           </div>
 
                       <div className="col-md-6 col-6 text-center">
                         <div className="stats-box">
                           <p>Overtime</p>
-                          {/* <h6>{isCheckedOut ? formatHoursMinutes(parseFloat(checkOut.overTime) * 60) : "--"}</h6> */}
+                          
                           <h6><label>{isCheckedOut ? formatHoursMinutes(checkOut.overTime) : "--"}</label></h6>
-                          {/* <h6>{isCheckedOut ? formatHoursMinutes(checkOut.overTime) : "None"}</h6> */}
+                          
                         </div>
                       </div>
 
@@ -708,78 +678,8 @@ const AttendanceEmployee = () => {
             </div>
         
             {/* Search Filter */}
-            {/* <div className="row filter-row">
-  <div className="col-sm-3">
-    <div className="form-group form-focus select-focus">
-      <div>
-        <input
-          type="date"
-          className="form-control floating datetimepicker"
-          onChange={(e) => handleFilterChange(e, "date")}
-        />
-      </div>
-      <label className="focus-label">Date</label>
-    </div>
-  </div>
-  <div className="col-sm-3">
-    <div className="form-group form-focus select-focus">
-      <select
-        className="form-control select2"
-        onChange={(e) => handleFilterChange(e, "month")}
-      >
-        <option value="">-</option>
-        <option>January</option>
-        <option>February</option>
-        <option>March</option>
-        <option>April</option>
-        <option>May</option>
-        <option>June</option>
-        <option>July</option>
-        <option>August</option>
-        <option>September</option>
-        <option>October</option>
-        <option>November</option>
-        <option>December</option>
-      </select>
-      <label className="focus-label">Select Month</label>
-    </div>
-  </div>
-  
-  <div className="col-sm-3">
-    <div className="form-group form-focus select-focus">
-      <select
-        className="form-control select2"
-        onChange={(e) => handleFilterChange(e, "year")}
-      >
-        <option value="">-</option>
-        {generateYearOptions()}
-      </select>
-      <label className="focus-label">Select Year</label>
-    </div>
-  </div>
-  
-<div className="col-sm-3">
-    <button
-    href="#"
-      className="btn btn-success btn-block w-100"
-      onClick={handleSearch}
-    >
-      Search
-    </button>
-    <button
-  href="#"
-      className="btn btn-secondary btn-block w-100"
-      onClick={handleReset}
-    >
-      Reset
-    </button>
-</div>
-
-
-                
-</div> */}
-
-<Form onFinish={handleSearch}>
+            
+<Form form={form}>
       <div className="row filter-row">
       <div className="col-sm-6 col-md-3">  
       <div className="form-group">
@@ -789,6 +689,7 @@ const AttendanceEmployee = () => {
             <DatePicker
               className="form-control"
               onChange={(date, dateString) => handleFilterChange(dateString, "date")}
+              allowClear={false}
             />
           </Form.Item>
         </div>
@@ -804,14 +705,19 @@ const AttendanceEmployee = () => {
               width: '100%',
             }}
             placeholder="Select Month"
+            allowClear={false}
+            format="MMMM"
             size="large"
+            onChange={(date, dateString) => handleFilterChange(dateString, "month")
+            
+            
+          }
           />
         </Form.Item>
       </div>
     </div>
-
         <div className="col-sm-6 col-md-3">
-      <div className="">
+      <div className="form-group">
         <Form.Item
           name="year"
           className="custom-border"
@@ -821,7 +727,9 @@ const AttendanceEmployee = () => {
               width: '100%',
             }}
             placeholder="Select Year"
+            allowClear={false}
             size="large"
+            onChange={(date, dateString) => handleFilterChange(dateString, "year")}
           />
         </Form.Item>
       </div>
@@ -831,14 +739,16 @@ const AttendanceEmployee = () => {
           <Button
             type="primary"
             htmlType="submit"
-            className="btn btn-success btn-block w-50"
+            onClick={handleSearch}
+            className="btn-success btn-block w-100"
           >
             Search
           </Button>
           <Button
-            type="default"
+            htmlType="submit"
+            type="primary"
             onClick={handleReset}
-            className="btn btn-secondary btn-block w-50"
+            className="btn-secondary btn-block w-100"
           >
             Reset
           </Button>
@@ -852,50 +762,37 @@ const AttendanceEmployee = () => {
       
         <div className="table-responsive">
           
-          <table className="table table-striped custom-table mb-0">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Date </th>
-                <th>Check In</th>
-                <th>Check Out</th>
-                <th>Status</th>
-                <th>Production</th>
-                
-                <th>Overtime</th>
-              </tr>
-            </thead>
-            <tbody>
-              {/* Iterate over filteredAttendance and display rows */}
-              {fetchattend.map((record, index) => (
-                <tr key={index}>
-                  <td>{index + 1}</td>
-                  <td>{record.attendanceDate}</td>
-                  <td>{moment(record.checkInTime, "HH:mm").format("h:mm A")}</td>
-                  <td>
-                    {record.checkOutTime
-                      ? moment(record.checkOutTime, "HH:mm").format("h:mm A")
-                      : "--"}
-                  </td>
-                  <td>{record.status}</td>
-                  <td>{formatHoursMinutes(record.hoursWorked)}</td>
-                  <td>{record.overTime?
-                  formatHoursMinutes(record.overTime):"None"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {loading && (
-            <tr>
-              <td colSpan="6">Loading...</td>
-            </tr>
-          )}
+        <Table
+  dataSource={fetchattend}
+  columns={columns}
+  locale={{
+    emptyText: isLoading ? (
+      <Spin size="large" tip="Loading..." />
+    ) : (
+      "No data"
+    ),
+  }}
+  bordered
+  pagination={{
+    current: pagination.current,
+    pageSize: pagination.pageSize,
+    total: pagination.total,
+    showTotal: (total, range) =>
+      `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+    pageSizeOptions: ["10", "20", "30", "40"], // Options to change page size
+    showSizeChanger: true, // Show the page size changer
+    onChange: (page, pageSize) => {
+      setPagination({
+        ...pagination,
+        current: page,
+        pageSize: pageSize,
+      });
+    },
+    itemRender:itemRender
+  }}
 
-          {reachedEnd && (
-            <tr>
-              <td colSpan="6">Reached end of records</td>
-            </tr>
-          )}
+/>
+
         </div>
         
       </div>
