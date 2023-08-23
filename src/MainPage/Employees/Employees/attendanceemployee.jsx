@@ -13,7 +13,6 @@ import { ItemRender } from "antd/lib/upload/interface";
 import { Table, Form, Input, DatePicker, Select, Button, Spin } from "antd";
 import { itemRender } from "../../paginationfunction";
 
-
 const AttendanceEmployee = () => {
   const [form] = Form.useForm();
   const [isLoading, setIsLoading] = useState(false);
@@ -49,11 +48,15 @@ const AttendanceEmployee = () => {
 
   const [attendanceData, setAttendanceData] = useState(null);
 
-  // ... (other useEffects)
+  
+  const moment = require("moment");
+  let nowdate = new Date(Date.now());
+
+  const firstDate = moment(nowdate).format("YYYY-MM-DD");
 
   useEffect(() => {
     // Fetch user's attendance data
-    apiServices("GET", 'attendance/', null, user_state)
+    apiServices("GET", `attendance/?attendanceDate=${firstDate}`, null, user_state)
       .then((res) => {
         if (res.data.success === true) {
           const attendanceData = res.data.Attendance.docs;
@@ -63,11 +66,20 @@ const AttendanceEmployee = () => {
             const firstAttendanceRecord = attendanceData[0];
   
             console.log("First Attendance Record:", firstAttendanceRecord);
+            console.log(firstAttendanceRecord.checkInTime)
   
             if (firstAttendanceRecord.checkOutTime) {
               //setIsCheckedOut(true);
-              setIsCheckedIn(false);
+              setCheckout({
+                ...checkOut,
+                checkOutTime: firstAttendanceRecord?.checkOutTime,
+                hoursWorked: firstAttendanceRecord?.hoursWorked,
+                overTime: firstAttendanceRecord?.overTime,
+              });
+              setIsCheckedOut(true);
               //setStatusText("Not yet checked in");
+              setStatusText(`${moment(firstAttendanceRecord.attendanceDate).format("ddd, Do MMM YYYY")} 
+                                      ${moment(firstAttendanceRecord.checkOutTime, "HH:mm").format("h:mm A")}`);
             } else {
               setIsCheckedIn(true);
               setIsCheckedOut(false);
@@ -254,9 +266,10 @@ const AttendanceEmployee = () => {
     
   };
 
-  const currentDate = moment().format("DD MMM YYYY");
 
+  const currentDate = moment(nowdate).format("DD MMM YYYY")
   
+
   const formatHoursMinutes = (timeString) => {
     if (!timeString) return "None";
   
@@ -433,7 +446,7 @@ const AttendanceEmployee = () => {
 
         <div className="page-wrapper">
           <Helmet>
-            <title>Attendance - HRMS Admin Template</title>
+            <title>Attendance - DaftarPro</title>
             <meta name="description" content="Login page" />
           </Helmet>
           <div className="content container-fluid">
@@ -456,14 +469,14 @@ const AttendanceEmployee = () => {
               <div className="col-md-4">
                 <div className="card punch-status">
                   <div className="card-body">
-                    <h5 className="card-title">
-                      Timesheet{" "}
-                      <small className="text-muted">{currentDate}</small>
-                    </h5>
+                  <h5 className="card-title d-flex gap-1">
+                      Timesheet
+                      <h5 className="text-muted" style={{fontSize: '20px'}}>{currentDate}</h5>
+                      </h5>
 
                     <div className="punch-det">
                       <h6><label>{isCheckedOut ? "Checked out at" : "Check in at"}</label></h6>
-                      <p>{statusText}</p>
+                      <p><label>{statusText}</label></p>
                     </div>
                   
 
@@ -471,7 +484,7 @@ const AttendanceEmployee = () => {
                       <div className="punch-hours">
                         {/* <span>{isCheckedOut ? formatHoursMinutes(checkOut.hoursWorked) : "--"}</span> */}
                         {/* <span>{isCheckedOut ? formatHoursMinutes(parseFloat(checkOut.hoursWorked) * 60) : "--"}</span> */}
-                        <span>{isCheckedOut ? formatHoursMinutes(checkOut.hoursWorked) : "--"}</span>
+                        <label>{isCheckedOut ? formatHoursMinutes(checkOut.hoursWorked) : "--"}</label>
                       </div>
                     </div>
                     
@@ -481,15 +494,12 @@ const AttendanceEmployee = () => {
                       <button
                         type="button"
                         className={`btn btn-${
-                          isCheckedIn || (attendanceData && attendanceData.checkOutTime)
-                            ? "danger"
-                            : "primary"
+                          isCheckedOut ? "success" : isCheckedIn ? "danger" : "primary"
                         } punch-btn`}
                         onClick={isCheckedIn ? handleCheckOut : handleCheckIn}
+                        disabled={isCheckedOut}
                       >
-                        {isCheckedIn || (attendanceData && attendanceData.checkOutTime)
-                          ? "Check Out"
-                          : "Check In"}
+                        {isCheckedOut ? "Marked" : isCheckedIn ? "Check Out" : "Check In"}
                       </button>
                     </div>
 
@@ -553,7 +563,7 @@ const AttendanceEmployee = () => {
                       </div>
                       <div className="stats-info">
                         <p>
-                          This Week{" "}
+                          <label>This Week{" "}</label>
                           <strong>
                             28 <small>/ 40 hrs</small>
                           </strong>
@@ -571,7 +581,7 @@ const AttendanceEmployee = () => {
                       </div>
                       <div className="stats-info">
                         <p>
-                          This Month{" "}
+                        <label>This Month{" "}</label>
                           <strong>
                             90 <small>/ 160 hrs</small>
                           </strong>
@@ -630,45 +640,46 @@ const AttendanceEmployee = () => {
                     <h5 className="card-title">Today Activity</h5>
                     <ul className="res-activity-list">
                       <li>
-                        <p className="mb-0">Check In at</p>
+                        <p className="mb-0"><label>Check In at</label></p>
                         <p className="res-activity-time">
-                          <i className="fa fa-clock-o" />
+                          <i className="fa fa-clock-o" /><label>
                           10.00 AM.
+                          </label>
                         </p>
                       </li>
                       <li>
-                        <p className="mb-0">Check Out at</p>
+                      <p className="mb-0"><label>Check Out at</label></p>
                         <p className="res-activity-time">
-                          <i className="fa fa-clock-o" />
-                          11.00 AM.
+                          <i className="fa fa-clock-o" /><label>11.00 AM.</label>
+                          
                         </p>
                       </li>
                       <li>
-                        <p className="mb-0">Check In at</p>
+                      <p className="mb-0"><label>Check In at</label></p>
                         <p className="res-activity-time">
                           <i className="fa fa-clock-o" />
-                          11.15 AM.
+                          <label >11.15 AM.</label>
                         </p>
                       </li>
                       <li>
-                        <p className="mb-0">Check Out at</p>
+                      <p className="mb-0"><label>Check Out at</label></p>
                         <p className="res-activity-time">
                           <i className="fa fa-clock-o" />
-                          1.30 PM.
+                          <label >1.30 PM.</label>
                         </p>
                       </li>
                       <li>
-                        <p className="mb-0">Check In at</p>
+                      <p className="mb-0"><label>Check In at</label></p>
                         <p className="res-activity-time">
                           <i className="fa fa-clock-o" />
-                          2.00 PM.
+                          <label htmlFor="">2.00 PM.</label>
                         </p>
                       </li>
                       <li>
-                        <p className="mb-0">Check Out at</p>
+                      <p className="mb-0"><label>Check Out at</label></p>
                         <p className="res-activity-time">
                           <i className="fa fa-clock-o" />
-                          7.30 PM.
+                          <label >7.30 PM.</label>
                         </p>
                       </li>
                     </ul>
@@ -679,7 +690,7 @@ const AttendanceEmployee = () => {
         
             {/* Search Filter */}
             
-<Form form={form}>
+    <Form form={form}>
       <div className="row filter-row">
       <div className="col-sm-6 col-md-3">  
       <div className="form-group">
