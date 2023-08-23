@@ -8,6 +8,7 @@ import { useSelector } from 'react-redux';
 import { apiServices } from '../../../../Services/apiServices';
 import { apiUploadToS3 } from "../../../../Services/uploadImage";
 import AccordianCheckBox from '../../../../Components/Accordian';
+import PermissionsTable from '../../../../Components/PermissionsTable';
 import ImgCrop from 'antd-img-crop';
 import { LoadingOutlined } from '@ant-design/icons';
 
@@ -132,6 +133,7 @@ const [image, setImage] = useState('')
         if (res?.data?.success === true) {
           setPermissions(res?.data?.permissions?.permissions);
           setRolePermLoader(false);
+          console.log(res?.data?.permissions?.permissions);
         }
       })
       .catch((err) => {
@@ -1186,7 +1188,7 @@ const getTaxSlab = () => {
                       }}
                     />
                   ) : permissions ? (
-                    <AccordianCheckBox
+                    <PermissionsTable
                       permissions={permissions}
                       disabled={true}
                     />
