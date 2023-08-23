@@ -8,6 +8,8 @@ import moment from "moment";
 import { useSelector } from "react-redux";
 import { apiServices } from "../../../Services/apiServices";
 import { message } from "antd";
+// import InfiniteScroll from "react-infinite-scroll-component";
+import { ItemRender } from "antd/lib/upload/interface";
 import { Table, Form, Input, DatePicker, Select, Button, Spin } from "antd";
 import { itemRender } from "../../paginationfunction";
 
@@ -471,7 +473,7 @@ const AttendanceEmployee = () => {
                       Timesheet
                       <h5 className="text-muted" style={{fontSize: '20px'}}>{currentDate}</h5>
                       </h5>
-                      
+
                     <div className="punch-det">
                       <h6><label>{isCheckedOut ? "Checked out at" : "Check in at"}</label></h6>
                       <p><label>{statusText}</label></p>
