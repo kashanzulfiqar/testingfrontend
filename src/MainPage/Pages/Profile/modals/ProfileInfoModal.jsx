@@ -374,7 +374,10 @@ const getTaxSlab = () => {
                                         beforeCrop={beforeUpload}
                                     >
                                         <Upload
-                                            action={(image) => onImageUpload(image)}
+                                            // action={(image) => onImageUpload(image)}
+                                            customRequest={({ file, onSuccess, onError }) => {
+                                              onImageUpload(file)
+                                            }}
                                             fileList={null}
                                             maxCount={1}
                                         >
