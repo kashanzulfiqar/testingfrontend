@@ -7174,6 +7174,10 @@ textarea.form-control {
 
 /* ................. custom css styling ................ */
 
+.customCellWidth tr >th:nth-child(1){
+  min-width: 190px !important;
+}
+
 /* //antd crop modal */
 .CropImageModalStyle .ant-modal-close-icon > svg{
   display: none;
