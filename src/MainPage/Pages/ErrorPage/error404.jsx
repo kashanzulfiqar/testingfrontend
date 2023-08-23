@@ -25,7 +25,7 @@ const Error404 = () => {
             </div>
          <div className='main-wrapper'>
             <Helmet>
-                <title>Error 404 - DaftarPro</title>
+                <title>DaftarPro</title>
                 <meta name="description" content="Login page"/>					
             </Helmet>
          <div className="error-box">

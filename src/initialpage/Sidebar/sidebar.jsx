@@ -763,7 +763,8 @@ const Sidebar = (props) => {
                   }
                 </li>
                 <li className="submenu">
-                  <Link to="/app/ui-interface/tables/basic" className={isSideMenu == "tables" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "tables" ? "" : "tables")}><i className="la la-table" /> <span> Tables </span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></Link>
+                  <a href="javascript:" className={isSideMenu == "tables" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "tables" ? "" : "tables")}><i className="la la-table" /> <span> Tables </span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
+                  {/* <Link to="/app/ui-interface/tables/basic" className={isSideMenu == "tables" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "tables" ? "" : "tables")}><i className="la la-table" /> <span> Tables </span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></Link> */}
                   {isSideMenu == "tables" ?
                     <ul>
                       <li><Link className={pathname.includes('tables/basic') ? "active" : ""} to="/app/ui-interface/tables/basic">Basic Tables </Link></li>
@@ -776,10 +777,11 @@ const Sidebar = (props) => {
                   <span>Extras</span>
                 </li>
                 <li>
-                  <a href="javascript:"><i className="la la-file-text" /> <span>Documentation</span> <span className="badge badge-primary ms-auto">{beta}</span></a>
+                  {/* self written route */}
+                  <Link to='/documentation'><i className="la la-file-text" /> <span>Documentation</span> <span className="badge badge-primary ms-auto">{beta}</span></Link>
                 </li>
                 <li>
-                  <a href=""><i className="la la-info" /> <span>Change Log</span> <span className="badge badge-primary ms-auto">{beta}</span></a>
+                  <Link to="/change-log"><i className="la la-info" /> <span>Change Log</span> <span className="badge badge-primary ms-auto">{beta}</span></Link>
                 </li>
                 <li className="submenu">
                   <a href="javascript:" className={isSideMenu == "multi Level" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "multi Level" ? "" : "multi Level")}><i className="la la-share-alt" /> <span>Multi Level</span> <span className="badge badge-primary ms-auto" style={{marginRight: '15px'}}>{beta}</span><span className="menu-arrow" /></a>
@@ -789,24 +791,24 @@ const Sidebar = (props) => {
                         <a href="javascript:" className={level2Menu == "level 1" ? "subdrop" : ""} onClick={() => toggleLvelTwo(level2Menu == "level 1" ? "" : "level 1")}> <span>Level 1</span> <span className="menu-arrow" /></a>
                         {level2Menu == "level 1" ?
                           <ul>
-                            <li><a href="javascript:" ><span>Level 2</span></a></li>
+                            <li><Link to="/level-2"><span>Level 2</span></Link></li>
                             <li className="submenu">
                               <a href="javascript:" className={level3Menu == "level 2" ? "subdrop" : ""} onClick={() => toggleLevelThree(level3Menu == "level 2" ? "" : "level 2")}> <span> Level 2</span> <span className="menu-arrow" /></a>
                               {level3Menu == "level 2" ?
                                 <ul>
-                                  <li><a href="">Level 3</a></li>
-                                  <li><a href="">Level 3</a></li>
+                                  <li><Link to="/level-3">Level 3</Link></li>
+                                  <li><Link to="/level-3">Level 3</Link></li>
                                 </ul>
                                 : ""
                               }
                             </li>
-                            <li><a href=""> <span>Level 2</span></a></li>
+                            <li><Link to="/level-2"> <span>Level 2</span></Link></li>
                           </ul>
                           : ""
                         }
                       </li>
                       <li>
-                        <a href=""> <span>Level 1</span></a>
+                        <Link to="/level-1"> <span>Level 1</span></Link>
                       </li>
                     </ul>
                     : ""
