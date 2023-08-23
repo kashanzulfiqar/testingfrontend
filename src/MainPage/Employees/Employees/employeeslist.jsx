@@ -74,7 +74,7 @@ const Employeeslist = () => {
 
   const getEmployees = (values, current_page, page_size) => {
     setTableLoader(true);
-    apiServices("GET", `user/view-user?deleted=false${values === '' ? '' : values?.employeeName ? `&employeeName=${values?.employeeName}` : filterValues?.employeeName ? `&employeeName=${filterValues?.employeeName}` : ''}${values === '' ? '' : values?.employeeId ? `&employeeId=${values?.employeeId}` : filterValues?.employeeId ? `&employeeId=${filterValues?.employeeId}` : ''}${values === '' ? '' : values?.designation ? `&designation=${values?.designation}` : filterValues?.designation ? `&designation=${filterValues?.designation}` : ''}&page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}`, null, user_state)
+    apiServices("GET", `user/view-user?deleted=false${values === '' ? '' : values?.employeeName === '' ? '' : values?.employeeName ? `&employeeName=${values?.employeeName}` : filterValues?.employeeName ? `&employeeName=${filterValues?.employeeName}` : ''}${values === '' ? '' : values?.employeeId === '' ? '' : values?.employeeId ? `&employeeId=${values?.employeeId}` : filterValues?.employeeId ? `&employeeId=${filterValues?.employeeId}` : ''}${values === '' ? '' : values?.designation === '' ? '' : values?.designation ? `&designation=${values?.designation}` : filterValues?.designation ? `&designation=${filterValues?.designation}` : ''}&page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}`, null, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
           setUsers(res?.data?.users?.docs);
@@ -489,7 +489,7 @@ const Employeeslist = () => {
                 <div className="col-sm-6 col-md-3">  
                   <div className="form-group">
                   <Form.Item
-                      name="id"
+                      name="employeeId"
                       className="custom-border"
                     >
                     <Input
