@@ -258,10 +258,27 @@ const getTaxSlab = () => {
   const allowedFileTypes = ['image/png', 'image/jpeg', 'image/jpg'];
   const beforeUpload = (file) => {
     const isFileTypeAllowed = allowedFileTypes.includes(file.type);
+
     if (!isFileTypeAllowed) {
       message.error('You can only upload PNG, JPG, or JPEG files!');
+      return false;
     }
-    return isFileTypeAllowed;
+
+    const maxSizeInBytes = 5 * 1024 * 1024; // 5MB
+    const isSizeAllowed = file.size <= maxSizeInBytes;
+
+    if (!isSizeAllowed) {
+      message.error('File size is too large. Maximum allowed size is 5MB.');
+      return false;
+    }
+
+    return true;
+
+    // const isFileTypeAllowed = allowedFileTypes.includes(file.type);
+    // if (!isFileTypeAllowed) {
+    //   message.error('You can only upload PNG, JPG, or JPEG files!');
+    // }
+    // return isFileTypeAllowed;
   };
 
   const onImageUpload = (imagedata) => {
@@ -302,7 +319,7 @@ const getTaxSlab = () => {
             open={open?.isprofileInfoOpen || open?.isEditOpen || open?.isAddOpen}
             onClose={() => { handleClose(); setPhoneLengthError(false); setEmergValue(null); form.resetFields(); }}
             aria-labelledby="modal-modal-title"
-            // className="modal custom-modal fade"
+            className="modalScroll"
             aria-describedby="modal-modal-description"
             disableRestoreFocus
             BackdropProps={{
