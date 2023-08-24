@@ -337,7 +337,7 @@ const Employeeslist = () => {
               title: 'Reports To',
               dataIndex: 'reportsTo',
               render: (text, record) => (            
-                <>{repInfo[text] || ''}</>
+                <>{repInfo[text] || 'None'}</>
             ),
             },
             // {
