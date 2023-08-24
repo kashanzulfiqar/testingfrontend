@@ -1697,7 +1697,7 @@ const antIcon = (
         open={open?.isEduInfoOpen}
         onClose={handleClose}
         aria-labelledby="modal-modal-title"
-        // className="modal custom-modal fade"
+        className="modalScroll"
         aria-describedby="modal-modal-description"
         disableRestoreFocus
         BackdropProps={{
@@ -1873,11 +1873,12 @@ const antIcon = (
         open={open?.isExpInfoOpen}
         onClose={handleClose}
         aria-labelledby="modal-modal-title"
-        // className="modal custom-modal fade"
+        className="modalScroll"
         aria-describedby="modal-modal-description"
         disableRestoreFocus
         BackdropProps={{
-          style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
+          style: { backgroundColor: "rgb(0 0 0 / 87%)",}, // Set the backdrop color here
+
         }}
         sx={{
           overflowY: "scroll",

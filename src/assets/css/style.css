@@ -7174,6 +7174,9 @@ textarea.form-control {
 
 /* ................. custom css styling ................ */
 
+.resetButton:hover{
+  background-color: #898989 !important;
+}
 .customCellWidth tr >th:nth-child(1){
   min-width: 190px !important;
 }
@@ -7252,7 +7255,9 @@ textarea.form-control {
     max-width: 560px;
 }
 }
-
+.modalScroll >div:nth-child(1){
+  margin-right: 17px !important;
+}
 @media (max-width: 500px) {
   .account-box{
     padding-inline: 0px !important;
@@ -7263,6 +7268,9 @@ textarea.form-control {
 }
 .ant-steps{
   padding-inline: 0px !important;
+}
+.modalScroll >div:nth-child(1){
+  margin-right: 0px !important;
 }
 }
 
