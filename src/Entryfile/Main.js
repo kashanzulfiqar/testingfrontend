@@ -33,7 +33,7 @@ import "../assets/plugins/bootstrap-tagsinput/bootstrap-tagsinput.css";
 import "../assets/css/bootstrap-datetimepicker.min.css";
 import '../assets/css/style.css';
 // window.Popper = require("popper.js").default;
-import { configureStore } from '@reduxjs/toolkit';
+import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import { Provider } from 'react-redux';
 // import userReducer from "./features/users"
 import userReducer from './features/users'
@@ -48,6 +48,7 @@ import {  persistStore,
           PURGE,
           REGISTER, } from 'redux-persist';
 import { getDefaultMiddleware } from '@reduxjs/toolkit';
+import permissionsSlice from '../Redux/Reducer/permissions/permissionSlice';
 
 
 // const store =configureStore({
@@ -60,18 +61,22 @@ const persistConfig = {
    key: 'root',
    storage
  };
+
+ const rootReducer = combineReducers({
+  user: userReducer,
+  permissionsSlice: permissionsSlice,
+});
  
- const persistedReducer = persistReducer(persistConfig, userReducer);
+ const persistedReducer = persistReducer(persistConfig, rootReducer);
  
  const store = configureStore({
-   reducer: {
-     user: persistedReducer,
-     middleware: getDefaultMiddleware({
-      serializableCheck: {
-        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
-      }
-    }),
-   }
+   reducer: persistedReducer,
+   middleware: (getDefaultMiddleware) =>
+   getDefaultMiddleware({
+     serializableCheck: {
+       ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+     },
+   }),
  });
  
  const persistor = persistStore(store);

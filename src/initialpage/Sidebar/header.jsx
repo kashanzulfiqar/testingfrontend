@@ -397,7 +397,7 @@ const Header = (props) => {
             <span className="user-img me-1"><img src={location?.state?.updated_user?.imageUrl ? location?.state?.updated_user?.imageUrl : updated_user?.imageUrl ? updated_user?.imageUrl : imageURL ? imageURL : user_icon} alt="profile" style={{width: '30px', height: '30px'}} />
             {/* <span className="user-img me-1"><img src={Avatar_21} alt="" /> */}
               <span className="status online" /></span>
-            <span>{location?.state?.updated_user?.fullName ? ` ${location?.state?.updated_user?.fullName} ` : updated_user?.fullName ? ` ${updated_user?.fullName} ` : ProfileName ? ` ${ProfileName} ` : "Admin"}</span>
+            <label style={{marginInline: '5px', cursor: 'pointer'}}>{location?.state?.updated_user?.fullName ? ` ${location?.state?.updated_user?.fullName} ` : updated_user?.fullName ? ` ${updated_user?.fullName} ` : ProfileName ? ` ${ProfileName} ` : "Admin"}</label>
           </a>
           <div className="dropdown-menu dropdown-menu-end" style={{marginLeft: '50px !important'}}>
             <Link className="dropdown-item" to="#">My Profile</Link>

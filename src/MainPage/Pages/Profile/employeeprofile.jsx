@@ -25,7 +25,8 @@ const EmployeeProfile = () => {
   const nav = useNavigate();
   const user_data = location?.state?.user_data;
   const allDataLocal = JSON.parse(localStorage.getItem("allDataLocal"));
-
+  
+  const permissions = useSelector((state) => state?.permissionsSlice?.data);
   const { loginvalue } = useSelector((state) => state.user);
   const user_state = useSelector((state) => state.user.loginvalue);
   const role = user_state?.user?.role
@@ -67,9 +68,13 @@ const EmployeeProfile = () => {
   });
   
   useEffect(() => {
-    getReportsTo()
-    getDepartment();
-    getDesignation();
+    if(permissions?.viewAllUsers) {
+      getReportsTo()
+      getDepartment();
+      getDesignation();
+    }else{
+      nav('/restricted', { state: { unAuthorize: true}})
+    }
   }, [])
 
   const getReportsTo = () => {
@@ -449,7 +454,7 @@ const antIcon = (
                   <div className="profile-view">
                     <div className="profile-img-wrap">
                       <div className="profile-img">
-                        <a href="javascript:void(0)"><img alt="" src={allData?.imageUrl || user_icon} /></a>
+                        <a href="javascript:void(0)" style={{cursor: 'default'}}><img alt="" src={allData?.imageUrl || user_icon} /></a>
                       </div>
                     </div>
                     <div className="profile-basic">
@@ -469,11 +474,11 @@ const antIcon = (
                           <ul className="personal-info">
                             <li>
                               <div className="title">Phone:</div>
-                              <div className="text"><a href="javascript:void(0)">{allData?.phoneNo}</a></div>
+                              <div className="text"><a href="javascript:void(0)" style={{cursor: 'default'}}>{allData?.phoneNo}</a></div>
                             </li>
                             <li>
                               <div className="title">Email:</div>
-                              <div className="text"><a href="javascript:void(0)">{allData?.email}</a></div>
+                              <div className="text"><a href="javascript:void(0)" style={{cursor: 'default'}}>{allData?.email}</a></div>
                             </li>
                             <li>
                               <div className="title">Birthday:</div>
@@ -505,7 +510,10 @@ const antIcon = (
                         </div>
                       </div>
                     </div>
-                    <div className="pro-edit"><a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: true, data: '' })}><i className="fa fa-pencil" /></a></div>
+                    {
+                      permissions?.updateUser &&
+                      <div className="pro-edit"><a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: true, data: '' })}><i className="fa fa-pencil" /></a></div>
+                    }
                   </div>
                 </div>
               </div>
@@ -530,7 +538,12 @@ const antIcon = (
                 <div className="col-md-6 d-flex">
                   <div className="card profile-box flex-fill">
                     <div className="card-body">
-                      <h3 className="card-title">Bank Information <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: false, isBankInfoOpen: true , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a></h3>
+                      <h3 className="card-title">Bank Information
+                      {
+                        permissions?.updateUser &&
+                        <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: false, isBankInfoOpen: true , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a>
+                      }
+                      </h3>
                       { allData?.bankName ?
                       <ul className="personal-info">
                             <li>
@@ -554,7 +567,12 @@ const antIcon = (
                 <div className="col-md-6 d-flex">
                   <div className="card profile-box flex-fill">
                     <div className="card-body">
-                      <h3 className="card-title">Emergency Contact <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: true, isprofileInfoOpen: false, data: allData?.emergencyContacts?.length > 0 ? allData.emergencyContacts[0] : {} })}><i className="fa fa-pencil" /></a></h3>
+                      <h3 className="card-title">Emergency Contact
+                      {
+                        permissions?.updateUser &&
+                        <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: true, isprofileInfoOpen: false, data: allData?.emergencyContacts?.length > 0 ? allData.emergencyContacts[0] : {} })}><i className="fa fa-pencil" /></a>
+                      }
+                      </h3>
                       {/* <h5 className="section-title">Primary</h5> */}
                       { allData?.emergencyContacts?.length > 0 ?
                         <ul className="personal-info">
@@ -605,7 +623,12 @@ const antIcon = (
                 <div className="col-md-6 d-flex">
                   <div className="card profile-box flex-fill">
                     <div className="card-body">
-                      <h3 className="card-title">Education Informations <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: true, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a></h3>
+                      <h3 className="card-title">Education Informations
+                      {
+                        permissions?.updateUser &&
+                        <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: true, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a>
+                      }
+                      </h3>
                       <div className="experience-box">
                         { allData?.education?.length > 0 ?
                         <ul className="experience-list">
@@ -635,7 +658,12 @@ const antIcon = (
                 <div className="col-md-6 d-flex">
                   <div className="card profile-box flex-fill">
                     <div className="card-body">
-                      <h3 className="card-title">Experience <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: true, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a></h3>
+                      <h3 className="card-title">Experience
+                      {
+                        permissions?.updateUser &&
+                        <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: true, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a>
+                      }
+                      </h3>
                       <div className="experience-box">
                         {
                           allData?.experience?.length > 0 ?

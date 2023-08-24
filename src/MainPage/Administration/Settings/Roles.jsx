@@ -10,6 +10,7 @@ import AccordianCheckBox from "../../../Components/Accordian";
 import { apiServices } from "../../../Services/apiServices";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { LoadingOutlined } from "@ant-design/icons";
+import PermissionsTable from "../../../Components/PermissionsTable";
 
 const Roles = () => {
   const { Option } = Select;
@@ -748,10 +749,14 @@ const Roles = () => {
                   name="control-hooks"
                   onFinish={() => onAddFinish(openPermissions?.data)}
                 >
-                  <AccordianCheckBox
+                  <PermissionsTable
                     permissions={permissions}
                     setPermissions={setPermissions}
                   />
+                  {/* <AccordianCheckBox
+                    permissions={permissions}
+                    setPermissions={setPermissions}
+                  /> */}
 
                   <div className="submit-section">
                     <Form.Item>
@@ -863,10 +868,14 @@ const Roles = () => {
                       }}
                     />
                   ) : (
-                    <AccordianCheckBox
+                    <PermissionsTable
                       permissions={permissions}
                       setPermissions={setPermissions}
                     />
+                    // <AccordianCheckBox
+                    //   permissions={permissions}
+                    //   setPermissions={setPermissions}
+                    // />
                   )}
                 </div>
 

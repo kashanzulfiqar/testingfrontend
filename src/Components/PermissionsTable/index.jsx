@@ -7,7 +7,7 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import { Table } from 'antd';
+import { Table, Tooltip } from 'antd';
 
 const PermissionsTable = ({ permissions, setPermissions, disabled }) => {
 
@@ -89,10 +89,17 @@ const PermissionsTable = ({ permissions, setPermissions, disabled }) => {
       title: 'Create',
       dataIndex: 'employeeId',
       render: (text, record) => {
-        const isChecked = record?.subPermissions?.find(permission => permission.title === "Add Employee" || permission.title === "Manage Self Request" || permission.title === "Manage Company")?.checked;
+        const sub = record?.subPermissions?.find(permission => permission.title === "Add Employee");
+        const isChecked = record?.subPermissions?.find(permission => permission.title === "Add Employee")?.checked;
         return(            
             <>
-                <Checkbox checked={isChecked || false} disabled />
+              {
+                record?.subPermissions?.find(permission => permission.title === "Add Employee") ?
+                  <Checkbox checked={isChecked || false} onChange={() => handleSingleCheckbox(record, sub)} disabled={disabled} /> :
+                  <Tooltip title="Permission Not Available For This Module">
+                    <span><Checkbox indeterminate={true} disabled /></span>
+                  </Tooltip>
+              }
             </>
         )},
     },
@@ -100,10 +107,17 @@ const PermissionsTable = ({ permissions, setPermissions, disabled }) => {
       title: 'View',
       dataIndex: 'email',
       render: (text, record) => {
-        const isChecked = record?.subPermissions?.find(permission => permission.title === "View Employees" || permission.title === "View Self Requests" || permission.title === "Manage Company")?.checked;
+        const sub = record?.subPermissions?.find(permission => permission.title === "View Employees" || permission.title === "View Self Requests");
+        const isChecked = record?.subPermissions?.find(permission => permission.title === "View Employees" || permission.title === "View Self Requests")?.checked;
         return(            
             <>
-                <Checkbox checked={isChecked || false} disabled />
+              {
+                record?.subPermissions?.find(permission => permission.title === "View Employees" || permission.title === "View Self Requests") ?
+                  <Checkbox checked={isChecked || false} onChange={() => handleSingleCheckbox(record, sub)} disabled={disabled} /> :
+                  <Tooltip title="Permission Not Available For This Module">
+                    <span><Checkbox indeterminate={true} disabled /></span>
+                  </Tooltip>
+              }
             </>
         )},
     },
@@ -111,10 +125,17 @@ const PermissionsTable = ({ permissions, setPermissions, disabled }) => {
       title: 'Update',
       dataIndex: 'joiningDate',
       render: (text, record) => {
-        const isChecked = record?.subPermissions?.find(permission => permission.title === "Edit Employee" || permission.title === "Manage Self Request" || permission.title === "Manage Company")?.checked;
+        const sub = record?.subPermissions?.find(permission => permission.title === "Edit Employee");
+        const isChecked = record?.subPermissions?.find(permission => permission.title === "Edit Employee")?.checked;
         return(            
             <>
-                <Checkbox checked={isChecked || false} disabled />
+              {
+                record?.subPermissions?.find(permission => permission.title === "Edit Employee") ?
+                  <Checkbox checked={isChecked || false} onChange={() => handleSingleCheckbox(record, sub)} disabled={disabled} /> :
+                  <Tooltip title="Permission Not Available For This Module">
+                    <span><Checkbox indeterminate={true} disabled /></span>
+                  </Tooltip>
+              }
             </>
         )},
     },
@@ -122,10 +143,17 @@ const PermissionsTable = ({ permissions, setPermissions, disabled }) => {
       title: 'Delete',
       dataIndex: 'roleId',
       render: (text, record) => {
-        const isChecked = record?.subPermissions?.find(permission => permission.title === "Enable/Disable Employee" || permission.title === "Manage Self Request" || permission.title === "Manage Company")?.checked;
+        const sub = record?.subPermissions?.find(permission => permission.title === "Enable/Disable Employee");
+        const isChecked = record?.subPermissions?.find(permission => permission.title === "Enable/Disable Employee")?.checked;
         return(            
             <>
-                <Checkbox checked={isChecked || false} disabled />
+              {
+                record?.subPermissions?.find(permission => permission.title === "Enable/Disable Employee") ?
+                  <Checkbox checked={isChecked || false} onChange={() => handleSingleCheckbox(record, sub)} disabled={disabled} /> :
+                  <Tooltip title="Permission Not Available For This Module">
+                    <span><Checkbox indeterminate={true} disabled /></span>
+                  </Tooltip>
+              }
             </>
         )},
     },
@@ -133,21 +161,71 @@ const PermissionsTable = ({ permissions, setPermissions, disabled }) => {
         title: 'Reports To Employee',
         dataIndex: 'roleId',
         render: (text, record) => {
+          const sub = record?.subPermissions?.find(permission => permission.title === "Reports to Employee");
           const isChecked = record?.subPermissions?.find(permission => permission.title === "Reports to Employee")?.checked;
           return(            
               <>
-                  <Checkbox checked={isChecked || false} disabled />
+                {
+                  record?.subPermissions?.find(permission => permission.title === "Reports to Employee") ?
+                    <Checkbox checked={isChecked || false} onChange={() => handleSingleCheckbox(record, sub)} disabled={disabled} /> :
+                    <Tooltip title="Permission Not Available For This Module">
+                      <span><Checkbox indeterminate={true} disabled /></span>
+                    </Tooltip>
+                }
               </>
           )},
       },
     {
+      title: 'Manage Self Request',
+      dataIndex: 'roleId',
+      render: (text, record) => {
+        const sub = record?.subPermissions?.find(permission => permission.title === "Manage Self Request");
+        const isChecked = record?.subPermissions?.find(permission => permission.title === "Manage Self Request")?.checked;
+        return(            
+            <>
+            {
+              record?.subPermissions?.find(permission => permission.title === "Manage Self Request") ?
+                <Checkbox checked={isChecked || false} onChange={() => handleSingleCheckbox(record, sub)} disabled={disabled} /> :
+                <Tooltip title="Permission Not Available For This Module">
+                  <span><Checkbox indeterminate={true} disabled /></span>
+                </Tooltip>
+            }
+            </>
+        )},
+    },
+    {
+      title: 'Manage Company',
+      dataIndex: 'roleId',
+      render: (text, record) => {
+        const sub = record?.subPermissions?.find(permission => permission.title === "Manage Company");
+        const isChecked = record?.subPermissions?.find(permission => permission.title === "Manage Company")?.checked;
+        return(            
+            <>
+            {
+              record?.subPermissions?.find(permission => permission.title === "Manage Company") ?
+                <Checkbox checked={isChecked || false} onChange={() => handleSingleCheckbox(record, sub)} disabled={disabled} /> :
+                <Tooltip title="Permission Not Available For This Module">
+                  <span><Checkbox indeterminate={true} disabled /></span>
+                </Tooltip>
+            }
+            </>
+        )},
+    },
+    {
       title: 'View Employees Requests',
       dataIndex: 'roleId',
       render: (text, record) => {
+        const sub = record?.subPermissions?.find(permission => permission.title === "View Employees Requests");
         const isChecked = record?.subPermissions?.find(permission => permission.title === "View Employees Requests")?.checked;
         return(            
             <>
-                <Checkbox checked={isChecked || false} disabled />
+            {
+              record?.subPermissions?.find(permission => permission.title === "View Employees Requests") ?
+                <Checkbox checked={isChecked || false} onChange={() => handleSingleCheckbox(record, sub)} disabled={disabled} /> :
+                <Tooltip title="Permission Not Available For This Module">
+                  <span><Checkbox indeterminate={true} disabled /></span>
+                </Tooltip>
+            }
             </>
         )},
     },
@@ -155,10 +233,17 @@ const PermissionsTable = ({ permissions, setPermissions, disabled }) => {
       title: 'Manage Request Approvals',
       dataIndex: 'roleId',
       render: (text, record) => {
+        const sub = record?.subPermissions?.find(permission => permission.title === "Manage Request Approvals");
         const isChecked = record?.subPermissions?.find(permission => permission.title === "Manage Request Approvals")?.checked;
         return(            
             <>
-                <Checkbox checked={isChecked || false} disabled />
+              {
+                record?.subPermissions?.find(permission => permission.title === "Manage Request Approvals") ?
+                  <Checkbox checked={isChecked || false} onChange={() => handleSingleCheckbox(record, sub)} disabled={disabled} /> :
+                  <Tooltip title="Permission Not Available For This Module">
+                    <span><Checkbox indeterminate={true} disabled /></span>
+                  </Tooltip>
+              }
             </>
         )},
     },
@@ -166,10 +251,17 @@ const PermissionsTable = ({ permissions, setPermissions, disabled }) => {
       title: 'Manage Team Request',
       dataIndex: 'roleId',
       render: (text, record) => {
+        const sub = record?.subPermissions?.find(permission => permission.title === "Manage Request From Team");
         const isChecked = record?.subPermissions?.find(permission => permission.title === "Manage Request From Team")?.checked;
         return(            
             <>
-                <Checkbox checked={isChecked || false} disabled />
+              {
+                record?.subPermissions?.find(permission => permission.title === "Manage Request From Team") ?
+                  <Checkbox checked={isChecked || false} onChange={() => handleSingleCheckbox(record, sub)} disabled={disabled} /> :
+                  <Tooltip title="Permission Not Available For This Module">
+                    <span><Checkbox indeterminate={true} disabled /></span>
+                  </Tooltip>
+              }
             </>
         )},
     },
@@ -177,10 +269,17 @@ const PermissionsTable = ({ permissions, setPermissions, disabled }) => {
       title: 'View Employees Attendance',
       dataIndex: 'roleId',
       render: (text, record) => {
+        const sub = record?.subPermissions?.find(permission => permission.title === "View Employees Attendance");
         const isChecked = record?.subPermissions?.find(permission => permission.title === "View Employees Attendance")?.checked;
         return(            
             <>
-                <Checkbox checked={isChecked || false} disabled />
+              {
+                record?.subPermissions?.find(permission => permission.title === "View Employees Attendance") ?
+                  <Checkbox checked={isChecked || false} onChange={() => handleSingleCheckbox(record, sub)} disabled={disabled} /> :
+                  <Tooltip title="Permission Not Available For This Module">
+                    <span><Checkbox indeterminate={true} disabled /></span>
+                  </Tooltip>
+              }
             </>
         )},
     },

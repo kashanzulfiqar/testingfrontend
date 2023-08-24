@@ -82,7 +82,7 @@ const App = () => {
   return (
     <div>
       <Routes>
-        {/* <Route path="/" element={<Navigate to="/login" />} /> */}
+        {/* <Route path="/" element={<Error404 />} /> */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/login/:email/:token" element={<LoginPage />} />
         <Route path="/forget-password" element={<ForgotPassword />} />
@@ -95,6 +95,7 @@ const App = () => {
         <Route path="/" element={<><RequireAuth /> </>}>
           {/* <Route> */}
           {/* dashboard */}
+          <Route path={`/restricted`} element={<Navigate to={login?.user?.role === 'admin' ? `/main/dashboard` : `/employee/dashboard`} />} />
           <Route path={`main/dashboard`} element={<AdminDashboard />} />
           <Route path={`employee/dashboard`} element={<EmployeeDashboard />} />
 
