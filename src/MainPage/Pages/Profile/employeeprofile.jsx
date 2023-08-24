@@ -495,7 +495,7 @@ const antIcon = (
                             <li>
                               <div className="title">Reports to:</div>
                               <div className="text">
-                              {repInfo[allData?.reportsTo] || ''}
+                              {repInfo[allData?.reportsTo] || 'None'}
                                 {/* <div className="avatar-box">
                                   <div className="avatar avatar-xs">
                                     <img src={Avatar_16} alt="" />
