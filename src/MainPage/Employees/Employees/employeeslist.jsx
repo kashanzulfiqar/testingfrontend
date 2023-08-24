@@ -23,6 +23,7 @@ const Employeeslist = () => {
   const [form] = Form.useForm();
   const nav = useNavigate();
   const user_state = useSelector((state) => state.user.loginvalue);
+  const permissions = useSelector((state) => state?.permissionsSlice?.data);
   const company_id = user_state?.user?.companyId
   const role = user_state?.user?.role
 
@@ -41,10 +42,14 @@ const Employeeslist = () => {
   const [users, setUsers] = useState([])
 
   useEffect(() => {
-    getEmployees();
-    getAllDesignations();
-    getAllRoles();
-    getReportsTo();
+    if(permissions?.viewAllUsers || permissions?.updateUser || permissions?.updateStatusOfEmployee) {
+      getEmployees();
+      getAllDesignations();
+      getAllRoles();
+      getReportsTo();
+    }else if(permissions?.viewAllUsers && permissions?.updateUser && permissions?.updateStatusOfEmployee && permissions?.addUser){
+      navigate('/restricted', { state: { unAuthorize: true}})
+    }
   }, [])
 
   const getReportsTo = () => {
@@ -353,10 +358,19 @@ const Employeeslist = () => {
               title: 'Action',
               render: (text, record) => (
                   <div className="dropdown dropdown-action text-end">
-                    <a href="#" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
+                    {
+                      (permissions?.updateStatusOfEmployee || permissions?.updateUser) &&
+                        <a href="#" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
+                    }
                     <div className="dropdown-menu dropdown-menu-right">
+                    {
+                      permissions?.updateUser &&
                       <a className="dropdown-item" href="javascript:void(0)" onClick={() => setOpen({ isAddOpen: false, isEditOpen: true, data: record })}><i className="fa fa-pencil m-r-5" /> Edit</a>
+                    }
+                    {
+                      permissions?.updateStatusOfEmployee &&
                       <a className="dropdown-item" href="javascript:void(0)" onClick={() => setOpen({ isAddOpen: false, isEditOpen: false, isDelOpen: true, data: record })}><i className="fa fa-trash-o m-r-5" /> Delete</a>
+                    }
                     </div>
                   </div>
                 ),
@@ -434,7 +448,10 @@ const Employeeslist = () => {
                       margin: "7px 0px 4px 0px",
                     }}
                   >
-                   No Employee Record found!
+                    {
+                      permissions?.viewAllUsers ? 'No Employee Record found!' : 'You are Restricted to View Employees'
+                    }
+                   
                   </div>
                   {/* <div
                     style={{ color: "#464665", fontWeight: "300", fontSize: "13px" }}
@@ -471,7 +488,10 @@ const Employeeslist = () => {
                    </ul>
                  </div>
                  <div className="col-auto float-end ms-auto">
-                   <a href="javascript:void(0)" className="btn add-btn" onClick={() => setOpen({ isAddOpen: true, isEditOpen: false, data: '' })}><i className="fa fa-plus" /> Add Employee</a>
+                 {
+                  permissions?.addUser &&
+                    <a href="javascript:void(0)" className="btn add-btn" onClick={() => setOpen({ isAddOpen: true, isEditOpen: false, data: '' })}><i className="fa fa-plus" /> Add Employee</a>
+                 }
                    <div className="view-icons">
                      <Link to="/employee/allemployees" className="grid-view btn btn-link"><i className="fa fa-th" /></Link>
                      <Link to="/employee/employees-list" className="list-view btn btn-link active"><i className="fa fa-bars" /></Link>
@@ -539,8 +559,8 @@ const Employeeslist = () => {
                   </div>
                 </div>
                 <div className="col-sm-6 col-md-3" style={{display: 'flex', alignItems: 'flex-start', gap: '13px'}}>  
-                  <button href="javascript:void(0)" type="submit" className="btn btn-success btn-block w-50"> Search </button>  
-                  <button href="javascript:void(0)" type="reset" onClick={() => { form.resetFields(); getEmployees('', 1, pageSize); setFilterValues(null); setCurrentPage(1)}} className="btn btn-success btn-block w-50" style={{backgroundColor: '#b9b9b9', color: 'white', borderColor: '#aeaeae'}}> Reset </button>  
+                  <button href="javascript:void(0)" type="submit" className="btn btn-success btn-block w-50" disabled={!permissions?.viewAllUsers}> Search </button>  
+                  <button href="javascript:void(0)" type="reset" onClick={() => { form.resetFields(); getEmployees('', 1, pageSize); setFilterValues(null); setCurrentPage(1)}} className="btn btn-success btn-block w-50" style={{backgroundColor: '#b9b9b9', color: 'white', borderColor: '#aeaeae'}} disabled={!permissions?.viewAllUsers}> Reset </button>  
                 </div>
               </div>
               </Form>

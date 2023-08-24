@@ -18,6 +18,7 @@ import { Form, Input, Spin, message } from 'antd';
 import { apiLoginEmployee } from "../Services/apiLogin";
 import { LoadingOutlined } from '@ant-design/icons';
 import { apiServices } from '../Services/apiServices';
+import { getPermissionList } from '../Redux/Reducer/permissions/actions';
 
 const Loginpage = (props) => {
 
@@ -57,8 +58,9 @@ const Loginpage = (props) => {
     apiLoginEmployee( !verificationToken ? 'user/login-user' : `user/login-user?token=${verificationToken}` , data).then((res) => {
       if (res?.data?.success === true) {
         // console.log(res?.data?.result);
+        dispatch(getPermissionList({ roleId: res?.data?.result?.user?.roleId, athtoken: res?.data?.result?.access_token?.accessToken }))
         dispatch(login(res?.data?.result));
-        nav('/main/dashboard');
+        nav(`${res?.data?.result?.user?.role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}`);
         setLoader(false)
         // dispatch(getPermissionList({ userId: res?.data?.result?.user?._id, athtoken: res?.data?.result?.access_token }))
         if (res?.data?.result?.user?.role === 'Admin') {

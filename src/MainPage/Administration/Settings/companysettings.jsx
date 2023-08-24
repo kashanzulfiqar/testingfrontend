@@ -6,7 +6,7 @@ import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet";
 import Offcanvas from "../../../Entryfile/offcanvance";
 import favicon from "../../../files/Icons/DaftarProIcon.svg";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Company from "./Company";
 import Leaves from "./Leaves";
 import Roles from "./Roles";
@@ -18,8 +18,11 @@ import { useSelector } from "react-redux";
 
 const Settings = ({test}) => {
 
+  const navigate = useNavigate();
+
   const user_state = useSelector((state) => state.user.loginvalue);
   const role = user_state?.user?.role
+  const permissions = useSelector((state) => state?.permissionsSlice?.data);
 
   let active = sessionStorage.getItem("active_setting");
 
@@ -37,6 +40,13 @@ const Settings = ({test}) => {
       });
     }
   });
+
+  useEffect(() => {
+    if(!permissions.companyManagement) {
+        navigate('/restricted', { state: { unAuthorize: true}})
+    }
+  }, [])
+  
 
 
 useEffect(() => {
