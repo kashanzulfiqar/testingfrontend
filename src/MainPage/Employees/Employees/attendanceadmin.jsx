@@ -8,7 +8,7 @@ import Header from '../../../initialpage/Sidebar/header'
 import Offcanvas from '../../../Entryfile/offcanvance';
 import { apiServices } from '../../../Services/apiServices';
 import { useSelector } from 'react-redux';
-import { Table,Form, Input, DatePicker, Select, Button, Spin } from "antd";
+import { Table,Form, Input, DatePicker, Select, Button, Spin, message } from "antd";
 import moment from "moment"; 
 import Modal from "@mui/material/Modal";
 
@@ -16,9 +16,10 @@ import Modal from "@mui/material/Modal";
 const { Option } = Select;
 
 const AttendanceAdmin = () => {
-   
+  const [form] = Form.useForm();
   const [menu, setMenu] = useState(false)
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedMonthYear, setSelectedMonthYear] = useState('');
 
 	const toggleMobileMenu = () => {
 		setMenu(!menu)
@@ -38,43 +39,55 @@ const AttendanceAdmin = () => {
   const [employeeAttendanceData, setEmployeeAttendanceData] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
+  const [filters, setFilters] = useState({
+    name: "",
+    month: "",
+    year: "",
+  });
+  const [selectedFilters, setSelectedFilters] = useState({
+    name: "",
+    month: "",
+    year: "",
+  });
+
 
   useEffect(() => {
     setIsLoading(true);
-    
-    // Create a function to fetch attendance data
-    const fetchAttendanceData = async () => {
-      apiServices("GET", 'attendance/employeesattendance', null, user_state)
-      .then((res) => {
-        if (res.data.success === true) {
-          const attendanceData=res?.data?.Attendance
-          setAttendanceRecords(attendanceData);
-          console.log(attendanceData)
-          console.log(attendancerecords)
 
-          const uniqueEmployees = [...new Set(attendanceData.map((record) => record.user._id))];
-          const employeeData = uniqueEmployees.map((employeeId) => {
-            const employeeRecords = attendanceData.filter((record) => record.user._id === employeeId);
-            return {
-              employeeId,
-              records: employeeRecords,
-            };
-          });
-          //const newAttendanceData = [...fetchattend, ...Attendance.docs];
-          setEmployeeAttendanceData(employeeData);
-          
-        }
-      })
-      .catch((error) => {
-        console.log("error", error);
-      }).finally(()=>{
-        setIsLoading(false);
-      });
-    };
-  
-    // Call the fetchAttendanceData function
     fetchAttendanceData();
-  }, []); // The empty array ensures that this effect runs only once when the component mounts
+
+  }, [filters]);
+
+
+  const fetchAttendanceData = async () => {
+    
+    apiServices("GET", `attendance/employeesattendance?attendanceMonth=${filters.month}&attendanceYear=${filters.year}&search=${filters.name}`, null, user_state)
+    .then((res) => {
+      if (res.data.success === true) {
+        const attendanceData=res?.data?.Attendance
+        setAttendanceRecords(attendanceData);
+        console.log(attendanceData)
+        console.log(attendancerecords)
+
+        const uniqueEmployees = [...new Set(attendanceData.map((record) => record.user._id))];
+        const employeeData = uniqueEmployees.map((employeeId) => {
+          const employeeRecords = attendanceData.filter((record) => record.user._id === employeeId);
+          return {
+            employeeId,
+            records: employeeRecords,
+          };
+        });
+        //const newAttendanceData = [...fetchattend, ...Attendance.docs];
+        setEmployeeAttendanceData(employeeData);
+        
+      }
+    })
+    .catch((error) => {
+      console.log("error", error);
+    }).finally(()=>{
+      setIsLoading(false);
+    });
+  };
 
   const [dayRecord, setDayRecord] = useState(null);
 
@@ -98,60 +111,207 @@ const AttendanceAdmin = () => {
   
     return `${hours}h ${minutes}m`;
   };
+
+  const handleFilterChange = (value, filterType) => {
+    setSelectedFilters({
+      ...selectedFilters,
+      [filterType]: value,
+    }); 
+  };
+
+  // const handleSearch = () => {
+  //   console.log(filters)
+  //   setFilters(selectedFilters);
+    
+  //   //fetchattendance();
+  // };
+
+  const handleSearch = () => {
+    const { name, month, year } = selectedFilters;
+  
+    if (name ||(month && year)) {
+      setFilters(selectedFilters);
+    } 
+    else {
+      form.resetFields();
+      message.warning('Both Month and Year required');
+    }
+  };
+  
+
+  const handleReset = () => {
+    setSelectedFilters({
+      name: "",
+      month: "",
+      year: "",
+    });
+
+    setSelectedMonthYear('');
+
+    setFilters({
+      name: "",
+      month: "",
+      year: "",
+    });
+
+    form.resetFields();
+  };
   
   console.log(employeeAttendanceData)
-  const daysInMonth = moment().daysInMonth();
+  //const daysInMonth = moment().daysInMonth();
+  let daysInMonth;
+if (filters.month) {
+  console.log("this is ",filters.month)
+  // If filters.month is present, find the number of days in that month
+  const formattedMonth = moment(`${filters.month} 1, ${new Date().getFullYear()}`, "MMMM D, YYYY");
+  daysInMonth = formattedMonth.daysInMonth();
+} else {
+  // If filters.month is not present, find the number of days in the current month
+  daysInMonth = moment().daysInMonth();
+}
+
 const columns = [
   {
     title: "Employee",
     dataIndex: "employeeName",
     key: "employeeName",
   },
-  ...Array.from({ length: daysInMonth }, (_, index) => ({
-    title: `${index + 1}`,
-    dataIndex: `day${index + 1}`,
-    key: `day${index + 1}`,
-    render: (text, record) => {
-      const dayRecord = record[`day${index + 1}`];
+  ...Array.from({ length: daysInMonth }, (_, index) => {
+    // Get the date for the current column based on the selected month and year
+    const currentDate = moment()
+      .year(filters.year)
+      .month(filters.month)
+      .date(index + 1);
 
-      // Define styles based on status
-      let abbreviation = "";
-      let color = "";
+    // Determine if the current column represents a Saturday or Sunday
+    const isSaturday = currentDate.isoWeekday() === 6;
+    const isSunday = currentDate.isoWeekday() === 7;
+    const isWeekday = !isSaturday && !isSunday;
 
-      switch (dayRecord?.status) {
-        case "Present":
-          abbreviation = "P";
-          color = "green";
-          break;
-        case "Late":
-          abbreviation = "P";
-          color = "orange";
-          break;
-        case "Absent":
-          abbreviation = "A";
-          color = "red";
-          break;
-        case "On-Leave":
-          abbreviation = "L";
-          color = "red"; // Change this color as needed
-          break;
-        default:
-          abbreviation = "-";
-          color = "black";
-          break;
-      }
+    return {
+      title: (
+        <div style={{ width: 30, textAlign: "center" }}>
+          <span>{index + 1}</span>
+          {isWeekday && (
+            <div className="weekend-text" style={{ color: "green", fontSize: "10px" }}>
+              
+              {currentDate.format("ddd")}
+            </div>
+          )}
+          {isSaturday && (
+            <div className="weekend-text" style={{ color: "brown", fontSize: "10px" }}>
+              Sat
+            </div>
+          )}
+          {isSunday && (
+            <div className="weekend-text" style={{ color: "brown", fontSize: "10px" }}>
+              Sun
+            </div>
+          )}
+        </div>
+      ),
+      dataIndex: `day${index + 1}`,
+      key: `day${index + 1}`,
+      render: (text, record) => {
+        const dayRecord = record[`day${index + 1}`];
 
-      return (
-        <span
-          style={{ color: color, cursor: abbreviation !== '-' ? 'pointer' : 'default' }}
-          onClick={() => openModal(dayRecord,abbreviation)}
-        >
-          {abbreviation}
-        </span>
-      );
-    },
-  })),
+        let abbreviation = "";
+        let color = "";
+
+        switch (dayRecord?.status) {
+          case "Present":
+            abbreviation = "P";
+            color = "green";
+            break;
+          case "Late":
+            abbreviation = "P";
+            color = "orange";
+            break;
+          case "Absent":
+            abbreviation = "A";
+            color = "red";
+            break;
+          case "On-Leave":
+            abbreviation = "L";
+            color = "red"; // Change this color as needed
+            break;
+          default:
+            abbreviation = "-";
+            color = "black";
+            break;
+        }
+
+        return (
+          <div style={{ textAlign: "center" }}>
+            <span
+              style={{
+                color: color,
+                cursor: abbreviation !== "-" ? "pointer" : "default",
+              }}
+              onClick={() => openModal(dayRecord, abbreviation)}
+            >
+              {abbreviation}
+            </span>
+          </div>
+        );
+      },
+    };
+  }),
 ];
+
+
+
+
+// const columns = [
+//   {
+//     title: "Employee",
+//     dataIndex: "employeeName",
+//     key: "employeeName",
+//   },
+//   ...Array.from({ length: daysInMonth }, (_, index) => ({
+//     title: `${index + 1}`,
+//     dataIndex: `day${index + 1}`,
+//     key: `day${index + 1}`,
+//     render: (text, record) => {
+//       const dayRecord = record[`day${index + 1}`];
+
+//       let abbreviation = "";
+//       let color = "";
+
+//       switch (dayRecord?.status) {
+//         case "Present":
+//           abbreviation = "P";
+//           color = "green";
+//           break;
+//         case "Late":
+//           abbreviation = "P";
+//           color = "orange";
+//           break;
+//         case "Absent":
+//           abbreviation = "A";
+//           color = "red";
+//           break;
+//         case "On-Leave":
+//           abbreviation = "L";
+//           color = "red"; // Change this color as needed
+//           break;
+//         default:
+//           abbreviation = "-";
+//           color = "black";
+//           break;
+//       }
+
+//       return (
+//         <span
+//           style={{ color: color, cursor: abbreviation !== '-' ? 'pointer' : 'default' }}
+//           onClick={() => openModal(dayRecord,abbreviation)}
+//         >
+//           {abbreviation}
+//         </span>
+//       );
+//     },
+//   })),
+// ];
 const dataSource = employeeAttendanceData.map((employeeData) => {
   const rowData = {
     key: employeeData.employeeId,
@@ -175,7 +335,7 @@ const dataSource = employeeAttendanceData.map((employeeData) => {
         <Sidebar />   
       <div className="page-wrapper"> 
         <Helmet>
-            <title>Attendance - HRMS Admin Template</title>
+            <title>Attendance - DaftarPro</title>
             <meta name="description" content="Login page"/>					
         </Helmet>
       <div className="content container-fluid">
@@ -193,9 +353,8 @@ const dataSource = employeeAttendanceData.map((employeeData) => {
         </div>
         {/* /Page Header */}
         {/* Search Filter */}
-        <Form
 
->
+        <Form form={form}>
   <div className="row filter-row">
     <div className="col-sm-6 col-md-3">
       <div className="form-group">
@@ -205,8 +364,9 @@ const dataSource = employeeAttendanceData.map((employeeData) => {
         >
           <Input
             className="form-control"
-            
+            allowClear={false}
             placeholder="Employee Name"
+            onChange={(e)=>handleFilterChange(e.target.value, "name")}
           />
         </Form.Item>
       </div>
@@ -222,8 +382,13 @@ const dataSource = employeeAttendanceData.map((employeeData) => {
             style={{
               width: '100%',
             }}
-            placeholder="Select Month"
+            placeholder={selectedMonthYear ? 'Select Month' : `${moment().format('MMMM')}`}
             size="large"
+            allowClear={false}
+            format="MMMM"
+            onChange={(date, dateString) => {handleFilterChange(dateString, "month")
+            setSelectedMonthYear(dateString);
+          }}
           />
         </Form.Item>
       </div>
@@ -234,20 +399,40 @@ const dataSource = employeeAttendanceData.map((employeeData) => {
         <Form.Item
           name="year"
           className="custom-border"
+          
         >
           <DatePicker.YearPicker
             style={{
               width: '100%',
             }}
-            placeholder="Select Year"
+            placeholder={selectedMonthYear ? 'Select Year' : `${moment().format('YYYY')}`}
             size="large"
+            allowClear={false}
+            onChange={(date, dateString) => {handleFilterChange(dateString, "year")
+            setSelectedMonthYear(dateString);
+          }}
           />
         </Form.Item>
       </div>
     </div>
     <div className="col-sm-6 col-md-3" style={{ display: 'flex', alignItems: 'flex-start', gap: '13px' }}>
-      <button href="javascript:void(0)" type="submit" className="btn btn-success btn-block w-50"> Search </button>
-      <button href="javascript:void(0)" type="submit" className="btn btn-success btn-block w-50" style={{ backgroundColor: '#b9b9b9', color: 'white', borderColor: '#aeaeae' }}> Reset </button>
+      <Button 
+       type="primary" 
+       htmlType="submit"
+       className="btn-success btn-block w-50"
+       onClick={handleSearch}
+       >
+         Search 
+      </Button>
+
+      <Button 
+       htmlType="submit"
+        className="btn-secondary btn-block w-50" 
+        onClick={handleReset}
+        >
+           Reset 
+        </Button>
+
     </div>
   </div>
 </Form>
@@ -264,170 +449,16 @@ const dataSource = employeeAttendanceData.map((employeeData) => {
                 "No data"
               ),
             }}
+        loading={isLoading}
         columns={columns}
         dataSource={dataSource}
-        pagination={false} // You can enable pagination if needed
+        pagination={false} 
       />
             </div>
           </div>
         </div>
-        {/* <Modal
-
-        open={isModalVisible}
-
-        onClose={closeModal}
-
-        aria-labelledby="modal-modal-title"
-
-        // className="modal custom-modal fade"
-
-        aria-describedby="modal-modal-description"
-
-        disableRestoreFocus
-
-        BackdropProps={{
-
-          style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
-
-        }}
-
-      >
-
-      </Modal> */}
-        {/* <Modal
-  title="Attendance Details"
-  visible={isModalVisible}
-  onCancel={closeModal}
-  footer={null}
->
-  {dayRecord && 
-  (<div className="row">
-    <div className="col-md-4">
-      <div className="card punch-status">
-        <div className="card-body">
-          <h5 className="card-title d-flex gap-1">
-            Timesheet
-            <h5 className="text-muted" style={{ fontSize: '20px' }}>
-              {moment(dayRecord.attendanceDate).format("DD MMM YYYY")}
-            </h5>
-          </h5>
-
-          <div className="punch-det">
-            <h6>
-              <label>{"Check in at"}</label>
-            </h6>
-            <p>
-              <label>{moment(dayRecord.checkInTime, "HH:mm").format("h:mm A")}</label>
-            </p>
-          </div>
-
-          <div className="punch-info">
-            <div className="punch-hours">
-              <label>
-                {dayRecord.checkOutTime
-                  ? formatHoursMinutes(dayRecord.hoursWorked)
-                  : "--"}
-              </label>
-            </div>
-          </div>
-
-          <div className="punch-det">
-            <h6>
-              <label>{"Checked out at"}</label>
-            </h6>
-            <p>
-              <label>{dayRecord.checkOutTime? moment(dayRecord.checkOutTime, "HH:mm").format("h:mm A") : "--"}</label>
-            </p>
-          </div>
-
-          <div className="statistics">
-            <div
-              className="row"
-              style={{
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              
-
-              <div className="text-center">
-                <div className="stats-box">
-                  <p>Overtime</p>
-
-                  <h6>
-                    <label>
-                      {dayRecord.checkOutTime
-                        ? formatHoursMinutes(dayRecord.overTime)
-                        : "--"}
-                    </label>
-                  </h6>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div className="col-md-4">
-      <div className="card recent-activity">
-        <div className="card-body">
-          <h5 className="card-title">Today Activity</h5>
-          <ul className="res-activity-list">
-            <li>
-              <p className="mb-0">
-                <label>Check In at</label>
-              </p>
-              <p className="res-activity-time">
-                <i className="fa fa-clock-o" />
-                <label>
-                  {dayRecord.checkInTime ? moment(dayRecord.checkInTime, "HH:mm").format("h:mm A") : "--"}
-                </label>
-              </p>
-            </li>
-            <div className="text-center">
-                <div className="stats-box">
-                  <p>Status</p>
-
-                  <h6>
-                    <label
-                      style={{
-                        color:
-                          dayRecord.status === "Late"
-                            ? "orange"
-                            : dayRecord.status === "Present"
-                            ? "green"
-                            : dayRecord.status === "On-Leave"
-                            ? "red"
-                            : "red",
-                      }}
-                    >
-                      {dayRecord.status}
-                    </label>
-                  </h6>
-                </div>
-              </div>
-            <li>
-              <p className="mb-0">
-                <label>Check Out at</label>
-              </p>
-              <p className="res-activity-time">
-                <i className="fa fa-clock-o" />
-                <label>
-                  {dayRecord.checkOutTime ? moment(dayRecord.checkOutTime, "HH:mm").format("h:mm A") : "--"}
-                </label>
-              </p>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-  )}
-  
-</Modal> */}
-
-<Modal
+        
+      <Modal
 
         open={isModalVisible}
 
@@ -457,7 +488,7 @@ const dataSource = employeeAttendanceData.map((employeeData) => {
 
               <h5 className="modal-title">
 
-                Attendance
+                Attendance Details
 
               </h5>
 
@@ -469,7 +500,7 @@ const dataSource = employeeAttendanceData.map((employeeData) => {
 
             </div>
 
-            <div className="modal-body">
+            <div className="modal-body" style={{ maxHeight: "80vh", overflowY: "auto" }}>
 
             {dayRecord && 
   (<div className="row">
@@ -614,7 +645,7 @@ const dataSource = employeeAttendanceData.map((employeeData) => {
       </Modal>
 
       </div>
-      {/*commented part here*/}
+      
     </div>
   </div>
   <Offcanvas/>
