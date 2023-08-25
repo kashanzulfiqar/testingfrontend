@@ -53,6 +53,7 @@ const AttendanceEmployee = () => {
   let nowdate = new Date(Date.now());
 
   const firstDate = moment(nowdate).format("YYYY-MM-DD");
+  //const firstDate = "2023-08-10"
 
   useEffect(() => {
     // Fetch user's attendance data
@@ -136,7 +137,7 @@ const AttendanceEmployee = () => {
     const moment = require("moment");
     let datebn = new Date(Date.now());
     let checkInTime = moment(datebn).format("HH:mm");
-    //let attendanceDate = "2023-08-31" for testing
+    //let attendanceDate = "2023-08-10"
     let attendanceDate = moment(datebn).format("YYYY-MM-DD");
     try {
       let data = {
@@ -337,22 +338,10 @@ const AttendanceEmployee = () => {
 
   
   const handleFilterChange = (value, filterType) => {
-    
-    if (filterType === "month") {
-      
-      const monthName = moment(value, "YYYY-MM").format("MMMM");
-      
-      setSelectedFilters({
-        ...selectedFilters,
-        [filterType]: monthName ? monthName : '',
-      });
-    } else {
-      
-      setSelectedFilters({
-        ...selectedFilters,
-        [filterType]: value,
-      });
-    }
+    setSelectedFilters({
+      ...selectedFilters,
+      [filterType]: value,
+    });
   };
 
   const handleSearch = () => {
@@ -391,7 +380,7 @@ const AttendanceEmployee = () => {
       title: "#",
       dataIndex: "index",
       key: "index",
-      render: (text, record, index) => index + 1,
+      render: (text, record, index) => (pagination.current - 1) * pagination.pageSize + index + 1,
     },
     {
       title: "Date",
@@ -783,6 +772,7 @@ const AttendanceEmployee = () => {
       "No data"
     ),
   }}
+  loading={isLoading}
   bordered
   pagination={{
     current: pagination.current,
