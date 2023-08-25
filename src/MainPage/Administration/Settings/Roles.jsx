@@ -125,8 +125,26 @@ const Roles = () => {
     setPermissions([]);
   };
   const handlePermClose = () => {
-    setOpenPermissions({ isOpen: false, data: "" });
-    setPermissions([]);
+    apiServices("DELETE", "role/delete-role", openPermissions?.data?._id, user_state)
+    .then((res) => {
+      // console.log(res?.data);
+      if (res?.data?.success === true) {
+        setOpenPermissions({ isOpen: false, data: "" });
+        setPermissions([]);
+      }
+    })
+    .catch((err) => {
+      // console.log(err);
+      message.error(
+        `${
+          err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
+            ? err?.response?.data?.validation?.body?.message
+            : "Delete role Error"
+        }`
+      );
+    });
   };
   const handleEditClose = () => {
     setOpen({
