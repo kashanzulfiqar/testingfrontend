@@ -745,10 +745,11 @@ const AttendanceEmployee = () => {
             Search
           </Button>
           <Button
-            htmlType="submit"
+            htmlType="button"
             type="primary"
             onClick={handleReset}
             className="btn-secondary btn-block w-100"
+            style={{ backgroundColor: "#616161", borderColor: "#616161" }}
           >
             Reset
           </Button>

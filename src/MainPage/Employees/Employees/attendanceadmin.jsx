@@ -354,7 +354,7 @@ const dataSource = employeeAttendanceData.map((employeeData) => {
         {/* /Page Header */}
         {/* Search Filter */}
 
-        <Form form={form}>
+        <Form form={form} onFinish={handleSearch}>
   <div className="row filter-row">
     <div className="col-sm-6 col-md-3">
       <div className="form-group">
@@ -426,9 +426,10 @@ const dataSource = employeeAttendanceData.map((employeeData) => {
       </Button>
 
       <Button 
-       htmlType="submit"
+       htmlType="button"
         className="btn-secondary btn-block w-50" 
         onClick={handleReset}
+        style={{ backgroundColor: "#616161", borderColor: "#616161" }}
         >
            Reset 
         </Button>
@@ -477,6 +478,7 @@ const dataSource = employeeAttendanceData.map((employeeData) => {
           style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
 
         }}
+        sx={{overflowY: "auto" }}
 
       >
 
@@ -500,7 +502,7 @@ const dataSource = employeeAttendanceData.map((employeeData) => {
 
             </div>
 
-            <div className="modal-body" style={{ maxHeight: "80vh", overflowY: "auto" }}>
+            <div className="modal-body" >
 
             {dayRecord && 
   (<div className="row">
