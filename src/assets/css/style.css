@@ -11794,3 +11794,12 @@ position:  relative;
   top: 15px;
 }
 
+/*
+styles by Qazi 
+  */
+
+.ant-table-tbody > tr {
+  background-color: white; /* Set your desired background color */
+}
+
+
