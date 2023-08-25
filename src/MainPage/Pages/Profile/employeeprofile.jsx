@@ -68,7 +68,7 @@ const EmployeeProfile = () => {
   });
   
   useEffect(() => {
-    if(permissions?.viewAllUsers) {
+    if(role === 'admin' || permissions?.viewAllUsers) {
       getReportsTo()
       getDepartment();
       getDesignation();
@@ -511,7 +511,7 @@ const antIcon = (
                       </div>
                     </div>
                     {
-                      permissions?.updateUser &&
+                      (role === 'admin' || permissions?.updateUser) &&
                       <div className="pro-edit"><a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: true, data: '' })}><i className="fa fa-pencil" /></a></div>
                     }
                   </div>
@@ -540,7 +540,7 @@ const antIcon = (
                     <div className="card-body">
                       <h3 className="card-title">Bank Information
                       {
-                        permissions?.updateUser &&
+                        (role === 'admin' || permissions?.updateUser) &&
                         <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: false, isBankInfoOpen: true , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a>
                       }
                       </h3>
@@ -569,7 +569,7 @@ const antIcon = (
                     <div className="card-body">
                       <h3 className="card-title">Emergency Contact
                       {
-                        permissions?.updateUser &&
+                        (role === 'admin' || permissions?.updateUser) &&
                         <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: true, isprofileInfoOpen: false, data: allData?.emergencyContacts?.length > 0 ? allData.emergencyContacts[0] : {} })}><i className="fa fa-pencil" /></a>
                       }
                       </h3>
@@ -625,7 +625,7 @@ const antIcon = (
                     <div className="card-body">
                       <h3 className="card-title">Education Informations
                       {
-                        permissions?.updateUser &&
+                        (role === 'admin' || permissions?.updateUser) &&
                         <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: true, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a>
                       }
                       </h3>
@@ -660,7 +660,7 @@ const antIcon = (
                     <div className="card-body">
                       <h3 className="card-title">Experience
                       {
-                        permissions?.updateUser &&
+                        (role === 'admin' || permissions?.updateUser) &&
                         <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: true, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a>
                       }
                       </h3>

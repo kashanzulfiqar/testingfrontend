@@ -42,12 +42,12 @@ const Employeeslist = () => {
   const [users, setUsers] = useState([])
 
   useEffect(() => {
-    if(permissions?.viewAllUsers || permissions?.updateUser || permissions?.updateStatusOfEmployee) {
+    if(role === 'admin' || permissions?.viewAllUsers) {
       getEmployees();
       getAllDesignations();
       getAllRoles();
       getReportsTo();
-    }else if(permissions?.viewAllUsers && permissions?.updateUser && permissions?.updateStatusOfEmployee && permissions?.addUser){
+    }else if(role === 'admin' && permissions?.viewAllUsers && permissions?.updateUser && permissions?.updateStatusOfEmployee && permissions?.addUser){
       navigate('/restricted', { state: { unAuthorize: true}})
     }
   }, [])
@@ -359,16 +359,16 @@ const Employeeslist = () => {
               render: (text, record) => (
                   <div className="dropdown dropdown-action text-end">
                     {
-                      (permissions?.updateStatusOfEmployee || permissions?.updateUser) &&
+                      (role === 'admin' || permissions?.updateStatusOfEmployee || permissions?.updateUser) &&
                         <a href="#" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
                     }
                     <div className="dropdown-menu dropdown-menu-right">
                     {
-                      permissions?.updateUser &&
+                      (role === 'admin' || permissions?.updateUser) &&
                       <a className="dropdown-item" href="javascript:void(0)" onClick={() => setOpen({ isAddOpen: false, isEditOpen: true, data: record })}><i className="fa fa-pencil m-r-5" /> Edit</a>
                     }
                     {
-                      permissions?.updateStatusOfEmployee &&
+                      (role === 'admin' || permissions?.updateStatusOfEmployee) &&
                       <a className="dropdown-item" href="javascript:void(0)" onClick={() => setOpen({ isAddOpen: false, isEditOpen: false, isDelOpen: true, data: record })}><i className="fa fa-trash-o m-r-5" /> Delete</a>
                     }
                     </div>
@@ -449,7 +449,7 @@ const Employeeslist = () => {
                     }}
                   >
                     {
-                      permissions?.viewAllUsers ? 'No Employee Record found!' : 'You are Restricted to View Employees'
+                      (role === 'admin' || permissions?.viewAllUsers) ? 'No Employee Record found!' : 'You are Restricted to View Employees'
                     }
                    
                   </div>
@@ -489,7 +489,7 @@ const Employeeslist = () => {
                  </div>
                  <div className="col-auto float-end ms-auto">
                  {
-                  permissions?.addUser &&
+                  (role === 'admin' || permissions?.addUser) &&
                     <a href="javascript:void(0)" className="btn add-btn" onClick={() => setOpen({ isAddOpen: true, isEditOpen: false, data: '' })}><i className="fa fa-plus" /> Add Employee</a>
                  }
                    <div className="view-icons">
@@ -559,8 +559,8 @@ const Employeeslist = () => {
                   </div>
                 </div>
                 <div className="col-sm-6 col-md-3" style={{display: 'flex', alignItems: 'flex-start', gap: '13px'}}>  
-                  <button href="javascript:void(0)" type="submit" className="btn btn-success btn-block w-50" disabled={!permissions?.viewAllUsers}> Search </button>  
-                  <button href="javascript:void(0)" type="reset" onClick={() => { form.resetFields(); getEmployees('', 1, pageSize); setFilterValues(null); setCurrentPage(1)}} className="btn btn-success btn-block w-50" style={{backgroundColor: '#b9b9b9', color: 'white', borderColor: '#aeaeae'}} disabled={!permissions?.viewAllUsers}> Reset </button>  
+                  <button href="javascript:void(0)" type="submit" className="btn btn-success btn-block w-50" disabled={((role === 'admin' ? false : true) || !permissions?.viewAllUsers)}> Search </button>  
+                  <button href="javascript:void(0)" type="reset" onClick={() => { form.resetFields(); getEmployees('', 1, pageSize); setFilterValues(null); setCurrentPage(1)}} className="btn btn-success btn-block w-50" style={{backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}} disabled={((role === 'admin' ? false : true) || !permissions?.viewAllUsers)}> Reset </button>  
                 </div>
               </div>
               </Form>

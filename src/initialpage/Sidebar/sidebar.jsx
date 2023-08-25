@@ -13,6 +13,7 @@ const Sidebar = (props) => {
 
   const location = useLocation();
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
+  const user_state = useSelector((state) => state.user.loginvalue?.user);
 
   useEffect(() => {
     if(location?.pathname !== '/settings'){
@@ -486,23 +487,28 @@ const Sidebar = (props) => {
                   <span>Employees</span>
                 </li>
                   <li className="submenu" >
-                    <a href="javascript:" className={pathname.includes('/employee/') && (isSideMenu == "employee") ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "employee" ? "" : "employee")}><i className="la la-user" /> <span className="noti-dot"> Employees</span> <span className="menu-arrow" /></a>
+                    <a href="javascript:" className={(isSideMenu == "employee") ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "employee" ? "" : "employee")}><i className="la la-user" /> <span className="noti-dot"> Employees</span> <span className="menu-arrow" /></a>
                     {/* <a href="javascript:" className={isSideMenu == "employee" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "employee" ? "" : "employee")}><i className="la la-user" /> <span className="noti-dot"> Employees</span> <span className="menu-arrow" /></a> */}
                     {isSideMenu == "employee" ?
 
                       <ul >
-                        { (permissions?.addUser || permissions?.updateUser || permissions?.viewAllUsers || permissions?.updateStatusOfEmployee) &&
+                        { (user_state?.role === 'admin' || permissions?.addUser || permissions?.updateUser || permissions?.viewAllUsers || permissions?.updateStatusOfEmployee) &&
                           <li>
                             <Link className={pathname.includes('allemployees') ? "active" : pathname.includes('employees-list') ? "active" : ""}
                             to="/employee/allemployees">All Employees</Link>
                           </li>
                         }
                         <li><Link className={pathname.includes('employee/holidays') ? "active" : ""} to="/employee/holidays">Holidays</Link></li>
-                        <li><Link className={pathname.includes('employee/leaves-admin') ? "active" : ""} to="/employee/leaves-admin">Leaves (Admin) <span className="badge badge-pill bg-primary float-end">1</span></Link></li>
-                        <li><Link className={pathname.includes('employee/leaves') ? "active" : ""} to="/employee/leaves">Leaves (Employee)</Link></li>
+                        <li><Link className={pathname.includes('request-admin') ? "active" : ""} to="/employee/request-admin">Requests (Admin) <span className="badge badge-pill bg-primary float-end">1</span></Link></li>
+                        <li><Link className={pathname.includes('employee/requests') ? "active" : ""} to="/employee/requests">Requests (Employee)</Link></li>
                         {/* <li><Link className={pathname.includes('e-settings') ? "active" : ""} to="/app/employee/leave-settings">Leave Settings</Link></li> */}
-                        <li><Link className={pathname.includes('nce-admin') ? "active" : ""} to="/employee/attendance-admin">Attendance (Admin)</Link></li>
-                        <li><Link className={pathname.includes('ce-employee') ? "active" : ""} to="/employee/attendance-employee">Attendance (Employee)</Link></li>
+                        {
+                          (user_state?.role === 'admin' || permissions?.attendanceManagement) &&
+                          <li>
+                            <li><Link className={pathname.includes('nce-admin') ? "active" : ""} to="/employee/attendance-admin">Attendance (Admin)</Link></li>
+                          </li>
+                        }
+                        <Link className={pathname.includes('ce-employee') ? "active" : ""} to="/employee/attendance-employee">Attendance (Employee)</Link>
                         {/* <li><Link className={pathname.includes('departments') ? "active" : ""} to="/app/employee/departments">Departments</Link></li> */}
                         {/* <li><Link className={pathname.includes('designations') ? "active" : ""} to="/app/employee/designations">Designations</Link></li> */}
                         <li><Link className={pathname.includes('employee/timesheet') ? "active" : ""} to="/employee/timesheet">Timesheet</Link></li>
@@ -674,7 +680,7 @@ const Sidebar = (props) => {
                 <li className={pathname.includes('administrator/users') ? "active" : ""}>
                   <Link to="/app/administrator/users"><i className="la la-user-plus" /> <span>Users</span> </Link>
                 </li>
-                {permissions?.companyManagement &&
+                {(user_state?.role === 'admin' || permissions?.companyManagement) &&
                   <li className={pathname.includes('/settings') ? "active" : ""}>
                     <Link to="/settings"><i className="la la-cog" /> <span>Settings</span></Link>
                   </li>
