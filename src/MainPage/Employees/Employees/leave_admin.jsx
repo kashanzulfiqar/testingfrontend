@@ -57,6 +57,7 @@ const LeaveAdmin = () => {
     const [statdata, setStatdata] = useState();
 
 
+    
     const closeModal = () => {
       setIsModalVisible(false);
       setSelectedRecord(null)
@@ -904,7 +905,6 @@ const LeaveAdmin = () => {
 
               <Form
 
-                form={form}
 
                 name="control-hooks"
 
