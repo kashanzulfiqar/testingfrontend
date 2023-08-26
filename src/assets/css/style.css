@@ -2358,6 +2358,7 @@ input[type=file].form-control {
   top: 15px;
   right: 37px;
   border-radius: 30px;
+  display: none;
 }
 .sidebar .sidebar-menu ul li.submenu .submenu a span,
 .two-col-bar .sidebar-menu ul li.submenu .submenu a span {

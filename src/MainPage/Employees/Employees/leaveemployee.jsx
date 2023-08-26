@@ -2,7 +2,7 @@
 import React, { useState,useEffect } from 'react';
 import { Helmet } from "react-helmet";
 import { Link, useNavigate } from 'react-router-dom';
-import { Avatar_02,Avatar_05,Avatar_09,Avatar_10, Avatar_03,Avatar_08,Avatar_15,Avatar_20,Avatar_25,Avatar_24  } from "../../../Entryfile/imagepath"
+import { Avatar_02,Avatar_05,Avatar_09,Avatar_10, Avatar_03,Avatar_08,Avatar_15,Avatar_20,Avatar_25,Avatar_24, user_icon  } from "../../../Entryfile/imagepath"
 
 import { Form, Table, Button, Spin, Input, DatePicker, Select, message, Empty, Pagination } from 'antd';
 // import 'antd/dist/antd.css';
@@ -113,7 +113,7 @@ const LeaveEmployee = () => {
           console.log(res?.data);
           if (res?.data?.success === true) {
             setData(res?.data?.SelfRequests?.docs);
-          setPaginationDetail(res?.data?.SelfRequests)
+          setPaginationDetail(res?.data?.SelfRequests?.total)
             setTableLoader(false);
           }
         })
@@ -220,10 +220,10 @@ const LeaveEmployee = () => {
           dataIndex: 'approvedBy',
           render: (text, record) => (            
               <h2 className="table-avatar">
-                {/* <Link to="/app/profile/employee-profile" className="avatar"><img alt="" src={record.image} /></Link>
-                <Link to="/app/profile/employee-profile">{text} </Link> */}
-                {
-                  text ? text : <span style={{marginLeft: '40px'}}>-</span>
+                { (text === '' || text === null || text === undefined) ?
+                  text ? text : <span style={{marginLeft: '40px'}}>-</span> :
+                <><label className="avatar"><img alt="" src={text?.imageUrl || user_icon} /></label>
+                <label>{text?.fullName} </label></>
                 }
               </h2>
             ),
@@ -322,6 +322,7 @@ const leaves = [
               },
               ...data,
             ]);
+            setPaginationDetail(prev => prev+1)
             handleClose();
             message.success("Request Added Successfully!");
             setLoader(false);
@@ -394,6 +395,7 @@ const leaves = [
             if (res?.data?.success === true) {
               // console.log(data);
               setData([...data.filter((req) => req._id !== id)]);
+              setPaginationDetail(prev => prev-1)
               handleClose();
               message.success("Request Deleted Successfully!");
               setLoader(false)
@@ -561,7 +563,7 @@ const leaves = [
                     <div>
                       <Pagination
                         style={{display: 'flex', float: 'right'}}
-                        total={paginationDetail?.total}
+                        total={paginationDetail}
                         pageSize={pageSize}
                         defaultCurrent={1}
                         current={currentPage}

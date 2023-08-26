@@ -208,7 +208,7 @@
 /**
  * App Header
  */
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
@@ -252,6 +252,7 @@ const Header = (props) => {
   const imageURL = user_state?.user?.image
   // const ProfileName = UserName?.charAt(0).toUpperCase() + UserName?.slice(1)
   console.log(ProfileName, "headerLoginvalue=====");
+  
 
 
   return (
