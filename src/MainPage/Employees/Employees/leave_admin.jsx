@@ -43,7 +43,7 @@ const LeaveAdmin = () => {
   const pending_counter = useSelector((state) => state?.counter?.counter?.payload);
     const role = user_state?.user?.role
 
-    
+
 
     const[requests,setRequests] = useState([]);
     const [tableData, setTableData] = useState([]); // Step 1
@@ -119,6 +119,7 @@ const LeaveAdmin = () => {
             
             message.success(`Leave request updated to ${newStatus}`);
             dispatch(counter(pending_counter-1))
+            
           }
         })
         .catch((error) => {
