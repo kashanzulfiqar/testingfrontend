@@ -11,15 +11,17 @@ import Header from '../../../initialpage/Sidebar/header'
 import Sidebar from '../../../initialpage/Sidebar/sidebar';
 import Offcanvas from '../../../Entryfile/offcanvance';
 import { apiServices } from '../../../Services/apiServices';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Modal } from '@mui/material';
 import moment from 'moment';
+import { counter } from '../../../Redux/Reducer/permissions/pendingCounterSlice';
 
 const { Option } = Select;
 
 const LeaveAdmin = () => {
 
   const [menu, setMenu] = useState(false)
+  const dispatch = useDispatch()
 
   const [form] = Form.useForm();
 
@@ -28,6 +30,7 @@ const LeaveAdmin = () => {
 	  }
 
     const user_state = useSelector((state) => state.user.loginvalue);
+  const pending_counter = useSelector((state) => state?.counter?.counter?.payload);
     const[requests,setRequests] = useState([]);
     const [tableData, setTableData] = useState([]); // Step 1
     const [pagination, setPagination] = useState({
@@ -73,6 +76,8 @@ const LeaveAdmin = () => {
     })
 
     const handleUpdateStatus = (record, newStatus) => {
+
+      dispatch(counter(pending_counter-1))
 
       const { _id, userId, companyId, requestType, leaveType, startDate, endDate, description, approvedBy } = record;
   
