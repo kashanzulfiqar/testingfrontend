@@ -133,7 +133,6 @@ const AttendanceAdmin = () => {
       setFilters(selectedFilters);
     } 
     else {
-      form.resetFields();
       message.warning('Both Month and Year required');
     }
   };
@@ -420,7 +419,6 @@ const dataSource = employeeAttendanceData.map((employeeData) => {
        type="primary" 
        htmlType="submit"
        className="btn-success btn-block w-50"
-       onClick={handleSearch}
        >
          Search 
       </Button>

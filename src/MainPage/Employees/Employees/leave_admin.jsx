@@ -2,9 +2,7 @@
 import React, { useState,useEffect } from 'react';
 import { Helmet } from "react-helmet";
 import { Link } from 'react-router-dom';
-import { Avatar_09, Avatar_02,Avatar_03, Avatar_05, Avatar_08, Avatar_10,Avatar_15,Avatar_20, Avatar_24,Avatar_25  } from "../../../Entryfile/imagepath"
-
-import { Table } from 'antd';
+import { Button, Col, Form, Input,DatePicker, Row, Select, Spin, Table, message } from 'antd';
 import 'antd/dist/antd.css';
 import {itemRender,onShowSizeChange} from "../../paginationfunction"
 import "../../antdstyle.css"
@@ -12,41 +10,181 @@ import  Delete from "../../../_components/modelbox/Delete"
 import Header from '../../../initialpage/Sidebar/header'
 import Sidebar from '../../../initialpage/Sidebar/sidebar';
 import Offcanvas from '../../../Entryfile/offcanvance';
+import { apiServices } from '../../../Services/apiServices';
+import { useSelector } from 'react-redux';
+import { format, differenceInDays } from 'date-fns';
+import { Modal } from '@mui/material';
+import moment from 'moment';
+
+const { Option } = Select;
 
 const LeaveAdmin = () => {
 
   const [menu, setMenu] = useState(false)
 
+  const [form] = Form.useForm();
+
 	const toggleMobileMenu = () => {
 		setMenu(!menu)
 	  }
 
-    const [data, setData] = useState([
-      {id:1,image:Avatar_02,name:"John Doe",role:"Web Designer",leavetype:"Medical Leave",from:"27 Feb 2019",to:'27 Feb 2019'
-      ,noofdays:"1 day",reason:"Going to Hospital",status:"Approved" },
-      {id:2,image:Avatar_09,name:"Buster Wigton",role:"Web Developer",leavetype:"Hospitalisation",from:"15 Jan 2019",to:'25 Jan 2019'
-      ,noofdays:"10 days",reason:"Going to Hospital",status:"Approved" },
-      {id:3,image:Avatar_03,name:"Catherine Manseau",role:"Web Developer",leavetype:"Maternity Leave",from:"5 Jan 2019",to:'15 Jan 2019'
-      ,noofdays:"10 days",reason:"Going to Hospital",status:"Approved" },
-      {id:4,image:Avatar_05,name:"Domenic Houston",role:"Web Developer",leavetype:"Casual Leave",from:"10 Jan 2019",to:'11 Jan 2019'
-      ,noofdays:"2 days",reason:"Going to Hospital",status:"Approved" },
-      {id:5,image:Avatar_02,name:"John Doe",role:"Web Designer",leavetype:"Casual Leave",from:"9 Jan 2019",to:'10 Jan 2019'
-      ,noofdays:"2 days",reason:"Going to Hospital",status:"Approved" },
-      {id:6,image:Avatar_08,name:"John Smith",role:"Android Developer",leavetype:"LOP",from:"24 Feb 2019",to:'25 Feb 2019'
-      ,noofdays:"2 days",reason:"Personnal",status:"Approved" },
-      {id:7,image:Avatar_10,name:"Melita Faucher",role:"Web Developer",leavetype:"Casual Leave",from:"13 Jan 2019",to:'14 Jan 2019'
-      ,noofdays:"2 days",reason:"Going to Hospital",status:"Declined" },
-      {id:8,image:Avatar_15,name:"Mike Litorus",role:"IOS Developer",leavetype:"Paternity Leave",from:"13 Feb 2019",to:'17 Feb 2019'
-      ,noofdays:"5 days",reason:"Going to Hospital",status:"Declined" },
-      {id:9,image:Avatar_20,name:"Richard Miles",role:"Web Designer",leavetype:"Casual Leave",from:"8 Mar 2019",to:'9 Mar 2019'
-      ,noofdays:"2 days",reason:"Going to Hospital",status:"New" },
-      {id:10,image:Avatar_25,name:"Richard Parker",role:"Web Developer",leavetype:"Casual Leave",from:"30 Jan 2019",to:'31 Jan 2019'
-      ,noofdays:"2 days",reason:"Personnal",status:"New" },
-      {id:11,image:Avatar_10,name:"Rolland Webber",role:"Web Developer",leavetype:"Casual Leave",from:"7 Jan 2019",to:'8 Jan 2019'
-      ,noofdays:"2 days",reason:"Going to Hospital",status:"Declined" },
-      {id:12,image:Avatar_24,name:"Tarah Shropshire",role:"Web Developer",leavetype:"Paternity Leave",from:"10 Jan 2019",to:'10 Jan 2019'
-      ,noofdays:"1 day",reason:"Going to Hospital",status:"New" },
-    ]);
+    const user_state = useSelector((state) => state.user.loginvalue);
+    const[requests,setRequests] = useState([]);
+    const [tableData, setTableData] = useState([]); // Step 1
+    const [pagination, setPagination] = useState({
+      current: 1,
+      pageSize: 10,
+      total: 0,
+    })
+    
+    const [isLoading, setIsLoading] = useState(false);
+    const [selectedfromTo, setSelectedfromTo] = useState('');
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [selectedRecord, setSelectedRecord] = useState(null);
+
+    const closeModal = () => {
+      setIsModalVisible(false);
+      setSelectedRecord(null)
+    };
+
+    const openModal = (record) => {
+        setSelectedRecord(record);
+        
+    };
+
+    useEffect(() => {
+      if (selectedRecord) {
+        setIsModalVisible(true);
+        console.log(selectedRecord)
+      }
+    }, [selectedRecord]);
+
+
+    const [update,setUpdated] = useState({
+      _id: "",
+      userId: "",
+      companyId: "",
+      requestType: "",
+      leaveType: "",
+      startDate: "",
+      endDate: "",
+      status: "",
+      description: "",
+      approvedBy: "",
+    })
+
+    const handleUpdateStatus = (record, newStatus) => {
+
+      const { _id, userId, companyId, requestType, leaveType, startDate, endDate, description, approvedBy } = record;
+  
+  
+      const updatedData = {
+        _id,
+        userId,
+        companyId,
+        requestType,
+        leaveType,
+        startDate,
+        endDate,
+        status: newStatus, 
+        description,
+        approvedBy,
+      };
+  
+      const apiUrl = `requests/update-request`; 
+      apiServices("PUT", apiUrl, updatedData, user_state)
+        .then((res) => {
+          if (res.data.success === true) {
+            
+            message.success(`Leave request updated to ${newStatus}`);
+          }
+        })
+        .catch((error) => {
+          console.log("error", error);
+          message.error('Failed to update leave request status');
+        })
+        .finally(() => {
+          setIsLoading(true);
+
+          // setSelectedFilters({
+          //   name: "",
+          //   type: "",
+          //   status: "",
+          //   from: "",
+          //   to:"",
+          // });
+    
+          // setFilters({
+          //   name: "",
+          //   type: "",
+          //   status: "",
+          //   from: "",
+          //   to:"",  
+          // });
+          
+          fetchleaves();
+        });
+    };
+
+
+
+    const [filters, setFilters] = useState({
+      name: "",
+      type: "",
+      status: "",
+      from: "",
+      to:"",
+    });
+
+    const [selectedFilters, setSelectedFilters] = useState({
+      name: "",
+      type: "",
+      status: "",
+      from: "",
+      to:"",
+    });
+
+
+    const handleFilterChange = (value, filterType) => {
+      setSelectedFilters({
+        ...selectedFilters,
+        [filterType]: value,
+      }); 
+    };
+  
+    
+    const handleSearch = () => {
+      const { name, type, status, from, to } = selectedFilters;
+
+      if (name || type || status || (from && to)) {
+        setFilters(selectedFilters);
+      } 
+      else {
+        
+        message.warning('Both Start and End Date required');
+      }
+    };
+    
+
+    const handleReset = () => {
+      setSelectedFilters({
+        name: "",
+        type: "",
+        status: "",
+        from: "",
+        to:"",
+      });
+
+      setFilters({
+        name: "",
+        type: "",
+        status: "",
+        from: "",
+        to:"",  
+      });
+  
+      form.resetFields();
+    };
   
     useEffect( ()=>{
       if($('.select').length > 0) {
@@ -56,78 +194,209 @@ const LeaveAdmin = () => {
         });
       }
     });  
+
+    useEffect(()=>{
+      setIsLoading(true);
+      fetchleaves();
+    },[filters, pagination.current, pagination.pageSize])
+
+    const fetchleaves = async() => {
+
+      const params = {
+        ...filters,
+        page: pagination.current,
+        limit: pagination.pageSize,
+      };
+
+      let apiUrl = `requests/view-all-request?employeeName=${filters.name}&leaveType=${filters.type}&requestTo=${filters.to}&requestFrom=${filters.from}&page=${params.page}&limit=${params.limit}&status=${params.status}`
+
+      apiServices("GET", apiUrl, null, user_state)
+        .then((res) => {
+          if (res.data.success === true) {
+            const requestData=res?.data?.Requests?.docs
+            setRequests(requestData);
+            console.log(requestData) ;
+            setTableData(requestData); // Step 2
+            setPagination({
+              ...pagination,
+              total: res?.data?.Requests?.totalDocs,
+            });
+          }
+        })
+        .catch((error) => {
+          console.log("error", error);
+        }).finally(()=>{
+          setIsLoading(false);
+        });
+        }
+
+
+    // const updateleaves = async () => {
+
+    //   let apiUrl = `requests/view-all-request`
+    //   apiServices("PUT", apiUrl, null, user_state)
+    //     .then((res) => {
+    //       if (res.data.success === true) {
+    //       }
+    //     })
+    //     .catch((error) => {
+    //       console.log("error", error);
+    //     }).finally(()=>{
+    //       setIsLoading(false);
+    //     });
+    // }
+
       const columns = [
-        {
-          title: 'Employee',
-          dataIndex: 'name',
-          render: (text, record) => (            
-              <h2 className="table-avatar">
-                <Link to="/app/profile/employee-profile" className="avatar"><img alt="" src={record.image} /></Link>
-                <Link to="/app/profile/employee-profile">{text} <span>{record.role}</span></Link>
-              </h2>
-            ), 
-            sorter: (a, b) => a.name.length - b.name.length,
-        },
-        {
-          title: 'Leave Type',
-          dataIndex: 'leavetype',
-          sorter: (a, b) => a.leavetype.length - b.leavetype.length,
-        },
+  {
+    title: 'Employee',
+    dataIndex: 'user.fullName', // Assuming 'fullName' is the name field in the user object
+    render: (text, record) => (
+        <span>{record?.user?.fullName}</span>
+    ),
+    //sorter: (a, b) => a.user.fullName.localeCompare(b.user.fullName), // Sort by employee name
+  },
+  {
+    title: 'Leave Type',
+    dataIndex: 'leaveType',
+    //sorter: (a, b) => a.leaveType.localeCompare(b.leaveType), // Sort by leave type
+  },
+  {
+    title: 'From',
+    dataIndex: 'startDate',
+    render: (text,record) => {
 
-        {
-          title: 'From',
-          dataIndex: 'from',
-          sorter: (a, b) => a.from.length - b.from.length,
-        },
-        {
-          title: 'To',
-          dataIndex: 'to',
-          sorter: (a, b) => a.to.length - b.to.length,
-        },
+      const date = new Date(text);
 
-        {
-          title: 'No Of Days',
-          dataIndex: 'noofdays', 
-          sorter: (a, b) => a.noofdays.length - b.noofdays.length,
-        },
-      
-        {
-          title: 'Reason',
-          dataIndex: 'reason',
-          sorter: (a, b) => a.reason.length - b.reason.length,
-        },
-        {
-          title: 'Status',
-          dataIndex: 'status',
-          render: (text, record) => (
-            <div className="dropdown action-label text-center">
-            <a className="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-              <i className={text==="New" ? "fa fa-dot-circle-o text-purple" : text === "Pending" ?
-              "fa fa-dot-circle-o text-info" : text === "Approved" ? "fa fa-dot-circle-o text-success" :"fa fa-dot-circle-o text-danger" } /> {text}
-            </a>
-            <div className="dropdown-menu dropdown-menu-right">
-              <a className="dropdown-item" href="#"><i className="fa fa-dot-circle-o text-purple" /> New</a>
-              <a className="dropdown-item" href="#"><i className="fa fa-dot-circle-o text-info" /> Pending</a>
-              <a className="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#approve_leave"><i className="fa fa-dot-circle-o text-success" /> Approved</a>
-              <a className="dropdown-item" href="#"><i className="fa fa-dot-circle-o text-danger" /> Declined</a>
-            </div>
-          </div>
-            ),
-            sorter: (a, b) => a.status.length - b.status.length,
-        },
-        {
-          title: 'Action',
-          render: (text, record) => (
-              <div className="dropdown dropdown-action text-end">
-                <a href="#" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
-                        <div className="dropdown-menu dropdown-menu-right">
-                          <a className="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#edit_leave"><i className="fa fa-pencil m-r-5" /> Edit</a>
-                          <a className="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#delete_approve"><i className="fa fa-trash-o m-r-5" /> Delete</a>
-                        </div>
-              </div>
-            ),
-        },
-      ]
+      const day = date.getDate();
+
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+      const month = monthNames[date.getMonth()];
+
+      const year = date.getFullYear();
+
+      const formattedDate = `${day} ${month} ${year}`;
+
+      return (
+
+        <>
+
+          {formattedDate}
+
+        </>
+
+      )
+
+    },
+    //sorter: (a, b) => a.startDate.localeCompare(b.startDate), // Sort by start date
+  },
+  {
+    title: 'To',
+    dataIndex: 'endDate',
+    render: (text,record) => {
+
+      const date = new Date(text);
+
+      const day = date.getDate();
+
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+      const month = monthNames[date.getMonth()];
+
+      const year = date.getFullYear();
+
+      const formattedDate = `${day} ${month} ${year}`;
+
+      return (
+
+        <>
+
+          {formattedDate}
+
+        </>
+
+      )
+
+    },
+    //sorter: (a, b) => a.endDate.localeCompare(b.endDate), // Sort by end date
+  },
+  {
+    title: 'Days Off',
+    dataIndex:'totalDays',
+    render: (text, record) => {
+      <span>{record?.totalDays}</span>
+    },
+  },
+  {
+    title: 'Reason',
+    dataIndex: 'description',
+    //sorter: (a, b) => a.description.localeCompare(b.description), // Sort by reason
+  },
+  {
+    title: 'Status',
+    dataIndex: 'status',
+    render: (text, record) => (
+      <div className="dropdown action-label text-center">
+        <a
+          className={`btn btn-white btn-sm btn-rounded dropdown-toggle ${
+            text === 'Pending'
+              ? 'text-info'
+              : text === 'Approved'
+              ? 'text-success'
+              : 'text-danger'
+          }`}
+          href={text !== 'Approved' && text !== 'Declined' ? "#" : undefined}
+          data-bs-toggle={text !== 'Approved' && text !== 'Declined' ? "dropdown" : undefined}
+          aria-expanded="false"
+          onClick={(e) => e.preventDefault()}
+        >
+          <i
+            className={`fa ${
+              text === 'New'
+                ? 'fa-dot-circle-o text-purple'
+                : text === 'Pending'
+                ? 'fa-dot-circle-o text-info'
+                : text === 'Approved'
+                ? 'fa-dot-circle-o text-success'
+                : 'fa-dot-circle-o text-danger'
+            }`}
+          />{' '}
+          {text}
+        </a>
+        <div className={`dropdown-menu dropdown-menu-right ${text === 'Approved' || text === 'Declined' ? 'disabled' : ''}`}>
+          
+          <a className={`dropdown-item ${text === 'Approved' && 'disabled'}`} href="#" onClick={(e) => {
+            e.preventDefault();
+            handleUpdateStatus(record, 'Approved')}}>
+
+            <i className="fa fa-dot-circle-o text-success" /> Approved
+          </a>
+          <a className={`dropdown-item ${text === 'Declined' && 'disabled'}`} href="#" onClick={(e) => {
+            e.preventDefault();
+            handleUpdateStatus(record, 'Declined')}}>
+
+            <i className="fa fa-dot-circle-o text-danger" /> Declined
+          </a>
+        </div>
+      </div>
+    ),
+    //sorter: (a, b) => a.status.localeCompare(b.status), // Sort by status
+  },
+  
+  
+  {
+    title: 'Action',
+    render: (text, record) => (
+      <div className="dropdown dropdown-action text-end">
+        <a href="#" className="action-icon" onClick={() => openModal(record)}>
+          <i className="material-icons">add_circle</i>
+        </a>
+      </div>
+    ),
+  }
+  
+];
+
 
       return (     
         <>
@@ -137,7 +406,7 @@ const LeaveAdmin = () => {
           <Sidebar />        
         <div className="page-wrapper">
         <Helmet>
-            <title>Leaves - HRMS Admin Template</title>
+            <title>Leaves - DaftarPro Admin</title>
             <meta name="description" content="Login page"/>					
         </Helmet>
         {/* Page Content */}
@@ -152,102 +421,167 @@ const LeaveAdmin = () => {
                   <li className="breadcrumb-item active">Leaves</li>
                 </ul>
               </div>
-              <div className="col-auto float-end ms-auto">
-                <a href="#" className="btn add-btn" data-bs-toggle="modal" data-bs-target="#add_leave"><i className="fa fa-plus" /> Add Leave</a>
-              </div>
             </div>
           </div>
           {/* /Page Header */}
-          {/* Leave Statistics */}
-          <div className="row">
-            <div className="col-md-3">
-              <div className="stats-info">
-                <h6>Today Presents</h6>
-                <h4>12 / 60</h4>
-              </div>
-            </div>
-            <div className="col-md-3">
-              <div className="stats-info">
-                <h6>Planned Leaves</h6>
-                <h4>8 <span>Today</span></h4>
-              </div>
-            </div>
-            <div className="col-md-3">
-              <div className="stats-info">
-                <h6>Unplanned Leaves</h6>
-                <h4>0 <span>Today</span></h4>
-              </div>
-            </div>
-            <div className="col-md-3">
-              <div className="stats-info">
-                <h6>Pending Requests</h6>
-                <h4>12</h4>
-              </div>
-            </div>
-          </div>
+      
           {/* /Leave Statistics */}
           {/* Search Filter */}
+          <Form form={form} onFinish={handleSearch}>
           <div className="row filter-row">
             <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">  
-              <div className="form-group form-focus">
-                <input type="text" className="form-control floating" />
-                <label className="focus-label">Employee Name</label>
+              <div className="form-group">
+              <Form.Item
+                name="name"
+                className="custom-border"
+              >
+                <Input
+                  className="form-control"
+                  allowClear={false}
+                  placeholder="Employee Name"
+                  onChange={(e)=>handleFilterChange(e.target.value, "name")}
+                />
+              </Form.Item>
               </div>
             </div>
             <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">  
-              <div className="form-group form-focus select-focus">
-                <select className="select floating"> 
-                  <option> -- Select -- </option>
-                  <option>Casual Leave</option>
-                  <option>Medical Leave</option>
-                  <option>Loss of Pay</option>
-                </select>
-                <label className="focus-label">Leave Type</label>
+              <div className="form-group form-focus">
+              <Form.Item
+                name="type"
+                className="custom-border"
+              >
+                <Select
+                  placeholder="Leave type"
+                  style={{ width: "100%" }}
+                  onChange={(value)=>handleFilterChange(value, "type")}
+                >
+                  <Select.Option value="casual">Casual</Select.Option>
+                  <Select.Option value="sick">Sick Leave</Select.Option>
+                  <Select.Option value="bereavement">Bereavement</Select.Option>
+                  <Select.Option value="marriage">Marriage</Select.Option>
+                  <Select.Option value="maternity">Maternity</Select.Option>
+                  <Select.Option value="paternity">Paternity</Select.Option>
+                  <Select.Option value="annual">Annual</Select.Option>
+                  <Select.Option value="halfDay">Half Day</Select.Option>
+                  <Select.Option value="unpaid">Unpaid</Select.Option>
+                </Select>
+              </Form.Item>
+
               </div>
             </div>
             <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12"> 
-              <div className="form-group form-focus select-focus">
-                <select className="select floating"> 
-                  <option> -- Select -- </option>
-                  <option> Pending </option>
-                  <option> Approved </option>
-                  <option> Rejected </option>
-                </select>
-                <label className="focus-label">Leave Status</label>
+              <div className="form-group form-focus">
+              <Form.Item
+                name="status"
+                className="custom-border"
+              >
+                <Select
+                  placeholder="Leave Status"
+                  style={{ width: "100%" }}
+                  onChange={(value)=>handleFilterChange(value, "status")}
+                >
+                  <Select.Option value="Pending">Pending</Select.Option>
+                  <Select.Option value="Approved">Approved</Select.Option>
+                  <Select.Option value="Declined">Declined</Select.Option>
+                </Select>
+              </Form.Item>
               </div>
             </div>
             <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
-              <div className="form-group form-focus select-focus">
-                  <input className="form-control floating" type="date" />
-                  <label className="focus-label">From</label>
+              <div className="form-group">
+              <Form.Item 
+                name="from"
+                >
+                  <DatePicker
+                    placeholder='From'
+                    className="form-control"
+                    onChange={(from, dateString) => {handleFilterChange(dateString, "from")
+                    setSelectedfromTo(dateString)  
+                  }}
+                    allowClear={false}
+                  />
+                </Form.Item>
               </div>
             </div>
             <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">  
-              <div className="form-group form-focus select-focus">
-                  <input className="form-control floating" type="date" />
-                  <label className="focus-label">To</label>
+              <div className="form-group">
+              <Form.Item 
+                name="to"
+                >
+                  <DatePicker
+                    placeholder='To'
+                    className="form-control"
+                    onChange={(to, dateString) => {handleFilterChange(dateString, "to")
+                    setSelectedfromTo(dateString)  
+                  }}
+                    allowClear={false}
+                  />
+                </Form.Item>
               </div>
             </div>
-            <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">  
-              <a href="#" className="btn btn-success btn-block w-100"> Search </a>  
+            <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12"
+            style={{ display: 'flex', alignItems: 'flex-start',justifyContent: 'center', gap: '2px' }}>  
+            <Button 
+              type="primary" 
+              htmlType="submit"
+              className="btn-success btn-block w-50"
+              >
+                <span className="d-flex justify-content-center">Search</span> 
+              </Button>
+
+              <Button 
+                htmlType="button"
+                className="btn-secondary btn-block w-50" 
+                onClick={handleReset}
+                style={{ backgroundColor: "#616161", borderColor: "#616161" }}
+                >
+                  <span className="d-flex justify-content-center">Reset</span> 
+              </Button>
+
             </div>     
           </div>
+          </Form>
+
           {/* /Search Filter */}
           <div className="row">
             <div className="col-md-12">
               <div className="table-responsive">
                 
-              <Table className="table-striped"
-                    pagination= { {total : data.length,
-                      showTotal : (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                      showSizeChanger : true,onShowSizeChange: onShowSizeChange ,itemRender : itemRender } }
-                    style = {{overflowX : 'auto'}}
-                    columns={columns}                 
-                    // bordered
-                    dataSource={data}
-                    rowKey={record => record.id}
-                    onChange={console.log("chnage")}
-                  />
+              <Table
+              className="table-striped"
+              locale={{
+                emptyText: isLoading ? (
+                  <Spin size="large" tip="Loading..." />
+                ) : (
+                  "No data"
+                ),
+              }}
+              loading={isLoading}
+              pagination={{
+                current: pagination.current,
+                pageSize: pagination.pageSize,
+                total: pagination.total,
+                showTotal: (total, range) =>
+                    `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+                  pageSizeOptions: ["10", "20", "30", "40"], // Options to change page size
+                  showSizeChanger: true, // Show the page size changer
+                  onChange: (page, pageSize) => {
+                    setPagination({
+                      ...pagination,
+                      current: page,
+                      pageSize: pageSize,
+                    });
+                  },
+                  itemRender:itemRender
+                }}
+              style={{ overflowX: 'auto' }}
+              columns={columns}
+              dataSource={tableData} // Step 4
+              rowKey={(record) => record?._id} // Assuming _id is the unique key
+              onChange={(pagination, filters, sorter) => {
+                // Handle table onChange event here if needed
+              }}
+            />
               </div>
             </div>
           </div>
@@ -308,7 +642,7 @@ const LeaveAdmin = () => {
         </div>
         {/* /Add Leave Modal */}
         {/* Edit Leave Modal */}
-        <div id="edit_leave" className="modal custom-modal fade" role="dialog">
+        {/* <div id="edit_leave" className="modal custom-modal fade" role="dialog">
           <div className="modal-dialog modal-dialog-centered" role="document">
             <div className="modal-content">
               <div className="modal-header">
@@ -357,7 +691,7 @@ const LeaveAdmin = () => {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
         {/* /Edit Leave Modal */}
         {/* Approve Leave Modal */}
         <div className="modal custom-modal fade" id="approve_leave" role="dialog">
@@ -383,6 +717,307 @@ const LeaveAdmin = () => {
           </div>
         </div>
         {/* /Approve Leave Modal */}
+
+        <Modal
+
+        open={isModalVisible}
+
+        onClose={closeModal}
+
+        aria-labelledby="modal-modal-title"
+
+        className="modalScroll"
+
+        aria-describedby="modal-modal-description"
+
+        disableRestoreFocus
+      
+
+        BackdropProps={{
+
+          style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
+
+        }}
+
+        sx={{overflowY: 'auto'}}
+
+      >
+        
+          <div className="modal-dialog modal-dialog-centered" role="document">
+
+          <div className="modal-content">
+
+            <div className="modal-header">
+
+              <h5 className="modal-title">
+
+                Details
+
+              </h5>
+
+              <button type="button" className="close" onClick={closeModal}>
+
+                <span aria-hidden="true">×</span>
+
+              </button>
+
+            </div>
+
+            <div className="modal-body">
+
+              <Form
+
+                form={form}
+
+                name="control-hooks"
+
+                initialValues={{
+
+                  fullName: selectedRecord?.user.fullName,
+
+                  requestType: selectedRecord?.requestType,
+
+                  leaveType: selectedRecord?.leaveType,
+
+                  startDate: moment(selectedRecord?.startDate, 'YYYY-MM-DD'),
+
+                  endDate: moment(selectedRecord?.endDate, 'YYYY-MM-DD'),
+
+                  totalDays: selectedRecord?.totalDays,
+
+                  description: selectedRecord?.description,
+
+                }}
+
+                autoComplete="off"
+
+              >
+                <div className="form-group">
+
+                    <label>
+
+                    Employee Name <span className="text-danger"></span>
+
+                    </label>
+
+                    <div style={{ position: 'relative' }} id='area'>
+
+                        <Form.Item
+
+                        name='fullName'
+
+                        className='custom-border'
+                    >
+                            <Input
+                          className='form-control'
+                          readOnly/>
+                        </Form.Item>
+
+                    </div>
+
+                    </div>
+
+                <div className="form-group">
+
+                    <label>
+
+                    Request Type <span className="text-danger"></span>
+
+                    </label>
+
+                    <div style={{ position: 'relative' }} id='area'>
+
+                        <Form.Item
+
+                        name='requestType'
+
+                        className='custom-border'
+>
+                            <Input
+                          className='form-control'
+                          readOnly/>
+                        </Form.Item>
+
+                    </div>
+
+                </div>
+
+                
+
+                  <div className="form-group">
+
+                      <label>
+
+                      Leave Type <span className="text-danger"></span>
+
+                      </label>
+
+                      <div style={{ position: 'relative' }} id='area'>
+
+                          <Form.Item
+
+                          name='leaveType'
+
+                          className='custom-border'
+                         
+                          >
+                            <Input
+                          className='form-control'
+                          readOnly/>
+                          </Form.Item>
+
+                      </div>
+
+                  </div>
+
+                <div className="form-group">
+
+                  <label>
+
+                  From <span className="text-danger"></span>
+
+                  </label>
+
+                  <div style={{ position: 'relative' }} id='area'>
+
+                      <Form.Item
+
+                      name='startDate'
+
+                      className='custom-border'
+                      >
+
+                        <DatePicker
+                          className='form-control datepicker-color'
+                          style={{backgroundColor:'#e9ecef'}}
+                          allowClear={false}
+                          disabled
+                          />
+
+                      </Form.Item>
+
+                  </div>
+
+                </div>
+
+                <div className="form-group">
+
+                  <label>
+
+                  To <span className="text-danger"></span>
+
+                  </label>
+
+                  <div style={{ position: 'relative' }} id='area'>
+
+                      <Form.Item
+
+                      name='endDate'
+
+                      className='custom-border'
+                      >
+
+                        <DatePicker
+                        className='form-control datepicker-color'
+                        style={{backgroundColor:'#e9ecef'}}
+
+                        disabled
+                        allowClear={false}
+                          />
+
+                      </Form.Item>
+
+                  </div>
+
+                </div>
+
+                <div className="form-group">
+
+                  <label>
+
+                  Number of Days <span className="text-danger"></span>
+
+                  </label>
+
+                    <Form.Item
+
+                    name='totalDays'
+
+                    className='custom-border'
+
+                    >
+
+                        <Input
+                          className='form-control'
+                          readOnly/>
+
+                    </Form.Item>
+
+                </div>
+
+                <div className="form-group">
+
+                  <label style={{display: 'flex', justifyContent: 'space-between'}}>
+
+                    <div>Reason <span className="text-danger"></span></div>
+
+                  </label>
+
+                  <Form.Item
+
+                    name="description"
+
+                    className="custom-border"
+
+                  >
+                    <Input.TextArea 
+                    className='form-control'
+                    readOnly/>
+
+                  </Form.Item>
+
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'flex-start',justifyContent: 'center', gap: '2px' }}> 
+                {selectedRecord?.status !=="Approved" && selectedRecord?.status !=="Declined" && (
+                  <>
+                  <Button 
+                  type="button" 
+                  htmlType="submit"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleUpdateStatus(selectedRecord, 'Approved')}}
+                  className="btn-success btn-block w-50"
+                  >
+                    <span className="d-flex justify-content-center">Approve</span> 
+                  </Button>
+
+                  <Button 
+                    htmlType="button"
+                    className="btn-secondary btn-block w-50" 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleUpdateStatus(selectedRecord, 'Declined')}}
+                    style={{ backgroundColor: "#616161", borderColor: "#616161" }}
+                    >
+                      <span className="d-flex justify-content-center">Decline</span> 
+                  </Button></>
+                )}
+                  
+                </div>
+
+            
+              </Form>
+
+            </div>
+
+          </div>
+
+        </div>
+        
+        
+
+      </Modal>
         {/* Delete Leave Modal */}
         <Delete/>
         {/* /Delete Leave Modal */}

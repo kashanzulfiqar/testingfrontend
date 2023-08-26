@@ -11824,4 +11824,8 @@ styles by Qazi
   background-color: white; /* Set your desired background color */
 }
 
+.datepicker-color input {
+  color: #25292d !important;  
+}
+
 
