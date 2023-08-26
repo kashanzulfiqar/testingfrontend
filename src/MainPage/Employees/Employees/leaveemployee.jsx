@@ -136,6 +136,7 @@ const LeaveEmployee = () => {
       setOpen({ isAddOpen: false, isDelOpen: false, data: "" });
       form.resetFields();
       setLeaveType(false)
+      setReasonLength('0')
     };
         
       const columns = [

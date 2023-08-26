@@ -77,7 +77,6 @@ const LeaveAdmin = () => {
 
     const handleUpdateStatus = (record, newStatus) => {
 
-      dispatch(counter(pending_counter-1))
 
       const { _id, userId, companyId, requestType, leaveType, startDate, endDate, description, approvedBy } = record;
   
@@ -101,6 +100,7 @@ const LeaveAdmin = () => {
           if (res.data.success === true) {
             
             message.success(`Leave request updated to ${newStatus}`);
+            dispatch(counter(pending_counter-1))
           }
         })
         .catch((error) => {
