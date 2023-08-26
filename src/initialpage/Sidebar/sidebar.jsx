@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 import { Scrollbars } from 'react-custom-scrollbars';
 import Header from './header';
 import { useSelector } from 'react-redux';
+import { apiServices } from '../../Services/apiServices';
 
 const Sidebar = (props) => {
 
@@ -21,6 +22,22 @@ const Sidebar = (props) => {
       sessionStorage.clear();
     }
   }, [location])
+
+  useEffect(() => {
+getCounter()
+  }, [location])
+
+
+const getCounter = () => {
+    // apiServices("GET", "requests/view-all-request?employeeName=&leaveType=&requestTo=&requestFrom=&page=1&limit=10&status=", null, user_state)
+    // .then((res) => {
+    //   if (res?.data?.success === true) {
+    //     // setSingleUser(res?.data?.user)
+    //     console.log(res.data.Requests);
+    //   }
+    // })
+  }
+  
   
   const MenuMore = () => {
     document.getElementById("more-menu-hidden").classList.toggle("hidden");
@@ -502,8 +519,9 @@ const Sidebar = (props) => {
                         <li>
                           {
                             (user_state?.role === 'admin' || permissions?.viewAllRequest || permissions?.teamRequest) &&
-                            <Link className={pathname.includes('request-admin') ? "active" : ""} to="/employee/request-admin">Requests (Admin) <span className="badge badge-pill bg-primary float-end">1</span></Link>
+                            <Link className={pathname.includes('request-admin') ? "active" : ""} to="/employee/request-admin">Requests (Admin)</Link>
                           }
+                          {/* <Link className={pathname.includes('request-admin') ? "active" : ""} to="/employee/request-admin">Requests (Admin) <span className="badge badge-pill bg-primary float-end">1</span></Link> */}
                         </li>
                         <li>
                         {
