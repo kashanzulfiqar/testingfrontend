@@ -7,9 +7,10 @@ import Sidebar from "../../../initialpage/Sidebar/sidebar";
 import moment from "moment";
 import { useSelector } from "react-redux";
 import { apiServices } from "../../../Services/apiServices";
-import { message } from "antd";
+import { Empty, message } from "antd";
 // import InfiniteScroll from "react-infinite-scroll-component";
 import { ItemRender } from "antd/lib/upload/interface";
+import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { Table, Form, Input, DatePicker, Select, Button, Spin } from "antd";
 import { itemRender } from "../../paginationfunction";
 
@@ -374,6 +375,44 @@ const AttendanceEmployee = () => {
     //fetchattendance();
 
   };
+
+  const customEmptyText = (
+    <Empty
+      image={<img src={EmptyTable} />}
+      // image={<InboxOutlined />}
+      imageStyle={
+        {
+          // fontSize: 48,
+          // color: '#1890ff',
+        }
+      }
+      style={{
+        height: "300px",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+      }}
+      description={
+        <div style={{ display: "" }}>
+          <div
+            style={{
+              color: "#34343F",
+              fontWeight: "500",
+              fontSize: "14px",
+              margin: "7px 0px 4px 0px",
+            }}
+          >
+            No Data
+          </div>
+          {/* <div
+            style={{ color: "#464665", fontWeight: "300", fontSize: "13px" }}
+          >
+            Click 'Add Department' Button To Create <br /> A New Department{" "}
+          </div> */}
+        </div>
+      }
+    />
+  );
 
   const columns = [
     {
@@ -745,11 +784,11 @@ const AttendanceEmployee = () => {
             Search
           </Button>
           <Button
-            htmlType="button"
+            htmlType="submit"
             type="primary"
             onClick={handleReset}
             className="btn-secondary btn-block w-100"
-            style={{ backgroundColor: "#616161", borderColor: "#616161" }}
+        style={{ backgroundColor: "#616161", borderColor: "#616161" }}
           >
             Reset
           </Button>
@@ -770,7 +809,7 @@ const AttendanceEmployee = () => {
     emptyText: isLoading ? (
       <Spin size="large" tip="Loading..." />
     ) : (
-      "No data"
+      customEmptyText
     ),
   }}
   loading={isLoading}

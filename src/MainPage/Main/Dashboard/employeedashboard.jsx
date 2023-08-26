@@ -9,7 +9,8 @@ import Sidebar from '../../../initialpage/Sidebar/sidebar';
 import Offcanvas from '../../../Entryfile/offcanvance/index.jsx';
 import { apiServices } from '../../../Services/apiServices.js';
 import { useSelector } from 'react-redux';
-import { Avatar, Table, Card, Spin } from 'antd';
+import EmptyTable from "../../../files/Icons/EmptyTable.svg";
+import { Avatar, Table, Card, Spin, Empty } from 'antd';
 
 const EmployeeDashboard = () => {
 
@@ -57,6 +58,44 @@ const EmployeeDashboard = () => {
       console.log("error", error);
     });
   }
+
+  const customEmptyText = (
+    <Empty
+      image={<img src={EmptyTable} />}
+      // image={<InboxOutlined />}
+      imageStyle={
+        {
+          // fontSize: 48,
+          // color: '#1890ff',
+        }
+      }
+      style={{
+        height: "300px",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+      }}
+      description={
+        <div style={{ display: "" }}>
+          <div
+            style={{
+              color: "#34343F",
+              fontWeight: "500",
+              fontSize: "14px",
+              margin: "7px 0px 4px 0px",
+            }}
+          >
+            No Employees
+          </div>
+          {/* <div
+            style={{ color: "#464665", fontWeight: "300", fontSize: "13px" }}
+          >
+            Click 'Add Department' Button To Create <br /> A New Department{" "}
+          </div> */}
+        </div>
+      }
+    />
+  );
 
   const columnsWfh = [
     {
@@ -179,7 +218,7 @@ const EmployeeDashboard = () => {
                     emptyText: isLoading ? (
                       <Spin size="large" tip="Loading..." />
                     ) : (
-                      "No employees on Work From Home Today"
+                      customEmptyText
                     ),
                   }}
                 />
@@ -197,7 +236,7 @@ const EmployeeDashboard = () => {
                     emptyText: isLoading ? (
                       <Spin size="large" tip="Loading..." />
                     ) : (
-                      "No employees on leave today"
+                      customEmptyText
                     ),
                   }}
                 />

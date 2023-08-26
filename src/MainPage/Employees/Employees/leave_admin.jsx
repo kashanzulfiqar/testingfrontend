@@ -1,8 +1,8 @@
 
 import React, { useState,useEffect } from 'react';
 import { Helmet } from "react-helmet";
-import { Link, Navigate, useParams, useNavigate } from 'react-router-dom';
-import { Button, Col, Form, Input,DatePicker, Row, Select, Spin, Table, message } from 'antd';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Button, Col, Form, Input,DatePicker, Row, Select, Spin, Table, message, Empty } from 'antd';
 import 'antd/dist/antd.css';
 import {itemRender,onShowSizeChange} from "../../paginationfunction"
 import "../../antdstyle.css"
@@ -14,6 +14,8 @@ import { apiServices } from '../../../Services/apiServices';
 import { useSelector } from 'react-redux';
 import { Modal } from '@mui/material';
 import moment from 'moment';
+import EmptyTable from "../../../files/Icons/EmptyTable.svg";
+import { user_icon } from '../../../Entryfile/imagepath';
 
 const { Option } = Select;
 
@@ -58,6 +60,7 @@ const LeaveAdmin = () => {
     const closeModal = () => {
       setIsModalVisible(false);
       setSelectedRecord(null)
+      navigate('/employee/request-admin')
     };
 
     const openModal = (record) => {
@@ -120,7 +123,7 @@ const LeaveAdmin = () => {
           setIsModalVisible(false);
           setSelectedRecord(null)
           setIsLoading(true);
-          navigate('employee/request-admin')
+          navigate('/employee/request-admin')
 
           // setSelectedFilters({
           //   name: "",
@@ -270,6 +273,45 @@ const LeaveAdmin = () => {
         }
 
 
+        const customEmptyText = (
+          <Empty
+            image={<img src={EmptyTable} />}
+            // image={<InboxOutlined />}
+            imageStyle={
+              {
+                // fontSize: 48,
+                // color: '#1890ff',
+              }
+            }
+            style={{
+              height: "300px",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+            }}
+            description={
+              <div style={{ display: "" }}>
+                <div
+                  style={{
+                    color: "#34343F",
+                    fontWeight: "500",
+                    fontSize: "14px",
+                    margin: "7px 0px 4px 0px",
+                  }}
+                >
+                  No Record Found!
+                </div>
+                {/* <div
+                  style={{ color: "#464665", fontWeight: "300", fontSize: "13px" }}
+                >
+                  Click 'Add Department' Button To Create <br /> A New Department{" "}
+                </div> */}
+              </div>
+            }
+          />
+        );
+
+
     // const updateleaves = async () => {
 
     //   let apiUrl = `requests/view-all-request`
@@ -292,7 +334,7 @@ const LeaveAdmin = () => {
     render: (text, record) => (
       <div>
       <img
-      src={record?.user.imageUrl}
+      src={record?.user.imageUrl || user_icon}
       alt={record?.user.fullName}
       className="avatar"
       style={{ width: '30px', height: '30px' }}
@@ -370,9 +412,7 @@ const LeaveAdmin = () => {
   {
     title: 'Days Off',
     dataIndex:'totalDays',
-    render: (text, record) => {
-      <span>{record?.totalDays ? record?.totalDays : "-" }</span>
-    },
+    
   },
   {
     title: 'Reason',
@@ -392,7 +432,7 @@ const LeaveAdmin = () => {
     title: 'Status',
     dataIndex: 'status',
     render: (text, record) => (
-      <div className="dropdown action-label text-center">
+      <div>
         <a
           className={`btn btn-white btn-sm btn-rounded dropdown-toggle ${
             text === 'Pending'
@@ -443,7 +483,7 @@ const LeaveAdmin = () => {
   {
     title: 'Action',
     render: (text, record) => (
-      <div className="dropdown dropdown-action text-end">
+      <div className="dropdown dropdown-action">
         <a href="javascript:void(0)" className="action-icon" onClick={() => openModal(record)}>
           <i className="material-icons">add_circle</i>
         </a>
@@ -462,7 +502,7 @@ const LeaveAdmin = () => {
           <Sidebar />        
         <div className="page-wrapper">
         <Helmet>
-            <title>Leaves - DaftarPro Admin</title>
+            <title>Requests - DaftarPro Admin</title>
             <meta name="description" content="Login page"/>					
         </Helmet>
         {/* Page Content */}
@@ -471,10 +511,10 @@ const LeaveAdmin = () => {
           <div className="page-header">
             <div className="row align-items-center">
               <div className="col">
-                <h3 className="page-title">Leaves</h3>
+                <h3 className="page-title">Requests</h3>
                 <ul className="breadcrumb">
                   <li className="breadcrumb-item"><Link to="/app/main/dashboard">Dashboard</Link></li>
-                  <li className="breadcrumb-item active">Leaves</li>
+                  <li className="breadcrumb-item active">Requests</li>
                 </ul>
               </div>
             </div>
@@ -650,7 +690,7 @@ const LeaveAdmin = () => {
                 emptyText: isLoading ? (
                   <Spin size="large" tip="Loading..." />
                 ) : (
-                  "No data"
+                  customEmptyText
                 ),
               }}
               loading={isLoading}
@@ -1082,7 +1122,8 @@ const LeaveAdmin = () => {
                   <Button 
                   type="button" 
                   htmlType="submit"
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault();
                     handleUpdateStatus(selectedRecord, 'Approved')
                   }}
                   className="btn-success btn-block w-50"
@@ -1093,7 +1134,8 @@ const LeaveAdmin = () => {
                   <Button 
                     htmlType="button"
                     className="btn-secondary btn-block w-50" 
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.preventDefault();
                       handleUpdateStatus(selectedRecord, 'Declined')
               
                     }}
