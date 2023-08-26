@@ -105,6 +105,7 @@ const App = () => {
           <Route path={`employee/holidays`} element={<Holidays />} />
           <Route path={`employee/requests`} element={<LeaveEmployee />} />
           <Route path={`employee/request-admin`} element={<LeaveAdmin />} />
+          <Route path={`employee/request-admin/:id`} element={<LeaveAdmin />} />
           <Route path={`employee/timesheet`} element={<Timesheet />} />
           <Route path={`/profile/employee-profile`} element={<EmployeeProfile />} />
 
