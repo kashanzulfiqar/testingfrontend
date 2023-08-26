@@ -1,6 +1,6 @@
 import React, {useEffect,useState } from 'react';
 import { Helmet } from "react-helmet";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {   Avatar_01,Avatar_04,Avatar_05, Avatar_09, Avatar_10,Avatar_11,Avatar_12,Avatar_13 ,Avatar_16 } from "../../../Entryfile/imagepath"
 import Tableavatar from '../../../_components/tableavatar/tableavatar'
 import Sidebar from '../../../initialpage/Sidebar/sidebar';;
@@ -16,6 +16,11 @@ import Modal from "@mui/material/Modal";
 const { Option } = Select;
 
 const AttendanceAdmin = () => {
+
+
+  const permissions = useSelector((state) => state?.permissionsSlice?.data)
+  const navigate = useNavigate()
+
   const [form] = Form.useForm();
   const [menu, setMenu] = useState(false)
   const [isLoading, setIsLoading] = useState(false);
@@ -35,7 +40,11 @@ const AttendanceAdmin = () => {
   });  
 
   const [attendancerecords, setAttendanceRecords] = useState([]);
+
   const user_state = useSelector((state) => state.user.loginvalue);
+  const role = user_state?.user?.role
+
+
   const [employeeAttendanceData, setEmployeeAttendanceData] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
@@ -52,9 +61,17 @@ const AttendanceAdmin = () => {
 
 
   useEffect(() => {
-    setIsLoading(true);
 
-    fetchAttendanceData();
+    if(role === 'admin' || permissions?.attndanceManagement) {
+
+      setIsLoading(true);
+      fetchAttendanceData();
+
+    }else{
+
+      navigate('/restricted', { state: { unAuthorize: true}})
+
+    }
 
   }, [filters]);
 
@@ -92,7 +109,7 @@ const AttendanceAdmin = () => {
   const [dayRecord, setDayRecord] = useState(null);
 
   const openModal = (dayRecord,abbreviation) => {
-    if (abbreviation !== "-" ) {
+    if (abbreviation !== "-") {
       setIsModalVisible(true);
       setDayRecord(dayRecord)
     }
@@ -415,23 +432,26 @@ const dataSource = employeeAttendanceData.map((employeeData) => {
       </div>
     </div>
     <div className="col-sm-6 col-md-3" style={{ display: 'flex', alignItems: 'flex-start', gap: '13px' }}>
-      <Button 
-       type="primary" 
-       htmlType="submit"
-       className="btn-success btn-block w-50"
-       >
-         Search 
-      </Button>
-
-      <Button 
-       htmlType="button"
-        className="btn-secondary btn-block w-50" 
-        onClick={handleReset}
-        style={{ backgroundColor: "#616161", borderColor: "#616161" }}
+      
+        <Button 
+        type="primary" 
+        htmlType="submit"
+        className="btn-success btn-block w-50"
+        disabled={role === 'admin' ? false : permissions?.attndanceManagement ? false : true}
         >
-           Reset 
-        </Button>
-
+          Search 
+       </Button>
+ 
+       <Button 
+        htmlType="button"
+         className="btn-secondary btn-block w-50" 
+         onClick={handleReset}
+         disabled={role === 'admin' ? false : permissions?.attndanceManagement ? false : true}
+         style={{ backgroundColor: "#616161", borderColor: "#616161" }}
+         >
+            Reset 
+         </Button>
+         
     </div>
   </div>
 </Form>
