@@ -1,8 +1,8 @@
 
 import React, { useState,useEffect } from 'react';
 import { Helmet } from "react-helmet";
-import { Link } from 'react-router-dom';
-import { Button, Col, Form, Input,DatePicker, Row, Select, Spin, Table, message } from 'antd';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Button, Col, Form, Input,DatePicker, Row, Select, Spin, Table, message, Empty } from 'antd';
 import 'antd/dist/antd.css';
 import {itemRender,onShowSizeChange} from "../../paginationfunction"
 import "../../antdstyle.css"
@@ -15,10 +15,20 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Modal } from '@mui/material';
 import moment from 'moment';
 import { counter } from '../../../Redux/Reducer/permissions/pendingCounterSlice';
+import EmptyTable from "../../../files/Icons/EmptyTable.svg";
+import { user_icon } from '../../../Entryfile/imagepath';
 
 const { Option } = Select;
 
 const LeaveAdmin = () => {
+
+  const { id } = useParams()
+
+  const navigate = useNavigate()
+
+  const permissions = useSelector((state) => state?.permissionsSlice?.data)
+  console.log(permissions,role)
+
 
   const [menu, setMenu] = useState(false)
   const dispatch = useDispatch()
@@ -31,6 +41,10 @@ const LeaveAdmin = () => {
 
     const user_state = useSelector((state) => state.user.loginvalue);
   const pending_counter = useSelector((state) => state?.counter?.counter?.payload);
+    const role = user_state?.user?.role
+
+    
+
     const[requests,setRequests] = useState([]);
     const [tableData, setTableData] = useState([]); // Step 1
     const [pagination, setPagination] = useState({
@@ -43,10 +57,14 @@ const LeaveAdmin = () => {
     const [selectedfromTo, setSelectedfromTo] = useState('');
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [selectedRecord, setSelectedRecord] = useState(null);
+    const [statdata, setStatdata] = useState();
 
+
+    
     const closeModal = () => {
       setIsModalVisible(false);
       setSelectedRecord(null)
+      navigate('/employee/request-admin')
     };
 
     const openModal = (record) => {
@@ -108,7 +126,10 @@ const LeaveAdmin = () => {
           message.error('Failed to update leave request status');
         })
         .finally(() => {
+          setIsModalVisible(false);
+          setSelectedRecord(null)
           setIsLoading(true);
+          navigate('/employee/request-admin')
 
           // setSelectedFilters({
           //   name: "",
@@ -200,9 +221,18 @@ const LeaveAdmin = () => {
     });  
 
     useEffect(()=>{
-      setIsLoading(true);
-      fetchleaves();
+      if(role === 'admin' || permissions?.viewAllRequest || permissions?.teamRequest) {
+
+        setIsLoading(true);
+        fetchleaves();
+
+      }else{
+
+        navigate('/restricted', { state: { unAuthorize: true}})
+
+      }
     },[filters, pagination.current, pagination.pageSize])
+
 
     const fetchleaves = async() => {
 
@@ -218,13 +248,27 @@ const LeaveAdmin = () => {
         .then((res) => {
           if (res.data.success === true) {
             const requestData=res?.data?.Requests?.docs
+            const statdata=res?.data
+            setStatdata(statdata)
+            console.log("hello",statdata)
+
             setRequests(requestData);
-            console.log(requestData) ;
+            console.log(requestData);
+
+            console.log("these are ",requestData?.totalDays)
             setTableData(requestData); // Step 2
             setPagination({
               ...pagination,
               total: res?.data?.Requests?.totalDocs,
             });
+
+            if (id) {
+              const specificRequest = requestData.find((request) => request._id === id);
+              console.log(specificRequest)
+              if(specificRequest){
+                openModal(specificRequest);
+              }
+            }
           }
         })
         .catch((error) => {
@@ -233,6 +277,45 @@ const LeaveAdmin = () => {
           setIsLoading(false);
         });
         }
+
+
+        const customEmptyText = (
+          <Empty
+            image={<img src={EmptyTable} />}
+            // image={<InboxOutlined />}
+            imageStyle={
+              {
+                // fontSize: 48,
+                // color: '#1890ff',
+              }
+            }
+            style={{
+              height: "300px",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+            }}
+            description={
+              <div style={{ display: "" }}>
+                <div
+                  style={{
+                    color: "#34343F",
+                    fontWeight: "500",
+                    fontSize: "14px",
+                    margin: "7px 0px 4px 0px",
+                  }}
+                >
+                  No Record Found!
+                </div>
+                {/* <div
+                  style={{ color: "#464665", fontWeight: "300", fontSize: "13px" }}
+                >
+                  Click 'Add Department' Button To Create <br /> A New Department{" "}
+                </div> */}
+              </div>
+            }
+          />
+        );
 
 
     // const updateleaves = async () => {
@@ -255,7 +338,15 @@ const LeaveAdmin = () => {
     title: 'Employee',
     dataIndex: 'user.fullName', // Assuming 'fullName' is the name field in the user object
     render: (text, record) => (
+      <div>
+      <img
+      src={record?.user.imageUrl || user_icon}
+      alt={record?.user.fullName}
+      className="avatar"
+      style={{ width: '30px', height: '30px' }}
+    />
         <span>{record?.user?.fullName}</span>
+      </div>
     ),
     //sorter: (a, b) => a.user.fullName.localeCompare(b.user.fullName), // Sort by employee name
   },
@@ -327,20 +418,27 @@ const LeaveAdmin = () => {
   {
     title: 'Days Off',
     dataIndex:'totalDays',
-    render: (text, record) => {
-      <span>{record?.totalDays}</span>
-    },
+    
   },
   {
     title: 'Reason',
     dataIndex: 'description',
+    render: (text,record) => (
+
+      <label className='longText'>
+
+        {record?.description ? record?.description : "-"}
+
+      </label>
+
+    )
     //sorter: (a, b) => a.description.localeCompare(b.description), // Sort by reason
   },
   {
     title: 'Status',
     dataIndex: 'status',
     render: (text, record) => (
-      <div className="dropdown action-label text-center">
+      <div>
         <a
           className={`btn btn-white btn-sm btn-rounded dropdown-toggle ${
             text === 'Pending'
@@ -349,8 +447,8 @@ const LeaveAdmin = () => {
               ? 'text-success'
               : 'text-danger'
           }`}
-          href={text !== 'Approved' && text !== 'Declined' ? "#" : undefined}
-          data-bs-toggle={text !== 'Approved' && text !== 'Declined' ? "dropdown" : undefined}
+          href={text !== 'Approved' && text !== 'Declined' ? "javascript:void(0)" : undefined}
+          data-bs-toggle={text !== 'Approved' && text !== 'Declined' && (permissions?.requestApproval || role==='admin') ? "dropdown" : ""}
           aria-expanded="false"
           onClick={(e) => e.preventDefault()}
         >
@@ -369,13 +467,13 @@ const LeaveAdmin = () => {
         </a>
         <div className={`dropdown-menu dropdown-menu-right ${text === 'Approved' || text === 'Declined' ? 'disabled' : ''}`}>
           
-          <a className={`dropdown-item ${text === 'Approved' && 'disabled'}`} href="#" onClick={(e) => {
+          <a className={`dropdown-item ${text === 'Approved' && 'disabled'}`} href="javascript:void(0)" onClick={(e) => {
             e.preventDefault();
             handleUpdateStatus(record, 'Approved')}}>
 
             <i className="fa fa-dot-circle-o text-success" /> Approved
           </a>
-          <a className={`dropdown-item ${text === 'Declined' && 'disabled'}`} href="#" onClick={(e) => {
+          <a className={`dropdown-item ${text === 'Declined' && 'disabled'}`} href="javascript:void(0)" onClick={(e) => {
             e.preventDefault();
             handleUpdateStatus(record, 'Declined')}}>
 
@@ -391,8 +489,8 @@ const LeaveAdmin = () => {
   {
     title: 'Action',
     render: (text, record) => (
-      <div className="dropdown dropdown-action text-end">
-        <a href="#" className="action-icon" onClick={() => openModal(record)}>
+      <div className="dropdown dropdown-action">
+        <a href="javascript:void(0)" className="action-icon" onClick={() => openModal(record)}>
           <i className="material-icons">add_circle</i>
         </a>
       </div>
@@ -410,7 +508,7 @@ const LeaveAdmin = () => {
           <Sidebar />        
         <div className="page-wrapper">
         <Helmet>
-            <title>Leaves - DaftarPro Admin</title>
+            <title>Requests - DaftarPro Admin</title>
             <meta name="description" content="Login page"/>					
         </Helmet>
         {/* Page Content */}
@@ -419,16 +517,55 @@ const LeaveAdmin = () => {
           <div className="page-header">
             <div className="row align-items-center">
               <div className="col">
-                <h3 className="page-title">Leaves</h3>
+                <h3 className="page-title">Requests</h3>
                 <ul className="breadcrumb">
                   <li className="breadcrumb-item"><Link to="/app/main/dashboard">Dashboard</Link></li>
-                  <li className="breadcrumb-item active">Leaves</li>
+                  <li className="breadcrumb-item active">Requests</li>
                 </ul>
               </div>
             </div>
           </div>
           {/* /Page Header */}
-      
+          <div className="row">
+          <div className="col-md-3">
+            <div className="stats-info">
+              <label>Today Present</label>
+              <h4>
+              {isLoading ? (
+                <Spin size="large" />
+              ) : (
+                <>{statdata?.attendanceRecord} / {statdata?.totalEmployee}</>
+              )}
+              </h4>
+            </div>
+          </div>
+          <div className="col-md-3">
+            <div className="stats-info">
+            <label>Planned Leaves</label>
+              <h4>8</h4>
+            </div>
+          </div>
+          <div className="col-md-3">
+            <div className="stats-info">
+            <label>Unplanned Leaves</label>
+              <h4>0</h4>
+            </div>
+          </div>
+          <div className="col-md-3">
+            <div className="stats-info">
+            <label>Pending Requests</label>
+            
+              <h4>
+              {isLoading ? (
+                <Spin size="large" />
+              ) : (
+                <>{statdata?.pendingRequests}</>
+              )}
+                </h4>
+              
+              </div>
+          </div>
+        </div>
           {/* /Leave Statistics */}
           {/* Search Filter */}
           <Form form={form} onFinish={handleSearch}>
@@ -529,6 +666,7 @@ const LeaveAdmin = () => {
               type="primary" 
               htmlType="submit"
               className="btn-success btn-block w-50"
+              disabled={role === 'admin' ? false : permissions?.viewAllRequest ? false : permissions?.teamRequest ? false : true}
               >
                 <span className="d-flex justify-content-center">Search</span> 
               </Button>
@@ -537,6 +675,7 @@ const LeaveAdmin = () => {
                 htmlType="button"
                 className="btn-secondary btn-block w-50" 
                 onClick={handleReset}
+                disabled={role === 'admin' ? false : permissions?.viewAllRequest ? false : permissions?.teamRequest ? false : true}
                 style={{ backgroundColor: "#616161", borderColor: "#616161" }}
                 >
                   <span className="d-flex justify-content-center">Reset</span> 
@@ -557,7 +696,7 @@ const LeaveAdmin = () => {
                 emptyText: isLoading ? (
                   <Spin size="large" tip="Loading..." />
                 ) : (
-                  "No data"
+                  customEmptyText
                 ),
               }}
               loading={isLoading}
@@ -771,25 +910,24 @@ const LeaveAdmin = () => {
 
               <Form
 
-                form={form}
 
                 name="control-hooks"
 
                 initialValues={{
 
-                  fullName: selectedRecord?.user.fullName,
+                  fullName: selectedRecord?.user.fullName || "",
 
-                  requestType: selectedRecord?.requestType,
+                  requestType: selectedRecord?.requestType || "",
 
-                  leaveType: selectedRecord?.leaveType,
+                  leaveType: selectedRecord?.leaveType || "",
 
-                  startDate: moment(selectedRecord?.startDate, 'YYYY-MM-DD'),
+                  startDate: moment(selectedRecord?.startDate, 'YYYY-MM-DD') || "",
 
-                  endDate: moment(selectedRecord?.endDate, 'YYYY-MM-DD'),
+                  endDate: moment(selectedRecord?.endDate, 'YYYY-MM-DD') || "",
 
-                  totalDays: selectedRecord?.totalDays,
+                  totalDays: selectedRecord?.totalDays || "",
 
-                  description: selectedRecord?.description,
+                  description: selectedRecord?.description || "",
 
                 }}
 
@@ -983,14 +1121,16 @@ const LeaveAdmin = () => {
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'flex-start',justifyContent: 'center', gap: '2px' }}> 
-                {selectedRecord?.status !=="Approved" && selectedRecord?.status !=="Declined" && (
+                {selectedRecord?.status !=="Approved" && selectedRecord?.status !=="Declined" && (permissions?.requestApproval
+                || role==='admin') && (
                   <>
                   <Button 
                   type="button" 
                   htmlType="submit"
                   onClick={(e) => {
                     e.preventDefault();
-                    handleUpdateStatus(selectedRecord, 'Approved')}}
+                    handleUpdateStatus(selectedRecord, 'Approved')
+                  }}
                   className="btn-success btn-block w-50"
                   >
                     <span className="d-flex justify-content-center">Approve</span> 
@@ -1001,7 +1141,9 @@ const LeaveAdmin = () => {
                     className="btn-secondary btn-block w-50" 
                     onClick={(e) => {
                       e.preventDefault();
-                      handleUpdateStatus(selectedRecord, 'Declined')}}
+                      handleUpdateStatus(selectedRecord, 'Declined')
+              
+                    }}
                     style={{ backgroundColor: "#616161", borderColor: "#616161" }}
                     >
                       <span className="d-flex justify-content-center">Decline</span> 
