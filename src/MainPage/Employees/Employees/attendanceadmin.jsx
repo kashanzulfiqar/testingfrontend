@@ -8,8 +8,9 @@ import Header from '../../../initialpage/Sidebar/header'
 import Offcanvas from '../../../Entryfile/offcanvance';
 import { apiServices } from '../../../Services/apiServices';
 import { useSelector } from 'react-redux';
-import { Table,Form, Input, DatePicker, Select, Button, Spin, message } from "antd";
+import { Table,Form, Input, DatePicker, Select, Button, Spin, message, Empty } from "antd";
 import moment from "moment"; 
+import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import Modal from "@mui/material/Modal";
 
 
@@ -62,7 +63,7 @@ const AttendanceAdmin = () => {
 
   useEffect(() => {
 
-    if(role === 'admin' || permissions?.attndanceManagement) {
+    if(role === 'admin' || permissions?.attendanceManagement) {
 
       setIsLoading(true);
       fetchAttendanceData();
@@ -109,7 +110,7 @@ const AttendanceAdmin = () => {
   const [dayRecord, setDayRecord] = useState(null);
 
   const openModal = (dayRecord,abbreviation) => {
-    if (abbreviation !== "-") {
+    if (abbreviation !== "-" ) {
       setIsModalVisible(true);
       setDayRecord(dayRecord)
     }
@@ -185,6 +186,44 @@ if (filters.month) {
   // If filters.month is not present, find the number of days in the current month
   daysInMonth = moment().daysInMonth();
 }
+
+const customEmptyText = (
+  <Empty
+    image={<img src={EmptyTable} />}
+    // image={<InboxOutlined />}
+    imageStyle={
+      {
+        // fontSize: 48,
+        // color: '#1890ff',
+      }
+    }
+    style={{
+      height: "300px",
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+    }}
+    description={
+      <div style={{ display: "" }}>
+        <div
+          style={{
+            color: "#34343F",
+            fontWeight: "500",
+            fontSize: "14px",
+            margin: "7px 0px 4px 0px",
+          }}
+        >
+          No Data
+        </div>
+        {/* <div
+          style={{ color: "#464665", fontWeight: "300", fontSize: "13px" }}
+        >
+          Click 'Add Department' Button To Create <br /> A New Department{" "}
+        </div> */}
+      </div>
+    }
+  />
+);
 
 const columns = [
   {
@@ -437,7 +476,7 @@ const dataSource = employeeAttendanceData.map((employeeData) => {
         type="primary" 
         htmlType="submit"
         className="btn-success btn-block w-50"
-        disabled={role === 'admin' ? false : permissions?.attndanceManagement ? false : true}
+        disabled={role === 'admin' ? false : permissions?.attendanceManagement ? false : true}
         >
           Search 
        </Button>
@@ -446,7 +485,7 @@ const dataSource = employeeAttendanceData.map((employeeData) => {
         htmlType="button"
          className="btn-secondary btn-block w-50" 
          onClick={handleReset}
-         disabled={role === 'admin' ? false : permissions?.attndanceManagement ? false : true}
+         disabled={role === 'admin' ? false : permissions?.attendanceManagement ? false : true}
          style={{ backgroundColor: "#616161", borderColor: "#616161" }}
          >
             Reset 
@@ -465,7 +504,7 @@ const dataSource = employeeAttendanceData.map((employeeData) => {
               emptyText: isLoading ? (
                 <Spin size="large" tip="Loading..." />
               ) : (
-                "No data"
+                customEmptyText
               ),
             }}
         loading={isLoading}
