@@ -2358,7 +2358,7 @@ input[type=file].form-control {
   top: 15px;
   right: 37px;
   border-radius: 30px;
-  display: none;
+  /* display: none; */
 }
 .sidebar .sidebar-menu ul li.submenu .submenu a span,
 .two-col-bar .sidebar-menu ul li.submenu .submenu a span {
@@ -7174,6 +7174,17 @@ textarea.form-control {
 }
 
 /* ................. custom css styling ................ */
+
+.custom-border .ant-select-disabled > div{
+  color: black !important;
+    background: #e9ecef !important;
+}
+.dateDisable input{
+  color: black !important;
+}
+.dateDisable{
+  color: black !important;
+}
 
 .longText{
   -webkit-line-clamp: 1;

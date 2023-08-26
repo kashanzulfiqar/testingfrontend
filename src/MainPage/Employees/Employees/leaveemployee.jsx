@@ -56,12 +56,12 @@ const LeaveEmployee = () => {
     });  
 
     useEffect(() => {
-      if(role === 'admin' || permissions.viewSelfRequest) {
+      if(permissions?.viewSelfRequest) {
         getSelfRequests();
         getLeaves()
         getUser()
       }else{
-        navigate('/restricted', { state: { unAuthorize: true}})
+        nav('/restricted', { state: { unAuthorize: true}})
       }
     }, []);
 
@@ -136,6 +136,7 @@ const LeaveEmployee = () => {
       setOpen({ isAddOpen: false, isDelOpen: false, data: "" });
       form.resetFields();
       setLeaveType(false)
+      setReasonLength('0')
     };
         
       const columns = [
@@ -233,29 +234,57 @@ const LeaveEmployee = () => {
           render: (text, record) => (
               <div className="dropdown dropdown-action text-end">
                 <a href="javascript:void(0)" className="action-icon dropdown-toggle" data-bs-toggle={role === 'admin' ? 'dropdown' : permissions?.manageSelfRequest ? 'dropdown' : ''} aria-expanded="false" disabled={role === 'admin' ? false : permissions?.manageSelfRequest ? false : true}><i className="material-icons">more_vert</i></a>
-                <div className="dropdown-menu dropdown-menu-right">
-                  <a
-                    className="dropdown-item" 
-                    href="javascript:void(0)" 
-                    onClick={() => {
+                { record?.status === 'Pending' ?
+                  <div className="dropdown-menu dropdown-menu-right">
+                    <a
+                      className="dropdown-item" 
+                      href="javascript:void(0)" 
+                      onClick={() => {
+                        setOpen({
+                        isAddOpen: true,
+                        isDelOpen: false,
+                        data: record,
+                      })
+                      form.setFieldsValue({
+                        ...record,
+                        startDate: moment(record?.startDate, 'YYYY-MM-DD'),
+                        endDate: moment(record?.endDate, 'YYYY-MM-DD'),
+                      })
+                      if(record?.requestType !== 'wfh')
+                        setLeaveType(true)
+                      }}
+                    >
+                      <i className="fa fa-pencil m-r-5" /> Edit</a>
+                    <a className="dropdown-item" href="#" onClick={() => {
                       setOpen({
-                      isAddOpen: true,
-                      isDelOpen: false,
-                      data: record,
-                    })
-                    if(record?.requestType !== 'wfh')
-                      setLeaveType(true)
-                    }}
-                  >
-                    <i className="fa fa-pencil m-r-5" /> Edit</a>
-                  <a className="dropdown-item" href="#" onClick={() => {
-                    setOpen({
-                      isAddOpen: false,
-                      isDelOpen: true,
-                      data: record,
-                    })
-                  }}><i className="fa fa-trash-o m-r-5" /> Delete</a>
-                </div>
+                        isAddOpen: false,
+                        isDelOpen: true,
+                        data: record,
+                      })
+                    }}><i className="fa fa-trash-o m-r-5" /> Delete</a>
+                  </div> :
+                  <div className="dropdown-menu dropdown-menu-right">
+                    <a
+                      className="dropdown-item" 
+                      href="javascript:void(0)" 
+                      onClick={() => {
+                        setOpen({
+                        isAddOpen: true,
+                        isDelOpen: false,
+                        data: record,
+                      })
+                      form.setFieldsValue({
+                        ...record,
+                        startDate: moment(record?.startDate, 'YYYY-MM-DD'),
+                        endDate: moment(record?.endDate, 'YYYY-MM-DD'),
+                      })
+                      if(record?.requestType !== 'wfh')
+                        setLeaveType(true)
+                      }}
+                    >
+                      <i className="fa fa-eye m-r-5" /> View</a>
+                  </div>
+                }
               </div>
             ),
       
@@ -474,6 +503,8 @@ const leaves = [
         return fromDate && current < moment(fromDate).startOf('day');
       };
 
+      const [good, setGood] = useState('')
+
       return (
         <>
         <div className="page-wrapper">
@@ -601,7 +632,7 @@ const leaves = [
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">
-                {open?.data ? "Update" : "Add"} Request
+                { open?.data === '' ? "Add" : open?.data?.status === 'Pending' ? "Update" : 'View'} Request
               </h5>
               <button type="button" className="close" onClick={handleClose}>
                 <span aria-hidden="true">×</span>
@@ -620,14 +651,14 @@ const leaves = [
                     message.error("Please Fill Required Fields!")
                   }
                 }}
-                initialValues={{
-                  requestType: open?.data ? open?.data?.requestType : "",
-                  leaveType: open?.data ? open?.data?.leaveType : "",
-                  startDate: open?.data ? moment(open?.data?.startDate, 'YYYY-MM-DD') : "",
-                  endDate: open?.data ? moment(open?.data?.endDate, 'YYYY-MM-DD') : "",
-                  totalDays: open?.data ? open?.data?.totalDays : "",
-                  description: open?.data ? open?.data?.description : "",
-                }}
+                // initialValues={{
+                //   requestType: open?.data ? open?.data?.requestType : "",
+                //   leaveType: open?.data ? open?.data?.leaveType : "",
+                //   startDate: open?.data ? moment(open?.data?.startDate, 'YYYY-MM-DD') : "",
+                //   endDate: open?.data ? moment(open?.data?.endDate, 'YYYY-MM-DD') : "",
+                //   totalDays: open?.data ? open?.data?.totalDays : "",
+                //   description: open?.data ? open?.data?.description : "",
+                // }}
                 autoComplete="off"
               >
                 <div className="form-group">
@@ -647,6 +678,7 @@ const leaves = [
                           ]}
                         >
                             <Select
+                                disabled={open?.data?.status === 'Approved' || open?.data?.status === 'Declined' || open?.data?.status === 'Cancelled'}
                                 className="custom-select custom-normal"
                                 getPopupContainer={() => document.getElementById('area')}
                                 style={{
@@ -694,6 +726,7 @@ const leaves = [
                             ]}
                           >
                               <Select
+                                  disabled={open?.data?.status === 'Approved' || open?.data?.status === 'Declined' || open?.data?.status === 'Cancelled'}
                                   className="custom-select custom-normal"
                                   getPopupContainer={() => document.getElementById('area')}
                                   style={{
@@ -726,7 +759,7 @@ const leaves = [
                           },
                         ]}
                       >
-                          <DatePicker className='form-control' onChange={e => {calculateTotalDays(e); handleFromDateChange(e)}} getPopupContainer={() => document.getElementById('area')} />
+                          <DatePicker style={{backgroundColor: (open?.data?.status === 'Approved' || open?.data?.status === 'Declined' || open?.data?.status === 'Cancelled') ? '#e9ecef' : ''}} disabled={open?.data?.status === 'Approved' || open?.data?.status === 'Declined' || open?.data?.status === 'Cancelled'} className={(open?.data?.status === 'Approved' || open?.data?.status === 'Declined' || open?.data?.status === 'Cancelled') ? 'dateDisable form-control' : 'form-control'} onChange={e => {calculateTotalDays(e); handleFromDateChange(e); setGood(10)}} getPopupContainer={() => document.getElementById('area')} />
                       </Form.Item>
                   </div>
                 </div>
@@ -745,7 +778,7 @@ const leaves = [
                           },
                         ]}
                       >
-                          <DatePicker className='form-control' onChange={calculateTotalDays} disabledDate={disabledDate} getPopupContainer={() => document.getElementById('area')} />
+                          <DatePicker style={{backgroundColor: (open?.data?.status === 'Approved' || open?.data?.status === 'Declined' || open?.data?.status === 'Cancelled') ? '#e9ecef' : ''}} disabled={open?.data?.status === 'Approved' || open?.data?.status === 'Declined' || open?.data?.status === 'Cancelled'} className={(open?.data?.status === 'Approved' || open?.data?.status === 'Declined' || open?.data?.status === 'Cancelled') ? 'dateDisable form-control' : 'form-control'} onChange={calculateTotalDays} disabledDate={disabledDate} getPopupContainer={() => document.getElementById('area')} />
                       </Form.Item>
                   </div>
                 </div>
@@ -757,13 +790,13 @@ const leaves = [
                     name='totalDays'
                     className='custom-border'
                     >
-                      <Input className='form-control' style={{color: 'black'}} disabled/>
+                      <Input className='form-control' value={good} style={{color: 'black'}} disabled/>
                     </Form.Item>
                 </div>
                 <div className="form-group">
                   <label style={{display: 'flex', justifyContent: 'space-between'}}>
                     <div>Reason <span className="text-danger">*</span></div>
-                  <small style={{marginTop: '5px', fontSize: '10px', color: 'rgba(0, 0, 0, 0.5)'}}>{reasonLength} / 150</small>
+                  { !(open?.data?.status === 'Approved' || open?.data?.status === 'Declined' || open?.data?.status === 'Cancelled') && <small style={{marginTop: '5px', fontSize: '10px', color: 'rgba(0, 0, 0, 0.5)'}}>{reasonLength} / 150</small>}
                   </label>
                   <Form.Item
                     name="description"
@@ -787,9 +820,12 @@ const leaves = [
                     ]}
                     className="custom-border"
                   >
-                    <Input.TextArea rows={3} className="form-control" onChange={(e) => setReasonLength(e.target.value.length)} maxLength={150} />
+                    <Input.TextArea rows={3} disabled={open?.data?.status === 'Approved' || open?.data?.status === 'Declined' || open?.data?.status === 'Cancelled'} className={(open?.data?.status === 'Approved' || open?.data?.status === 'Declined' || open?.data?.status === 'Cancelled') ? 'dateDisable form-control' : 'form-control'} onChange={(e) => setReasonLength(e.target.value.length)} maxLength={150} />
                   </Form.Item>
                 </div>
+                {
+                  !(open?.data?.status === 'Approved' || open?.data?.status === 'Declined' || open?.data?.status === 'Cancelled') && 
+                  
                 <div className="submit-section">
                   <Form.Item>
                     <Button
@@ -804,7 +840,8 @@ const leaves = [
                       )}
                     </Button>
                   </Form.Item>
-                </div>
+                </div> 
+              }
               </Form>
             </div>
           </div>
