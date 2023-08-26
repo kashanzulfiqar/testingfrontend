@@ -1,7 +1,7 @@
 
 import React, { useState,useEffect } from 'react';
 import { Helmet } from "react-helmet";
-import { Link, useParams } from 'react-router-dom';
+import { Link, Navigate, useParams, useNavigate } from 'react-router-dom';
 import { Button, Col, Form, Input,DatePicker, Row, Select, Spin, Table, message } from 'antd';
 import 'antd/dist/antd.css';
 import {itemRender,onShowSizeChange} from "../../paginationfunction"
@@ -20,6 +20,8 @@ const { Option } = Select;
 const LeaveAdmin = () => {
 
   const { id } = useParams()
+
+  const navigate = useNavigate()
 
   const permissions = useSelector((state) => state?.permissionsSlice?.data)
   console.log(permissions,role)
@@ -118,6 +120,7 @@ const LeaveAdmin = () => {
           setIsModalVisible(false);
           setSelectedRecord(null)
           setIsLoading(true);
+          navigate('employee/request-admin')
 
           // setSelectedFilters({
           //   name: "",
@@ -241,7 +244,9 @@ const LeaveAdmin = () => {
             console.log("hello",statdata)
 
             setRequests(requestData);
-            console.log(requestData) ;
+            console.log(requestData);
+
+            console.log("these are ",requestData?.totalDays)
             setTableData(requestData); // Step 2
             setPagination({
               ...pagination,
@@ -285,7 +290,15 @@ const LeaveAdmin = () => {
     title: 'Employee',
     dataIndex: 'user.fullName', // Assuming 'fullName' is the name field in the user object
     render: (text, record) => (
+      <div>
+      <img
+      src={record?.user.imageUrl}
+      alt={record?.user.fullName}
+      className="avatar"
+      style={{ width: '30px', height: '30px' }}
+    />
         <span>{record?.user?.fullName}</span>
+      </div>
     ),
     //sorter: (a, b) => a.user.fullName.localeCompare(b.user.fullName), // Sort by employee name
   },
@@ -358,7 +371,7 @@ const LeaveAdmin = () => {
     title: 'Days Off',
     dataIndex:'totalDays',
     render: (text, record) => {
-      <span>{record?.totalDays}</span>
+      <span>{record?.totalDays ? record?.totalDays : "-" }</span>
     },
   },
   {
@@ -368,7 +381,7 @@ const LeaveAdmin = () => {
 
       <label className='longText'>
 
-        {record?.description}
+        {record?.description ? record?.description : "-"}
 
       </label>
 
@@ -471,7 +484,13 @@ const LeaveAdmin = () => {
           <div className="col-md-3">
             <div className="stats-info">
               <label>Today Present</label>
-              <h4>{statdata?.attendanceRecord} / {statdata?.totalEmployee}</h4>
+              <h4>
+              {isLoading ? (
+                <Spin size="large" />
+              ) : (
+                <>{statdata?.attendanceRecord} / {statdata?.totalEmployee}</>
+              )}
+              </h4>
             </div>
           </div>
           <div className="col-md-3">
@@ -489,8 +508,16 @@ const LeaveAdmin = () => {
           <div className="col-md-3">
             <div className="stats-info">
             <label>Pending Requests</label>
-              <h4>{statdata?.pendingRequests}</h4>
-            </div>
+            
+              <h4>
+              {isLoading ? (
+                <Spin size="large" />
+              ) : (
+                <>{statdata?.pendingRequests}</>
+              )}
+                </h4>
+              
+              </div>
           </div>
         </div>
           {/* /Leave Statistics */}
