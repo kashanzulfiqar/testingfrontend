@@ -423,8 +423,8 @@ const AllEmployees = () => {
             </div>
           </div>
           <div className="col-sm-6 col-md-3" style={{display: 'flex', alignItems: 'flex-start', gap: '13px'}}>  
-            <button href="javascript:void(0)" type="submit" className="btn btn-success btn-block w-50" disabled={((role === 'admin' ? false : true) || !permissions?.viewAllUsers)}> Search </button>  
-            <button href="javascript:void(0)" type="reset" onClick={() => { form.resetFields(); getEmployees('', 1, pageSize); setFilterValues(null); setCurrentPage(1)}} className="btn btn-success btn-block w-50 resetButton" style={{backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}} disabled={((role === 'admin' ? false : true) || !permissions?.viewAllUsers)}> Reset </button>  
+            <button href="javascript:void(0)" type="submit" className="btn btn-success btn-block w-50" disabled={role === 'admin' ? false : permissions?.viewAllUsers ? false : true}> Search </button>  
+            <button href="javascript:void(0)" type="reset" onClick={() => { form.resetFields(); getEmployees('', 1, pageSize); setFilterValues(null); setCurrentPage(1)}} className="btn btn-success btn-block w-50 resetButton" style={{backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}} disabled={role === 'admin' ? false : permissions?.viewAllUsers ? false : true}> Reset </button>  
           </div>
         </div>
         </Form>

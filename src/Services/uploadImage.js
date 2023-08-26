@@ -11,8 +11,8 @@ export const apiUploadToS3 = (imagedata) => {
 
     // const PRD_BASE_URL = "https://hrms.herokuapp.com";
 
-    // let BASE_URL = (location === "https://www.daftarpro.com" || location === "https://daftarpro.com" || location === "http://daftarpro.com" || location === "http://daftarpro.com") ? PRD_BASE_URL : DEV_BASE_URL
-    let BASE_URL = PRD_BASE_URL
+    let BASE_URL = (location === "https://www.daftarpro.com" || location === "https://daftarpro.com" || location === "http://daftarpro.com" || location === "http://daftarpro.com") ? PRD_BASE_URL : DEV_BASE_URL
+    // let BASE_URL = PRD_BASE_URL
     
     
     

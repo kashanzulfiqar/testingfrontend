@@ -7174,6 +7174,13 @@ textarea.form-control {
 
 /* ................. custom css styling ................ */
 
+.longText{
+  -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    display: -webkit-box;
+    max-width: 190px;
+    overflow: hidden;
+}
 .resetButton:hover{
   background-color: #898989 !important;
 }
