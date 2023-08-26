@@ -231,7 +231,9 @@ const Roles = () => {
               customPermissions: allpermissions,
             },
           ]);
-          handlePermClose();
+          // handlePermClose();
+          setOpenPermissions({ isOpen: false, data: "" });
+          setPermissions([]);
           message.success("Role and Permissions Added Successfully!");
           setLoader(false)
         }

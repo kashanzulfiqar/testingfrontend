@@ -499,8 +499,18 @@ const Sidebar = (props) => {
                           </li>
                         }
                         <li><Link className={pathname.includes('employee/holidays') ? "active" : ""} to="/employee/holidays">Holidays</Link></li>
-                        <li><Link className={pathname.includes('request-admin') ? "active" : ""} to="/employee/request-admin">Requests (Admin) <span className="badge badge-pill bg-primary float-end">1</span></Link></li>
-                        <li><Link className={pathname.includes('employee/requests') ? "active" : ""} to="/employee/requests">Requests (Employee)</Link></li>
+                        <li>
+                          {
+                            (user_state?.role === 'admin' || permissions?.viewAllRequest || permissions?.teamRequest) &&
+                            <Link className={pathname.includes('request-admin') ? "active" : ""} to="/employee/request-admin">Requests (Admin) <span className="badge badge-pill bg-primary float-end">1</span></Link>
+                          }
+                        </li>
+                        <li>
+                        {
+                            (user_state?.role === 'admin' || permissions?.viewSelfRequest) &&
+                            <Link className={pathname.includes('employee/requests') ? "active" : ""} to="/employee/requests">Requests (Employee)</Link>
+                        }
+                        </li>
                         {/* <li><Link className={pathname.includes('e-settings') ? "active" : ""} to="/app/employee/leave-settings">Leave Settings</Link></li> */}
                         {
                           (user_state?.role === 'admin' || permissions?.attendanceManagement) &&

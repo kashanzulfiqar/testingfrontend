@@ -103,8 +103,8 @@ const App = () => {
           <Route path={`employee/allemployees`} element={<AllEmployees />} />
           <Route path={`employee/employees-list`} element={<Employeeslist />} />
           <Route path={`employee/holidays`} element={<Holidays />} />
-          <Route path={`employee/leaves`} element={<LeaveEmployee />} />
-          <Route path={`employee/leaves-admin`} element={<LeaveAdmin />} />
+          <Route path={`employee/requests`} element={<LeaveEmployee />} />
+          <Route path={`employee/request-admin`} element={<LeaveAdmin />} />
           <Route path={`employee/timesheet`} element={<Timesheet />} />
           <Route path={`/profile/employee-profile`} element={<EmployeeProfile />} />
 
