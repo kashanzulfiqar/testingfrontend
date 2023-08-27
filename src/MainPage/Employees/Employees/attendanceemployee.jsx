@@ -512,7 +512,11 @@ const AttendanceEmployee = () => {
                       <div className="punch-hours">
                         {/* <span>{isCheckedOut ? formatHoursMinutes(checkOut.hoursWorked) : "--"}</span> */}
                         {/* <span>{isCheckedOut ? formatHoursMinutes(parseFloat(checkOut.hoursWorked) * 60) : "--"}</span> */}
-                        <label>{isCheckedOut ? formatHoursMinutes(checkOut.hoursWorked) : "--"}</label>
+                        <label>{isLoading ? (
+                        <Spin size="large" />
+                      ) : (isCheckedOut ? formatHoursMinutes(checkOut.hoursWorked) : "--")
+                      }
+                          </label>
                       </div>
                     </div>
                     
@@ -526,9 +530,12 @@ const AttendanceEmployee = () => {
                         } punch-btn`}
                         onClick={isCheckedIn ? handleCheckOut : handleCheckIn}
                         disabled={isCheckedOut}
-                      >
-                        {isCheckedOut ? "Marked" : isCheckedIn ? "Check Out" : "Check In"}
-                      </button>
+                      >{isLoading ? (
+                        <Spin size="medium" />
+                      ) : (
+                        isCheckedOut ? "Marked" : isCheckedIn ? "Check Out" : "Check In"
+                      )}
+                        </button>
                     </div>
 
                     <div className="statistics">
