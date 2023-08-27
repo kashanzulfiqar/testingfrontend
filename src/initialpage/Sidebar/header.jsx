@@ -424,7 +424,8 @@ const Header = (props) => {
             <a className="dropdown-item" onClick={() => {
               localStorage.clear();
               sessionStorage.clear();
-              nav('/login');
+              // nav('/login');
+              window.location.href = `${window?.location?.origin}/login`
             }}>Logout</a>
           </div>
         </li>
@@ -440,7 +441,8 @@ const Header = (props) => {
           <a className="dropdown-item" onClick={() => {
               localStorage.clear();
               sessionStorage.clear();
-              nav('/login');
+              // nav('/login');
+              window.location.href = `${window?.location?.origin}/login`
             }}>Logout</a>
         </div>
       </div>
