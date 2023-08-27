@@ -49,7 +49,7 @@ const LeaveAdmin = () => {
     const [tableData, setTableData] = useState([]); // Step 1
     const [pagination, setPagination] = useState({
       current: 1,
-      pageSize: 10,
+      pageSize: 20,
       total: 0,
     })
     
@@ -60,38 +60,23 @@ const LeaveAdmin = () => {
     const [statdata, setStatdata] = useState();
 
 
-    
     const closeModal = () => {
-      setIsModalVisible(false);
       setSelectedRecord(null)
-      navigate('/employee/request-admin')
+      setIsModalVisible(false);
     };
 
     const openModal = (record) => {
         setSelectedRecord(record);
-        
+        setIsModalVisible(true);
     };
 
-    useEffect(() => {
-      if (selectedRecord) {
-        setIsModalVisible(true);
-        console.log(selectedRecord)
-      }
-    }, [selectedRecord]);
+    // useEffect(() => {
+    //   if (selectedRecord) {
+    //     setIsModalVisible(true);
+    //     console.log(selectedRecord)
+    //   }
+    // }, [selectedRecord]);
 
-
-    const [update,setUpdated] = useState({
-      _id: "",
-      userId: "",
-      companyId: "",
-      requestType: "",
-      leaveType: "",
-      startDate: "",
-      endDate: "",
-      status: "",
-      description: "",
-      approvedBy: "",
-    })
 
     const handleUpdateStatus = (record, newStatus) => {
 
@@ -118,8 +103,14 @@ const LeaveAdmin = () => {
           if (res.data.success === true) {
             
             message.success(`Leave request updated to ${newStatus}`);
+
+            handleReset();
+            navigate('/employee/request-admin')
+            fetchleaves();
+
             dispatch(counter(pending_counter-1))
             
+
           }
         })
         .catch((error) => {
@@ -127,31 +118,11 @@ const LeaveAdmin = () => {
           message.error('Failed to update leave request status');
         })
         .finally(() => {
-          setIsModalVisible(false);
-          setSelectedRecord(null)
-          setIsLoading(true);
-          navigate('/employee/request-admin')
 
-          // setSelectedFilters({
-          //   name: "",
-          //   type: "",
-          //   status: "",
-          //   from: "",
-          //   to:"",
-          // });
-    
-          // setFilters({
-          //   name: "",
-          //   type: "",
-          //   status: "",
-          //   from: "",
-          //   to:"",  
-          // });
-          
-          fetchleaves();
+          closeModal();
+
         });
     };
-
 
 
     const [filters, setFilters] = useState({
@@ -226,6 +197,7 @@ const LeaveAdmin = () => {
 
         setIsLoading(true);
         fetchleaves();
+        console.log("helloooooooooo")
 
       }else{
 
@@ -243,40 +215,62 @@ const LeaveAdmin = () => {
         limit: pagination.pageSize,
       };
 
-      let apiUrl = `requests/view-all-request?employeeName=${filters.name}&leaveType=${filters.type}&requestTo=${filters.to}&requestFrom=${filters.from}&page=${params.page}&limit=${params.limit}&status=${params.status}`
-
-      apiServices("GET", apiUrl, null, user_state)
-        .then((res) => {
-          if (res.data.success === true) {
-            const requestData=res?.data?.Requests?.docs
-            const statdata=res?.data
-            setStatdata(statdata)
-            console.log("hello",statdata)
-
-            setRequests(requestData);
-            console.log(requestData);
-
-            console.log("these are ",requestData?.totalDays)
-            setTableData(requestData); // Step 2
-            setPagination({
-              ...pagination,
-              total: res?.data?.Requests?.totalDocs,
-            });
-
-            if (id) {
-              const specificRequest = requestData.find((request) => request._id === id);
-              console.log(specificRequest)
-              if(specificRequest){
-                openModal(specificRequest);
-              }
+      if(id){
+        let apiUrl = `requests/view-all-request?employeeName=${filters.name}&leaveType=${filters.type}&requestTo=${filters.to}&requestFrom=${filters.from}&page=1&limit=9999&status=${params.status}`
+      
+            apiServices("GET", apiUrl, null, user_state)
+              .then((res) => {
+                if (res.data.success === true) {
+                    
+                  const requestData=res?.data?.Requests?.docs
+                  const statdata=res?.data
+                  setStatdata(statdata)
+      
+                  const specificRequest = requestData.find((request) => request._id === id);
+                  //console.log("this is the specific request id !!!",specificRequest)
+      
+                  //console.log("these are ",requestData?.totalDays)
+                  setTableData([specificRequest]); // Step 2
+                  //console.log("this is the id",specificRequest)
+                 
+                }
+              })
+              .catch((error) => {
+                console.log("error", error);
+              }).finally(()=>{
+                setIsLoading(false);
+              });
+      }
+      else{
+        let apiUrl = `requests/view-all-request?employeeName=${filters.name}&leaveType=${filters.type}&requestTo=${filters.to}&requestFrom=${filters.from}&page=${params.page}&limit=${params.limit}&status=${params.status}`
+      
+        apiServices("GET", apiUrl, null, user_state)
+          .then((res) => {
+            if (res.data.success === true) {
+          
+              const requestData=res?.data?.Requests?.docs
+              const statdata=res?.data
+              setStatdata(statdata)
+      
+              setRequests(requestData);
+              console.log(requestData);
+      
+              console.log("these are ",requestData?.totalDays)
+              setTableData(requestData); // Step 2
+              setPagination({
+                ...pagination,
+                total: res?.data?.Requests?.totalDocs,
+              });
+              
             }
-          }
-        })
-        .catch((error) => {
-          console.log("error", error);
-        }).finally(()=>{
-          setIsLoading(false);
-        });
+          })
+          .catch((error) => {
+            console.log("error", error);
+          }).finally(()=>{
+            setIsLoading(false);
+          });
+        }
+
         }
 
 
@@ -566,10 +560,10 @@ const LeaveAdmin = () => {
               
               </div>
           </div>
-        </div>
+          </div>
           {/* /Leave Statistics */}
           {/* Search Filter */}
-          <Form form={form} onFinish={handleSearch}>
+          {!id && <Form form={form} onFinish={handleSearch}>
           <div className="row filter-row">
             <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">  
               <div className="form-group">
@@ -684,7 +678,8 @@ const LeaveAdmin = () => {
 
             </div>     
           </div>
-          </Form>
+          </Form>}
+          
 
           {/* /Search Filter */}
           <div className="row">
@@ -727,140 +722,24 @@ const LeaveAdmin = () => {
               }}
             />
               </div>
-            </div>
-          </div>
-        </div>
-        {/* /Page Content */}
-        {/* Add Leave Modal */}
-        <div id="add_leave" className="modal custom-modal fade" role="dialog">
-          <div className="modal-dialog modal-dialog-centered" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Add Leave</h5>
-                <button type="button" className="close" data-bs-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">×</span>
+              {id && (
+              <div style={{ textAlign: 'center', marginTop: '16px' }}>
+                <button
+                  className="btn btn-primary"
+                  style={{borderRadius:'50px', fontSize:"18px", fontWeight:"600", padding:"10px 20px"}}
+                  onClick={() => {
+                    handleReset();
+                    navigate('/employee/request-admin')
+                  }}
+                >
+                  Back to All Requests
                 </button>
               </div>
-              <div className="modal-body">
-                <form>
-                  <div className="form-group">
-                    <label>Leave Type <span className="text-danger">*</span></label>
-                    <select className="select">
-                      <option>Select Leave Type</option>
-                      <option>Casual Leave 12 Days</option>
-                      <option>Medical Leave</option>
-                      <option>Loss of Pay</option>
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label>From <span className="text-danger">*</span></label>
-                    <div>
-                      <input className="form-control datetimepicker" type="date" />
-                    </div>
-                  </div>
-                  <div className="form-group">
-                    <label>To <span className="text-danger">*</span></label>
-                    <div>
-                      <input className="form-control datetimepicker" type="date" />
-                    </div>
-                  </div>
-                  <div className="form-group">
-                    <label>Number of days <span className="text-danger">*</span></label>
-                    <input className="form-control" readOnly type="text" />
-                  </div>
-                  <div className="form-group">
-                    <label>Remaining Leaves <span className="text-danger">*</span></label>
-                    <input className="form-control" readOnly defaultValue={12} type="text" />
-                  </div>
-                  <div className="form-group">
-                    <label>Leave Reason <span className="text-danger">*</span></label>
-                    <textarea rows={4} className="form-control" defaultValue={""} />
-                  </div>
-                  <div className="submit-section">
-                    <button className="btn btn-primary submit-btn">Submit</button>
-                  </div>
-                </form>
-              </div>
+              )}
+              
             </div>
           </div>
         </div>
-        {/* /Add Leave Modal */}
-        {/* Edit Leave Modal */}
-        {/* <div id="edit_leave" className="modal custom-modal fade" role="dialog">
-          <div className="modal-dialog modal-dialog-centered" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Edit Leave</h5>
-                <button type="button" className="close" data-bs-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">×</span>
-                </button>
-              </div>
-              <div className="modal-body">
-                <form>
-                  <div className="form-group">
-                    <label>Leave Type <span className="text-danger">*</span></label>
-                    <select className="select">
-                      <option>Select Leave Type</option>
-                      <option>Casual Leave 12 Days</option>
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label>From <span className="text-danger">*</span></label>
-                    <div>
-                      <input className="form-control datetimepicker" defaultValue="01-01-2019" type="date" />
-                    </div>
-                  </div>
-                  <div className="form-group">
-                    <label>To <span className="text-danger">*</span></label>
-                    <div>
-                      <input className="form-control datetimepicker" defaultValue="01-01-2019" type="date" />
-                    </div>
-                  </div>
-                  <div className="form-group">
-                    <label>Number of days <span className="text-danger">*</span></label>
-                    <input className="form-control" readOnly type="text" defaultValue={2} />
-                  </div>
-                  <div className="form-group">
-                    <label>Remaining Leaves <span className="text-danger">*</span></label>
-                    <input className="form-control" readOnly defaultValue={12} type="text" />
-                  </div>
-                  <div className="form-group">
-                    <label>Leave Reason <span className="text-danger">*</span></label>
-                    <textarea rows={4} className="form-control" defaultValue={"Going to hospital"} />
-                  </div>
-                  <div className="submit-section">
-                    <button className="btn btn-primary submit-btn">Save</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        </div> */}
-        {/* /Edit Leave Modal */}
-        {/* Approve Leave Modal */}
-        <div className="modal custom-modal fade" id="approve_leave" role="dialog">
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-body">
-                <div className="form-header">
-                  <h3>Leave Approve</h3>
-                  <p>Are you sure want to approve for this leave?</p>
-                </div>
-                <div className="modal-btn delete-action">
-                  <div className="row">
-                    <div className="col-6">
-                      <a href="" className="btn btn-primary continue-btn">Approve</a>
-                    </div>
-                    <div className="col-6">
-                      <a href="" data-bs-dismiss="modal" className="btn btn-primary cancel-btn">Decline</a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* /Approve Leave Modal */}
 
         <Modal
 
