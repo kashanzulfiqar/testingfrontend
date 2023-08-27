@@ -13,6 +13,7 @@ const Sidebar = (props) => {
 
   const location = useLocation();
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
+  const pending_counter = useSelector((state) => state?.counter?.counter?.payload);
   const user_state = useSelector((state) => state.user.loginvalue?.user);
 
   useEffect(() => {
@@ -21,6 +22,7 @@ const Sidebar = (props) => {
       sessionStorage.clear();
     }
   }, [location])
+  
   
   const MenuMore = () => {
     document.getElementById("more-menu-hidden").classList.toggle("hidden");
@@ -487,7 +489,7 @@ const Sidebar = (props) => {
                   <span>Employees</span>
                 </li>
                   <li className="submenu" >
-                    <a href="javascript:" className={(isSideMenu == "employee") ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "employee" ? "" : "employee")}><i className="la la-user" /> <span className="noti-dot"> Employees</span> <span className="menu-arrow" /></a>
+                    <a href="javascript:" className={(isSideMenu == "employee") ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "employee" ? "" : "employee")}><i className="la la-user" /> <span className={pending_counter > 0 ? 'noti-dot' : ''}> Employees</span> <span className="menu-arrow" /></a>
                     {/* <a href="javascript:" className={isSideMenu == "employee" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "employee" ? "" : "employee")}><i className="la la-user" /> <span className="noti-dot"> Employees</span> <span className="menu-arrow" /></a> */}
                     {isSideMenu == "employee" ?
 
@@ -502,12 +504,13 @@ const Sidebar = (props) => {
                         <li>
                           {
                             (user_state?.role === 'admin' || permissions?.viewAllRequest || permissions?.teamRequest) &&
-                            <Link className={pathname.includes('request-admin') ? "active" : ""} to="/employee/request-admin">Requests (Admin) <span className="badge badge-pill bg-primary float-end">1</span></Link>
+                            <Link className={pathname.includes('request-admin') ? "active" : ""} to="/employee/request-admin">Requests (Admin) {pending_counter > 0 && <span className="badge badge-pill bg-primary float-end">{pending_counter}</span>} </Link>
                           }
+                          {/* <Link className={pathname.includes('request-admin') ? "active" : ""} to="/employee/request-admin">Requests (Admin)</Link> */}
                         </li>
                         <li>
                         {
-                            (user_state?.role === 'admin' || permissions?.viewSelfRequest) &&
+                            (permissions?.viewSelfRequest) &&
                             <Link className={pathname.includes('employee/requests') ? "active" : ""} to="/employee/requests">Requests (Employee)</Link>
                         }
                         </li>

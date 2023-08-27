@@ -42,8 +42,10 @@ const Settings = ({test}) => {
   });
 
   useEffect(() => {
-    if(!permissions.companyManagement) {
-        navigate('/restricted', { state: { unAuthorize: true}})
+    if(role === 'admin' || permissions?.companyManagement) {
+
+    }else{
+      navigate('/restricted', { state: { unAuthorize: true}})
     }
   }, [])
   

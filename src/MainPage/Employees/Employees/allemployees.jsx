@@ -115,7 +115,6 @@ const AllEmployees = () => {
           width: '100%'
         });
       }
-      console.log('st1======', st1);
     });  
 
 
