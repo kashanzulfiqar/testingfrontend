@@ -232,7 +232,6 @@ const Header = (props) => {
   const dispatch = useDispatch();
   const updated_user = JSON.parse(localStorage.getItem("updated_user"));
 
-
   const data = notifications.notifications;
   const datas = message.message;
   const [notification, setNotifications] = useState(false);
@@ -246,6 +245,7 @@ const Header = (props) => {
   }
 
   useEffect(() => {
+    if(user_state?.user?.role === 'admin' || permissions?.viewAllRequest || permissions?.teamRequest)
     getCounter()
       }, [location])
     
@@ -264,6 +264,7 @@ const Header = (props) => {
   let pathname = location.pathname
   // const { loginvalue } = useSelector((state) => state.user);
   const user_state = useSelector((state) => state.user.loginvalue);
+  const permissions = useSelector((state) => state?.permissionsSlice?.data);
   const UserName = user_state?.email?.split('@')[0];
   const ProfileName = user_state?.user?.fullName
   const imageURL = user_state?.user?.image
@@ -418,8 +419,8 @@ const Header = (props) => {
             <label style={{marginInline: '5px', cursor: 'pointer'}}>{location?.state?.updated_user?.fullName ? ` ${location?.state?.updated_user?.fullName} ` : updated_user?.fullName ? ` ${updated_user?.fullName} ` : ProfileName ? ` ${ProfileName} ` : "Admin"}</label>
           </a>
           <div className="dropdown-menu dropdown-menu-end" style={{marginLeft: '50px !important'}}>
-            <Link className="dropdown-item" to="#">My Profile</Link>
-            <Link className="dropdown-item" to="#">Settings</Link>
+          <Link to="/profile" className="dropdown-item">My Profile</Link>
+            <Link className="dropdown-item" to="/change-password">Change Password</Link>
             {/* <Link className="dropdown-item" to="/login">Logout</Link> */}
             <a className="dropdown-item" onClick={() => {
               localStorage.clear();
@@ -435,8 +436,8 @@ const Header = (props) => {
       <div className="dropdown mobile-user-menu">
         <a href="javascript:void(0)" className="nav-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="fa fa-ellipsis-v" /></a>
         <div className="dropdown-menu dropdown-menu-end dropdown-menu-right">
-          <Link className="dropdown-item" to="#">My Profile</Link>
-          <Link className="dropdown-item" to="#">Settings</Link>
+        <Link to="/profile" className="dropdown-item">My Profile</Link>
+          <Link className="dropdown-item" to="/change-password">Change Password</Link>
           {/* <Link className="dropdown-item" to="/login">Logout</Link> */}
           <a className="dropdown-item" onClick={() => {
               localStorage.clear();

@@ -659,7 +659,7 @@ const getTaxSlab = () => {
                         </div>
                     </div>
                     </div>
-                    <div className="col-md-12">
+                    <div className="col-md-6">
                     <div className="form-group">
                     <label>
                         Address <span className="text-danger">*</span>
@@ -800,6 +800,51 @@ const getTaxSlab = () => {
                         >
                         <Input className='form-control' maxLength={50} />
                         </Form.Item>
+                    </div>
+                    </div>
+                    <div className="col-md-6">
+                    <div className="form-group">
+                      <label>
+                        Salary <span className="text-danger">*</span>
+                      </label>
+                      <Form.Item
+                        name='salary'
+                        className='custom-border'
+                        rules={[
+                          {
+                            whitespace: true,
+                            required: true,
+                            message: 'please enter salary'
+                            // validator: (_, value) => {
+                            //   if (!value || value.trim() === '') {
+                            //     return Promise.reject('please enter salary');
+                            //   } else if (/\s{2,}/.test(value)) {
+                            //     return Promise.reject('please remove consecutive spaces');
+                            //   } else if (value.length < 3) {
+                            //     return Promise.reject('length must be at least 3 characters long');
+                            //   }
+                            //   return Promise.resolve();
+                            // },
+                          },
+                        ]}
+                      >
+                        <Input className='form-control' maxLength={50}
+                          // onKeyPress={(e) => {
+                          //   if ((e.which >= 65 && e.which <= 90) || (e.which >= 97 && e.which <= 122) || (e.which >= 33 &&  e.which <= 47) || (e.which >= 58 && e.which <= 64) || (e.which >= 91 && e.which <= 96) || (e.which >= 123 && e.which <= 126) ) {
+                          //     e.preventDefault();
+                          //   }
+                          // }}
+                          onKeyPress={(e) => {
+                            if (
+                                (e.which >= 48 && e.which <= 57) ||
+                                e.which === 45
+                            ) {
+                                return
+                            }
+                            e.preventDefault();
+                            }}
+                        />
+                      </Form.Item>
                     </div>
                     </div>
                     <div className="col-md-6">

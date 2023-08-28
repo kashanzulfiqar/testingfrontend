@@ -296,15 +296,15 @@ const LeaveEmployee = () => {
 
 
 const leaves = [
-  {value: 'casual', label: 'Casual Leave'},
-  {value: 'sick', label: 'Sick Leave'},
-  {value: 'bereavement', label: 'Bereavement Leave'},
-  {value: 'marriage', label: 'Marriage Leave'},
-  {value: 'maternity', label: 'Maternity Leave'},
-  {value: 'paternity', label: 'Paternity Leave'},
-  {value: 'annual', label: 'Annual Leave'},
-  {value: 'half', label: 'Half Leave'},
-  {value: 'Unpaid', label: 'Unpaid Leave'},
+  compLeaves?.casualLeaves > 0  && {value: 'casual', label: 'Casual Leave'},
+  compLeaves?.sickLeaves > 0  && {value: 'sick', label: 'Sick Leave'},
+  compLeaves?.bereavementLeaves > 0  && {value: 'bereavement', label: 'Bereavement Leave'},
+  compLeaves?.marriageLeaves > 0  && {value: 'marriage', label: 'Marriage Leave'},
+  compLeaves?.maternityLeaves > 0  && {value: 'maternity', label: 'Maternity Leave'},
+  compLeaves?.paternityLeaves > 0  && {value: 'paternity', label: 'Paternity Leave'},
+  compLeaves?.annualLeaves > 0  && {value: 'annual', label: 'Annual Leave'},
+  compLeaves?.halfDayLeaves > 0  && {value: 'half', label: 'Half Leave'},
+  compLeaves?.unpaidLeaves > 0  && {value: 'Unpaid', label: 'Unpaid Leave'},
 ]
       const calculateTotalDays = () => {
         const startDate = form.getFieldValue('startDate');
@@ -555,7 +555,7 @@ const leaves = [
           </div>
           <div className="col-md-3">
             <div className="stats-info">
-              <label>Work From Home Leave</label>
+              <label>Work From Home</label>
               <h4>{singleUser?.workFromHomeLeaves} / {compLeaves?.workFromHomeLeaves}</h4>
             </div>
           </div>
@@ -735,9 +735,11 @@ const leaves = [
                                   placeholder='Select type'
                               >
                                 {leaves?.map((item, index) => {
-                                  return (
-                                      <Option key={index} value={item?.value}>{item?.label}</Option>
-                                  )
+                                  if(item?.value){
+                                    return (
+                                        <Option key={index} value={item?.value}>{item?.label}</Option>
+                                    )
+                                  }
                                   })}
                               </Select>
                           </Form.Item>

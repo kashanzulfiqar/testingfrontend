@@ -35,6 +35,7 @@ import LeaveEmployee from '../MainPage/Employees/Employees/leaveemployee';
 import Timesheet from '../MainPage/Employees/Employees/timesheet';
 import AttendanceEmployee from '../MainPage/Employees/Employees/attendanceemployee';
 import AttendanceAdmin from '../MainPage/Employees/Employees/attendanceadmin';
+import ChangePassword from '../MainPage/Administration/Settings/changepassword';
 
 
 const App = () => {
@@ -108,6 +109,8 @@ const App = () => {
           <Route path={`employee/request-admin/:id`} element={<LeaveAdmin />} />
           <Route path={`employee/timesheet`} element={<Timesheet />} />
           <Route path={`/profile/employee-profile`} element={<EmployeeProfile />} />
+          <Route path={`/profile`} element={<EmployeeProfile />} />
+          <Route path={`/change-password`} element={<ChangePassword />} />
 
           {/* Settings  */}
           <Route path="/settings" element={<Settings />} />

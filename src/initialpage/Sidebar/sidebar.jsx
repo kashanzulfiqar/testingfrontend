@@ -494,7 +494,8 @@ const Sidebar = (props) => {
                     {isSideMenu == "employee" ?
 
                       <ul >
-                        { (user_state?.role === 'admin' || permissions?.addUser || permissions?.updateUser || permissions?.viewAllUsers || permissions?.updateStatusOfEmployee) &&
+                        { (user_state?.role === 'admin' || permissions?.addUser || permissions?.viewAllUsers || permissions?.updateStatusOfEmployee) &&
+                        // { (user_state?.role === 'admin' || permissions?.addUser || permissions?.updateUser || permissions?.viewAllUsers || permissions?.updateStatusOfEmployee) &&
                           <li>
                             <Link className={pathname.includes('allemployees') ? "active" : pathname.includes('employees-list') ? "active" : ""}
                             to="/employee/allemployees">All Employees</Link>
@@ -698,148 +699,7 @@ const Sidebar = (props) => {
                     <Link to="/settings"><i className="la la-cog" /> <span>Settings</span></Link>
                   </li>
                 }
-
-                <li className="menu-title">
-                  <span>Pages</span>
-                </li>
-                <li className="submenu">
-                  <a href="javascript:" className={isSideMenu == "profile" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "profile" ? "" : "profile")}><i className="la la-user" /> <span> Profile </span> <span className="menu-arrow" /></a>
-                  {isSideMenu == "profile" ?
-                    <ul>
-                      <li><Link className={pathname.includes('profile/employee-') ? "active" : ""} to="/app/profile/employee-profile"> Employee Profile </Link></li>
-                      <li><Link className={pathname.includes('client-') ? "active" : ""} to="/app/profile/client-profile"> Client Profile </Link></li>
-                    </ul>
-                    : ""
-                  }
-                </li>
-                <li className="submenu">
-                  <a href="javascript:" className={isSideMenu == "authentication" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "authentication" ? "" : "authentication")} ><i className="la la-key" /> <span> Authentication </span> <span className="menu-arrow" /></a>
-                  {isSideMenu == "authentication" ?
-                    <ul>
-                      <li><Link to="/login"> Login </Link></li>
-                      <li><Link to="/register"> Register </Link></li>
-                      <li><Link to="/forgotpassword"> Forgot Password </Link></li>
-                      <li><Link to="/otp"> OTP </Link></li>
-                      <li><Link to="/lockscreen"> Lock Screen </Link></li>
-                    </ul>
-                    : ""
-                  }
-                </li>
-                <li className="submenu">
-                  <a href="javascript:" className={isSideMenu == "error pages" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "error pages" ? "" : "error pages")}><i className="la la-exclamation-triangle" /> <span> Error Pages </span> <span className="menu-arrow" /></a>
-                  {isSideMenu == "error pages" ?
-                    <ul>
-                      <li><Link to="/error-404">404 Error </Link></li>
-                      <li><Link to="/error-500">500 Error </Link></li>
-                    </ul>
-                    : ""
-                  }
-                </li>
-                <li className="submenu">
-                  <a href="javascript:" className={isSideMenu == "subscriptions" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "subscriptions" ? "" : "subscriptions")}><i className="la la-hand-o-up" /> <span> Subscriptions </span> <span className="menu-arrow" /></a>
-                  {isSideMenu == "subscriptions" ?
-                    <ul>
-                      <li><Link className={pathname.includes('subscriptionadmin') ? "active" : ""} to="/app/subscription/subscriptionadmin">
-                        Subscriptions (Admin) </Link></li>
-                      <li><Link className={pathname.includes('subscriptioncompany') ? "active" : ""} to="/app/subscription/subscriptioncompany">
-                        Subscriptions (Company) </Link></li>
-                      <li><Link className={pathname.includes('subscribedcompanies') ? "active" : ""} to="/app/subscription/subscribedcompanies">
-                        Subscribed Companies</Link></li>
-                    </ul>
-                    : ""
-                  }
-                </li>
-                <li className="submenu">
-                  <a href="javascript:" className={isSideMenu == "pages" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "pages" ? "" : "pages")}><i className="la la-columns" /> <span> Pages </span> <span className="menu-arrow" /></a>
-                  {isSideMenu == "pages" ?
-                    <ul>
-                      <li><Link className={pathname.includes('pages/search') ? "active" : ""} to="/app/pages/search"> Search </Link></li>
-                      <li><Link className={pathname.includes('pages/faq') ? "active" : ""} to="/app/pages/faq"> FAQ </Link></li>
-                      <li><Link className={pathname.includes('pages/terms') ? "active" : ""} to="/app/pages/terms"> Terms </Link></li>
-                      <li><Link className={pathname.includes('privacypolicy') ? "active" : ""} to="/app/pages/privacypolicy"> Privacy Policy </Link></li>
-                      <li><Link className={pathname.includes('pages/blank') ? "active" : ""} to="/app/pages/blank"> Blank Page </Link></li>
-                    </ul>
-                    : ""
-                  }
-                </li>
-                <li className="menu-title">
-                  <span>UI Interface</span>
-                </li>
-                <li>
-                  <Link to="/ui-components"><i className="la la-puzzle-piece" /> <span>Components</span> </Link>
-                </li>
-                <li className="submenu">
-                  <a href="javascript:" className={isSideMenu == "forms" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "forms" ? "" : "forms")}><i className="la la-object-group" /> <span> Forms </span> <span className="menu-arrow" /></a>
-                  {isSideMenu == "forms" ?
-                    <ul>
-                      <li><Link className={pathname.includes('basicinputs') ? "active" : ""}
-                        to="/app/ui-interface/forms/basicinputs">Basic Inputs </Link></li>
-                      <li><Link className={pathname.includes('inputgroups') ? "active" : ""}
-                        to="/app/ui-interface/forms/inputgroups">Input Groups </Link></li>
-                      <li><Link className={pathname.includes('horizontalform') ? "active" : ""}
-                        to="/app/ui-interface/forms/horizontalform">Horizontal Form </Link></li>
-                      <li><Link className={pathname.includes('verticalform') ? "active" : ""}
-                        to="/app/ui-interface/forms/verticalform"> Vertical Form </Link></li>
-                      <li><Link className={pathname.includes('formmask') ? "active" : ""}
-                        to="/app/ui-interface/forms/formmask"> Form Mask </Link></li>
-                      <li><Link className={pathname.includes('formvalidation') ? "active" : ""}
-                        to="/app/ui-interface/forms/formvalidation"> Form Validation </Link></li>
-                    </ul>
-                    : ""
-                  }
-                </li>
-                <li className="submenu">
-                  <a href="javascript:" className={isSideMenu == "tables" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "tables" ? "" : "tables")}><i className="la la-table" /> <span> Tables </span> <span className="menu-arrow" /></a>
-                  {/* <Link to="/app/ui-interface/tables/basic" className={isSideMenu == "tables" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "tables" ? "" : "tables")}><i className="la la-table" /> <span> Tables </span> <span className="menu-arrow" /></Link> */}
-                  {isSideMenu == "tables" ?
-                    <ul>
-                      <li><Link className={pathname.includes('tables/basic') ? "active" : ""} to="/app/ui-interface/tables/basic">Basic Tables </Link></li>
-                      <li><Link className={pathname.includes('tables/data-table') ? "active" : ""} to="/app/ui-interface/tables/data-table">Data Table </Link></li>
-                    </ul>
-                    : ""
-                  }
-                </li>
-                <li className="menu-title">
-                  <span>Extras</span>
-                </li>
-                <li>
-                  {/* self written route */}
-                  <Link to='/documentation'><i className="la la-file-text" /> <span>Documentation</span> </Link>
-                </li>
-                <li>
-                  <Link to="/change-log"><i className="la la-info" /> <span>Change Log</span> </Link>
-                </li>
-                <li className="submenu">
-                  <a href="javascript:" className={isSideMenu == "multi Level" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "multi Level" ? "" : "multi Level")}><i className="la la-share-alt" /> <span>Multi Level</span> <span className="menu-arrow" /></a>
-                  {isSideMenu == "multi Level" ?
-                    <ul>
-                      <li className="submenu">
-                        <a href="javascript:" className={level2Menu == "level 1" ? "subdrop" : ""} onClick={() => toggleLvelTwo(level2Menu == "level 1" ? "" : "level 1")}> <span>Level 1</span> <span className="menu-arrow" /></a>
-                        {level2Menu == "level 1" ?
-                          <ul>
-                            <li><Link to="/level-2"><span>Level 2</span></Link></li>
-                            <li className="submenu">
-                              <a href="javascript:" className={level3Menu == "level 2" ? "subdrop" : ""} onClick={() => toggleLevelThree(level3Menu == "level 2" ? "" : "level 2")}> <span> Level 2</span> <span className="menu-arrow" /></a>
-                              {level3Menu == "level 2" ?
-                                <ul>
-                                  <li><Link to="/level-3">Level 3</Link></li>
-                                  <li><Link to="/level-3">Level 3</Link></li>
-                                </ul>
-                                : ""
-                              }
-                            </li>
-                            <li><Link to="/level-2"> <span>Level 2</span></Link></li>
-                          </ul>
-                          : ""
-                        }
-                      </li>
-                      <li>
-                        <Link to="/level-1"> <span>Level 1</span></Link>
-                      </li>
-                    </ul>
-                    : ""
-                  }
-                </li>
+                
               </ul>
             </div>
           </div>
