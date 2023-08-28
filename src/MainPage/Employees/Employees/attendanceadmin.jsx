@@ -230,6 +230,11 @@ const columns = [
     title: "Employee",
     dataIndex: "employeeName",
     key: "employeeName",
+    render: (text, record) => (
+      <div style={{width: 'max-content'}}>
+        {text}
+      </div>
+    ),
   },
   ...Array.from({ length: daysInMonth }, (_, index) => {
     // Get the date for the current column based on the selected month and year
