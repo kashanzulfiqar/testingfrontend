@@ -11,9 +11,10 @@ import Header from '../../../initialpage/Sidebar/header'
 import Sidebar from '../../../initialpage/Sidebar/sidebar';
 import Offcanvas from '../../../Entryfile/offcanvance';
 import { apiServices } from '../../../Services/apiServices';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Modal } from '@mui/material';
 import moment from 'moment';
+import { counter } from '../../../Redux/Reducer/permissions/pendingCounterSlice';
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { user_icon } from '../../../Entryfile/imagepath';
 
@@ -30,6 +31,7 @@ const LeaveAdmin = () => {
 
 
   const [menu, setMenu] = useState(false)
+  const dispatch = useDispatch()
 
   const [form] = Form.useForm();
 
@@ -37,10 +39,11 @@ const LeaveAdmin = () => {
 		setMenu(!menu)
 	  }
 
-    const user_state = useSelector((state) => state?.user?.loginvalue);
+    const user_state = useSelector((state) => state.user.loginvalue);
+  const pending_counter = useSelector((state) => state?.counter?.counter?.payload);
     const role = user_state?.user?.role
 
-    
+
 
     const[requests,setRequests] = useState([]);
     const [tableData, setTableData] = useState([]); // Step 1
@@ -77,6 +80,7 @@ const LeaveAdmin = () => {
 
     const handleUpdateStatus = (record, newStatus) => {
 
+
       const { _id, userId, companyId, requestType, leaveType, startDate, endDate, description, approvedBy } = record;
   
   
@@ -99,9 +103,14 @@ const LeaveAdmin = () => {
           if (res.data.success === true) {
             
             message.success(`Leave request updated to ${newStatus}`);
+
             handleReset();
             navigate('/employee/request-admin')
             fetchleaves();
+
+            dispatch(counter(pending_counter-1))
+            
+
           }
         })
         .catch((error) => {

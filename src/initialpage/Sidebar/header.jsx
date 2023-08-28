@@ -208,8 +208,8 @@
 /**
  * App Header
  */
-import React, { useState } from 'react'
-import { useSelector } from 'react-redux';
+import React, { useState, useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import {
@@ -219,15 +219,17 @@ import {
 import notifications from '../../assets/json/notifications';
 import message from '../../assets/json/message';
 import DaftarProWhiteIcon from '../../files/Icons/DaftarProWhiteIcon.svg'
+import { apiServices } from '../../Services/apiServices';
+import { counter } from '../../Redux/Reducer/permissions/pendingCounterSlice';
 
 const Header = (props) => {
   const { onMenuClick } = props;
   // console.log(Emails?.split('@')[0]);
   // const Emailss=Emails;
   //  console.log(loginvalue?.email,"ss");
-
   const location = useLocation();
   const nav = useNavigate();
+  const dispatch = useDispatch();
   const updated_user = JSON.parse(localStorage.getItem("updated_user"));
 
 
@@ -243,6 +245,21 @@ const Header = (props) => {
     props.onMenuClick()
   }
 
+  useEffect(() => {
+    getCounter()
+      }, [location])
+    
+    
+    const getCounter = () => {
+        apiServices("GET", "requests/view-all-request?employeeName=&leaveType=&requestTo=&requestFrom=&page=1&limit=10&status=", null, user_state)
+        .then((res) => {
+          if (res?.data?.success === true) {
+            console.log('pending', res.data?.pendingRequests);
+            dispatch(counter(res.data?.pendingRequests))
+          }
+        })
+      }
+
   
   let pathname = location.pathname
   // const { loginvalue } = useSelector((state) => state.user);
@@ -252,6 +269,7 @@ const Header = (props) => {
   const imageURL = user_state?.user?.image
   // const ProfileName = UserName?.charAt(0).toUpperCase() + UserName?.slice(1)
   console.log(ProfileName, "headerLoginvalue=====");
+  
 
 
   return (
@@ -406,7 +424,8 @@ const Header = (props) => {
             <a className="dropdown-item" onClick={() => {
               localStorage.clear();
               sessionStorage.clear();
-              nav('/login');
+              // nav('/login');
+              window.location.href = `${window?.location?.origin}/login`
             }}>Logout</a>
           </div>
         </li>
@@ -422,7 +441,8 @@ const Header = (props) => {
           <a className="dropdown-item" onClick={() => {
               localStorage.clear();
               sessionStorage.clear();
-              nav('/login');
+              // nav('/login');
+              window.location.href = `${window?.location?.origin}/login`
             }}>Logout</a>
         </div>
       </div>
