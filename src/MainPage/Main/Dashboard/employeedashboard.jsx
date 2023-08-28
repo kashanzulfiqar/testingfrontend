@@ -3,7 +3,7 @@
  */
 import React, { useEffect, useState } from 'react';
 import { Helmet } from "react-helmet";
-import { Avatar_02, Avatar_04, Avatar_05, Avatar_07, Avatar_08, Avatar_09 } from '../../../Entryfile/imagepath.jsx'
+import { Avatar_02, Avatar_04, Avatar_05, Avatar_07, Avatar_08, Avatar_09, user_icon } from '../../../Entryfile/imagepath.jsx'
 import Header from '../../../initialpage/Sidebar/header'
 import Sidebar from '../../../initialpage/Sidebar/sidebar';
 import Offcanvas from '../../../Entryfile/offcanvance/index.jsx';
@@ -112,7 +112,7 @@ const EmployeeDashboard = () => {
       width: '60%',
       render: (userId) => (
         <div>
-          <img src={userId.imageUrl} alt={userId.fullName} className="avatar" />
+          <img src={userId.imageUrl || user_icon} alt={userId.fullName} className="avatar" />
           {userId.fullName}
         </div>
       ),
@@ -195,7 +195,7 @@ const EmployeeDashboard = () => {
 
                 <div className="welcome-box">
                   <div className="welcome-img">
-                    <img alt="" src={userData?.user?.imageUrl || Avatar_02} />
+                    <img alt="" src={userData?.user?.imageUrl || user_icon} />
                   </div>
                   <div className="welcome-det">
                     <h3>{userData? `Welcome, ${userData?.user?.fullName }`:" "} </h3>
