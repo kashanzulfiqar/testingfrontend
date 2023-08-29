@@ -60,14 +60,19 @@ const Loginpage = (props) => {
         // console.log(res?.data?.result);
         dispatch(getPermissionList({ roleId: res?.data?.result?.user?.roleId, athtoken: res?.data?.result?.access_token?.accessToken }))
         dispatch(login(res?.data?.result));
-        setLoader(false)
         if(!res?.data?.result?.user?.role && res?.data?.result?.user?.firstTimeLogin){
-          nav('/change-password');
-          // window.location.href = `${window?.location?.origin}/change-password`
-          localStorage.setItem("firstTimeLogin", JSON.stringify(res?.data?.result?.user?.firstTimeLogin));
+          // nav('/change-password');
+          setTimeout(() => {
+            setLoader(false)
+            window.location.href = `${window?.location?.origin}/change-password`
+            localStorage.setItem("firstTimeLogin", JSON.stringify(res?.data?.result?.user?.firstTimeLogin));
+          }, 1300);
         }else{
-          nav(`${res?.data?.result?.user?.role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}`);
-          // window.location.href = `${window?.location?.origin}${res?.data?.result?.user?.role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}`
+          // nav(`${res?.data?.result?.user?.role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}`);
+          setTimeout(() => {
+            setLoader(false)
+            window.location.href = `${window?.location?.origin}${res?.data?.result?.user?.role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}`
+          }, 1300);
         }
         // nav(`${res?.data?.result?.user?.role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}`);
         // dispatch(getPermissionList({ userId: res?.data?.result?.user?._id, athtoken: res?.data?.result?.access_token }))

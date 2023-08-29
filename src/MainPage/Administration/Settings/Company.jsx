@@ -299,7 +299,7 @@ const Company = () => {
                     onInput={(e) => {
                       onHandleChange("companyAddress", e.target.value);
                     }}
-                    maxLength={50}
+                    maxLength={150}
                   />
                 </Form.Item>
               </div>

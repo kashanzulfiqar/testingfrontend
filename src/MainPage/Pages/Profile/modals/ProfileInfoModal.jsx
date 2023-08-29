@@ -684,7 +684,7 @@ const getTaxSlab = () => {
                         },
                         ]}
                     >
-                        <Input className='form-control' maxLength={50} />
+                        <Input className='form-control' maxLength={150} />
                     </Form.Item>
                     </div>
                     </div>
