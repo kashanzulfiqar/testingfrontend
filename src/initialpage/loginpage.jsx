@@ -60,56 +60,22 @@ const Loginpage = (props) => {
         // console.log(res?.data?.result);
         dispatch(getPermissionList({ roleId: res?.data?.result?.user?.roleId, athtoken: res?.data?.result?.access_token?.accessToken }))
         dispatch(login(res?.data?.result));
-        nav(`${res?.data?.result?.user?.role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}`);
-        setLoader(false)
+        if(!res?.data?.result?.user?.role && res?.data?.result?.user?.firstTimeLogin){
+          // nav('/change-password');
+          setTimeout(() => {
+            setLoader(false)
+            window.location.href = `${window?.location?.origin}/change-password`
+            localStorage.setItem("firstTimeLogin", JSON.stringify(res?.data?.result?.user?.firstTimeLogin));
+          }, 1300);
+        }else{
+          // nav(`${res?.data?.result?.user?.role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}`);
+          setTimeout(() => {
+            setLoader(false)
+            window.location.href = `${window?.location?.origin}${res?.data?.result?.user?.role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}`
+          }, 1300);
+        }
+        // nav(`${res?.data?.result?.user?.role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}`);
         // dispatch(getPermissionList({ userId: res?.data?.result?.user?._id, athtoken: res?.data?.result?.access_token }))
-        if (res?.data?.result?.user?.role === 'Admin') {
-          // let acesstoken = res?.data?.result?.access_token;
-          // const role = res?.data?.result?.user?.role;
-          // const id = res?.data?.result?.user?._id;
-          // const companyID = res?.data?.result?.user.companyID;
-          // const { email, password } = data;
-          // const adminLogin = {
-          //   email: email,
-          //   userId: id,
-          //   password: password,
-          //   role: role,
-          //   acesstoken: acesstoken,
-          //   companyID: companyID,
-          //   img: res?.data?.result?.user?.image
-          // }
-          // localStorage.setItem("AuthObj", JSON.stringify(adminLogin));
-          // navigate('/company-management' || '/', { replace: true });
-          // setloader(false)
-        }
-        else{
-          // localStorage.clear("AuthObj")
-          // const name = res?.data?.result?.user?.name;
-          // const role = res?.data?.result?.user?.role;
-          // const companyID = res?.data?.result?.user?.companyID;
-          // const acesstoken = res?.data?.result?.access_token;
-          // const id = res?.data?.result?.user?._id;
-          // const { email, password } = data;
-          // const employLogin = {
-          //   name: name,
-          //   userId: id,
-          //   email: email,
-          //   password: password,
-          //   role: role,
-          //   acesstoken: acesstoken,
-          //   companyID: companyID,
-          //   img: res?.data?.result?.user?.image,
-          //   firstTimeLogin: res?.data?.result?.user?.firstTimeLogin
-          // }
-          // localStorage.setItem("AuthObj", JSON.stringify(employLogin))
-          // if (res?.data?.result?.user?.firstTimeLogin){
-          //   navigate('/employee-setting')
-          //   setloader(false)
-          // }else{
-          //   navigate('/overview')
-          //   setloader(false)
-          // }
-        }
       }
     }).catch((err)=>{
       if (err.response.data.verified === false){

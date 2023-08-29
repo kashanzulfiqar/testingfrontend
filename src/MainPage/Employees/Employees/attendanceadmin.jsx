@@ -227,9 +227,16 @@ const customEmptyText = (
 
 const columns = [
   {
-    title: "Employee",
+    title: 'Employee',
     dataIndex: "employeeName",
     key: "employeeName",
+    // width: 170,
+    fixed: 'left',
+    render: (text, record) => (
+      <div style={{ minWidth: '120px',width: 'max-content'}}>
+        {text}
+      </div>
+    ),
   },
   ...Array.from({ length: daysInMonth }, (_, index) => {
     // Get the date for the current column based on the selected month and year
@@ -267,6 +274,7 @@ const columns = [
       ),
       dataIndex: `day${index + 1}`,
       key: `day${index + 1}`,
+      width: 45,
       render: (text, record) => {
         const dayRecord = record[`day${index + 1}`];
 
@@ -498,8 +506,10 @@ const dataSource = employeeAttendanceData.map((employeeData) => {
         {/* /Search Filter */}
         <div className="row">
           <div className="col-lg-12">
-            <div className="table-responsive">
+            <div className="table-responsive" style={{background: 'white'}}>
+            {/* <div className="table-responsive fixedColmn"> */}
             <Table
+            className='fixedTableHeader'
             locale={{
               emptyText: isLoading ? (
                 <Spin size="large" tip="Loading..." />
@@ -507,10 +517,14 @@ const dataSource = employeeAttendanceData.map((employeeData) => {
                 customEmptyText
               ),
             }}
+            style={{height: '353px', background: 'white'}}
         loading={isLoading}
         columns={columns}
         dataSource={dataSource}
-        pagination={false} 
+        pagination={false}
+        scroll={{
+          // y: 310,
+        }}
       />
             </div>
           </div>

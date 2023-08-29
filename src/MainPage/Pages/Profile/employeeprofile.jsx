@@ -8,7 +8,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Avatar_02, Avatar_05, Avatar_09, Avatar_10, Avatar_16, eye, user_icon } from '../../../Entryfile/imagepath'
 import { keyboard, mouse, laptop } from '../../../Entryfile/imagepath';
 import Offcanvas from '../../../Entryfile/offcanvance';
-import { DatePicker, Empty, Form, Input, Select, Spin, Table, message, InputNumber } from 'antd';
+import { DatePicker, Empty, Form, Input, Select, Spin, Table, message, InputNumber, Upload, Skeleton } from 'antd';
 import Modal from "@mui/material/Modal";
 import { itemRender } from '../../paginationfunction';
 import PhoneNoInput from '../../../Components/PhoneNoInput';
@@ -16,6 +16,8 @@ import moment from 'moment';
 import ProfileInfoModal from './modals/ProfileInfoModal';
 import { apiServices } from '../../../Services/apiServices';
 import { LoadingOutlined } from '@ant-design/icons';
+import ImgCrop from 'antd-img-crop';
+import { apiUploadToS3 } from '../../../Services/uploadImage';
 
 
 
@@ -38,8 +40,11 @@ const EmployeeProfile = () => {
   console.log(loginvalue, "loginvalue");
 
   const [loader, setLoader] = useState(false)
+const [imageLoader, setImageLoader] = useState(false)
+const [dataLoading, setDataLoading] = useState(false)
+const [image, setImage] = useState('')
   const [emergValue, setEmergValue] = useState(null)
-  const [allData, setAllData] = useState(allDataLocal ? allDataLocal : user_data)
+  const [allData, setAllData] = useState()
   const [phoneLengthError, setPhoneLengthError] = useState(false);
   const [deptInfo, setDeptInfo] = useState([])
   const [desigInfo, setDesigInfo] = useState([])
@@ -66,15 +71,49 @@ const EmployeeProfile = () => {
       });
     }
   });
+const [imageChange, setImageChange] = useState(1)
+  useEffect(() => {
+    if(location.pathname === "/profile/employee-profile"){
+      setAllData(allDataLocal ? allDataLocal : user_data)
+    }else if(location.pathname === "/profile"){
+      if(imageChange === 1){
+        setDataLoading(true)
+      apiServices("GET", "user/employee-overview", null, user_state)
+      .then((res) => {
+        if (res?.data?.success === true) {
+          setAllData(allDataLocal ? allDataLocal : res?.data?.user)
+          setDataLoading(false)
+          setImageChange(prev => prev+1)
+        }
+      })
+      .catch((err) => {
+        setDataLoading(false)
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Get Employee Info Error"
+          }!`
+        );
+      });
+      }
+    }
+  }, [location])
+  
   
   useEffect(() => {
-    if(role === 'admin' || permissions?.viewAllUsers) {
       getReportsTo()
       getDepartment();
       getDesignation();
-    }else{
-      nav('/restricted', { state: { unAuthorize: true}})
-    }
+    // if(role === 'admin' || permissions?.viewAllUsers) {
+    //   getReportsTo()
+    //   getDepartment();
+    //   getDesignation();
+    // }else{
+    //   nav('/restricted', { state: { unAuthorize: true}})
+    // }
   }, [])
 
   const getReportsTo = () => {
@@ -396,23 +435,111 @@ const handleClose = () => {
   }
 
   const formatDate = (inputDate) => {
-    const date = new Date(inputDate);
-    const day = date.getDate();
-    const month = date.toLocaleString('default', { month: 'short' });
-    const year = date.getFullYear();
+    if(inputDate){
+      const date = new Date(inputDate);
+      const day = date.getDate();
+      const month = date.toLocaleString('default', { month: 'short' });
+      const year = date.getFullYear();
+  
+      let daySuffix = "th";
+      if (day === 1 || day === 21 || day === 31) {
+          daySuffix = "st";
+      } else if (day === 2 || day === 22) {
+          daySuffix = "nd";
+      } else if (day === 3 || day === 23) {
+          daySuffix = "rd";
+      }
+  
+      const formattedDate = `${day}${daySuffix} ${month}, ${year}`;
+      return formattedDate;
+    }
+}
 
-    let daySuffix = "th";
-    if (day === 1 || day === 21 || day === 31) {
-        daySuffix = "st";
-    } else if (day === 2 || day === 22) {
-        daySuffix = "nd";
-    } else if (day === 3 || day === 23) {
-        daySuffix = "rd";
+const allowedFileTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+  const beforeUpload = (file) => {
+    const isFileTypeAllowed = allowedFileTypes.includes(file.type);
+
+    if (!isFileTypeAllowed) {
+      message.error('You can only upload PNG, JPG, or JPEG files!');
+      return false;
     }
 
-    const formattedDate = `${day}${daySuffix} ${month}, ${year}`;
-    return formattedDate;
-}
+    const maxSizeInBytes = 5 * 1024 * 1024; // 5MB
+    const isSizeAllowed = file.size <= maxSizeInBytes;
+
+    if (!isSizeAllowed) {
+      message.error('File size is too large. Maximum allowed size is 5MB.');
+      return false;
+    }
+
+    return true;
+
+    // const isFileTypeAllowed = allowedFileTypes.includes(file.type);
+    // if (!isFileTypeAllowed) {
+    //   message.error('You can only upload PNG, JPG, or JPEG files!');
+    // }
+    // return isFileTypeAllowed;
+  };
+
+  const onImageUpload = (imagedata) => {
+    setImageLoader(true)
+    apiUploadToS3(imagedata).then((res) => {
+        // console.log(res?.data?.result);
+        setImage(res?.data?.result)
+        localStorage.setItem('updated_user', JSON.stringify({imageUrl: res?.data?.result}))
+        nav('/profile', {state: {updated_user: {imageUrl: res?.data?.result}}})
+
+        let d1 = {
+          ...allData,
+          imageUrl: res?.data?.result
+        }
+        Object.keys(d1).forEach((key) => {
+          if (key === 'password') {
+            delete d1[key];
+          }
+        });
+        apiServices("PUT", "user/update-user", d1, user_state)
+        .then((res) => {
+          if (res?.data?.success === true) {
+            setAllData((prev) => ({
+              ...prev,
+              imageUrl: res?.data?.result
+            }))
+            localStorage.setItem('allDataLocal', JSON.stringify({...d1, password: user_data?.password}));
+            // setImage(res?.data?.result)
+            setImageLoader(false)
+            message.success('Profile picture updated successfully!')
+          }
+        })
+        .catch((err) => {
+          setLoader(false)
+          setImage('')
+          localStorage.setItem('updated_user', JSON.stringify({imageUrl: ''}))
+          nav('/profile', {state: {updated_user: {imageUrl: ''}}})
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : "Update Profile picture Error"
+            }!`
+          );
+        });
+      }
+      ).catch((err)=>{
+        setImageLoader(false)
+        message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : "upload image Error"
+            }!`
+          );
+      })
+  }
 
 const antIcon = (
   <LoadingOutlined
@@ -448,76 +575,115 @@ const antIcon = (
           </div>
           {/* /Page Header */}
           <div className="card mb-0">
-            <div className="card-body">
-              <div className="row">
-                <div className="col-md-12">
-                  <div className="profile-view">
-                    <div className="profile-img-wrap">
-                      <div className="profile-img">
-                        <a href="javascript:void(0)" style={{cursor: 'default'}}><img alt="" src={allData?.imageUrl || user_icon} /></a>
+            {
+              dataLoading ? <Spin size='middle' style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '262px'}} /> :
+              <div className="card-body">
+                <div className="row">
+                  <div className="col-md-12">
+                    <div className="profile-view">
+                      <div className="profile-img-wrap">
+                        <div className="profile-img">
+                          {
+                            location?.pathname === '/profile' ?
+                            <div className="profile-img-wrap edit-img">
+                                {
+                                    imageLoader ? <div className="uploadImgSpinContainer"> <Spin /> </div> :
+                                    <>
+                                        <img className="inline-block" src={image ? image : allData?.imageUrl || user_icon} alt="user" />
+                                        <div className="fileupload btn">
+                                        <ImgCrop
+                                            cropShape='round'
+                                            quality={1}
+                                            modalTitle='Crop Image'
+                                            modalOk='Apply'
+                                            modalClassName='CropImageModalStyle'
+                                            beforeCrop={beforeUpload}
+                                        >
+                                            <Upload
+                                                // action={(image) => onImageUpload(image)}
+                                                customRequest={({ file, onSuccess, onError }) => {
+                                                  onImageUpload(file)
+                                                }}
+                                                fileList={null}
+                                                maxCount={1}
+                                            >
+                                                <div className="btn-text" style={{width: '80px', padding: '4px'}}>edit</div>
+                                            </Upload>
+                                        </ImgCrop>
+                                        </div>
+                                    </>
+                                }
+                            </div> :
+                            <a href="javascript:void(0)" style={{cursor: 'default'}}><img alt="" src={allData?.imageUrl || user_icon} /></a>
+                          }
+                        </div>
                       </div>
-                    </div>
-                    <div className="profile-basic">
-                      <div className="row">
-                        <div className="col-md-5">
-                          <div className="profile-info-left">
-                            <h3 className="user-name m-t-0 mb-0">{allData?.fullName}</h3>
-                            <div className="small doj text-muted" style={{fontSize: '12px', fontWeight: '500'}}>{deptInfo[allData?.teamId]}</div>
-                            <small className="text-muted">{desigInfo[allData?.designationId]}</small>
-                            <div className="staff-id">Employee ID: {allData?.employeeId}</div>
-                            <div className="small doj text-muted">Date of Join: {formatDate(allData?.joiningDate || '')}</div>
-                            <div style={{color: 'transparent', height: '98px'}}>.</div>
-                            {/* <div className="staff-msg"><Link onClick={() => localStorage.setItem("minheight", "true")} className="btn btn-custom" to="/conversation/chat">Send Message</Link></div> */}
+                      <div className="profile-basic">
+                        <div className="row">
+                          <div className="col-md-5">
+                            <div className="profile-info-left">
+                              <h3 className="user-name m-t-0 mb-0">{allData?.fullName}</h3>
+                              <div className="small doj text-muted" style={{fontSize: '12px', fontWeight: '500'}}>{deptInfo[allData?.teamId]}</div>
+                              <small className="text-muted">{desigInfo[allData?.designationId]}</small>
+                              <div className="staff-id">Employee ID: {allData?.employeeId}</div>
+                              <div className="small doj text-muted">Date of Join: {formatDate(allData?.joiningDate || '')}</div>
+                              <div style={{color: 'transparent', height: '98px'}}>.</div>
+                              {/* <div className="staff-msg"><Link onClick={() => localStorage.setItem("minheight", "true")} className="btn btn-custom" to="/conversation/chat">Send Message</Link></div> */}
+                            </div>
+                          </div>
+                          <div className="col-md-7">
+                            <ul className="personal-info">
+                              <li>
+                                <div className="title">Phone:</div>
+                                <div className="text"><a href="javascript:void(0)" style={{cursor: 'default'}}>{allData?.phoneNo}</a></div>
+                              </li>
+                              <li>
+                                <div className="title">Email:</div>
+                                <div className="text"><a href="javascript:void(0)" style={{cursor: 'default'}}>{allData?.email}</a></div>
+                              </li>
+                              <li>
+                                <div className="title">Birthday:</div>
+                                <div className="text">{formatDate(allData?.dateOfBirth || '')}</div>
+                              </li>
+                              <li>
+                                <div className="title">Address:</div>
+                                <div className="text">{allData?.address}</div>
+                              </li>
+                              <li>
+                                <div className="title">Gender:</div>
+                                <div className="text">{allData?.gender}</div>
+                              </li>
+                              <li>
+                                <div className="title">Salary:</div>
+                                <div className="text">{allData?.salary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</div>
+                              </li>
+                              <li>
+                                <div className="title">Reports to:</div>
+                                <div className="text">
+                                {repInfo[allData?.reportsTo] || 'None'}
+                                  {/* <div className="avatar-box">
+                                    <div className="avatar avatar-xs">
+                                      <img src={Avatar_16} alt="" />
+                                    </div>
+                                  </div>
+                                  <Link to="/app/profile/employee-profile">
+                                    {user_data?.reportsTo || ''}
+                                  </Link> */}
+                                </div>
+                              </li>
+                            </ul>
                           </div>
                         </div>
-                        <div className="col-md-7">
-                          <ul className="personal-info">
-                            <li>
-                              <div className="title">Phone:</div>
-                              <div className="text"><a href="javascript:void(0)" style={{cursor: 'default'}}>{allData?.phoneNo}</a></div>
-                            </li>
-                            <li>
-                              <div className="title">Email:</div>
-                              <div className="text"><a href="javascript:void(0)" style={{cursor: 'default'}}>{allData?.email}</a></div>
-                            </li>
-                            <li>
-                              <div className="title">Birthday:</div>
-                              <div className="text">{formatDate(allData?.dateOfBirth || '')}</div>
-                            </li>
-                            <li>
-                              <div className="title">Address:</div>
-                              <div className="text">{allData?.address}</div>
-                            </li>
-                            <li>
-                              <div className="title">Gender:</div>
-                              <div className="text">{allData?.gender}</div>
-                            </li>
-                            <li>
-                              <div className="title">Reports to:</div>
-                              <div className="text">
-                              {repInfo[allData?.reportsTo] || 'None'}
-                                {/* <div className="avatar-box">
-                                  <div className="avatar avatar-xs">
-                                    <img src={Avatar_16} alt="" />
-                                  </div>
-                                </div>
-                                <Link to="/app/profile/employee-profile">
-                                  {user_data?.reportsTo || ''}
-                                </Link> */}
-                              </div>
-                            </li>
-                          </ul>
-                        </div>
                       </div>
+                      {
+                        (location?.pathname !== '/profile') && (role === 'admin' || permissions?.updateUser) &&
+                        <div className="pro-edit"><a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: true, data: '' })}><i className="fa fa-pencil" /></a></div>
+                      }
                     </div>
-                    {
-                      (role === 'admin' || permissions?.updateUser) &&
-                      <div className="pro-edit"><a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: true, data: '' })}><i className="fa fa-pencil" /></a></div>
-                    }
                   </div>
                 </div>
               </div>
-            </div>
+            }
           </div>
           <div className="card tab-box">
             <div className="row user-tabs">
@@ -531,814 +697,817 @@ const antIcon = (
               </div>
             </div>
           </div>
-          <div className="tab-content">
-            {/* Profile Info Tab */}
-            <div id="emp_profile" className="pro-overview tab-pane fade show active">
-              <div className="row">
-                <div className="col-md-6 d-flex">
-                  <div className="card profile-box flex-fill">
-                    <div className="card-body">
-                      <h3 className="card-title">Bank Information
-                      {
-                        (role === 'admin' || permissions?.updateUser) &&
-                        <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: false, isBankInfoOpen: true , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a>
-                      }
-                      </h3>
-                      { allData?.bankName ?
-                      <ul className="personal-info">
-                            <li>
-                              <div className="title">Bank Name</div>
-                              <div className="text">{allData?.bankName}</div>
-                            </li>
-                            <li>
-                              <div className="title">Bank Account No.</div>
-                              <div className="text">{allData?.bankAccountNumber}</div>
-                            </li>
-                            <li>
-                              <div className="title">Salary</div>
-                              <div className="text">{allData?.salary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</div>
-                            </li>
-                      </ul> :
-                        <Empty style={{marginTop: '12%'}} image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                      }
-                    </div>
-                  </div>
-                </div>
-                <div className="col-md-6 d-flex">
-                  <div className="card profile-box flex-fill">
-                    <div className="card-body">
-                      <h3 className="card-title">Emergency Contact
-                      {
-                        (role === 'admin' || permissions?.updateUser) &&
-                        <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: true, isprofileInfoOpen: false, data: allData?.emergencyContacts?.length > 0 ? allData.emergencyContacts[0] : {} })}><i className="fa fa-pencil" /></a>
-                      }
-                      </h3>
-                      {/* <h5 className="section-title">Primary</h5> */}
-                      { allData?.emergencyContacts?.length > 0 ?
-                        <ul className="personal-info">
+          {
+              dataLoading ? <Spin size='middle' style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '262px'}} /> :
+              <div className="tab-content">
+                {/* Profile Info Tab */}
+                <div id="emp_profile" className="pro-overview tab-pane fade show active">
+                  <div className="row">
+                    <div className="col-md-6 d-flex">
+                      <div className="card profile-box flex-fill">
+                        <div className="card-body">
+                          <h3 className="card-title">Bank Information
                           {
-                            allData?.emergencyContacts?.map((emerg) => (
-                              <>
+                            (role === 'admin' || permissions?.updateUser) &&
+                            <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: false, isBankInfoOpen: true , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a>
+                          }
+                          </h3>
+                          { allData?.bankName ?
+                          <ul className="personal-info">
                                 <li>
-                                  <div className="title">Name</div>
-                                  <div className="text">{emerg?.name}</div>
+                                  <div className="title">Bank Name</div>
+                                  <div className="text">{allData?.bankName}</div>
                                 </li>
                                 <li>
-                                  <div className="title">Relationship</div>
-                                  <div className="text">{emerg?.relationship}</div>
+                                  <div className="title">Bank Account No.</div>
+                                  <div className="text">{allData?.bankAccountNumber}</div>
                                 </li>
-                                <li>
-                                  <div className="title">Phone No. </div>
-                                  <div className="text">{emerg?.phoneNo}</div>
-                                </li>
-                              </>
-                            ))
+                                {/* <li>
+                                  <div className="title">Salary</div>
+                                  <div className="text">{allData?.salary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</div>
+                                </li> */}
+                          </ul> :
+                            <Empty style={{marginTop: '12%'}} image={Empty.PRESENTED_IMAGE_SIMPLE} />
                           }
-                        </ul> :
-                        <Empty style={{marginTop: '12%'}} image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                      }
-                      {/* <hr />
-                      <h5 className="section-title">Secondary</h5>
-                      <ul className="personal-info">
-                        <li>
-                          <div className="title">Name</div>
-                          <div className="text">Karen Wills</div>
-                        </li>
-                        <li>
-                          <div className="title">Relationship</div>
-                          <div className="text">Brother</div>
-                        </li>
-                        <li>
-                          <div className="title">Phone </div>
-                          <div className="text">9876543210, 9876543210</div>
-                        </li>
-                      </ul> */}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </div>
-              <div className="row">
-              </div>
-              <div className="row">
-                <div className="col-md-6 d-flex">
-                  <div className="card profile-box flex-fill">
-                    <div className="card-body">
-                      <h3 className="card-title">Education Informations
-                      {
-                        (role === 'admin' || permissions?.updateUser) &&
-                        <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: true, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a>
-                      }
-                      </h3>
-                      <div className="experience-box">
-                        { allData?.education?.length > 0 ?
-                        <ul className="experience-list">
+                    <div className="col-md-6 d-flex">
+                      <div className="card profile-box flex-fill">
+                        <div className="card-body">
+                          <h3 className="card-title">Emergency Contact
                           {
-                            allData?.education?.map((edu) => (
-                              <li>
-                                <div className="experience-user">
-                                  <div className="before-circle" />
-                                </div>
-                                <div className="experience-content">
-                                  <div className="timeline-content">
-                                    <a href="javascript:void(0)" className="name" style={{cursor: 'text'}}>{edu?.institute}</a>
-                                    <div>{edu?.degree}</div>
-                                    <span className="time">{edu?.year}</span>
-                                  </div>
-                                </div>
-                              </li>
-                            ))
+                            (role === 'admin' || permissions?.updateUser) &&
+                            <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: true, isprofileInfoOpen: false, data: allData?.emergencyContacts?.length > 0 ? allData.emergencyContacts[0] : {} })}><i className="fa fa-pencil" /></a>
                           }
-                        </ul> :
-                        <Empty style={{marginTop: '12%'}} image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                        }
+                          </h3>
+                          {/* <h5 className="section-title">Primary</h5> */}
+                          { allData?.emergencyContacts?.length > 0 ?
+                            <ul className="personal-info">
+                              {
+                                allData?.emergencyContacts?.map((emerg) => (
+                                  <>
+                                    <li>
+                                      <div className="title">Name</div>
+                                      <div className="text">{emerg?.name}</div>
+                                    </li>
+                                    <li>
+                                      <div className="title">Relationship</div>
+                                      <div className="text">{emerg?.relationship}</div>
+                                    </li>
+                                    <li>
+                                      <div className="title">Phone No. </div>
+                                      <div className="text">{emerg?.phoneNo}</div>
+                                    </li>
+                                  </>
+                                ))
+                              }
+                            </ul> :
+                            <Empty style={{marginTop: '12%'}} image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                          }
+                          {/* <hr />
+                          <h5 className="section-title">Secondary</h5>
+                          <ul className="personal-info">
+                            <li>
+                              <div className="title">Name</div>
+                              <div className="text">Karen Wills</div>
+                            </li>
+                            <li>
+                              <div className="title">Relationship</div>
+                              <div className="text">Brother</div>
+                            </li>
+                            <li>
+                              <div className="title">Phone </div>
+                              <div className="text">9876543210, 9876543210</div>
+                            </li>
+                          </ul> */}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-                <div className="col-md-6 d-flex">
-                  <div className="card profile-box flex-fill">
-                    <div className="card-body">
-                      <h3 className="card-title">Experience
-                      {
-                        (role === 'admin' || permissions?.updateUser) &&
-                        <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: true, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a>
-                      }
-                      </h3>
-                      <div className="experience-box">
-                        {
-                          allData?.experience?.length > 0 ?
-                        <ul className="experience-list">
+                  <div className="row">
+                  </div>
+                  <div className="row">
+                    <div className="col-md-6 d-flex">
+                      <div className="card profile-box flex-fill">
+                        <div className="card-body">
+                          <h3 className="card-title">Education Informations
                           {
-                            allData?.experience?.map((exp) => (
-                              <li>
-                                <div className="experience-user">
-                                  <div className="before-circle" />
-                                </div>
-                                <div className="experience-content">
-                                  <div className="timeline-content">
-                                    <a href="/" className="name">{exp?.designation} at {exp?.company}</a>
-                                    <span className="time">{exp?.duration}</span>
-                                  </div>
-                                </div>
-                              </li>
-                            ))
+                            (role === 'admin' || permissions?.updateUser) &&
+                            <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: true, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a>
                           }
-                        </ul>
-                        : <Empty style={{marginTop: '12%'}} image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                        }
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            {/* /Profile Info Tab */}
-            {/* Projects Tab */}
-            <div className="tab-pane fade" id="emp_projects">
-              <div className="row">
-                <div className="col-lg-4 col-sm-6 col-md-4 col-xl-3">
-                  <div className="card">
-                    <div className="card-body">
-                      <div className="dropdown profile-action">
-                        <a aria-expanded="false" data-bs-toggle="dropdown" className="action-icon dropdown-toggle" href="#"><i className="material-icons">more_vert</i></a>
-                        <div className="dropdown-menu dropdown-menu-right">
-                          <a data-bs-target="#edit_project" data-bs-toggle="modal" href="#" className="dropdown-item"><i className="fa fa-pencil m-r-5" /> Edit</a>
-                          <a data-bs-target="#delete_project" data-bs-toggle="modal" href="#" className="dropdown-item"><i className="fa fa-trash-o m-r-5" /> Delete</a>
-                        </div>
-                      </div>
-                      <h4 className="project-title"><Link to="/app/projects/projects-view">Office Management</Link></h4>
-                      <small className="block text-ellipsis m-b-15">
-                        <span className="text-xs">1</span> <span className="text-muted">open tasks, </span>
-                        <span className="text-xs">9</span> <span className="text-muted">tasks completed</span>
-                      </small>
-                      <p className="text-muted">Lorem Ipsum is simply dummy text of the printing and
-                        typesetting industry. When an unknown printer took a galley of type and
-                        scrambled it...
-                      </p>
-                      <div className="pro-deadline m-b-15">
-                        <div className="sub-title">
-                          Deadline:
-                        </div>
-                        <div className="text-muted">
-                          17 Apr 2019
-                        </div>
-                      </div>
-                      <div className="project-members m-b-15">
-                        <div>Project Leader :</div>
-                        <ul className="team-members">
-                          <li>
-                            <a href="#" data-bs-toggle="tooltip" title="Jeffery Lalor"><img alt="" src={Avatar_16} /></a>
-                          </li>
-                        </ul>
-                      </div>
-                      <div className="project-members m-b-15">
-                        <div>Team :</div>
-                        <ul className="team-members">
-                          <li>
-                            <a href="#" data-bs-toggle="tooltip" title="John Doe"><img alt="" src={Avatar_02} /></a>
-                          </li>
-                          <li>
-                            <a href="#" data-bs-toggle="tooltip" title="Richard Miles"><img alt="" src={Avatar_09} /></a>
-                          </li>
-                          <li>
-                            <a href="#" data-bs-toggle="tooltip" title="John Smith"><img alt="" src={Avatar_10} /></a>
-                          </li>
-                          <li>
-                            <a href="#" data-bs-toggle="tooltip" title="Mike Litorus"><img alt="" src={Avatar_05} /></a>
-                          </li>
-                          <li>
-                            <a href="#" className="all-users">+15</a>
-                          </li>
-                        </ul>
-                      </div>
-                      <p className="m-b-5">Progress <span className="text-success float-end">40%</span></p>
-                      <div className="progress progress-xs mb-0">
-                        <div style={{ width: '40%' }} data-bs-toggle="tooltip" role="progressbar" className="progress-bar bg-success" data-original-title="40%" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-lg-4 col-sm-6 col-md-4 col-xl-3">
-                  <div className="card">
-                    <div className="card-body">
-                      <div className="dropdown profile-action">
-                        <a aria-expanded="false" data-bs-toggle="dropdown" className="action-icon dropdown-toggle" href="#"><i className="material-icons">more_vert</i></a>
-                        <div className="dropdown-menu dropdown-menu-right">
-                          <a data-bs-target="#edit_project" data-bs-toggle="modal" href="#" className="dropdown-item"><i className="fa fa-pencil m-r-5" /> Edit</a>
-                          <a data-bs-target="#delete_project" data-bs-toggle="modal" href="#" className="dropdown-item"><i className="fa fa-trash-o m-r-5" /> Delete</a>
-                        </div>
-                      </div>
-                      <h4 className="project-title"><Link to="/app/projects/projects-view">Project Management</Link></h4>
-                      <small className="block text-ellipsis m-b-15">
-                        <span className="text-xs">2</span> <span className="text-muted">open tasks, </span>
-                        <span className="text-xs">5</span> <span className="text-muted">tasks completed</span>
-                      </small>
-                      <p className="text-muted">Lorem Ipsum is simply dummy text of the printing and
-                        typesetting industry. When an unknown printer took a galley of type and
-                        scrambled it...
-                      </p>
-                      <div className="pro-deadline m-b-15">
-                        <div className="sub-title">
-                          Deadline:
-                        </div>
-                        <div className="text-muted">
-                          17 Apr 2019
-                        </div>
-                      </div>
-                      <div className="project-members m-b-15">
-                        <div>Project Leader :</div>
-                        <ul className="team-members">
-                          <li>
-                            <a href="#" data-bs-toggle="tooltip" title="Jeffery Lalor"><img alt="" src={Avatar_16} /></a>
-                          </li>
-                        </ul>
-                      </div>
-                      <div className="project-members m-b-15">
-                        <div>Team :</div>
-                        <ul className="team-members">
-                          <li>
-                            <a href="#" data-bs-toggle="tooltip" title="John Doe"><img alt="" src={Avatar_02} /></a>
-                          </li>
-                          <li>
-                            <a href="#" data-bs-toggle="tooltip" title="Richard Miles"><img alt="" src={Avatar_09} /></a>
-                          </li>
-                          <li>
-                            <a href="#" data-bs-toggle="tooltip" title="John Smith"><img alt="" src={Avatar_10} /></a>
-                          </li>
-                          <li>
-                            <a href="#" data-bs-toggle="tooltip" title="Mike Litorus"><img alt="" src={Avatar_05} /></a>
-                          </li>
-                          <li>
-                            <a href="#" className="all-users">+15</a>
-                          </li>
-                        </ul>
-                      </div>
-                      <p className="m-b-5">Progress <span className="text-success float-end">40%</span></p>
-                      <div className="progress progress-xs mb-0">
-                        <div style={{ width: '40%' }} data-bs-toggle="tooltip" role="progressbar" className="progress-bar bg-success" data-original-title="40%" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-lg-4 col-sm-6 col-md-4 col-xl-3">
-                  <div className="card">
-                    <div className="card-body">
-                      <div className="dropdown profile-action">
-                        <a aria-expanded="false" data-bs-toggle="dropdown" className="action-icon dropdown-toggle" href="#"><i className="material-icons">more_vert</i></a>
-                        <div className="dropdown-menu dropdown-menu-right">
-                          <a data-bs-target="#edit_project" data-bs-toggle="modal" href="#" className="dropdown-item"><i className="fa fa-pencil m-r-5" /> Edit</a>
-                          <a data-bs-target="#delete_project" data-bs-toggle="modal" href="#" className="dropdown-item"><i className="fa fa-trash-o m-r-5" /> Delete</a>
-                        </div>
-                      </div>
-                      <h4 className="project-title"><Link to="/app/projects/projects-view">Video Calling App</Link></h4>
-                      <small className="block text-ellipsis m-b-15">
-                        <span className="text-xs">3</span> <span className="text-muted">open tasks, </span>
-                        <span className="text-xs">3</span> <span className="text-muted">tasks completed</span>
-                      </small>
-                      <p className="text-muted">Lorem Ipsum is simply dummy text of the printing and
-                        typesetting industry. When an unknown printer took a galley of type and
-                        scrambled it...
-                      </p>
-                      <div className="pro-deadline m-b-15">
-                        <div className="sub-title">
-                          Deadline:
-                        </div>
-                        <div className="text-muted">
-                          17 Apr 2019
-                        </div>
-                      </div>
-                      <div className="project-members m-b-15">
-                        <div>Project Leader :</div>
-                        <ul className="team-members">
-                          <li>
-                            <a href="#" data-bs-toggle="tooltip" title="Jeffery Lalor"><img alt="" src={Avatar_16} /></a>
-                          </li>
-                        </ul>
-                      </div>
-                      <div className="project-members m-b-15">
-                        <div>Team :</div>
-                        <ul className="team-members">
-                          <li>
-                            <a href="#" data-bs-toggle="tooltip" title="John Doe"><img alt="" src={Avatar_02} /></a>
-                          </li>
-                          <li>
-                            <a href="#" data-bs-toggle="tooltip" title="Richard Miles"><img alt="" src={Avatar_09} /></a>
-                          </li>
-                          <li>
-                            <a href="#" data-bs-toggle="tooltip" title="John Smith"><img alt="" src={Avatar_10} /></a>
-                          </li>
-                          <li>
-                            <a href="#" data-bs-toggle="tooltip" title="Mike Litorus"><img alt="" src={Avatar_05} /></a>
-                          </li>
-                          <li>
-                            <a href="#" className="all-users">+15</a>
-                          </li>
-                        </ul>
-                      </div>
-                      <p className="m-b-5">Progress <span className="text-success float-end">40%</span></p>
-                      <div className="progress progress-xs mb-0">
-                        <div style={{ width: '40%' }} data-bs-toggle="tooltip" role="progressbar" className="progress-bar bg-success" data-original-title="40%" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-lg-4 col-sm-6 col-md-4 col-xl-3">
-                  <div className="card">
-                    <div className="card-body">
-                      <div className="dropdown profile-action">
-                        <a aria-expanded="false" data-bs-toggle="dropdown" className="action-icon dropdown-toggle" href="#"><i className="material-icons">more_vert</i></a>
-                        <div className="dropdown-menu dropdown-menu-right">
-                          <a data-bs-target="#edit_project" data-bs-toggle="modal" href="#" className="dropdown-item"><i className="fa fa-pencil m-r-5" /> Edit</a>
-                          <a data-bs-target="#delete_project" data-bs-toggle="modal" href="#" className="dropdown-item"><i className="fa fa-trash-o m-r-5" /> Delete</a>
-                        </div>
-                      </div>
-                      <h4 className="project-title"><Link to="/app/projects/projects-view">Hospital Administration</Link></h4>
-                      <small className="block text-ellipsis m-b-15">
-                        <span className="text-xs">12</span> <span className="text-muted">open tasks, </span>
-                        <span className="text-xs">4</span> <span className="text-muted">tasks completed</span>
-                      </small>
-                      <p className="text-muted">Lorem Ipsum is simply dummy text of the printing and
-                        typesetting industry. When an unknown printer took a galley of type and
-                        scrambled it...
-                      </p>
-                      <div className="pro-deadline m-b-15">
-                        <div className="sub-title">
-                          Deadline:
-                        </div>
-                        <div className="text-muted">
-                          17 Apr 2019
-                        </div>
-                      </div>
-                      <div className="project-members m-b-15">
-                        <div>Project Leader :</div>
-                        <ul className="team-members">
-                          <li>
-                            <a href="#" data-bs-toggle="tooltip" title="Jeffery Lalor"><img alt="" src={Avatar_16} /></a>
-                          </li>
-                        </ul>
-                      </div>
-                      <div className="project-members m-b-15">
-                        <div>Team :</div>
-                        <ul className="team-members">
-                          <li>
-                            <a href="#" data-bs-toggle="tooltip" title="John Doe"><img alt="" src={Avatar_02} /></a>
-                          </li>
-                          <li>
-                            <a href="#" data-bs-toggle="tooltip" title="Richard Miles"><img alt="" src={Avatar_09} /></a>
-                          </li>
-                          <li>
-                            <a href="#" data-bs-toggle="tooltip" title="John Smith"><img alt="" src={Avatar_10} /></a>
-                          </li>
-                          <li>
-                            <a href="#" data-bs-toggle="tooltip" title="Mike Litorus"><img alt="" src={Avatar_05} /></a>
-                          </li>
-                          <li>
-                            <a href="#" className="all-users">+15</a>
-                          </li>
-                        </ul>
-                      </div>
-                      <p className="m-b-5">Progress <span className="text-success float-end">40%</span></p>
-                      <div className="progress progress-xs mb-0">
-                        <div style={{ width: '40%' }} data-bs-toggle="tooltip" role="progressbar" className="progress-bar bg-success" data-original-title="40%" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            {/* /Projects Tab */}
-            {/* Bank Statutory Tab */}
-            <div className="tab-pane fade" id="bank_statutory">
-              <div className="card">
-                <div className="card-body">
-                  <h3 className="card-title"> Basic Salary Information</h3>
-                  <form>
-                    <div className="row">
-                      <div className="col-sm-4">
-                        <div className="form-group">
-                          <label className="col-form-label">Salary basis <span className="text-danger">*</span></label>
-                          <select className="select">
-                            <option>Select salary basis type</option>
-                            <option>Hourly</option>
-                            <option>Daily</option>
-                            <option>Weekly</option>
-                            <option>Monthly</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div className="col-sm-4">
-                        <div className="form-group">
-                          <label className="col-form-label">Salary amount <small className="text-muted">per month</small></label>
-                          <div className="input-group">
-                            <div className="input-group-prepend">
-                              <span className="input-group-text">$</span>
-                            </div>
-                            <input type="text" className="form-control" placeholder="Type your salary amount" defaultValue={0.00} />
+                          </h3>
+                          <div className="experience-box">
+                            { allData?.education?.length > 0 ?
+                            <ul className="experience-list">
+                              {
+                                allData?.education?.map((edu) => (
+                                  <li>
+                                    <div className="experience-user">
+                                      <div className="before-circle" />
+                                    </div>
+                                    <div className="experience-content">
+                                      <div className="timeline-content">
+                                        <a href="javascript:void(0)" className="name" style={{cursor: 'text'}}>{edu?.institute}</a>
+                                        <div>{edu?.degree}</div>
+                                        <span className="time">{edu?.year}</span>
+                                      </div>
+                                    </div>
+                                  </li>
+                                ))
+                              }
+                            </ul> :
+                            <Empty style={{marginTop: '12%'}} image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                            }
                           </div>
                         </div>
                       </div>
-                      <div className="col-sm-4">
-                        <div className="form-group">
-                          <label className="col-form-label">Payment type</label>
-                          <select className="select">
-                            <option>Select payment type</option>
-                            <option>Bank transfer</option>
-                            <option>Check</option>
-                            <option>Cash</option>
-                          </select>
+                    </div>
+                    <div className="col-md-6 d-flex">
+                      <div className="card profile-box flex-fill">
+                        <div className="card-body">
+                          <h3 className="card-title">Experience
+                          {
+                            (role === 'admin' || permissions?.updateUser) &&
+                            <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: true, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a>
+                          }
+                          </h3>
+                          <div className="experience-box">
+                            {
+                              allData?.experience?.length > 0 ?
+                            <ul className="experience-list">
+                              {
+                                allData?.experience?.map((exp) => (
+                                  <li>
+                                    <div className="experience-user">
+                                      <div className="before-circle" />
+                                    </div>
+                                    <div className="experience-content">
+                                      <div className="timeline-content">
+                                        <a href="javascript:void(0)" style={{cursor: 'text'}} className="name">{exp?.designation} at {exp?.company}</a>
+                                        <span className="time">{exp?.duration}</span>
+                                      </div>
+                                    </div>
+                                  </li>
+                                ))
+                              }
+                            </ul>
+                            : <Empty style={{marginTop: '12%'}} image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                            }
+                          </div>
                         </div>
                       </div>
                     </div>
-                    <hr />
-                    <h3 className="card-title"> PF Information</h3>
-                    <div className="row">
-                      <div className="col-sm-4">
-                        <div className="form-group">
-                          <label className="col-form-label">PF contribution</label>
-                          <select className="select">
-                            <option>Select PF contribution</option>
-                            <option>Yes</option>
-                            <option>No</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div className="col-sm-4">
-                        <div className="form-group">
-                          <label className="col-form-label">PF No. <span className="text-danger">*</span></label>
-                          <select className="select">
-                            <option>Select PF contribution</option>
-                            <option>Yes</option>
-                            <option>No</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="row">
-                      <div className="col-sm-4">
-                        <div className="form-group">
-                          <label className="col-form-label">Employee PF rate</label>
-                          <select className="select">
-                            <option>Select PF contribution</option>
-                            <option>Yes</option>
-                            <option>No</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div className="col-sm-4">
-                        <div className="form-group">
-                          <label className="col-form-label">Additional rate <span className="text-danger">*</span></label>
-                          <select className="select">
-                            <option>Select additional rate</option>
-                            <option>0%</option>
-                            <option>1%</option>
-                            <option>2%</option>
-                            <option>3%</option>
-                            <option>4%</option>
-                            <option>5%</option>
-                            <option>6%</option>
-                            <option>7%</option>
-                            <option>8%</option>
-                            <option>9%</option>
-                            <option>10%</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div className="col-sm-4">
-                        <div className="form-group">
-                          <label className="col-form-label">Total rate</label>
-                          <input type="text" className="form-control" placeholder="N/A" defaultValue="11%" />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="row">
-                      <div className="col-sm-4">
-                        <div className="form-group">
-                          <label className="col-form-label">Employee PF rate</label>
-                          <select className="select">
-                            <option>Select PF contribution</option>
-                            <option>Yes</option>
-                            <option>No</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div className="col-sm-4">
-                        <div className="form-group">
-                          <label className="col-form-label">Additional rate <span className="text-danger">*</span></label>
-                          <select className="select">
-                            <option>Select additional rate</option>
-                            <option>0%</option>
-                            <option>1%</option>
-                            <option>2%</option>
-                            <option>3%</option>
-                            <option>4%</option>
-                            <option>5%</option>
-                            <option>6%</option>
-                            <option>7%</option>
-                            <option>8%</option>
-                            <option>9%</option>
-                            <option>10%</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div className="col-sm-4">
-                        <div className="form-group">
-                          <label className="col-form-label">Total rate</label>
-                          <input type="text" className="form-control" placeholder="N/A" defaultValue="11%" />
-                        </div>
-                      </div>
-                    </div>
-                    <hr />
-                    <h3 className="card-title"> ESI Information</h3>
-                    <div className="row">
-                      <div className="col-sm-4">
-                        <div className="form-group">
-                          <label className="col-form-label">ESI contribution</label>
-                          <select className="select">
-                            <option>Select ESI contribution</option>
-                            <option>Yes</option>
-                            <option>No</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div className="col-sm-4">
-                        <div className="form-group">
-                          <label className="col-form-label">ESI No. <span className="text-danger">*</span></label>
-                          <select className="select">
-                            <option>Select ESI contribution</option>
-                            <option>Yes</option>
-                            <option>No</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="row">
-                      <div className="col-sm-4">
-                        <div className="form-group">
-                          <label className="col-form-label">Employee ESI rate</label>
-                          <select className="select">
-                            <option>Select ESI contribution</option>
-                            <option>Yes</option>
-                            <option>No</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div className="col-sm-4">
-                        <div className="form-group">
-                          <label className="col-form-label">Additional rate <span className="text-danger">*</span></label>
-                          <select className="select">
-                            <option>Select additional rate</option>
-                            <option>0%</option>
-                            <option>1%</option>
-                            <option>2%</option>
-                            <option>3%</option>
-                            <option>4%</option>
-                            <option>5%</option>
-                            <option>6%</option>
-                            <option>7%</option>
-                            <option>8%</option>
-                            <option>9%</option>
-                            <option>10%</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div className="col-sm-4">
-                        <div className="form-group">
-                          <label className="col-form-label">Total rate</label>
-                          <input type="text" className="form-control" placeholder="N/A" defaultValue="11%" />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="submit-section">
-                      <button className="btn btn-primary submit-btn" type="submit">Save</button>
-                    </div>
-                  </form>
+                  </div>
                 </div>
-              </div>
-            </div>
-            <div className="tab-pane fade" id="emp_assets">
-              <div className="table-responsive table-newdatatable">
-                <table className="table table-new custom-table mb-0 datatable">
-                  <thead>
-                    <tr>
-                      <th>#</th>
-                      <th>Name</th>
-                      <th>Asset ID</th>
-                      <th>Assigned Date</th>
-                      <th>Assignee</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>1</td>
-                      <td>
-                        <a href="assets-details.html" className="table-imgname">
-                          <img src={laptop} className="me-2" alt="img" />
-                          <span>Laptop</span>
-                        </a>
-                      </td>
-                      <td>AST - 001</td>
-                      <td>22 Nov, 2022    10:32AM</td>
-                      <td className="table-namesplit">
-                        <a href="javascript:void(0);" className="table-profileimage">
-                          <img src={Avatar_02} className="me-2" alt="img" />
-                        </a>
-                        <a href="javascript:void(0);" className="table-name">
-                          <span>John Paul Raj</span>
-                          <p>john@dreamguystech.com</p>
-                        </a>
-                      </td>
-                      <td>
-                        <div className="table-actions d-flex">
-                          <Link className="delete-table me-2" to="/app/profile/userassets">
-                            <img src={eye} alt="svg" />
-                          </Link>
+                {/* /Profile Info Tab */}
+                {/* Projects Tab */}
+                <div className="tab-pane fade" id="emp_projects">
+                  <div className="row">
+                    <div className="col-lg-4 col-sm-6 col-md-4 col-xl-3">
+                      <div className="card">
+                        <div className="card-body">
+                          <div className="dropdown profile-action">
+                            <a aria-expanded="false" data-bs-toggle="dropdown" className="action-icon dropdown-toggle" href="#"><i className="material-icons">more_vert</i></a>
+                            <div className="dropdown-menu dropdown-menu-right">
+                              <a data-bs-target="#edit_project" data-bs-toggle="modal" href="#" className="dropdown-item"><i className="fa fa-pencil m-r-5" /> Edit</a>
+                              <a data-bs-target="#delete_project" data-bs-toggle="modal" href="#" className="dropdown-item"><i className="fa fa-trash-o m-r-5" /> Delete</a>
+                            </div>
+                          </div>
+                          <h4 className="project-title"><Link to="/app/projects/projects-view">Office Management</Link></h4>
+                          <small className="block text-ellipsis m-b-15">
+                            <span className="text-xs">1</span> <span className="text-muted">open tasks, </span>
+                            <span className="text-xs">9</span> <span className="text-muted">tasks completed</span>
+                          </small>
+                          <p className="text-muted">Lorem Ipsum is simply dummy text of the printing and
+                            typesetting industry. When an unknown printer took a galley of type and
+                            scrambled it...
+                          </p>
+                          <div className="pro-deadline m-b-15">
+                            <div className="sub-title">
+                              Deadline:
+                            </div>
+                            <div className="text-muted">
+                              17 Apr 2019
+                            </div>
+                          </div>
+                          <div className="project-members m-b-15">
+                            <div>Project Leader :</div>
+                            <ul className="team-members">
+                              <li>
+                                <a href="#" data-bs-toggle="tooltip" title="Jeffery Lalor"><img alt="" src={Avatar_16} /></a>
+                              </li>
+                            </ul>
+                          </div>
+                          <div className="project-members m-b-15">
+                            <div>Team :</div>
+                            <ul className="team-members">
+                              <li>
+                                <a href="#" data-bs-toggle="tooltip" title="John Doe"><img alt="" src={Avatar_02} /></a>
+                              </li>
+                              <li>
+                                <a href="#" data-bs-toggle="tooltip" title="Richard Miles"><img alt="" src={Avatar_09} /></a>
+                              </li>
+                              <li>
+                                <a href="#" data-bs-toggle="tooltip" title="John Smith"><img alt="" src={Avatar_10} /></a>
+                              </li>
+                              <li>
+                                <a href="#" data-bs-toggle="tooltip" title="Mike Litorus"><img alt="" src={Avatar_05} /></a>
+                              </li>
+                              <li>
+                                <a href="#" className="all-users">+15</a>
+                              </li>
+                            </ul>
+                          </div>
+                          <p className="m-b-5">Progress <span className="text-success float-end">40%</span></p>
+                          <div className="progress progress-xs mb-0">
+                            <div style={{ width: '40%' }} data-bs-toggle="tooltip" role="progressbar" className="progress-bar bg-success" data-original-title="40%" />
+                          </div>
                         </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>2</td>
-                      <td>
-                        <a href="assets-details.html" className="table-imgname">
-                          <img src={laptop} className="me-2" alt="img" />
-                          <span>Laptop</span>
-                        </a>
-                      </td>
-                      <td>AST - 002</td>
-                      <td>22 Nov, 2022    10:32AM</td>
-                      <td className="table-namesplit">
-                        <a href="javascript:void(0);" className="table-profileimage" data-bs-toggle="modal" data-bs-target="#edit-asset">
-                          <img src={Avatar_05} className="me-2" alt="img" />
-                        </a>
-                        <a href="javascript:void(0);" className="table-name">
-                          <span>Vinod Selvaraj</span>
-                          <p>vinod.s@dreamguystech.com</p>
-                        </a>
-                      </td>
-                      <td>
-                        <div className="table-actions d-flex">
-                          <a className="delete-table me-2" href="user-asset-details.html">
-                            <img src={eye} alt="svg" />
-                          </a>
+                      </div>
+                    </div>
+                    <div className="col-lg-4 col-sm-6 col-md-4 col-xl-3">
+                      <div className="card">
+                        <div className="card-body">
+                          <div className="dropdown profile-action">
+                            <a aria-expanded="false" data-bs-toggle="dropdown" className="action-icon dropdown-toggle" href="#"><i className="material-icons">more_vert</i></a>
+                            <div className="dropdown-menu dropdown-menu-right">
+                              <a data-bs-target="#edit_project" data-bs-toggle="modal" href="#" className="dropdown-item"><i className="fa fa-pencil m-r-5" /> Edit</a>
+                              <a data-bs-target="#delete_project" data-bs-toggle="modal" href="#" className="dropdown-item"><i className="fa fa-trash-o m-r-5" /> Delete</a>
+                            </div>
+                          </div>
+                          <h4 className="project-title"><Link to="/app/projects/projects-view">Project Management</Link></h4>
+                          <small className="block text-ellipsis m-b-15">
+                            <span className="text-xs">2</span> <span className="text-muted">open tasks, </span>
+                            <span className="text-xs">5</span> <span className="text-muted">tasks completed</span>
+                          </small>
+                          <p className="text-muted">Lorem Ipsum is simply dummy text of the printing and
+                            typesetting industry. When an unknown printer took a galley of type and
+                            scrambled it...
+                          </p>
+                          <div className="pro-deadline m-b-15">
+                            <div className="sub-title">
+                              Deadline:
+                            </div>
+                            <div className="text-muted">
+                              17 Apr 2019
+                            </div>
+                          </div>
+                          <div className="project-members m-b-15">
+                            <div>Project Leader :</div>
+                            <ul className="team-members">
+                              <li>
+                                <a href="#" data-bs-toggle="tooltip" title="Jeffery Lalor"><img alt="" src={Avatar_16} /></a>
+                              </li>
+                            </ul>
+                          </div>
+                          <div className="project-members m-b-15">
+                            <div>Team :</div>
+                            <ul className="team-members">
+                              <li>
+                                <a href="#" data-bs-toggle="tooltip" title="John Doe"><img alt="" src={Avatar_02} /></a>
+                              </li>
+                              <li>
+                                <a href="#" data-bs-toggle="tooltip" title="Richard Miles"><img alt="" src={Avatar_09} /></a>
+                              </li>
+                              <li>
+                                <a href="#" data-bs-toggle="tooltip" title="John Smith"><img alt="" src={Avatar_10} /></a>
+                              </li>
+                              <li>
+                                <a href="#" data-bs-toggle="tooltip" title="Mike Litorus"><img alt="" src={Avatar_05} /></a>
+                              </li>
+                              <li>
+                                <a href="#" className="all-users">+15</a>
+                              </li>
+                            </ul>
+                          </div>
+                          <p className="m-b-5">Progress <span className="text-success float-end">40%</span></p>
+                          <div className="progress progress-xs mb-0">
+                            <div style={{ width: '40%' }} data-bs-toggle="tooltip" role="progressbar" className="progress-bar bg-success" data-original-title="40%" />
+                          </div>
                         </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>3</td>
-                      <td>
-                        <a href="assets-details.html" className="table-imgname">
-                          <img src={keyboard} className="me-2" alt="img" />
-                          <span>Dell Keyboard</span>
-                        </a>
-                      </td>
-                      <td>AST - 003</td>
-                      <td>22 Nov, 2022    10:32AM</td>
-                      <td className="table-namesplit">
-                        <a href="javascript:void(0);" className="table-profileimage" data-bs-toggle="modal" data-bs-target="#edit-asset">
-                          <img src={Avatar_09} className="me-2" alt="img" />
-                        </a>
-                        <a href="javascript:void(0);" className="table-name">
-                          <span>Harika </span>
-                          <p>harika.v@dreamguystech.com</p>
-                        </a>
-                      </td>
-                      <td>
-                        <div className="table-actions d-flex">
-                          <a className="delete-table me-2" href="user-asset-details.html">
-                            <img src={eye} alt="svg" />
-                          </a>
+                      </div>
+                    </div>
+                    <div className="col-lg-4 col-sm-6 col-md-4 col-xl-3">
+                      <div className="card">
+                        <div className="card-body">
+                          <div className="dropdown profile-action">
+                            <a aria-expanded="false" data-bs-toggle="dropdown" className="action-icon dropdown-toggle" href="#"><i className="material-icons">more_vert</i></a>
+                            <div className="dropdown-menu dropdown-menu-right">
+                              <a data-bs-target="#edit_project" data-bs-toggle="modal" href="#" className="dropdown-item"><i className="fa fa-pencil m-r-5" /> Edit</a>
+                              <a data-bs-target="#delete_project" data-bs-toggle="modal" href="#" className="dropdown-item"><i className="fa fa-trash-o m-r-5" /> Delete</a>
+                            </div>
+                          </div>
+                          <h4 className="project-title"><Link to="/app/projects/projects-view">Video Calling App</Link></h4>
+                          <small className="block text-ellipsis m-b-15">
+                            <span className="text-xs">3</span> <span className="text-muted">open tasks, </span>
+                            <span className="text-xs">3</span> <span className="text-muted">tasks completed</span>
+                          </small>
+                          <p className="text-muted">Lorem Ipsum is simply dummy text of the printing and
+                            typesetting industry. When an unknown printer took a galley of type and
+                            scrambled it...
+                          </p>
+                          <div className="pro-deadline m-b-15">
+                            <div className="sub-title">
+                              Deadline:
+                            </div>
+                            <div className="text-muted">
+                              17 Apr 2019
+                            </div>
+                          </div>
+                          <div className="project-members m-b-15">
+                            <div>Project Leader :</div>
+                            <ul className="team-members">
+                              <li>
+                                <a href="#" data-bs-toggle="tooltip" title="Jeffery Lalor"><img alt="" src={Avatar_16} /></a>
+                              </li>
+                            </ul>
+                          </div>
+                          <div className="project-members m-b-15">
+                            <div>Team :</div>
+                            <ul className="team-members">
+                              <li>
+                                <a href="#" data-bs-toggle="tooltip" title="John Doe"><img alt="" src={Avatar_02} /></a>
+                              </li>
+                              <li>
+                                <a href="#" data-bs-toggle="tooltip" title="Richard Miles"><img alt="" src={Avatar_09} /></a>
+                              </li>
+                              <li>
+                                <a href="#" data-bs-toggle="tooltip" title="John Smith"><img alt="" src={Avatar_10} /></a>
+                              </li>
+                              <li>
+                                <a href="#" data-bs-toggle="tooltip" title="Mike Litorus"><img alt="" src={Avatar_05} /></a>
+                              </li>
+                              <li>
+                                <a href="#" className="all-users">+15</a>
+                              </li>
+                            </ul>
+                          </div>
+                          <p className="m-b-5">Progress <span className="text-success float-end">40%</span></p>
+                          <div className="progress progress-xs mb-0">
+                            <div style={{ width: '40%' }} data-bs-toggle="tooltip" role="progressbar" className="progress-bar bg-success" data-original-title="40%" />
+                          </div>
                         </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>4</td>
-                      <td>
-                        <a href="#" className="table-imgname">
-                          <img src={mouse} className="me-2" alt="img" />
-                          <span>Logitech Mouse</span>
-                        </a>
-                      </td>
-                      <td>AST - 0024</td>
-                      <td>22 Nov, 2022    10:32AM</td>
-                      <td className="table-namesplit">
-                        <a href="assets-details.html" className="table-profileimage">
-                          <img src={Avatar_10} className="me-2" alt="img" />
-                        </a>
-                        <a href="assets-details.html" className="table-name">
-                          <span>Mythili</span>
-                          <p>mythili@dreamguystech.com</p>
-                        </a>
-                      </td>
-                      <td>
-                        <div className="table-actions d-flex">
-                          <a className="delete-table me-2" href="user-asset-details.html">
-                            <img src={eye} alt="svg" />
-                          </a>
+                      </div>
+                    </div>
+                    <div className="col-lg-4 col-sm-6 col-md-4 col-xl-3">
+                      <div className="card">
+                        <div className="card-body">
+                          <div className="dropdown profile-action">
+                            <a aria-expanded="false" data-bs-toggle="dropdown" className="action-icon dropdown-toggle" href="#"><i className="material-icons">more_vert</i></a>
+                            <div className="dropdown-menu dropdown-menu-right">
+                              <a data-bs-target="#edit_project" data-bs-toggle="modal" href="#" className="dropdown-item"><i className="fa fa-pencil m-r-5" /> Edit</a>
+                              <a data-bs-target="#delete_project" data-bs-toggle="modal" href="#" className="dropdown-item"><i className="fa fa-trash-o m-r-5" /> Delete</a>
+                            </div>
+                          </div>
+                          <h4 className="project-title"><Link to="/app/projects/projects-view">Hospital Administration</Link></h4>
+                          <small className="block text-ellipsis m-b-15">
+                            <span className="text-xs">12</span> <span className="text-muted">open tasks, </span>
+                            <span className="text-xs">4</span> <span className="text-muted">tasks completed</span>
+                          </small>
+                          <p className="text-muted">Lorem Ipsum is simply dummy text of the printing and
+                            typesetting industry. When an unknown printer took a galley of type and
+                            scrambled it...
+                          </p>
+                          <div className="pro-deadline m-b-15">
+                            <div className="sub-title">
+                              Deadline:
+                            </div>
+                            <div className="text-muted">
+                              17 Apr 2019
+                            </div>
+                          </div>
+                          <div className="project-members m-b-15">
+                            <div>Project Leader :</div>
+                            <ul className="team-members">
+                              <li>
+                                <a href="#" data-bs-toggle="tooltip" title="Jeffery Lalor"><img alt="" src={Avatar_16} /></a>
+                              </li>
+                            </ul>
+                          </div>
+                          <div className="project-members m-b-15">
+                            <div>Team :</div>
+                            <ul className="team-members">
+                              <li>
+                                <a href="#" data-bs-toggle="tooltip" title="John Doe"><img alt="" src={Avatar_02} /></a>
+                              </li>
+                              <li>
+                                <a href="#" data-bs-toggle="tooltip" title="Richard Miles"><img alt="" src={Avatar_09} /></a>
+                              </li>
+                              <li>
+                                <a href="#" data-bs-toggle="tooltip" title="John Smith"><img alt="" src={Avatar_10} /></a>
+                              </li>
+                              <li>
+                                <a href="#" data-bs-toggle="tooltip" title="Mike Litorus"><img alt="" src={Avatar_05} /></a>
+                              </li>
+                              <li>
+                                <a href="#" className="all-users">+15</a>
+                              </li>
+                            </ul>
+                          </div>
+                          <p className="m-b-5">Progress <span className="text-success float-end">40%</span></p>
+                          <div className="progress progress-xs mb-0">
+                            <div style={{ width: '40%' }} data-bs-toggle="tooltip" role="progressbar" className="progress-bar bg-success" data-original-title="40%" />
+                          </div>
                         </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>5</td>
-                      <td>
-                        <a href="#" className="table-imgname">
-                          <img src={laptop} className="me-2" alt="img" />
-                          <span>Laptop</span>
-                        </a>
-                      </td>
-                      <td>AST - 005</td>
-                      <td>22 Nov, 2022    10:32AM</td>
-                      <td className="table-namesplit">
-                        <a href="assets-details.html" className="table-profileimage">
-                          <img src={Avatar_16} className="me-2" alt="img" />
-                        </a>
-                        <a href="assets-details.html" className="table-name">
-                          <span>John Paul Raj</span>
-                          <p>john@dreamguystech.com</p>
-                        </a>
-                      </td>
-                      <td>
-                        <div className="table-actions d-flex">
-                          <a className="delete-table me-2" href="user-asset-details.html">
-                            <img src={eye} alt="svg" />
-                          </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {/* /Projects Tab */}
+                {/* Bank Statutory Tab */}
+                <div className="tab-pane fade" id="bank_statutory">
+                  <div className="card">
+                    <div className="card-body">
+                      <h3 className="card-title"> Basic Salary Information</h3>
+                      <form>
+                        <div className="row">
+                          <div className="col-sm-4">
+                            <div className="form-group">
+                              <label className="col-form-label">Salary basis <span className="text-danger">*</span></label>
+                              <select className="select">
+                                <option>Select salary basis type</option>
+                                <option>Hourly</option>
+                                <option>Daily</option>
+                                <option>Weekly</option>
+                                <option>Monthly</option>
+                              </select>
+                            </div>
+                          </div>
+                          <div className="col-sm-4">
+                            <div className="form-group">
+                              <label className="col-form-label">Salary amount <small className="text-muted">per month</small></label>
+                              <div className="input-group">
+                                <div className="input-group-prepend">
+                                  <span className="input-group-text">$</span>
+                                </div>
+                                <input type="text" className="form-control" placeholder="Type your salary amount" defaultValue={0.00} />
+                              </div>
+                            </div>
+                          </div>
+                          <div className="col-sm-4">
+                            <div className="form-group">
+                              <label className="col-form-label">Payment type</label>
+                              <select className="select">
+                                <option>Select payment type</option>
+                                <option>Bank transfer</option>
+                                <option>Check</option>
+                                <option>Cash</option>
+                              </select>
+                            </div>
+                          </div>
                         </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>6</td>
-                      <td>
-                        <a href="#" className="table-imgname">
-                          <img src={laptop} className="me-2" alt="img" />
-                          <span>Laptop</span>
-                        </a>
-                      </td>
-                      <td>AST - 006</td>
-                      <td>22 Nov, 2022    10:32AM</td>
-                      <td className="table-namesplit">
-                        <a href="javascript:void(0);" className="table-profileimage">
-                          <img src={Avatar_02} className="me-2" alt="img" />
-                        </a>
-                        <a href="javascript:void(0);" className="table-name">
-                          <span>Vinod Selvaraj</span>
-                          <p>vinod.s@dreamguystech.com</p>
-                        </a>
-                      </td>
-                      <td>
-                        <div className="table-actions d-flex">
-                          <a className="delete-table me-2" href="user-asset-details.html">
-                            <img src={eye} alt="svg" />
-                          </a>
+                        <hr />
+                        <h3 className="card-title"> PF Information</h3>
+                        <div className="row">
+                          <div className="col-sm-4">
+                            <div className="form-group">
+                              <label className="col-form-label">PF contribution</label>
+                              <select className="select">
+                                <option>Select PF contribution</option>
+                                <option>Yes</option>
+                                <option>No</option>
+                              </select>
+                            </div>
+                          </div>
+                          <div className="col-sm-4">
+                            <div className="form-group">
+                              <label className="col-form-label">PF No. <span className="text-danger">*</span></label>
+                              <select className="select">
+                                <option>Select PF contribution</option>
+                                <option>Yes</option>
+                                <option>No</option>
+                              </select>
+                            </div>
+                          </div>
                         </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
+                        <div className="row">
+                          <div className="col-sm-4">
+                            <div className="form-group">
+                              <label className="col-form-label">Employee PF rate</label>
+                              <select className="select">
+                                <option>Select PF contribution</option>
+                                <option>Yes</option>
+                                <option>No</option>
+                              </select>
+                            </div>
+                          </div>
+                          <div className="col-sm-4">
+                            <div className="form-group">
+                              <label className="col-form-label">Additional rate <span className="text-danger">*</span></label>
+                              <select className="select">
+                                <option>Select additional rate</option>
+                                <option>0%</option>
+                                <option>1%</option>
+                                <option>2%</option>
+                                <option>3%</option>
+                                <option>4%</option>
+                                <option>5%</option>
+                                <option>6%</option>
+                                <option>7%</option>
+                                <option>8%</option>
+                                <option>9%</option>
+                                <option>10%</option>
+                              </select>
+                            </div>
+                          </div>
+                          <div className="col-sm-4">
+                            <div className="form-group">
+                              <label className="col-form-label">Total rate</label>
+                              <input type="text" className="form-control" placeholder="N/A" defaultValue="11%" />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="row">
+                          <div className="col-sm-4">
+                            <div className="form-group">
+                              <label className="col-form-label">Employee PF rate</label>
+                              <select className="select">
+                                <option>Select PF contribution</option>
+                                <option>Yes</option>
+                                <option>No</option>
+                              </select>
+                            </div>
+                          </div>
+                          <div className="col-sm-4">
+                            <div className="form-group">
+                              <label className="col-form-label">Additional rate <span className="text-danger">*</span></label>
+                              <select className="select">
+                                <option>Select additional rate</option>
+                                <option>0%</option>
+                                <option>1%</option>
+                                <option>2%</option>
+                                <option>3%</option>
+                                <option>4%</option>
+                                <option>5%</option>
+                                <option>6%</option>
+                                <option>7%</option>
+                                <option>8%</option>
+                                <option>9%</option>
+                                <option>10%</option>
+                              </select>
+                            </div>
+                          </div>
+                          <div className="col-sm-4">
+                            <div className="form-group">
+                              <label className="col-form-label">Total rate</label>
+                              <input type="text" className="form-control" placeholder="N/A" defaultValue="11%" />
+                            </div>
+                          </div>
+                        </div>
+                        <hr />
+                        <h3 className="card-title"> ESI Information</h3>
+                        <div className="row">
+                          <div className="col-sm-4">
+                            <div className="form-group">
+                              <label className="col-form-label">ESI contribution</label>
+                              <select className="select">
+                                <option>Select ESI contribution</option>
+                                <option>Yes</option>
+                                <option>No</option>
+                              </select>
+                            </div>
+                          </div>
+                          <div className="col-sm-4">
+                            <div className="form-group">
+                              <label className="col-form-label">ESI No. <span className="text-danger">*</span></label>
+                              <select className="select">
+                                <option>Select ESI contribution</option>
+                                <option>Yes</option>
+                                <option>No</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="row">
+                          <div className="col-sm-4">
+                            <div className="form-group">
+                              <label className="col-form-label">Employee ESI rate</label>
+                              <select className="select">
+                                <option>Select ESI contribution</option>
+                                <option>Yes</option>
+                                <option>No</option>
+                              </select>
+                            </div>
+                          </div>
+                          <div className="col-sm-4">
+                            <div className="form-group">
+                              <label className="col-form-label">Additional rate <span className="text-danger">*</span></label>
+                              <select className="select">
+                                <option>Select additional rate</option>
+                                <option>0%</option>
+                                <option>1%</option>
+                                <option>2%</option>
+                                <option>3%</option>
+                                <option>4%</option>
+                                <option>5%</option>
+                                <option>6%</option>
+                                <option>7%</option>
+                                <option>8%</option>
+                                <option>9%</option>
+                                <option>10%</option>
+                              </select>
+                            </div>
+                          </div>
+                          <div className="col-sm-4">
+                            <div className="form-group">
+                              <label className="col-form-label">Total rate</label>
+                              <input type="text" className="form-control" placeholder="N/A" defaultValue="11%" />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="submit-section">
+                          <button className="btn btn-primary submit-btn" type="submit">Save</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+                <div className="tab-pane fade" id="emp_assets">
+                  <div className="table-responsive table-newdatatable">
+                    <table className="table table-new custom-table mb-0 datatable">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Name</th>
+                          <th>Asset ID</th>
+                          <th>Assigned Date</th>
+                          <th>Assignee</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>1</td>
+                          <td>
+                            <a href="assets-details.html" className="table-imgname">
+                              <img src={laptop} className="me-2" alt="img" />
+                              <span>Laptop</span>
+                            </a>
+                          </td>
+                          <td>AST - 001</td>
+                          <td>22 Nov, 2022    10:32AM</td>
+                          <td className="table-namesplit">
+                            <a href="javascript:void(0);" className="table-profileimage">
+                              <img src={Avatar_02} className="me-2" alt="img" />
+                            </a>
+                            <a href="javascript:void(0);" className="table-name">
+                              <span>John Paul Raj</span>
+                              <p>john@dreamguystech.com</p>
+                            </a>
+                          </td>
+                          <td>
+                            <div className="table-actions d-flex">
+                              <Link className="delete-table me-2" to="/app/profile/userassets">
+                                <img src={eye} alt="svg" />
+                              </Link>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>2</td>
+                          <td>
+                            <a href="assets-details.html" className="table-imgname">
+                              <img src={laptop} className="me-2" alt="img" />
+                              <span>Laptop</span>
+                            </a>
+                          </td>
+                          <td>AST - 002</td>
+                          <td>22 Nov, 2022    10:32AM</td>
+                          <td className="table-namesplit">
+                            <a href="javascript:void(0);" className="table-profileimage" data-bs-toggle="modal" data-bs-target="#edit-asset">
+                              <img src={Avatar_05} className="me-2" alt="img" />
+                            </a>
+                            <a href="javascript:void(0);" className="table-name">
+                              <span>Vinod Selvaraj</span>
+                              <p>vinod.s@dreamguystech.com</p>
+                            </a>
+                          </td>
+                          <td>
+                            <div className="table-actions d-flex">
+                              <a className="delete-table me-2" href="user-asset-details.html">
+                                <img src={eye} alt="svg" />
+                              </a>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>3</td>
+                          <td>
+                            <a href="assets-details.html" className="table-imgname">
+                              <img src={keyboard} className="me-2" alt="img" />
+                              <span>Dell Keyboard</span>
+                            </a>
+                          </td>
+                          <td>AST - 003</td>
+                          <td>22 Nov, 2022    10:32AM</td>
+                          <td className="table-namesplit">
+                            <a href="javascript:void(0);" className="table-profileimage" data-bs-toggle="modal" data-bs-target="#edit-asset">
+                              <img src={Avatar_09} className="me-2" alt="img" />
+                            </a>
+                            <a href="javascript:void(0);" className="table-name">
+                              <span>Harika </span>
+                              <p>harika.v@dreamguystech.com</p>
+                            </a>
+                          </td>
+                          <td>
+                            <div className="table-actions d-flex">
+                              <a className="delete-table me-2" href="user-asset-details.html">
+                                <img src={eye} alt="svg" />
+                              </a>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>4</td>
+                          <td>
+                            <a href="#" className="table-imgname">
+                              <img src={mouse} className="me-2" alt="img" />
+                              <span>Logitech Mouse</span>
+                            </a>
+                          </td>
+                          <td>AST - 0024</td>
+                          <td>22 Nov, 2022    10:32AM</td>
+                          <td className="table-namesplit">
+                            <a href="assets-details.html" className="table-profileimage">
+                              <img src={Avatar_10} className="me-2" alt="img" />
+                            </a>
+                            <a href="assets-details.html" className="table-name">
+                              <span>Mythili</span>
+                              <p>mythili@dreamguystech.com</p>
+                            </a>
+                          </td>
+                          <td>
+                            <div className="table-actions d-flex">
+                              <a className="delete-table me-2" href="user-asset-details.html">
+                                <img src={eye} alt="svg" />
+                              </a>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>5</td>
+                          <td>
+                            <a href="#" className="table-imgname">
+                              <img src={laptop} className="me-2" alt="img" />
+                              <span>Laptop</span>
+                            </a>
+                          </td>
+                          <td>AST - 005</td>
+                          <td>22 Nov, 2022    10:32AM</td>
+                          <td className="table-namesplit">
+                            <a href="assets-details.html" className="table-profileimage">
+                              <img src={Avatar_16} className="me-2" alt="img" />
+                            </a>
+                            <a href="assets-details.html" className="table-name">
+                              <span>John Paul Raj</span>
+                              <p>john@dreamguystech.com</p>
+                            </a>
+                          </td>
+                          <td>
+                            <div className="table-actions d-flex">
+                              <a className="delete-table me-2" href="user-asset-details.html">
+                                <img src={eye} alt="svg" />
+                              </a>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>6</td>
+                          <td>
+                            <a href="#" className="table-imgname">
+                              <img src={laptop} className="me-2" alt="img" />
+                              <span>Laptop</span>
+                            </a>
+                          </td>
+                          <td>AST - 006</td>
+                          <td>22 Nov, 2022    10:32AM</td>
+                          <td className="table-namesplit">
+                            <a href="javascript:void(0);" className="table-profileimage">
+                              <img src={Avatar_02} className="me-2" alt="img" />
+                            </a>
+                            <a href="javascript:void(0);" className="table-name">
+                              <span>Vinod Selvaraj</span>
+                              <p>vinod.s@dreamguystech.com</p>
+                            </a>
+                          </td>
+                          <td>
+                            <div className="table-actions d-flex">
+                              <a className="delete-table me-2" href="user-asset-details.html">
+                                <img src={eye} alt="svg" />
+                              </a>
+                            </div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
 
 
-            {/* /Bank Statutory Tab */}
-          </div>
+                {/* /Bank Statutory Tab */}
+              </div>
+          }
         </div>
         {/* /Page Content */}
         {/* Profile Modal */}
@@ -1466,16 +1635,16 @@ const antIcon = (
                                       ]}
                                     >
                                       <Input className='form-control' maxLength={50}
-                                        onKeyPress={(e) => {
-                                          if ((e.which >= 65 && e.which <= 90) || (e.which >= 97 && e.which <= 122) || (e.which >= 33 &&  e.which <= 47) || (e.which >= 58 && e.which <= 64) || (e.which >= 91 && e.which <= 96) || (e.which >= 123 && e.which <= 126) ) {
-                                            e.preventDefault();
-                                          }
-                                        }}
+                                        // onKeyPress={(e) => {
+                                        //   if ((e.which >= 65 && e.which <= 90) || (e.which >= 97 && e.which <= 122) || (e.which >= 33 &&  e.which <= 47) || (e.which >= 58 && e.which <= 64) || (e.which >= 91 && e.which <= 96) || (e.which >= 123 && e.which <= 126) ) {
+                                        //     e.preventDefault();
+                                        //   }
+                                        // }}
                                       />
                                     </Form.Item>
                                   </div>
                                 </div>
-                                <div className="col-12">
+                                {/* <div className="col-12">
                                   <div className="form-group">
                                     <label>
                                      Salary <span className="text-danger">*</span>
@@ -1509,7 +1678,7 @@ const antIcon = (
                                       />
                                     </Form.Item>
                                   </div>
-                                </div>
+                                </div> */}
                               </div>
                             </div>
                           </div>
