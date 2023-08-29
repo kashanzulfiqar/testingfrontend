@@ -3,7 +3,7 @@
  */
 import React, { useEffect, useState } from 'react';
 import { Helmet } from "react-helmet";
-import { Avatar_02, Avatar_04, Avatar_05, Avatar_07, Avatar_08, Avatar_09 } from '../../../Entryfile/imagepath.jsx'
+import { Avatar_02, Avatar_04, Avatar_05, Avatar_07, Avatar_08, Avatar_09, user_icon } from '../../../Entryfile/imagepath.jsx'
 import Header from '../../../initialpage/Sidebar/header'
 import Sidebar from '../../../initialpage/Sidebar/sidebar';
 import Offcanvas from '../../../Entryfile/offcanvance/index.jsx';
@@ -70,7 +70,7 @@ const EmployeeDashboard = () => {
         }
       }
       style={{
-        height: "300px",
+        height: "282px",
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
@@ -112,7 +112,7 @@ const EmployeeDashboard = () => {
       width: '60%',
       render: (userId) => (
         <div>
-          <img src={userId.imageUrl} alt={userId.fullName} className="avatar" />
+          <img src={userId.imageUrl || user_icon} alt={userId.fullName} className="avatar" />
           {userId.fullName}
         </div>
       ),
@@ -122,37 +122,6 @@ const EmployeeDashboard = () => {
       dataIndex: 'status',
       key: 'status',
       width: '35%',
-      render: (status) => (
-        <span style={{ color: status === 'Pending' ? 'orange' : status === 'Approved' ? 'green' : 'red' }}>
-        {status}
-      </span>
-      ),
-    },
-  ];
-  
-  const columnsLeave = [
-    {
-      title: '#',
-      dataIndex: 'index',
-      key: 'index',
-      width: '10%',
-      render: (index) => <span>{index}</span>,
-    },
-    {
-      title: 'Employee',
-      dataIndex: 'userId',
-      key: 'employee',
-      render: (userId) => (
-        <div>
-          <img src={userId.imageUrl} alt={userId.fullName} className="avatar" />
-          {userId.fullName}
-        </div>
-      ),
-    },
-    {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
       render: (status) => (
         <span style={{ color: status === 'Pending' ? 'orange' : status === 'Approved' ? 'green' : 'red' }}>
         {status}
@@ -208,15 +177,17 @@ const EmployeeDashboard = () => {
             <div className="row">
             <div className="col-lg-8 col-md-8">
               <section className="dash-section">
-                <h1 className="dash-sec-title">Work From Home</h1>
+                <label className="dash-sec-title">Employees on Work From Home</label>
                 <div style={{ maxWidth: '100%', overflowX: 'auto',boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}>
                 <Table
                   columns={columnsWfh}
+                  className='fixedTableHeader'
+                  style={{height: '349px', background: 'white'}}
                   dataSource={dataSourceWfh.map((item, index) => ({ ...item, index: index + 1 }))}
                   pagination={false}
                   locale={{
                     emptyText: isLoading ? (
-                      <Spin size="large" tip="Loading..." />
+                      <Spin size="large" style={{height: '280px', display: 'flex', justifyContent: 'center', alignItems: 'center'}} tip="Loading..." />
                     ) : (
                       customEmptyText
                     ),
@@ -226,15 +197,17 @@ const EmployeeDashboard = () => {
               </section>
 
               <section className="dash-section">
-                <h1 className="dash-sec-title">On Leave</h1>
+                <label className="dash-sec-title">Employees On Leave</label>
                 <div style={{ maxWidth: '100%', overflowX: 'auto',boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}>
                 <Table
                   columns={columnsWfh}
+                  className='fixedTableHeader'
+                  style={{height: '349px', background: 'white'}}
                   dataSource={dataSourceLeave.map((item, index) => ({ ...item, index: index + 1 }))}
                   pagination={false}
                   locale={{
                     emptyText: isLoading ? (
-                      <Spin size="large" tip="Loading..." />
+                      <Spin size="large" style={{height: '280px', display: 'flex', justifyContent: 'center', alignItems: 'center'}} tip="Loading..." />
                     ) : (
                       customEmptyText
                     ),
@@ -328,7 +301,7 @@ const EmployeeDashboard = () => {
                           return (
                             <div key={item._id} className="time-list">
                               <div className="dash-stats-list">
-                                <h4><img src={item.imageUrl} alt={item.fullName} className="avatar" />{item.fullName}</h4>
+                                <h4><img src={item.imageUrl || user_icon} alt={item.fullName} className="avatar" />{item.fullName}</h4>
                                 <p>{yearsSinceJoining} years at the company</p>
                               </div>
                             </div>

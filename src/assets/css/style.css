@@ -7175,6 +7175,47 @@ textarea.form-control {
 
 /* ................. custom css styling ................ */
 
+.brandStyle{
+  display: flex;
+  padding: 15px 0px;
+  justify-content: center;
+  background: #243037;
+  border-radius: 5px;
+  margin-left: 2px;
+  /* position: sticky;
+  bottom: 0; */
+}
+.brandStyle > a {
+  color: #dbdcdd;
+}
+.brandStyle > a:hover{
+  color: #FF9B44;
+}
+
+
+.fixedTableHeader thead > *{
+  position: sticky !important;
+  top: 0 !important;
+  background: white !important;
+  z-index: 300 !important;
+}
+
+.fixedTableHeader thead > tr > th:nth-child(1){
+  background-color: #FFFFFF !important;
+}
+.fixedColmn thead > tr > th:nth-child(1){
+  background-color: #FFFFFF !important;
+}
+.fixedColmn tbody > tr:nth-child(1) > td{
+  padding: 0px !important;
+}
+.fixedColmn .ant-table-content{
+  /* position: sticky;
+    top: 0;
+    background: white;
+    z-index: 300; */
+}
+
 .custom-border .ant-select-disabled > div{
   color: black !important;
     background: #e9ecef !important;

@@ -433,8 +433,8 @@ const AllEmployees = () => {
         { tableLoader ? <div style={{display: 'flex', justifyContent: 'center', height: '150px', background: '#efefef', alignItems: 'center', borderRadius: '10px'}}> <Spin size='middle' /> </div> :
           users?.length > 0 ? users.map((user, index) => (
             <>
-              <div key={index} className="col-md-4 col-sm-6 col-12 col-lg-4 col-xl-3">
-                <div className="profile-widget">
+              <div key={index} className="col-md-4 col-sm-6 col-12 col-lg-4 col-xl-3 d-flex">
+                <div className="profile-widget" style={{width: '100%'}}>
                   <div className="profile-img">
                     <Link to="/profile/employee-profile" state={{user_data: user}} className="avatar"><img src={user?.imageUrl ? user?.imageUrl : user_icon} alt="" /></Link>
                   </div>

@@ -16,6 +16,7 @@ import Header from '../../../initialpage/Sidebar/header'
 import Sidebar from '../../../initialpage/Sidebar/sidebar';
 import Offcanvas from '../../../Entryfile/offcanvance/index.jsx';
 import "../../index.css"
+import { useSelector } from 'react-redux';
 
 
 const barchartdata = [
@@ -39,6 +40,8 @@ const linechartdata = [
 const AdminDashboard = () => {
 
   const [menu, setMenu] = useState(false)
+  const user_state = useSelector((state) => state.user.loginvalue);
+  const admin_name = user_state?.user?.fullName
 
   const toggleMobileMenu = () => {
     setMenu(!menu)
@@ -62,7 +65,7 @@ const AdminDashboard = () => {
         <Sidebar /> */}
         <div className="page-wrapper">
           <Helmet>
-            <title>Dashboard - HRMS Admin Template</title>
+            <title>Dashboard - DaftarPro</title>
             <meta name="description" content="Dashboard" />
           </Helmet>
           {/* Page Content */}
@@ -71,7 +74,7 @@ const AdminDashboard = () => {
             <div className="page-header">
               <div className="row">
                 <div className="col-sm-12">
-                  <h3 className="page-title">Welcome Admin!</h3>
+                  <h3 className="page-title">Welcome {admin_name}!</h3>
                   <ul className="breadcrumb">
                     <li className="breadcrumb-item active">Dashboard</li>
                   </ul>

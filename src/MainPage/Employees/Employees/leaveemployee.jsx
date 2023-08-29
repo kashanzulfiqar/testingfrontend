@@ -255,7 +255,7 @@ const LeaveEmployee = () => {
                       }}
                     >
                       <i className="fa fa-pencil m-r-5" /> Edit</a>
-                    <a className="dropdown-item" href="#" onClick={() => {
+                    <a className="dropdown-item" href="javascript:void(0)" onClick={() => {
                       setOpen({
                         isAddOpen: false,
                         isDelOpen: true,
@@ -313,7 +313,8 @@ const leaves = [
         if (startDate && endDate) {
           const duration = moment.duration(endDate.diff(startDate));
           const totalDays = duration.days();
-          form.setFieldsValue({ totalDays: totalDays+1 });
+          form.setFieldsValue({ totalDays: totalDays });
+          // form.setFieldsValue({ totalDays: totalDays+1 });
         }
         else{
           form.setFieldsValue({ totalDays: '' })
@@ -423,8 +424,22 @@ const leaves = [
             // console.log(res?.data);
             if (res?.data?.success === true) {
               // console.log(data);
-              setData([...data.filter((req) => req._id !== id)]);
-              setPaginationDetail(prev => prev-1)
+              // setData([...data.filter((req) => req._id !== id)]);
+              // setPaginationDetail(prev => prev-1)
+              setData(
+                data.map((req) => {
+                  if (req._id === id) {
+                    return {
+                      ...req,
+                      status: 'Cancelled'
+                    };
+                  } else {
+                    return {
+                      ...req,
+                    };
+                  }
+                })
+              );
               handleClose();
               message.success("Request Deleted Successfully!");
               setLoader(false)
@@ -498,9 +513,8 @@ const leaves = [
       };
     
       const disabledDate = (current) => {
-        // Disable dates before the selected from date
-        // return fromDate && current < moment(fromDate).endOf('day');
-        return fromDate && current < moment(fromDate).startOf('day');
+        return fromDate && current < moment(fromDate).endOf('day');
+        // return fromDate && current < moment(fromDate).startOf('day');
       };
 
       const [good, setGood] = useState('')
@@ -761,7 +775,7 @@ const leaves = [
                           },
                         ]}
                       >
-                          <DatePicker style={{backgroundColor: (open?.data?.status === 'Approved' || open?.data?.status === 'Declined' || open?.data?.status === 'Cancelled') ? '#e9ecef' : ''}} disabled={open?.data?.status === 'Approved' || open?.data?.status === 'Declined' || open?.data?.status === 'Cancelled'} className={(open?.data?.status === 'Approved' || open?.data?.status === 'Declined' || open?.data?.status === 'Cancelled') ? 'dateDisable form-control' : 'form-control'} onChange={e => {calculateTotalDays(e); handleFromDateChange(e); setGood(10)}} getPopupContainer={() => document.getElementById('area')} />
+                          <DatePicker style={{backgroundColor: (open?.data?.status === 'Approved' || open?.data?.status === 'Declined' || open?.data?.status === 'Cancelled') ? '#e9ecef' : ''}} disabled={open?.data?.status === 'Approved' || open?.data?.status === 'Declined' || open?.data?.status === 'Cancelled'} className={(open?.data?.status === 'Approved' || open?.data?.status === 'Declined' || open?.data?.status === 'Cancelled') ? 'dateDisable form-control' : 'form-control'} onChange={e => {calculateTotalDays(e); handleFromDateChange(e); setGood(10); if(e === null || e){ form.setFieldsValue({ endDate: null }); calculateTotalDays(e); }}} getPopupContainer={() => document.getElementById('area')} />
                       </Form.Item>
                   </div>
                 </div>

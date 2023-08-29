@@ -701,6 +701,7 @@ const Sidebar = (props) => {
                 }
                 
               </ul>
+              <label className='brandStyle'><a target='_blank' href='https://devgate.ca'>Powered By Devgate</a></label>
             </div>
           </div>
 

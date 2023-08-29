@@ -416,7 +416,7 @@ const Registrationpage = (props) => {
                     onInput={(e) => {
                       onHandleRegChange("companyAddress", e.target.value);
                     }}
-                    maxLength={50}
+                    maxLength={150}
                   />
                 </Form.Item>
               </div>
@@ -1002,7 +1002,7 @@ const Registrationpage = (props) => {
                     onInput={(e) => {
                       onHandleAdminChange("address", e.target.value);
                     }}
-                    maxLength={50}
+                    maxLength={150}
                   />
                 </Form.Item>
               </div>
