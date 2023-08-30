@@ -66,7 +66,7 @@ const Navbar = () => {
             >
                 Features
             </Link>
-            <Link 
+            {/* <Link 
                 smooth spy to="testimonials"
                 duration={500} 
                 className='nav-link-text topnav2'
@@ -77,7 +77,7 @@ const Navbar = () => {
                 style={{fontFamily: 'Montserrat', fontSize: '16px', height: 'auto' ,fontWeight: '400'}}
             >
                 Testimonials
-            </Link>
+            </Link> */}
             <Link 
                 smooth spy to="pricing"
                 duration={500} 
@@ -90,7 +90,7 @@ const Navbar = () => {
             >
                 Pricing
             </Link>
-            <Link 
+            {/* <Link 
                 smooth spy to="faq"
                 duration={500} 
                 className='nav-link-text topnav2'
@@ -101,7 +101,7 @@ const Navbar = () => {
                 style={{fontFamily: 'Montserrat', fontSize: '16px', height: 'auto' ,fontWeight: '400'}}
             >
                 FAQ
-            </Link>
+            </Link> */}
             {/* <Button component={Link} to="/features" color="inherit">
               Features
             </Button>

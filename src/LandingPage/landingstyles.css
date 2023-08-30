@@ -350,14 +350,15 @@ border: none;
 }
 .slick-dots > .slick-active > button{
     background-color: orange !important;
-    height: 5px !important;
-    border-radius: 50px !important;
+    /* height: 5px !important;
+    border-radius: 50px !important; */
 }
 .slick-slider{
     margin-inline: 100px !important;
 }
 .slick-dots{
-    margin: 100px !important;
+    margin: 25px !important;
+    /* margin: 100px !important; */
 }
 .slick-slide .slick-active .slick-current{
     width: 1450px !important;
