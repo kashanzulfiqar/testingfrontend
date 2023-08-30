@@ -36,6 +36,7 @@ import Timesheet from '../MainPage/Employees/Employees/timesheet';
 import AttendanceEmployee from '../MainPage/Employees/Employees/attendanceemployee';
 import AttendanceAdmin from '../MainPage/Employees/Employees/attendanceadmin';
 import ChangePassword from '../MainPage/Administration/Settings/changepassword';
+import LandingPage from '../LandingPage';
 
 
 const App = () => {
@@ -83,7 +84,7 @@ const App = () => {
   return (
     <div>
       <Routes>
-        {/* <Route path="/" element={<Error404 />} /> */}
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/login/:email/:token" element={<LoginPage />} />
         <Route path="/forget-password" element={<ForgotPassword />} />
