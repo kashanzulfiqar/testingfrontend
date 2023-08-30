@@ -3,7 +3,7 @@ import Navbar from "./Navbar";
 // import BackgroundSVG from "./BackgroundSVG";
 // import image9 from "./image9.png";
 import "./landingstyles.css";
-import { Input, Button, Divider } from "antd";
+import { Input, Button, Divider, message } from "antd";
 // import Container from "./Container.png";
 // import isolation_Mode from "./Isolation_Mode.png";
 // import Linkdin from "./Linkdin.png";
@@ -37,6 +37,11 @@ const LandingPage = () => {
 
     const nav = useNavigate();
 
+    const [activeCard, setActiveCard] = useState(2)
+
+    const cardClick = (card) => {
+        setActiveCard(card)
+    }
 
     const contentStyle = {
         margin: 0,
@@ -58,7 +63,7 @@ const LandingPage = () => {
       };
 
     const onChange = (currentSlide) => {
-        console.log(currentSlide);
+        // console.log(currentSlide);
       };
 
       const [demoImages, setDemoImages] = useState([
@@ -1001,26 +1006,26 @@ const LandingPage = () => {
             
             <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
                 {/* card 1 */}
-                <div style={{width: '330px', height: '470px', background: '#FCFCFC', border: '1px solid #ECECEC', borderRadius: '7px'}}>
-                    <div className='col-12' style={{border: 'none', fontFamily: 'Lato', display: 'grid', justifyItems: 'center', padding: '44px'}}>
-                    <p className='pricing-card-title' style={{fontWeight: '700', fontSize: '17px', color: '#9D9D9D'}}> START-UP PLAN </p>
-                    <p className="pricing-card-package" style={{fontWeight: '700', fontSize: '30px', fontFamily: 'Lato', color: '#402869'}}> $3.50 /mo</p>
-                    <p className="pricing-timeline" style={{fontWeight: '700', fontSize: '17px', fontFamily: 'Lato', color: '#444444', marginBottom: '10px'}}>0 - 50 Users</p>
+                <div onClick={()=>cardClick(1)} style={{ cursor: 'pointer',width: `${activeCard === 1 ? '360px' : '330px'}`, height: `${activeCard === 1 ? '517px' : '470px'}`, background: `${activeCard === 1 ? 'linear-gradient(270deg, #FD7167 0%, #FF9B44 100%)' : '#FCFCFC'}`, border: `${activeCard === 1 ? 'none' : '1px solid #ECECEC'}`, boxShadow: `${activeCard === 1 ? '0px 20px 40px 0px #0000001A' : 'none'}`, borderRadius: '7px'}}>
+                    <div className='col-12' style={{border: 'none', fontFamily: 'Lato', display: 'grid', justifyItems: 'center', padding: `${activeCard === 1 ? '67px' : '44px'}`}}>
+                    <p className='pricing-card-title' style={{fontWeight: '700', fontSize: '17px', color: `${activeCard === 1 ? '#FCFCFC' : '#9D9D9D'}`}}> START-UP PLAN </p>
+                    <p className="pricing-card-package" style={{fontWeight: '700', fontSize: '30px', fontFamily: 'Lato', color: `${activeCard === 1 ? '#FCFCFC' : '#402869'}`}}> $3.50 /mo</p>
+                    <p className="pricing-timeline" style={{fontWeight: '700', fontSize: '17px', fontFamily: 'Lato', color: `${activeCard === 1 ? '#FCFCFC' : '#444444'}`, marginBottom: '10px'}}>0 - 50 Users</p>
                     {/* <hr className="hrLine" style={{marginLeft: '0px'}} /> */}
-                    <div style={{height: '7px', width: '54px', background:'#ECECEC', borderRadius: '35px', marginBottom: '14px'}}></div>
+                    <div style={{height: '7px', width: '54px', background: `${activeCard === 1 ? 'white' : '#ECECEC'}`, borderRadius: '35px', marginBottom: '14px'}}></div>
                         <div style={{display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center', margin: '17px 0px'}}>
-                        <p style={{fontWeight: '400', fontSize: '18px', fontFamily: 'Lato', color: '#444444', marginBottom: '0px'}}>HR Operations</p>
-                        <p style={{fontWeight: '400', fontSize: '18px', fontFamily: 'Lato', color: '#444444', marginBottom: '0px'}}>Finance Management</p>
-                        <p style={{fontWeight: '400', fontSize: '18px', fontFamily: 'Lato', color: '#444444', marginBottom: '0px'}}>Project Management</p>
-                        <p style={{fontWeight: '400', fontSize: '18px', fontFamily: 'Lato', color: '#444444', marginBottom: '0px'}}>Inventory Management</p>
-                        <p style={{fontWeight: '400', fontSize: '18px', fontFamily: 'Lato', color: '#444444', marginBottom: '0px'}}>Leads Management</p>
+                        <p style={{fontWeight: '400', fontSize: '18px', fontFamily: 'Lato', color: `${activeCard === 1 ? '#FCFCFC' : '#444444'}`, marginBottom: '0px'}}>HR Operations</p>
+                        <p style={{fontWeight: '400', fontSize: '18px', fontFamily: 'Lato', color: `${activeCard === 1 ? '#FCFCFC' : '#444444'}`, marginBottom: '0px'}}>Finance Management</p>
+                        <p style={{fontWeight: '400', fontSize: '18px', fontFamily: 'Lato', color: `${activeCard === 1 ? '#FCFCFC' : '#444444'}`, marginBottom: '0px'}}>Project Management</p>
+                        <p style={{fontWeight: '400', fontSize: '18px', fontFamily: 'Lato', color: `${activeCard === 1 ? '#FCFCFC' : '#444444'}`, marginBottom: '0px'}}>Inventory Management</p>
+                        <p style={{fontWeight: '400', fontSize: '18px', fontFamily: 'Lato', color: `${activeCard === 1 ? '#FCFCFC' : '#444444'}`, marginBottom: '0px'}}>Leads Management</p>
                         </div>
                         <button
                 style={{
                     width: '178px',
                     height: '64px',
-                    border: '1px solid #444444',
-                    background: 'transparent',
+                    border: `${activeCard === 1 ? 'none' : '1px solid #444444'}`,
+                    background: `${activeCard === 1 ? 'white' : 'transparent'}`,
                     fontFamily: "Lato",
                     fontSize: "18px",
                     fontWeight: 700,
@@ -1032,28 +1037,28 @@ const LandingPage = () => {
                     </div>
                 </div>
                 {/* card 2 */}
-                <div style={{width: '360px', height: '517px', background: 'linear-gradient(270deg, #FD7167 0%, #FF9B44 100%)', borderRadius: '7px', boxShadow: '0px 20px 40px 0px #0000001A'}}>
-                    <div className='col-12' style={{border: 'none', fontFamily: 'Lato', display: 'grid', justifyItems: 'center', padding: '67px'}}>
-                    <p className='pricing-card-title' style={{fontWeight: '700', fontSize: '18px', color: '#FCFCFC'}}> SME PLAN </p>
-                    <p className="pricing-card-package" style={{fontWeight: '700', fontSize: '30px', fontFamily: 'Lato', color: '#FCFCFC'}}> $5.00 /mo</p>
-                    <p className="pricing-timeline" style={{fontWeight: '700', fontSize: '17px', fontFamily: 'Lato', color: '#FCFCFC', marginBottom: '10px'}}>50 - 100 Users</p>
+                <div onClick={()=>cardClick(2)} style={{cursor: 'pointer',width: `${activeCard === 2 ? '360px' : '330px'}`, height: `${activeCard === 2 ? '517px' : '470px'}`, background: `${activeCard === 2 ? 'linear-gradient(270deg, #FD7167 0%, #FF9B44 100%)' : '#FCFCFC'}`, border: `${activeCard === 2 ? 'none' : '1px solid #ECECEC'}`, boxShadow: `${activeCard === 2 ? '0px 20px 40px 0px #0000001A' : 'none'}`, borderRadius: '7px'}}>
+                    <div className='col-12' style={{border: 'none', fontFamily: 'Lato', display: 'grid', justifyItems: 'center', padding: `${activeCard === 2 ? '67px' : '44px'}`}}>
+                    <p className='pricing-card-title' style={{fontWeight: '700', fontSize: '18px', color: `${activeCard === 2 ? '#FCFCFC' : '#9D9D9D'}`}}> SME PLAN </p>
+                    <p className="pricing-card-package" style={{fontWeight: '700', fontSize: '30px', fontFamily: 'Lato', color: `${activeCard === 2 ? '#FCFCFC' : '#402869'}`}}> $5.00 /mo</p>
+                    <p className="pricing-timeline" style={{fontWeight: '700', fontSize: '17px', fontFamily: 'Lato', color: `${activeCard === 2 ? '#FCFCFC' : '#444444'}`, marginBottom: '10px'}}>50 - 100 Users</p>
                     {/* <hr className="hrLine" style={{marginLeft: '0px', borderColor: 'white', color: 'white'}} /> */}
-                    <div style={{height: '7px', width: '54px', background:'white', borderRadius: '35px', marginBottom: '14px'}}></div>
+                    <div style={{height: '7px', width: '54px', background: `${activeCard === 2 ? 'white' : '#ECECEC'}`, borderRadius: '35px', marginBottom: '14px'}}></div>
                         <div style={{display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center', margin: '17px 0px'}}>
-                        <p style={{fontWeight: '400', fontSize: '18px', fontFamily: 'Lato', color: '#FCFCFC', marginBottom: '0px'}}>HR Operations</p>
-                        <p style={{fontWeight: '400', fontSize: '18px', fontFamily: 'Lato', color: '#FCFCFC', marginBottom: '0px'}}>Finance Management</p>
-                        <p style={{fontWeight: '400', fontSize: '18px', fontFamily: 'Lato', color: '#FCFCFC', marginBottom: '0px'}}>Project Management</p>
-                        <p style={{fontWeight: '400', fontSize: '18px', fontFamily: 'Lato', color: '#FCFCFC', marginBottom: '0px'}}>Inventory Management</p>
-                        <p style={{fontWeight: '400', fontSize: '18px', fontFamily: 'Lato', color: '#FCFCFC', marginBottom: '0px'}}>Leads Management</p>
+                        <p style={{fontWeight: '400', fontSize: '18px', fontFamily: 'Lato', color: `${activeCard === 2 ? '#FCFCFC' : '#444444'}`, marginBottom: '0px'}}>HR Operations</p>
+                        <p style={{fontWeight: '400', fontSize: '18px', fontFamily: 'Lato', color: `${activeCard === 2 ? '#FCFCFC' : '#444444'}`, marginBottom: '0px'}}>Finance Management</p>
+                        <p style={{fontWeight: '400', fontSize: '18px', fontFamily: 'Lato', color: `${activeCard === 2 ? '#FCFCFC' : '#444444'}`, marginBottom: '0px'}}>Project Management</p>
+                        <p style={{fontWeight: '400', fontSize: '18px', fontFamily: 'Lato', color: `${activeCard === 2 ? '#FCFCFC' : '#444444'}`, marginBottom: '0px'}}>Inventory Management</p>
+                        <p style={{fontWeight: '400', fontSize: '18px', fontFamily: 'Lato', color: `${activeCard === 2 ? '#FCFCFC' : '#444444'}`, marginBottom: '0px'}}>Leads Management</p>
                         </div>
                         <button
                         style={{
                             width: '169px',
                             height: '64px',
-                            background: 'white',
-                            border: 'none',
+                            border: `${activeCard === 2 ? 'none' : '1px solid #444444'}`,
+                            background: `${activeCard === 2 ? 'white' : 'transparent'}`,
                             fontFamily: "Lato",
-                            fontSize: "22px",
+                            fontSize: "18px",
                             fontWeight: 700,
                             borderRadius: '100px'
                         }}
@@ -1063,31 +1068,33 @@ const LandingPage = () => {
                     </div>
                 </div>
                 {/* card 3 */}
-                <div style={{width: '330px', height: '470px', background: '#FCFCFC', border: '1px solid #ECECEC', borderRadius: '7px'}}>
-                    <div className='col-12' style={{border: 'none', fontFamily: 'Lato', display: 'grid', justifyItems: 'center', padding: '44px'}}>
-                    <p className='pricing-card-title' style={{fontWeight: '700', fontSize: '17px', color: '#9D9D9D'}}> ENTERPRISE PLAN </p>
-                    <p className="pricing-card-package" style={{fontWeight: '700', fontSize: '30px', fontFamily: 'Lato', color: '#402869'}}> GET A QUOTE</p>
-                    <p className="pricing-timeline" style={{fontWeight: '700', fontSize: '17px', fontFamily: 'Lato', color: '#444444', marginBottom: '10px'}}>More Than 100 Users</p>
+                <div onClick={()=>cardClick(3)} style={{cursor: 'pointer',width: `${activeCard === 3 ? '360px' : '330px'}`, height: `${activeCard === 3 ? '517px' : '470px'}`, background: `${activeCard === 3 ? 'linear-gradient(270deg, #FD7167 0%, #FF9B44 100%)' : '#FCFCFC'}`, border: `${activeCard === 3 ? 'none' : '1px solid #ECECEC'}`, boxShadow: `${activeCard === 3 ? '0px 20px 40px 0px #0000001A' : 'none'}`, borderRadius: '7px'}}>
+                    <div className='col-12' style={{border: 'none', fontFamily: 'Lato', display: 'grid', justifyItems: 'center', padding: `${activeCard === 3 ? '67px' : '44px'}`}}>
+                    <p className='pricing-card-title' style={{fontWeight: '700', fontSize: '17px', color: `${activeCard === 3 ? '#FCFCFC' : '#9D9D9D'}`}}> ENTERPRISE PLAN </p>
+                    <p className="pricing-card-package" style={{fontWeight: '700', fontSize: '30px', fontFamily: 'Lato', color: `${activeCard === 3 ? '#FCFCFC' : '#402869'}`}}> GET A QUOTE</p>
+                    <p className="pricing-timeline" style={{fontWeight: '700', fontSize: '17px', fontFamily: 'Lato', color: `${activeCard === 3 ? '#FCFCFC' : '#444444'}`, marginBottom: '10px'}}>More Than 100 Users</p>
                     {/* <hr className="hrLine" style={{marginLeft: '0px'}} /> */}
-                    <div style={{height: '7px', width: '54px', background:'#ECECEC', borderRadius: '35px', marginBottom: '14px'}}></div>
+                    <div style={{height: '7px', width: '54px', background: `${activeCard === 3 ? 'white' : '#ECECEC'}`, borderRadius: '35px', marginBottom: '14px'}}></div>
                         <div style={{display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center', margin: '17px 0px'}}>
-                        <p style={{fontWeight: '400', fontSize: '18px', fontFamily: 'Lato', color: '#444444', marginBottom: '0px'}}>HR Operations</p>
-                        <p style={{fontWeight: '400', fontSize: '18px', fontFamily: 'Lato', color: '#444444', marginBottom: '0px'}}>Finance Management</p>
-                        <p style={{fontWeight: '400', fontSize: '18px', fontFamily: 'Lato', color: '#444444', marginBottom: '0px'}}>Project Management</p>
-                        <p style={{fontWeight: '400', fontSize: '18px', fontFamily: 'Lato', color: '#444444', marginBottom: '0px'}}>Inventory Management</p>
-                        <p style={{fontWeight: '400', fontSize: '18px', fontFamily: 'Lato', color: '#444444', marginBottom: '0px'}}>Leads Management</p>
+                        <p style={{fontWeight: '400', fontSize: '18px', fontFamily: 'Lato', color: `${activeCard === 3 ? '#FCFCFC' : '#444444'}`, marginBottom: '0px'}}>HR Operations</p>
+                        <p style={{fontWeight: '400', fontSize: '18px', fontFamily: 'Lato', color: `${activeCard === 3 ? '#FCFCFC' : '#444444'}`, marginBottom: '0px'}}>Finance Management</p>
+                        <p style={{fontWeight: '400', fontSize: '18px', fontFamily: 'Lato', color: `${activeCard === 3 ? '#FCFCFC' : '#444444'}`, marginBottom: '0px'}}>Project Management</p>
+                        <p style={{fontWeight: '400', fontSize: '18px', fontFamily: 'Lato', color: `${activeCard === 3 ? '#FCFCFC' : '#444444'}`, marginBottom: '0px'}}>Inventory Management</p>
+                        <p style={{fontWeight: '400', fontSize: '18px', fontFamily: 'Lato', color: `${activeCard === 3 ? '#FCFCFC' : '#444444'}`, marginBottom: '0px'}}>Leads Management</p>
                         </div>
                         <button
                 style={{
                     width: '133px',
                     height: '64px',
-                    border: '1px solid #444444',
-                    background: 'transparent',
+                    border: `${activeCard === 3 ? 'none' : '1px solid #444444'}`,
+                    background: `${activeCard === 3 ? 'white' : 'transparent'}`,
                     fontFamily: "Lato",
                     fontSize: "18px",
                     fontWeight: 700,
                     borderRadius: '100px'
                 }}
+                onClick={() => 
+                    message.info(`Contact Us at "contact@daftarpro.com"`, 6)}
                 >
                     <p style={{color: '#444444', margin: '0px'}}>Contact Us</p>
                 </button>
@@ -1481,12 +1488,15 @@ const LandingPage = () => {
         <Divider style={{margin: '-25px 0px'}} />
         <div
           style={{
-            display: "inline-flex",
-            alignItems: "center",
+            display: "flex",
             width: "100%",
-            gap: "194px",
-            marginLeft: "200px",
-            marginBottom: "35px",
+            marginBottom: "23px",
+            paddingInline: '7.5%',
+            justifyContent: 'space-between',
+
+            // alignItems: "center",
+            // gap: "194px",
+            // marginLeft: "200px",
           }}
         >
           <a href='https://www.daftarpro.com/' >
@@ -1506,16 +1516,18 @@ const LandingPage = () => {
               fontStyle: "normal",
               fontWeight: 400,
               lineHeight: "normal",
+              textAlign: 'center',
+              lineHeight: '28px'
             }}>
-              DaftarPro 2023 all Rights Reserved/ DafterPro powered by <a target='_blank' href='https://devgate.ca' style={{color: '#9D9D9D'}}><b>DEVGATE</b></a>
+              DaftarPro 2023 all Rights Reserved <br />Powered by <a target='_blank' href='https://devgate.ca' style={{color: '#9D9D9D'}}><b>DEVGATE</b></a>
             </p>
 
           <div
             style={{
-              display: "inline-flex",
-              alignItems: "flex-start",
+              display: "flex",
+            //   alignItems: "flex-start",
               gap: "15px",
-              marginRight:'200px'
+            //   marginRight:'200px'
             }}
           >
             <a
