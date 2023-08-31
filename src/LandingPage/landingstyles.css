@@ -369,6 +369,16 @@ border: none;
     width: 1000px !important;
     /* width: 1450px !important; */
 }
+
+.image-gallery-left-nav{
+    padding-left: 7% !important;
+}
+.image-gallery-right-nav{
+    padding-right: 7% !important;
+}
+.image-gallery-slides{
+    padding-inline: 20% !important;
+}
 .hrLine{
     border: 3px solid #7e8386;
     border-radius: 10px;
