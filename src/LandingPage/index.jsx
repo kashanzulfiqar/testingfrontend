@@ -19,16 +19,16 @@ import FooterLogo from './assets/FooterLogo.svg';
 import Facebook from './assets/Facebook.svg';
 import LinkedIn from './assets/LinkedIn.svg';
 import Instagram from './assets/Instagram.svg';
-import iImage1 from './assets/iImage1.png';
-import iImage2 from './assets/iImage2.png';
-import iImage3 from './assets/iImage3.png';
-import iImage4 from './assets/iImage4.png';
+import iImage11 from './assets/iImage11.svg';
+import iImage22 from './assets/iImage22.svg';
+import iImage33 from './assets/iImage33.svg';
+import iImage44 from './assets/iImage44.svg';
 import iImage5 from './assets/iImage5.png';
 import iImage6 from './assets/iImage6.png';
 import iImage7 from './assets/iImage7.png';
 import { Link, Element } from 'react-scroll';
 import { RightOutlined } from '@ant-design/icons';
-import { Carousel } from 'antd';
+import { Carousel, Modal } from 'antd';
 import { useNavigate } from "react-router-dom";
 
 
@@ -38,6 +38,17 @@ const LandingPage = () => {
     const nav = useNavigate();
 
     const [activeCard, setActiveCard] = useState(2)
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const showModal = () => {
+      setIsModalOpen(true);
+    };
+    const handleOk = () => {
+      setIsModalOpen(false);
+    };
+    const handleCancel = () => {
+      setIsModalOpen(false);
+    };
 
     const cardClick = (card) => {
         setActiveCard(card)
@@ -184,26 +195,18 @@ const LandingPage = () => {
       <div style={{height: '570px', backgroundColor: 'white', marginTop: '-20px'}}>
       <Carousel autoplay afterChange={onChange}>
         <div style={contentStyle}>
-            <img src={iImage1} style={imageStyle} />
+            <img src={iImage11} style={imageStyle} />
         </div>
         <div style={contentStyle}>
-            <img src={iImage2} style={imageStyle} />
+            <img src={iImage22} style={imageStyle} />
         </div>
         <div style={contentStyle}>
-            <img src={iImage3} style={imageStyle} />
+            <img src={iImage33} style={imageStyle} />
         </div>
         <div style={contentStyle}>
-            <img src={iImage4} style={imageStyle} />
+            <img src={iImage44} style={imageStyle} />
         </div>
-        <div style={contentStyle}>
-            <img src={iImage5} style={imageStyle} />
-        </div>
-        <div style={contentStyle}>
-            <img src={iImage6} style={imageStyle} />
-        </div>
-        <div style={contentStyle}>
-            <img src={iImage7} style={imageStyle} />
-        </div>
+        
     </Carousel>
       </div>
 
@@ -1031,8 +1034,9 @@ const LandingPage = () => {
                     fontWeight: 700,
                     borderRadius: '100px'
                 }}
+                onClick={() => showModal()}
                 >
-                    <p style={{color: '#444444', margin: '0px'}}>Choose Start-Up</p>
+                    <p style={{color: '#444444', margin: '0px'}}>Contact Us</p>
                 </button>
                     </div>
                 </div>
@@ -1062,8 +1066,9 @@ const LandingPage = () => {
                             fontWeight: 700,
                             borderRadius: '100px'
                         }}
-                        >
-                            <p style={{color: '#402869', margin: '0px'}}>Choose SME</p>
+                        onClick={() => showModal()}
+                      >
+                            <p style={{color: '#402869', margin: '0px'}}>Contact Us</p>
                         </button>
                     </div>
                 </div>
@@ -1093,8 +1098,7 @@ const LandingPage = () => {
                     fontWeight: 700,
                     borderRadius: '100px'
                 }}
-                onClick={() => 
-                    message.info(`Contact Us at "contact@daftarpro.com"`, 6)}
+                onClick={() => showModal()}
                 >
                     <p style={{color: '#444444', margin: '0px'}}>Contact Us</p>
                 </button>
@@ -1605,6 +1609,11 @@ const LandingPage = () => {
           </div>
         </div>
       </div>
+
+      <Modal open={isModalOpen} onCancel={handleCancel} onOk={handleOk} centered className="landingModal">
+        <p style={{fontFamily: 'Lato', fontWeight: '600' , fontSize: '20px',extAlign: 'center', height: '90px', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>Contact Us at "contact@daftarpro.com"</p>
+      </Modal>
+
     </div>
   );
 };

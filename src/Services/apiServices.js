@@ -31,7 +31,11 @@ export const apiServices = async (type, endpoint, data, state) => {
                 if(err?.response?.data?.err?.message === "jwt expired"){
                     console.log('access token expired====', err?.response?.data?.err?.message);
                     localStorage.clear();
-                    window.location.href = `${location}/login`
+                    sessionStorage.clear()
+                    setTimeout(() => {
+                        window.location.href = `${location}/login`
+                      }, 500);
+                    // window.location.href = `${location}/login`
                 }
             })
             return (result)

@@ -341,9 +341,14 @@ border: none;
 }
 .slick-list{
     /* height: 721px !important; */
-    width: 1240px !important;
+    width: 1000px !important;
+    /* width: 1240px !important; */
     padding: 76px 0px !important;
-    margin: 0px 140px !important;
+    margin: 0px 270px !important;
+    /* margin: 0px 140px !important; */
+}
+.landingModal .ant-modal-content{
+    border-radius: 10px !important;
 }
 .slick-dots > li > button{
     background-color: grey !important;
@@ -361,7 +366,8 @@ border: none;
     /* margin: 100px !important; */
 }
 .slick-slide .slick-active .slick-current{
-    width: 1450px !important;
+    width: 1000px !important;
+    /* width: 1450px !important; */
 }
 .hrLine{
     border: 3px solid #7e8386;
