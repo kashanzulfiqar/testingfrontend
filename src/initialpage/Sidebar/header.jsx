@@ -426,7 +426,9 @@ const Header = (props) => {
               localStorage.clear();
               sessionStorage.clear();
               // nav('/login');
-              window.location.href = `${window?.location?.origin}/login`
+              setTimeout(() => {
+                window.location.href = `${window?.location?.origin}/login`
+              }, 500);
             }}>Logout</a>
           </div>
         </li>
@@ -443,7 +445,10 @@ const Header = (props) => {
               localStorage.clear();
               sessionStorage.clear();
               // nav('/login');
-              window.location.href = `${window?.location?.origin}/login`
+              // window.location.href = `${window?.location?.origin}/login`
+              setTimeout(() => {
+                window.location.href = `${window?.location?.origin}/login`
+              }, 500);
             }}>Logout</a>
         </div>
       </div>
