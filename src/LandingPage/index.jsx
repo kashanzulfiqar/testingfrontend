@@ -186,7 +186,7 @@ const LandingPage = () => {
   <div>
       <ImageGallery
         items={images}
-        // autoPlay={true}
+        autoPlay={true}
         slideInterval={3000}
         showFullscreenButton={false}
         showPlayButton={false}
