@@ -19,23 +19,41 @@ import FooterLogo from './assets/FooterLogo.svg';
 import Facebook from './assets/Facebook.svg';
 import LinkedIn from './assets/LinkedIn.svg';
 import Instagram from './assets/Instagram.svg';
-import iImage11 from './assets/iImage11.svg';
-import iImage22 from './assets/iImage22.svg';
-import iImage33 from './assets/iImage33.svg';
-import iImage44 from './assets/iImage44.svg';
-import iImage5 from './assets/iImage5.png';
-import iImage6 from './assets/iImage6.png';
-import iImage7 from './assets/iImage7.png';
+import im1 from './assets/im1.png';
+import im2 from './assets/im2.png';
+import im3 from './assets/im3.png';
+import im4 from './assets/im4.png';
 import { Link, Element } from 'react-scroll';
 import { RightOutlined } from '@ant-design/icons';
 import { Carousel, Modal } from 'antd';
 import { useNavigate } from "react-router-dom";
+import ImageGallery from "react-image-gallery";
+import 'react-image-gallery/styles/css/image-gallery.css';
 
 
 
 const LandingPage = () => {
 
     const nav = useNavigate();
+
+    const images = [
+      {
+        original: im1,
+        thumbnail: im1,
+      },
+      {
+        original: im2,
+        thumbnail: im2,
+      },
+      {
+        original: im3,
+        thumbnail: im3,
+      },
+      {
+        original: im4,
+        thumbnail: im4,
+      },
+    ];
 
     const [activeCard, setActiveCard] = useState(2)
 
@@ -76,31 +94,6 @@ const LandingPage = () => {
     const onChange = (currentSlide) => {
         // console.log(currentSlide);
       };
-
-      const [demoImages, setDemoImages] = useState([
-        {
-          key: '1',
-          rating: 5,
-        //   image: <img src={Employee} alt="Employee" />,
-          review: 'Our HRMS has transformed the way we manage HR processes, making everything faster and more efficient. We highly recommend it.',
-          name: "Muhammad Ahmed"
-        },
-        {
-           key: '2',
-            rating: 5,
-        //   image: <img src={Employee} alt="Employee" />,
-          review: 'The data security and privacy features of our HRMS are top-notch. We feel confident that our sensitive employee information is in good hands.',
-          name: "Benjimen Henry"
-        },
-        {
-           key: '3',
-            rating: 5,
-        //   image: <img src={Employee} alt="Employee" />,
-          review: 'Our HRMS has transformed the way we manage HR processes, making everything faster and more efficient. We highly recommend it.',
-          name: "Courtney Jack"
-        },
-  
-      ])
 
 
   const svg = (
@@ -187,12 +180,28 @@ const LandingPage = () => {
       <div
         style={{
           height: "40px",
-          background: "#FFF",
+          background: "#F7F7F7",
+        }}
+      ></div>
+  <div>
+      <ImageGallery
+        items={images}
+        // autoPlay={true}
+        slideInterval={3000}
+        showFullscreenButton={false}
+        showPlayButton={false}
+      />
+      </div>
+
+      <div
+        style={{
+          height: "40px",
+          background: "#F7F7F7",
         }}
       ></div>
 
       {/* /. carousal goes here */}
-      <div style={{height: '570px', backgroundColor: 'white', marginTop: '-20px'}}>
+      {/* <div style={{height: '570px', backgroundColor: 'white', marginTop: '-20px'}}>
       <Carousel autoplay afterChange={onChange}>
         <div style={contentStyle}>
             <img src={iImage11} style={imageStyle} />
@@ -208,7 +217,7 @@ const LandingPage = () => {
         </div>
         
     </Carousel>
-      </div>
+      </div> */}
 
       {/* Gap */}
       <div
