@@ -82,7 +82,13 @@ const AttendanceEmployee = () => {
               //setStatusText("Not yet checked in");
               setStatusText(`${moment(firstAttendanceRecord.attendanceDate).format("ddd, Do MMM YYYY")} 
                                       ${moment(firstAttendanceRecord.checkOutTime, "HH:mm").format("h:mm A")}`);
-            } else {
+            }
+            else if (firstAttendanceRecord.status === "Absent") {
+              setIsCheckedIn(false);
+              setIsCheckedOut(false);
+              setStatusText("Not yet checked in");
+            } 
+            else {
               setIsCheckedIn(true);
               setIsCheckedOut(false);
               setStatusText(`${moment(firstAttendanceRecord.attendanceDate).format("ddd, Do MMM YYYY")} 
@@ -430,7 +436,7 @@ const AttendanceEmployee = () => {
       title: "Check In",
       dataIndex: "checkInTime",
       key: "checkInTime",
-      render: (checkInTime) => moment(checkInTime, "HH:mm").format("h:mm A"),
+      render: (checkInTime) => checkInTime ? moment(checkInTime, "HH:mm").format("h:mm A") : "--",
     },
     {
       title: "Check Out",
@@ -443,7 +449,7 @@ const AttendanceEmployee = () => {
       dataIndex: "status",
       key: "status",
       render: (status) => (
-        <span style={{ color: status === "Late" ? "red" : status === "Present" ? "green" : "black" }}>
+        <span style={{ color: (status === "Late" || status === "Absent") ? "red" : status === "Present" ? "green" : "black" }}>
           {status}
         </span>
       ),
@@ -525,15 +531,17 @@ const AttendanceEmployee = () => {
                     <div className="punch-btn-section">
                       <button
                         type="button"
+                        
                         className={`btn btn-${
-                          isCheckedOut ? "success" : isCheckedIn ? "danger" : "primary"
+                          isCheckedOut || checkIn.status==="Absent" ? "success" : isCheckedIn ? "danger" : "primary"
                         } punch-btn`}
+
                         onClick={isCheckedIn ? handleCheckOut : handleCheckIn}
-                        disabled={isCheckedOut}
+                        disabled={isCheckedOut  || checkIn.status === "Absent"}
                       >{isLoading ? (
                         <Spin size="medium" />
                       ) : (
-                        isCheckedOut ? "Marked" : isCheckedIn ? "Check Out" : "Check In"
+                        isCheckedOut || checkIn.status === "Absent" ? "Marked" : isCheckedIn ? "Check Out" : "Check In"
                       )}
                         </button>
                     </div>
@@ -553,9 +561,9 @@ const AttendanceEmployee = () => {
                               <h6><label
                               style={{
                                 color:
-                                  (isCheckedIn || isCheckedOut) &&
-                                  (checkIn.status === "Late" ? "red" : checkIn.status === "Present" ? "green" : "black"),
-                              }}>{isCheckedIn || isCheckedOut ? checkIn.status : "--"}</label></h6>
+                                  (isCheckedIn || isCheckedOut) ||
+                                  (checkIn.status === "Late" || checkIn.status === "Absent" ? "red" : checkIn.status === "Present" ? "green" : "black"),
+                              }}>{isCheckedIn || isCheckedOut || checkIn.status === "Absent" ? checkIn.status : "--"}</label></h6>
                             </div>
                           </div>
 
@@ -811,6 +819,7 @@ const AttendanceEmployee = () => {
           
         <Table
   dataSource={fetchattend}
+  loading={isLoading}
   columns={columns}
   locale={{
     emptyText: isLoading ? (
@@ -819,7 +828,7 @@ const AttendanceEmployee = () => {
       customEmptyText
     ),
   }}
-  loading={isLoading}
+  
   bordered
   pagination={{
     current: pagination.current,
