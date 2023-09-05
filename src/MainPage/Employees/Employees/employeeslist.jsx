@@ -360,7 +360,7 @@ const Employeeslist = () => {
                   <div className="dropdown dropdown-action text-end">
                     {
                       (role === 'admin' || permissions?.updateStatusOfEmployee || permissions?.updateUser) &&
-                        <a href="#" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
+                        <a href="javascript:void(0)" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
                     }
                     <div className="dropdown-menu dropdown-menu-right">
                     {

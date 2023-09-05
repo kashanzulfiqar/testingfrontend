@@ -7175,6 +7175,25 @@ textarea.form-control {
 
 /* ................. custom css styling ................ */
 
+.payrollHistoryTable thead tr th:not(:nth-last-child(1)){
+  min-width: 175px !important;
+}
+
+.filterDateMonth .ant-picker-header {
+  height: 40px !important;
+}
+.filterDateMonth .ant-picker-header button,
+.filterDateMonth .ant-picker-header .ant-picker-header-view{
+  display: none !important;
+}
+
+.filterDate input{
+  font-size: 15px !important;
+}
+.filterDate input::placeholder{
+  color: #D1D1D4 !important;
+}
+
 .brandStyle{
   display: flex;
   padding: 15px 0px;

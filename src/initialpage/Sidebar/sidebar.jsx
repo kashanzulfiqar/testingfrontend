@@ -589,8 +589,8 @@ const Sidebar = (props) => {
                   {isSideMenu == "payroll" ?
                     <ul>
                       <li><Link className={pathname.includes('_salary') ? "active" : ""} to="/app/payroll/_salary"> Employee Salary </Link></li>
-                      <li><Link className={pathname.includes('y-view') ? "active" : ""} to="/app/payroll/salary-view"> Payslip </Link></li>
-                      <li><Link className={pathname.includes('payroll-items') ? "active" : ""} to="/app/payroll/payroll-items"> Payroll Items </Link></li>
+                      <li><Link className={pathname.includes('payslip') ? "active" : ""} to="/payroll/payslip"> Payslip </Link></li>
+                      <li><Link className={pathname.includes('payroll-histroy') ? "active" : ""} to="/payroll/payroll-histroy"> Payroll History </Link></li>
                     </ul>
                     : ""
                   }
