@@ -46,7 +46,11 @@ const PayrollHistory = () => {
   const [data, setData] = useState();
 
   useEffect(() => {
-    getEmployeeSalary()
+    if(user_state?.role === 'admin' || permissions?.managePayrolls) {
+      getEmployeeSalary()
+    }else{
+      nav('/restricted', { state: { unAuthorize: true}})
+    }
   }, [])
 
   const getEmployeeSalary = (values, current_page, page_size) => {

@@ -37,7 +37,11 @@ const SalarySlip = () => {
   const [data, setData] = useState();
 
   useEffect(() => {
-    getEmployeeSalary();
+    if(permissions?.viewSelfPayrolls) {
+      getEmployeeSalary();
+    }else{
+      nav('/restricted', { state: { unAuthorize: true}})
+    }
   }, [])
 
   const getEmployeeSalary = (current_page, page_size) => {

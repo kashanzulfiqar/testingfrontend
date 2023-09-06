@@ -589,8 +589,14 @@ const Sidebar = (props) => {
                   {isSideMenu == "payroll" ?
                     <ul>
                       <li><Link className={pathname.includes('_salary') ? "active" : ""} to="/app/payroll/_salary"> Employee Salary </Link></li>
-                      <li><Link className={pathname.includes('payslip') ? "active" : ""} to="/payroll/payslip"> Payslip </Link></li>
-                      <li><Link className={pathname.includes('payroll-histroy') ? "active" : ""} to="/payroll/payroll-histroy"> Payroll History </Link></li>
+                      {
+                        permissions?.viewSelfPayrolls &&
+                        <li><Link className={pathname.includes('payslip') ? "active" : ""} to="/payroll/payslip"> Payslip </Link></li>
+                      }
+                      {
+                        (user_state?.role === 'admin' || permissions?.managePayrolls) &&
+                        <li><Link className={pathname.includes('payroll-histroy') ? "active" : ""} to="/payroll/payroll-histroy"> Payroll History </Link></li>
+                      }
                     </ul>
                     : ""
                   }
