@@ -778,7 +778,7 @@ const EmployeeSalary = () => {
   };
 
   useEffect(() => {
-    if(user_state?.role === 'admin' || permissions?.managePayrolls) {
+    if(role === 'admin' || permissions?.managePayrolls) {
 
     setIsLoading(true);
     firstAPI();
