@@ -475,9 +475,6 @@ const AttendanceEmployee = () => {
   return (
     <>
       <div className={`main-wrapper ${menu ? "slide-nav" : ""}`}>
-        {/* <Header onMenuClick={(value) => toggleMobileMenu()} /> */}
-        <Sidebar />
-
         <div className="page-wrapper">
           <Helmet>
             <title>Attendance - DaftarPro</title>

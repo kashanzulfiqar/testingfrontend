@@ -26,7 +26,7 @@ const PayrollHistory = () => {
   const [Dform] = Form.useForm();
   const [Detailform] = Form.useForm();
   const nav = useNavigate();
-  const user_state = useSelector((state) => state.user.loginvalue);
+  const user_state = useSelector((state) => state?.user?.loginvalue);
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
   const company_id = user_state?.user?.companyId
   const role = user_state?.user?.role
@@ -46,7 +46,7 @@ const PayrollHistory = () => {
   const [data, setData] = useState();
 
   useEffect(() => {
-    if(user_state?.role === 'admin' || permissions?.managePayrolls) {
+    if(role === 'admin' || permissions?.managePayrolls) {
       getEmployeeSalary()
     }else{
       nav('/restricted', { state: { unAuthorize: true}})
@@ -97,7 +97,7 @@ const PayrollHistory = () => {
             {
               title: 'Name',
               dataIndex: 'name',
-              // fixed: 'left',
+              fixed: 'left',
               render: (text, record) => (            
                   <h2 className="table-avatar">
                     <label className="avatar"><img alt="" src={record?.user?.imageUrl || user_icon} /></label>
@@ -565,7 +565,8 @@ const PayrollHistory = () => {
                     locale={{
                       emptyText: tableLoader ? null : customEmptyText,
                     }}
-                    style = {{overflowX : 'auto'}}
+                    // style = {{overflowX : 'auto'}}
+                    style = {{overflowX : 'auto', height: '485px'}}
                     columns={columns}
                     dataSource={data}
                     pagination={false}

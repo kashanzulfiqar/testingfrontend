@@ -7175,6 +7175,23 @@ textarea.form-control {
 
 /* ................. custom css styling ................ */
 
+/* ---- payrollHistoryTable fixed header--- */
+.payrollHistoryTable thead > *{
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 300 !important;
+  background: #FFFFFF !important;
+}
+.payrollHistoryTable thead > tr > th:nth-child(1){
+  background-color: #FFFFFF !important;
+  z-index: 301 !important;
+}
+
+
+.payrollHistoryTable tbody tr:nth-child(odd) > td:nth-child(1){
+background: #f5f5f5 !important;
+}
+
 .payrollHistoryTable thead tr th:not(:nth-last-child(1)){
   min-width: 175px !important;
 }
