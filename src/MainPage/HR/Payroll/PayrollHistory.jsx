@@ -247,7 +247,20 @@ const PayrollHistory = () => {
             },
             {
                 title: 'Payroll Creation Date',
-                dataIndex: 'payrollCreationDate',
+                dataIndex: 'createdAt',
+                render: (text,record) => {
+                  const date = new Date(text);
+                  const day = date.getDate();
+                  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                  const month = monthNames[date.getMonth()];
+                  const year = date.getFullYear();
+                  const formattedDate = `${day} ${month}, ${year}`;
+                  return (
+                    <>
+                      {formattedDate}
+                    </>
+                  )
+                }
             },
             {
                 title: 'Status',
@@ -268,7 +281,7 @@ const PayrollHistory = () => {
                               employeeId: record?.user?.employeeId,
                               payMonth: moment(record?.payMonth, 'MMMM'),
                               payYear: moment(record?.payYear, 'YYYY'),
-                              payrollCreationDate: moment(record?.payrollCreationDate, 'YYYY-MM-DD'),
+                              payrollCreationDate: moment(record?.createdAt, 'YYYY-MM-DD'),
                             }
                             Detailform.setFieldsValue(d);
                             console.log(record);
