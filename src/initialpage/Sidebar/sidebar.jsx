@@ -588,7 +588,10 @@ const Sidebar = (props) => {
                   <a href="javascript:" className={isSideMenu == "payroll" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "payroll" ? "" : "payroll")}><i className="la la-money" /> <span> Payroll </span> <span className="menu-arrow" /></a>
                   {isSideMenu == "payroll" ?
                     <ul>
-                      <li><Link className={pathname.includes('_salary') ? "active" : ""} to="/app/payroll/_salary"> Employee Salary </Link></li>
+                      {
+                        (user_state?.role === 'admin' || permissions?.managePayrolls) &&
+                      <li><Link className={pathname.includes('salary') ? "active" : ""} to="/payroll/salary"> Employee Salary </Link></li>
+                      }
                       {
                         permissions?.viewSelfPayrolls &&
                         <li><Link className={pathname.includes('payslip') ? "active" : ""} to="/payroll/payslip"> Payslip </Link></li>
