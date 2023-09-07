@@ -74,6 +74,19 @@ const EmployeeSalary = () => {
     total: 0,
   });
 
+  const [toProcess, setToProcess] = useState(null);
+  const [confirmProcess, setCofirmProcess] = useState(false);
+
+  const OpenProcesConfirm = (record) => {
+    setToProcess(record);
+    setCofirmProcess(true);
+  };
+
+  const closeProcessConfirm = () => {
+    setCofirmProcess(false);
+    setToProcess(null);
+  };
+
   const OpenEditModal = (record) => {
     setSelectedRecord(record);
     setEditModal(true);
@@ -90,12 +103,14 @@ const EmployeeSalary = () => {
   };
 
   const [filters, setFilters] = useState({
+    id :"",
     name: "",
     month: "",
     year: "",
   });
 
   const [selectedFilters, setSelectedFilters] = useState({
+    id:"",
     name: "",
     month: "",
     year: "",
@@ -108,18 +123,23 @@ const EmployeeSalary = () => {
     });
   };
 
-  const handleSearch = () => {
-    const { name, month, year } = selectedFilters;
 
-    if (name || (month && year)) {
+  const handleSearch = () => {
+    const { id, name, month, year } = selectedFilters;
+
+    if ((name || id) && (!month && !year)) {
       setFilters(selectedFilters);
-    } else {
+    } else if (month && year) {
+      setFilters(selectedFilters);
+    }
+    else {
       message.warning("Both Month and Year required");
     }
   };
 
   const handleReset = () => {
     setSelectedFilters({
+      id: "",
       name: "",
       month: "",
       year: "",
@@ -128,6 +148,7 @@ const EmployeeSalary = () => {
     setSelectedMonthYear("");
 
     setFilters({
+      id:"",
       name: "",
       month: "",
       year: "",
@@ -234,6 +255,7 @@ const EmployeeSalary = () => {
         if (res.data.success === true) {
           if (!processingMultipleRecords) {
             message.success(`Payroll processed successfully`);
+            closeProcessConfirm()
             handleReset();
           }
         }
@@ -242,6 +264,8 @@ const EmployeeSalary = () => {
       })
       .catch((error) => {
         console.error(`Error processing Payroll ID ${record}:`, error);
+        message.error(`Error processing Payroll`);
+        closeProcessConfirm();
       });
   };
 
@@ -276,10 +300,12 @@ const EmployeeSalary = () => {
       )
         .then(() => {
           message.success(`Selected Payrolls Processed successfully`);
+          closeProcessConfirm();
           handleReset();
         })
         .catch((error) => {
           console.error(`Error processing selected payrolls:`, error);
+          closeProcessConfirm();
         });
       if (updatedData.length === 0) {
         // Reset the current page to the first page
@@ -508,7 +534,7 @@ const EmployeeSalary = () => {
       render: (text, record) => (
         <button
           className="btn btn-sm btn-primary"
-          onClick={() => handleProcessPayroll(record)}
+          onClick={() => OpenProcesConfirm(record)}
         >
           Process Payroll
         </button>
@@ -771,7 +797,7 @@ const EmployeeSalary = () => {
 
     apiServices(
       "GET",
-      `payrolls/view-payrolls?payMonth=${filters.month}&payYear=${filters.year}&employeeName=${filters.name}&processed=false&page=${params.page}&limit=${params.limit}`,
+      `payrolls/view-payrolls?payMonth=${filters.month}&payYear=${filters.year}&employeeName=${filters.name}&employeeId=${filters.id}&processed=false&page=${params.page}&limit=${params.limit}`,
       null,
       user_state
     )
@@ -990,7 +1016,22 @@ const EmployeeSalary = () => {
           {/* Search Filter */}
           <Form form={form}>
             <div className="row filter-row">
-              <div className="col-sm-6 col-md-3">
+            <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
+                <div className="form-group">
+                  <Form.Item name="id" className="custom-border">
+                    <Input
+                      className="form-control"
+                      allowClear={false}
+                      placeholder="Employee ID"
+                      onChange={(e) =>
+                        handleFilterChange(e.target.value, "id")
+                      }
+                    />
+                  </Form.Item>
+                </div>
+              </div>
+              
+              <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
                 <div className="form-group">
                   <Form.Item name="name" className="custom-border">
                     <Input
@@ -1005,7 +1046,7 @@ const EmployeeSalary = () => {
                 </div>
               </div>
 
-              <div className="col-sm-6 col-md-3">
+              <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
                 <div className="form-group">
                   <Form.Item name="month">
                     <DatePicker.MonthPicker
@@ -1024,7 +1065,7 @@ const EmployeeSalary = () => {
                   </Form.Item>
                 </div>
               </div>
-              <div className="col-sm-6 col-md-3">
+              <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
                 <div className="form-group">
                   <Form.Item name="year">
                     <DatePicker.YearPicker
@@ -1044,12 +1085,7 @@ const EmployeeSalary = () => {
               </div>
 
               <div
-                className="col-sm-6 col-md-3"
-                style={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  gap: "13px",
-                }}
+                className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12"
               >
                 <Button
                   type="primary"
@@ -1060,6 +1096,10 @@ const EmployeeSalary = () => {
                 >
                   Search
                 </Button>
+                </div>
+                <div
+                className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12"
+              >
                 <Button
                   htmlType="submit"
                   onClick={handleReset}
@@ -1653,6 +1693,61 @@ const EmployeeSalary = () => {
             </div>
           </Modal>
 
+          {/* Process Confirmation */}
+          <Modal
+            open={confirmProcess}
+            onClose={closeProcessConfirm}
+            aria-labelledby="modal-modal-title"
+            aria-describedby="modal-modal-description"
+            disableRestoreFocus
+            BackdropProps={{
+              style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
+            }}
+          >
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content" style={{ height: "280px" }}>
+                <div
+                  className="modal-body"
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                  }}
+                >
+                  <div className="form-header">
+                    <h3 style={{ marginBottom: "30px" }}>Process Payroll</h3>
+                    <p>
+                      Are you sure you want to Process ?
+                    </p>
+                  </div>
+                  <div className="modal-btn delete-action">
+                    <div className="row">
+                      <div className="col-6">
+                        <Button
+                          htmlType="submit"
+                          className="btn btn-primary continue-btn"
+                          onClick={() => handleProcessPayroll(toProcess)}
+                          style={{width: '100%'}}
+                        >
+                          Process
+                        </Button>
+                      </div>
+                      <div className="col-6">
+                        <Button
+                          onClick={closeProcessConfirm}
+                          className="btn btn-primary submit-btn"
+                          style={{width: '100%'}}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Modal>
+      
         </div>
 
       </div>
