@@ -39,6 +39,7 @@ import ChangePassword from '../MainPage/Administration/Settings/changepassword';
 import LandingPage from '../LandingPage';
 import SalarySlip from '../MainPage/HR/Payroll/SalarySlip';
 import PayrollHistory from '../MainPage/HR/Payroll/PayrollHistory';
+import EmployeeSalary from '../MainPage/HR/Payroll/employeesalary';
 
 
 const App = () => {
@@ -124,6 +125,10 @@ const App = () => {
           {/* Settings  */}
           <Route path="/employee/attendance-employee" element={<AttendanceEmployee />} />
           <Route path="/employee/attendance-admin" element={<AttendanceAdmin />} />
+
+          {/* Payrolls */}
+          <Route path="/payroll/salary" element={<EmployeeSalary />} />
+
         </Route>
         
         {/* <Route path="/404" element={<Error404 />}></Route> */}
