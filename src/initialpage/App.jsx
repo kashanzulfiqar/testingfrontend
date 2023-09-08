@@ -127,7 +127,7 @@ const App = () => {
           <Route path="/employee/attendance-admin" element={<AttendanceAdmin />} />
 
           {/* Payrolls */}
-          <Route path="/payroll/salary" element={<EmployeeSalary />} />
+          <Route path="/payroll/current-payroll" element={<EmployeeSalary />} />
 
         </Route>
         

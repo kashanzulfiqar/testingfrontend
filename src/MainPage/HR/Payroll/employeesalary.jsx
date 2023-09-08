@@ -23,6 +23,7 @@ import {
   Spin,
   Empty,
   Input,
+  Pagination,
 } from "antd";
 import "antd/dist/antd.css";
 import { itemRender, onShowSizeChange } from "../../paginationfunction";
@@ -41,6 +42,7 @@ import jsPDF from "jspdf";
 import "jspdf-autotable";
 import DownloadOutlinedIcon from '@mui/icons-material/DownloadOutlined';
 import DownloadForOfflineRoundedIcon from '@mui/icons-material/DownloadForOfflineRounded';
+import CurrentPayrollPDF from "./CurrentPayrollPDF";
 
 const EmployeeSalary = () => {
   const user_state = useSelector((state) => state.user.loginvalue);
@@ -62,6 +64,9 @@ const EmployeeSalary = () => {
   const [data, setData] = useState([]);
   const [editModal, setEditModal] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
+
+  const [paginationDetail, setPaginationDetail] = useState();
+
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -76,16 +81,49 @@ const EmployeeSalary = () => {
 
   const [toProcess, setToProcess] = useState(null);
   const [confirmProcess, setCofirmProcess] = useState(false);
+  const [MOPModal, setMOPModal] = useState(false);
+
+  const [loader, setLoader] = useState(false);
+
+  const [dataAvailable, setDataAvailable] = useState(false);
+  
+  useEffect(()=>{
+    if (data.length===0){
+      setDataAvailable(false);
+    }
+    else{
+      setDataAvailable(true);
+    }
+  },[data])
+
+  const isDisabled = !dataAvailable;
 
   const OpenProcesConfirm = (record) => {
-    setToProcess(record);
-    setCofirmProcess(true);
+    if(record?.modeOfPayment){
+      setToProcess(record);
+      setCofirmProcess(true);
+      setSelectedRecord(null);
+    }
+    else{
+      openMOP(record);
+      //WORK FROM HERE!!!!!!!
+    }
   };
 
   const closeProcessConfirm = () => {
     setCofirmProcess(false);
     setToProcess(null);
   };
+
+  const openMOP = (record) => {
+    setMOPModal(true);
+    setSelectedRecord(record)
+  }
+
+  const closeMOP = () => {
+    setMOPModal(false);
+    setSelectedRecord(null);
+  }
 
   const OpenEditModal = (record) => {
     setSelectedRecord(record);
@@ -155,6 +193,12 @@ const EmployeeSalary = () => {
     });
 
     form.resetFields();
+
+    setPagination({
+      current: 1,
+      pageSize: 10,
+      total: 0,
+    })
   };
 
   // Function to handle closing the modal
@@ -164,6 +208,7 @@ const EmployeeSalary = () => {
   };
 
   const handleGeneratePayroll = () => {
+    setLoader(true);
     const { month, year } = selectedPayFilters;
     if (month && year) {
       //setFilters(selectedFilters)
@@ -191,6 +236,7 @@ const EmployeeSalary = () => {
             message.success(
               `Successfully Generated Payrolls of ${selectedPayFilters.month} ${selectedPayFilters.year}`
             );
+            setLoader(false);
             GetGenPayrolls();
             handleCloseModal();
           }
@@ -206,6 +252,7 @@ const EmployeeSalary = () => {
             }`
           );
           setIsLoading(false);
+          setLoader(false);
           PayFilterReset();
         });
     } else {
@@ -313,13 +360,20 @@ const EmployeeSalary = () => {
           ...pagination,
           total: pagination.total - selectedRows.length,
           current: pagination.current - 1,
+          //pageSize:pagination.pageSize
         });
+        console.log(pagination)
+        console.log('slected',selectedRows.length)
         handleReset();
       }
       handleReset();
       setProcessedPayrolls([...processedPayrolls, ...selectedIds]);
       // Update processed status for all selected rows (you can loop through selectedRows)
-    } else {
+    }
+      else if (selectedRows.length === 0){
+        message.warning("Please Select Payrolls")
+    }
+     else {
       processingMultipleRecords = false; // Reset the flag to false
     }
     setSelectedRows([]);
@@ -410,12 +464,12 @@ const EmployeeSalary = () => {
     },
     {
       title: "Employee Name",
-      dataIndex: "user.fulName",
+      dataIndex: "user.fullName",
       fixed: "left",
       render: (text, record) => (
         <h2 className="table-avatar">
           <label className="avatar"><img alt="" src={record?.user?.imageUrl || user_icon} /></label>
-          <label>{record?.user?.fulName}</label>
+          <label>{record?.user?.fullName}</label>
           {/* <label>{text} <span>{record?.user?.role}</span></label> */}
         </h2>
       ),
@@ -518,6 +572,13 @@ const EmployeeSalary = () => {
       dataIndex: "transactionId",
       render: (text, record) => (
         <label>{record?.transactionId ? record?.transactionId : "-"}</label>
+      ),
+    },
+    {
+      title: "Bank",
+      dataIndex: "user.bankName",
+      render: (text, record) => (
+        <label>{record?.user?.bankName ? record?.user?.bankName : "-"}</label>
       ),
     },
     {
@@ -559,12 +620,12 @@ const EmployeeSalary = () => {
   const columns2 = [
     {
       title: "Employee Name",
-      dataIndex: "user.fulName",
+      dataIndex: "user.fullName",
       fixed: "left",
       render: (text, record) => (
         <h2 className="table-avatar">
           <label className="avatar"><img alt="" src={record?.user?.imageUrl || user_icon} /></label>
-          <label>{record?.user?.fulName}</label>
+          <label>{record?.user?.fullName}</label>
           {/* <label>{text} <span>{record?.user?.role}</span></label> */}
         </h2>
       ),
@@ -667,6 +728,13 @@ const EmployeeSalary = () => {
       dataIndex: "transactionId",
       render: (text, record) => (
         <label>{record?.transactionId ? record?.transactionId : "-"}</label>
+      ),
+    },
+    {
+      title: "Bank",
+      dataIndex: "user.bankName",
+      render: (text, record) => (
+        <label>{record?.user?.bankName ? record?.user?.bankName : "-"}</label>
       ),
     },
     {
@@ -804,6 +872,7 @@ const EmployeeSalary = () => {
       .then((res) => {
         if (res.data.success === true) {
           const newPayrolls = res?.data?.payrolls || [];
+          //setPaginationDetail(res?.data)
           const uniquePayrolls = newPayrolls.filter(
             (newPayroll) =>
               !data.some(
@@ -857,61 +926,61 @@ const EmployeeSalary = () => {
     form.resetFields();
   };
 
-  const downloadPDF = (row_data) => {
-    const d1 = Array.isArray(row_data) ? row_data : [row_data];
+  // const downloadPDF = (row_data) => {
+  //   const d1 = Array.isArray(row_data) ? row_data : [row_data];
 
-    const columnsForPDF = [
-      { title: "Employee ID", dataIndex: "employeeId" },
+  //   const columnsForPDF = [
+  //     { title: "Employee ID", dataIndex: "employeeId" },
 
-      { title: "Employee Name", dataIndex: "name" },
+  //     { title: "Employee Name", dataIndex: "name" },
 
-      { title: "Account No", dataIndex: "bankAccountNumber" },
+  //     { title: "Account No", dataIndex: "bankAccountNumber" },
 
-      { title: "Credit Salary", dataIndex: "creditSalary" },
-    ];
+  //     { title: "Credit Salary", dataIndex: "creditSalary" },
+  //   ];
 
-    const doc = new jsPDF();
+  //   const doc = new jsPDF();
 
-    const headerStyles = {
-      // fillColor: '#F6F6F6',
+  //   const headerStyles = {
+  //     // fillColor: '#F6F6F6',
 
-      fillColor: "white",
+  //     fillColor: "white",
 
-      textColor: "black",
+  //     textColor: "black",
 
-      fontStyle: "bold",
+  //     fontStyle: "bold",
 
-      fontSize: 10,
-    };
+  //     fontSize: 10,
+  //   };
 
-    const dataForPDF = d1.map((record, index) => [
-      record?.user?.employeeId,
+  //   const dataForPDF = d1.map((record, index) => [
+  //     record?.user?.employeeId,
 
-      record?.user?.fulName,
+  //     record?.user?.fullName,
 
-      record?.user?.bankAccountNumber,
+  //     record?.user?.bankAccountNumber,
 
-      record?.creditSalary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","),
-    ]);
+  //     record?.creditSalary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+  //   ]);
 
-    doc.autoTable({
-      headStyles: headerStyles,
+  //   doc.autoTable({
+  //     headStyles: headerStyles,
 
-      head: [columnsForPDF.map((rec) => rec?.title)],
+  //     head: [columnsForPDF.map((rec) => rec?.title)],
 
-      body: dataForPDF,
+  //     body: dataForPDF,
 
-      // styles: {
+  //     // styles: {
 
-      //   lineColor: [0, 0, 0], // Border color
+  //     //   lineColor: [0, 0, 0], // Border color
 
-      //   lineWidth: 0.1,      // Border width
+  //     //   lineWidth: 0.1,      // Border width
 
-      // },
-    });
+  //     // },
+  //   });
 
-    doc.save("payroll_export.pdf");
-  };
+  //   doc.save("payroll_export.pdf");
+  // };
 
   const updatePayroll = (values) => {
 
@@ -931,22 +1000,6 @@ const EmployeeSalary = () => {
       extraPaymentReason: values.extraPaymentReason,
       processed : false // Use values from the form
     };
-    // const updateData = {
-    //   _id: selectedRecord?._id,
-    //   absentFine: selectedRecord?.absentFine,
-    //   companyId: selectedRecord?.companyId,
-    //   deduction: selectedRecord?.deduction,
-    //   deductionReason: selectedRecord?.deductionReason,
-    //   totalDeduction: selectedRecord?.totalDeduction,
-    //   bonus: selectedRecord?.bonus,
-    //   bonusReason: selectedRecord?.bonusReason,
-    //   totalAddition: selectedRecord?.totalAddition,
-    //   creditSalary: selectedRecord?.creditSalary,
-    //   modeOfPayment: selectedRecord?.modeOfPayment,
-    //   transactionId: selectedRecord?.transactionId,
-    //   extraPayment: selectedRecord?.extraPayment,
-    //   extraPaymentReason: selectedRecord?.extraPaymentReason,
-    // };
 
     console.log(updateData);
     // Send a PUT request for each payroll ID
@@ -960,16 +1013,62 @@ const EmployeeSalary = () => {
         }
       })
       .catch((error) => {
+        message.error(`Error updating Payroll Details`);
         console.error(`Error updating Payroll Details`, error);
       });
   };
 
+  const updateModeOfPayment = (values) => {
+    const { modeOfPayment } = values;
+    if (!modeOfPayment) {
+      message.warning('Select a Mode of Payment');
+    } 
+    else {
+      setLoader(true);
+
+      const updateData = {
+        _id: selectedRecord?._id,
+        companyId: selectedRecord?.companyId,
+        deduction: selectedRecord?.deduction, // Use values from the form
+        deductionReason: selectedRecord?.deductionReason, // Use values from the form
+        totalDeduction: selectedRecord?.totalDeduction, // Use values from the form
+        bonus: selectedRecord?.bonus, // Use values from the form
+        bonusReason: selectedRecord?.bonusReason, // Use values from the form
+        totalAddition: selectedRecord?.totalAddition, // Use values from the form
+        creditSalary: selectedRecord?.creditSalary,
+        modeOfPayment: values.modeOfPayment,
+        transactionId: selectedRecord?.transactionId, // Use values from the form
+        extraPayment: selectedRecord?.extraPayment, // Use values from the form
+        extraPaymentReason: selectedRecord?.extraPaymentReason,
+        processed : false
+      };
+      console.log(updateData);
+  
+      apiServices("PUT", `payrolls/process-payroll`, updateData, user_state)
+        .then((res) => {
+          if (res.data.success === true) {
+            const updated = res?.data?.payroll
+            message.success(`Mode of Payment Added `);
+            handleReset();
+            closeMOP();
+            setLoader(false);
+            OpenProcesConfirm(updated)
+          }
+        })
+        .catch((error) => {
+          message.error(`Error Adding Mode of Payment`);
+          closeMOP();
+          setLoader(false);
+          console.error(`Error Adding Mode of Payment`, error);
+        });
+    }
+  };
 
   return (
     <>
       <div className="page-wrapper">
         <Helmet>
-          <title>Salary - DaftarPro</title>
+          <title>Current Payroll - DaftarPro</title>
           <meta name="description" content="Login page" />
         </Helmet>
         {/* Page Content */}
@@ -978,28 +1077,30 @@ const EmployeeSalary = () => {
           <div className="page-header">
             <div className="row align-items-center">
               <div className="col">
-                <h3 className="page-title">Employee Salary</h3>
+                <h3 className="page-title">Current Payroll</h3>
                 <ul className="breadcrumb">
                   <li className="breadcrumb-item">
                     <Link to="/app/main/dashboard">Dashboard</Link>
                   </li>
-                  <li className="breadcrumb-item active">Salary</li>
+                  <li className="breadcrumb-item active">Current Payroll</li>
                 </ul>
               </div>
               <div className="col-auto float-end ms-auto d-flex gap-2">
-                <Button
-                  className="btn add-btn"
-                  onClick={() => handleProcessPayroll()}
-                  style={{ display: 'flex',justifyContent: 'center', alignItems: 'center', backgroundColor: '#ff9b44', color: '#ffffff' }}
-                >
-                  <i className="fa fa-plus" />Process Payroll
-                </Button>
-
                 <Button className="btn add-btn"
                   style={{ display: 'flex',justifyContent: 'center',alignItems: 'center',}}
                   onClick={handleOpenModal}>
                   <i className="fa fa-plus" /> Generate Payroll
                 </Button>
+
+                <Button
+                  className="btn add-btn"
+                  onClick={() => handleProcessPayroll()}
+                  style={{ display: 'flex',justifyContent: 'center', alignItems: 'center', backgroundColor: '#ff9b44', color: '#ffffff' }}
+                  disabled={isDisabled}
+                >
+                  <i className="fa fa-plus" />Process Payroll
+                </Button>
+
                 <Button
                   className="col-auto"
                   type="default"
@@ -1007,7 +1108,12 @@ const EmployeeSalary = () => {
                   onClick={() => {
                     setDownloadModal(true);
                   }}
-                  style={{ backgroundColor: '#ff9b44', color: '#ffffff', borderRadius: "40px" }}
+                  style={{ backgroundColor: '#ff9b44', color: '#ffffff', borderRadius: "40px",
+                  pointerEvents: isDisabled ? 'none' : 'auto',
+                  opacity: isDisabled ? 0.5 : 1,
+                  cursor: isDisabled ? 'not-allowed' : 'pointer'
+                }}
+                  disabled={isDisabled}
                 />
               </div>
             </div>
@@ -1087,6 +1193,7 @@ const EmployeeSalary = () => {
               <div
                 className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12"
               >
+                <div className="form-group">
                 <Button
                   type="primary"
                   htmlType="submit"
@@ -1097,9 +1204,11 @@ const EmployeeSalary = () => {
                   Search
                 </Button>
                 </div>
+                </div>
                 <div
                 className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12"
               >
+                <div className="form-group">
                 <Button
                   htmlType="submit"
                   onClick={handleReset}
@@ -1108,6 +1217,7 @@ const EmployeeSalary = () => {
                 >
                   Reset
                 </Button>
+                </div>
               </div>
             </div>
           </Form>
@@ -1193,7 +1303,7 @@ const EmployeeSalary = () => {
                         <Button
                           htmlType="submit"
                           className="btn btn-primary submit-btn"
-                          //disabled={loader}
+                          disabled={loader===true}
                           onClick={handleGeneratePayroll}
                         >
                           Submit
@@ -1300,7 +1410,7 @@ const EmployeeSalary = () => {
           {/* /Main Table */}
           <div className="row">
             <div className="col-md-12">
-              <div className="table-responsive currentPayrollTable">
+              <div className="table-responsive currentPayrollTable" style={{background: 'white'}}>
                 <Table
                   locale={{
                     emptyText: isLoading ? (
@@ -1311,31 +1421,43 @@ const EmployeeSalary = () => {
                   }}
                   className="fixedTableHeader2"
                   loading={isLoading}
-                  pagination={{
-                    current: pagination.current,
-                    pageSize: pagination.pageSize,
-                    total: pagination.total,
-                    showTotal: (total, range) =>
-                      `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                    pageSizeOptions: ["10", "20", "30", "40"], // Options to change page size
-                    showSizeChanger: true, // Show the page size changer
-                    onChange: (page, pageSize) => {
-                      setPagination({
-                        ...pagination,
-                        current: page,
-                        pageSize: pageSize,
-                      });
-                    },
-                    itemRender: itemRender,
-                  }}
                   style={{ height: "400px", background: "white" }}
                   columns={columns}
                   // bordered
                   dataSource={data}
                   rowKey={(record) => record?._id}
+                  pagination={false}
                   // onChange={this.handleTableChange}
                 />
+                
               </div>
+              {
+                    data?.length > 0 &&
+                    <div>
+                      <Pagination
+                        style={{display: 'flex', float: 'right'}}
+                        total={pagination.total}
+                        pageSize={pagination.pageSize}
+                        defaultCurrent={1}
+                        current={pagination.current}
+                        showTotal={(total, range) =>
+                          `Showing ${range[0]} to ${range[1]} of ${total} entries`}
+                        onChange={(page, pageSize) => {
+                          setPagination({
+                            ...pagination,
+                            current: page,
+                            pageSize: pageSize,
+                          });
+                          //console.log(page, size);
+                          //setPageSize(size); setCurrentPage(page);
+                          //getEmployeeSalary(filterValues, page, size)
+                        }}
+                        showSizeChanger={true}
+                        pageSizeOptions={['20', '30', '40', '50']}
+                        itemRender={itemRender}
+                      />
+                    </div>
+                  }
             </div>
           </div>
 
@@ -1366,8 +1488,9 @@ const EmployeeSalary = () => {
                   href="javascript:void(0)" 
                   className="btn add-btn"
                   onClick={() => {
-                    downloadPDF(downloadData);
-                    console.log(downloadData);
+                    CurrentPayrollPDF(downloadData)
+                    // downloadPDF(downloadData);
+                    // console.log(downloadData);
                   }}>
                   <DownloadOutlinedIcon />
                     Export</a>
@@ -1473,9 +1596,11 @@ const EmployeeSalary = () => {
                     createdAt: moment(selectedRecord?.createdAt).format("D MMM YYYY") || "",
                     updatedAt: moment(selectedRecord?.updatedAt).format("D MMM YYYY") || "",
                     employeeId: selectedRecord?.user?.employeeId || "",
-                    fullName: selectedRecord?.user?.fulName || "",
+                    fullName: selectedRecord?.user?.fullName || "",
                     salary: selectedRecord?.user?.salary || "0.00",
                     email: selectedRecord?.user?.email || "",
+                    bankAccountNumber: selectedRecord?.user?.bankAccountNumber || "-",
+                    bankName: selectedRecord?.user?.bankName || "-",
 
                   }}
                   >
@@ -1660,6 +1785,25 @@ const EmployeeSalary = () => {
                     <div className="row">
                     <div className="col-sm-6">
                         <div className="form-group">
+                          <label>Bank Name</label>
+                          <Form.Item name="bankName">
+                            <Input className="form-control" readOnly/>
+                          </Form.Item>
+                        </div>
+                      </div>
+                      <div className="col-sm-6">
+                        <div className="form-group">
+                          <label>Bank Account Number</label>
+                          <Form.Item name="bankAccountNumber">
+                            <Input className="form-control" readOnly/>
+                          </Form.Item>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="row">
+                    <div className="col-sm-6">
+                        <div className="form-group">
                           <label>Transaction ID</label>
                           <Form.Item name="transactionId">
                             <Input className="form-control" />
@@ -1743,6 +1887,80 @@ const EmployeeSalary = () => {
                       </div>
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
+          </Modal>
+
+          {/* Mode Of Payment Modal */}
+          <Modal
+            open={MOPModal}
+            onClose={closeMOP}
+            aria-labelledby="modal-modal-title"
+            className="modalScroll"
+            aria-describedby="modal-modal-description"
+            disableRestoreFocus
+            BackdropProps={{
+              style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
+            }}
+            sx={{ overflowY: "auto" }}
+          >
+            <div className="modal-dialog modal-dialog-centered" role="document">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Mode Of Payment</h5>
+                  <button
+                    type="button"
+                    className="close"
+                    onClick={closeMOP}
+                  >
+                    <span aria-hidden="true">×</span>
+                  </button>
+                </div>
+
+                <div className="modal-body">
+                  <Form
+                  onFinish={updateModeOfPayment}
+
+                  name="control-hooks"
+                  >
+                    <div className="row">
+                        <div className="form-group" 
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                          }}>
+                          <label>Choose a Payment Method</label>
+                          <br/>
+                          <Form.Item
+                            name="modeOfPayment"
+                            className="custom-border"
+                          >
+                            <Select
+                              placeholder="Select Mode of Payment"
+                            >
+                              <Select.Option value="Bank Transfer">Bank Transfer</Select.Option>
+                              <Select.Option value="Cheque">Cheque</Select.Option>
+                              <Select.Option value="Cash">Cash</Select.Option>
+                            </Select>
+                          </Form.Item>
+                          <div className="submit-section">
+                            <Form.Item>
+                              <Button
+                                type="primary" 
+                                htmlType="submit"
+                                className="btn btn-primary submit-btn"
+                                disabled={loader===true}
+                              >
+                                Submit
+                              </Button>
+                            </Form.Item>
+                          </div>
+                        </div>
+                    </div>
+
+                    
+                  </Form>
                 </div>
               </div>
             </div>

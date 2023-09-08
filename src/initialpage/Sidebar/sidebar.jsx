@@ -590,7 +590,7 @@ const Sidebar = (props) => {
                     <ul>
                       {
                         (user_state?.role === 'admin' || permissions?.managePayrolls) &&
-                      <li><Link className={pathname.includes('salary') ? "active" : ""} to="/payroll/salary"> Employee Salary </Link></li>
+                      <li><Link className={pathname.includes('current-payroll') ? "active" : ""} to="/payroll/current-payroll"> Current Payroll </Link></li>
                       }
                       {
                         permissions?.viewSelfPayrolls &&
