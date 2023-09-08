@@ -164,7 +164,7 @@ const EmployeeDashboard = () => {
 
                 <div className="welcome-box">
                   <div className="welcome-img">
-                    <img alt="" src={userData?.user?.imageUrl || Avatar_02} />
+                    <img alt="" src={userData?.user?.imageUrl || user_icon} />
                   </div>
                   <div className="welcome-det">
                     <h3>{userData? `Welcome, ${userData?.user?.fullName }`:" "} </h3>
@@ -331,7 +331,7 @@ const EmployeeDashboard = () => {
                             <div key={item._id} className="time-list">
                               <div className="dash-stats-list">
                                 
-                                <h4><img src={item.imageUrl} alt={item.fullName} className="avatar" />{item.fullName}</h4>
+                                <h4><img src={item.imageUrl || user_icon} alt={item.fullName} className="avatar" />{item.fullName}</h4>
                                 <p>{age} years old</p>
                               </div>
                             </div>

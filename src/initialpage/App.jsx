@@ -37,6 +37,9 @@ import AttendanceEmployee from '../MainPage/Employees/Employees/attendanceemploy
 import AttendanceAdmin from '../MainPage/Employees/Employees/attendanceadmin';
 import ChangePassword from '../MainPage/Administration/Settings/changepassword';
 import LandingPage from '../LandingPage';
+import SalarySlip from '../MainPage/HR/Payroll/SalarySlip';
+import PayrollHistory from '../MainPage/HR/Payroll/PayrollHistory';
+import EmployeeSalary from '../MainPage/HR/Payroll/employeesalary';
 
 
 const App = () => {
@@ -112,6 +115,8 @@ const App = () => {
           <Route path={`/profile/employee-profile`} element={<EmployeeProfile />} />
           <Route path={`/profile`} element={<EmployeeProfile />} />
           <Route path={`/change-password`} element={<ChangePassword />} />
+          <Route path={`payroll/payslip`} element={<SalarySlip />} />
+          <Route path={`payroll/payroll-histroy`} element={<PayrollHistory />} />
 
           {/* Settings  */}
           <Route path="/settings" element={<Settings />} />
@@ -120,6 +125,10 @@ const App = () => {
           {/* Settings  */}
           <Route path="/employee/attendance-employee" element={<AttendanceEmployee />} />
           <Route path="/employee/attendance-admin" element={<AttendanceAdmin />} />
+
+          {/* Payrolls */}
+          <Route path="/payroll/current-payroll" element={<EmployeeSalary />} />
+
         </Route>
         
         {/* <Route path="/404" element={<Error404 />}></Route> */}

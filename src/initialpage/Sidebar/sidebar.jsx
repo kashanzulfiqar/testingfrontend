@@ -588,9 +588,18 @@ const Sidebar = (props) => {
                   <a href="javascript:" className={isSideMenu == "payroll" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "payroll" ? "" : "payroll")}><i className="la la-money" /> <span> Payroll </span> <span className="menu-arrow" /></a>
                   {isSideMenu == "payroll" ?
                     <ul>
-                      <li><Link className={pathname.includes('_salary') ? "active" : ""} to="/app/payroll/_salary"> Employee Salary </Link></li>
-                      <li><Link className={pathname.includes('y-view') ? "active" : ""} to="/app/payroll/salary-view"> Payslip </Link></li>
-                      <li><Link className={pathname.includes('payroll-items') ? "active" : ""} to="/app/payroll/payroll-items"> Payroll Items </Link></li>
+                      {
+                        (user_state?.role === 'admin' || permissions?.managePayrolls) &&
+                      <li><Link className={pathname.includes('current-payroll') ? "active" : ""} to="/payroll/current-payroll"> Current Payroll </Link></li>
+                      }
+                      {
+                        permissions?.viewSelfPayrolls &&
+                        <li><Link className={pathname.includes('payslip') ? "active" : ""} to="/payroll/payslip"> Payslip </Link></li>
+                      }
+                      {
+                        (user_state?.role === 'admin' || permissions?.managePayrolls) &&
+                        <li><Link className={pathname.includes('payroll-histroy') ? "active" : ""} to="/payroll/payroll-histroy"> Payroll History </Link></li>
+                      }
                     </ul>
                     : ""
                   }
