@@ -1493,7 +1493,7 @@ const EmployeeSalary = () => {
                   style={{marginInline:'auto'}}>
                     PayRolls
                   </h5>
-                  <a 
+                  <button
                   href="javascript:void(0)" 
                   className="btn add-btn"
                   disabled={isDisabled}
@@ -1503,7 +1503,7 @@ const EmployeeSalary = () => {
                     // console.log(downloadData);
                   }}>
                   <DownloadOutlinedIcon />
-                    Export</a>
+                    Export</button>
 
                   {/* <Button
                     type="default"
