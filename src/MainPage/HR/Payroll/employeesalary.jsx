@@ -86,6 +86,7 @@ const EmployeeSalary = () => {
   const [loader, setLoader] = useState(false);
 
   const [dataAvailable, setDataAvailable] = useState(false);
+  const [downAvailable, setDownAvailable] = useState(false);
   
   useEffect(()=>{
     if (data.length===0){
@@ -96,15 +97,15 @@ const EmployeeSalary = () => {
     }
   },[data])
 
-  useEffect(()=>{
-    if (downloadData.length===0){
-      setDataAvailable(false);
+  useEffect(() => {
+    if (downloadData.length === 0) {
+      setDownAvailable(false);
+    } else {
+      setDownAvailable(true);
     }
-    else{
-      setDataAvailable(true);
-    }
-  },[downloadData])
+  },[downloadData]);
 
+  const isdownDisabled = !downAvailable;
   const isDisabled = !dataAvailable;
 
   const OpenProcesConfirm = (record) => {
@@ -390,6 +391,7 @@ const EmployeeSalary = () => {
 
   const closeDmodal = () => {
     setDownloadModal(false);
+    setDownloadData([])
     PayFilterReset();
   };
 
@@ -811,7 +813,6 @@ const EmployeeSalary = () => {
       total: 0,
     });
     PayFilterReset();
-    setDataAvailable(true);
   };
 
   const GetGenPayrolls = () => {
@@ -1493,17 +1494,17 @@ const EmployeeSalary = () => {
                   style={{marginInline:'auto'}}>
                     PayRolls
                   </h5>
-                  <a 
+                  <button
                   href="javascript:void(0)" 
                   className="btn add-btn"
-                  disabled={isDisabled}
+                  disabled={isdownDisabled}
                   onClick={() => {
                     CurrentPayrollPDF(downloadData)
                     // downloadPDF(downloadData);
                     // console.log(downloadData);
                   }}>
                   <DownloadOutlinedIcon />
-                    Export</a>
+                    Export</button>
 
                   {/* <Button
                     type="default"
