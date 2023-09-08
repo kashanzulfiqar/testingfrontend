@@ -14,10 +14,10 @@ import { useSelector } from 'react-redux';
 import { apiServices } from '../../../Services/apiServices';
 import { LoadingOutlined } from '@ant-design/icons';
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
-import GeneratePDF from './GenerateSalaryPDF';
 import DetailsModal from './DetailsModal';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import GenerateSalaryPDF from './GenerateSalaryPDF';
 
 const PayrollHistory = () => {
 
@@ -95,13 +95,13 @@ const PayrollHistory = () => {
         
         const columns = [
             {
-              title: 'Name',
+              title: 'Employee Name',
               dataIndex: 'name',
               fixed: 'left',
               render: (text, record) => (            
                   <h2 className="table-avatar">
                     <label className="avatar"><img alt="" src={record?.user?.imageUrl || user_icon} /></label>
-                    <label>{record?.user?.fulName}</label>
+                    <label>{record?.user?.fullName}</label>
                     {/* <label>{text} <span>{record?.user?.role}</span></label> */}
                   </h2>
                 ),
@@ -116,11 +116,11 @@ const PayrollHistory = () => {
               )
             },
             {
-              title: 'Pay Month',
+              title: 'Month',
               dataIndex: 'payMonth',
             },
             {
-              title: 'Pay Year',
+              title: 'Year',
               dataIndex: 'payYear',
             },
             {
@@ -246,7 +246,7 @@ const PayrollHistory = () => {
                 )
             },
             {
-                title: 'Payroll Creation Date',
+                title: 'Payroll Processing Date',
                 dataIndex: 'createdAt',
                 render: (text,record) => {
                   const date = new Date(text);
@@ -286,7 +286,8 @@ const PayrollHistory = () => {
                             Detailform.setFieldsValue(d);
                             console.log(record);
                           }}><i className="fa fa-eye m-r-5" /> View</a>
-                        <a className="dropdown-item" href="javascript:void(0)" onClick={()=> downloadPDF(record)}><i className="fa fa-download m-r-5" /> Export to PDF</a>
+                        {/* <a className="dropdown-item" href="javascript:void(0)" onClick={()=> downloadPDF(record)}><i className="fa fa-download m-r-5" /> Export to PDF</a> */}
+                        <a className="dropdown-item" href="javascript:void(0)" onClick={()=> GenerateSalaryPDF(record, false, 'history', false)}><i className="fa fa-download m-r-5" /> Export Payslip</a>
                       </div>
                   </div>
                 ),
@@ -309,7 +310,7 @@ const PayrollHistory = () => {
               if (res?.data?.success === true) {
                 // console.log(res?.data?.payrolls);
                 if(res?.data?.payrolls.length > 0){
-                  downloadPDF(res?.data?.payrolls)
+                  downloadPDF(res?.data?.payrolls, values?.month, values?.year)
                   setOpenDownload(false)
                   setAllValuesDownload({})
                   Dform.resetFields()
@@ -407,43 +408,71 @@ const PayrollHistory = () => {
         });
     };
 
-    const downloadPDF = (row_data) => {
+    const downloadPDF = (row_data, month, year) => {
       const d1 = Array.isArray(row_data) ? row_data : [row_data]
 
       const columnsForPDF = [
-        { title: "Employee ID", dataIndex: "employeeId", },
-        { title: "Employee Name", dataIndex: "name", },
-        { title: "Account No", dataIndex: "bankAccountNumber", },
-        { title: "Credit Salary", dataIndex: "creditSalary", }
+        { title: "Sr.", dataIndex: "number", },
+        // { title: "Employee ID", dataIndex: "employeeId", },
+        { title: "Name", dataIndex: "name", },
+        { title: "CNIC", dataIndex: "cnic", },
+        { title: "A/C No", dataIndex: "bankAccountNumber", },
+        { title: "Rs", dataIndex: "creditSalary", }
       ];
   
   
       const doc = new jsPDF();
+
       const headerStyles = {
         // fillColor: '#F6F6F6',
         fillColor: 'white',
         textColor: 'black',
         fontStyle: 'bold',
         fontSize: 10,
+        fontFamily: 'Calibri',
       };
   
       const dataForPDF = d1.map((record, index) => [
-        record?.user?.employeeId,
-        record?.user?.fulName,
+        `${index+1}.`,
+        // record?.user?.employeeId,
+        record?.user?.fullName,
+        record?.user?.nationalIdentityNumber,
         record?.user?.bankAccountNumber,
         record?.creditSalary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","),
       ]);
+
+
+      doc.setFontSize(17);
+      doc.setTextColor(0, 0, 0);
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const textWidth = doc.getStringUnitWidth(`Payroll History of ${month}, ${year}`) * doc.internal.getFontSize() / doc.internal.scaleFactor;
+      const startX = (pageWidth - textWidth) / 2;
+      doc.text(`Payroll History of ${month}, ${year}`, startX, 25);
   
       doc.autoTable({
+        startY: 40,
+        // margin: { top: 20 },
         headStyles: headerStyles,
         head: [columnsForPDF.map(rec => rec?.title)],
         body: dataForPDF,
-        // styles: {
-        //   lineColor: [0, 0, 0], // Border color
-        //   lineWidth: 0.1,      // Border width
-        // },
+        styles: {
+          lineColor: [0, 0, 0], // color
+          lineWidth: 0.01,      // width
+          fontFamily: 'Calibri',
+          textColor: [0, 0, 0],
+        },
+        alternateRowStyles: { fillColor: [255, 255, 255] },
       });
       doc.save('payroll_export.pdf');
+
+
+      // for open pdf
+      // const pdfBlob = doc.output('blob');
+      // const blobUrl = URL.createObjectURL(pdfBlob);
+  
+      // const newWindow = window.open();
+      // newWindow.location.href = blobUrl;
+
     };
 
       return ( 
@@ -468,7 +497,12 @@ const PayrollHistory = () => {
                    </ul>
                  </div>
                  <div className="col-auto float-end ms-auto">
+                  {
+                    data?.length > 0 ?
                     <a href="javascript:void(0)" className="btn add-btn" onClick={()=> setOpenDownload(true)}><i className="fa fa-download" />Download</a>
+                    :
+                    <button href="javascript:void(0)" className="btn add-btn" disabled={true} style={{background: '#ff9b44', pointerEvents: 'auto', color: 'white', cursor: 'not-allowed'}}><i className="fa fa-download" />Download</button>
+                  }
                 </div>
                </div>
              </div>

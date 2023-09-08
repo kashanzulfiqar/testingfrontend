@@ -49,7 +49,7 @@ function DetailsModal({ Detailform, openDetail, setOpenDetail }) {
                             <img className="inline-block" src={openDetail?.data?.user?.imageUrl || user_icon} alt="user" />
                         </div>
                             <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '15px'}}>
-                                <h3>{openDetail?.data?.user?.fulName}</h3>
+                                <h3>{openDetail?.data?.user?.fullName}</h3>
                                 {/* <label style={{fontSize: '13px', color: '#888888', marginTop: '-5px'}}>{openDetail?.data?.role}</label> */}
                             </div>
                     </Form.Item>
@@ -58,7 +58,7 @@ function DetailsModal({ Detailform, openDetail, setOpenDetail }) {
                         <div className="col-md-6">
                             <div className="form-group">
                                 <label>
-                                Employee Id
+                                Employee ID
                                 </label>
                                 <Form.Item
                                     name='employeeId'
@@ -253,7 +253,7 @@ function DetailsModal({ Detailform, openDetail, setOpenDetail }) {
                         <div className="col-md-6">
                             <div className="form-group">
                                 <label>
-                                Mode Of Paymen
+                                Mode Of Payment
                                 </label>
                                 <Form.Item
                                     name='modeOfPayment'
@@ -279,7 +279,7 @@ function DetailsModal({ Detailform, openDetail, setOpenDetail }) {
                         <div className="col-md-6">
                             <div className="form-group">
                                 <label>
-                                Payroll Creation Date
+                                Payroll Processing Date
                                 </label>
                                 <Form.Item
                                     name='payrollCreationDate'

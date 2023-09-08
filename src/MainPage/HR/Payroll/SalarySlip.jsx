@@ -88,16 +88,19 @@ const SalarySlip = () => {
             {
               title: "Month",
               dataIndex: "payMonth",
-              width:210
+              width:300
+              // width:210
             },
             {
               title: "Year",
               dataIndex: "payYear",
-              width:200
+              width:300
+              // width:200
             },
             {
-              title: "Issue Date",
+              title: "Date Of Issue",
               dataIndex: "createdAt",
+              width:300,
               render: (text,record) => {
                 const date = new Date(text);
                 const monthNames = [
@@ -115,7 +118,7 @@ const SalarySlip = () => {
             },
             {
               title: "Actions",
-              width:110,
+              width:76,
               render: (text, record) => (
                 <div className="dropdown dropdown-action text-end">
                   <a
@@ -131,7 +134,7 @@ const SalarySlip = () => {
                       className="dropdown-item"
                       href="javascript:void(0)"
                       onClick={() => {
-                        GenerateSalaryPDF(record, true)
+                        GenerateSalaryPDF(record, true, 'slip', false)
                       }}
                     >
                       <i className="fa fa-eye m-r-5" /> View
@@ -147,7 +150,7 @@ const SalarySlip = () => {
                       className="dropdown-item"
                       href="javascript:void(0)"
                       onClick={() => {
-                        GenerateSalaryPDF(record)
+                        GenerateSalaryPDF(record, false, 'slip', false)
                       }}
                     >
                       <i className="fa fa-download m-r-5" /> Download
@@ -318,14 +321,14 @@ const SalarySlip = () => {
              {/* /Search Filter */}
              <div className="row">
                <div className="col-md-12">
-                 <div className="table-responsive">
+                 <div className="table-responsive" style={{paddingBottom: `200px`}}>
                  <Table
                     loading={tableLoader}
                     className={data?.length > 0 ? "table-striped" : ""}
                     locale={{
                       emptyText: tableLoader ? null : customEmptyText,
                     }}
-                    style = {{overflowX : 'auto'}}
+                    // style = {{overflowX : 'auto'}}
                     columns={columns}
                     dataSource={data}
                     pagination={false}

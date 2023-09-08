@@ -6,7 +6,7 @@ import 'jspdf-autotable';
 
 
 
-function GenerateSalaryPDF(row, view, print) {
+function GenerateSalaryPDF(row, view, screen, print) {
 
   const doc = new jsPDF();
   
@@ -25,8 +25,9 @@ function GenerateSalaryPDF(row, view, print) {
 
   // ========= line 2 ============
 
-  const arr = row?.userId?.fullName?.split(" ");
-  for (var i = 0; i < arr.length; i++) {
+  // const arr = row?.userId?.fullName?.split(" ");
+  const arr = screen === 'slip' ? row?.userId?.fullName?.split(" ") : row?.user?.fullName?.split(" ");
+  for (var i = 0; i < arr?.length; i++) {
     arr[i] = arr[i].charAt(0).toUpperCase() + arr[i].slice(1);
   }
   const capitlized_name = arr.join(" ");
@@ -70,7 +71,7 @@ function GenerateSalaryPDF(row, view, print) {
   
   // Define the table data
   const tableData = [
-    ['Basic Salary', `${row?.userId?.salary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`, 'Tax', `${row?.tax?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`],
+    ['Basic Salary', `${screen === 'slip' ? row?.userId?.salary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : row?.user?.salary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`, 'Tax', `${row?.tax?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`],
     ['Bonus', `${row?.bonus?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`, 'Absent Fine', `${row?.absentFine?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`],
     ['Total Addition', `${row?.totalAddition?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`, 'Total Deduction', `${row?.totalDeduction?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`],
     ['','','',''],
@@ -108,7 +109,7 @@ function GenerateSalaryPDF(row, view, print) {
     body: tableData,
     ...options,
     didParseCell: function (data) {
-      if (data.section === 'body' && data.cell.raw === `Net Salary`) {
+      if (data.section === 'body' && data.cell.raw === `Credit Salary`) {
         data.cell.styles.fontStyle = 'bold';
       }
     },
@@ -143,7 +144,8 @@ if(view){
       };
     };
   }else{
-    doc.save(`${row?.payMonth} ${row?.payYear} Payslip.pdf`);
+    // doc.save(`${row?.payMonth} ${row?.payYear} Payslip.pdf`);
+    doc.save(`Payslip.pdf`);
   }
 
   };
