@@ -390,7 +390,6 @@ const EmployeeSalary = () => {
 
   const closeDmodal = () => {
     setDownloadModal(false);
-    setDownloadData([]);
     PayFilterReset();
   };
 
