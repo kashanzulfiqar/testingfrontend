@@ -812,6 +812,7 @@ const EmployeeSalary = () => {
       total: 0,
     });
     PayFilterReset();
+    setDataAvailable(true);
   };
 
   const GetGenPayrolls = () => {
