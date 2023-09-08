@@ -96,6 +96,15 @@ const EmployeeSalary = () => {
     }
   },[data])
 
+  useEffect(()=>{
+    if (downloadData.length===0){
+      setDataAvailable(false);
+    }
+    else{
+      setDataAvailable(true);
+    }
+  },[downloadData])
+
   const isDisabled = !dataAvailable;
 
   const OpenProcesConfirm = (record) => {
@@ -1487,6 +1496,7 @@ const EmployeeSalary = () => {
                   <a 
                   href="javascript:void(0)" 
                   className="btn add-btn"
+                  disabled={isDisabled}
                   onClick={() => {
                     CurrentPayrollPDF(downloadData)
                     // downloadPDF(downloadData);
