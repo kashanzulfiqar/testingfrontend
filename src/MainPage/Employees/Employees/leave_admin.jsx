@@ -515,7 +515,7 @@ const LeaveAdmin = () => {
               <div className="col">
                 <h3 className="page-title">Requests</h3>
                 <ul className="breadcrumb">
-                  <li className="breadcrumb-item"><Link to="/app/main/dashboard">Dashboard</Link></li>
+                  <li className="breadcrumb-item"><Link to="/main/dashboard">Dashboard</Link></li>
                   <li className="breadcrumb-item active">Requests</li>
                 </ul>
               </div>

@@ -1090,7 +1090,7 @@ const EmployeeSalary = () => {
                 <h3 className="page-title">Current Payroll</h3>
                 <ul className="breadcrumb">
                   <li className="breadcrumb-item">
-                    <Link to="/app/main/dashboard">Dashboard</Link>
+                    <Link to="/main/dashboard">Dashboard</Link>
                   </li>
                   <li className="breadcrumb-item active">Current Payroll</li>
                 </ul>

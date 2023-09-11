@@ -488,7 +488,7 @@ const AttendanceEmployee = () => {
                   <h3 className="page-title">Attendance</h3>
                   <ul className="breadcrumb">
                     <li className="breadcrumb-item">
-                      <Link to="/app/main/dashboard">Dashboard</Link>
+                      <Link to="/employee/dashboard">Dashboard</Link>
                     </li>
                     <li className="breadcrumb-item active">Attendance</li>
                   </ul>
