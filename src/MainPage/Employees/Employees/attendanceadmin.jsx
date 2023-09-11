@@ -347,57 +347,7 @@ const AttendanceAdmin = () => {
       };
     }),
   ];
-
-  // const columns = [
-  //   {
-  //     title: "Employee",
-  //     dataIndex: "employeeName",
-  //     key: "employeeName",
-  //   },
-  //   ...Array.from({ length: daysInMonth }, (_, index) => ({
-  //     title: `${index + 1}`,
-  //     dataIndex: `day${index + 1}`,
-  //     key: `day${index + 1}`,
-  //     render: (text, record) => {
-  //       const dayRecord = record[`day${index + 1}`];
-
-  //       let abbreviation = "";
-  //       let color = "";
-
-  //       switch (dayRecord?.status) {
-  //         case "Present":
-  //           abbreviation = "P";
-  //           color = "green";
-  //           break;
-  //         case "Late":
-  //           abbreviation = "P";
-  //           color = "orange";
-  //           break;
-  //         case "Absent":
-  //           abbreviation = "A";
-  //           color = "red";
-  //           break;
-  //         case "On-Leave":
-  //           abbreviation = "L";
-  //           color = "red"; // Change this color as needed
-  //           break;
-  //         default:
-  //           abbreviation = "-";
-  //           color = "black";
-  //           break;
-  //       }
-
-  //       return (
-  //         <span
-  //           style={{ color: color, cursor: abbreviation !== '-' ? 'pointer' : 'default' }}
-  //           onClick={() => openModal(dayRecord,abbreviation)}
-  //         >
-  //           {abbreviation}
-  //         </span>
-  //       );
-  //     },
-  //   })),
-  // ];
+  
   const dataSource = employeeAttendanceData.map((employeeData) => {
     const rowData = {
       key: employeeData.employeeId,
@@ -430,7 +380,7 @@ const AttendanceAdmin = () => {
                   <h3 className="page-title">Attendance</h3>
                   <ul className="breadcrumb">
                     <li className="breadcrumb-item">
-                      <Link to="/app/main/dashboard">Dashboard</Link>
+                      <Link to="/main/dashboard">Dashboard</Link>
                     </li>
                     <li className="breadcrumb-item active">Attendance</li>
                   </ul>
