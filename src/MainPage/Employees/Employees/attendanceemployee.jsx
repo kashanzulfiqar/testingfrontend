@@ -20,6 +20,7 @@ const AttendanceEmployee = () => {
 
 
   const user_state = useSelector((state) => state.user.loginvalue);
+  const role = user_state?.user?.role
 
   let AuthObj = JSON.parse(localStorage.getItem("AuthObj"));
   let userID = AuthObj?.userId;
@@ -488,7 +489,7 @@ const AttendanceEmployee = () => {
                   <h3 className="page-title">Attendance</h3>
                   <ul className="breadcrumb">
                     <li className="breadcrumb-item">
-                      <Link to="/employee/dashboard">Dashboard</Link>
+                      <Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>Dashboard</Link>
                     </li>
                     <li className="breadcrumb-item active">Attendance</li>
                   </ul>
