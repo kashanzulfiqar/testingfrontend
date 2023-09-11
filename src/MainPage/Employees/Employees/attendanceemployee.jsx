@@ -582,7 +582,7 @@ const AttendanceEmployee = () => {
                 <div className="card att-statistics">
                   <div className="card-body">
                     <h5 className="card-title">Statistics</h5>
-                    <div className="stats-list">
+                    <div className="stats-list" style={{height:'347px'}}>
                       <div className="stats-info">
                         <p>
                           Today{" "}
@@ -678,6 +678,7 @@ const AttendanceEmployee = () => {
                 <div className="card recent-activity">
                   <div className="card-body">
                     <h5 className="card-title">Today Activity</h5>
+                    <div className="stats-list" style={{height:'347px'}}>
                     <ul className="res-activity-list">
                       <li>
                         <p className="mb-0"><label>Check In at</label></p>
@@ -723,6 +724,7 @@ const AttendanceEmployee = () => {
                         </p>
                       </li>
                     </ul>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -752,6 +754,7 @@ const AttendanceEmployee = () => {
           className="custom-border"
         >
           <DatePicker.MonthPicker
+            className="form-control"
             style={{
               width: '100%',
             }}
@@ -774,6 +777,7 @@ const AttendanceEmployee = () => {
           className="custom-border"
         >
           <DatePicker.YearPicker
+            className="form-control"
             style={{
               width: '100%',
             }}
