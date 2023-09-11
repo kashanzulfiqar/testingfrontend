@@ -380,7 +380,7 @@ const AttendanceAdmin = () => {
                   <h3 className="page-title">Attendance</h3>
                   <ul className="breadcrumb">
                     <li className="breadcrumb-item">
-                      <Link to="/main/dashboard">Dashboard</Link>
+                      <Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>Dashboard</Link>
                     </li>
                     <li className="breadcrumb-item active">Attendance</li>
                   </ul>
