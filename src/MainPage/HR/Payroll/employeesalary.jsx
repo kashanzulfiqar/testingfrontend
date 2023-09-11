@@ -1948,6 +1948,7 @@ const EmployeeSalary = () => {
                             className="custom-border"
                           >
                             <Select
+                              className="custom-select"
                               placeholder="Select Mode of Payment"
                             >
                               <Select.Option value="Bank Transfer">Bank Transfer</Select.Option>

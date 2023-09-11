@@ -17,6 +17,7 @@ import moment from 'moment';
 import { counter } from '../../../Redux/Reducer/permissions/pendingCounterSlice';
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { user_icon } from '../../../Entryfile/imagepath';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 
 const { Option } = Select;
 
@@ -486,7 +487,7 @@ const LeaveAdmin = () => {
     render: (text, record) => (
       <div className="dropdown dropdown-action">
         <a href="javascript:void(0)" className="action-icon" onClick={() => openModal(record)}>
-          <i className="material-icons">add_circle</i>
+          <VisibilityIcon />
         </a>
       </div>
     ),
