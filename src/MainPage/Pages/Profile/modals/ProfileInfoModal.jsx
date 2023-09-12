@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { DatePicker, Form, Input, InputNumber, Select, Spin, Upload, message } from 'antd';
+import { DatePicker, Divider, Form, Input, InputNumber, Select, Spin, Upload, message, Button } from 'antd';
 import Modal from "@mui/material/Modal";
 import moment from 'moment';
 import PhoneNoInput from '../../../../Components/PhoneNoInput';
@@ -11,6 +11,12 @@ import AccordianCheckBox from '../../../../Components/Accordian';
 import PermissionsTable from '../../../../Components/PermissionsTable';
 import ImgCrop from 'antd-img-crop';
 import { LoadingOutlined } from '@ant-design/icons';
+import PlusOutlined from '@mui/icons-material/Add';
+import AddDepartment from './addFunctions/AddDepartment';
+import AddDesignation from './addFunctions/AddDesignation';
+import AddShift from './addFunctions/AddShift';
+import AddTaxSlab from './addFunctions/AddTaxSlab';
+import AddRole from './addFunctions/AddRole';
 
 
 
@@ -35,6 +41,11 @@ const [phoneLengthError, setPhoneLengthError] = useState(false);
 const [emergValue, setEmergValue] = useState(null)
 const [imageLoader, setImageLoader] = useState(false)
 const [image, setImage] = useState('')
+const [addDeptOpen, setAddDeptOpen] = useState(false)
+const [addDesigOpen, setAddDesigOpen] = useState(false)
+const [addShiftOpen, setAddShiftOpen] = useState(false)
+const [addTaxOpen, setAddTaxOpen] = useState(false)
+const [addRoleOpen, setAddRoleOpen] = useState(false)
 
 
   useEffect(() => {
@@ -757,6 +768,28 @@ const getTaxSlab = () => {
                                     <Select
                                         className="custom-select custom-normal"
                                         getPopupContainer={() => document.getElementById('area')}
+                                        dropdownRender={(menu) => (
+                                          <>
+                                            {menu}
+                                            {
+                                                <>
+                                                  <Divider
+                                                    style={{
+                                                      margin: '5px 0',
+                                                    }}
+                                                  />
+                                                  <Button
+                                                    type="button" icon={<PlusOutlined style={{fontSize: '20px', marginRight: '5px'}} />}
+                                                    className="addButtonStyles"
+                                                    style={{width: '100%', height: '40px', background: '#efefef', borderColor: '#efefef', display: 'flex', justifyContent: 'center', alignItems: 'center'}}
+                                                    onClick={() => setAddRoleOpen(true)}
+                                                  >
+                                                    Add Role
+                                                  </Button>
+                                                </>
+                                            }
+                                          </>
+                                        )}
                                         style={{
                                         width: '100%',
                                         }}
@@ -867,6 +900,28 @@ const getTaxSlab = () => {
                                 <Select
                                     className="custom-select custom-normal"
                                     getPopupContainer={() => document.getElementById('area')}
+                                    dropdownRender={(menu) => (
+                                      <>
+                                        {menu}
+                                        {
+                                            <>
+                                              <Divider
+                                                style={{
+                                                  margin: '5px 0',
+                                                }}
+                                              />
+                                              <Button
+                                                type="button" icon={<PlusOutlined style={{fontSize: '20px', marginRight: '5px'}} />}
+                                                className="addButtonStyles"
+                                                style={{width: '100%', height: '40px', background: '#efefef', borderColor: '#efefef', display: 'flex', justifyContent: 'center', alignItems: 'center'}}
+                                                onClick={() => setAddDeptOpen(true)}
+                                              >
+                                                Add Department
+                                              </Button>
+                                            </>
+                                        }
+                                      </>
+                                    )}
                                     style={{
                                     width: '100%',
                                     }}
@@ -902,6 +957,28 @@ const getTaxSlab = () => {
                                 <Select
                                     className="custom-select custom-normal"
                                     getPopupContainer={() => document.getElementById('area')}
+                                    dropdownRender={(menu) => (
+                                      <>
+                                        {menu}
+                                        {
+                                            <>
+                                              <Divider
+                                                style={{
+                                                  margin: '5px 0',
+                                                }}
+                                              />
+                                              <Button
+                                                type="button" icon={<PlusOutlined style={{fontSize: '20px', marginRight: '5px'}} />}
+                                                className="addButtonStyles"
+                                                style={{width: '100%', height: '40px', background: '#efefef', borderColor: '#efefef', display: 'flex', justifyContent: 'center', alignItems: 'center'}}
+                                                onClick={() => setAddDesigOpen(true)}
+                                              >
+                                                Add Designation
+                                              </Button>
+                                            </>
+                                        }
+                                      </>
+                                    )}
                                     style={{
                                     width: '100%',
                                     }}
@@ -937,6 +1014,28 @@ const getTaxSlab = () => {
                                 <Select
                                     className="custom-select custom-normal"
                                     getPopupContainer={() => document.getElementById('area')}
+                                    dropdownRender={(menu) => (
+                                      <>
+                                        {menu}
+                                        {
+                                            <>
+                                              <Divider
+                                                style={{
+                                                  margin: '5px 0',
+                                                }}
+                                              />
+                                              <Button
+                                                type="button" icon={<PlusOutlined style={{fontSize: '20px', marginRight: '5px'}} />}
+                                                className="addButtonStyles"
+                                                style={{width: '100%', height: '40px', background: '#efefef', borderColor: '#efefef', display: 'flex', justifyContent: 'center', alignItems: 'center'}}
+                                                onClick={() => setAddShiftOpen(true)}
+                                              >
+                                                Add Shift
+                                              </Button>
+                                            </>
+                                        }
+                                      </>
+                                    )}
                                     style={{
                                     width: '100%',
                                     }}
@@ -972,6 +1071,28 @@ const getTaxSlab = () => {
                                 <Select
                                     className="custom-select custom-normal"
                                     getPopupContainer={() => document.getElementById('area')}
+                                    dropdownRender={(menu) => (
+                                      <>
+                                        {menu}
+                                        {
+                                            <>
+                                              <Divider
+                                                style={{
+                                                  margin: '5px 0',
+                                                }}
+                                              />
+                                              <Button
+                                                type="button" icon={<PlusOutlined style={{fontSize: '20px', marginRight: '5px'}} />}
+                                                className="addButtonStyles"
+                                                style={{width: '100%', height: '40px', background: '#efefef', borderColor: '#efefef', display: 'flex', justifyContent: 'center', alignItems: 'center'}}
+                                                onClick={() => setAddTaxOpen(true)}
+                                              >
+                                                Add Tax Slab
+                                              </Button>
+                                            </>
+                                        }
+                                      </>
+                                    )}
                                     style={{
                                     width: '100%',
                                     }}
@@ -1270,6 +1391,58 @@ const getTaxSlab = () => {
             </div>
             </div>
         </Modal>
+
+        {
+          addDeptOpen &&
+          <AddDepartment
+            addDeptOpen={addDeptOpen}
+            setAddDeptOpen={setAddDeptOpen}
+            allTeams={allTeams}
+            setAllTeams={setAllTeams}
+            user_state={user_state}
+          />
+        }
+        {
+          addDesigOpen &&
+          <AddDesignation
+            addDesigOpen={addDesigOpen}
+            setAddDesigOpen={setAddDesigOpen}
+            allDesignations={allDesignations}
+            setAllDesignations={setAllDesignations}
+            user_state={user_state}
+          />
+        }
+        {
+          addShiftOpen &&
+          <AddShift
+            addShiftOpen={addShiftOpen}
+            setAddShiftOpen={setAddShiftOpen}
+            allShifts={allShifts}
+            setAllShifts={setAllShifts}
+            user_state={user_state}
+          />
+        }
+        {
+          addTaxOpen &&
+          <AddTaxSlab
+            addTaxOpen={addTaxOpen}
+            setAddTaxOpen={setAddTaxOpen}
+            allTaxSlabs={allTaxSlabs}
+            setAllTaxSlabs={setAllTaxSlabs}
+            user_state={user_state}
+          />
+        }
+        {
+          addRoleOpen &&
+          <AddRole
+            addRoleOpen={addRoleOpen}
+            setAddRoleOpen={setAddRoleOpen}
+            allRoles={allRoles}
+            setAllRoles={setAllRoles}
+            user_state={user_state}
+          />
+        }
+
     </>
   )
 }
