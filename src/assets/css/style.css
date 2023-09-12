@@ -7175,6 +7175,12 @@ textarea.form-control {
 
 /* ................. custom css styling ................ */
 
+.addButtonStyles:hover, .addButtonStyles:focus{
+  background: #d1d1d1;
+  border-color: #d1d1d1;
+  color: black;
+}
+
 /* ---- payrollHistoryTable fixed header--- */
 .payrollHistoryTable thead > *{
   position: sticky !important;
