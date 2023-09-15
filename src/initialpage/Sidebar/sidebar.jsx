@@ -533,8 +533,8 @@ const Sidebar = (props) => {
                       : ""
                     }
                   </li>
-                <li className={pathname.includes('clients') ? "active" : ""}>
-                  <Link to="/app/employees/clients"><i className="la la-users" /> <span>Clients</span> </Link>
+                <li className={pathname.includes('client') ? "active" : ""}>
+                  <Link to="/clients"><i className="la la-users" /> <span>Client</span> </Link>
                 </li>
                 <li className="submenu">
                   <a href="javascript:" className={isSideMenu == "projects" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "projects" ? "" : "projects")}><i className="la la-rocket" /> <span> Projects</span> <span className="menu-arrow" /></a>

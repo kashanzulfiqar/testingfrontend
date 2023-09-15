@@ -40,6 +40,11 @@ import LandingPage from '../LandingPage';
 import SalarySlip from '../MainPage/HR/Payroll/SalarySlip';
 import PayrollHistory from '../MainPage/HR/Payroll/PayrollHistory';
 import EmployeeSalary from '../MainPage/HR/Payroll/employeesalary';
+import Clients from '../MainPage/Employees/clients';
+import ClientsList from '../MainPage/Employees/clientslist';
+// import ClientProfile from '../MainPage/Pages/Profile/clientprofile';
+// import ClientLogin from './ClientLogin';
+// import FocalProfile from '../MainPage/Pages/Profile/FocalProfile';
 
 
 const App = () => {
@@ -89,6 +94,7 @@ const App = () => {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
+        {/* <Route path="/client/login" element={<ClientLogin />} /> */}
         <Route path="/login/:email/:token" element={<LoginPage />} />
         <Route path="/forget-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
@@ -117,6 +123,10 @@ const App = () => {
           <Route path={`/change-password`} element={<ChangePassword />} />
           <Route path={`payroll/payslip`} element={<SalarySlip />} />
           <Route path={`payroll/payroll-histroy`} element={<PayrollHistory />} />
+          <Route path={`clients`} element={<Clients />} />
+          <Route path={`clients-list`} element={<ClientsList />} />
+          {/* <Route path={`client/client-profile`} element={<ClientProfile />} />
+          <Route path={`client/focal-profile`} element={<FocalProfile />} /> */}
 
           {/* Settings  */}
           <Route path="/settings" element={<Settings />} />

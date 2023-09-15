@@ -1,87 +1,166 @@
 
-import React, { useState,useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Helmet } from "react-helmet";
 import { Link } from 'react-router-dom';
-import {  Avatar_07 } from "../../Entryfile/imagepath"
-import  Editclient from "../../_components/modelbox/Editclient"
-import { Table } from 'antd';
+import { user_icon } from "../../Entryfile/imagepath"
+import { Button, Empty, Form, Input, Pagination, Select, Spin, Table, message } from 'antd';
+import EmptyTable from "../../files/Icons/EmptyTable.svg";
+import { LoadingOutlined } from '@ant-design/icons';
+import AddClientModal from '../Pages/Profile/modals/AddClientModal';
+import { useSelector } from 'react-redux';
+import Modal from "@mui/material/Modal";
+import { itemRender } from '../paginationfunction';
 import 'antd/dist/antd.css';
-import {itemRender,onShowSizeChange} from "../paginationfunction"
 import "../antdstyle.css"
+import { apiServices } from '../../Services/apiServices';
 
-const Clients = () => {
+const ClientsList = () => {
 
-  const [data, setData] = useState([
-    {id:1,image:Avatar_07,name:"John Doe",client_id:"CLT-0001",contactperson:"Barry Cuda",
-    email :"barrycuda@example.com",mobile:"9876543210",status:"Active"}
-  ]);
-  useEffect( ()=>{
-    if($('.select').length > 0) {
-      $('.select').select2({
-        minimumResultsForSearch: -1,
-        width: '100%'
-      });
+  const [form1] = Form.useForm();
+
+  const user_state = useSelector((state) => state.user.loginvalue);
+  const role = user_state?.user?.role
+
+  const [allClients, setAllClients] = useState([])
+  const [tableLoader, setTableLoader] = useState(true)
+  const [loader, setLoader] = useState(false)
+  const [pageSize, setPageSize] = useState(20);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [paginationDetail, setPaginationDetail] = useState();
+  const [filterValues, setFilterValues] = useState();
+  const [open, setOpen] = useState({
+    isAddOpen: false,
+    data: ''
+  });
+
+  useEffect(() => {
+    getAllClients()
+    }, [])
+
+    const getAllClients = (values, current_page, page_size) => {
+      setTableLoader(true);
+      apiServices("GET", `client/view-client?deleted=false${values === '' ? '' : values?.clientName === '' ? '' : values?.clientName ? `&clientName=${values?.clientName}` : filterValues?.clientName ? `&clientName=${filterValues?.clientName}` : ''}&page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}`, null, user_state)
+        .then((res) => {
+          if (res?.data?.success === true) {
+            setAllClients(res?.data?.clients?.docs);
+            setPaginationDetail(res?.data?.clients)
+            setTableLoader(false);
+          }
+        })
+        .catch((err) => {
+          setTableLoader(false);
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : "Get All Clients Error"
+            }!`
+          );
+        });
     }
-  }); 
+  
+    const onFinishDelete = (id) => {
+      setLoader(true)
+      apiServices("DELETE", "client/delete-client", id, user_state)
+        .then((res) => {
+          if (res?.data?.success === true) {
+            setAllClients([...allClients.filter((client) => client._id !== id)]);
+            setOpen({ isDelOpen: false, data: '' })
+            message.success("Client Deleted Successfully!");
+            setLoader(false)
+          }
+        })
+        .catch((err) => {
+          setLoader(false)
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : "Client Delete Error"
+            }!`
+          );
+        });
+    }
+  
+    const onFilterFinish = (values) => {
+      if(values?.clientName){
+        getAllClients(values, currentPage, pageSize);
+        setFilterValues(values)
+        console.log(values);
+      }
+    }
   
   
   const columns = [
       
     {
       title: 'Name',
-      dataIndex: 'name',
+      // dataIndex: 'name',
+      fixed: 'left',
+      width: 120,
       render: (text, record) => (            
           <h2 className="table-avatar">
-            <Link to="/app/profile/employee-profile" className="avatar"><img alt="" src={record.image} /></Link>
-            <Link to="/app/profile/employee-profile">{text}</Link>
+            <Link to="/client/client-profile" state={{client_data: record}} className="avatar"><img alt="" src={record?.logo || user_icon} /></Link>
+            <Link to="/client/client-profile" state={{client_data: record}}>{record?.clientName}</Link>
           </h2>
-        ), 
-        sorter: (a, b) => a.name.length - b.name.length,
-    },
-    {
-      title: 'Client ID',
-      dataIndex: 'client_id',
-      sorter: (a, b) => a.employee_id.length - b.employee_id.length,
-    },
-  
-    {
-      title: 'Contact Person',
-      dataIndex: 'contactperson',
-      sorter: (a, b) => a.contactperson.length - b.contactperson.length,
+        ),
     },
     {
       title: 'Email',
-      dataIndex: 'email',
-      sorter: (a, b) => a.email.length - b.email.length,
-    },
-
-    {
-      title: 'Mobile',
-      dataIndex: 'mobile', 
-      sorter: (a, b) => a.mobile.length - b.mobile.length,
+      dataIndex: 'clientEmail',
+      width: 130,
     },
     {
-      title: 'Status',
-      dataIndex: 'status',
-      render: (text, record) => (
-        <div className="dropdown">
-            <a href="#" className="btn btn-white btn-sm btn-rounded dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-              <i className={text==="Active" ? "fa fa-dot-circle-o text-success" : "fa fa-dot-circle-o text-danger"} /> {text} </a>
-            <div className="dropdown-menu">
-              <a className="dropdown-item" href="#"><i className="fa fa-dot-circle-o text-success" /> Active</a>
-              <a className="dropdown-item" href="#"><i className="fa fa-dot-circle-o text-danger" /> Inactive</a>
-            </div>
-      </div>
-        ),
+      title: 'Phone No',
+      dataIndex: 'clientPhoneNo',
+      width: 130,
     },
+    {
+      title: 'Country',
+      dataIndex: 'country',
+      width: 130,
+    },
+    {
+      title: 'Invoice Email',
+      dataIndex: 'invoiceEmail',
+      width: 130,
+    },
+    {
+      title: 'Address',
+      dataIndex: 'headOfficeAddress',
+      width: 130,
+      render: (text,record) => (
+        <label className='longText'>
+          {text}
+        </label>
+      )
+    },
+    // {
+    //   title: 'Status',
+    //   dataIndex: 'status',
+    //   render: (text, record) => (
+    //     <div className="dropdown">
+    //         <a href="#" className="btn btn-white btn-sm btn-rounded dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+    //           <i className={text==="Active" ? "fa fa-dot-circle-o text-success" : "fa fa-dot-circle-o text-danger"} /> {text} </a>
+    //         <div className="dropdown-menu">
+    //           <a className="dropdown-item" href="#"><i className="fa fa-dot-circle-o text-success" /> Active</a>
+    //           <a className="dropdown-item" href="#"><i className="fa fa-dot-circle-o text-danger" /> Inactive</a>
+    //         </div>
+    //   </div>
+    //     ),
+    // },
     {
       title: 'Action',
       render: (text, record) => (
           <div className="dropdown dropdown-action text-end">
-            <a href="#" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
+            <a href="javascript:void(0)" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
             <div className="dropdown-menu dropdown-menu-right">
-              <a className="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#edit_client"><i className="fa fa-pencil m-r-5" /> Edit</a>
-              <a className="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#delete_client"><i className="fa fa-trash-o m-r-5" /> Delete</a>
+              <a className="dropdown-item" href="javascript:void(0)" onClick={() => { setOpen({ isAddOpen: true, data: record }) }}><i className="fa fa-pencil m-r-5" /> Edit</a>
+              <a className="dropdown-item" href="javascript:void(0)" onClick={() => { setOpen({ isDelOpen: true, data: record }) }}><i className="fa fa-trash-o m-r-5" /> Delete</a>
             </div>
           </div>
         ),
@@ -89,10 +168,56 @@ const Clients = () => {
 
   ]
 
+  const customEmptyText = (
+    <Empty
+      image={<img src={EmptyTable} />}
+      // image={<InboxOutlined />}
+      imageStyle={
+        {
+          // fontSize: 48,
+          // color: '#1890ff',
+        }
+      }
+      style={{
+        height: "300px",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+      }}
+      description={
+        <div style={{ display: "" }}>
+          <div
+            style={{
+              color: "#34343F",
+              fontWeight: "500",
+              fontSize: "14px",
+              margin: "7px 0px 4px 0px",
+            }}
+          >
+            {/* {
+              (role === 'admin' || permissions?.viewAllUsers) ? 'No Employee Record found!' : 'You are Restricted to View Employees'
+            } */}
+            No Client Record Found!
+          </div>
+        </div>
+      }
+    />
+  );
+
+  
+const antIcon = (
+  <LoadingOutlined
+    style={{
+      fontSize: 24,
+      color: '#fff'
+    }}
+    spin
+  />
+);
       return ( 
          <div className="page-wrapper">
          <Helmet>
-             <title>Clients - HRMS Admin Template</title>
+             <title>Clients List - DaftarPro</title>
              <meta name="description" content="Login page"/>					
          </Helmet>
          {/* Page Content */}
@@ -101,319 +226,181 @@ const Clients = () => {
            <div className="page-header">
              <div className="row align-items-center">
                <div className="col">
-                 <h3 className="page-title">Clients</h3>
+                 <h3 className="page-title">Clients List</h3>
                  <ul className="breadcrumb">
-                   <li className="breadcrumb-item"><Link to="/app/main/dashboard">Dashboard</Link></li>
-                   <li className="breadcrumb-item active">Clients</li>
+                   <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>Dashboard</Link></li>
+                   <li className="breadcrumb-item active">Clients List</li>
                  </ul>
                </div>
                <div className="col-auto float-end ms-auto">
-                 <a href="#" className="btn add-btn" data-bs-toggle="modal" data-bs-target="#add_client"><i className="fa fa-plus" /> Add Client</a>
+                 <a href="javascript:void(0)" className="btn add-btn" onClick={() => { setOpen({ isAddOpen: true, data: '' }) }}><i className="fa fa-plus" /> Add Client</a>
                  <div className="view-icons">
-                   <Link to="/app/employees/clients" className="grid-view btn btn-link"><i className="fa fa-th" /></Link>
-                   <Link to="/app/employees/clients-list" className="list-view btn btn-link active"><i className="fa fa-bars" /></Link>
+                   <Link to="/clients" className="grid-view btn btn-link"><i className="fa fa-th" /></Link>
+                   <Link to="/clients-list" className="list-view btn btn-link active"><i className="fa fa-bars" /></Link>
                  </div>
                </div>
              </div>
            </div>
            {/* /Page Header */}
            {/* Search Filter */}
-           <div className="row filter-row">
-             <div className="col-sm-6 col-md-3">  
-               <div className="form-group form-focus">
-                 <input type="text" className="form-control floating" />
-                 <label className="focus-label">Client ID</label>
-               </div>
-             </div>
-             <div className="col-sm-6 col-md-3">  
-               <div className="form-group form-focus">
-                 <input type="text" className="form-control floating" />
-                 <label className="focus-label">Client Name</label>
-               </div>
-             </div>
-             <div className="col-sm-6 col-md-3"> 
-               <div className="form-group form-focus select-focus">
-                 <select className="select floating"> 
-                   <option>Select Company</option>
-                   <option>Global Technologies</option>
-                   <option>Delta Infotech</option>
-                 </select>
-                 <label className="focus-label">Company</label>
-               </div>
-             </div>
-             <div className="col-sm-6 col-md-3">  
-               <a href="#" className="btn btn-success btn-block w-100"> Search </a>  
-             </div>     
-           </div>
+           <Form
+              form={form1}
+              onFinish={onFilterFinish}
+              autoComplete='off'
+            >
+            <div className="row filter-row">
+              <div className="col-sm-6 col-md-6">  
+                <div className="form-group">
+                <Form.Item
+                    name="clientName"
+                    className="custom-border"
+                  >
+                  <Input
+                    className="form-control"
+                    style={{height:'50px'}}
+                    placeholder='Client Name'
+                  />
+                  </Form.Item>
+                </div>
+              </div>
+              <div className="col-sm-3 col-md-3">  
+                <button href="javascript:void(0)" type="submit" className="btn btn-success btn-block w-100" style={{marginBottom: '24px'}}> Search</button>  
+              </div>
+              <div className="col-sm-3 col-md-3">  
+                <button 
+                  href="javascript:void(0)" type="reset"
+                  className="btn btn-success btn-block w-100"
+                  style={{backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}}
+                  onClick={() => { form1.resetFields(); getAllClients('', 1, pageSize); setFilterValues(null); setCurrentPage(1)}}
+                  // disabled={role === 'admin' ? false : permissions?.viewAllUsers ? false : true}
+                >
+                  Reset
+                </button>  
+              </div>
+            </div>
+            </Form>
            {/* Search Filter */}
            <div className="row">
              <div className="col-md-12">
-               <div className="table-responsive">
-                  <Table className="table-striped"
-                    pagination= { {total : data.length,
-                    showTotal : (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                    showSizeChanger : true,onShowSizeChange: onShowSizeChange ,itemRender : itemRender } }
-                    style = {{overflowX : 'auto'}}
+               <div className="table-responsive clientTable">
+                  <Table
+                    loading={tableLoader}
+                    className={allClients?.length > 0 ? "table-striped" : ""}
+                    locale={{
+                      emptyText: tableLoader ? null : customEmptyText,
+                    }}
+                    style = {{overflowX : 'auto', height: `${allClients?.length > 0 ? "485px" : "384px"}`}}
+                    pagination={false}
                     columns={columns}       
                     // bordered
-                    dataSource={data}
+                    dataSource={allClients}
                     rowKey={record => record.id}
                     onChange={console.log("change")}
                   />
+
+                  {
+                    allClients?.length > 0 &&
+                    <div>
+                      <Pagination
+                        style={{display: 'flex', float: 'right'}}
+                        total={paginationDetail?.total}
+                        pageSize={pageSize}
+                        defaultCurrent={1}
+                        current={currentPage}
+                        showTotal={(total, range) =>
+                          `Showing ${range[0]} to ${range[1]} of ${total} entries`}
+                        onChange={(page, size) => {
+                          console.log(page, size);
+                          setPageSize(size); setCurrentPage(page);
+                          getAllClients(filterValues, page, size)
+                        }}
+                        showSizeChanger={true}
+                        pageSizeOptions={['20', '30', '40', '50']}
+                        itemRender={itemRender}
+                      />
+                    </div>
+                  }
                </div>
              </div>
            </div>
          </div>
          {/* /Page Content */}
-         {/* Add Client Modal */}
-         <div id="add_client" className="modal custom-modal fade" role="dialog">
-           <div className="modal-dialog modal-dialog-centered modal-lg" role="document">
-             <div className="modal-content">
-               <div className="modal-header">
-                 <h5 className="modal-title">Add Client</h5>
-                 <button type="button" className="close" data-bs-dismiss="modal" aria-label="Close">
-                   <span aria-hidden="true">×</span>
-                 </button>
-               </div>
-               <div className="modal-body">
-                 <form>
-                   <div className="row">
-                     <div className="col-md-6">
-                       <div className="form-group">
-                         <label className="col-form-label">First Name <span className="text-danger">*</span></label>
-                         <input className="form-control" type="text" />
-                       </div>
-                     </div>
-                     <div className="col-md-6">
-                       <div className="form-group">
-                         <label className="col-form-label">Last Name</label>
-                         <input className="form-control" type="text" />
-                       </div>
-                     </div>
-                     <div className="col-md-6">
-                       <div className="form-group">
-                         <label className="col-form-label">Username <span className="text-danger">*</span></label>
-                         <input className="form-control" type="text" />
-                       </div>
-                     </div>
-                     <div className="col-md-6">
-                       <div className="form-group">
-                         <label className="col-form-label">Email <span className="text-danger">*</span></label>
-                         <input className="form-control floating" type="email" />
-                       </div>
-                     </div>
-                     <div className="col-md-6">
-                       <div className="form-group">
-                         <label className="col-form-label">Password</label>
-                         <input className="form-control" type="password" />
-                       </div>
-                     </div>
-                     <div className="col-md-6">
-                       <div className="form-group">
-                         <label className="col-form-label">Confirm Password</label>
-                         <input className="form-control" type="password" />
-                       </div>
-                     </div>
-                     <div className="col-md-6">  
-                       <div className="form-group">
-                         <label className="col-form-label">Client ID <span className="text-danger">*</span></label>
-                         <input className="form-control floating" type="text" />
-                       </div>
-                     </div>
-                     <div className="col-md-6">
-                       <div className="form-group">
-                         <label className="col-form-label">Phone </label>
-                         <input className="form-control" type="text" />
-                       </div>
-                     </div>
-                     <div className="col-md-6">
-                       <div className="form-group">
-                         <label className="col-form-label">Company Name</label>
-                         <input className="form-control" type="text" />
-                       </div>
-                     </div>
-                   </div>
-                   <div className="table-responsive m-t-15">
-                     <table className="table table-striped custom-table">
-                       <thead>
-                         <tr>
-                           <th>Module Permission</th>
-                           <th className="text-center">Read</th>
-                           <th className="text-center">Write</th>
-                           <th className="text-center">Create</th>
-                           <th className="text-center">Delete</th>
-                           <th className="text-center">Import</th>
-                           <th className="text-center">Export</th>
-                         </tr>
-                       </thead>
-                       <tbody>
-                         <tr>
-                           <td>Projects</td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                         </tr>
-                         <tr>
-                           <td>Tasks</td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                         </tr>
-                         <tr>
-                           <td>Chat</td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                         </tr>
-                         <tr>
-                           <td>Estimates</td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                         </tr>
-                         <tr>
-                           <td>Invoices</td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                         </tr>
-                         <tr>
-                           <td>Timing Sheets</td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                           <td className="text-center">
-                             <input defaultChecked type="checkbox" />
-                           </td>
-                         </tr>
-                       </tbody>
-                     </table>
-                   </div>
-                   <div className="submit-section">
-                     <button className="btn btn-primary submit-btn">Submit</button>
-                   </div>
-                 </form>
-               </div>
-             </div>
-           </div>
-         </div>
-         {/* /Add Client Modal */}
-         {/* Edit Client Modal */}
-         <Editclient/>
-         {/* /Edit Client Modal */}
+        {/* Add Client Modal */}
+        {
+          open?.isAddOpen &&
+          <AddClientModal
+            open={open}
+            setOpen={setOpen}
+            user_state={user_state}
+            allClients={allClients}
+            setAllClients={setAllClients}
+          />
+        }
+        {/* /Add Client Modal */}
+
+
          {/* Delete Client Modal */}
-         <div className="modal custom-modal fade" id="delete_client" role="dialog">
-           <div className="modal-dialog modal-dialog-centered">
-             <div className="modal-content">
-               <div className="modal-body">
-                 <div className="form-header">
-                   <h3>Delete Client</h3>
-                   <p>Are you sure want to delete?</p>
-                 </div>
-                 <div className="modal-btn delete-action">
-                   <div className="row">
-                     <div className="col-6">
-                       <a href="" className="btn btn-primary continue-btn">Delete</a>
-                     </div>
-                     <div className="col-6">
-                       <a href="" data-bs-dismiss="modal" className="btn btn-primary cancel-btn">Cancel</a>
-                     </div>
-                   </div>
-                 </div>
-               </div>
-             </div>
-           </div>
-         </div>
+          <Modal
+            open={open.isDelOpen}
+            onClose={() => { setOpen({ isDelOpen: false, data: '' }) }}
+            aria-labelledby="modal-modal-title"
+            aria-describedby="modal-modal-description"
+            disableRestoreFocus
+            BackdropProps={{
+              style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
+            }}
+          >
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content" style={{ height: "280px" }}>
+                <div
+                  className="modal-body"
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                  }}
+                >
+                  <div className="form-header">
+                    <h3 style={{ marginBottom: "30px" }}>Delete Client</h3>
+                    <p>
+                      Are you sure you want to delete{" "}
+                      <b>{open?.data?.clientName}</b>?
+                    </p>
+                  </div>
+                  <div className="modal-btn delete-action">
+                    <div className="row">
+                      <div className="col-6">
+                        <Button
+                          htmlType="submit"
+                          className="btn btn-primary continue-btn"
+                          onClick={() => onFinishDelete(open?.data?._id)}
+                          disabled={loader}
+                          style={{width: '100%'}}
+                        >
+                          {
+                            loader ? <Spin size="small" indicator={antIcon} />
+                              : 'Delete'
+                          }
+                        </Button>
+                      </div>
+                      <div className="col-6">
+                        <Button
+                          onClick={() => { setOpen({ isDelOpen: false, data: '' }) }}
+                          className="btn btn-primary submit-btn"
+                          style={{width: '100%'}}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Modal>
          {/* /Delete Client Modal */}
        </div>
       );
   }
 
-export default Clients;
+export default ClientsList;
