@@ -67,6 +67,10 @@ const ClientsList = () => {
         .then((res) => {
           if (res?.data?.success === true) {
             setAllClients([...allClients.filter((client) => client._id !== id)]);
+            setPaginationDetail({
+              ...paginationDetail,
+              total: paginationDetail?.total - 1
+            })
             setOpen({ isDelOpen: false, data: '' })
             message.success("Client Deleted Successfully!");
             setLoader(false)
@@ -334,6 +338,8 @@ const antIcon = (
             user_state={user_state}
             allClients={allClients}
             setAllClients={setAllClients}
+            setPaginationDetail={setPaginationDetail}
+            paginationDetail={paginationDetail}
           />
         }
         {/* /Add Client Modal */}

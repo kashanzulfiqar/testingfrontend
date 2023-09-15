@@ -8,7 +8,7 @@ import { user_icon } from '../../../../Entryfile/imagepath';
 import { apiUploadToS3 } from '../../../../Services/uploadImage';
 import { apiServices } from '../../../../Services/apiServices';
 
-const AddClientModal = ({ open, setOpen, user_state, allClients, setAllClients }) => {
+const AddClientModal = ({ open, setOpen, user_state, allClients, setAllClients, setPaginationDetail, paginationDetail }) => {
     const [form] = Form.useForm();
     
     const company_id = user_state?.user?.companyId
@@ -47,6 +47,10 @@ const onFinishAdd = (values) => {
               },
               ...prev,
             ]))
+            setPaginationDetail({
+              ...paginationDetail,
+              total: paginationDetail?.total + 1
+            })
             message.success('Client Added Successfully!')
             handleClose();
             setLoader(false);
