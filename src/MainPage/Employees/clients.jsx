@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Helmet } from "react-helmet";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { user_icon } from "../../Entryfile/imagepath"
 import { Button, Empty, Form, Input, Pagination, Select, Spin, message } from 'antd';
 import EmptyTable from "../../files/Icons/EmptyTable.svg";
@@ -16,6 +16,9 @@ import { apiServices } from '../../Services/apiServices';
 const Clients = () => {
   
   const [form1] = Form.useForm();
+
+  const permissions = useSelector((state) => state?.permissionsSlice?.data);
+  const nav = useNavigate();
 
   const user_state = useSelector((state) => state.user.loginvalue);
   const role = user_state?.user?.role
@@ -33,7 +36,11 @@ const Clients = () => {
   });
 
   useEffect(() => {
-  getAllClients()
+  if(role === 'admin' || permissions?.clientManagement) {
+    getAllClients()
+  }else{
+    nav(`${role === 'client' ? '/client/client-profile' : role === 'focalperson' ? `/client/focal-profile` : role === 'admin' ? `/main/dashboard` : `/employee/dashboard`}`)
+  }
   }, [])
 
   const getAllClients = (values, current_page, page_size) => {
