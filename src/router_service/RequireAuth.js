@@ -31,6 +31,17 @@ const RequireAuth = ({Role}) => {
           nav('/change-password')
           // message.error('Please Change Your Password First!')
         }
+        if((role === 'client' || role === 'focalperson') && firstTimeLogin){
+          nav('/change-password')
+          // message.error('Please Change Your Password First!')
+        }
+      }
+      // for client and focal person redirect code
+      if( role === 'client' && location.pathname !== '/client/client-profile' && location.pathname !== '/client/focal-profile' && location.pathname !== '/change-password'){
+        nav('/client/client-profile')
+      }
+      if( role === 'focalperson' && location.pathname !== '/client/focal-profile' && location.pathname !== '/change-password'){
+        nav('/client/focal-profile')
       }
     }, [location])
     
