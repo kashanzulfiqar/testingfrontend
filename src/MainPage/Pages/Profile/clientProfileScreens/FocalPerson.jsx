@@ -62,11 +62,12 @@ const user_state = useSelector((state) => state.user.loginvalue);
     apiServices("DELETE", "focal-person/delete-focal-person", id, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
-          setAllFocalPerson([...allFocalPerson.filter((focal) => focal._id !== id)]);
-          setPaginationDetail({
-            ...paginationDetail,
-            total: paginationDetail?.total - 1
-          })
+          getFocalPerson(currentPage, pageSize)
+          // setAllFocalPerson([...allFocalPerson.filter((focal) => focal._id !== id)]);
+          // setPaginationDetail({
+          //   ...paginationDetail,
+          //   total: paginationDetail?.total - 1
+          // })
           setOpen({ isDelOpen: false, data: '' })
           message.success("Focal Person Deleted Successfully!");
           setLoader(false)
@@ -188,8 +189,8 @@ const antIcon = (
             <div className="col-auto float-end ms-auto">
                 <a href="javascript:void(0)" className="btn add-btn" onClick={() => setOpen({ isAddOpen: true, isEditOpen: false, data: '' })}><i className="fa fa-plus" /> Add Focal Person</a>
               <div className="view-icons">
-                <a href="javascript:void(0)" onClick={() => setView('grid')} className={`grid-view btn btn-link ${view === 'grid' && 'active'}`}><i className="fa fa-th" /></a>
-                <a href="javascript:void(0)" onClick={() => setView('list')} className={`grid-view btn btn-link ${view === 'list' && 'active'}`}><i className="fa fa-bars" /></a>
+                <a href="javascript:void(0)" onClick={() => {setView('grid'); getFocalPerson(1, 20); setCurrentPage(1); setPageSize(20); }} className={`grid-view btn btn-link ${view === 'grid' && 'active'}`}><i className="fa fa-th" /></a>
+                <a href="javascript:void(0)" onClick={() => {setView('list'); getFocalPerson(1, 20); setCurrentPage(1); setPageSize(20); }} className={`grid-view btn btn-link ${view === 'list' && 'active'}`}><i className="fa fa-bars" /></a>
               </div>
             </div>
           </div>
@@ -257,7 +258,7 @@ const antIcon = (
                     locale={{
                         emptyText: tableLoader ? null : customEmptyText,
                     }}
-                    style = {{overflowX : 'auto', paddingBottom: '10px'}}
+                    style = {{overflowX : 'auto', paddingBottom: '65px'}}
                     pagination={false}
                     columns={columns}       
                     // bordered
@@ -280,7 +281,7 @@ const antIcon = (
                         onChange={(page, size) => {
                             console.log(page, size);
                             setPageSize(size); setCurrentPage(page);
-                            // getEmployees(filterValues, page, size)
+                            getFocalPerson(page, size)
                         }}
                         showSizeChanger={true}
                         pageSizeOptions={['20', '30', '40', '50']}

@@ -6,7 +6,6 @@ import { Helmet } from "react-helmet";
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {Avatar_01,Avatar_02,Avatar_05,Avatar_09,Avatar_10,Avatar_11,Avatar_12,Avatar_13,Avatar_16 ,Avatar_19, user_icon} from '../../../Entryfile/imagepath'
 import { useSelector } from 'react-redux';
-import FocalPerson from './clientProfileScreens/FocalPerson';
 import InvoicesScreen from './clientProfileScreens/InvoicesScreen';
 import ProjectsScreen from './clientProfileScreens/ProjectsScreen';
 import { Spin, message } from 'antd';
@@ -148,9 +147,12 @@ const FocalProfile = () => {
                  <div className="tab-content profile-tab-content">
                    {/* Projects Tab */}
                     {
-                      activeTab === 'projects' &&
+                      (activeTab === 'projects' && focalData?._id) &&
                       <div id="myprojects" className="tab-pane fade show active">
-                        <ProjectsScreen />
+                        <ProjectsScreen
+                          isID={focalData?._id}
+                          isRole='focalperson'
+                        />
                       </div>
                     }
                    {/* /Projects Tab */}
@@ -305,16 +307,7 @@ const FocalProfile = () => {
                       <InvoicesScreen />
                       </div>
                   }
-                   {/* Invoice Tab */}  
-
-                   {/* Focal Person Tab */}  
-                   {
-                      activeTab === 'focal' &&
-                      <div id="focal_person" className="tab-pane fade show active">
-                      <FocalPerson />
-                      </div>
-                  }
-                   {/* Focal Person Tab */}  
+                   {/* Invoice Tab */} 
 
                  </div>
                </div>

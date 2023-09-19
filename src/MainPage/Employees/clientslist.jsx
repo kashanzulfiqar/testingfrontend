@@ -73,11 +73,12 @@ const ClientsList = () => {
       apiServices("DELETE", "client/delete-client", id, user_state)
         .then((res) => {
           if (res?.data?.success === true) {
-            setAllClients([...allClients.filter((client) => client._id !== id)]);
-            setPaginationDetail({
-              ...paginationDetail,
-              total: paginationDetail?.total - 1
-            })
+            getAllClients(filterValues, currentPage, pageSize);
+            // setAllClients([...allClients.filter((client) => client._id !== id)]);
+            // setPaginationDetail({
+            //   ...paginationDetail,
+            //   total: paginationDetail?.total - 1
+            // })
             setOpen({ isDelOpen: false, data: '' })
             message.success("Client Deleted Successfully!");
             setLoader(false)
@@ -115,8 +116,8 @@ const ClientsList = () => {
       width: 120,
       render: (text, record) => (            
           <h2 className="table-avatar">
-            <Link to="/client/client-profile" state={{client_data: record}} className="avatar"><img alt="" src={record?.logo || user_icon} /></Link>
-            <Link to="/client/client-profile" state={{client_data: record}}>{record?.clientName}</Link>
+            <Link to="/client/client-profile" state={{client_data: record}} onClick={() => sessionStorage.setItem(`clients_tab`, 'projects')} className="avatar"><img alt="" src={record?.logo || user_icon} /></Link>
+            <Link to="/client/client-profile" state={{client_data: record}} onClick={() => sessionStorage.setItem(`clients_tab`, 'projects')}>{record?.clientName}</Link>
           </h2>
         ),
     },
@@ -145,7 +146,10 @@ const ClientsList = () => {
       dataIndex: 'headOfficeAddress',
       width: 130,
       render: (text,record) => (
-        <label className='longText'>
+        <label
+          // className='longText'
+          style={{textWrap: 'nowrap'}}
+        >
           {text}
         </label>
       )

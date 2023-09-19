@@ -7175,6 +7175,20 @@ textarea.form-control {
 
 /* ................. custom css styling ................ */
 
+.projectTeamMember{
+  margin-left: -10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.projectDesc {
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;  
+  overflow: hidden;
+}
+
 /* client table */
 .clientTable thead > *{
   position: sticky !important;
