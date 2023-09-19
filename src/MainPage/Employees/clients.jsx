@@ -72,11 +72,12 @@ const Clients = () => {
     apiServices("DELETE", "client/delete-client", id, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
-          setAllClients([...allClients.filter((client) => client._id !== id)]);
-          setPaginationDetail({
-            ...paginationDetail,
-            total: paginationDetail?.total - 1
-          })
+          getAllClients(filterValues, currentPage, pageSize);
+          // setAllClients([...allClients.filter((client) => client._id !== id)]);
+          // setPaginationDetail({
+          //   ...paginationDetail,
+          //   total: paginationDetail?.total - 1
+          // })
           setOpen({ isDelOpen: false, data: '' })
           message.success("Client Deleted Successfully!");
           setLoader(false)
@@ -253,7 +254,7 @@ const antIcon = (
                   <div key={index} className="col-md-4 col-sm-6 col-12 col-lg-4 col-xl-3 d-flex">
                     <div className="profile-widget" style={{width: '100%', display: 'flex', flexDirection: 'column'}}>
                       <div className="profile-img">
-                        <Link to="/client/client-profile" state={{client_data: client}} className="avatar"><img alt="" src={client?.logo || user_icon} /></Link>
+                        <Link to="/client/client-profile" state={{client_data: client}} onClick={() => sessionStorage.setItem(`clients_tab`, 'projects')} className="avatar"><img alt="" src={client?.logo || user_icon} /></Link>
                       </div>
                       <div className="dropdown profile-action">
                         <a href="javascript:void(0)" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
@@ -262,12 +263,12 @@ const antIcon = (
                           <a className="dropdown-item" href="javascript:void(0)" onClick={() => { setOpen({ isDelOpen: true, data: client }) }}><i className="fa fa-trash-o m-r-5" /> Delete</a>
                         </div>
                       </div>
-                      <h4 className="user-name m-t-10 m-b-15 text-ellipsis"><Link to="/client/client-profile" state={{client_data: client}}>{client?.clientName}</Link></h4>
+                      <h4 className="user-name m-t-10 m-b-15 text-ellipsis"><Link to="/client/client-profile" state={{client_data: client}} onClick={() => sessionStorage.setItem(`clients_tab`, 'projects')} >{client?.clientName}</Link></h4>
                       {/* <h5 className="user-name m-t-10 mb-0 text-ellipsis"><Link to="/app/profile/client-profile">Barry Cuda</Link></h5>
                       <div className="small text-muted">CEO</div> */}
                       {/* <Link onClick={() => localStorage.setItem("minheight", "true")} to="/conversation/chat" className="btn btn-white btn-sm m-t-10 me-1">Message</Link> */}
                       {/* <Link to="/app/profile/client-profile" className="btn btn-white btn-sm m-t-10" style={{margin: 'auto auto 0 auto'}}>View Profile</Link> */}
-                      <Link to="/client/client-profile" state={{client_data: client}} className="btn btn-white btn-sm" style={{margin: 'auto auto 0 auto'}}>View Profile</Link>
+                      <Link to="/client/client-profile" state={{client_data: client}} onClick={() => sessionStorage.setItem(`clients_tab`, 'projects')} className="btn btn-white btn-sm" style={{margin: 'auto auto 0 auto'}}>View Profile</Link>
                     </div>
                   </div>
                 </>

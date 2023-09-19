@@ -18,11 +18,19 @@ const ClientProfile = () => {
   const client_data = location?.state?.client_data;
   const nav = useNavigate();
 
+  let active = sessionStorage.getItem("active_tab");
+  let clients_tab = sessionStorage.getItem("clients_tab");
+
   const user_state = useSelector((state) => state.user.loginvalue);
   const role = user_state?.user?.role
 
   const [clientData, setClientData] = useState({})
-  const [activeTab, setActiveTab] = useState('projects')
+  const [activeTab, setActiveTab] = useState(clients_tab ? clients_tab : active ? active : 'projects')
+  if(clients_tab){
+    setTimeout( function() { 
+    sessionStorage.removeItem('clients_tab');
+    }, 1000);
+  }
   const [loader, setLoader] = useState(true)
 
   useEffect(() => {
@@ -35,6 +43,12 @@ const ClientProfile = () => {
       nav(role === 'focalperson' ? `/client/focal-profile` : role === 'admin' ? `/main/dashboard` : `/employee/dashboard`)
     }
   }, [])
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    // sessionStorage.clear();
+    sessionStorage.setItem(`active_tab`, `${activeTab}`)
+  }, [activeTab])
 
   const getSingleClient = () => {
     apiServices("GET", `client/get-client-info?_id=${user_state?.user?._id}`, null, user_state)
@@ -158,9 +172,12 @@ const ClientProfile = () => {
                  <div className="tab-content profile-tab-content">
                    {/* Projects Tab */}
                     {
-                      activeTab === 'projects' &&
+                      (activeTab === 'projects' && clientData?._id) &&
                       <div id="myprojects" className="tab-pane fade show active">
-                        <ProjectsScreen />
+                        <ProjectsScreen
+                          isID={clientData?._id}
+                          isRole='client'
+                        />
                       </div>
                     }
                    {/* /Projects Tab */}
@@ -310,7 +327,7 @@ const ClientProfile = () => {
 
                    {/* Invoice Tab */}  
                    {
-                      activeTab === 'invoices' &&
+                      (activeTab === 'invoices' && clientData?._id) &&
                       <div id="invoices" className="tab-pane fade show active">
                       <InvoicesScreen />
                       </div>
@@ -319,7 +336,7 @@ const ClientProfile = () => {
 
                    {/* Focal Person Tab */}  
                    {
-                      activeTab === 'focal' &&
+                      (activeTab === 'focal' && clientData?._id) &&
                       <div id="focal_person" className="tab-pane fade show active">
                       <FocalPerson
                         clientId={clientData?._id}

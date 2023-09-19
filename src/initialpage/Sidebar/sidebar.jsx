@@ -19,7 +19,7 @@ const Sidebar = (props) => {
   useEffect(() => {
     if(location?.pathname !== '/settings'){
       // clear active settings session
-      sessionStorage.clear();
+      sessionStorage.removeItem('active_setting');
     }
   }, [location])
   
