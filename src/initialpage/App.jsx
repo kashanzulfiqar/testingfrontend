@@ -87,7 +87,19 @@ const App = () => {
     if(location?.pathname !== "/profile/employee-profile")
     localStorage.removeItem('allDataLocal');
   }, [location])
+
+  useEffect(() => {
+    if(login === null || login === undefined || !login){
+      const handleBackButtonPress = (event) => {
+        // window.location.reload();
+        console.log('pressed ===============');
+        nav('/login')
+      };
   
+      // Add the event listener when the component mounts
+      window.addEventListener("popstate", handleBackButtonPress);
+    }
+    }, []);
 
   return (
     <div>

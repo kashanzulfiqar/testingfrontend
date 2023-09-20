@@ -46,18 +46,6 @@ const RequireAuth = ({Role}) => {
     }, [location])
 
     useEffect(() => {
-    if(!AuthRole){
-      const handleBackButtonPress = (event) => {
-        nav('/login')
-      };
-  
-      // Add the event listener when the component mounts
-      window.addEventListener("popstate", handleBackButtonPress);
-    }
-    }, []);
-    
-  
-    useEffect(() => {
       setMenu(false);
       window.scrollTo(0, 0);
     }, [location])
