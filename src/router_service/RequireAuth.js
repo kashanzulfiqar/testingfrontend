@@ -43,14 +43,18 @@ const RequireAuth = ({Role}) => {
       if( role === 'focalperson' && location.pathname !== '/client/focal-profile' && location.pathname !== '/change-password'){
         nav('/client/focal-profile')
       }
-
-      // for afer logout navigation
-      if(!value){
-        nav('/login')
-        console.log('not login ONE ===============');
-      }
-      console.log('not login TWO===============');
     }, [location])
+
+    useEffect(() => {
+    if(!AuthRole){
+      const handleBackButtonPress = (event) => {
+        nav('/login')
+      };
+  
+      // Add the event listener when the component mounts
+      window.addEventListener("popstate", handleBackButtonPress);
+    }
+    }, []);
     
   
     useEffect(() => {

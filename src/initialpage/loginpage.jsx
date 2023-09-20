@@ -161,7 +161,7 @@ const Loginpage = (props) => {
             !emailNotVerified ?
               <div className="account-box" style={{ width: '100%', maxWidth: '514px', height: '525px', paddingInline: '55px' }}>
                 <div className="account-wrapper">
-                  <h3 className="account-title" style={{ padding: '17px 0px 40px 0px' }}>Login 2</h3>
+                  <h3 className="account-title" style={{ padding: '17px 0px 40px 0px' }}>Login 11</h3>
                   {/* <p className="account-subtitle">Access to our dashboard</p> */}
                   {/* Account Form */}
                   <div>
