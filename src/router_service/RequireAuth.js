@@ -9,7 +9,7 @@ import { message } from 'antd';
 const RequireAuth = ({Role}) => {
     
   const nav = useNavigate();
-    const value = useSelector(state => state.user.loginvalue)
+    const value = useSelector(state => state?.user?.loginvalue)
     const role = value?.user?.role
     const firstTimeLogin = localStorage.getItem("firstTimeLogin");
     const { auth } = useAuth();
@@ -45,10 +45,11 @@ const RequireAuth = ({Role}) => {
       }
 
       // for afer logout navigation
-      if(!AuthRole){
+      if(!value){
         nav('/login')
-        console.log('not login===============');
+        console.log('not login ONE ===============');
       }
+      console.log('not login TWO===============');
     }, [location])
     
   
