@@ -11981,3 +11981,21 @@ styles by Qazi
   background-color: #FFFFFF !important;
 }
 
+.longText1{
+  -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    display: -webkit-box;
+    max-width: 190px;
+    overflow: hidden;
+}
+
+
+.customselect-height > div {
+  height: auto !important;
+}
+
+/* Add this CSS in your component's stylesheet or CSS file */
+.custom-tag {
+  display: flex;
+  align-items: center;
+}
