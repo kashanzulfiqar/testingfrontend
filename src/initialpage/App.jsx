@@ -79,7 +79,7 @@ const App = () => {
     || location.pathname === '/forget-password' || location.pathname === '/reset-password/:id'
     || location.pathname === '/register') && login)
     {
-      nav('/employee/dashboard');
+      // nav('/employee/dashboard');
     }
   }, []);
 

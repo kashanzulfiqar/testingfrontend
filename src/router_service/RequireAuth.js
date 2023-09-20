@@ -60,7 +60,7 @@ const RequireAuth = ({Role}) => {
                 <Outlet />
             </div>
             :
-            <Navigate to='/login' />
+            <Navigate to='/login' replace={true} />
             // auth?.user ?
             //     alert('unauthorized') :
                 // <Navigate to='/login' state={{ from: location.pathname }} replace />

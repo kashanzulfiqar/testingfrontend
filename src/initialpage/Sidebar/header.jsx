@@ -428,7 +428,10 @@ const Header = (props) => {
               // nav('/login');
               setTimeout(() => {
                 // window.location.href = `${window?.location?.origin}/login`
-                window.location.href = `${window?.location?.origin}${(user_state?.user?.role === 'client' || user_state?.user?.role === 'focalperson') ? '/client/login' : '/login'}`
+                // window.location.href = `${window?.location?.origin}${(user_state?.user?.role === 'client' || user_state?.user?.role === 'focalperson') ? '/client/login' : '/login'}`
+                window.history.replaceState(null, null, `${window?.location?.origin}${(user_state?.user?.role === 'client' || user_state?.user?.role === 'focalperson') ? '/client/login' : '/login'}`);
+                // window.history.back();
+                window.location.reload();
               }, 500);
             }}>Logout</a>
           </div>
@@ -449,7 +452,10 @@ const Header = (props) => {
               // nav('/login');
               // window.location.href = `${window?.location?.origin}/login`
               setTimeout(() => {
-                window.location.href = `${window?.location?.origin}${(user_state?.user?.role === 'client' || user_state?.user?.role === 'focalperson') ? '/client/login' : '/login'}`
+                // window.location.href = `${window?.location?.origin}${(user_state?.user?.role === 'client' || user_state?.user?.role === 'focalperson') ? '/client/login' : '/login'}`
+                window.history.replaceState(null, null, `${window?.location?.origin}${(user_state?.user?.role === 'client' || user_state?.user?.role === 'focalperson') ? '/client/login' : '/login'}`);
+                // window.history.back();
+                window.location.reload();
               }, 500);
             }}>Logout</a>
         </div>
