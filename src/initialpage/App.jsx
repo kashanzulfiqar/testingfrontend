@@ -40,6 +40,9 @@ import LandingPage from '../LandingPage';
 import SalarySlip from '../MainPage/HR/Payroll/SalarySlip';
 import PayrollHistory from '../MainPage/HR/Payroll/PayrollHistory';
 import EmployeeSalary from '../MainPage/HR/Payroll/employeesalary';
+import Projects from '../MainPage/Employees/Projects/projects';
+import ProjectView from '../MainPage/Employees/Projects/projectview';
+import ProjectList from '../MainPage/Employees/Projects/projectlist';
 import Clients from '../MainPage/Employees/clients';
 import ClientsList from '../MainPage/Employees/clientslist';
 import ClientProfile from '../MainPage/Pages/Profile/clientprofile';
@@ -138,6 +141,12 @@ const App = () => {
 
           {/* Payrolls */}
           <Route path="/payroll/current-payroll" element={<EmployeeSalary />} />
+
+          {/* Projects */}
+          <Route path="/projects/project_dashboard" element={<Projects />} />
+          <Route path="/projects/projects-view/:_id" element={<ProjectView />} />
+
+
 
         </Route>
         
