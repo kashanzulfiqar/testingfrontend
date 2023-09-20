@@ -330,8 +330,6 @@ const AllEmployees = () => {
         <>
         <div className={`main-wrapper ${menu ? 'slide-nav': ''}`}> 
       
-      {/* <Header onMenuClick={(value) => toggleMobileMenu()} />
-      <Sidebar />  */}
       <div className="page-wrapper">
         <Helmet>
             <title>Employee - DaftarPro</title>
@@ -398,7 +396,7 @@ const AllEmployees = () => {
             </div>
           </div>
           <div className="col-sm-6 col-md-3">
-          <div style={{ position: 'relative' }} id='area'>
+          <div style={{ position: 'relative' }} id='area1'>
               <Form.Item
                 name="designation"
                 className="custom-border"
@@ -410,7 +408,7 @@ const AllEmployees = () => {
                   }}
                   placeholder='Select Designation'
                   size='large'
-                  getPopupContainer={() => document.getElementById('area')}
+                  getPopupContainer={() => document.getElementById('area1')}
                 >
                   {allDesignations?.map((item, index) => {
                   return (

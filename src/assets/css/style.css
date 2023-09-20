@@ -7175,6 +7175,47 @@ textarea.form-control {
 
 /* ................. custom css styling ................ */
 
+.projectTeamMember{
+  margin-left: -10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.projectDesc {
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;  
+  overflow: hidden;
+}
+
+/* client table */
+.clientTable thead > *{
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 300 !important;
+  background: #FFFFFF !important;
+}
+.clientTable thead > tr > th:nth-child(1){
+  background-color: #FFFFFF !important;
+  z-index: 301 !important;
+}
+
+.clientTable tbody tr:nth-child(odd) > td:nth-child(1){
+background: #f5f5f5 !important;
+}
+.clientTable thead tr th:not(:nth-last-child(1)){
+  min-width: 170px !important;
+}
+
+
+
+.addButtonStyles:hover, .addButtonStyles:focus{
+  background: #d1d1d1;
+  border-color: #d1d1d1;
+  color: black;
+}
+
 /* ---- payrollHistoryTable fixed header--- */
 .payrollHistoryTable thead > *{
   position: sticky !important;
@@ -7193,7 +7234,7 @@ background: #f5f5f5 !important;
 }
 
 .payrollHistoryTable thead tr th:not(:nth-last-child(1)){
-  min-width: 175px !important;
+  min-width: 181px !important;
 }
 
 .filterDateMonth .ant-picker-header {

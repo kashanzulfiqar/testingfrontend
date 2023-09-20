@@ -92,43 +92,43 @@ useEffect(() => {
                <div className="roles-menu" style={{margin: '0px'}}>
                  <ul>
                     <li className={showComponent === 'Company Settings' ? 'active' : ''}>
-                      <a href="javascript:void(0)" onClick={() => {sessionStorage.clear(); setShowComponent('Company Settings') }}>
+                      <a href="javascript:void(0)" onClick={() => {setShowComponent('Company Settings') }}>
                         <i className="fa fa-fw fa-info-circle" style={{marginRight: '8px'}}></i>
                         Company Settings
                       </a>
                    </li>
                    <li className={showComponent === 'Leave Settings' ? 'active' : ''}>
-                      <a href="javascript:void(0)" onClick={() => {sessionStorage.clear(); setShowComponent('Leave Settings') }}>
+                      <a href="javascript:void(0)" onClick={() => {setShowComponent('Leave Settings') }}>
                         <i className="fa fa-fw fa-warning" style={{marginRight: '8px'}}></i>
                         Leave Settings
                       </a>
                    </li>
                    <li className={showComponent === 'Roles' ? 'active' : ''}>
-                      <a href="javascript:void(0)" onClick={() => {sessionStorage.clear(); setShowComponent('Roles') }}>
+                      <a href="javascript:void(0)" onClick={() => {setShowComponent('Roles') }}>
                         <i className="fa fa-fw fa-list-alt" style={{marginRight: '8px'}}></i>
                         Roles
                       </a>
                    </li>
                    <li className={showComponent === 'Departments' ? 'active' : ''}>
-                      <a href="javascript:void(0)" onClick={() => {sessionStorage.clear(); setShowComponent('Departments') }}>
+                      <a href="javascript:void(0)" onClick={() => {setShowComponent('Departments') }}>
                         <i className="fa fa-fw fa-sitemap" style={{marginRight: '8px'}}></i>
                         Departments
                       </a>
                    </li>
                    <li className={showComponent === 'Designations' ? 'active' : ''}>
-                      <a href="javascript:void(0)" onClick={() => {sessionStorage.clear(); setShowComponent('Designations') }}>
+                      <a href="javascript:void(0)" onClick={() => {setShowComponent('Designations') }}>
                         <i className="fa fa-fw fa-users" style={{marginRight: '8px'}}></i>
                         Designations
                       </a>
                    </li>
                    <li className={showComponent === 'Shifts' ? 'active' : ''}>
-                      <a href="javascript:void(0)" onClick={() => {sessionStorage.clear(); setShowComponent('Shifts') }}>
+                      <a href="javascript:void(0)" onClick={() => {setShowComponent('Shifts') }}>
                         <i className="fa fa-fw fa-clock-o" style={{marginRight: '8px'}}></i>
                         Shifts
                       </a>
                    </li>
                    <li className={showComponent === 'Tax Slabs' ? 'active' : ''}>
-                      <a href="javascript:void(0)" onClick={() => {sessionStorage.clear(); setShowComponent('Tax Slabs') }}>
+                      <a href="javascript:void(0)" onClick={() => {setShowComponent('Tax Slabs') }}>
                         <i className="fa fa-fw fa-money" style={{marginRight: '8px'}}></i>
                         Tax Slabs
                       </a>

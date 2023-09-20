@@ -73,7 +73,8 @@ const ChangePassword = () => {
         if (res?.data?.success === true) {
           setLoader(false);
           localStorage.removeItem("firstTimeLogin");
-          nav(`${user_state?.user?.role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}`);
+          // nav(`${user_state?.user?.role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}`);
+          nav(`${user_state?.user?.role === 'admin' ? '/main/dashboard' : user_state?.user?.role === 'client' ? '/client/client-profile' : user_state?.user?.role === 'focalperson' ? '/client/focal-profile' : '/employee/dashboard'}`);
           message.success("Password updated Successfully!");
         }
       })
