@@ -47,6 +47,7 @@ const RequireAuth = ({Role}) => {
       // for afer logout navigation
       if(!AuthRole){
         nav('/login')
+        console.log('not login===============');
       }
     }, [location])
     
