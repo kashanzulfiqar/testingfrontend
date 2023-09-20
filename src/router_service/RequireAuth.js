@@ -43,6 +43,11 @@ const RequireAuth = ({Role}) => {
       if( role === 'focalperson' && location.pathname !== '/client/focal-profile' && location.pathname !== '/change-password'){
         nav('/client/focal-profile')
       }
+
+      // for afer logout navigation
+      if(!AuthRole){
+        nav('/login')
+      }
     }, [location])
     
   
