@@ -145,7 +145,7 @@ const Sidebar = (props) => {
                       <ul>
                         <li><Link className={pathname.includes('t_dashboard') ? "active" : pathname.includes('projects-list') ?
                           "active" : pathname.includes('cts-view') ? "active" : ""}
-                          to="/app/projects/project_dashboard">Projects</Link></li>
+                          to="/projects/project_dashboard">Projects</Link></li>
                         <li><Link onClick={() => localStorage.setItem("minheight", "true")} to="/tasks/tasks">Tasks</Link></li>
                         <li><Link className={pathname.includes('task-board') ? "active" : ""} to="/app/projects/task-board">Task Board</Link></li>
                       </ul>
@@ -542,7 +542,7 @@ const Sidebar = (props) => {
                     <ul>
                       <li><Link className={pathname.includes('t_dashboard') ? "active" : pathname.includes('projects-list') ?
                         "active" : pathname.includes('cts-view') ? "active" : ""}
-                        to="/app/projects/project_dashboard">Projects</Link></li>
+                        to="/projects/project_dashboard">Projects</Link></li>
                       <li><Link onClick={() => localStorage.setItem("minheight", "true")} to="/tasks/tasks">Tasks</Link></li>
                       <li><Link className={pathname.includes('task-board') ? "active" : ""} to="/app/projects/task-board">Task Board</Link></li>
                     </ul>
@@ -975,7 +975,7 @@ const Sidebar = (props) => {
                     <ul>
                       <li><Link className={pathname.includes('t_dashboard') ? "active" : pathname.includes('projects-list') ?
                         "active" : pathname.includes('cts-view') ? "active" : ""}
-                        to="/app/projects/project_dashboard">Projects</Link></li>
+                        to="/projects/project_dashboard">Projects</Link></li>
                       <li><Link onClick={() => localStorage.setItem("minheight", "true")} to="/tasks/tasks">Tasks</Link></li>
                       <li><Link className={pathname.includes('task-board') ? "active" : ""} to="/app/projects/task-board">Task Board</Link></li>
                     </ul>

@@ -95,7 +95,7 @@ function EditProjects({ data, editModal, closeEditModal }) {
     setSelectedFiles(data?.docs);
     setUploadFiles(data?.docs);
     // Count the number of payment schedules in the response
-    const numPaymentSchedules = data?.paymentSchedule.length;
+    const numPaymentSchedules = data?.paymentSchedule?.length;
 
     // Initialize the paymentSchedules state with the correct number of payment schedules
     const initialPaymentSchedules = Array.from(
@@ -115,7 +115,7 @@ function EditProjects({ data, editModal, closeEditModal }) {
       ...data,
       startDate: moment(data?.startDate, "YYYY-MM-DD"),
       endDate: moment(data?.endDate, "YYYY-MM-DD"),
-      paymentSchedule: data?.paymentSchedule.map((schedule) => ({
+      paymentSchedule: data?.paymentSchedule?.map((schedule) => ({
         ...schedule,
         dueDate: schedule.dueDate
           ? moment(schedule.dueDate, "YYYY-MM-DD")
@@ -136,15 +136,15 @@ function EditProjects({ data, editModal, closeEditModal }) {
 
   const getTeamMemberOptions = () => {
     if (!selectedLeader) {
-      return employees.map((employee) => (
+      return employees?.map((employee) => (
         <Select.Option key={employee._id} value={employee._id}>
           {employee.fullName}
         </Select.Option>
       ));
     } else {
       return employees
-        .filter((employee) => employee._id !== selectedLeader)
-        .map((employee) => (
+        ?.filter((employee) => employee._id !== selectedLeader)
+        ?.map((employee) => (
           <Select.Option key={employee._id} value={employee._id}>
             {employee.fullName}
           </Select.Option>
@@ -346,7 +346,7 @@ function EditProjects({ data, editModal, closeEditModal }) {
   //   };
 
   const displaySelectedFiles = () => {
-    return selectedFiles.map((file, index) => (
+    return selectedFiles?.map((file, index) => (
       <Space key={index}>
         <Tag
           closable
@@ -482,18 +482,47 @@ function EditProjects({ data, editModal, closeEditModal }) {
         </Form.Item>
       ),
     },
+    // {
+    //   title: "Action",
+    //   key: "action",
+    //   render: (text, record, index) => (
+    //     <MinusCircleFilled
+    //       style={{ color: "red", cursor: "pointer" }}
+    //       //disabled={record?.paid}
+    //       onClick={() => {
+    //         removePaymentSchedule(index);
+    //         console.log(record?.paid);
+    //       }}
+    //     />
+    //   ),
+    // },
     {
       title: "Action",
       key: "action",
       render: (text, record, index) => (
-        <MinusCircleFilled
-          style={{ color: "red", cursor: "pointer" }}
-          //disabled={record?.paid}
-          onClick={() => {
-            removePaymentSchedule(index);
-            console.log(record?.paid);
+        <span
+          style={{
+            color:
+              paymentSchedules.length > 1
+                ? index === paymentSchedules.length - 1
+                  ? "red"
+                  : "#ccc"
+                : "#ccc",
+            cursor: "pointer",
           }}
-        />
+        >
+          {/* <span style={{ color: index === paymentSchedules?.length - 1 ? 'red' : '#ccc', cursor: 'pointer' }}> */}
+          <MinusCircleFilled
+            onClick={() => {
+              if (
+                paymentSchedules.length > 1 &&
+                index === paymentSchedules?.length - 1
+              ) {
+                removePaymentSchedule(index);
+              }
+            }}
+          />
+        </span>
       ),
     },
   ];
@@ -554,7 +583,10 @@ function EditProjects({ data, editModal, closeEditModal }) {
                         },
                       ]}
                     >
-                      <Input className="form-control" />
+                      <Input
+                        className="form-control"
+                        placeholder="Enter Project Name"
+                      />
                     </Form.Item>
                   </div>
                 </div>
@@ -586,7 +618,7 @@ function EditProjects({ data, editModal, closeEditModal }) {
                             fetchFocalPersons(value);
                           }}
                         >
-                          {clients.map((client) => (
+                          {clients?.map((client) => (
                             <Select.Option key={client._id} value={client._id}>
                               {client.clientName}
                             </Select.Option>
@@ -619,7 +651,7 @@ function EditProjects({ data, editModal, closeEditModal }) {
                           }
                           placeholder="Select a Focal Person"
                         >
-                          {focalPersons.map((focalPerson) => (
+                          {focalPersons?.map((focalPerson) => (
                             <Select.Option
                               key={focalPerson._id}
                               value={focalPerson._id}
@@ -977,7 +1009,7 @@ function EditProjects({ data, editModal, closeEditModal }) {
               <div className="submit-section">
                 <Form.Item>
                   <Button type="primary" onClick={addPaymentSchedule}>
-                    Add More Payment
+                    Add More Payments
                   </Button>
                 </Form.Item>
                 <hr />

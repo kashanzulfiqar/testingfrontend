@@ -1,160 +1,772 @@
-
-import React, {useEffect} from 'react';
+import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet";
-import { Link } from 'react-router-dom';
-import {Avatar_16,Avatar_02,Avatar_05,Avatar_09,Avatar_10,Avatar_11,Avatar_01,PlaceHolder} from "../../../Entryfile/imagepath"
-import  Editproject from "../../../_components/modelbox/Editproject"
+import { Link, useParams } from "react-router-dom";
+import {
+  Avatar_16,
+  Avatar_02,
+  Avatar_05,
+  Avatar_09,
+  Avatar_10,
+  Avatar_11,
+  Avatar_01,
+  PlaceHolder,
+  user_icon,
+} from "../../../Entryfile/imagepath";
+import Editproject from "../../../_components/modelbox/Editproject";
+import { useSelector } from "react-redux";
+import {
+  Avatar,
+  Button,
+  Checkbox,
+  DatePicker,
+  Empty,
+  Form,
+  Input,
+  Pagination,
+  Select,
+  Spin,
+  Table,
+  Tooltip,
+  message,
+} from "antd";
+import { Modal } from "@mui/material";
+import moment from "moment";
+import { apiServices } from "../../../Services/apiServices";
+import { MinusCircleFilled } from "@ant-design/icons";
+import EditProjects from "./EditProjects";
+import EmptyTable from "../../../files/Icons/EmptyTable.svg";
+//import EditProjects from "./EditProjects";
 
 const ProjectView = () => {
-  
-  useEffect( ()=>{
-    if($('.select').length > 0) {
-      $('.select').select2({
+  const [form] = Form.useForm();
+
+  const user_state = useSelector((state) => state.user.loginvalue);
+  const role = user_state?.user?.role;
+
+  const [paymentSchedules, setPaymentSchedules] = useState(null);
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [TableLoad, setTableLoad] = useState(false);
+  const [LoadLeader, setLoadLeader] = useState(false);
+  const [LoadTeam, setLoadTeam] = useState(false);
+  const [openUser, setOpenUser] = useState(false);
+  const [openLeader, setOpenLeader] = useState(false);
+  const [selectedData, setSelectedData] = useState(null);
+  const [editModal, setEditModal] = useState(false);
+  const [employees, setEmployees] = useState([]);
+  const [clients, setClients] = useState([]);
+  const [focalPersons, setFocalPersons] = useState([]);
+
+  const [selectedClient, setSelectedClient] = useState(null);
+  const [selectedLeader, setSelectedLeader] = useState(null);
+  const [selectedDevelopers, setSelectedDevelopers] = useState([]);
+
+  const getEmployeeImage = (employeeId) => {
+    const employee = employees.find((emp) => emp._id === employeeId);
+    return employee?.imageUrl || ""; // You may provide a default image URL
+  };
+
+  const handleRemoveDeveloper = (developerId) => {
+    const updatedSelectedDevelopers = selectedDevelopers.filter(
+      (id) => id !== developerId
+    );
+    setSelectedDevelopers(updatedSelectedDevelopers);
+  };
+
+  const handleSelectDeveloper = (value) => {
+    setSelectedDevelopers([...selectedDevelopers, value]);
+    form.resetFields(); // Clear the selection in the form
+  };
+
+  const getEmployeeFullName = (employeeId) => {
+    const employee = employees.find((emp) => emp._id === employeeId);
+    return employee ? employee.fullName : "None";
+  };
+
+  const getTeamMemberOptions = () => {
+    // Create an array of selected employee IDs (selected developers and leader)
+    const selectedEmployeeIds = [project?.projectLead, ...selectedDevelopers];
+
+    return employees
+      .filter((employee) => !selectedEmployeeIds.includes(employee._id))
+      .map((employee) => (
+        <Select.Option key={employee._id} value={employee._id}>
+          {employee.fullName}
+        </Select.Option>
+      ));
+  };
+
+  const [data, setData] = useState([]);
+
+  const { _id } = useParams();
+  //console.log(_id);
+  //const originalProjectName = projectName.replace(/[-_]/g, ' ');
+
+  const project = data?.find((p) => p?._id === _id);
+  console.log("this is project :", project);
+
+  const openUserModal = () => {
+    setOpenUser(true);
+  };
+
+  const closeUser = () => {
+    setOpenUser(false);
+    form.resetFields();
+    setSelectedDevelopers([]);
+    //setFocalPersons([]);
+    //setSelectedLeader(null);
+    //setSelectedTeamMembers([]);
+  };
+
+  const openLeaderModal = () => {
+    setOpenLeader(true);
+  };
+
+  const closeLeader = () => {
+    setOpenLeader(false);
+    form.resetFields();
+    setSelectedLeader(null);
+    //setFocalPersons([]);
+    //setSelectedLeader(null);
+    //setSelectedTeamMembers([]);
+  };
+
+  const openEditModal = (data) => {
+    setSelectedData(data);
+    fetchFocalPersons(data?.clientId);
+    setEditModal(true);
+  };
+
+  const closeEditModal = () => {
+    setSelectedData(null);
+    setEditModal(false);
+    GetProjects();
+    form.resetFields();
+  };
+
+  useEffect(() => {
+    setIsLoading(true);
+    GetProjects();
+    fetchEmployees();
+    ViewClients();
+  }, []);
+
+  const GetProjects = () => {
+    apiServices(
+      "GET",
+      `project-management/?page=1&limit=99999`,
+      null,
+      user_state
+    )
+      .then((res) => {
+        if (res.data.success === true) {
+          setData(res?.data?.projects?.docs);
+          //setData(newProjects);
+          setIsLoading(false);
+          setLoadLeader(false);
+          setLoadTeam(false);
+          setTableLoad(false);
+        }
+      })
+      .catch((err) => {
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Get Projects Error"
+          }`
+        );
+        setIsLoading(false);
+        setLoadLeader(false);
+        setLoadTeam(false);
+        setTableLoad(false);
+      });
+  };
+
+  const fetchEmployees = () => {
+    apiServices("GET", `user/all-employees`, null, user_state)
+      .then((res) => {
+        if (res.data.success === true) {
+          const emps = res?.data?.User;
+          setEmployees(emps);
+        }
+      })
+      .catch((err) => {
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Get Client Error"
+          }`
+        );
+      });
+  };
+
+  const ViewClients = () => {
+    apiServices(
+      "GET",
+      `client/view-client?deleted=false&page=1&limit=99999`,
+      null,
+      user_state
+    )
+      .then((res) => {
+        if (res.data.success === true) {
+          const clients = res?.data?.clients?.docs;
+          setClients(clients);
+        }
+      })
+      .catch((err) => {
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Get Client Error"
+          }`
+        );
+      });
+  };
+
+  const fetchFocalPersons = (clientId) => {
+    apiServices(
+      "GET",
+      `focal-person/view-focal-person?deleted=false&clientId=${clientId}`,
+      null,
+      user_state
+    )
+      .then((res) => {
+        if (res.data.success === true) {
+          const focalperson = res?.data?.focalPersons.docs;
+          setFocalPersons(focalperson);
+        }
+      })
+      .catch((err) => {
+        // message.error(
+        //   `Get Focal Person Error`
+        // );
+        console.log("error");
+      });
+  };
+
+  const UpdateTeam = () => {
+    //setLoader(true);
+    //setIsLoading(true);
+
+    let data = {
+      _id: project?._id,
+      startDate: moment(project?.startDate).format("YYYY-MM-DD"),
+      endDate: moment(project?.endDate).format("YYYY-MM-DD"),
+      deleted: false,
+      companyId: project?.companyId,
+    };
+
+    if (selectedLeader !== null) {
+      data.projectLead = selectedLeader;
+      setLoadLeader(true);
+    }
+
+    if (selectedDevelopers.length > 0) {
+      data.assignedDevelopers = selectedDevelopers;
+      setLoadTeam(true);
+    }
+
+    apiServices("PUT", `project-management/`, data, user_state)
+      .then((res) => {
+        if (res.data.success === true) {
+          message.success(`Project Team Updated Successfully`);
+        }
+      })
+      .catch((err) => {
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Error Updating Team"
+          }`
+        );
+      })
+      .finally(() => {
+        GetProjects();
+        closeLeader();
+        closeUser();
+      });
+  };
+
+  const UpdateStatus = (payment) => {
+    //setLoader(true);
+    //setIsLoading(true);
+    let data = {
+      _id: project?._id,
+      startDate: moment(project?.startDate).format("YYYY-MM-DD"),
+      endDate: moment(project?.endDate).format("YYYY-MM-DD"),
+      deleted: false,
+      companyId: project?.companyId,
+      paymentSchedule: payment,
+    };
+
+    apiServices("PUT", `project-management/`, data, user_state)
+      .then((res) => {
+        if (res.data.success === true) {
+          message.success(`Status set to Paid`);
+          setTableLoad(true);
+        }
+      })
+      .catch((err) => {
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Error Updating Payment"
+          }`
+        );
+      })
+      .finally(() => {
+        GetProjects();
+      });
+  };
+
+  useEffect(() => {
+    if ($(".select").length > 0) {
+      $(".select").select2({
         minimumResultsForSearch: -1,
-        width: '100%'
+        width: "100%",
       });
     }
-  }); 
-      return (         
-      <div className="page-wrapper" >
-        <Helmet>
-            <title>Projects - HRMS Admin Template</title>
-            <meta name="description" content="Login page"/>					
-        </Helmet>
+  });
+
+  const customEmptyText = (
+    <Empty
+      image={<img src={EmptyTable} />}
+      // image={<InboxOutlined />}
+      imageStyle={
+        {
+          // fontSize: 48,
+          // color: '#1890ff',
+        }
+      }
+      style={{
+        height: "300px",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+      }}
+      description={
+        <div style={{ display: "" }}>
+          <div
+            style={{
+              color: "#34343F",
+              fontWeight: "500",
+              fontSize: "14px",
+              margin: "7px 0px 4px 0px",
+            }}
+          >
+            No Data
+          </div>
+          {/* <div
+            style={{ color: "#464665", fontWeight: "300", fontSize: "13px" }}
+          >
+            Click 'Add Department' Button To Create <br /> A New Department{" "}
+          </div> */}
+        </div>
+      }
+    />
+  );
+
+  const handlePaidChange = (record) => {
+    // Update the "paid" field of the specific record to true
+    const updatedPaymentSchedules = project?.paymentSchedule?.map(
+      (schedule) => {
+        if (schedule._id === record._id) {
+          return { ...schedule, paid: true };
+        }
+        return schedule;
+      }
+    );
+
+    // Update the state with the new payment schedules
+    //setPaymentSchedules(updatedPaymentSchedules);
+    UpdateStatus(updatedPaymentSchedules);
+  };
+
+  const paymentColumns = [
+    {
+      title: "Payment Title",
+      dataIndex: "paymentTitle",
+      key: "paymentTitle",
+    },
+    {
+      title: "Amount in Figure",
+      dataIndex: "amountInFigure",
+      key: "amountInFigure",
+    },
+    {
+      title: "Amount in Percent",
+      dataIndex: "amountInPercent",
+      key: "amountInPercent",
+    },
+    {
+      title: "Due Date",
+      dataIndex: "dueDate",
+      key: "dueDate",
+      render: (dueDate) => moment(dueDate).format("YYYY-MM-DD"),
+    },
+    {
+      title: "Paid",
+      dataIndex: "paid",
+      key: "paid",
+      render: (paid, record) => (
+        <Checkbox
+          checked={paid}
+          disabled={paid} // Disable the checkbox if already paid
+          onChange={() => handlePaidChange(record)} // Handle checkbox change
+          //style={{ pointerEvents: paid ? 'none' : 'auto' }}
+        />
+      ),
+    },
+    // {
+    //   title: "Action",
+    //   key: "action",
+    //   render: (text, record, index) => (
+    //     <MinusCircleFilled
+    //       style={{ color: "red", cursor: "pointer" }}
+    //       //disabled={record?.paid}
+    //       onClick={() => {
+    //         removePaymentSchedule(index);
+    //         console.log(record?.paid);
+    //       }}
+    //     />
+    //   ),
+    // },
+  ];
+
+  return (
+    <div className="page-wrapper">
+      <Helmet>
+        <title>Project View - DaftarPro</title>
+        <meta name="description" content="Login page" />
+      </Helmet>
       {/* Page Content */}
       <div className="content container-fluid">
         {/* Page Header */}
         <div className="page-header">
           <div className="row align-items-center">
             <div className="col">
-              <h3 className="page-title">Hospital Admin</h3>
+              <h3 className="page-title">Project</h3>
               <ul className="breadcrumb">
-                <li className="breadcrumb-item"><Link to="/app/main/dashboard">Dashboard</Link></li>
-                <li className="breadcrumb-item active">Project</li>
+                <li className="breadcrumb-item">
+                  <Link
+                    to={
+                      role === "admin"
+                        ? "/main/dashboard"
+                        : "/employee/dashboard"
+                    }
+                  >
+                    Dashboard
+                  </Link>
+                </li>
+                <li className="breadcrumb-item active">Project View</li>
               </ul>
             </div>
+
             <div className="col-auto float-end ms-auto">
-              <a href="#" className="btn add-btn" data-bs-toggle="modal" data-bs-target="#edit_project"><i className="fa fa-plus" /> Edit Project</a>
-              <Link to="/app/projects/task-board" className="btn btn-white float-end m-r-10" data-bs-toggle="tooltip" title="Task Board"><i className="fa fa-bars" /></Link>
+              {!isLoading && (
+                <button
+                  className="btn add-btn"
+                  onClick={() => {
+                    openEditModal(project);
+                    form.setFieldsValue({
+                      ...project,
+                      startDate: moment(project?.startDate, "YYYY-MM-DD"),
+                      endDate: moment(project?.endDate, "YYYY-MM-DD"),
+                    });
+                  }}
+                >
+                  <i className="fa fa-plus" />
+                  Edit Project
+                </button>
+              )}
+
+              {/* <Link
+                to="/app/projects/task-board"
+                className="btn btn-white float-end m-r-10"
+                data-bs-toggle="tooltip"
+                title="Task Board"
+              >
+                <i className="fa fa-bars" />
+              </Link> */}
             </div>
           </div>
         </div>
         {/* /Page Header */}
-        <div className="row">
-          <div className="col-lg-8 col-xl-9">
-            <div className="card">
-              <div className="card-body">
-                <div className="project-title">
-                  <h5 className="card-title">Hospital Administration</h5>
-                  <small className="block text-ellipsis m-b-15"><span className="text-xs">2</span> <span className="text-muted">open tasks, </span><span className="text-xs">5</span> <span className="text-muted">tasks completed</span></small>
-                </div>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vel elit neque. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Vestibulum sollicitudin libero vitae est consectetur, a molestie tortor consectetur. Aenean tincidunt interdum ipsum, id pellentesque diam suscipit ut. Vivamus massa mi, fermentum eget neque eget, imperdiet tristique lectus. Proin at purus ut sem pellentesque tempor sit amet ut lectus. Sed orci augue, placerat et pretium ac, hendrerit in felis. Integer scelerisque libero non metus commodo, et hendrerit diam aliquet. Proin tincidunt porttitor ligula, a tincidunt orci pellentesque nec. Ut ultricies maximus nulla id consequat. Fusce eu consequat mi, eu euismod ligula. Aliquam porttitor neque id massa porttitor, a pretium velit vehicula. Morbi volutpat tincidunt urna, vel ullamcorper ligula fermentum at. </p>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vel elit neque. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Vestibulum sollicitudin libero vitae est consectetur, a molestie tortor consectetur. Aenean tincidunt interdum ipsum, id pellentesque diam suscipit ut. Vivamus massa mi, fermentum eget neque eget, imperdiet tristique lectus. Proin at purus ut sem pellentesque tempor sit amet ut lectus. Sed orci augue, placerat et pretium ac, hendrerit in felis. Integer scelerisque libero non metus commodo, et hendrerit diam aliquet. Proin tincidunt porttitor ligula, a tincidunt orci pellentesque nec. Ut ultricies maximus nulla id consequat. Fusce eu consequat mi, eu euismod ligula. Aliquam porttitor neque id massa porttitor, a pretium velit vehicula. Morbi volutpat tincidunt urna, vel ullamcorper ligula fermentum at. </p>
-              </div>
-            </div>
-            <div className="card">
-              <div className="card-body">
-                <h5 className="card-title m-b-20">Uploaded image files</h5>
-                <div className="row">
-                  <div className="col-md-3 col-sm-4 col-lg-4 col-xl-3">
-                    <div className="uploaded-box">
-                      <div className="uploaded-img">
-                        <img src={PlaceHolder} className="img-fluid" alt="" />
-                      </div>
-                      <div className="uploaded-img-name">
-                        demo.png
-                      </div>
-                    </div>
+        {isLoading ? (
+          <div
+            style={{
+              position: "fixed",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              zIndex: 9999,
+            }}
+          >
+            <Spin size="large" />
+          </div>
+        ) : (
+          <div className="row">
+            <div className="col-lg-8 col-xl-9">
+              <div className="card">
+                <div className="card-body">
+                  <div className="project-title">
+                    <h5 className="card-title">{project?.projectName}</h5>
+                    {/* <small className="block text-ellipsis m-b-15">
+                      <span className="text-xs">2</span>{" "}
+                      <span className="text-muted">open tasks, </span>
+                      <span className="text-xs">5</span>{" "}
+                      <span className="text-muted">tasks completed</span>
+                    </small> */}
                   </div>
-                  <div className="col-md-3 col-sm-4 col-lg-4 col-xl-3">
-                    <div className="uploaded-box">
-                      <div className="uploaded-img">
-                        <img src={PlaceHolder} className="img-fluid" alt="" />
-                      </div>
-                      <div className="uploaded-img-name">
-                        demo.png
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-md-3 col-sm-4 col-lg-4 col-xl-3">
-                    <div className="uploaded-box">
-                      <div className="uploaded-img">
-                        <img src={PlaceHolder} className="img-fluid" alt="" />
-                      </div>
-                      <div className="uploaded-img-name">
-                        demo.png
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-md-3 col-sm-4 col-lg-4 col-xl-3">
-                    <div className="uploaded-box">
-                      <div className="uploaded-img">
-                        <img src={PlaceHolder} className="img-fluid" alt="" />
-                      </div>
-                      <div className="uploaded-img-name">
-                        demo.png
-                      </div>
-                    </div>
-                  </div>
+                  <p>{project?.projectDescription}</p>
                 </div>
               </div>
-            </div>
-            <div className="card">
-              <div className="card-body">
-                <h5 className="card-title m-b-20">Uploaded files</h5>
-                <ul className="files-list">
-                  <li>
-                    <div className="files-cont">
-                      <div className="file-type">
-                        <span className="files-icon"><i className="fa fa-file-pdf-o" /></span>
-                      </div>
-                      <div className="files-info">
-                        <span className="file-name text-ellipsis"><a href="#">AHA Selfcare Mobile Application Test-Cases.xls</a></span>
-                        <span className="file-author"><a href="#">John Doe</a></span> <span className="file-date">May 31st at 6:53 PM</span>
-                        <div className="file-size">Size: 14.8Mb</div>
-                      </div>
-                      <ul className="files-action">
-                        <li className="dropdown dropdown-action">
-                          <a href="" className="dropdown-toggle btn btn-link" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_horiz</i></a>
-                          <div className="dropdown-menu dropdown-menu-right">
-                            <a className="dropdown-item" href="">Download</a>
-                            <a className="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#share_files">Share</a>
-                            <a className="dropdown-item" href="">Delete</a>
-                          </div>
-                        </li>
-                      </ul>
-                    </div>
-                  </li>
-                  <li>
-                    <div className="files-cont">
-                      <div className="file-type">
-                        <span className="files-icon"><i className="fa fa-file-pdf-o" /></span>
-                      </div>
-                      <div className="files-info">
-                        <span className="file-name text-ellipsis"><a href="#">AHA Selfcare Mobile Application Test-Cases.xls</a></span>
-                        <span className="file-author"><a href="#">Richard Miles</a></span> <span className="file-date">May 31st at 6:53 PM</span>
-                        <div className="file-size">Size: 14.8Mb</div>
-                      </div>
-                      <ul className="files-action">
-                        <li className="dropdown dropdown-action">
-                          <a href="" className="dropdown-toggle btn btn-link" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_horiz</i></a>
-                          <div className="dropdown-menu dropdown-menu-right">
-                            <a className="dropdown-item" href="">Download</a>
-                            <a className="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#share_files">Share</a>
-                            <a className="dropdown-item" href="">Delete</a>
-                          </div>
-                        </li>
-                      </ul>
-                    </div>
-                  </li>
-                </ul>
+
+              <div className="card">
+                <div className="card-body">
+                  <h5 className="card-title m-b-20">Uploaded image files</h5>
+                  <div className="row">
+                    {project?.docs.length > 0 ? (
+                      project?.docs.map((doc, index) => {
+                        // Split the link to check for the file format
+                        const parts = doc.split(".");
+                        const format = parts[parts.length - 1];
+
+                        // Check if it's a cloudinary link and the format is an image
+                        if (
+                          doc.includes("res.cloudinary.com") &&
+                          format.match(/^(jpg|jpeg|png|gif)$/i)
+                        ) {
+                          // Extract the image ID from the Cloudinary URL
+                          const imageId = doc.match(/v\d+\/(.+?)\./)[1];
+                          // Construct the thumbnail URL
+                          const thumbnailUrl = `https://res.cloudinary.com/dcxpovyr9/image/upload/c_thumb,w_200,h_200/${imageId}.png`;
+
+                          const fullImageUrl = `https://res.cloudinary.com/dcxpovyr9/image/upload/${imageId}.${format}`;
+
+                          const downloadLink = `${doc.replace(
+                            "/upload/",
+                            "/upload/fl_attachment/"
+                          )}`;
+
+                          return (
+                            <div
+                              key={index}
+                              className="col-md-3 col-sm-4 col-lg-4 col-xl-3"
+                            >
+                              <div className="uploaded-box">
+                                <a
+                                  href={fullImageUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  <div className="uploaded-img">
+                                    <img
+                                      src={thumbnailUrl}
+                                      className="img-fluid"
+                                      alt={`Image ${index + 1}`}
+                                      style={{ borderRadius: "10px" }}
+                                    />
+                                    <div className="download-icon hidden">
+                                      <a href={downloadLink} download>
+                                        <i className="fa fa-download" />
+                                      </a>
+                                    </div>
+                                  </div>
+                                </a>
+                                <div className="uploaded-img-name">{`File ${
+                                  index + 1
+                                }`}</div>
+                              </div>
+                            </div>
+                          );
+                        } else if (format.match(/^(jpg|jpeg|png|gif)$/i)) {
+                          // Check if it's an image based on the file format
+                          return (
+                            <div
+                              key={index}
+                              className="col-md-3 col-sm-4 col-lg-4 col-xl-3"
+                            >
+                              <div className="uploaded-box">
+                                <div className="uploaded-img">
+                                  <img
+                                    src={doc}
+                                    className="img-fluid"
+                                    alt={`Image ${index + 1}`}
+                                  />
+                                  <div className="download-icon">
+                                    <a href={fullImageUrl} download>
+                                      <i className="fa fa-download" />
+                                    </a>
+                                  </div>
+                                </div>
+                                <div className="uploaded-img-name">{`File ${
+                                  index + 1
+                                }`}</div>
+                              </div>
+                            </div>
+                          );
+                        }
+                        // If it's not an image, return null to ignore it
+                        return null;
+                      })
+                    ) : (
+                      <p>No images uploaded</p>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="project-task">
+
+              <div className="card">
+                <div className="card-body">
+                  <h5 className="card-title m-b-20">Uploaded files</h5>
+                  <ul className="files-list">
+                    {project?.docs.length > 0 ? (
+                      project?.docs.map((doc, index) => {
+                        // Split the link to get the file format
+                        const parts = doc.split(".");
+                        const format = parts[parts.length - 1];
+
+                        // Check if it's an image format (jpg, jpeg, png, gif)
+                        if (format.match(/^(jpg|jpeg|png|gif)$/i)) {
+                          // Ignore image files
+                          return null;
+                        }
+
+                        // Construct the thumbnail URL based on file format
+                        let thumbnailUrl = "";
+                        if (format.toLowerCase() === "pdf") {
+                          thumbnailUrl = "/path-to-pdf-icon.png"; // Replace with the path to your PDF icon
+                        } else {
+                          thumbnailUrl = "/path-to-generic-file-icon.png"; // Replace with the path to your generic file icon
+                        }
+
+                        const downloadLink = `${doc.replace(
+                          "/upload/",
+                          "/upload/fl_attachment/"
+                        )}`;
+
+                        return (
+                          <li key={index}>
+                            <div
+                              className="files-cont"
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                paddingTop: "inherit",
+                              }}
+                            >
+                              <div className="file-type">
+                                <span className="files-icon">
+                                  <i
+                                    className={`fa fa-file-${format.toLowerCase()}-o`}
+                                  />
+                                </span>
+                              </div>
+                              <div className="files-info">
+                                <span className="file-name text-ellipsis">
+                                  <a
+                                    href={doc}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    {`File ${index + 1}.${format}`}
+                                  </a>
+                                </span>
+                              </div>
+                              <ul className="files-action">
+                                <li className="dropdown dropdown-action">
+                                  <a
+                                    href={downloadLink}
+                                    className="dropdown-toggle btn btn-link"
+                                    download
+                                  >
+                                    <i className="fa fa-download" />{" "}
+                                    {/* Download icon */}
+                                  </a>
+                                </li>
+                              </ul>
+                            </div>
+                          </li>
+                        );
+                      })
+                    ) : (
+                      <p>No files uploaded</p>
+                    )}
+                  </ul>
+                </div>
+              </div>
+
+              <div className="card">
+                <div className="card-body">
+                  <h5 className="card-title m-b-20">Payments</h5>
+                  <div className="table-responsive">
+                    <Table
+                      locale={{
+                        emptyText: TableLoad ? (
+                          <Spin size="large" tip="Loading..." />
+                        ) : (
+                          customEmptyText
+                        ),
+                      }}
+                      loading={TableLoad}
+                      dataSource={project?.paymentSchedule}
+                      columns={paymentColumns}
+                      rowKey={(record, index) => index}
+                      pagination={false}
+                      style={{ overflowX: "auto" }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* <div className="project-task">
               <ul className="nav nav-tabs nav-tabs-top nav-justified mb-0">
-                <li className="nav-item"><a className="nav-link active" href="#all_tasks" data-bs-toggle="tab" aria-expanded="true">All Tasks</a></li>
-                <li className="nav-item"><a className="nav-link" href="#pending_tasks" data-bs-toggle="tab" aria-expanded="false">Pending Tasks</a></li>
-                <li className="nav-item"><a className="nav-link" href="#completed_tasks" data-bs-toggle="tab" aria-expanded="false">Completed Tasks</a></li>
+                <li className="nav-item">
+                  <a
+                    className="nav-link active"
+                    href="#all_tasks"
+                    data-bs-toggle="tab"
+                    aria-expanded="true"
+                  >
+                    All Tasks
+                  </a>
+                </li>
+                <li className="nav-item">
+                  <a
+                    className="nav-link"
+                    href="#pending_tasks"
+                    data-bs-toggle="tab"
+                    aria-expanded="false"
+                  >
+                    Pending Tasks
+                  </a>
+                </li>
+                <li className="nav-item">
+                  <a
+                    className="nav-link"
+                    href="#completed_tasks"
+                    data-bs-toggle="tab"
+                    aria-expanded="false"
+                  >
+                    Completed Tasks
+                  </a>
+                </li>
               </ul>
               <div className="tab-content">
                 <div className="tab-pane show active" id="all_tasks">
@@ -165,16 +777,31 @@ const ProjectView = () => {
                           <li className="task">
                             <div className="task-container">
                               <span className="task-action-btn task-check">
-                                <span className="action-circle large complete-btn" title="Mark Complete">
+                                <span
+                                  className="action-circle large complete-btn"
+                                  title="Mark Complete"
+                                >
                                   <i className="material-icons">check</i>
                                 </span>
                               </span>
-                              <span className="task-label" contentEditable="true" suppressContentEditableWarning={true}>Patient appointment booking</span>
+                              <span
+                                className="task-label"
+                                contentEditable="true"
+                                suppressContentEditableWarning={true}
+                              >
+                                Patient appointment booking
+                              </span>
                               <span className="task-action-btn task-btn-right">
-                                <span className="action-circle large" title="Assign">
+                                <span
+                                  className="action-circle large"
+                                  title="Assign"
+                                >
                                   <i className="material-icons">person_add</i>
                                 </span>
-                                <span className="action-circle large delete-btn" title="Delete Task">
+                                <span
+                                  className="action-circle large delete-btn"
+                                  title="Delete Task"
+                                >
                                   <i className="material-icons">delete</i>
                                 </span>
                               </span>
@@ -183,16 +810,31 @@ const ProjectView = () => {
                           <li className="task">
                             <div className="task-container">
                               <span className="task-action-btn task-check">
-                                <span className="action-circle large complete-btn" title="Mark Complete">
+                                <span
+                                  className="action-circle large complete-btn"
+                                  title="Mark Complete"
+                                >
                                   <i className="material-icons">check</i>
                                 </span>
                               </span>
-                              <span className="task-label" contentEditable="true" suppressContentEditableWarning={true}>Appointment booking with payment gateway</span>
+                              <span
+                                className="task-label"
+                                contentEditable="true"
+                                suppressContentEditableWarning={true}
+                              >
+                                Appointment booking with payment gateway
+                              </span>
                               <span className="task-action-btn task-btn-right">
-                                <span className="action-circle large" title="Assign">
+                                <span
+                                  className="action-circle large"
+                                  title="Assign"
+                                >
                                   <i className="material-icons">person_add</i>
                                 </span>
-                                <span className="action-circle large delete-btn" title="Delete Task">
+                                <span
+                                  className="action-circle large delete-btn"
+                                  title="Delete Task"
+                                >
                                   <i className="material-icons">delete</i>
                                 </span>
                               </span>
@@ -201,16 +843,27 @@ const ProjectView = () => {
                           <li className="completed task">
                             <div className="task-container">
                               <span className="task-action-btn task-check">
-                                <span className="action-circle large complete-btn" title="Mark Complete">
+                                <span
+                                  className="action-circle large complete-btn"
+                                  title="Mark Complete"
+                                >
                                   <i className="material-icons">check</i>
                                 </span>
                               </span>
-                              <span className="task-label">Doctor available module</span>
+                              <span className="task-label">
+                                Doctor available module
+                              </span>
                               <span className="task-action-btn task-btn-right">
-                                <span className="action-circle large" title="Assign">
+                                <span
+                                  className="action-circle large"
+                                  title="Assign"
+                                >
                                   <i className="material-icons">person_add</i>
                                 </span>
-                                <span className="action-circle large delete-btn" title="Delete Task">
+                                <span
+                                  className="action-circle large delete-btn"
+                                  title="Delete Task"
+                                >
                                   <i className="material-icons">delete</i>
                                 </span>
                               </span>
@@ -219,16 +872,31 @@ const ProjectView = () => {
                           <li className="task">
                             <div className="task-container">
                               <span className="task-action-btn task-check">
-                                <span className="action-circle large complete-btn" title="Mark Complete">
+                                <span
+                                  className="action-circle large complete-btn"
+                                  title="Mark Complete"
+                                >
                                   <i className="material-icons">check</i>
                                 </span>
                               </span>
-                              <span className="task-label" contentEditable="true" suppressContentEditableWarning={true}>Patient and Doctor video conferencing</span>
+                              <span
+                                className="task-label"
+                                contentEditable="true"
+                                suppressContentEditableWarning={true}
+                              >
+                                Patient and Doctor video conferencing
+                              </span>
                               <span className="task-action-btn task-btn-right">
-                                <span className="action-circle large" title="Assign">
+                                <span
+                                  className="action-circle large"
+                                  title="Assign"
+                                >
                                   <i className="material-icons">person_add</i>
                                 </span>
-                                <span className="action-circle large delete-btn" title="Delete Task">
+                                <span
+                                  className="action-circle large delete-btn"
+                                  title="Delete Task"
+                                >
                                   <i className="material-icons">delete</i>
                                 </span>
                               </span>
@@ -237,16 +905,31 @@ const ProjectView = () => {
                           <li className="task">
                             <div className="task-container">
                               <span className="task-action-btn task-check">
-                                <span className="action-circle large complete-btn" title="Mark Complete">
+                                <span
+                                  className="action-circle large complete-btn"
+                                  title="Mark Complete"
+                                >
                                   <i className="material-icons">check</i>
                                 </span>
                               </span>
-                              <span className="task-label" contentEditable="true" suppressContentEditableWarning={true}>Private chat module</span>
+                              <span
+                                className="task-label"
+                                contentEditable="true"
+                                suppressContentEditableWarning={true}
+                              >
+                                Private chat module
+                              </span>
                               <span className="task-action-btn task-btn-right">
-                                <span className="action-circle large" title="Assign">
+                                <span
+                                  className="action-circle large"
+                                  title="Assign"
+                                >
                                   <i className="material-icons">person_add</i>
                                 </span>
-                                <span className="action-circle large delete-btn" title="Delete Task">
+                                <span
+                                  className="action-circle large delete-btn"
+                                  title="Delete Task"
+                                >
                                   <i className="material-icons">delete</i>
                                 </span>
                               </span>
@@ -255,16 +938,31 @@ const ProjectView = () => {
                           <li className="task">
                             <div className="task-container">
                               <span className="task-action-btn task-check">
-                                <span className="action-circle large complete-btn" title="Mark Complete">
+                                <span
+                                  className="action-circle large complete-btn"
+                                  title="Mark Complete"
+                                >
                                   <i className="material-icons">check</i>
                                 </span>
                               </span>
-                              <span className="task-label" contentEditable="true" suppressContentEditableWarning={true}>Patient Profile add</span>
+                              <span
+                                className="task-label"
+                                contentEditable="true"
+                                suppressContentEditableWarning={true}
+                              >
+                                Patient Profile add
+                              </span>
                               <span className="task-action-btn task-btn-right">
-                                <span className="action-circle large" title="Assign">
+                                <span
+                                  className="action-circle large"
+                                  title="Assign"
+                                >
                                   <i className="material-icons">person_add</i>
                                 </span>
-                                <span className="action-circle large delete-btn" title="Delete Task">
+                                <span
+                                  className="action-circle large delete-btn"
+                                  title="Delete Task"
+                                >
                                   <i className="material-icons">delete</i>
                                 </span>
                               </span>
@@ -274,10 +972,20 @@ const ProjectView = () => {
                       </div>
                       <div className="task-list-footer">
                         <div className="new-task-wrapper">
-                          <textarea id="new-task" placeholder="Enter new task here. . ." defaultValue={""} />
-                          <span className="error-message hidden">You need to enter a task first</span>
-                          <span className="add-new-task-btn btn" id="add-task">Add Task</span>
-                          <span className="btn" id="close-task-panel">Close</span>
+                          <textarea
+                            id="new-task"
+                            placeholder="Enter new task here. . ."
+                            defaultValue={""}
+                          />
+                          <span className="error-message hidden">
+                            You need to enter a task first
+                          </span>
+                          <span className="add-new-task-btn btn" id="add-task">
+                            Add Task
+                          </span>
+                          <span className="btn" id="close-task-panel">
+                            Close
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -286,135 +994,173 @@ const ProjectView = () => {
                 <div className="tab-pane" id="pending_tasks" />
                 <div className="tab-pane" id="completed_tasks" />
               </div>
+            </div> */}
             </div>
-          </div>
-          <div className="col-lg-4 col-xl-3">
-            <div className="card">
-              <div className="card-body">
-                <h6 className="card-title m-b-15">Project details</h6>
-                <table className="table table-striped table-border">
-                  <tbody>
-                    <tr>
-                      <td>Cost:</td>
-                      <td className="text-end">$1200</td>
-                    </tr>
-                    <tr>
-                      <td>Total Hours:</td>
-                      <td className="text-end">100 Hours</td>
-                    </tr>
-                    <tr>
-                      <td>Created:</td>
-                      <td className="text-end">25 Feb, 2019</td>
-                    </tr>
-                    <tr>
-                      <td>Deadline:</td>
-                      <td className="text-end">12 Jun, 2019</td>
-                    </tr>
-                    <tr>
-                      <td>Priority:</td>
-                      <td className="text-end">
-                        <div className="btn-group">
-                          <a href="#" className="badge badge-danger dropdown-toggle" data-bs-toggle="dropdown">Highest </a>
-                          <div className="dropdown-menu dropdown-menu-right">
-                            <a className="dropdown-item" href="#"><i className="fa fa-dot-circle-o text-danger" /> Highest priority</a>
-                            <a className="dropdown-item" href="#"><i className="fa fa-dot-circle-o text-info" /> High priority</a>
-                            <a className="dropdown-item" href="#"><i className="fa fa-dot-circle-o text-primary" /> Normal priority</a>
-                            <a className="dropdown-item" href="#"><i className="fa fa-dot-circle-o text-success" /> Low priority</a>
+
+            <div className="col-lg-4 col-xl-3">
+              <div className="card">
+                <div className="card-body">
+                  <h6 className="card-title m-b-15">Project details</h6>
+                  <table className="table table-striped table-border">
+                    <tbody>
+                      <tr>
+                        <td>Cost:</td>
+                        <td className="text-end">{project?.cost}</td>
+                      </tr>
+                      <tr>
+                        <td>StartDate:</td>
+                        <td className="text-end">
+                          {moment(project?.startDate).format("YYYY-MM-DD")}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Deadline:</td>
+                        <td className="text-end">
+                          {moment(project?.endDate).format("YYYY-MM-DD")}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Priority:</td>
+                        <td className="text-end">
+                          <span
+                            className={`badge ${
+                              project?.priority === "High Priority"
+                                ? "bg-danger"
+                                : project?.priority === "Normal Priority"
+                                ? "bg-warning"
+                                : project?.priority === "Low Priority"
+                                ? "bg-success"
+                                : ""
+                            }`}
+                            style={{ pointerEvents: "none" }}
+                          >
+                            {project?.priority === "High Priority"
+                              ? "High"
+                              : project?.priority === "High Priority"
+                              ? "Normal"
+                              : "Low"}
+                          </span>
+                        </td>
+                      </tr>
+
+                      <tr>
+                        <td>Status:</td>
+                        <td className="text-end">{project?.status}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  {/* <p className="m-b-5">
+                    Progress <span className="text-success float-end">40%</span>
+                  </p>
+                  <div className="progress progress-xs mb-0">
+                    <div
+                      className="progress-bar bg-success"
+                      role="progressbar"
+                      data-bs-toggle="tooltip"
+                      title="40%"
+                      style={{ width: "40%" }}
+                    />
+                  </div> */}
+                </div>
+              </div>
+
+              <div className="card project-user">
+                <div className="card-body">
+                  <h6 className="card-title m-b-20">
+                    Assigned Leader{" "}
+                    <button
+                      type="button"
+                      className="float-end btn btn-primary btn-sm"
+                      // data-bs-toggle="modal"
+                      // data-bs-target="#assign_leader"
+                      onClick={() => {
+                        openLeaderModal();
+                        setSelectedLeader(project?.projectLead);
+                      }}
+                    >
+                      <i className="fa fa-plus" /> Add
+                    </button>
+                  </h6>
+                  {LoadLeader ? (
+                    <Spin size="medium" />
+                  ) : (
+                    <ul className="list-box">
+                      {project?.projectLead && (
+                        <div className="list-item">
+                          <div
+                            className="employee-selection d-flex gap-1"
+                            style={{ alignItems: "center" }}
+                          >
+                            <img
+                              alt=""
+                              className="avatar"
+                              src={
+                                getEmployeeImage(project.projectLead) ||
+                                user_icon
+                              }
+                            />
+                            <span className="employee-name">
+                              {getEmployeeFullName(project.projectLead)}
+                            </span>
                           </div>
+                          <hr
+                            className="developer-divider"
+                            style={{ opacity: "0", marginTop: "0px" }}
+                          />
                         </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>Created by:</td>
-                      <td className="text-end"><Link to="/app/profile/employee-profile">Barry Cuda</Link></td>
-                    </tr>
-                    <tr>
-                      <td>Status:</td>
-                      <td className="text-end">Working</td>
-                    </tr>
-                  </tbody>
-                </table>
-                <p className="m-b-5">Progress <span className="text-success float-end">40%</span></p>
-                <div className="progress progress-xs mb-0">
-                  <div className="progress-bar bg-success" role="progressbar" data-bs-toggle="tooltip" title="40%" style={{width: '40%'}} />
+                      )}
+                    </ul>
+                  )}
+                </div>
+              </div>
+
+              <div className="card project-user">
+                <div className="card-body">
+                  <h6 className="card-title m-b-20">
+                    Assigned Users
+                    <button
+                      type="button"
+                      className="float-end btn btn-primary btn-sm"
+                      onClick={() => {
+                        openUserModal();
+                        setSelectedDevelopers(project?.assignedDevelopers);
+                      }}
+                    >
+                      <i className="fa fa-plus" /> Add
+                    </button>
+                  </h6>
+                  {LoadTeam ? (
+                    <Spin size="medium" />
+                  ) : (
+                    <ul className="list-box">
+                      {project?.assignedDevelopers.map((developerId) => (
+                        <div className="list-item">
+                          <div
+                            className="employee-selection d-flex gap-1"
+                            style={{ alignItems: "center" }}
+                          >
+                            <img
+                              alt=""
+                              className="avatar"
+                              src={getEmployeeImage(developerId) || user_icon}
+                            />
+                            <span className="employee-name">
+                              {getEmployeeFullName(developerId)}
+                            </span>
+                          </div>
+                          <hr
+                            className="developer-divider"
+                            style={{ opacity: "0", marginTop: "0px" }}
+                          />
+                        </div>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </div>
             </div>
-            <div className="card project-user">
-              <div className="card-body">
-                <h6 className="card-title m-b-20">Assigned Leader <button type="button" className="float-end btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#assign_leader"><i className="fa fa-plus" /> Add</button></h6>
-                <ul className="list-box">
-                  <li>
-                    <Link to="/app/profile/employee-profile">
-                      <div className="list-item">
-                        <div className="list-left">
-                          <span className="avatar"><img alt="" src={Avatar_11} /></span>
-                        </div>
-                        <div className="list-body">
-                          <span className="message-author">Wilmer Deluna</span>
-                          <div className="clearfix" />
-                          <span className="message-content">Team Leader</span>
-                        </div>
-                      </div>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to="/app/profile/employee-profile">
-                      <div className="list-item">
-                        <div className="list-left">
-                          <span className="avatar"><img alt="" src={Avatar_01} /></span>
-                        </div>
-                        <div className="list-body">
-                          <span className="message-author">Lesley Grauer</span>
-                          <div className="clearfix" />
-                          <span className="message-content">Team Leader</span>
-                        </div>
-                      </div>
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            </div>
-            <div className="card project-user">
-              <div className="card-body">
-                <h6 className="card-title m-b-20">
-                  Assigned users 
-                  <button type="button" className="float-end btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#assign_user"><i className="fa fa-plus" /> Add</button>
-                </h6>
-                <ul className="list-box">
-                  <li>
-                    <Link to="/app/profile/employee-profile">
-                      <div className="list-item">
-                        <div className="list-left">
-                          <span className="avatar"><img alt="" src={Avatar_02} /></span>
-                        </div>
-                        <div className="list-body">
-                          <span className="message-author">John Doe</span>
-                          <div className="clearfix" />
-                          <span className="message-content">Web Designer</span>
-                        </div>
-                      </div>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to="/app/profile/employee-profile">
-                      <div className="list-item">
-                        <div className="list-left">
-                          <span className="avatar"><img alt="" src={Avatar_09} /></span>
-                        </div>
-                        <div className="list-body">
-                          <span className="message-author">Richard Miles</span>
-                          <div className="clearfix" />
-                          <span className="message-content">Web Developer</span>
-                        </div>
-                      </div>
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            </div>
           </div>
-        </div>
+        )}
       </div>
       {/* /Page Content */}
       {/* Assign Leader Modal */}
@@ -423,13 +1169,22 @@ const ProjectView = () => {
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">Assign Leader to this project</h5>
-              <button type="button" className="close" data-bs-dismiss="modal" aria-label="Close">
+              <button
+                type="button"
+                className="close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              >
                 <span aria-hidden="true">×</span>
               </button>
             </div>
             <div className="modal-body">
               <div className="input-group m-b-30">
-                <input placeholder="Search to add a leader" className="form-control search-input" type="text" />
+                <input
+                  placeholder="Search to add a leader"
+                  className="form-control search-input"
+                  type="text"
+                />
                 <span className="input-group-append">
                   <button className="btn btn-primary w-100">Search</button>
                 </span>
@@ -439,7 +1194,9 @@ const ProjectView = () => {
                   <li>
                     <a href="#">
                       <div className="media">
-                        <span className="avatar"><img alt="" src={Avatar_09} /></span>
+                        <span className="avatar">
+                          <img alt="" src={Avatar_09} />
+                        </span>
                         <div className="media-body align-self-center text-nowrap">
                           <div className="user-name">Richard Miles</div>
                           <span className="designation">Web Developer</span>
@@ -450,7 +1207,9 @@ const ProjectView = () => {
                   <li>
                     <a href="#">
                       <div className="media">
-                        <span className="avatar"><img alt="" src={Avatar_10} /></span>
+                        <span className="avatar">
+                          <img alt="" src={Avatar_10} />
+                        </span>
                         <div className="media-body align-self-center text-nowrap">
                           <div className="user-name">John Smith</div>
                           <span className="designation">Android Developer</span>
@@ -480,6 +1239,87 @@ const ProjectView = () => {
           </div>
         </div>
       </div>
+
+      <Modal
+        open={openLeader}
+        onClose={closeLeader}
+        aria-labelledby="modal-modal-title"
+        className="modalScroll"
+        aria-describedby="modal-modal-description"
+        disableRestoreFocus
+        BackdropProps={{
+          style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
+        }}
+        sx={{ overflowY: "auto" }}
+      >
+        <div className="modal-dialog modal-dialog-centered" role="document">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">Add Leader</h5>
+
+              <button type="button" className="close" onClick={closeLeader}>
+                <span aria-hidden="true">×</span>
+              </button>
+            </div>
+
+            <div className="modal-body">
+              <Form form={form} onFinish={UpdateTeam} name="control-hooks">
+                <div className="row">
+                  <div className="form-group">
+                    <label>Leader</label>
+                    <Form.Item name="projectLead">
+                      <Select
+                        placeholder="Select a Leader"
+                        onChange={(value) => setSelectedLeader(value)}
+                      >
+                        {employees?.map((employee) => (
+                          <Select.Option
+                            key={employee._id}
+                            value={employee._id}
+                          >
+                            {employee.fullName}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </div>
+                </div>
+
+                {selectedLeader && (
+                  <div className="selected-leader-info ">
+                    <div
+                      className="employee-selection d-flex gap-2"
+                      style={{ alignItems: "center" }}
+                    >
+                      <img
+                        alt=""
+                        className="avatar"
+                        src={getEmployeeImage(selectedLeader) || user_icon}
+                      />
+                      <span className="employee-name">
+                        {getEmployeeFullName(selectedLeader)}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                <div className="submit-section">
+                  <Form.Item>
+                    <Button
+                      type="primary"
+                      htmlType="submit"
+                      className="btn btn-primary submit-btn"
+                    >
+                      Submit
+                    </Button>
+                  </Form.Item>
+                </div>
+              </Form>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
       {/* /Assign Leader Modal */}
       {/* Assign User Modal */}
       <div id="assign_user" className="modal custom-modal fade" role="dialog">
@@ -487,13 +1327,22 @@ const ProjectView = () => {
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">Assign the user to this project</h5>
-              <button type="button" className="close" data-bs-dismiss="modal" aria-label="Close">
+              <button
+                type="button"
+                className="close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              >
                 <span aria-hidden="true">×</span>
               </button>
             </div>
             <div className="modal-body">
               <div className="input-group m-b-30">
-                <input placeholder="Search a user to assign" className="form-control search-input" type="text" />
+                <input
+                  placeholder="Search a user to assign"
+                  className="form-control search-input"
+                  type="text"
+                />
                 <span className="input-group-append">
                   <button className="btn btn-primary">Search</button>
                 </span>
@@ -503,7 +1352,9 @@ const ProjectView = () => {
                   <li>
                     <a href="#">
                       <div className="media">
-                        <span className="avatar"><img alt="" src={Avatar_09} /></span>
+                        <span className="avatar">
+                          <img alt="" src={Avatar_09} />
+                        </span>
                         <div className="media-body align-self-center text-nowrap">
                           <div className="user-name">Richard Miles</div>
                           <span className="designation">Web Developer</span>
@@ -514,7 +1365,9 @@ const ProjectView = () => {
                   <li>
                     <a href="#">
                       <div className="media">
-                        <span className="avatar"><img alt="" src={Avatar_10} /></span>
+                        <span className="avatar">
+                          <img alt="" src={Avatar_10} />
+                        </span>
                         <div className="media-body align-self-center text-nowrap">
                           <div className="user-name">John Smith</div>
                           <span className="designation">Android Developer</span>
@@ -545,12 +1398,111 @@ const ProjectView = () => {
         </div>
       </div>
       {/* /Assign User Modal */}
+
+      <Modal
+        open={openUser}
+        onClose={closeUser}
+        aria-labelledby="modal-modal-title"
+        className="modalScroll"
+        aria-describedby="modal-modal-description"
+        disableRestoreFocus
+        BackdropProps={{
+          style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
+        }}
+        sx={{ overflowY: "auto" }}
+      >
+        <div className="modal-dialog modal-dialog-centered" role="document">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">Add Developers</h5>
+
+              <button type="button" className="close" onClick={closeUser}>
+                <span aria-hidden="true">×</span>
+              </button>
+            </div>
+
+            <div className="modal-body">
+              <Form form={form} onFinish={UpdateTeam} name="control-hooks">
+                <div className="row">
+                  <div className="form-group">
+                    <label>Add Team</label>
+                    <Form.Item name="assignedDevelopers">
+                      <Select
+                        mode="multiple"
+                        placeholder="Select Team Members"
+                        onSelect={handleSelectDeveloper}
+                      >
+                        {getTeamMemberOptions()}
+                      </Select>
+                    </Form.Item>
+                  </div>
+                </div>
+
+                <ul className="chat-user-list">
+                  {selectedDevelopers.map((developerId) => (
+                    <li>
+                      <div
+                        className="employee-selection"
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <div>
+                          <img
+                            alt=""
+                            className="avatar"
+                            src={getEmployeeImage(developerId) || user_icon}
+                          />
+                          <span className="employee-name">
+                            {getEmployeeFullName(developerId)}
+                          </span>
+                        </div>
+
+                        <MinusCircleFilled
+                          style={{ color: "red", cursor: "pointer" }}
+                          onClick={() => handleRemoveDeveloper(developerId)}
+                        />
+                      </div>
+                      <hr
+                        className="developer-divider"
+                        style={{ opacity: "0.1" }}
+                      />
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="submit-section">
+                  <Form.Item>
+                    <Button
+                      type="primary"
+                      htmlType="submit"
+                      className="btn btn-primary submit-btn"
+                    >
+                      Submit
+                    </Button>
+                  </Form.Item>
+                </div>
+              </Form>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
       {/* Edit Project Modal */}
-     <Editproject/>
+
+      {editModal && (
+        <EditProjects
+          data={project}
+          editModal={editModal}
+          closeEditModal={closeEditModal}
+        />
+      )}
+
       {/* /Edit Project Modal */}
     </div>
-      );
-   
-}
+  );
+};
 
 export default ProjectView;
