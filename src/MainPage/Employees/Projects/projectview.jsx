@@ -140,7 +140,6 @@ const ProjectView = () => {
   const closeEditModal = () => {
     setSelectedData(null);
     setEditModal(false);
-    GetProjects();
     form.resetFields();
   };
 
@@ -448,6 +447,9 @@ const ProjectView = () => {
     // },
   ];
 
+  const emptyfunction = () =>{
+    return null
+  }
   return (
     <div className="page-wrapper">
       <Helmet>
@@ -1497,6 +1499,8 @@ const ProjectView = () => {
           data={project}
           editModal={editModal}
           closeEditModal={closeEditModal}
+          getprojects={GetProjects}
+          getlistprojects={emptyfunction}
         />
       )}
 
