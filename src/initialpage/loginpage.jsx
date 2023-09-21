@@ -22,6 +22,9 @@ import { getPermissionList } from '../Redux/Reducer/permissions/actions';
 
 const Loginpage = (props) => {
 
+  const isLogin = useSelector(state => state?.user?.loginvalue)
+  const role = isLogin?.user?.role
+
   const nav = useNavigate();
   const location = useLocation();
   const param = useParams();
@@ -43,6 +46,13 @@ const Loginpage = (props) => {
     email: "admin@dreamguys.co.in",
     password: "123456",
   });
+
+  useEffect(() => {
+    if(isLogin){
+      nav(role === 'client' ? `/client/client-profile` : role === 'focalperson' ? `/client/focal-profile` : role === 'admin' ? `/main/dashboard` : `/employee/dashboard`)
+    }
+  }, [])
+  
 
 
   const onFinish = (values) => {
