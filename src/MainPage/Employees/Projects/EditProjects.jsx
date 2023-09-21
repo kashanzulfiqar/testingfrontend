@@ -273,38 +273,50 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
       });
   };
 
+  const acceptableFormats = ["pdf", "doc", "docx", "jpg", "jpeg", "png", "gif", "xls", "xlsx"];
+
+  
   const onFileUpload = async (files) => {
     const uploadPromises = [];
-
+    const validFiles = []; // To store valid files
+  
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       console.log("File: ", file);
-
+  
+      // Check file format (extension)
+      const fileExtension = file.name.split(".").pop().toLowerCase();
+      if (!acceptableFormats.includes(fileExtension)) {
+        message.error(`File format not supported: ${file.name}`);
+        continue; // Skip this file and continue with the next one
+      }
+  
+      // Check file size
+      if (file.size > 10485760) {
+        message.error(`File size exceeds 10MB: ${file.name}`);
+        continue; // Skip this file and continue with the next one
+      }
+  
+      validFiles.push(file); // Add valid files to the array
+  
       const uploadPromise = apiUploadToS3(file)
         .then((res) => {
           console.log(res?.data?.result);
           return res?.data?.result;
         })
         .catch((err) => {
-          message.error(
-            `${
-              err?.response?.data?.msg
-                ? err?.response?.data?.msg
-                : err?.response?.data?.validation?.body?.message
-                ? err?.response?.data?.validation?.body?.message
-                : "uploadFile Error"
-            }!`
-          );
-          throw err;
+          message.error(`File upload error: ${file.name}`);
         });
-
       uploadPromises.push(uploadPromise);
     }
-
+  
+    // Add valid files to selectedFiles
+    setSelectedFiles((prevSelectedFiles) => [...prevSelectedFiles, ...validFiles]);
+  
     try {
       // Wait for all upload promises to resolve
       const urls = await Promise.all(uploadPromises);
-
+      console.log("these are ",urls)
       // Add the uploaded URLs to the uploadFiles state array
       setUploadFiles((prevUploadFiles) => [...prevUploadFiles, ...urls]);
       e.target.files = null;
@@ -978,7 +990,6 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                   multiple
                   onChange={(e) => {
                     onFileUpload(e.target.files);
-                    setSelectedFiles([...selectedFiles, ...e.target.files]);
                   }}
                   type="file"
                 />
