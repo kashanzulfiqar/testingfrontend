@@ -319,6 +319,42 @@ const PermissionsTable = ({ permissions, setPermissions, disabled }) => {
             </>
         )},
     },
+    {
+      title: 'Manage Clients',
+      dataIndex: 'clientManagement',
+      render: (text, record) => {
+        const sub = record?.subPermissions?.find(permission => permission.title === "Manage Clients");
+        const isChecked = record?.subPermissions?.find(permission => permission.title === "Manage Clients")?.checked;
+        return(            
+            <>
+              {
+                record?.subPermissions?.find(permission => permission.title === "Manage Clients") ?
+                  <Checkbox checked={isChecked || false} onChange={() => handleSingleCheckbox(record, sub)} disabled={disabled} style={{color: `${isChecked ? '#ff9b44' : '#B8B8B8'}`}} /> :
+                  <Tooltip title="Permission Not Available For This Module">
+                    <span><Checkbox indeterminate={true} disabled /></span>
+                  </Tooltip>
+              }
+            </>
+        )},
+    },
+    {
+      title: 'Manage Projects',
+      dataIndex: 'projectManagement',
+      render: (text, record) => {
+        const sub = record?.subPermissions?.find(permission => permission.title === "Manage Projects");
+        const isChecked = record?.subPermissions?.find(permission => permission.title === "Manage Projects")?.checked;
+        return(            
+            <>
+              {
+                record?.subPermissions?.find(permission => permission.title === "Manage Projects") ?
+                  <Checkbox checked={isChecked || false} onChange={() => handleSingleCheckbox(record, sub)} disabled={disabled} style={{color: `${isChecked ? '#ff9b44' : '#B8B8B8'}`}} /> :
+                  <Tooltip title="Permission Not Available For This Module">
+                    <span><Checkbox indeterminate={true} disabled /></span>
+                  </Tooltip>
+              }
+            </>
+        )},
+    },
   ]
 
   return (
