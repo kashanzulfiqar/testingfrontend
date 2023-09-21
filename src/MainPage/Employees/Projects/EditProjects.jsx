@@ -685,13 +685,21 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                           getPopupContainer={() =>
                             document.getElementById("area")
                           }
-                          placeholder="Select a Cost Type"
+                          placeholder="Select a Status"
                         >
                           <Select.Option value="Paused">Paused</Select.Option>
                           <Select.Option value="Scheduled">
                             Scheduled
                           </Select.Option>
-                          <Select.Option value="Ongoing">Ongoing</Select.Option>
+                          <Select.Option value="On-Going">
+                                On-Going
+                          </Select.Option>
+                          <Select.Option value="Archived">
+                            Archived
+                          </Select.Option>
+                          <Select.Option value="Completed">
+                            Completed
+                          </Select.Option>
                         </Select>
                       </Form.Item>
                     </div>
@@ -791,9 +799,9 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                           }
                           placeholder="Select a Cost Type"
                         >
-                          <Select.Option value="hourly">Hourly</Select.Option>
-                          <Select.Option value="fixed">Fixed</Select.Option>
-                          <Select.Option value="monthly">Monthly</Select.Option>
+                          <Select.Option value="Hourly">Hourly</Select.Option>
+                          <Select.Option value="Fixed">Fixed</Select.Option>
+                          <Select.Option value="Monthly">Monthly</Select.Option>
                         </Select>
                       </Form.Item>
                     </div>

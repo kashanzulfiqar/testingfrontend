@@ -159,6 +159,8 @@ const Projects = () => {
         paid: false,
       },
     ]);
+    setSelectedFiles([]);
+    setUploadFiles([]);
   };
 
   const openEditModal = (data) => {
@@ -401,9 +403,7 @@ const Projects = () => {
       projectLead: values.projectLead,
       assignedDevelopers: values.assignedDevelopers,
       status: values.status,
-      docs: [
-        "https://res.cloudinary.com/dcxpovyr9/image/upload/v1694068829/t91sxvwxqmkbnicpnfpl.png",
-      ],
+      docs: uploadFiles,
       paymentSchedule: values?.paymentSchedule,
     };
 
@@ -507,7 +507,8 @@ const Projects = () => {
       dataIndex: "assignedDevelopers",
       key: "assignedDevelopers",
       render: (assignedDevelopers) => (
-        <ul className="team-members text-nowrap">
+        <div className="project-members m-b-15">
+        <ul className="team-members">
           {assignedDevelopers?.slice(0, 4).map((developer, index) => (
             <li key={index}>
               <Tooltip title={getEmployeeFullName(developer)}>
@@ -519,6 +520,7 @@ const Projects = () => {
             <li className="dropdown avatar-dropdown">
               <Link
                 className="all-users dropdown-toggle projectTeamMember"
+                style={{display:'inline-flex'}}
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
               >
@@ -530,6 +532,7 @@ const Projects = () => {
                   {assignedDevelopers?.slice(4).map((developer, index) => (
                     <a
                       className="avatar avatar-xs projectTeamMember"
+                      
                       key={index}
                     >
                       <Tooltip title={getEmployeeFullName(developer)}>
@@ -541,7 +544,7 @@ const Projects = () => {
                   ))}
                 </div>
                 {/* Pagination for additional team members */}
-                <div className="avatar-pagination">
+                {/* <div className="avatar-pagination">
                   <ul className="pagination">
                     <li className="page-item">
                       <a className="page-link" aria-label="Previous">
@@ -564,11 +567,12 @@ const Projects = () => {
                       </a>
                     </li>
                   </ul>
-                </div>
+                </div> */}
               </div>
             </li>
           )}
         </ul>
+        </div>
       ),
     },
     {
@@ -618,7 +622,7 @@ const Projects = () => {
             {record === "Scheduled" && (
               <i className="fa fa-dot-circle-o text-danger" />
             )}
-            {record === "Ongoing" && (
+            {record === "On-Going" && (
               <i className="fa fa-dot-circle-o text-warning" />
             )}
             {record === "Paused" && (
@@ -632,8 +636,8 @@ const Projects = () => {
             )}
             {record === "Scheduled"
               ? " Scheduled"
-              : record === "Ongoing"
-              ? " Ongoing"
+              : record === "On-going"
+              ? " On-Going"
               : record === "Paused"
               ? " Paused"
               : record === "Archived"
@@ -781,9 +785,7 @@ const Projects = () => {
       projectLead: values.projectLead,
       assignedDevelopers: values.assignedDevelopers,
       status: values.status,
-      docs: [
-        "https://res.cloudinary.com/dcxpovyr9/image/upload/v1694068829/t91sxvwxqmkbnicpnfpl.png",
-      ],
+      docs: uploadFiles,
       paymentSchedule: [
         {
           paymentTitle: "Payment 1",
@@ -1129,12 +1131,12 @@ const Projects = () => {
                           <div>Project Leader :</div>
                           <ul className="team-members">
                             <li>
-                              <a
-                                data-bs-toggle="tooltip"
+                            <Tooltip
                                 title={getEmployeeFullName(
                                   project?.projectLead
                                 )}
                               >
+                              <a>
                                 <img
                                   alt=""
                                   src={
@@ -1143,6 +1145,7 @@ const Projects = () => {
                                   }
                                 />
                               </a>
+                              </Tooltip>
                             </li>
                           </ul>
                         </div>
@@ -1153,7 +1156,24 @@ const Projects = () => {
                               ?.slice(0, 4)
                               ?.map((developer, devIndex) => (
                                 <li key={devIndex}>
-                                  <a
+                                  <Tooltip
+                                  className="projectTeamMember"
+                                title={getEmployeeFullName(
+                                  developer
+                                )}
+                              >
+                              <a>
+                                <img
+                                  alt=""
+                                  src={
+                                    getEmployeeImage(developer) ||
+                                    user_icon
+                                  }
+                                />
+                              </a>
+                              </Tooltip>
+
+                                  {/* <a
                                     className="projectTeamMember"
                                     data-bs-toggle="tooltip"
                                     title={getEmployeeFullName(developer)}
@@ -1164,7 +1184,7 @@ const Projects = () => {
                                         getEmployeeImage(developer) || user_icon
                                       }
                                     />
-                                  </a>
+                                  </a> */}
                                 </li>
                               ))}
                             {project?.assignedDevelopers?.length > 4 && (
@@ -1200,7 +1220,7 @@ const Projects = () => {
                                         </a>
                                       ))}
                                   </div>
-                                  <div className="avatar-pagination">
+                                  {/* <div className="avatar-pagination">
                                     <ul className="pagination">
                                       <li className="page-item">
                                         <a
@@ -1231,7 +1251,7 @@ const Projects = () => {
                                         </a>
                                       </li>
                                     </ul>
-                                  </div>
+                                  </div> */}
                                 </div>
                               </li>
                             )}
@@ -1697,7 +1717,7 @@ const Projects = () => {
                               getPopupContainer={() =>
                                 document.getElementById("area")
                               }
-                              placeholder="Select a Cost Type"
+                              placeholder="Select a Status"
                             >
                               <Select.Option value="Paused">
                                 Paused
@@ -1705,8 +1725,14 @@ const Projects = () => {
                               <Select.Option value="Scheduled">
                                 Scheduled
                               </Select.Option>
-                              <Select.Option value="Ongoing">
-                                Ongoing
+                              <Select.Option value="On-Going">
+                                On-Going
+                              </Select.Option>
+                              <Select.Option value="Archived">
+                                Archived
+                              </Select.Option>
+                              <Select.Option value="Completed">
+                                Completed
                               </Select.Option>
                             </Select>
                           </Form.Item>
@@ -1809,11 +1835,11 @@ const Projects = () => {
                               }
                               placeholder="Select a Cost Type"
                             >
-                              <Select.Option value="hourly">
+                              <Select.Option value="Hourly">
                                 Hourly
                               </Select.Option>
-                              <Select.Option value="fixed">Fixed</Select.Option>
-                              <Select.Option value="monthly">
+                              <Select.Option value="Fixed">Fixed</Select.Option>
+                              <Select.Option value="Monthly">
                                 Monthly
                               </Select.Option>
                             </Select>
@@ -2108,6 +2134,7 @@ const Projects = () => {
                         <div className="col-sm-6">
                           <div className="form-group">
                             <label>Due Date</label>
+                            <div style={{ position: "relative" }} id="area"></div>
                             <Form.Item
                               name={["paymentSchedule", index, "dueDate"]}
                               className="custom-border"
@@ -2119,6 +2146,9 @@ const Projects = () => {
                               ]}
                             >
                               <DatePicker
+                              getPopupContainer={() =>
+                                document.getElementById("area")
+                              }
                                 style={{ width: "100%" }}
                                 className="form-control"
                                 size="large"
