@@ -38,7 +38,7 @@ import { apiServices } from "../../../Services/apiServices";
 import { apiUploadToS3 } from "../../../Services/uploadImage";
 import { MinusCircleFilled } from "@ant-design/icons";
 
-function EditProjects({ data, editModal, closeEditModal }) {
+function EditProjects({ data, editModal, closeEditModal, getprojects, getlistprojects }) {
   const [form] = Form.useForm();
 
   const user_state = useSelector((state) => state.user.loginvalue);
@@ -253,6 +253,8 @@ function EditProjects({ data, editModal, closeEditModal }) {
       .then((res) => {
         if (res.data.success === true) {
           message.success(`Project Details Updated Successfully`);
+          getprojects();
+          getlistprojects();
         }
       })
       .catch((err) => {

@@ -168,8 +168,6 @@ const Projects = () => {
   };
 
   const closeEditModal = () => {
-    GetCardProjects();
-    GetListProjects();
     setSelectedData(null);
     setEditModal(false);
     form.resetFields();
@@ -2164,6 +2162,8 @@ const Projects = () => {
             data={selectedData}
             editModal={editModal}
             closeEditModal={closeEditModal}
+            getprojects={GetCardProjects}
+            getlistprojects={GetListProjects}
           />
         )}
 
