@@ -42,6 +42,13 @@ const ClientProfile = () => {
     }else if(!client_data && role !== 'client'){
       nav(role === 'focalperson' ? `/client/focal-profile` : role === 'admin' ? `/main/dashboard` : `/employee/dashboard`)
     }
+
+    window.history.pushState(null, '', `${window?.location?.origin}/client/focal-profile`)
+    window.onpopstate = function() {
+      if(location.pathname === '/client/login' || location.pathname === '/login'){
+        window.history.pushState(null, '', `${window?.location?.origin}/client/focal-profile`)
+      }
+    }
   }, [])
 
   useEffect(() => {
