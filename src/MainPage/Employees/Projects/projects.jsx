@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet";
 import { DefaultEditor } from "react-simple-wysiwyg";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Editproject from "../../../_components/modelbox/Editproject";
 import Offcanvas from "../../../Entryfile/offcanvance";
 // import ReactSummernote from 'react-summernote';
@@ -49,7 +49,10 @@ const Projects = () => {
   const [html, setHtml] = React.useState("my <b>HTML</b>");
 
   const user_state = useSelector((state) => state.user.loginvalue);
-  const role = user_state?.user?.role;
+  const permissions = useSelector((state) => state?.permissionsSlice?.data);
+  const role = user_state?.user?.role
+  console.log(permissions,user_state)
+  const nav = useNavigate();
 
   const [isLoading, setIsLoading] = useState(false);
   const [createModal, setCreateModal] = useState(false);
@@ -161,6 +164,8 @@ const Projects = () => {
     ]);
     setSelectedFiles([]);
     setUploadFiles([]);
+    GetCardProjects();
+    GetListProjects();
   };
 
   const openEditModal = (data) => {
@@ -839,38 +844,50 @@ const Projects = () => {
       });
   };
 
+  const acceptableFormats = ["pdf", "doc", "docx", "jpg", "jpeg", "png", "gif", "xls", "xlsx"];
+
+  
   const onFileUpload = async (files) => {
     const uploadPromises = [];
-
+    const validFiles = []; // To store valid files
+  
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       console.log("File: ", file);
-
+  
+      // Check file format (extension)
+      const fileExtension = file.name.split(".").pop().toLowerCase();
+      if (!acceptableFormats.includes(fileExtension)) {
+        message.error(`File format not supported: ${file.name}`);
+        continue; // Skip this file and continue with the next one
+      }
+  
+      // Check file size
+      if (file.size > 10485760) {
+        message.error(`File size exceeds 10MB: ${file.name}`);
+        continue; // Skip this file and continue with the next one
+      }
+  
+      validFiles.push(file); // Add valid files to the array
+  
       const uploadPromise = apiUploadToS3(file)
         .then((res) => {
           console.log(res?.data?.result);
           return res?.data?.result;
         })
         .catch((err) => {
-          message.error(
-            `${
-              err?.response?.data?.msg
-                ? err?.response?.data?.msg
-                : err?.response?.data?.validation?.body?.message
-                ? err?.response?.data?.validation?.body?.message
-                : "uploadFile Error"
-            }!`
-          );
-          throw err;
+          message.error(`File upload error: ${file.name}`);
         });
-
       uploadPromises.push(uploadPromise);
     }
-
+  
+    // Add valid files to selectedFiles
+    setSelectedFiles((prevSelectedFiles) => [...prevSelectedFiles, ...validFiles]);
+  
     try {
       // Wait for all upload promises to resolve
       const urls = await Promise.all(uploadPromises);
-
+      console.log("these are ",urls)
       // Add the uploaded URLs to the uploadFiles state array
       setUploadFiles((prevUploadFiles) => [...prevUploadFiles, ...urls]);
       e.target.files = null;
@@ -879,6 +896,8 @@ const Projects = () => {
       console.error("File upload error:", error);
     }
   };
+  
+
 
   const removeSelectedFile = (index) => {
     const updatedSelectedFiles = [...selectedFiles];
@@ -889,11 +908,6 @@ const Projects = () => {
     const updatedUploadFiles = [...uploadFiles];
     updatedUploadFiles.splice(index, 1);
     setUploadFiles(updatedUploadFiles);
-  };
-
-  const openCloudinaryLink = (url) => {
-    // Open the Cloudinary link in a new tab
-    window.open(url, "_blank");
   };
 
   const generateCustomFileName = (fileUrl, index) => {
@@ -994,6 +1008,7 @@ const Projects = () => {
                       className="form-control"
                       allowClear={false}
                       placeholder="Select Project Name"
+                      style={{height:'50px'}}
                       onChange={(e) =>
                         handleFilterChange(e.target.value, "projectName")
                       }
@@ -1005,10 +1020,12 @@ const Projects = () => {
                 <div className="form-group">
                   <Form.Item name="clientName" className="custom-border">
                     <Select
+                      className="custom-select"
                       placeholder="Select a Client"
                       onChange={(value) => {
                         handleFilterChange(value, "clientName");
                       }}
+                      style={{height:'50px'}}
                     >
                       {clients.map((client) => (
                         <Select.Option
@@ -1023,30 +1040,26 @@ const Projects = () => {
                 </div>
               </div>
               <div className="col-sm-6 col-md-3">
-                <Button
+                <button
                   type="primary"
                   htmlType="submit"
-                  className="btn-success btn-block w-100"
+                  className="btn btn-success btn-block w-100"
                   //disabled={role === 'admin' ? false : permissions?.viewAllRequest ? false : permissions?.teamRequest ? false : true}
-                  style={{ borderRadius: "5px" }}
+                  style={{marginBottom: '24px'}}
                 >
                   <span className="d-flex justify-content-center">Search</span>
-                </Button>
+                </button>
               </div>
               <div className="col-sm-6 col-md-3">
-                <Button
+                <button
                   htmlType="button"
-                  className="btn-secondary btn-block w-100"
+                  className="btn btn-success btn-block w-100"
                   onClick={handleReset}
                   //disabled={role === 'admin' ? false : permissions?.viewAllRequest ? false : permissions?.teamRequest ? false : true}
-                  style={{
-                    backgroundColor: "#616161",
-                    borderColor: "#616161",
-                    borderRadius: "5px",
-                  }}
+                  style={{backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}}
                 >
                   <span className="d-flex justify-content-center">Reset</span>
-                </Button>
+                </button>
               </div>
             </div>
           </Form>
@@ -2027,7 +2040,6 @@ const Projects = () => {
                       multiple
                       onChange={(e) => {
                         onFileUpload(e.target.files);
-                        setSelectedFiles([...selectedFiles, ...e.target.files]);
                       }}
                       type="file"
                     />
