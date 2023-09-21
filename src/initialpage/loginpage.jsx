@@ -22,6 +22,9 @@ import { getPermissionList } from '../Redux/Reducer/permissions/actions';
 
 const Loginpage = (props) => {
 
+  const isLogin = useSelector((state) => state.user.loginvalue);
+  const role = login?.user?.role
+
   const nav = useNavigate();
   const location = useLocation();
   const param = useParams();
@@ -141,6 +144,13 @@ const Loginpage = (props) => {
     });
   }
 
+  useEffect(() => {
+    if(isLogin){
+      nav(role === 'client' ? `/client/client-profile` : role === 'focalperson' ? `/client/focal-profile` : role === 'admin' ? `/main/dashboard` : `/employee/dashboard`)
+    }
+  }, [])
+  
+
 
   return (
     <>
@@ -161,7 +171,7 @@ const Loginpage = (props) => {
             !emailNotVerified ?
               <div className="account-box" style={{ width: '100%', maxWidth: '514px', height: '525px', paddingInline: '55px' }}>
                 <div className="account-wrapper">
-                  <h3 className="account-title" style={{ padding: '17px 0px 40px 0px' }}>Login 55</h3>
+                  <h3 className="account-title" style={{ padding: '17px 0px 40px 0px' }}>Login 23</h3>
                   {/* <p className="account-subtitle">Access to our dashboard</p> */}
                   {/* Account Form */}
                   <div>
