@@ -51,9 +51,7 @@ import FocalProfile from '../MainPage/Pages/Profile/FocalProfile';
 
 
 const App = () => {
-  const login = useSelector((state) => state?.user?.loginvalue);
-  const role = login?.user?.role
-
+  const login = useSelector((state) => state.user.loginvalue);
   const nav = useNavigate();
   const location = useLocation();
   //   useEffect(() => {
@@ -84,20 +82,10 @@ const App = () => {
     || location.pathname === '/forget-password' || location.pathname === '/reset-password/:id'
     || location.pathname === '/register') && login)
     {
-      // nav('/employee/dashboard');
+      nav('/employee/dashboard');
+      console.log('loged in ============');
     }
   }, []);
-
-  useEffect(() => {
-    if(login){
-      if(location.pathname === '/login' || location.pathname === '/client/login' || location.pathname === '/login/:email/:token' 
-        || location.pathname === '/forget-password' || location.pathname === '/reset-password/:id'
-        || location.pathname === '/register')
-        {
-          nav(role === 'client' ? `/client/client-profile` : role === 'focalperson' ? `/client/focal-profile` : role === 'admin' ? `/main/dashboard` : `/employee/dashboard`)
-        }
-    }
-  }, [])
 
   useEffect(() => {
     if(location?.pathname !== "/profile/employee-profile")
