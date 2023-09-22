@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   Avatar_16,
   Avatar_02,
@@ -42,6 +42,9 @@ const ProjectView = () => {
 
   const user_state = useSelector((state) => state.user.loginvalue);
   const role = user_state?.user?.role;
+  const permissions = useSelector((state) => state?.permissionsSlice?.data);
+  console.log(permissions,user_state)
+  const nav = useNavigate();
 
   const [paymentSchedules, setPaymentSchedules] = useState(null);
 
@@ -144,10 +147,14 @@ const ProjectView = () => {
   };
 
   useEffect(() => {
-    setIsLoading(true);
-    GetProjects();
-    fetchEmployees();
-    ViewClients();
+    if(role === 'admin' || role === 'client' || role === 'focalperson' || permissions?.projectManagement || permissions?.clientManagement ) {
+      setIsLoading(true);
+      GetProjects();
+      fetchEmployees();
+      ViewClients();
+    }else{
+      nav('/restricted', { state: { unAuthorize: true}})
+    }
   }, []);
 
   const GetProjects = () => {
@@ -491,6 +498,13 @@ const ProjectView = () => {
                       endDate: moment(project?.endDate, "YYYY-MM-DD"),
                     });
                   }}
+                  disabled={
+                    (role === 'admin' || role === 'client' || role === 'focalperson')
+                      ? false
+                      : (permissions?.projectManagement || permissions?.clientManagement)
+                      ? false
+                      : true
+                  }
                 >
                   <i className="fa fa-plus" />
                   Edit Project

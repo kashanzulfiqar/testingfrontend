@@ -43,6 +43,7 @@ import { apiServices } from "../../../Services/apiServices";
 import { itemRender } from "../../paginationfunction";
 import EditProjects from "./EditProjects";
 import { apiUploadToS3 } from "../../../Services/uploadImage";
+import { MinusCircleFilled } from "@ant-design/icons";
 
 const Projects = () => {
   const [form] = Form.useForm();
@@ -233,18 +234,30 @@ const Projects = () => {
   };
 
   useEffect(() => {
-    ViewClients();
-    fetchEmployees();
+    if(role === 'admin' || permissions?.projectManagement ) {
+      ViewClients();
+      fetchEmployees();
+    }else{
+      nav('/restricted', { state: { unAuthorize: true}})
+    }
   }, []);
 
   useEffect(() => {
-    setIsLoading(true);
-    GetCardProjects();
+    if(role === 'admin' || permissions?.projectManagement ) {
+      setIsLoading(true);
+      GetCardProjects();
+    }else{
+      nav('/restricted', { state: { unAuthorize: true}})
+    }
   }, [filters]);
 
   useEffect(() => {
-    setIsLoading(true);
-    GetListProjects();
+    if(role === 'admin' || permissions?.projectManagement ) { 
+      setIsLoading(true);
+      GetListProjects();
+    }else{
+      nav('/restricted', { state: { unAuthorize: true}})
+    }
   }, [filters, pagination.current, pagination.pageSize]);
 
   const fetchEmployees = () => {
@@ -964,6 +977,13 @@ const Projects = () => {
                 <button
                   className="btn add-btn"
                   onClick={() => openCreateModal()}
+                  disabled={
+                    role === "admin" 
+                      ? false
+                      : permissions?.projectManagement
+                      ? false
+                      : true
+                  }
                 >
                   <i className="fa fa-plus" />
                   Create Project
@@ -2068,12 +2088,19 @@ const Projects = () => {
                         Payment {index + 1}
                         {index === paymentSchedules.length - 1 &&
                           paymentSchedules.length > 1 && (
-                            <Button
-                              type="link"
+                            <MinusCircleFilled
+                              style={{
+                                fontSize: 18,
+                                color:
+                                  paymentSchedules.length > 1
+                                    ? index === paymentSchedules.length - 1
+                                      ? "red"
+                                      : "#ccc"
+                                    : "#ccc",
+                                cursor: "pointer",
+                              }}
                               onClick={removeLastPaymentSchedule}
-                            >
-                              Remove
-                            </Button>
+                            />
                           )}
                       </h5>
 
