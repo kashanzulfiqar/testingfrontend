@@ -23,7 +23,7 @@ import { getPermissionList } from '../Redux/Reducer/permissions/actions';
 const ClientLogin = (props) => {
 
   const isLogin = useSelector((state) => state.user.loginvalue);
-  const role = login?.user?.role
+  const role = isLogin?.user?.role
 
   const nav = useNavigate();
   const location = useLocation();
@@ -71,20 +71,37 @@ const ClientLogin = (props) => {
         if(res?.data?.result?.user?.firstTimeLogin){
           setTimeout(() => {
             setLoader(false)
-            window.location.href = `${window?.location?.origin}/change-password`
+            // window.location.href = `${window?.location?.origin}/change-password`
+
+            window.history.replaceState(null, null, `${window?.location?.origin}/change-password`);
+            // window.location.replace(`${window?.location?.origin}/client/client-profile`)
+            window.location.reload();
+
             localStorage.setItem("firstTimeLogin", JSON.stringify(res?.data?.result?.user?.firstTimeLogin));
           }, 1300);
         }else{
           if(res?.data?.result?.user?.role === "client"){
             setTimeout(() => {
               setLoader(false)
-              window.location.href = `${window?.location?.origin}/client/client-profile`
+              // window.location.href = `${window?.location?.origin}/client/client-profile`
+
+              window.history.replaceState(null, null, `${window?.location?.origin}/client/client-profile`);
+              // window.location.replace(`${window?.location?.origin}/client/client-profile`)
+              window.location.reload();
+
+
             }, 1300);
           }
           else if(res?.data?.result?.user?.role === "focalperson") {
             setTimeout(() => {
               setLoader(false)
-              window.location.href = `${window?.location?.origin}/client/focal-profile`
+              // window.location.href = `${window?.location?.origin}/client/focal-profile`
+
+              window.history.replaceState(null, null, `${window?.location?.origin}/client/focal-profile`);
+              // window.location.replace(`${window?.location?.origin}/client/focal-profile`)
+              window.location.reload();
+
+
             }, 1300);
           }
 
