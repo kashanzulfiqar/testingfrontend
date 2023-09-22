@@ -501,7 +501,7 @@ const LeaveAdmin = () => {
            <div className={`main-wrapper ${menu ? 'slide-nav': ''}`}> 
           
           {/* <Header onMenuClick={(value) => toggleMobileMenu()} /> */}
-          <Sidebar />        
+          {/* <Sidebar />         */}
         <div className="page-wrapper">
         <Helmet>
             <title>Requests - DaftarPro Admin</title>
