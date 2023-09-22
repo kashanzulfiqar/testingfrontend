@@ -17,6 +17,7 @@ import moment from 'moment';
 import { counter } from '../../../Redux/Reducer/permissions/pendingCounterSlice';
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { user_icon } from '../../../Entryfile/imagepath';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 
 const { Option } = Select;
 
@@ -486,7 +487,7 @@ const LeaveAdmin = () => {
     render: (text, record) => (
       <div className="dropdown dropdown-action">
         <a href="javascript:void(0)" className="action-icon" onClick={() => openModal(record)}>
-          <i className="material-icons">add_circle</i>
+          <VisibilityIcon />
         </a>
       </div>
     ),
@@ -500,7 +501,7 @@ const LeaveAdmin = () => {
            <div className={`main-wrapper ${menu ? 'slide-nav': ''}`}> 
           
           {/* <Header onMenuClick={(value) => toggleMobileMenu()} /> */}
-          <Sidebar />        
+          {/* <Sidebar />         */}
         <div className="page-wrapper">
         <Helmet>
             <title>Requests - DaftarPro Admin</title>
@@ -514,7 +515,7 @@ const LeaveAdmin = () => {
               <div className="col">
                 <h3 className="page-title">Requests</h3>
                 <ul className="breadcrumb">
-                  <li className="breadcrumb-item"><Link to="/app/main/dashboard">Dashboard</Link></li>
+                  <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>Dashboard</Link></li>
                   <li className="breadcrumb-item active">Requests</li>
                 </ul>
               </div>

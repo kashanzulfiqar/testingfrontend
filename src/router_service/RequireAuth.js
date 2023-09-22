@@ -31,10 +31,20 @@ const RequireAuth = ({Role}) => {
           nav('/change-password')
           // message.error('Please Change Your Password First!')
         }
+        if((role === 'client' || role === 'focalperson') && firstTimeLogin){
+          nav('/change-password')
+          // message.error('Please Change Your Password First!')
+        }
+      }
+      // for client and focal person redirect code
+      if( role === 'client' && location.pathname !== '/client/client-profile' && location.pathname !== '/client/focal-profile' && location.pathname !== '/change-password' && !location.pathname.includes('/projects/projects-view/')){
+        nav('/client/client-profile')
+      }
+      if( role === 'focalperson' && location.pathname !== '/client/focal-profile' && location.pathname !== '/change-password' && !location.pathname.includes('/projects/projects-view/')){
+        nav('/client/focal-profile')
       }
     }, [location])
-    
-  
+
     useEffect(() => {
       setMenu(false);
       window.scrollTo(0, 0);
@@ -50,9 +60,10 @@ const RequireAuth = ({Role}) => {
                 <Outlet />
             </div>
             :
-            auth?.user ?
-                alert('unauthorized') :
-                <Navigate to='/login' state={{ from: location.pathname }} replace />
+            <Navigate to='/login' replace={true} />
+            // auth?.user ?
+            //     alert('unauthorized') :
+                // <Navigate to='/login' state={{ from: location.pathname }} replace />
     );
 }
 export default RequireAuth;

@@ -6,62 +6,40 @@ import { Helmet } from "react-helmet";
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {Avatar_01,Avatar_02,Avatar_05,Avatar_09,Avatar_10,Avatar_11,Avatar_12,Avatar_13,Avatar_16 ,Avatar_19, user_icon} from '../../../Entryfile/imagepath'
 import { useSelector } from 'react-redux';
-import FocalPerson from './clientProfileScreens/FocalPerson';
 import InvoicesScreen from './clientProfileScreens/InvoicesScreen';
 import ProjectsScreen from './clientProfileScreens/ProjectsScreen';
-import { apiServices } from '../../../Services/apiServices';
 import { Spin, message } from 'antd';
+import { apiServices } from '../../../Services/apiServices';
 
-const ClientProfile = () => {
+const FocalProfile = () => {
 
   const location = useLocation();
-  const client_data = location?.state?.client_data;
+  const focal_data = location?.state?.focal_data;
   const nav = useNavigate();
-
-  let active = sessionStorage.getItem("active_tab");
-  let clients_tab = sessionStorage.getItem("clients_tab");
 
   const user_state = useSelector((state) => state.user.loginvalue);
   const role = user_state?.user?.role
 
-  const [clientData, setClientData] = useState({})
-  const [activeTab, setActiveTab] = useState(clients_tab ? clients_tab : active ? active : 'projects')
-  if(clients_tab){
-    setTimeout( function() { 
-    sessionStorage.removeItem('clients_tab');
-    }, 1000);
-  }
+  const [focalData, setFocalData] = useState({})
+  const [activeTab, setActiveTab] = useState('projects')
   const [loader, setLoader] = useState(true)
 
   useEffect(() => {
-    if(client_data){
-      setClientData(client_data)
+    if(focal_data){
+      setFocalData(focal_data)
       setLoader(false)
-    }else if(role === 'client'){
-        getSingleClient()
-    }else if(!client_data && role !== 'client'){
-      nav(role === 'focalperson' ? `/client/focal-profile` : role === 'admin' ? `/main/dashboard` : `/employee/dashboard`)
+    }else if(role === 'focalperson'){
+        getSingleFocal()
+    }else if(!focal_data && role !== 'focalperson'){
+      nav(role === 'client' ? `/client/client-profile` : role === 'admin' ? `/main/dashboard` : `/employee/dashboard`)
     }
-
-    // window.history.pushState(null, '', `${window?.location?.origin}/client/focal-profile`)
-    // window.onpopstate = function() {
-    //   if(location.pathname === '/client/login' || location.pathname === '/login'){
-    //     window.history.pushState(null, '', `${window?.location?.origin}/client/focal-profile`)
-    //   }
-    // }
   }, [])
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    // sessionStorage.clear();
-    sessionStorage.setItem(`active_tab`, `${activeTab}`)
-  }, [activeTab])
-
-  const getSingleClient = () => {
-    apiServices("GET", `client/get-client-info?_id=${user_state?.user?._id}`, null, user_state)
+  const getSingleFocal = () => {
+    apiServices("GET", `focal-person/get-focal-person-info?_id=${user_state?.user?._id}`, null, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
-          setClientData(res?.data?.Client);
+          setFocalData(res?.data?.FocalPerson);
           setLoader(false);
         }
       })
@@ -73,7 +51,7 @@ const ClientProfile = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Single Client Error"
+              : "Get Single Focal Person Error"
           }!`
         );
       });
@@ -84,7 +62,7 @@ const ClientProfile = () => {
       <>
        <div className="page-wrapper">
             <Helmet>
-              <title>Client Profile - DaftarPro</title>
+              <title>Focal Person Profile - DaftarPro</title>
               <meta name="description" content="Reactify Blank Page" />
             </Helmet>
            {/* Page Content */}
@@ -104,7 +82,7 @@ const ClientProfile = () => {
              {/* /Page Header */}
              <div className="card mb-0">
               {
-                loader ? <Spin size='middle' style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '195px'}} /> :
+                loader ? <Spin size='middle' style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '158px'}} /> :
                 <div className="card-body">
                   <div className="row">
                     <div className="col-md-12">
@@ -112,15 +90,15 @@ const ClientProfile = () => {
                         <div className="profile-img-wrap">
                           <div className="profile-img">
                             <a href="javascript:void(0)" style={{cursor: 'default'}}>
-                              <img src={clientData?.logo || user_icon} alt="profile" />
+                              <img src={focalData?.focalPersonImageUrl || user_icon} alt="profile" />
                             </a>
                           </div>
                         </div>
                         <div className="profile-basic">
                           <div className="row">
                             <div className="col-md-5">
-                              <div className="profile-info-left" style={{padding: '45px 0px 80px 0px'}}>
-                                <h3 className="user-name m-t-0">{clientData?.clientName}</h3>
+                              <div className="profile-info-left" style={{padding: '45px 0px 45px 0px'}}>
+                                <h3 className="user-name m-t-0">{focalData?.focalPersonName}</h3>
                                 {/* <h5 className="company-role m-t-0 mb-0">Barry Cuda</h5>
                                 <small className="text-muted">CEO</small>
                                 <div className="staff-id">Employee ID : CLT-0001</div>
@@ -131,23 +109,15 @@ const ClientProfile = () => {
                               <ul className="personal-info">
                                 <li>
                                   <span className="title">Phone:</span>
-                                  <span className="text"><a href="javascript:void(0)" style={{cursor: 'default'}}>{clientData?.clientPhoneNo}</a></span>
+                                  <span className="text"><a href="javascript:void(0)" style={{cursor: 'default'}}>{focalData?.focalPersonPhoneNo}</a></span>
                                 </li>
                                 <li>
                                   <span className="title">Email:</span>
-                                  <span className="text"><a href="javascript:void(0)" style={{cursor: 'default'}}>{clientData?.clientEmail}</a></span>
+                                  <span className="text"><a href="javascript:void(0)" style={{cursor: 'default'}}>{focalData?.focalPersonEmail}</a></span>
                                 </li>
                                 <li>
-                                  <span className="title">Country:</span>
-                                  <span className="text">{clientData?.country}</span>
-                                </li>
-                                <li>
-                                  <label className="title">Invoice Email:</label>
-                                  <span className="text">{clientData?.invoiceEmail}</span>
-                                </li>
-                                <li>
-                                  <label className="title">Head Office Address:</label>
-                                  <label className="text">{clientData?.headOfficeAddress}</label>
+                                  <span className="title">Designation:</span>
+                                  <span className="text">{focalData?.designation}</span>
                                 </li>
                               </ul>
                             </div>
@@ -168,8 +138,6 @@ const ClientProfile = () => {
                      {/* <li className="nav-item col-sm-3"><a className="nav-link" data-bs-toggle="tab" href="#tasks">Tasks</a></li> */}
                      <li className="nav-item col-sm-3"><a className={`nav-link ${activeTab === 'invoices' ? 'active' : ''}`} onClick={() => { setActiveTab('invoices') }}>Invoices</a></li>
                      {/* <li className="nav-item col-sm-3"><a className="nav-link" data-bs-toggle="tab" href="#invoices">Invoices</a></li> */}
-                     <li className="nav-item col-sm-3"><a className={`nav-link ${activeTab === 'focal' ? 'active' : ''}`} onClick={() => { setActiveTab('focal') }}>Focal Persons</a></li>
-                     {/* <li className="nav-item col-sm-3"><a className="nav-link" data-bs-toggle="tab" href="#focal_person">Focal Person</a></li> */}
                    </ul>
                  </div>
                </div>
@@ -179,11 +147,11 @@ const ClientProfile = () => {
                  <div className="tab-content profile-tab-content">
                    {/* Projects Tab */}
                     {
-                      (activeTab === 'projects' && clientData?._id) &&
+                      (activeTab === 'projects' && focalData?._id) &&
                       <div id="myprojects" className="tab-pane fade show active">
                         <ProjectsScreen
-                          isID={clientData?._id}
-                          isRole='client'
+                          isID={focalData?._id}
+                          isRole='focalperson'
                         />
                       </div>
                     }
@@ -334,23 +302,12 @@ const ClientProfile = () => {
 
                    {/* Invoice Tab */}  
                    {
-                      (activeTab === 'invoices' && clientData?._id) &&
+                      activeTab === 'invoices' &&
                       <div id="invoices" className="tab-pane fade show active">
                       <InvoicesScreen />
                       </div>
                   }
-                   {/* Invoice Tab */}  
-
-                   {/* Focal Person Tab */}  
-                   {
-                      (activeTab === 'focal' && clientData?._id) &&
-                      <div id="focal_person" className="tab-pane fade show active">
-                      <FocalPerson
-                        clientId={clientData?._id}
-                      />
-                      </div>
-                  }
-                   {/* Focal Person Tab */}  
+                   {/* Invoice Tab */} 
 
                  </div>
                </div>
@@ -364,4 +321,5 @@ const ClientProfile = () => {
        
     );
   }
-  export default ClientProfile;
+
+export default FocalProfile

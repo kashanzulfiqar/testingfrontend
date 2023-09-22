@@ -20,7 +20,7 @@ import { LoadingOutlined } from '@ant-design/icons';
 import { apiServices } from '../Services/apiServices';
 import { getPermissionList } from '../Redux/Reducer/permissions/actions';
 
-const Loginpage = (props) => {
+const ClientLogin = (props) => {
 
   const isLogin = useSelector((state) => state.user.loginvalue);
   const role = isLogin?.user?.role
@@ -64,44 +64,51 @@ const Loginpage = (props) => {
       password: values?.password,
     };
 
-    apiLoginEmployee( !verificationToken ? 'user/login-user' : `user/login-user?token=${verificationToken}` , data).then((res) => {
+    apiLoginEmployee( !verificationToken ? 'client/login-client' : `user/login-user?token=${verificationToken}` , data).then((res) => {
       if (res?.data?.success === true) {
         // console.log(res?.data?.result);
-        dispatch(getPermissionList({ roleId: res?.data?.result?.user?.roleId, athtoken: res?.data?.result?.access_token?.accessToken }))
         dispatch(login(res?.data?.result));
-        if(!res?.data?.result?.user?.role && res?.data?.result?.user?.firstTimeLogin){
-          // nav('/change-password');
+        if(res?.data?.result?.user?.firstTimeLogin){
           setTimeout(() => {
             setLoader(false)
             // window.location.href = `${window?.location?.origin}/change-password`
-            
+
             window.history.replaceState(null, null, `${window?.location?.origin}/change-password`);
             // window.location.replace(`${window?.location?.origin}/client/client-profile`)
             window.location.reload();
 
-
             localStorage.setItem("firstTimeLogin", JSON.stringify(res?.data?.result?.user?.firstTimeLogin));
           }, 1300);
         }else{
-          // nav(`${res?.data?.result?.user?.role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}`);
-          setTimeout(() => {
-            setLoader(false)
-            // window.location.href = `${window?.location?.origin}${res?.data?.result?.user?.role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}`
+          if(res?.data?.result?.user?.role === "client"){
+            setTimeout(() => {
+              setLoader(false)
+              // window.location.href = `${window?.location?.origin}/client/client-profile`
 
-            window.history.replaceState(null, null, `${window?.location?.origin}${res?.data?.result?.user?.role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}`);
-            // window.location.replace(`${window?.location?.origin}/client/client-profile`)
-            window.location.reload();
+              window.history.replaceState(null, null, `${window?.location?.origin}/client/client-profile`);
+              // window.location.replace(`${window?.location?.origin}/client/client-profile`)
+              window.location.reload();
 
 
-          }, 1300);
+            }, 1300);
+          }
+          else if(res?.data?.result?.user?.role === "focalperson") {
+            setTimeout(() => {
+              setLoader(false)
+              // window.location.href = `${window?.location?.origin}/client/focal-profile`
+
+              window.history.replaceState(null, null, `${window?.location?.origin}/client/focal-profile`);
+              // window.location.replace(`${window?.location?.origin}/client/focal-profile`)
+              window.location.reload();
+
+
+            }, 1300);
+          }
+
         }
-        // nav(`${res?.data?.result?.user?.role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}`);
-        // dispatch(getPermissionList({ userId: res?.data?.result?.user?._id, athtoken: res?.data?.result?.access_token }))
       }
     }).catch((err)=>{
       if (err.response.data.verified === false){
-        // setresendEmail(true)
-        // console.log(err);
         setEmailNotVerified(true)
         setEmailVal(data?.email)
       }
@@ -116,10 +123,6 @@ const Loginpage = (props) => {
         } Error`
       );
   })
-
-    // Credentials are valid, proceed with login
-    // dispatch(login(data));
-    // nav('/main/dashboard');
   }
   const dispatch = useDispatch();
   const [eye, seteye] = useState(true);
@@ -163,7 +166,6 @@ const Loginpage = (props) => {
   }
 
 
-
   return (
     <>
       <Helmet>
@@ -181,9 +183,9 @@ const Loginpage = (props) => {
           {/* /Account Logo */}
           {
             !emailNotVerified ?
-              <div className="account-box" style={{ width: '100%', maxWidth: '514px', height: '525px', paddingInline: '55px' }}>
+              <div className="account-box" style={{ width: '100%', maxWidth: '514px', height: '460px', paddingInline: '55px' }}>
                 <div className="account-wrapper">
-                  <h3 className="account-title" style={{ padding: '17px 0px 40px 0px' }}>Login</h3>
+                  <h3 className="account-title" style={{ padding: '17px 0px 40px 0px' }}>Client & Focal Person Login</h3>
                   {/* <p className="account-subtitle">Access to our dashboard</p> */}
                   {/* Account Form */}
                   <div>
@@ -224,11 +226,11 @@ const Loginpage = (props) => {
                           <div className="col">
                             <label>Password</label>
                           </div>
-                          <div className="col-auto">
+                          {/* <div className="col-auto">
                             <Link className="text-muted" to="/forget-password">
                               Forgot password?
                             </Link>
-                          </div>
+                          </div> */}
                         </div>
                         <Form.Item
                           name="password"
@@ -269,11 +271,6 @@ const Loginpage = (props) => {
 
                       </div>
                     </Form>
-                    <div className="account-footer">
-                      <label style={{fontSize: '15px'}}>Don't have an account yet? <Link to="/register">Register</Link></label>
-                      <div style={{borderBottom: '1px dashed #b7b7b7', margin: '10px 0px 15px'}}></div>
-                      <label style={{fontSize: '15px'}}>If you are a Client or Focal Person. <Link to="/client/login">Login here</Link></label>
-                    </div>
                   </div>
                   {/* /Account Form */}
                 </div>
@@ -301,5 +298,4 @@ const Loginpage = (props) => {
   );
 }
 
-
-export default Loginpage;
+export default ClientLogin

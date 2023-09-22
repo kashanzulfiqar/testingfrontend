@@ -17,9 +17,12 @@ import { itemRender } from "../../paginationfunction";
 const AttendanceEmployee = () => {
   const [form] = Form.useForm();
   const [isLoading, setIsLoading] = useState(false);
+  const [Bdisbale, setBdisbale] = useState(true);
 
+  const isDisabled = !Bdisbale;
 
   const user_state = useSelector((state) => state.user.loginvalue);
+  const role = user_state?.user?.role
 
   let AuthObj = JSON.parse(localStorage.getItem("AuthObj"));
   let userID = AuthObj?.userId;
@@ -140,6 +143,7 @@ const AttendanceEmployee = () => {
   });
 
   const handleCheckIn = () => {
+    setBdisbale(false);
     //let current = new Date(Date.now());
     const moment = require("moment");
     let datebn = new Date(Date.now());
@@ -197,6 +201,8 @@ const AttendanceEmployee = () => {
           }`
 
         );
+      }).finally(()=>{
+        setBdisbale(true);
       });
     } catch (error) {
       console.log("error", error);
@@ -250,23 +256,25 @@ const AttendanceEmployee = () => {
           }`
 
         );
+      }).finally(()=>{
+        setPagination({
+          ...pagination,
+          current: 1,
+        });
+        setSelectedFilters({
+          date: "",
+          month: "",
+          year: "",
+        });
+        setFilters({
+          date: "",
+          month: "",
+          year: "",
+        });
+        setIsCheckedIn(false);
+        setIsCheckedOut(true);
       });
-      setPagination({
-        ...pagination,
-        current: 1,
-      });
-      setSelectedFilters({
-        date: "",
-        month: "",
-        year: "",
-      });
-      setFilters({
-        date: "",
-        month: "",
-        year: "",
-      });
-      setIsCheckedIn(false);
-      setIsCheckedOut(true);
+      
     } catch (error) {
       console.log("error", error);
     }
@@ -488,7 +496,7 @@ const AttendanceEmployee = () => {
                   <h3 className="page-title">Attendance</h3>
                   <ul className="breadcrumb">
                     <li className="breadcrumb-item">
-                      <Link to="/app/main/dashboard">Dashboard</Link>
+                      <Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>Dashboard</Link>
                     </li>
                     <li className="breadcrumb-item active">Attendance</li>
                   </ul>
@@ -534,8 +542,8 @@ const AttendanceEmployee = () => {
                         } punch-btn`}
 
                         onClick={isCheckedIn ? handleCheckOut : handleCheckIn}
-                        disabled={isCheckedOut  || checkIn.status === "Absent"}
-                      >{isLoading ? (
+                        disabled={isCheckedOut  || checkIn.status === "Absent" || isDisabled }
+                      >{isLoading || isDisabled ? (
                         <Spin size="medium" />
                       ) : (
                         isCheckedOut || checkIn.status === "Absent" ? "Marked" : isCheckedIn ? "Check Out" : "Check In"
@@ -582,7 +590,7 @@ const AttendanceEmployee = () => {
                 <div className="card att-statistics">
                   <div className="card-body">
                     <h5 className="card-title">Statistics</h5>
-                    <div className="stats-list">
+                    <div className="stats-list" style={{height:'347px'}}>
                       <div className="stats-info">
                         <p>
                           Today{" "}
@@ -678,6 +686,7 @@ const AttendanceEmployee = () => {
                 <div className="card recent-activity">
                   <div className="card-body">
                     <h5 className="card-title">Today Activity</h5>
+                    <div className="stats-list" style={{height:'347px'}}>
                     <ul className="res-activity-list">
                       <li>
                         <p className="mb-0"><label>Check In at</label></p>
@@ -723,6 +732,7 @@ const AttendanceEmployee = () => {
                         </p>
                       </li>
                     </ul>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -752,6 +762,7 @@ const AttendanceEmployee = () => {
           className="custom-border"
         >
           <DatePicker.MonthPicker
+            className="form-control"
             style={{
               width: '100%',
             }}
@@ -774,6 +785,7 @@ const AttendanceEmployee = () => {
           className="custom-border"
         >
           <DatePicker.YearPicker
+            className="form-control"
             style={{
               width: '100%',
             }}

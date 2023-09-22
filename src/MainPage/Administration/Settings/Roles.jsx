@@ -733,6 +733,7 @@ const Roles = () => {
         open={openPermissions?.isOpen}
         // open={openPermissions?.isOpen}
         onClose={handlePermClose}
+        className="modalScroll"
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
         disableRestoreFocus
@@ -804,6 +805,7 @@ const Roles = () => {
         open={open?.isEditOpen}
         // open={openPermissions?.isOpen}
         onClose={handleEditClose}
+        className="modalScroll"
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
         disableRestoreFocus

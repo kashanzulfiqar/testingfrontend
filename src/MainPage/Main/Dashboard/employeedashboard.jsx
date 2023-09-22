@@ -50,8 +50,7 @@ const EmployeeDashboard = () => {
         const userData=res?.data
         setUserData(userData)
         console.log(userData)
-        setIsLoading(false); 
-        setFirstLoad(false);       
+        setIsLoading(false);      
       }
     })
     .catch((error) => {

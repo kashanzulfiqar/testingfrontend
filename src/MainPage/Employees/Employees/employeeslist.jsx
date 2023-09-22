@@ -466,9 +466,6 @@ const Employeeslist = () => {
       return ( 
         <>
         <div className={`main-wrapper ${menu ? 'slide-nav': ''}`}> 
-          
-          {/* <Header onMenuClick={(value) => toggleMobileMenu()} /> */}
-          <Sidebar />  
            <div className="page-wrapper">
               <Helmet>
                   <title>Employees List - DaftarPro</title>
@@ -535,7 +532,7 @@ const Employeeslist = () => {
                   </div>
                 </div>
                 <div className="col-sm-6 col-md-3">
-                <div style={{ position: 'relative' }} id='area'>
+                <div style={{ position: 'relative' }} id='area1'>
                     <Form.Item
                       name="designation"
                       className="custom-border"
@@ -547,7 +544,7 @@ const Employeeslist = () => {
                         }}
                         placeholder='Select Designation'
                         size='large'
-                        getPopupContainer={() => document.getElementById('area')}
+                        getPopupContainer={() => document.getElementById('area1')}
                       >
                         {allDesignations?.map((item, index) => {
                         return (
@@ -577,7 +574,7 @@ const Employeeslist = () => {
                     // pagination= { {total : users?.length,
                     //   showTotal : (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
                     //   showSizeChanger : true,onShowSizeChange: onShowSizeChange ,itemRender : itemRender } }
-                    style = {{overflowX : 'auto'}}
+                    style = {{overflowX : 'auto', paddingBottom: '65px'}}
                     columns={columns}                 
                     // bordered
                     dataSource={users}
