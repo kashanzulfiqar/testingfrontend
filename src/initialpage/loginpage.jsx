@@ -23,7 +23,7 @@ import { getPermissionList } from '../Redux/Reducer/permissions/actions';
 const Loginpage = (props) => {
 
   const isLogin = useSelector((state) => state.user.loginvalue);
-  const role = login?.user?.role
+  const role = isLogin?.user?.role
 
   const nav = useNavigate();
   const location = useLocation();
@@ -47,6 +47,12 @@ const Loginpage = (props) => {
     password: "123456",
   });
 
+  useEffect(() => {
+    if(isLogin){
+      nav(role === 'client' ? `/client/client-profile` : role === 'focalperson' ? `/client/focal-profile` : role === 'admin' ? `/main/dashboard` : `/employee/dashboard`)
+    }
+  }, [])
+
 
   const onFinish = (values) => {
     setLoader(true)
@@ -67,14 +73,26 @@ const Loginpage = (props) => {
           // nav('/change-password');
           setTimeout(() => {
             setLoader(false)
-            window.location.href = `${window?.location?.origin}/change-password`
+            // window.location.href = `${window?.location?.origin}/change-password`
+            
+            window.history.replaceState(null, null, `${window?.location?.origin}/change-password`);
+            // window.location.replace(`${window?.location?.origin}/client/client-profile`)
+            window.location.reload();
+
+
             localStorage.setItem("firstTimeLogin", JSON.stringify(res?.data?.result?.user?.firstTimeLogin));
           }, 1300);
         }else{
           // nav(`${res?.data?.result?.user?.role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}`);
           setTimeout(() => {
             setLoader(false)
-            window.location.href = `${window?.location?.origin}${res?.data?.result?.user?.role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}`
+            // window.location.href = `${window?.location?.origin}${res?.data?.result?.user?.role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}`
+
+            window.history.replaceState(null, null, `${window?.location?.origin}${res?.data?.result?.user?.role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}`);
+            // window.location.replace(`${window?.location?.origin}/client/client-profile`)
+            window.location.reload();
+
+
           }, 1300);
         }
         // nav(`${res?.data?.result?.user?.role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}`);
@@ -144,12 +162,6 @@ const Loginpage = (props) => {
     });
   }
 
-  useEffect(() => {
-    if(isLogin){
-      nav(role === 'client' ? `/client/client-profile` : role === 'focalperson' ? `/client/focal-profile` : role === 'admin' ? `/main/dashboard` : `/employee/dashboard`)
-    }
-  }, [])
-  
 
 
   return (
@@ -171,7 +183,7 @@ const Loginpage = (props) => {
             !emailNotVerified ?
               <div className="account-box" style={{ width: '100%', maxWidth: '514px', height: '525px', paddingInline: '55px' }}>
                 <div className="account-wrapper">
-                  <h3 className="account-title" style={{ padding: '17px 0px 40px 0px' }}>Login 24</h3>
+                  <h3 className="account-title" style={{ padding: '17px 0px 40px 0px' }}>Login</h3>
                   {/* <p className="account-subtitle">Access to our dashboard</p> */}
                   {/* Account Form */}
                   <div>
