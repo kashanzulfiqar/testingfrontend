@@ -256,23 +256,25 @@ const AttendanceEmployee = () => {
           }`
 
         );
+      }).finally(()=>{
+        setPagination({
+          ...pagination,
+          current: 1,
+        });
+        setSelectedFilters({
+          date: "",
+          month: "",
+          year: "",
+        });
+        setFilters({
+          date: "",
+          month: "",
+          year: "",
+        });
+        setIsCheckedIn(false);
+        setIsCheckedOut(true);
       });
-      setPagination({
-        ...pagination,
-        current: 1,
-      });
-      setSelectedFilters({
-        date: "",
-        month: "",
-        year: "",
-      });
-      setFilters({
-        date: "",
-        month: "",
-        year: "",
-      });
-      setIsCheckedIn(false);
-      setIsCheckedOut(true);
+      
     } catch (error) {
       console.log("error", error);
     }
