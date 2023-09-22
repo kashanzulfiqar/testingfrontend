@@ -255,7 +255,7 @@ const ProjectsScreen = ({ isID, isRole }) => {
                   className="card-body"
                   style={{ display: "flex", flexDirection: "column" }}
                 >
-                  <div className="dropdown profile-action">
+                  {/* <div className="dropdown profile-action">
                     <a
                       href="javascript:void(0)"
                       className="action-icon dropdown-toggle"
@@ -292,7 +292,7 @@ const ProjectsScreen = ({ isID, isRole }) => {
                         <i className="fa fa-trash-o m-r-5" /> Delete
                       </a>
                     </div>
-                  </div>
+                  </div> */}
                   <h4 className="project-title" style={{ width: "190px" }}>
                     <Link to={`/projects/projects-view/${project?._id}`}>
                       {project?.projectName}

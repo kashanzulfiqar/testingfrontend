@@ -37,10 +37,10 @@ const RequireAuth = ({Role}) => {
         }
       }
       // for client and focal person redirect code
-      if( role === 'client' && location.pathname !== '/client/client-profile' && location.pathname !== '/client/focal-profile' && location.pathname !== '/change-password'){
+      if( role === 'client' && location.pathname !== '/client/client-profile' && location.pathname !== '/client/focal-profile' && location.pathname !== '/change-password' && !location.pathname.includes('/projects/projects-view/')){
         nav('/client/client-profile')
       }
-      if( role === 'focalperson' && location.pathname !== '/client/focal-profile' && location.pathname !== '/change-password'){
+      if( role === 'focalperson' && location.pathname !== '/client/focal-profile' && location.pathname !== '/change-password' && !location.pathname.includes('/projects/projects-view/')){
         nav('/client/focal-profile')
       }
     }, [location])
