@@ -427,12 +427,15 @@ const Header = (props) => {
               sessionStorage.clear();
               // nav('/login');
               setTimeout(() => {
+                localStorage.clear();
+                sessionStorage.clear();
+
                 // window.location.href = `${window?.location?.origin}/login`
                 // window.location.href = `${window?.location?.origin}${(user_state?.user?.role === 'client' || user_state?.user?.role === 'focalperson') ? '/client/login' : '/login'}`
                 window.history.replaceState(null, null, `${window?.location?.origin}${(user_state?.user?.role === 'client' || user_state?.user?.role === 'focalperson') ? '/client/login' : '/login'}`);
                 // window.history.back();
                 window.location.reload();
-              }, 500);
+              }, 800);
             }}>Logout</a>
           </div>
         </li>
@@ -452,11 +455,14 @@ const Header = (props) => {
               // nav('/login');
               // window.location.href = `${window?.location?.origin}/login`
               setTimeout(() => {
+                localStorage.clear();
+                sessionStorage.clear();
+
                 // window.location.href = `${window?.location?.origin}${(user_state?.user?.role === 'client' || user_state?.user?.role === 'focalperson') ? '/client/login' : '/login'}`
                 window.history.replaceState(null, null, `${window?.location?.origin}${(user_state?.user?.role === 'client' || user_state?.user?.role === 'focalperson') ? '/client/login' : '/login'}`);
                 // window.history.back();
                 window.location.reload();
-              }, 500);
+              }, 800);
             }}>Logout</a>
         </div>
       </div>
