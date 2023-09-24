@@ -17,7 +17,9 @@ import { itemRender } from "../../paginationfunction";
 const AttendanceEmployee = () => {
   const [form] = Form.useForm();
   const [isLoading, setIsLoading] = useState(false);
+  const [Bdisbale, setBdisbale] = useState(true);
 
+  const isDisabled = !Bdisbale;
 
   const user_state = useSelector((state) => state.user.loginvalue);
   const role = user_state?.user?.role
@@ -141,6 +143,7 @@ const AttendanceEmployee = () => {
   });
 
   const handleCheckIn = () => {
+    setBdisbale(false);
     //let current = new Date(Date.now());
     const moment = require("moment");
     let datebn = new Date(Date.now());
@@ -198,6 +201,8 @@ const AttendanceEmployee = () => {
           }`
 
         );
+      }).finally(()=>{
+        setBdisbale(true);
       });
     } catch (error) {
       console.log("error", error);
@@ -535,8 +540,8 @@ const AttendanceEmployee = () => {
                         } punch-btn`}
 
                         onClick={isCheckedIn ? handleCheckOut : handleCheckIn}
-                        disabled={isCheckedOut  || checkIn.status === "Absent"}
-                      >{isLoading ? (
+                        disabled={isCheckedOut  || checkIn.status === "Absent" || isDisabled }
+                      >{isLoading || isDisabled ? (
                         <Spin size="medium" />
                       ) : (
                         isCheckedOut || checkIn.status === "Absent" ? "Marked" : isCheckedIn ? "Check Out" : "Check In"
