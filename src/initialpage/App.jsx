@@ -48,6 +48,7 @@ import ClientsList from '../MainPage/Employees/clientslist';
 import ClientProfile from '../MainPage/Pages/Profile/clientprofile';
 import ClientLogin from './ClientLogin';
 import FocalProfile from '../MainPage/Pages/Profile/FocalProfile';
+import Invoices from '../MainPage/HR/Sales/invoice';
 
 
 const App = () => {
@@ -130,6 +131,7 @@ const App = () => {
           <Route path={`clients-list`} element={<ClientsList />} />
           <Route path={`client/client-profile`} element={<ClientProfile />} />
           <Route path={`client/focal-profile`} element={<FocalProfile />} />
+          <Route path={`invoices`} element={<Invoices />} />
 
           {/* Settings  */}
           <Route path="/settings" element={<Settings />} />
