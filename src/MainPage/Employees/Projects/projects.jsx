@@ -1184,7 +1184,8 @@ const Projects = () => {
                         </div>
                         <div className="project-members m-b-15">
                           <div>Team :</div>
-                          <ul className="team-members">
+                          <ul className="team-members"
+                          style={{ marginLeft: "10px" }}>
                             {project?.assignedDevelopers
                               ?.slice(0, 4)
                               ?.map((developer, devIndex) => (
