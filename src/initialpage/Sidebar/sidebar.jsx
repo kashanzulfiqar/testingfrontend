@@ -605,7 +605,7 @@ const Sidebar = (props) => {
                   {isSideMenu == "sales" ?
                     <ul>
                       <li><Link className={pathname.includes('estimates') ? "active" : ""} to="/app/sales/estimates">Estimates</Link></li>
-                      <li><Link className={pathname.includes('invoices') ? "active" : ""} to="/app/sales/invoices">Invoices</Link></li>
+                      <li><Link className={pathname.includes('invoices') ? "active" : ""} to="/invoices">Invoices</Link></li>
                       <li><Link className={pathname.includes('payments') ? "active" : ""} to="/app/sales/payments">Payments</Link></li>
                       <li><Link className={pathname.includes('expenses') ? "active" : ""} to="/app/sales/expenses">Expenses</Link></li>
                       <li><Link className={pathname.includes('provident-fund') ? "active" : ""} to="/app/sales/provident-fund">Provident Fund</Link></li>
