@@ -432,11 +432,19 @@ const Registrationpage = (props) => {
                     {
                       whitespace: true,
                       required: true,
-                      message: "please enter postal code",
+                      validator: (_, value) => {
+                        if(!value || value?.trim() === ''){
+                          return Promise.reject("please enter postal code");
+                        }
+                        else if (/\s{2,}/.test(value)) {
+                          return Promise.reject("please remove consecutive spaces");
+                        }
+                        return Promise.resolve();
+                      },
                     },
                     {
                       min: 3,
-                      message: "postal code length must be at least 3 digits long",
+                      message: "postal code length must be at least 3 characters long",
                     },
                   ]}
                 >
@@ -449,11 +457,11 @@ const Registrationpage = (props) => {
                     onInput={(e) => {
                       onHandleRegChange("postalCode", e.target.value);
                     }}
-                    onKeyPress={(e) => {
-                      if ( ((e.which < 48 || e.which > 57)) ) {
-                        e.preventDefault();
-                      }
-                    }}
+                    // onKeyPress={(e) => {
+                    //   if ( ((e.which < 48 || e.which > 57)) ) {
+                    //     e.preventDefault();
+                    //   }
+                    // }}
                     maxLength={50}
                   />
                 </Form.Item>
@@ -519,8 +527,8 @@ const Registrationpage = (props) => {
                       },
                     },
                     {
-                      min: 3,
-                      message: "state length must be at least 3 characters long",
+                      min: 2,
+                      message: "state length must be at least 2 characters long",
                     },
                   ]}
                 >
@@ -771,14 +779,12 @@ const Registrationpage = (props) => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                  Fax <span className="text-danger">*</span>
+                  Fax
                 </label>
                 <Form.Item
                   name="fax"
                   rules={[
                     {
-                      whitespace: true,
-                      required: true,
                       message: "please enter fax",
                     },
                     {
