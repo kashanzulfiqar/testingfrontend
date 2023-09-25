@@ -324,14 +324,14 @@ const ProjectsScreen = ({ isID, isRole }) => {
                       <div>Project Leader:</div>
                       <ul className="team-members">
                         <li>
-                          <Tooltip title={empInfo[project.projectLead].fullName}>
+                          <Tooltip title={empInfo[project.projectLead]?.fullName}>
                           <a
                             href="javascript:void(0)"
                           >
                             <img
                               alt=""
                               src={
-                                empInfo[project.projectLead].image || user_icon
+                                empInfo[project.projectLead]?.image || user_icon
                               }
                             />
                           </a>

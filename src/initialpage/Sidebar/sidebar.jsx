@@ -565,7 +565,7 @@ const Sidebar = (props) => {
                 }
                   {isSideMenu == "projects" ?
                     <ul>
-                      {user_state?.role === 'admin' || permissions?.projectManagement &&
+                      {(user_state?.role === 'admin' || permissions?.projectManagement) &&
                       <li><Link className={pathname.includes('project_dashboard') ? "active" : pathname.includes('projects-list') ?
                         "active" : pathname.includes('cts-view') ? "active" : ""}
                         to="/projects/project_dashboard">Projects</Link></li>}
