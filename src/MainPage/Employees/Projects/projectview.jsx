@@ -206,7 +206,7 @@ const ProjectView = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Client Error"
+              : "Get Employee Error"
           }`
         );
       });
@@ -215,7 +215,7 @@ const ProjectView = () => {
   const ViewClients = () => {
     apiServices(
       "GET",
-      `client/view-client?deleted=false&page=1&limit=99999`,
+      `client/all-client`,
       null,
       user_state
     )
@@ -432,7 +432,7 @@ const ProjectView = () => {
       render: (paid, record) => (
         <Checkbox
           checked={paid}
-          disabled={paid} // Disable the checkbox if already paid
+          disabled={paid || role === 'client' || role === 'focalperson' } // Disable the checkbox if already paid
           onChange={() => handlePaidChange(record)} // Handle checkbox change
           //style={{ pointerEvents: paid ? 'none' : 'auto' }}
         />
@@ -498,13 +498,7 @@ const ProjectView = () => {
                       endDate: moment(project?.endDate, "YYYY-MM-DD"),
                     });
                   }}
-                  disabled={
-                    (role === 'admin' || role === 'client' || role === 'focalperson')
-                      ? false
-                      : (permissions?.projectManagement || permissions?.clientManagement)
-                      ? false
-                      : true
-                  }
+                  disabled={role === 'client' || role === 'focalperson'}
                 >
                   <i className="fa fa-plus" />
                   Edit Project
@@ -1268,6 +1262,7 @@ const ProjectView = () => {
                         openLeaderModal();
                         setSelectedLeader(project?.projectLead);
                       }}
+                      disabled={role === 'client' || role === 'focalperson'}
                     >
                       <i className="fa fa-plus" /> Add
                     </button>
@@ -1316,6 +1311,7 @@ const ProjectView = () => {
                         openUserModal();
                         setSelectedDevelopers(project?.assignedDevelopers);
                       }}
+                      disabled={role === 'client' || role === 'focalperson'}
                     >
                       <i className="fa fa-plus" /> Add
                     </button>
