@@ -42,6 +42,7 @@ const AttendanceAdmin = () => {
   const [form] = Form.useForm();
   const [menu, setMenu] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isStatLoading, setIsStatLoading] = useState(false);
   const [selectedMonthYear, setSelectedMonthYear] = useState("");
   const [statdata, setStatdata] = useState(null);
 
@@ -65,6 +66,7 @@ const AttendanceAdmin = () => {
 
   const [employeeAttendanceData, setEmployeeAttendanceData] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [employees, setEmployees] = useState([]);
 
   const [filters, setFilters] = useState({
     name: "",
@@ -78,8 +80,35 @@ const AttendanceAdmin = () => {
   });
 
   useEffect(() => {
+    setIsStatLoading(true);
+    fetchEmployees();
+  }, []);
+
+  const fetchEmployees = () => {
+    apiServices("GET", `user/all-employees`, null, user_state)
+      .then((res) => {
+        if (res.data.success === true) {
+          const emps = res?.data?.User;
+          setEmployees(emps);
+          //console.log("these are ", emps)
+        }
+      })
+      .catch((err) => {
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Get Client Error"
+          }`
+        );
+      });
+  };
+
+  useEffect(() => {
     if (role === "admin" || permissions?.attendanceManagement) {
-      setIsLoading(true);
+      
       fetchAttendanceData();
     } else {
       navigate("/restricted", { state: { unAuthorize: true } });
@@ -87,6 +116,7 @@ const AttendanceAdmin = () => {
   }, [filters]);
 
   const fetchAttendanceData = async () => {
+    setIsLoading(true);
     apiServices(
       "GET",
       `attendance/employeesattendance?attendanceMonth=${filters.month}&attendanceYear=${filters.year}&search=${filters.name}`,
@@ -99,14 +129,14 @@ const AttendanceAdmin = () => {
           const statData = res?.data;
           setAttendanceRecords(attendanceData);
           setStatdata(statData);
-          console.log(attendanceData);
-          console.log(attendancerecords);
+          //console.log(attendanceData);
+          //console.log(attendancerecords);
 
           const uniqueEmployees = [
             ...new Set(attendanceData.map((record) => record.user._id)),
           ];
-          const employeeData = uniqueEmployees.map((employeeId) => {
-            const employeeRecords = attendanceData.filter(
+          const employeeData = uniqueEmployees?.map((employeeId) => {
+            const employeeRecords = attendanceData?.filter(
               (record) => record.user._id === employeeId
             );
             return {
@@ -116,6 +146,7 @@ const AttendanceAdmin = () => {
           });
           //const newAttendanceData = [...fetchattend, ...Attendance.docs];
           setEmployeeAttendanceData(employeeData);
+          //console.log("this is atendance",employeeData)
         }
       })
       .catch((error) => {
@@ -123,6 +154,7 @@ const AttendanceAdmin = () => {
       })
       .finally(() => {
         setIsLoading(false);
+        setIsStatLoading(false);
       });
   };
 
@@ -191,11 +223,11 @@ const AttendanceAdmin = () => {
     form.resetFields();
   };
 
-  console.log(employeeAttendanceData);
+  //console.log(employeeAttendanceData);
   //const daysInMonth = moment().daysInMonth();
   let daysInMonth;
   if (filters.month) {
-    console.log("this is ", filters.month);
+    //console.log("this is ", filters.month);
     // If filters.month is present, find the number of days in that month
     const formattedMonth = moment(
       `${filters.month} 1, ${new Date().getFullYear()}`,
@@ -347,20 +379,52 @@ const AttendanceAdmin = () => {
       };
     }),
   ];
-  
-  const dataSource = employeeAttendanceData.map((employeeData) => {
+
+  const dataSource = employees
+  ?.filter((employee) => {
+    // Filter employees based on the search criteria (employee name)
+    return employee.fullName.toLowerCase().includes(filters.name.toLowerCase());
+  })
+  ?.map((employee) => {
     const rowData = {
-      key: employeeData.employeeId,
-      employeeName: employeeData.records[0].user.fullName,
+      key: employee._id,
+      employeeName: employee.fullName,
     };
 
-    employeeData.records.forEach((record) => {
-      const day = moment(record.attendanceDate).date();
-      rowData[`day${day}`] = record; // Store the entire day's record under day1, day2, ...
-    });
+    const employeeAttendance = employeeAttendanceData?.find(
+      (data) => data.employeeId === employee._id
+    );
+
+    if (employeeAttendance) {
+      // Employee has attendance records
+      employeeAttendance?.records.forEach((record) => {
+        const day = moment(record.attendanceDate).date();
+        rowData[`day${day}`] = record;
+      });
+    } else {
+      // Employee has no attendance records
+      for (let i = 1; i <= daysInMonth; i++) {
+        rowData[`day${i}`] = { status: "-" };
+      }
+    }
 
     return rowData;
   });
+
+  
+  // const dataSource = employeeAttendanceData.map((employeeData) => {
+  //   const rowData = {
+  //     key: employeeData.employeeId,
+  //     employeeName: employeeData.records[0].user.fullName,
+  //   };
+
+  //   employeeData.records.forEach((record) => {
+  //     const day = moment(record.attendanceDate).date();
+  //     rowData[`day${day}`] = record; // Store the entire day's record under day1, day2, ...
+  //   });
+
+  //   return rowData;
+  // });
 
   return (
     <>
@@ -393,7 +457,7 @@ const AttendanceAdmin = () => {
                 <div className="stats-info">
                   <label>Today Present</label>
                   <h4>
-                    {isLoading ? (
+                    {isStatLoading ? (
                       <Spin size="large" />
                     ) : (
                       <>
@@ -407,7 +471,7 @@ const AttendanceAdmin = () => {
                 <div className="stats-info">
                   <label>Today Late</label>
                   <h4>
-                    {isLoading ? (
+                    {isStatLoading ? (
                       <Spin size="large" />
                     ) : (
                       <>{statdata?.todayLate}</>
@@ -419,7 +483,7 @@ const AttendanceAdmin = () => {
                 <div className="stats-info">
                   <label>Today Absent</label>
                   <h4>
-                    {isLoading ? (
+                    {isStatLoading ? (
                       <Spin size="large" />
                     ) : (
                       <>{statdata?.todayAbsent}</>
@@ -432,7 +496,7 @@ const AttendanceAdmin = () => {
                   <label>Work From Home</label>
 
                   <h4>
-                    {isLoading ? (
+                    {isStatLoading ? (
                       <Spin size="large" />
                     ) : (
                       <>{statdata?.wfhToday}</>
@@ -563,6 +627,7 @@ const AttendanceAdmin = () => {
                   {/* <div className="table-responsive fixedColmn"> */}
                   <Table
                     className="fixedTableHeader"
+                    // locale={{ emptyText: customEmptyText }}
                     locale={{
                       emptyText: isLoading ? (
                         <Spin size="large" tip="Loading..." />
@@ -639,8 +704,8 @@ const AttendanceAdmin = () => {
                                 </h6>
                                 <p>
                                   { 
-                                  dayRecord.status !== "Absent" ? (
-                                    <label>
+                                  (dayRecord.checkInTime) ?
+                                  <label>
                                     {moment(dayRecord.attendanceDate).format(
                                       "ddd, Do MMM YYYY"
                                     )}
@@ -650,7 +715,8 @@ const AttendanceAdmin = () => {
                                       "HH:mm"
                                     ).format("h:mm A")}
                                   </label>
-                                  ) : "--"
+                                  :
+                                  "--"
                                   }
                                   
                                 </p>
