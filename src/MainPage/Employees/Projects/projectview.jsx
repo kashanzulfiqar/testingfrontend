@@ -36,6 +36,8 @@ import { MinusCircleFilled } from "@ant-design/icons";
 import EditProjects from "./EditProjects";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 //import EditProjects from "./EditProjects";
+import { getAllISOCodes } from 'iso-country-currency';
+
 
 const ProjectView = () => {
   const [form] = Form.useForm();
@@ -59,6 +61,7 @@ const ProjectView = () => {
   const [employees, setEmployees] = useState([]);
   const [clients, setClients] = useState([]);
   const [focalPersons, setFocalPersons] = useState([]);
+  const [allCurrencies, setAllCurrencies] = useState([]);
 
   const [selectedClient, setSelectedClient] = useState(null);
   const [selectedLeader, setSelectedLeader] = useState(null);
@@ -413,6 +416,14 @@ const ProjectView = () => {
       title: "Amount in Figure",
       dataIndex: "amountInFigure",
       key: "amountInFigure",
+      render: (amount) => {
+
+        return(
+          <>
+            {amount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {project?.currency}
+          </>
+        )
+      },
     },
     {
       title: "Amount in Percent",
@@ -457,6 +468,25 @@ const ProjectView = () => {
   const emptyfunction = () =>{
     return null
   }
+
+  const getAllCurrencies = () => {
+    const isoCodes = getAllISOCodes();
+    const uniqueCurrencies = new Set();
+    isoCodes.forEach(isoCode => {
+        // const currency = isoCode.currency;
+        const currency = {
+          currency: isoCode?.currency,
+          symbol: isoCode?.symbol
+        };
+        // uniqueCurrencies.add(currency);
+        uniqueCurrencies.add(JSON.stringify(currency));
+    });
+    const currency_d = [...uniqueCurrencies].map(currency => JSON.parse(currency));
+    const sorted_data = currency_d.sort((a, b) => a.currency.localeCompare(b.currency));
+    // setAllCurrencies([...uniqueCurrencies])
+    setAllCurrencies(sorted_data)
+  };
+
   return (
     <div className="page-wrapper">
       <Helmet>
@@ -491,6 +521,7 @@ const ProjectView = () => {
                 <button
                   className="btn add-btn"
                   onClick={() => {
+                    getAllCurrencies();
                     openEditModal(project);
                     form.setFieldsValue({
                       ...project,
@@ -543,7 +574,7 @@ const ProjectView = () => {
                       <span className="text-muted">tasks completed</span>
                     </small> */}
                   </div>
-                  <p>{project?.projectDescription}</p>
+                  <label>{project?.projectDescription}</label>
                 </div>
               </div>
 
@@ -1185,12 +1216,12 @@ const ProjectView = () => {
             <div className="col-lg-4 col-xl-3">
               <div className="card">
                 <div className="card-body">
-                  <h6 className="card-title m-b-15">Project details</h6>
+                  <h6 className="card-title m-b-15">Project Details</h6>
                   <table className="table table-striped table-border">
                     <tbody>
                       <tr>
                         <td>Cost:</td>
-                        <td className="text-end">{project?.cost}</td>
+                        <td className="text-end">{project?.cost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {project?.currency}</td>
                       </tr>
                       <tr>
                         <td>StartDate:</td>
@@ -1303,7 +1334,7 @@ const ProjectView = () => {
               <div className="card project-user">
                 <div className="card-body">
                   <h6 className="card-title m-b-20">
-                    Assigned Users
+                    <label style={{width: '69%'}}>Assigned Developers</label>
                     <button
                       type="button"
                       className="float-end btn btn-primary btn-sm"
@@ -1686,6 +1717,7 @@ const ProjectView = () => {
           closeEditModal={closeEditModal}
           getprojects={GetProjects}
           getlistprojects={emptyfunction}
+          allCurrencies={allCurrencies}
         />
       )}
 

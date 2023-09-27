@@ -13,6 +13,8 @@ import { itemRender } from '../paginationfunction';
 import 'antd/dist/antd.css';
 import "../antdstyle.css"
 import { apiServices } from '../../Services/apiServices';
+import { getAllISOCodes } from 'iso-country-currency';
+
 
 const ClientsList = () => {
 
@@ -35,6 +37,7 @@ const ClientsList = () => {
     isAddOpen: false,
     data: ''
   });
+  const [allCountries, setAllCountries] = useState([]);
 
   useEffect(() => {
     if(role === 'admin' || permissions?.clientManagement) {
@@ -174,7 +177,7 @@ const ClientsList = () => {
           <div className="dropdown dropdown-action text-end">
             <a href="javascript:void(0)" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
             <div className="dropdown-menu dropdown-menu-right">
-              <a className="dropdown-item" href="javascript:void(0)" onClick={() => { setOpen({ isAddOpen: true, data: record }) }}><i className="fa fa-pencil m-r-5" /> Edit</a>
+              <a className="dropdown-item" href="javascript:void(0)" onClick={() => { setOpen({ isAddOpen: true, data: record }); getAllCountries() }}><i className="fa fa-pencil m-r-5" /> Edit</a>
               <a className="dropdown-item" href="javascript:void(0)" onClick={() => { setOpen({ isDelOpen: true, data: record }) }}><i className="fa fa-trash-o m-r-5" /> Delete</a>
             </div>
           </div>
@@ -229,6 +232,12 @@ const antIcon = (
     spin
   />
 );
+
+const getAllCountries = () => {
+  const isoCodes = getAllISOCodes();
+  const sorted_data = isoCodes.sort((a, b) => a.countryName.localeCompare(b.countryName));
+  setAllCountries(sorted_data)
+};
       return ( 
          <div className="page-wrapper">
          <Helmet>
@@ -248,7 +257,7 @@ const antIcon = (
                  </ul>
                </div>
                <div className="col-auto float-end ms-auto">
-                 <a href="javascript:void(0)" className="btn add-btn" onClick={() => { setOpen({ isAddOpen: true, data: '' }) }}><i className="fa fa-plus" /> Add Client</a>
+                 <a href="javascript:void(0)" className="btn add-btn" onClick={() => { setOpen({ isAddOpen: true, data: '' }); getAllCountries() }}><i className="fa fa-plus" /> Add Client</a>
                  <div className="view-icons">
                    <Link to="/clients" className="grid-view btn btn-link"><i className="fa fa-th" /></Link>
                    <Link to="/clients-list" className="list-view btn btn-link active"><i className="fa fa-bars" /></Link>
@@ -351,6 +360,7 @@ const antIcon = (
             setAllClients={setAllClients}
             setPaginationDetail={setPaginationDetail}
             paginationDetail={paginationDetail}
+            allCountries={allCountries}
           />
         }
         {/* /Add Client Modal */}
