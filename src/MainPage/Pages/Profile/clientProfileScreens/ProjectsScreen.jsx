@@ -41,7 +41,6 @@ const ProjectsScreen = ({ isID, isRole }) => {
   });
 
   useEffect(() => {
-    console.log("=====================", isID, isRole);
     getAllProjects();
     getEmployees();
   }, []);

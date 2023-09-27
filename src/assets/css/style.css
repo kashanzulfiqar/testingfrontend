@@ -7175,6 +7175,24 @@ textarea.form-control {
 
 /* ................. custom css styling ................ */
 
+.countryDropDown > div:nth-child(2) .ant-select-dropdown{
+  max-height: 220px !important;
+}
+
+.searchCenter .ant-select-selection-search{
+  display: flex !important;
+  align-items: center !important;
+}
+
+.addTeamHeight .ant-select-selector{
+  min-height: 44px !important;
+  height: auto !important;
+  border-color: #e3e3e3 !important;
+  box-shadow: none !important;
+  padding-top: 7px !important;
+  padding-bottom: 7px !important;
+}
+
 .projectTeamMember{
   margin-left: -10px;
   display: inline-flex;

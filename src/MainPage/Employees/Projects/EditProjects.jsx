@@ -31,6 +31,7 @@ import {
   Tag,
   Space,
   Popconfirm,
+  InputNumber,
 } from "antd";
 import { Modal } from "@mui/material";
 import moment from "moment";
@@ -38,13 +39,14 @@ import { apiServices } from "../../../Services/apiServices";
 import { apiUploadToS3 } from "../../../Services/uploadImage";
 import { MinusCircleFilled } from "@ant-design/icons";
 
-function EditProjects({ data, editModal, closeEditModal, getprojects, getlistprojects }) {
+function EditProjects({ data, editModal, closeEditModal, getprojects, getlistprojects, allCurrencies }) {
   const [form] = Form.useForm();
 
   const user_state = useSelector((state) => state.user.loginvalue);
   const role = user_state?.user?.role;
 
   const [selectedData, setSelectedData] = useState(null);
+  const [allDomain, setAllDomain] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [clients, setClients] = useState([]);
   const [focalPersons, setFocalPersons] = useState([]);
@@ -135,34 +137,66 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
   };
 
   const getTeamMemberOptions = () => {
-    if (!selectedLeader) {
-      return employees?.map((employee) => (
-        <Select.Option key={employee._id} value={employee._id}>
-          {employee.fullName}
-        </Select.Option>
-      ));
-    } else {
-      return employees
-        ?.filter((employee) => employee._id !== selectedLeader)
-        ?.map((employee) => (
-          <Select.Option key={employee._id} value={employee._id}>
-            {employee.fullName}
-          </Select.Option>
-        ));
-    }
+    return employees?.map((employee) => (
+      <Select.Option key={employee._id} value={employee._id}>
+        {employee.fullName}
+      </Select.Option>
+    ));
+    // if (!selectedLeader) {
+    //   return employees?.map((employee) => (
+    //     <Select.Option key={employee._id} value={employee._id}>
+    //       {employee.fullName}
+    //     </Select.Option>
+    //   ));
+    // } else {
+    //   return employees
+    //     ?.filter((employee) => employee._id !== selectedLeader)
+    //     ?.map((employee) => (
+    //       <Select.Option key={employee._id} value={employee._id}>
+    //         {employee.fullName}
+    //       </Select.Option>
+    //     ));
+    // }
   };
 
   useEffect(() => {
     fetchEmployees();
     ViewClients();
+    getAllDomain();
   }, []);
+
+  const getAllDomain = () => {
+    apiServices("GET", "team/view-team", null, user_state)
+    .then((res) => {
+      // console.log(res?.data);
+      if (res?.data?.success === true) {
+        // setAllDomain(res?.data?.Team);
+        const all_domains = res?.data?.Team;
+        const sortedData = all_domains.slice().sort((a, b) => a.teamName.localeCompare(b.teamName));
+        setAllDomain(sortedData);
+      }
+    })
+    .catch((err) => {
+      // console.log(err);
+      message.error(
+        `${
+          err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
+            ? err?.response?.data?.validation?.body?.message
+            : "Get Domain Info Error"
+        }!`
+      );
+    });
+  }
 
   const fetchEmployees = () => {
     apiServices("GET", `user/all-employees`, null, user_state)
       .then((res) => {
         if (res.data.success === true) {
           const emps = res?.data?.User;
-          setEmployees(emps);
+          const sortedData = emps.slice().sort((a, b) => a.fullName.localeCompare(b.fullName));
+          setEmployees(sortedData);
         }
       })
       .catch((err) => {
@@ -188,7 +222,8 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
       .then((res) => {
         if (res.data.success === true) {
           const clients = res?.data?.clients?.docs;
-          setClients(clients);
+          const sortedData = clients.slice().sort((a, b) => a.clientName.localeCompare(b.clientName));
+          setClients(sortedData);
         }
       })
       .catch((err) => {
@@ -214,7 +249,8 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
       .then((res) => {
         if (res.data.success === true) {
           const focalperson = res?.data?.focalPersons.docs;
-          setFocalPersons(focalperson);
+          const sortedData = focalperson.slice().sort((a, b) => a.focalPersonName.localeCompare(b.focalPersonName));
+          setFocalPersons(sortedData);
         }
       })
       .catch((err) => {
@@ -237,6 +273,8 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
       focalPersonId: values.focalPersonId,
       startDate: moment(values.startDate).format("YYYY-MM-DD"),
       endDate: moment(values.endDate).format("YYYY-MM-DD"),
+      projectDomain: values.projectDomain,
+      currency: values.currency,
       cost: values.cost,
       costType: values.costType,
       priority: values.priority,
@@ -431,7 +469,16 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
             },
           ]}
         >
-          <Input type="number" className="form-control" />
+          {/* <Input type="number" className="form-control" /> */}
+          <InputNumber
+            className="form-control"
+            formatter={(value) => {
+              return `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            }}
+            parser={(value) => {
+              return value.replace(/\$\s?|(,*)/g, '');
+            }}
+          />
         </Form.Item>
       ),
     },
@@ -450,7 +497,12 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
             },
           ]}
         >
-          <Input type="number" className="form-control" />
+          {/* <Input type="number" className="form-control" /> */}
+          <InputNumber
+            className="form-control"
+            max={100}
+            min={0}
+          />
         </Form.Item>
       ),
     },
@@ -541,6 +593,40 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
     },
   ];
 
+  const showTeamSearch = (val, type) => {
+    let dropdownValues = []
+    if(type === 'Team'){
+      employees.forEach((team)=>{
+          dropdownValues.push(team.fullName.toLowerCase())
+       })
+    }else if (type === 'client'){
+      clients.forEach((client)=>{
+        dropdownValues.push(client.clientName.toLowerCase())
+     })
+    }else if (type === 'focal'){
+      focalPersons.forEach((focal)=>{
+        dropdownValues.push(focal.focalPersonName.toLowerCase())
+     })
+    }else if (type === 'domain'){
+      allDomain.forEach((dom)=>{
+        dropdownValues.push(dom.teamName.toLowerCase())
+     })
+    }
+
+    if(val !== ''){
+      dropdownValues.some((team) => {
+        if(team.includes(val.toLowerCase())){
+          // setNoData(false);
+          return true
+        }else{
+          // setNoData(true);
+        }
+      })
+    }else{
+      // setNoData(false)
+    }
+  }
+
   return (
     <Modal
       open={editModal}
@@ -619,6 +705,21 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                         ]}
                       >
                         <Select
+                          showSearch
+                          onSearch={(val) => {
+                            showTeamSearch(val, 'client')
+                            // onTeamChange(val)
+                          }}
+                          filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                          optionFilterProp="children"
+                          notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                          dropdownRender={(menu) => (
+                            <>
+                              {menu}
+                            </>
+                          )}
+
+                          className="custom-select custom-normal"
                           getPopupContainer={() =>
                             document.getElementById("area")
                           }
@@ -660,6 +761,21 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                         ]}
                       >
                         <Select
+                          showSearch
+                          onSearch={(val) => {
+                            showTeamSearch(val, 'focal')
+                            // onTeamChange(val)
+                          }}
+                          filterOption={(input, option) => option.children[0].toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                          optionFilterProp="children"
+                          notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                          dropdownRender={(menu) => (
+                            <>
+                              {menu}
+                            </>
+                          )}
+
+                          className="custom-select custom-normal"
                           getPopupContainer={() =>
                             document.getElementById("area")
                           }
@@ -694,6 +810,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                         ]}
                       >
                         <Select
+                          className="custom-select custom-normal"
                           getPopupContainer={() =>
                             document.getElementById("area")
                           }
@@ -726,6 +843,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                     <div style={{ position: "relative" }} id="area">
                       <Form.Item
                         name="startDate"
+                        className="custom-border"
                         rules={[
                           {
                             required: true,
@@ -751,6 +869,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                     <div style={{ position: "relative" }} id="area">
                       <Form.Item
                         name="endDate"
+                        className="custom-border"
                         rules={[
                           {
                             required: true,
@@ -773,6 +892,89 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
               </div>
 
               <div className="row">
+                <div className="col-sm-6">
+                  <div className="form-group">
+                    <label>Domain</label>
+                    <div style={{ position: "relative" }} id="area">
+                      <Form.Item
+                        name="projectDomain"
+                        className="addTeamHeight"
+                        rules={[
+                          {
+                            required: true,
+                            message: "Domain cannot be empty",
+                          },
+                        ]}
+                      >
+                        <Select
+                          showSearch
+                          onSearch={(val) => {
+                            showTeamSearch(val, 'domain')
+                          }}
+                          filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                          optionFilterProp="children"
+                          notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                          dropdownRender={(menu) => (
+                            <>
+                              {menu}
+                            </>
+                          )}
+
+                          getPopupContainer={() =>
+                            document.getElementById("area")
+                          }
+                          className="customselect-height custom-select"
+                          mode="multiple"
+                          placeholder="Select Domain"
+                        >
+                          {allDomain?.map((domain) => (
+                            <Select.Option
+                              key={domain._id}
+                              value={domain._id}
+                            >
+                              {domain.teamName}
+                            </Select.Option>
+                          ))}
+                        </Select>
+                      </Form.Item>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-sm-6">
+                  <div className="form-group">
+                    <label>Currency</label>
+                    <div style={{ position: "relative" }} id="area">
+                      <Form.Item
+                        name="currency"
+                        className="custom-border"
+                        rules={[
+                          {
+                            required: true,
+                            message: "Choose a currency",
+                          },
+                        ]}
+                      >
+                        <Select
+                          showSearch
+                          className="custom-select custom-normal"
+                          getPopupContainer={() =>
+                            document.getElementById("area")
+                          }
+                          placeholder="Select Currency"
+                        >
+                          {
+                            allCurrencies.map((currency, index) => (
+                              <Select.Option key={index} value={currency?.currency}>
+                                {currency?.currency}
+                              </Select.Option>
+                            ))
+                          }
+                        </Select>
+                      </Form.Item>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="col-sm-3">
                   <div className="form-group">
                     <label>Cost</label>
@@ -787,7 +989,16 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                         },
                       ]}
                     >
-                      <Input type="number" className="form-control" />
+                      {/* <Input type="number" className="form-control" /> */}
+                      <InputNumber
+                        className="form-control"
+                        formatter={(value) => {
+                          return `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                        }}
+                        parser={(value) => {
+                          return value.replace(/\$\s?|(,*)/g, '');
+                        }}
+                      />
                     </Form.Item>
                   </div>
                 </div>
@@ -806,6 +1017,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                         ]}
                       >
                         <Select
+                          className="custom-select custom-normal"
                           getPopupContainer={() =>
                             document.getElementById("area")
                           }
@@ -819,7 +1031,6 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                     </div>
                   </div>
                 </div>
-
                 <div className="col-sm-6">
                   <div className="form-group">
                     <label>Priority</label>
@@ -835,6 +1046,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                         ]}
                       >
                         <Select
+                          className="custom-select custom-normal"
                           getPopupContainer={() =>
                             document.getElementById("area")
                           }
@@ -863,6 +1075,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                     <div style={{ position: "relative" }} id="area">
                       <Form.Item
                         name="projectLead"
+                        className="custom-border"
                         rules={[
                           {
                             required: true,
@@ -871,6 +1084,21 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                         ]}
                       >
                         <Select
+                          showSearch
+                          onSearch={(val) => {
+                            showTeamSearch(val, 'Team')
+                            // onTeamChange(val)
+                          }}
+                          filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                          optionFilterProp="children"
+                          notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                          dropdownRender={(menu) => (
+                            <>
+                              {menu}
+                            </>
+                          )}
+
+                          className="custom-select custom-normal"
                           getPopupContainer={() =>
                             document.getElementById("area")
                           }
@@ -918,6 +1146,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                     <div style={{ position: "relative" }} id="area">
                       <Form.Item
                         name="assignedDevelopers"
+                        className="addTeamHeight"
                         rules={[
                           {
                             required: true,
@@ -926,10 +1155,24 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                         ]}
                       >
                         <Select
+                          showSearch
+                          onSearch={(val) => {
+                            showTeamSearch(val, 'Team')
+                            // onTeamChange(val)
+                          }}
+                          filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                          optionFilterProp="children"
+                          notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                          dropdownRender={(menu) => (
+                            <>
+                              {menu}
+                            </>
+                          )}
+
                           getPopupContainer={() =>
                             document.getElementById("area")
                           }
-                          className="customselect-height"
+                          className="customselect-height custom-select"
                           mode="multiple"
                           placeholder="Select Team Members"
                           onChange={(values) => setSelectedTeamMembers(values)}
@@ -1029,7 +1272,8 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
 
               <div className="submit-section">
                 <Form.Item>
-                  <Button type="primary" onClick={addPaymentSchedule}>
+                  <Button type="primary" onClick={addPaymentSchedule} className="btn btn-primary submit-btn btn-add" style={{fontSize: '14px', minWidth: '30px', height: '39px', lineHeight: '0px'}}>
+                    <i className="fa fa-plus m-r-5" />
                     Add More Payments
                   </Button>
                 </Form.Item>
