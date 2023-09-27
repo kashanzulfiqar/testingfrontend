@@ -205,11 +205,15 @@ const Projects = () => {
   const [filters, setFilters] = useState({
     projectName: "",
     clientName: "",
+    projectDomain: "",
+    projectType: "",
   });
 
   const [selectedFilters, setSelectedFilters] = useState({
     projectName: "",
     clientName: "",
+    projectDomain: "",
+    projectType: "",
   });
 
   const handleFilterChange = (value, filterType) => {
@@ -227,10 +231,14 @@ const Projects = () => {
     setSelectedFilters({
       projectName: "",
       clientName: "",
+      projectDomain: "",
+      projectType: "",
     });
     setFilters({
       projectName: "",
       clientName: "",
+      projectDomain: "",
+      projectType: "",
     });
 
     setPagination({
@@ -377,7 +385,8 @@ const Projects = () => {
 
     apiServices(
       "GET",
-      `project-management/?clientName=${filters.clientName}&projectName=${filters.projectName}&page=${params.page}&limit=${params.limit}`,
+      // `project-management/?clientName=${filters.clientName}&projectName=${filters.projectName}&page=${params.page}&limit=${params.limit}`,
+      `project-management/?clientName=${filters.clientName}&projectName=${filters.projectName}&projectDomain=${filters.projectDomain}&projectType=${filters.projectType}&page=${params.page}&limit=${params.limit}`,
       null,
       user_state
     )
@@ -417,7 +426,8 @@ const Projects = () => {
   const GetCardProjects = () => {
     apiServices(
       "GET",
-      `project-management/?clientName=${filters.clientName}&projectName=${filters.projectName}&page=1&limit=99999`,
+      // `project-management/?clientName=${filters.clientName}&projectName=${filters.projectName}&page=1&limit=99999`,
+      `project-management/?clientName=${filters.clientName}&projectName=${filters.projectName}&projectDomain=${filters.projectDomain}&projectType=${filters.projectType}&page=1&limit=99999`,
       null,
       user_state
     )
@@ -1114,13 +1124,13 @@ const Projects = () => {
           {/* Search Filter */}
           <Form form={form} onFinish={handleSearch}>
             <div className="row filter-row">
-              <div className="col-sm-6 col-md-3">
+              <div className="col-sm-6 col-md-2">
                 <div className="form-group">
                   <Form.Item name="projectName" className="custom-border">
                     <Input
                       className="form-control"
                       allowClear={false}
-                      placeholder="Select Project Name"
+                      placeholder="Project Name"
                       style={{height:'50px'}}
                       onChange={(e) =>
                         handleFilterChange(e.target.value, "projectName")
@@ -1129,7 +1139,7 @@ const Projects = () => {
                   </Form.Item>
                 </div>
               </div>
-              <div className="col-sm-6 col-md-3">
+              <div className="col-sm-6 col-md-2">
                 <div className="form-group">
                   <Form.Item name="clientName" className="custom-border">
                     <Select
@@ -1148,7 +1158,7 @@ const Projects = () => {
                       )}
                       
                       className="custom-select searchCenter"
-                      placeholder="Select a Client"
+                      placeholder="Select Client"
                       onChange={(value) => {
                         handleFilterChange(value, "clientName");
                       }}
@@ -1166,7 +1176,77 @@ const Projects = () => {
                   </Form.Item>
                 </div>
               </div>
-              <div className="col-sm-6 col-md-3">
+              <div className="col-sm-6 col-md-2">
+                <div className="form-group">
+                  <div style={{ position: "relative" }} id="area">
+                    <Form.Item
+                      name="projectType"
+                      className="custom-border"
+                    >
+                      <Select
+                        className="custom-select searchCenter"
+                        getPopupContainer={() =>
+                          document.getElementById("area")
+                        }
+                        placeholder="Project Type"
+                        style={{height:'50px'}}
+                        onChange={(value) => {
+                          handleFilterChange(value, "projectType");
+                        }}
+                      >
+                        <Select.Option value="Hourly">Hourly</Select.Option>
+                        <Select.Option value="Fixed">Fixed</Select.Option>
+                        <Select.Option value="Monthly">Monthly</Select.Option>
+                      </Select>
+                    </Form.Item>
+                  </div>
+                </div>
+              </div>
+              <div className="col-sm-6 col-md-2">
+                <div className="form-group">
+                  <div style={{ position: "relative" }} id="area">
+                    <Form.Item
+                      name="projectDomain"
+                      className="custom-border"
+                    >
+                      <Select
+                        showSearch
+                        onSearch={(val) => {
+                          showTeamSearch(val, 'domain')
+                        }}
+                        filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                        optionFilterProp="children"
+                        notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                        dropdownRender={(menu) => (
+                          <>
+                            {menu}
+                          </>
+                        )}
+
+                        getPopupContainer={() =>
+                          document.getElementById("area")
+                        }
+                        className="custom-select searchCenter"
+                        placeholder="Select Domain"
+                        style={{height:'50px'}}
+                        onChange={(value) => {
+                          handleFilterChange(value, "projectDomain");
+                        }}
+                      >
+                        {allDomain?.map((domain) => (
+                          <Select.Option
+                            key={domain._id}
+                            value={domain._id}
+                          >
+                            {domain.teamName}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </div>
+                </div>
+              </div>
+              <div className="col-sm-6 col-md-2">
                 <button
                   type="primary"
                   htmlType="submit"
@@ -1177,7 +1257,7 @@ const Projects = () => {
                   <span className="d-flex justify-content-center">Search</span>
                 </button>
               </div>
-              <div className="col-sm-6 col-md-3">
+              <div className="col-sm-6 col-md-2">
                 <button
                   htmlType="button"
                   className="btn btn-success btn-block w-100"

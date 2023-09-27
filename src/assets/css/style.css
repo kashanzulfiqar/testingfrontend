@@ -7511,6 +7511,7 @@ background: #f5f5f5 !important;
 }
 .ant-picker-dropdown, .ant-select-dropdown {
 z-index: 3300;
+min-width: fit-content !important;
 }
 /* antd dropdown selected color to orange */
 .ant-select-item-option-selected:not(.ant-select-item-option-disabled){
