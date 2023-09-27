@@ -54,7 +54,7 @@ const Projects = () => {
   const user_state = useSelector((state) => state.user.loginvalue);
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
   const role = user_state?.user?.role
-  console.log(permissions,user_state)
+  //console.log(permissions,user_state)
   const nav = useNavigate();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -73,7 +73,7 @@ const Projects = () => {
   const [selectedData, setSelectedData] = useState(null);
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 10,
+    pageSize: 20,
     total: 0,
   });
 
@@ -174,13 +174,13 @@ const Projects = () => {
     ]);
     setSelectedFiles([]);
     setUploadFiles([]);
-    GetCardProjects();
-    GetListProjects();
+    //GetCardProjects();
+    //GetListProjects();
   };
 
   const openEditModal = (data) => {
     setSelectedData(data);
-    console.log(data);
+    //console.log(data);
     setEditModal(true);
   };
 
@@ -243,7 +243,7 @@ const Projects = () => {
 
     setPagination({
       current: 1,
-      pageSize: 10,
+      pageSize: 20,
       total: 0,
     });
 
@@ -259,15 +259,6 @@ const Projects = () => {
     }
   }, []);
 
-  useEffect(() => {
-    if(role === 'admin' || permissions?.projectManagement ) {
-      setIsLoading(true);
-      GetCardProjects();
-      getAllDomain();
-    }else{
-      nav('/restricted', { state: { unAuthorize: true}})
-    }
-  }, [filters]);
 
   useEffect(() => {
     if(role === 'admin' || permissions?.projectManagement ) { 
@@ -392,16 +383,8 @@ const Projects = () => {
     )
       .then((res) => {
         if (res.data.success === true) {
-          if (params.page === 1) {
-            setTableData(res?.data?.projects?.docs);
-          } else {
-            // If it's not the first page, append the data
-            setTableData((prevData) => [
-              ...prevData,
-              ...res?.data?.projects?.docs,
-            ]);
-          }
-
+          setTableData(res?.data?.projects?.docs);
+ 
           setIsLoading(false);
           setPagination({
             ...pagination,
@@ -485,7 +468,7 @@ const Projects = () => {
           //GetGenPayrolls();
           message.success(`Project Added`);
           setIsLoading(false);
-          handleReset();
+          GetListProjects();
           closeCreateModal();
         }
       })
@@ -507,6 +490,10 @@ const Projects = () => {
   const handleViewToggle = (newView) => {
     setView(newView);
   };
+
+  const emptyfunction = () =>{
+    return null
+  }
 
   function onChange(e) {
     setHtml(e.target.value);
@@ -704,7 +691,7 @@ const Projects = () => {
             )}
             {record === "Scheduled"
               ? " Scheduled"
-              : record === "On-going"
+              : record === "On-Going"
               ? " On-Going"
               : record === "Paused"
               ? " Paused"
@@ -817,7 +804,7 @@ const Projects = () => {
           //GetGenPayrolls();
           message.success(`Project Deleted`);
           setIsLoading(false);
-          handleReset();
+          GetListProjects();
           closeDelete();
         }
       })
@@ -917,7 +904,7 @@ const Projects = () => {
   
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      console.log("File: ", file);
+      //console.log("File: ", file);
   
       // Check file format (extension)
       const fileExtension = file.name.split(".").pop().toLowerCase();
@@ -936,7 +923,7 @@ const Projects = () => {
   
       const uploadPromise = apiUploadToS3(file)
         .then((res) => {
-          console.log(res?.data?.result);
+          //console.log(res?.data?.result);
           return res?.data?.result;
         })
         .catch((err) => {
@@ -951,7 +938,7 @@ const Projects = () => {
     try {
       // Wait for all upload promises to resolve
       const urls = await Promise.all(uploadPromises);
-      console.log("these are ",urls)
+      //console.log("these are ",urls)
       // Add the uploaded URLs to the uploadFiles state array
       setUploadFiles((prevUploadFiles) => [...prevUploadFiles, ...urls]);
       e.target.files = null;
@@ -1094,7 +1081,10 @@ const Projects = () => {
 
                 <div className="view-icons">
                   <button
-                    onClick={() => handleViewToggle("grid")}
+                    onClick={() => {
+                      handleViewToggle("grid")
+                      handleReset();
+                    }}
                     className={`grid-view btn btn-link ${
                       view === "grid" ? "active" : ""
                     }`}
@@ -1104,7 +1094,8 @@ const Projects = () => {
                   <button
                     onClick={() => {
                       handleViewToggle("list");
-                      GetListProjects();
+                      handleReset();
+                      //GetListProjects();
                     }}
                     className={`list-view btn btn-link ${
                       view === "list" ? "active" : ""
@@ -1178,7 +1169,7 @@ const Projects = () => {
               </div>
               <div className="col-sm-6 col-md-2">
                 <div className="form-group">
-                  <div style={{ position: "relative" }} id="area">
+                  <div style={{ position: "relative" }} id="area1">
                     <Form.Item
                       name="projectType"
                       className="custom-border"
@@ -1186,7 +1177,7 @@ const Projects = () => {
                       <Select
                         className="custom-select searchCenter"
                         getPopupContainer={() =>
-                          document.getElementById("area")
+                          document.getElementById("area1")
                         }
                         placeholder="Project Type"
                         style={{height:'50px'}}
@@ -1204,7 +1195,7 @@ const Projects = () => {
               </div>
               <div className="col-sm-6 col-md-2">
                 <div className="form-group">
-                  <div style={{ position: "relative" }} id="area">
+                  <div style={{ position: "relative" }} id="area1">
                     <Form.Item
                       name="projectDomain"
                       className="custom-border"
@@ -1224,7 +1215,7 @@ const Projects = () => {
                         )}
 
                         getPopupContainer={() =>
-                          document.getElementById("area")
+                          document.getElementById("area1")
                         }
                         className="custom-select searchCenter"
                         placeholder="Select Domain"
@@ -1278,9 +1269,9 @@ const Projects = () => {
                 <div className="col-md-12 text-center">
                   <Spin size="large" tip="Loading..." />
                 </div>
-              ) : data?.length > 0 ? (
+              ) : tableData?.length > 0 ? (
                 // Render grid items when data is available
-                data?.map((project, index) => (
+                tableData?.map((project, index) => (
                   <div
                     className="col-lg-4 col-sm-6 col-md-4 col-xl-3"
                     key={index}
@@ -1327,7 +1318,7 @@ const Projects = () => {
                             </button>
                           </div>
                         </div>
-                        <h4 className="project-title">
+                        <h4 className="project-title longText">
                           <Link to={`/projects/projects-view/${project?._id}`}>
                             {project?.projectName}
                           </Link>
@@ -1501,6 +1492,34 @@ const Projects = () => {
                 // Render custom empty text when no data is available
                 <div className="col-md-12 text-center">{customEmptyText}</div>
               )}
+
+                  {
+                    tableData?.length > 0 &&
+                    <div>
+                      <Pagination
+                        style={{display: 'flex', float: 'right'}}
+                        total={pagination.total}
+                        pageSize={pagination.pageSize}
+                        defaultCurrent={1}
+                        current={pagination.current}
+                        showTotal={(total, range) =>
+                          `Showing ${range[0]} to ${range[1]} of ${total} entries`}
+                        onChange={(page, pageSize) => {
+                          setPagination({
+                            ...pagination,
+                            current: page,
+                            pageSize: pageSize,
+                          });
+                          //console.log(page, size);
+                          //setPageSize(size); setCurrentPage(page);
+                          //getEmployeeSalary(filterValues, page, size)
+                        }}
+                        showSizeChanger={true}
+                        pageSizeOptions={['20', '30', '40', '50']}
+                        itemRender={itemRender}
+                      />
+                    </div>
+                  }
             </div>
           ) : (
             <div className="row">
@@ -2595,7 +2614,7 @@ const Projects = () => {
             data={selectedData}
             editModal={editModal}
             closeEditModal={closeEditModal}
-            getprojects={GetCardProjects}
+            getprojects={emptyfunction}
             getlistprojects={GetListProjects}
             allCurrencies={allCurrencies}
           />
