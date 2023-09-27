@@ -2045,7 +2045,7 @@ const Projects = () => {
                       <div className="form-group">
                         <label>End Date</label>
                         <div style={{ position: "relative" }} id="area">
-                          <Form.Item
+                          {/* <Form.Item
                             name="endDate"
                             rules={[
                               {
@@ -2059,6 +2059,39 @@ const Projects = () => {
                               getPopupContainer={() =>
                                 document.getElementById("area")
                               }
+                              style={{ width: "100%" }}
+                              className="form-control"
+                              size="large"
+                            />
+                          </Form.Item> */}
+
+                          <Form.Item
+                            name="endDate"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Enter an end date",
+                              },
+                              ({ getFieldValue }) => ({
+                                validator(_, value) {
+                                  // Ensure that the end date is not before the start date
+                                  const startDate = getFieldValue('startDate');
+                                  if (!startDate || !value) {
+                                    // If either date is not selected, do not perform validation
+                                    return Promise.resolve();
+                                  }
+                                  if (value.isSameOrAfter(startDate)) {
+                                    // End date is valid
+                                    return Promise.resolve();
+                                  }
+                                  return Promise.reject('End date must not be before the start date');
+                                },
+                              }),
+                            ]}
+                            className="custom-border"
+                          >
+                            <DatePicker
+                              getPopupContainer={() => document.getElementById("area")}
                               style={{ width: "100%" }}
                               className="form-control"
                               size="large"
