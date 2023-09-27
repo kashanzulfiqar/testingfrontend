@@ -91,7 +91,8 @@ const ProjectView = () => {
 
   const getTeamMemberOptions = () => {
     // Create an array of selected employee IDs (selected developers and leader)
-    const selectedEmployeeIds = [project?.projectLead, ...selectedDevelopers];
+    // const selectedEmployeeIds = [project?.projectLead, ...selectedDevelopers];
+    const selectedEmployeeIds = [...selectedDevelopers];
 
     return employees
       .filter((employee) => !selectedEmployeeIds.includes(employee._id))
@@ -487,6 +488,28 @@ const ProjectView = () => {
     setAllCurrencies(sorted_data)
   };
 
+  const showTeamSearch = (val, type) => {
+    let dropdownValues = []
+    if(type === 'Team'){
+      employees.forEach((team)=>{
+          dropdownValues.push(team.fullName.toLowerCase())
+       })
+    }
+
+    if(val !== ''){
+      dropdownValues.some((team) => {
+        if(team.includes(val.toLowerCase())){
+          // setNoData(false);
+          return true
+        }else{
+          // setNoData(true);
+        }
+      })
+    }else{
+      // setNoData(false)
+    }
+  }
+
   return (
     <div className="page-wrapper">
       <Helmet>
@@ -580,7 +603,7 @@ const ProjectView = () => {
 
               <div className="card">
                 <div className="card-body">
-                  <h5 className="card-title m-b-20">Uploaded image files</h5>
+                  <h5 className="card-title m-b-20">Uploaded Image Files</h5>
                   <div className="row">
                     {project?.docs?.length > 0 ? (
                       // project?.docs?.map((doc, index) => {
@@ -758,10 +781,10 @@ const ProjectView = () => {
                           return null;
                         })
                       ) : (
-                        <p>No images uploaded</p>
+                        <label>No images uploaded</label>
                       )
                     ) : (
-                      <p>No images uploaded</p>
+                      <label>No images uploaded</label>
                     )}
                   </div>
                 </div>
@@ -769,7 +792,7 @@ const ProjectView = () => {
 
               <div className="card">
                 <div className="card-body">
-                  <h5 className="card-title m-b-20">Uploaded files</h5>
+                  <h5 className="card-title m-b-20">Uploaded Files</h5>
                   <ul className="files-list">
                     {project?.docs.length > 0 ? (
                       // project?.docs.map((doc, index) => {
@@ -849,7 +872,7 @@ const ProjectView = () => {
                         return format.match(/^(jpg|jpeg|png|gif)$/i);
                       }) ? (
                         // Render "No files uploaded" message if all files are images
-                        <p>No files uploaded</p>
+                        <label>No files uploaded</label>
                       ) : (
                         // Render files
                         project?.docs.map((doc, index) => {
@@ -922,7 +945,7 @@ const ProjectView = () => {
                         })
                       )
                     ) : (
-                      <p>No files uploaded</p>
+                      <label>No files uploaded</label>
                     )}
                   </ul>
                 </div>
@@ -1224,7 +1247,7 @@ const ProjectView = () => {
                         <td className="text-end">{project?.cost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {project?.currency}</td>
                       </tr>
                       <tr>
-                        <td>StartDate:</td>
+                        <td>Start Date:</td>
                         <td className="text-end">
                           {moment(project?.startDate).format("YYYY-MM-DD")}
                         </td>
@@ -1283,7 +1306,7 @@ const ProjectView = () => {
               <div className="card project-user">
                 <div className="card-body">
                   <h6 className="card-title m-b-20">
-                    Assigned Leader{" "}
+                    <label style={{width: '69%'}}>Assigned Leader</label>
                     <button
                       type="button"
                       className="float-end btn btn-primary btn-sm"
@@ -1295,7 +1318,7 @@ const ProjectView = () => {
                       }}
                       disabled={role === 'client' || role === 'focalperson'}
                     >
-                      <i className="fa fa-plus" /> Add
+                      <i className="fa fa-plus" /> Edit
                     </button>
                   </h6>
                   {LoadLeader ? (
@@ -1316,9 +1339,9 @@ const ProjectView = () => {
                                 user_icon
                               }
                             />
-                            <span className="employee-name">
+                            <label className="employee-name">
                               {getEmployeeFullName(project.projectLead)}
-                            </span>
+                            </label>
                           </div>
                           <hr
                             className="developer-divider"
@@ -1362,9 +1385,9 @@ const ProjectView = () => {
                               className="avatar"
                               src={getEmployeeImage(developerId) || user_icon}
                             />
-                            <span className="employee-name">
+                            <label className="employee-name">
                               {getEmployeeFullName(developerId)}
-                            </span>
+                            </label>
                           </div>
                           <hr
                             className="developer-divider"
@@ -1485,10 +1508,25 @@ const ProjectView = () => {
                 <div className="row">
                   <div className="form-group">
                     <label>Leader</label>
-                    <Form.Item name="projectLead">
+                    <Form.Item name="projectLead" className="custom-border">
                       <Select
-                        placeholder="Select a Leader"
+                        showSearch
+                        onSearch={(val) => {
+                          showTeamSearch(val, 'Team')
+                          // onTeamChange(val)
+                        }}
+                        filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                        optionFilterProp="children"
+                        notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                        dropdownRender={(menu) => (
+                          <>
+                            {menu}
+                          </>
+                        )}
+
+                        placeholder="Select Leader"
                         onChange={(value) => setSelectedLeader(value)}
+                        className="custom-select custom-normal"
                       >
                         {employees?.map((employee) => (
                           <Select.Option
@@ -1644,11 +1682,26 @@ const ProjectView = () => {
                 <div className="row">
                   <div className="form-group">
                     <label>Add Team</label>
-                    <Form.Item name="assignedDevelopers">
+                    <Form.Item name="assignedDevelopers" className="custom-border">
                       <Select
-                        mode="multiple"
+                        showSearch
+                        onSearch={(val) => {
+                          showTeamSearch(val, 'Team')
+                          // onTeamChange(val)
+                        }}
+                        filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                        optionFilterProp="children"
+                        notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                        dropdownRender={(menu) => (
+                          <>
+                            {menu}
+                          </>
+                        )}
+
+                        // mode="multiple"
                         placeholder="Select Team Members"
                         onSelect={handleSelectDeveloper}
+                        className="custom-select custom-normal"
                       >
                         {getTeamMemberOptions()}
                       </Select>
