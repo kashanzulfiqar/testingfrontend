@@ -520,7 +520,7 @@ const Projects = () => {
       key: "projectName",
       render: (text, record) => (
         <Link to={`/projects/projects-view/${record?._id}`} style={{color: '#333333'}}>
-          <label>{text}</label>
+          <label style={{cursor: 'pointer', fontWeight: '500'}} className="longText">{text}</label>
         </Link>
       ),
     },
@@ -529,14 +529,14 @@ const Projects = () => {
       dataIndex: "clientName",
       key: "clientName",
       render: (text, record) => (
-        <div>
+        <div style={{minWidth: 'max-content'}}>
           <img
             src={record?.client?.logo || user_icon}
             alt=""
             className="avatar"
             style={{ width: "30px", height: "30px" }}
           />
-          <span>{record?.client?.clientName}</span>
+          <label>{record?.client?.clientName}</label>
         </div>
       ),
     },
@@ -545,13 +545,22 @@ const Projects = () => {
       dataIndex: "projectLead",
       key: "projectLead",
       render: (projectLead) => (
-        <ul className="team-members">
-          <li>
-            <Tooltip title={getEmployeeFullName(projectLead)}>
-              <Avatar src={getEmployeeImage(projectLead) || user_icon} />
-            </Tooltip>
-          </li>
-        </ul>
+        // <ul className="team-members">
+        //   <li>
+        //     <Tooltip title={getEmployeeFullName(projectLead)}>
+        //       <Avatar src={getEmployeeImage(projectLead) || user_icon} />
+        //     </Tooltip>
+        //   </li>
+        // </ul>
+        <div style={{minWidth: 'max-content'}}>
+          <img
+            src={getEmployeeImage(projectLead) || user_icon}
+            alt=""
+            className="avatar"
+            style={{ width: "30px", height: "30px" }}
+          />
+          <label>{getEmployeeFullName(projectLead)}</label>
+        </div>
       ),
     },
     {
@@ -560,11 +569,11 @@ const Projects = () => {
       key: "assignedDevelopers",
       render: (assignedDevelopers) => (
         <div className="project-members" style={{margin: '4px auto'}}>
-        <ul className="team-members">
+        <ul className="team-members" style={{minWidth: 'max-content'}}>
           {assignedDevelopers?.slice(0, 4).map((developer, index) => (
             <li key={index}>
               <Tooltip title={getEmployeeFullName(developer)}>
-                <Avatar src={getEmployeeImage(developer) || user_icon} />
+                <Avatar style={{cursor: 'pointer'}} src={getEmployeeImage(developer) || user_icon} />
               </Tooltip>
             </li>
           ))}
@@ -590,6 +599,7 @@ const Projects = () => {
                       <Tooltip title={getEmployeeFullName(developer)}>
                         <Avatar
                           src={getEmployeeImage(developer) || user_icon}
+                          style={{cursor: 'pointer'}}
                         />
                       </Tooltip>
                     </a>
@@ -631,6 +641,7 @@ const Projects = () => {
       title: <b>Deadline</b>,
       dataIndex: "endDate",
       key: "endDate",
+      render: (text, record) => <label style={{minWidth: 'max-content'}}>{text}</label> 
     },
     {
       title: <b>Priority</b>,
@@ -1033,6 +1044,14 @@ const Projects = () => {
     // setAllCurrencies([...uniqueCurrencies])
     setAllCurrencies(sorted_data)
   };
+
+
+const filteredColumns = columns.filter(column => {
+  if (column.dataIndex === 'clientName' && (role === '' && !permissions?.projectManagement)) {
+    return false;
+  }
+  return true;
+});
 
 
   return (
@@ -1626,7 +1645,8 @@ const Projects = () => {
           ) : (
             <div className="row">
               <div className="col-md-12">
-                <div className="table-responsive">
+              {/* projectsListTable */}
+                <div className="table-responsive"> 
                   <Table
                     locale={{
                       emptyText: isLoading ? (
@@ -1636,9 +1656,10 @@ const Projects = () => {
                       ),
                     }}
                     className="table-striped custom-table datatable"
+                    style = {{overflowX : 'auto'}}
                     loading={isLoading}
                     //style={{ height: "400px", background: "white" }}
-                    columns={columns}
+                    columns={filteredColumns}
                     // bordered
                     dataSource={tableData}
                     //rowKey={(record) => record?._id}
