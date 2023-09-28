@@ -557,9 +557,9 @@ const Projects = () => {
             src={getEmployeeImage(projectLead) || user_icon}
             alt=""
             className="avatar"
-            style={{ width: "30px", height: "30px" }}
+            style={{ width: "30px", height: "30px", cursor: 'pointer' }}
           />
-          <label>{getEmployeeFullName(projectLead)}</label>
+          <label style={{cursor: 'pointer'}}>{getEmployeeFullName(projectLead)}</label>
         </div>
       ),
     },
