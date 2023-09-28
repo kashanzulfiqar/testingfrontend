@@ -8,7 +8,7 @@ import { user_icon } from '../../../../Entryfile/imagepath';
 import { apiUploadToS3 } from '../../../../Services/uploadImage';
 import { apiServices } from '../../../../Services/apiServices';
 
-const AddClientModal = ({ open, setOpen, user_state, allClients, setAllClients, setPaginationDetail, paginationDetail }) => {
+const AddClientModal = ({ open, setOpen, user_state, allClients, setAllClients, setPaginationDetail, paginationDetail, allCountries }) => {
     const [form] = Form.useForm();
     
     const company_id = user_state?.user?.companyId
@@ -422,28 +422,37 @@ const antIcon = (
                     <label>
                         Country <span className="text-danger">*</span>
                     </label>
-                    <Form.Item
-                        name='country'
-                        className='custom-border'
-                        rules={[
-                        {
+                    <div style={{ position: "relative" }} id="area" className='countryDropDown'>
+                      <Form.Item
+                          name='country'
+                          className='custom-border'
+                          rules={[
+                          {
                             whitespace: true,
                             required: true,
-                            validator: (_, value) => {
-                            if (!value || value.trim() === '') {
-                                return Promise.reject('please enter country name');
-                            } else if (/\s{2,}/.test(value)) {
-                                return Promise.reject('please remove consecutive spaces');
-                            } else if (value.length < 3) {
-                                return Promise.reject('name must be at least 3 characters long');
-                            }
-                            return Promise.resolve();
-                            },
-                        },
-                        ]}
-                    >
-                        <Input className='form-control' maxLength={50} />
-                    </Form.Item>
+                            message: 'please select country name',
+                          },
+                          ]}
+                      >
+                          {/* <Input className='form-control' maxLength={50} /> */}
+                            <Select
+                              showSearch
+                              className="custom-select custom-normal"
+                              getPopupContainer={() =>
+                                document.getElementById("area")
+                              }
+                              placeholder="Select Country"
+                            >
+                              {
+                                allCountries.map((country, index) => (
+                                  <Select.Option key={index} value={country.countryName}>
+                                    {country.countryName}
+                                  </Select.Option>
+                                ))
+                              }
+                            </Select>
+                      </Form.Item>
+                    </div>
                     </div>
                     </div>
                     <div className="col-md-6">

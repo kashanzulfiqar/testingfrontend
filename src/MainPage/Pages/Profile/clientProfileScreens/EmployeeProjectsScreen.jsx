@@ -21,12 +21,18 @@ import EmptyTable from "../../../../files/Icons/EmptyTable.svg";
 import { itemRender } from "../../../paginationfunction";
 import EditProjects from "../../../Employees/Projects/EditProjects";
 import Modal from "@mui/material/Modal";
+import { getAllISOCodes } from 'iso-country-currency';
 
 
-const ProjectsScreen = ({ isID, isRole }) => {
+const EmployeeProjectsScreen = ({ employeeId }) => {
   const user_state = useSelector((state) => state.user.loginvalue);
+  const role = user_state?.user?.role;
+  const user_id = user_state?.user?._id;
+  const permissions = useSelector((state) => state?.permissionsSlice?.data);
 
   const [allProjects, setAllProjects] = useState();
+  const [allDomain, setAllDomain] = useState([]);
+  const [allCurrencies, setAllCurrencies] = useState([]);
   const [tableLoader, setTableLoader] = useState(true);
   const [empLoader, setEmpLoader] = useState(true);
   const [loader, setLoader] = useState(false);
@@ -44,19 +50,6 @@ const ProjectsScreen = ({ isID, isRole }) => {
     getAllProjects();
     getEmployees();
   }, []);
-
-  //   const d = [
-  //     {_id: 1, projectName: 'Office Management Task Task', projectDescription: 'Project description project description project description project description project description project description project description project description project description project description project description', endDate: '2023-09-15', projectLead: '64ea194c7f50012b6221681a', assignedDevelopers: ['64ad03c05a16f308a6ce1e2b', '64af9143ad4f55990dfbae86']},
-  //     {_id: 2, projectName: 'Office Management 3', projectDescription: 'Project description project description project description project description project description project description project description project description project description project description project description', endDate: '2023-09-15', projectLead: '64ea194c7f50012b6221681a', assignedDevelopers: ['64ad03c05a16f308a6ce1e2b', '64af9143ad4f55990dfbae86']},
-  //     {_id: 3, projectName: 'Office Management 5', projectDescription: 'Project description project description project description project description project description project description project description project description project description project description project description', endDate: '2023-09-15', projectLead: '64ea194c7f50012b6221681a', assignedDevelopers: ['64ad03c05a16f308a6ce1e2b', '64af9143ad4f55990dfbae86']},
-  //     {_id: 4, projectName: 'Office Management 6', projectDescription: 'Project description project description project description project description project description project description project description project description project description project description project description', endDate: '2023-09-15', projectLead: '64ea194c7f50012b6221681a', assignedDevelopers: ['64ad03c05a16f308a6ce1e2b', '64af9143ad4f55990dfbae86']},
-  //     {_id: 5, projectName: 'Office Management 7', projectDescription: 'Project description project description project description project description project description project description project description project description project description project description project description', endDate: '2023-09-15', projectLead: '64ea194c7f50012b6221681a', assignedDevelopers: ['64ad03c05a16f308a6ce1e2b', '64af9143ad4f55990dfbae86']},
-  //   ]
-  //   const getAllProjects2 = () => {
-  //       setAllProjects(d)
-  //       setPaginationDetail({total: d.length})
-  //       setTableLoader(false)
-  //     }
 
   const getEmployees = () => {
     setEmpLoader(true);
@@ -91,7 +84,9 @@ const ProjectsScreen = ({ isID, isRole }) => {
     setTableLoader(true);
     apiServices(
       "GET",
-      `project-management/project-by-id?role=${isRole}&id=${isID}&page=${
+      `project-management/?employeeId=${(employeeId !== user_id ? employeeId : (role === '' && !permissions?.projectManagement)) ? employeeId : ''}&page=${
+      // `project-management/?employeeId=${employeeId}&page=${
+      // `project-management/?employeeId=${(role === '' && !permissions?.projectManagement) ? employeeId : ''}&page=${
         current_page ? current_page : currentPage ? currentPage : 1
       }&limit=${page_size ? page_size : pageSize ? pageSize : 20}`,
       null,
@@ -99,7 +94,7 @@ const ProjectsScreen = ({ isID, isRole }) => {
     )
       .then((res) => {
         if (res?.data?.success === true) {
-          console.log(res?.data);
+        //   console.log(res?.data);
           setAllProjects(res?.data?.projects?.docs);
           setPaginationDetail(res?.data?.projects);
           setTableLoader(false);
@@ -113,7 +108,7 @@ const ProjectsScreen = ({ isID, isRole }) => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get All Projects Error"
+              : "Get Employee Projects Error"
           }!`
         );
       });
@@ -226,6 +221,48 @@ const ProjectsScreen = ({ isID, isRole }) => {
     />
   );
 
+  const getAllDomain = () => {
+    apiServices("GET", "team/view-team", null, user_state)
+    .then((res) => {
+      // console.log(res?.data);
+      if (res?.data?.success === true) {
+        const all_domains = res?.data?.Team;
+        const sortedData = all_domains.slice().sort((a, b) => a.teamName.localeCompare(b.teamName));
+        setAllDomain(sortedData);
+      }
+    })
+    .catch((err) => {
+      // console.log(err);
+      message.error(
+        `${
+          err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
+            ? err?.response?.data?.validation?.body?.message
+            : "Get Domain Info Error"
+        }!`
+      );
+    });
+  }
+
+  const getAllCurrencies = () => {
+    const isoCodes = getAllISOCodes();
+    const uniqueCurrencies = new Set();
+    isoCodes.forEach(isoCode => {
+        // const currency = isoCode.currency;
+        const currency = {
+          currency: isoCode?.currency,
+          symbol: isoCode?.symbol
+        };
+        // uniqueCurrencies.add(currency);
+        uniqueCurrencies.add(JSON.stringify(currency));
+    });
+    const currency_d = [...uniqueCurrencies].map(currency => JSON.parse(currency));
+    const sorted_data = currency_d.sort((a, b) => a.currency.localeCompare(b.currency));
+    // setAllCurrencies([...uniqueCurrencies])
+    setAllCurrencies(sorted_data)
+  };
+
   return (
     <>
       <div className="row">
@@ -254,44 +291,49 @@ const ProjectsScreen = ({ isID, isRole }) => {
                   className="card-body"
                   style={{ display: "flex", flexDirection: "column" }}
                 >
-                  {/* <div className="dropdown profile-action">
-                    <a
-                      href="javascript:void(0)"
-                      className="action-icon dropdown-toggle"
-                      data-bs-toggle="dropdown"
-                      aria-expanded="false"
-                    >
-                      <i className="material-icons">more_vert</i>
-                    </a>
-                    <div className="dropdown-menu dropdown-menu-right">
+                  {
+                    (role === 'admin' || permissions?.projectManagement) &&
+                    <div className="dropdown profile-action">
                       <a
-                        className="dropdown-item"
                         href="javascript:void(0)"
-                        onClick={() => {
-                          setOpen({
-                            editOpen: true,
-                            delOpen: false,
-                            data: project,
-                          });
-                        }}
+                        className="action-icon dropdown-toggle"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false"
                       >
-                        <i className="fa fa-pencil m-r-5" /> Edit
+                        <i className="material-icons">more_vert</i>
                       </a>
-                      <a
-                        className="dropdown-item"
-                        href="javascript:void(0)"
-                        onClick={() => {
-                          setOpen({
-                            editOpen: false,
-                            delOpen: true,
-                            data: project,
-                          });
-                        }}
-                      >
-                        <i className="fa fa-trash-o m-r-5" /> Delete
-                      </a>
+                      <div className="dropdown-menu dropdown-menu-right">
+                        <a
+                          className="dropdown-item"
+                          href="javascript:void(0)"
+                          onClick={() => {
+                            getAllDomain();
+                            getAllCurrencies();
+                            setOpen({
+                              editOpen: true,
+                              delOpen: false,
+                              data: project,
+                            });
+                          }}
+                        >
+                          <i className="fa fa-pencil m-r-5" /> Edit
+                        </a>
+                        <a
+                          className="dropdown-item"
+                          href="javascript:void(0)"
+                          onClick={() => {
+                            setOpen({
+                              editOpen: false,
+                              delOpen: true,
+                              data: project,
+                            });
+                          }}
+                        >
+                          <i className="fa fa-trash-o m-r-5" /> Delete
+                        </a>
+                      </div>
                     </div>
-                  </div> */}
+                  }
                   <h4 className="project-title" style={{ width: "190px" }}>
                     <Link to={`/projects/projects-view/${project?._id}`}>
                       {project?.projectName}
@@ -512,7 +554,7 @@ const ProjectsScreen = ({ isID, isRole }) => {
           <div>
             <Pagination
               style={{ display: "flex", float: "right" }}
-              total={paginationDetail?.total}
+              total={paginationDetail?.totalDocs}
               pageSize={pageSize}
               defaultCurrent={1}
               current={currentPage}
@@ -871,6 +913,8 @@ const ProjectsScreen = ({ isID, isRole }) => {
             closeEditModal={closeModal}
             getprojects={getAllProjectsOnEdit}
             getlistprojects={() => { }}
+            allCurrencies={allCurrencies}
+            allDomain={allDomain}
           />
         )}
         {/* Delete Modal */}
@@ -941,4 +985,4 @@ const ProjectsScreen = ({ isID, isRole }) => {
   );
 };
 
-export default ProjectsScreen;
+export default EmployeeProjectsScreen;

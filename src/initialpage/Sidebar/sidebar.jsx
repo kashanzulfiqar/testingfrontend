@@ -565,10 +565,13 @@ const Sidebar = (props) => {
                 }
                   {isSideMenu == "projects" ?
                     <ul>
-                      {user_state?.role === 'admin' || permissions?.projectManagement &&
-                      <li><Link className={pathname.includes('project_dashboard') ? "active" : pathname.includes('projects-list') ?
-                        "active" : pathname.includes('cts-view') ? "active" : ""}
-                        to="/projects/project_dashboard">Projects</Link></li>}
+                      {
+                        // (user_state?.role === 'admin' || permissions?.projectManagement) &&
+                        (user_state?.role !== 'client' || user_state?.role !== 'focalperson') &&
+                          <li><Link className={pathname.includes('project_dashboard') ? "active" : pathname.includes('projects-list') ?
+                            "active" : pathname.includes('cts-view') ? "active" : ""}
+                            to="/projects/project_dashboard">Projects</Link></li>
+                      }
                       <li><Link onClick={() => localStorage.setItem("minheight", "true")} to="/tasks/tasks">Tasks</Link></li>
                       <li><Link className={pathname.includes('task-board') ? "active" : ""} to="/app/projects/task-board">Task Board</Link></li>
                     </ul>
@@ -605,7 +608,7 @@ const Sidebar = (props) => {
                   {isSideMenu == "sales" ?
                     <ul>
                       <li><Link className={pathname.includes('estimates') ? "active" : ""} to="/app/sales/estimates">Estimates</Link></li>
-                      <li><Link className={pathname.includes('invoices') ? "active" : ""} to="/app/sales/invoices">Invoices</Link></li>
+                      <li><Link className={pathname.includes('invoices') ? "active" : ""} to="/invoices">Invoices</Link></li>
                       <li><Link className={pathname.includes('payments') ? "active" : ""} to="/app/sales/payments">Payments</Link></li>
                       <li><Link className={pathname.includes('expenses') ? "active" : ""} to="/app/sales/expenses">Expenses</Link></li>
                       <li><Link className={pathname.includes('provident-fund') ? "active" : ""} to="/app/sales/provident-fund">Provident Fund</Link></li>

@@ -28,7 +28,7 @@ const LeaveAdmin = () => {
   const navigate = useNavigate()
 
   const permissions = useSelector((state) => state?.permissionsSlice?.data)
-  console.log(permissions,role)
+  //console.log(permissions,role)
 
 
   const [menu, setMenu] = useState(false)
@@ -106,8 +106,8 @@ const LeaveAdmin = () => {
             message.success(`Leave request updated to ${newStatus}`);
 
             handleReset();
-            navigate('/employee/request-admin')
-            fetchleaves();
+            //navigate('/employee/request-admin')
+            //fetchleaves();
 
             dispatch(counter(pending_counter-1))
             
@@ -198,7 +198,7 @@ const LeaveAdmin = () => {
 
         setIsLoading(true);
         fetchleaves();
-        console.log("helloooooooooo")
+        //console.log("helloooooooooo")
 
       }else{
 
@@ -254,9 +254,9 @@ const LeaveAdmin = () => {
               setStatdata(statdata)
       
               setRequests(requestData);
-              console.log(requestData);
+              //console.log(requestData);
       
-              console.log("these are ",requestData?.totalDays)
+              //console.log("these are ",requestData?.totalDays)
               setTableData(requestData); // Step 2
               setPagination({
                 ...pagination,

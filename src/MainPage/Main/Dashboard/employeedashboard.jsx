@@ -49,7 +49,7 @@ const EmployeeDashboard = () => {
       if (res.data.success === true) {
         const userData=res?.data
         setUserData(userData)
-        console.log(userData)
+        //console.log(userData)
         setIsLoading(false);      
       }
     })

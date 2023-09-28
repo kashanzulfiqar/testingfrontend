@@ -18,6 +18,7 @@ import { apiServices } from '../../../Services/apiServices';
 import { LoadingOutlined } from '@ant-design/icons';
 import ImgCrop from 'antd-img-crop';
 import { apiUploadToS3 } from '../../../Services/uploadImage';
+import EmployeeProjectsScreen from './clientProfileScreens/EmployeeProjectsScreen';
 
 
 
@@ -27,6 +28,9 @@ const EmployeeProfile = () => {
   const nav = useNavigate();
   const user_data = location?.state?.user_data;
   const allDataLocal = JSON.parse(localStorage.getItem("allDataLocal"));
+
+  let active = sessionStorage.getItem("emp_active_tab");
+  let employee_tab = sessionStorage.getItem("employee_tab");
   
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
   const { loginvalue } = useSelector((state) => state.user);
@@ -39,6 +43,12 @@ const EmployeeProfile = () => {
   const ProfileName = UserName?.charAt(0).toUpperCase() + UserName?.slice(1)
   console.log(loginvalue, "loginvalue");
 
+  const [activeTab, setActiveTab] = useState(employee_tab ? employee_tab : active ? active : 'profile')
+  if(employee_tab){
+    setTimeout( function() { 
+    sessionStorage.removeItem('employee_tab');
+    }, 1000);
+  }
   const [loader, setLoader] = useState(false)
 const [imageLoader, setImageLoader] = useState(false)
 const [dataLoading, setDataLoading] = useState(false)
@@ -76,6 +86,7 @@ const [imageChange, setImageChange] = useState(1)
     if(location.pathname === "/profile/employee-profile"){
       setAllData(allDataLocal ? allDataLocal : user_data)
     }else if(location.pathname === "/profile"){
+      setActiveTab(employee_tab ? employee_tab : active ? active : 'profile')
       if(imageChange === 1){
         setDataLoading(true)
       apiServices("GET", "user/employee-overview", null, user_state)
@@ -104,9 +115,11 @@ const [imageChange, setImageChange] = useState(1)
   
   
   useEffect(() => {
+    if(activeTab === 'profile'){
       getReportsTo()
       getDepartment();
       getDesignation();
+    }
     // if(role === 'admin' || permissions?.viewAllUsers) {
     //   getReportsTo()
     //   getDepartment();
@@ -115,6 +128,12 @@ const [imageChange, setImageChange] = useState(1)
     //   nav('/restricted', { state: { unAuthorize: true}})
     // }
   }, [])
+
+  useEffect(() => {
+    // window.scrollTo(0, 0);
+    // sessionStorage.clear();
+    sessionStorage.setItem(`emp_active_tab`, `${activeTab}`)
+  }, [activeTab])
 
   const getReportsTo = () => {
     apiServices("GET", "user/view-team-lead", null, user_state)
@@ -689,180 +708,189 @@ const antIcon = (
             <div className="row user-tabs">
               <div className="col-lg-12 col-md-12 col-sm-12 line-tabs">
                 <ul className="nav nav-tabs nav-tabs-bottom">
-                  <li className="nav-item"><a href="#emp_profile" data-bs-toggle="tab" className="nav-link active">Profile</a></li>
-                  <li className="nav-item"><a href="#emp_projects" data-bs-toggle="tab" className="nav-link">Projects</a></li>
-                  <li className="nav-item"><a href="#bank_statutory" data-bs-toggle="tab" className="nav-link">Bank &amp; Statutory <small className="text-danger">(Admin Only)</small></a></li>
-                  <li className="nav-item"><a href="#emp_assets" data-bs-toggle="tab" className="nav-link">Assets</a></li>
+                  <li className="nav-item"><a href="javascript:void(0)"  className={`nav-link ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => { setActiveTab('profile') }}>Profile</a></li>
+                  {/* <li className="nav-item"><a href="#emp_projects" data-bs-toggle="tab" className="nav-link">Projects</a></li> */}
+                  <li className="nav-item"><a href="javascript:void(0)"  className={`nav-link ${activeTab === 'projects' ? 'active' : ''}`} onClick={() => { setActiveTab('projects') }}>Projects</a></li>
+                  <li className="nav-item"><a href="javascript:void(0)"  className={`nav-link ${activeTab === 'bank' ? 'active' : ''}`} onClick={() => { setActiveTab('bank') }}>Bank &amp; Statutory <small className="text-danger">(Admin Only)</small></a></li>
+                  <li className="nav-item"><a href="javascript:void(0)"  className={`nav-link ${activeTab === 'assets' ? 'active' : ''}`} onClick={() => { setActiveTab('assets') }}>Assets</a></li>
                 </ul>
               </div>
             </div>
           </div>
-          {
-              dataLoading ? <Spin size='middle' style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '262px'}} /> :
               <div className="tab-content">
                 {/* Profile Info Tab */}
-                <div id="emp_profile" className="pro-overview tab-pane fade show active">
-                  <div className="row">
-                    <div className="col-md-6 d-flex">
-                      <div className="card profile-box flex-fill">
-                        <div className="card-body">
-                          <h3 className="card-title">Bank Information
-                          {
-                            (role === 'admin' || permissions?.updateUser) &&
-                            <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: false, isBankInfoOpen: true , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a>
-                          }
-                          </h3>
-                          { allData?.bankName ?
-                          <ul className="personal-info">
-                                <li>
-                                  <div className="title">Bank Name</div>
-                                  <div className="text">{allData?.bankName}</div>
-                                </li>
-                                <li>
-                                  <div className="title">Bank Account No.</div>
-                                  <div className="text">{allData?.bankAccountNumber}</div>
-                                </li>
-                                {/* <li>
-                                  <div className="title">Salary</div>
-                                  <div className="text">{allData?.salary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</div>
-                                </li> */}
-                          </ul> :
-                            <Empty style={{marginTop: '12%'}} image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                          }
-                        </div>
-                      </div>
-                    </div>
-                    <div className="col-md-6 d-flex">
-                      <div className="card profile-box flex-fill">
-                        <div className="card-body">
-                          <h3 className="card-title">Emergency Contact
-                          {
-                            (role === 'admin' || permissions?.updateUser) &&
-                            <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: true, isprofileInfoOpen: false, data: allData?.emergencyContacts?.length > 0 ? allData.emergencyContacts[0] : {} })}><i className="fa fa-pencil" /></a>
-                          }
-                          </h3>
-                          {/* <h5 className="section-title">Primary</h5> */}
-                          { allData?.emergencyContacts?.length > 0 ?
-                            <ul className="personal-info">
-                              {
-                                allData?.emergencyContacts?.map((emerg) => (
-                                  <>
+                {
+                    (activeTab === 'profile' && allData?._id) &&
+                    <>
+                    {
+                      dataLoading ? <Spin size='middle' style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '262px'}} /> :
+                        <div id="emp_profile" className="pro-overview tab-pane fade show active">
+                          <div className="row">
+                            <div className="col-md-6 d-flex">
+                              <div className="card profile-box flex-fill">
+                                <div className="card-body">
+                                  <h3 className="card-title">Bank Information
+                                  {
+                                    (role === 'admin' || permissions?.updateUser) &&
+                                    <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: false, isBankInfoOpen: true , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a>
+                                  }
+                                  </h3>
+                                  { allData?.bankName ?
+                                  <ul className="personal-info">
+                                        <li>
+                                          <div className="title">Bank Name</div>
+                                          <div className="text">{allData?.bankName}</div>
+                                        </li>
+                                        <li>
+                                          <div className="title">Bank Account No.</div>
+                                          <div className="text">{allData?.bankAccountNumber}</div>
+                                        </li>
+                                        {/* <li>
+                                          <div className="title">Salary</div>
+                                          <div className="text">{allData?.salary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</div>
+                                        </li> */}
+                                  </ul> :
+                                    <Empty style={{marginTop: '12%'}} image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                                  }
+                                </div>
+                              </div>
+                            </div>
+                            <div className="col-md-6 d-flex">
+                              <div className="card profile-box flex-fill">
+                                <div className="card-body">
+                                  <h3 className="card-title">Emergency Contact
+                                  {
+                                    (role === 'admin' || permissions?.updateUser) &&
+                                    <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: true, isprofileInfoOpen: false, data: allData?.emergencyContacts?.length > 0 ? allData.emergencyContacts[0] : {} })}><i className="fa fa-pencil" /></a>
+                                  }
+                                  </h3>
+                                  {/* <h5 className="section-title">Primary</h5> */}
+                                  { allData?.emergencyContacts?.length > 0 ?
+                                    <ul className="personal-info">
+                                      {
+                                        allData?.emergencyContacts?.map((emerg) => (
+                                          <>
+                                            <li>
+                                              <div className="title">Name</div>
+                                              <div className="text">{emerg?.name}</div>
+                                            </li>
+                                            <li>
+                                              <div className="title">Relationship</div>
+                                              <div className="text">{emerg?.relationship}</div>
+                                            </li>
+                                            <li>
+                                              <div className="title">Phone No. </div>
+                                              <div className="text">{emerg?.phoneNo}</div>
+                                            </li>
+                                          </>
+                                        ))
+                                      }
+                                    </ul> :
+                                    <Empty style={{marginTop: '12%'}} image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                                  }
+                                  {/* <hr />
+                                  <h5 className="section-title">Secondary</h5>
+                                  <ul className="personal-info">
                                     <li>
                                       <div className="title">Name</div>
-                                      <div className="text">{emerg?.name}</div>
+                                      <div className="text">Karen Wills</div>
                                     </li>
                                     <li>
                                       <div className="title">Relationship</div>
-                                      <div className="text">{emerg?.relationship}</div>
+                                      <div className="text">Brother</div>
                                     </li>
                                     <li>
-                                      <div className="title">Phone No. </div>
-                                      <div className="text">{emerg?.phoneNo}</div>
+                                      <div className="title">Phone </div>
+                                      <div className="text">9876543210, 9876543210</div>
                                     </li>
-                                  </>
-                                ))
-                              }
-                            </ul> :
-                            <Empty style={{marginTop: '12%'}} image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                          }
-                          {/* <hr />
-                          <h5 className="section-title">Secondary</h5>
-                          <ul className="personal-info">
-                            <li>
-                              <div className="title">Name</div>
-                              <div className="text">Karen Wills</div>
-                            </li>
-                            <li>
-                              <div className="title">Relationship</div>
-                              <div className="text">Brother</div>
-                            </li>
-                            <li>
-                              <div className="title">Phone </div>
-                              <div className="text">9876543210, 9876543210</div>
-                            </li>
-                          </ul> */}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="row">
-                  </div>
-                  <div className="row">
-                    <div className="col-md-6 d-flex">
-                      <div className="card profile-box flex-fill">
-                        <div className="card-body">
-                          <h3 className="card-title">Education Informations
-                          {
-                            (role === 'admin' || permissions?.updateUser) &&
-                            <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: true, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a>
-                          }
-                          </h3>
-                          <div className="experience-box">
-                            { allData?.education?.length > 0 ?
-                            <ul className="experience-list">
-                              {
-                                allData?.education?.map((edu) => (
-                                  <li>
-                                    <div className="experience-user">
-                                      <div className="before-circle" />
-                                    </div>
-                                    <div className="experience-content">
-                                      <div className="timeline-content">
-                                        <a href="javascript:void(0)" className="name" style={{cursor: 'text'}}>{edu?.institute}</a>
-                                        <div>{edu?.degree}</div>
-                                        <span className="time">{edu?.year}</span>
-                                      </div>
-                                    </div>
-                                  </li>
-                                ))
-                              }
-                            </ul> :
-                            <Empty style={{marginTop: '12%'}} image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                            }
+                                  </ul> */}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="row">
+                          </div>
+                          <div className="row">
+                            <div className="col-md-6 d-flex">
+                              <div className="card profile-box flex-fill">
+                                <div className="card-body">
+                                  <h3 className="card-title">Education Informations
+                                  {
+                                    (role === 'admin' || permissions?.updateUser) &&
+                                    <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: true, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a>
+                                  }
+                                  </h3>
+                                  <div className="experience-box">
+                                    { allData?.education?.length > 0 ?
+                                    <ul className="experience-list">
+                                      {
+                                        allData?.education?.map((edu) => (
+                                          <li>
+                                            <div className="experience-user">
+                                              <div className="before-circle" />
+                                            </div>
+                                            <div className="experience-content">
+                                              <div className="timeline-content">
+                                                <a href="javascript:void(0)" className="name" style={{cursor: 'text'}}>{edu?.institute}</a>
+                                                <div>{edu?.degree}</div>
+                                                <span className="time">{edu?.year}</span>
+                                              </div>
+                                            </div>
+                                          </li>
+                                        ))
+                                      }
+                                    </ul> :
+                                    <Empty style={{marginTop: '12%'}} image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                                    }
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="col-md-6 d-flex">
+                              <div className="card profile-box flex-fill">
+                                <div className="card-body">
+                                  <h3 className="card-title">Experience
+                                  {
+                                    (role === 'admin' || permissions?.updateUser) &&
+                                    <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: true, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a>
+                                  }
+                                  </h3>
+                                  <div className="experience-box">
+                                    {
+                                      allData?.experience?.length > 0 ?
+                                    <ul className="experience-list">
+                                      {
+                                        allData?.experience?.map((exp) => (
+                                          <li>
+                                            <div className="experience-user">
+                                              <div className="before-circle" />
+                                            </div>
+                                            <div className="experience-content">
+                                              <div className="timeline-content">
+                                                <a href="javascript:void(0)" style={{cursor: 'text'}} className="name">{exp?.designation} at {exp?.company}</a>
+                                                <span className="time">{exp?.duration}</span>
+                                              </div>
+                                            </div>
+                                          </li>
+                                        ))
+                                      }
+                                    </ul>
+                                    : <Empty style={{marginTop: '12%'}} image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                                    }
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
-                    <div className="col-md-6 d-flex">
-                      <div className="card profile-box flex-fill">
-                        <div className="card-body">
-                          <h3 className="card-title">Experience
-                          {
-                            (role === 'admin' || permissions?.updateUser) &&
-                            <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: true, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a>
-                          }
-                          </h3>
-                          <div className="experience-box">
-                            {
-                              allData?.experience?.length > 0 ?
-                            <ul className="experience-list">
-                              {
-                                allData?.experience?.map((exp) => (
-                                  <li>
-                                    <div className="experience-user">
-                                      <div className="before-circle" />
-                                    </div>
-                                    <div className="experience-content">
-                                      <div className="timeline-content">
-                                        <a href="javascript:void(0)" style={{cursor: 'text'}} className="name">{exp?.designation} at {exp?.company}</a>
-                                        <span className="time">{exp?.duration}</span>
-                                      </div>
-                                    </div>
-                                  </li>
-                                ))
-                              }
-                            </ul>
-                            : <Empty style={{marginTop: '12%'}} image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                            }
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                    }
+                    </>
+                }
+
                 {/* /Profile Info Tab */}
+
                 {/* Projects Tab */}
-                <div className="tab-pane fade" id="emp_projects">
+                {/* <div className="tab-pane fade" id="emp_projects">
                   <div className="row">
                     <div className="col-lg-4 col-sm-6 col-md-4 col-xl-3">
                       <div className="card">
@@ -1113,401 +1141,416 @@ const antIcon = (
                       </div>
                     </div>
                   </div>
-                </div>
+                </div> */}
+
+                  {
+                    (activeTab === 'projects' && allData?._id) &&
+                      <div id="emp_projects" className="tab-pane fade show active">
+                      <EmployeeProjectsScreen
+                        employeeId={allData?._id}
+                      />
+                      </div>
+                  }
+
                 {/* /Projects Tab */}
+
                 {/* Bank Statutory Tab */}
-                <div className="tab-pane fade" id="bank_statutory">
-                  <div className="card">
-                    <div className="card-body">
-                      <h3 className="card-title"> Basic Salary Information</h3>
-                      <form>
-                        <div className="row">
-                          <div className="col-sm-4">
-                            <div className="form-group">
-                              <label className="col-form-label">Salary basis <span className="text-danger">*</span></label>
-                              <select className="select">
-                                <option>Select salary basis type</option>
-                                <option>Hourly</option>
-                                <option>Daily</option>
-                                <option>Weekly</option>
-                                <option>Monthly</option>
-                              </select>
-                            </div>
-                          </div>
-                          <div className="col-sm-4">
-                            <div className="form-group">
-                              <label className="col-form-label">Salary amount <small className="text-muted">per month</small></label>
-                              <div className="input-group">
-                                <div className="input-group-prepend">
-                                  <span className="input-group-text">$</span>
+                {
+                  (activeTab === 'bank' && allData?._id) &&
+                    <div className="tab-pane fade show active" id="bank_statutory">
+                      <div className="card">
+                        <div className="card-body">
+                          <h3 className="card-title"> Basic Salary Information</h3>
+                          <form>
+                            <div className="row">
+                              <div className="col-sm-4">
+                                <div className="form-group">
+                                  <label className="col-form-label">Salary basis <span className="text-danger">*</span></label>
+                                  <select className="select">
+                                    <option>Select salary basis type</option>
+                                    <option>Hourly</option>
+                                    <option>Daily</option>
+                                    <option>Weekly</option>
+                                    <option>Monthly</option>
+                                  </select>
                                 </div>
-                                <input type="text" className="form-control" placeholder="Type your salary amount" defaultValue={0.00} />
+                              </div>
+                              <div className="col-sm-4">
+                                <div className="form-group">
+                                  <label className="col-form-label">Salary amount <small className="text-muted">per month</small></label>
+                                  <div className="input-group">
+                                    <div className="input-group-prepend">
+                                      <span className="input-group-text">$</span>
+                                    </div>
+                                    <input type="text" className="form-control" placeholder="Type your salary amount" defaultValue={0.00} />
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="col-sm-4">
+                                <div className="form-group">
+                                  <label className="col-form-label">Payment type</label>
+                                  <select className="select">
+                                    <option>Select payment type</option>
+                                    <option>Bank transfer</option>
+                                    <option>Check</option>
+                                    <option>Cash</option>
+                                  </select>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                          <div className="col-sm-4">
-                            <div className="form-group">
-                              <label className="col-form-label">Payment type</label>
-                              <select className="select">
-                                <option>Select payment type</option>
-                                <option>Bank transfer</option>
-                                <option>Check</option>
-                                <option>Cash</option>
-                              </select>
+                            <hr />
+                            <h3 className="card-title"> PF Information</h3>
+                            <div className="row">
+                              <div className="col-sm-4">
+                                <div className="form-group">
+                                  <label className="col-form-label">PF contribution</label>
+                                  <select className="select">
+                                    <option>Select PF contribution</option>
+                                    <option>Yes</option>
+                                    <option>No</option>
+                                  </select>
+                                </div>
+                              </div>
+                              <div className="col-sm-4">
+                                <div className="form-group">
+                                  <label className="col-form-label">PF No. <span className="text-danger">*</span></label>
+                                  <select className="select">
+                                    <option>Select PF contribution</option>
+                                    <option>Yes</option>
+                                    <option>No</option>
+                                  </select>
+                                </div>
+                              </div>
                             </div>
-                          </div>
+                            <div className="row">
+                              <div className="col-sm-4">
+                                <div className="form-group">
+                                  <label className="col-form-label">Employee PF rate</label>
+                                  <select className="select">
+                                    <option>Select PF contribution</option>
+                                    <option>Yes</option>
+                                    <option>No</option>
+                                  </select>
+                                </div>
+                              </div>
+                              <div className="col-sm-4">
+                                <div className="form-group">
+                                  <label className="col-form-label">Additional rate <span className="text-danger">*</span></label>
+                                  <select className="select">
+                                    <option>Select additional rate</option>
+                                    <option>0%</option>
+                                    <option>1%</option>
+                                    <option>2%</option>
+                                    <option>3%</option>
+                                    <option>4%</option>
+                                    <option>5%</option>
+                                    <option>6%</option>
+                                    <option>7%</option>
+                                    <option>8%</option>
+                                    <option>9%</option>
+                                    <option>10%</option>
+                                  </select>
+                                </div>
+                              </div>
+                              <div className="col-sm-4">
+                                <div className="form-group">
+                                  <label className="col-form-label">Total rate</label>
+                                  <input type="text" className="form-control" placeholder="N/A" defaultValue="11%" />
+                                </div>
+                              </div>
+                            </div>
+                            <div className="row">
+                              <div className="col-sm-4">
+                                <div className="form-group">
+                                  <label className="col-form-label">Employee PF rate</label>
+                                  <select className="select">
+                                    <option>Select PF contribution</option>
+                                    <option>Yes</option>
+                                    <option>No</option>
+                                  </select>
+                                </div>
+                              </div>
+                              <div className="col-sm-4">
+                                <div className="form-group">
+                                  <label className="col-form-label">Additional rate <span className="text-danger">*</span></label>
+                                  <select className="select">
+                                    <option>Select additional rate</option>
+                                    <option>0%</option>
+                                    <option>1%</option>
+                                    <option>2%</option>
+                                    <option>3%</option>
+                                    <option>4%</option>
+                                    <option>5%</option>
+                                    <option>6%</option>
+                                    <option>7%</option>
+                                    <option>8%</option>
+                                    <option>9%</option>
+                                    <option>10%</option>
+                                  </select>
+                                </div>
+                              </div>
+                              <div className="col-sm-4">
+                                <div className="form-group">
+                                  <label className="col-form-label">Total rate</label>
+                                  <input type="text" className="form-control" placeholder="N/A" defaultValue="11%" />
+                                </div>
+                              </div>
+                            </div>
+                            <hr />
+                            <h3 className="card-title"> ESI Information</h3>
+                            <div className="row">
+                              <div className="col-sm-4">
+                                <div className="form-group">
+                                  <label className="col-form-label">ESI contribution</label>
+                                  <select className="select">
+                                    <option>Select ESI contribution</option>
+                                    <option>Yes</option>
+                                    <option>No</option>
+                                  </select>
+                                </div>
+                              </div>
+                              <div className="col-sm-4">
+                                <div className="form-group">
+                                  <label className="col-form-label">ESI No. <span className="text-danger">*</span></label>
+                                  <select className="select">
+                                    <option>Select ESI contribution</option>
+                                    <option>Yes</option>
+                                    <option>No</option>
+                                  </select>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="row">
+                              <div className="col-sm-4">
+                                <div className="form-group">
+                                  <label className="col-form-label">Employee ESI rate</label>
+                                  <select className="select">
+                                    <option>Select ESI contribution</option>
+                                    <option>Yes</option>
+                                    <option>No</option>
+                                  </select>
+                                </div>
+                              </div>
+                              <div className="col-sm-4">
+                                <div className="form-group">
+                                  <label className="col-form-label">Additional rate <span className="text-danger">*</span></label>
+                                  <select className="select">
+                                    <option>Select additional rate</option>
+                                    <option>0%</option>
+                                    <option>1%</option>
+                                    <option>2%</option>
+                                    <option>3%</option>
+                                    <option>4%</option>
+                                    <option>5%</option>
+                                    <option>6%</option>
+                                    <option>7%</option>
+                                    <option>8%</option>
+                                    <option>9%</option>
+                                    <option>10%</option>
+                                  </select>
+                                </div>
+                              </div>
+                              <div className="col-sm-4">
+                                <div className="form-group">
+                                  <label className="col-form-label">Total rate</label>
+                                  <input type="text" className="form-control" placeholder="N/A" defaultValue="11%" />
+                                </div>
+                              </div>
+                            </div>
+                            <div className="submit-section">
+                              <button className="btn btn-primary submit-btn" type="submit">Save</button>
+                            </div>
+                          </form>
                         </div>
-                        <hr />
-                        <h3 className="card-title"> PF Information</h3>
-                        <div className="row">
-                          <div className="col-sm-4">
-                            <div className="form-group">
-                              <label className="col-form-label">PF contribution</label>
-                              <select className="select">
-                                <option>Select PF contribution</option>
-                                <option>Yes</option>
-                                <option>No</option>
-                              </select>
-                            </div>
-                          </div>
-                          <div className="col-sm-4">
-                            <div className="form-group">
-                              <label className="col-form-label">PF No. <span className="text-danger">*</span></label>
-                              <select className="select">
-                                <option>Select PF contribution</option>
-                                <option>Yes</option>
-                                <option>No</option>
-                              </select>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="row">
-                          <div className="col-sm-4">
-                            <div className="form-group">
-                              <label className="col-form-label">Employee PF rate</label>
-                              <select className="select">
-                                <option>Select PF contribution</option>
-                                <option>Yes</option>
-                                <option>No</option>
-                              </select>
-                            </div>
-                          </div>
-                          <div className="col-sm-4">
-                            <div className="form-group">
-                              <label className="col-form-label">Additional rate <span className="text-danger">*</span></label>
-                              <select className="select">
-                                <option>Select additional rate</option>
-                                <option>0%</option>
-                                <option>1%</option>
-                                <option>2%</option>
-                                <option>3%</option>
-                                <option>4%</option>
-                                <option>5%</option>
-                                <option>6%</option>
-                                <option>7%</option>
-                                <option>8%</option>
-                                <option>9%</option>
-                                <option>10%</option>
-                              </select>
-                            </div>
-                          </div>
-                          <div className="col-sm-4">
-                            <div className="form-group">
-                              <label className="col-form-label">Total rate</label>
-                              <input type="text" className="form-control" placeholder="N/A" defaultValue="11%" />
-                            </div>
-                          </div>
-                        </div>
-                        <div className="row">
-                          <div className="col-sm-4">
-                            <div className="form-group">
-                              <label className="col-form-label">Employee PF rate</label>
-                              <select className="select">
-                                <option>Select PF contribution</option>
-                                <option>Yes</option>
-                                <option>No</option>
-                              </select>
-                            </div>
-                          </div>
-                          <div className="col-sm-4">
-                            <div className="form-group">
-                              <label className="col-form-label">Additional rate <span className="text-danger">*</span></label>
-                              <select className="select">
-                                <option>Select additional rate</option>
-                                <option>0%</option>
-                                <option>1%</option>
-                                <option>2%</option>
-                                <option>3%</option>
-                                <option>4%</option>
-                                <option>5%</option>
-                                <option>6%</option>
-                                <option>7%</option>
-                                <option>8%</option>
-                                <option>9%</option>
-                                <option>10%</option>
-                              </select>
-                            </div>
-                          </div>
-                          <div className="col-sm-4">
-                            <div className="form-group">
-                              <label className="col-form-label">Total rate</label>
-                              <input type="text" className="form-control" placeholder="N/A" defaultValue="11%" />
-                            </div>
-                          </div>
-                        </div>
-                        <hr />
-                        <h3 className="card-title"> ESI Information</h3>
-                        <div className="row">
-                          <div className="col-sm-4">
-                            <div className="form-group">
-                              <label className="col-form-label">ESI contribution</label>
-                              <select className="select">
-                                <option>Select ESI contribution</option>
-                                <option>Yes</option>
-                                <option>No</option>
-                              </select>
-                            </div>
-                          </div>
-                          <div className="col-sm-4">
-                            <div className="form-group">
-                              <label className="col-form-label">ESI No. <span className="text-danger">*</span></label>
-                              <select className="select">
-                                <option>Select ESI contribution</option>
-                                <option>Yes</option>
-                                <option>No</option>
-                              </select>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="row">
-                          <div className="col-sm-4">
-                            <div className="form-group">
-                              <label className="col-form-label">Employee ESI rate</label>
-                              <select className="select">
-                                <option>Select ESI contribution</option>
-                                <option>Yes</option>
-                                <option>No</option>
-                              </select>
-                            </div>
-                          </div>
-                          <div className="col-sm-4">
-                            <div className="form-group">
-                              <label className="col-form-label">Additional rate <span className="text-danger">*</span></label>
-                              <select className="select">
-                                <option>Select additional rate</option>
-                                <option>0%</option>
-                                <option>1%</option>
-                                <option>2%</option>
-                                <option>3%</option>
-                                <option>4%</option>
-                                <option>5%</option>
-                                <option>6%</option>
-                                <option>7%</option>
-                                <option>8%</option>
-                                <option>9%</option>
-                                <option>10%</option>
-                              </select>
-                            </div>
-                          </div>
-                          <div className="col-sm-4">
-                            <div className="form-group">
-                              <label className="col-form-label">Total rate</label>
-                              <input type="text" className="form-control" placeholder="N/A" defaultValue="11%" />
-                            </div>
-                          </div>
-                        </div>
-                        <div className="submit-section">
-                          <button className="btn btn-primary submit-btn" type="submit">Save</button>
-                        </div>
-                      </form>
+                      </div>
                     </div>
-                  </div>
-                </div>
-                <div className="tab-pane fade" id="emp_assets">
-                  <div className="table-responsive table-newdatatable">
-                    <table className="table table-new custom-table mb-0 datatable">
-                      <thead>
-                        <tr>
-                          <th>#</th>
-                          <th>Name</th>
-                          <th>Asset ID</th>
-                          <th>Assigned Date</th>
-                          <th>Assignee</th>
-                          <th>Action</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td>1</td>
-                          <td>
-                            <a href="assets-details.html" className="table-imgname">
-                              <img src={laptop} className="me-2" alt="img" />
-                              <span>Laptop</span>
-                            </a>
-                          </td>
-                          <td>AST - 001</td>
-                          <td>22 Nov, 2022    10:32AM</td>
-                          <td className="table-namesplit">
-                            <a href="javascript:void(0);" className="table-profileimage">
-                              <img src={Avatar_02} className="me-2" alt="img" />
-                            </a>
-                            <a href="javascript:void(0);" className="table-name">
-                              <span>John Paul Raj</span>
-                              <p>john@dreamguystech.com</p>
-                            </a>
-                          </td>
-                          <td>
-                            <div className="table-actions d-flex">
-                              <Link className="delete-table me-2" to="/app/profile/userassets">
-                                <img src={eye} alt="svg" />
-                              </Link>
-                            </div>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>2</td>
-                          <td>
-                            <a href="assets-details.html" className="table-imgname">
-                              <img src={laptop} className="me-2" alt="img" />
-                              <span>Laptop</span>
-                            </a>
-                          </td>
-                          <td>AST - 002</td>
-                          <td>22 Nov, 2022    10:32AM</td>
-                          <td className="table-namesplit">
-                            <a href="javascript:void(0);" className="table-profileimage" data-bs-toggle="modal" data-bs-target="#edit-asset">
-                              <img src={Avatar_05} className="me-2" alt="img" />
-                            </a>
-                            <a href="javascript:void(0);" className="table-name">
-                              <span>Vinod Selvaraj</span>
-                              <p>vinod.s@dreamguystech.com</p>
-                            </a>
-                          </td>
-                          <td>
-                            <div className="table-actions d-flex">
-                              <a className="delete-table me-2" href="user-asset-details.html">
-                                <img src={eye} alt="svg" />
-                              </a>
-                            </div>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>3</td>
-                          <td>
-                            <a href="assets-details.html" className="table-imgname">
-                              <img src={keyboard} className="me-2" alt="img" />
-                              <span>Dell Keyboard</span>
-                            </a>
-                          </td>
-                          <td>AST - 003</td>
-                          <td>22 Nov, 2022    10:32AM</td>
-                          <td className="table-namesplit">
-                            <a href="javascript:void(0);" className="table-profileimage" data-bs-toggle="modal" data-bs-target="#edit-asset">
-                              <img src={Avatar_09} className="me-2" alt="img" />
-                            </a>
-                            <a href="javascript:void(0);" className="table-name">
-                              <span>Harika </span>
-                              <p>harika.v@dreamguystech.com</p>
-                            </a>
-                          </td>
-                          <td>
-                            <div className="table-actions d-flex">
-                              <a className="delete-table me-2" href="user-asset-details.html">
-                                <img src={eye} alt="svg" />
-                              </a>
-                            </div>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>4</td>
-                          <td>
-                            <a href="#" className="table-imgname">
-                              <img src={mouse} className="me-2" alt="img" />
-                              <span>Logitech Mouse</span>
-                            </a>
-                          </td>
-                          <td>AST - 0024</td>
-                          <td>22 Nov, 2022    10:32AM</td>
-                          <td className="table-namesplit">
-                            <a href="assets-details.html" className="table-profileimage">
-                              <img src={Avatar_10} className="me-2" alt="img" />
-                            </a>
-                            <a href="assets-details.html" className="table-name">
-                              <span>Mythili</span>
-                              <p>mythili@dreamguystech.com</p>
-                            </a>
-                          </td>
-                          <td>
-                            <div className="table-actions d-flex">
-                              <a className="delete-table me-2" href="user-asset-details.html">
-                                <img src={eye} alt="svg" />
-                              </a>
-                            </div>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>5</td>
-                          <td>
-                            <a href="#" className="table-imgname">
-                              <img src={laptop} className="me-2" alt="img" />
-                              <span>Laptop</span>
-                            </a>
-                          </td>
-                          <td>AST - 005</td>
-                          <td>22 Nov, 2022    10:32AM</td>
-                          <td className="table-namesplit">
-                            <a href="assets-details.html" className="table-profileimage">
-                              <img src={Avatar_16} className="me-2" alt="img" />
-                            </a>
-                            <a href="assets-details.html" className="table-name">
-                              <span>John Paul Raj</span>
-                              <p>john@dreamguystech.com</p>
-                            </a>
-                          </td>
-                          <td>
-                            <div className="table-actions d-flex">
-                              <a className="delete-table me-2" href="user-asset-details.html">
-                                <img src={eye} alt="svg" />
-                              </a>
-                            </div>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>6</td>
-                          <td>
-                            <a href="#" className="table-imgname">
-                              <img src={laptop} className="me-2" alt="img" />
-                              <span>Laptop</span>
-                            </a>
-                          </td>
-                          <td>AST - 006</td>
-                          <td>22 Nov, 2022    10:32AM</td>
-                          <td className="table-namesplit">
-                            <a href="javascript:void(0);" className="table-profileimage">
-                              <img src={Avatar_02} className="me-2" alt="img" />
-                            </a>
-                            <a href="javascript:void(0);" className="table-name">
-                              <span>Vinod Selvaraj</span>
-                              <p>vinod.s@dreamguystech.com</p>
-                            </a>
-                          </td>
-                          <td>
-                            <div className="table-actions d-flex">
-                              <a className="delete-table me-2" href="user-asset-details.html">
-                                <img src={eye} alt="svg" />
-                              </a>
-                            </div>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
+                }
+                {
+                  (activeTab === 'assets' && allData?._id) &&
+                    <div className="tab-pane fade show active" id="emp_assets">
+                      <div className="table-responsive table-newdatatable">
+                        <table className="table table-new custom-table mb-0 datatable">
+                          <thead>
+                            <tr>
+                              <th>#</th>
+                              <th>Name</th>
+                              <th>Asset ID</th>
+                              <th>Assigned Date</th>
+                              <th>Assignee</th>
+                              <th>Action</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td>1</td>
+                              <td>
+                                <a href="assets-details.html" className="table-imgname">
+                                  <img src={laptop} className="me-2" alt="img" />
+                                  <span>Laptop</span>
+                                </a>
+                              </td>
+                              <td>AST - 001</td>
+                              <td>22 Nov, 2022    10:32AM</td>
+                              <td className="table-namesplit">
+                                <a href="javascript:void(0);" className="table-profileimage">
+                                  <img src={Avatar_02} className="me-2" alt="img" />
+                                </a>
+                                <a href="javascript:void(0);" className="table-name">
+                                  <span>John Paul Raj</span>
+                                  <p>john@dreamguystech.com</p>
+                                </a>
+                              </td>
+                              <td>
+                                <div className="table-actions d-flex">
+                                  <Link className="delete-table me-2" to="/app/profile/userassets">
+                                    <img src={eye} alt="svg" />
+                                  </Link>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>2</td>
+                              <td>
+                                <a href="assets-details.html" className="table-imgname">
+                                  <img src={laptop} className="me-2" alt="img" />
+                                  <span>Laptop</span>
+                                </a>
+                              </td>
+                              <td>AST - 002</td>
+                              <td>22 Nov, 2022    10:32AM</td>
+                              <td className="table-namesplit">
+                                <a href="javascript:void(0);" className="table-profileimage" data-bs-toggle="modal" data-bs-target="#edit-asset">
+                                  <img src={Avatar_05} className="me-2" alt="img" />
+                                </a>
+                                <a href="javascript:void(0);" className="table-name">
+                                  <span>Vinod Selvaraj</span>
+                                  <p>vinod.s@dreamguystech.com</p>
+                                </a>
+                              </td>
+                              <td>
+                                <div className="table-actions d-flex">
+                                  <a className="delete-table me-2" href="user-asset-details.html">
+                                    <img src={eye} alt="svg" />
+                                  </a>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>3</td>
+                              <td>
+                                <a href="assets-details.html" className="table-imgname">
+                                  <img src={keyboard} className="me-2" alt="img" />
+                                  <span>Dell Keyboard</span>
+                                </a>
+                              </td>
+                              <td>AST - 003</td>
+                              <td>22 Nov, 2022    10:32AM</td>
+                              <td className="table-namesplit">
+                                <a href="javascript:void(0);" className="table-profileimage" data-bs-toggle="modal" data-bs-target="#edit-asset">
+                                  <img src={Avatar_09} className="me-2" alt="img" />
+                                </a>
+                                <a href="javascript:void(0);" className="table-name">
+                                  <span>Harika </span>
+                                  <p>harika.v@dreamguystech.com</p>
+                                </a>
+                              </td>
+                              <td>
+                                <div className="table-actions d-flex">
+                                  <a className="delete-table me-2" href="user-asset-details.html">
+                                    <img src={eye} alt="svg" />
+                                  </a>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>4</td>
+                              <td>
+                                <a href="#" className="table-imgname">
+                                  <img src={mouse} className="me-2" alt="img" />
+                                  <span>Logitech Mouse</span>
+                                </a>
+                              </td>
+                              <td>AST - 0024</td>
+                              <td>22 Nov, 2022    10:32AM</td>
+                              <td className="table-namesplit">
+                                <a href="assets-details.html" className="table-profileimage">
+                                  <img src={Avatar_10} className="me-2" alt="img" />
+                                </a>
+                                <a href="assets-details.html" className="table-name">
+                                  <span>Mythili</span>
+                                  <p>mythili@dreamguystech.com</p>
+                                </a>
+                              </td>
+                              <td>
+                                <div className="table-actions d-flex">
+                                  <a className="delete-table me-2" href="user-asset-details.html">
+                                    <img src={eye} alt="svg" />
+                                  </a>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>5</td>
+                              <td>
+                                <a href="#" className="table-imgname">
+                                  <img src={laptop} className="me-2" alt="img" />
+                                  <span>Laptop</span>
+                                </a>
+                              </td>
+                              <td>AST - 005</td>
+                              <td>22 Nov, 2022    10:32AM</td>
+                              <td className="table-namesplit">
+                                <a href="assets-details.html" className="table-profileimage">
+                                  <img src={Avatar_16} className="me-2" alt="img" />
+                                </a>
+                                <a href="assets-details.html" className="table-name">
+                                  <span>John Paul Raj</span>
+                                  <p>john@dreamguystech.com</p>
+                                </a>
+                              </td>
+                              <td>
+                                <div className="table-actions d-flex">
+                                  <a className="delete-table me-2" href="user-asset-details.html">
+                                    <img src={eye} alt="svg" />
+                                  </a>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>6</td>
+                              <td>
+                                <a href="#" className="table-imgname">
+                                  <img src={laptop} className="me-2" alt="img" />
+                                  <span>Laptop</span>
+                                </a>
+                              </td>
+                              <td>AST - 006</td>
+                              <td>22 Nov, 2022    10:32AM</td>
+                              <td className="table-namesplit">
+                                <a href="javascript:void(0);" className="table-profileimage">
+                                  <img src={Avatar_02} className="me-2" alt="img" />
+                                </a>
+                                <a href="javascript:void(0);" className="table-name">
+                                  <span>Vinod Selvaraj</span>
+                                  <p>vinod.s@dreamguystech.com</p>
+                                </a>
+                              </td>
+                              <td>
+                                <div className="table-actions d-flex">
+                                  <a className="delete-table me-2" href="user-asset-details.html">
+                                    <img src={eye} alt="svg" />
+                                  </a>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                }
 
                 {/* /Bank Statutory Tab */}
               </div>
-          }
         </div>
         {/* /Page Content */}
         {/* Profile Modal */}

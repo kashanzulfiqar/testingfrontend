@@ -36,11 +36,14 @@ import { MinusCircleFilled } from "@ant-design/icons";
 import EditProjects from "./EditProjects";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 //import EditProjects from "./EditProjects";
+import { getAllISOCodes } from 'iso-country-currency';
+
 
 const ProjectView = () => {
   const [form] = Form.useForm();
 
   const user_state = useSelector((state) => state.user.loginvalue);
+  const employee_id = user_state?.user?._id;
   const role = user_state?.user?.role;
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
   console.log(permissions,user_state)
@@ -49,6 +52,7 @@ const ProjectView = () => {
   const [paymentSchedules, setPaymentSchedules] = useState(null);
 
   const [isLoading, setIsLoading] = useState(false);
+  const [allDomain, setAllDomain] = useState([]);
   const [TableLoad, setTableLoad] = useState(false);
   const [LoadLeader, setLoadLeader] = useState(false);
   const [LoadTeam, setLoadTeam] = useState(false);
@@ -59,6 +63,7 @@ const ProjectView = () => {
   const [employees, setEmployees] = useState([]);
   const [clients, setClients] = useState([]);
   const [focalPersons, setFocalPersons] = useState([]);
+  const [allCurrencies, setAllCurrencies] = useState([]);
 
   const [selectedClient, setSelectedClient] = useState(null);
   const [selectedLeader, setSelectedLeader] = useState(null);
@@ -88,7 +93,8 @@ const ProjectView = () => {
 
   const getTeamMemberOptions = () => {
     // Create an array of selected employee IDs (selected developers and leader)
-    const selectedEmployeeIds = [project?.projectLead, ...selectedDevelopers];
+    // const selectedEmployeeIds = [project?.projectLead, ...selectedDevelopers];
+    const selectedEmployeeIds = [...selectedDevelopers];
 
     return employees
       .filter((employee) => !selectedEmployeeIds.includes(employee._id))
@@ -147,20 +153,45 @@ const ProjectView = () => {
   };
 
   useEffect(() => {
-    if(role === 'admin' || role === 'client' || role === 'focalperson' || permissions?.projectManagement || permissions?.clientManagement ) {
+    // if(role === 'admin' || role === 'client' || role === 'focalperson' || permissions?.projectManagement || permissions?.clientManagement ) {
       setIsLoading(true);
       GetProjects();
       fetchEmployees();
-      ViewClients();
-    }else{
-      nav('/restricted', { state: { unAuthorize: true}})
-    }
+      getAllDomain();
+      // ViewClients();
+    // }else{
+    //   nav('/restricted', { state: { unAuthorize: true}})
+    // }
   }, []);
+
+  const getAllDomain = () => {
+    apiServices("GET", "team/view-team", null, user_state)
+    .then((res) => {
+      // console.log(res?.data);
+      if (res?.data?.success === true) {
+        const all_domains = res?.data?.Team;
+        const sortedData = all_domains.slice().sort((a, b) => a.teamName.localeCompare(b.teamName));
+        setAllDomain(sortedData);
+      }
+    })
+    .catch((err) => {
+      // console.log(err);
+      message.error(
+        `${
+          err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
+            ? err?.response?.data?.validation?.body?.message
+            : "Get Domain Info Error"
+        }!`
+      );
+    });
+  }
 
   const GetProjects = () => {
     apiServices(
       "GET",
-      `project-management/?page=1&limit=99999`,
+      `project-management/?employeeId=${(role === '' && !permissions?.projectManagement) ? employee_id : ''}&page=1&limit=99999`,
       null,
       user_state
     )
@@ -413,6 +444,14 @@ const ProjectView = () => {
       title: "Amount in Figure",
       dataIndex: "amountInFigure",
       key: "amountInFigure",
+      render: (amount) => {
+
+        return(
+          <>
+            {amount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {project?.currency}
+          </>
+        )
+      },
     },
     {
       title: "Amount in Percent",
@@ -457,6 +496,47 @@ const ProjectView = () => {
   const emptyfunction = () =>{
     return null
   }
+
+  const getAllCurrencies = () => {
+    const isoCodes = getAllISOCodes();
+    const uniqueCurrencies = new Set();
+    isoCodes.forEach(isoCode => {
+        // const currency = isoCode.currency;
+        const currency = {
+          currency: isoCode?.currency,
+          symbol: isoCode?.symbol
+        };
+        // uniqueCurrencies.add(currency);
+        uniqueCurrencies.add(JSON.stringify(currency));
+    });
+    const currency_d = [...uniqueCurrencies].map(currency => JSON.parse(currency));
+    const sorted_data = currency_d.sort((a, b) => a.currency.localeCompare(b.currency));
+    // setAllCurrencies([...uniqueCurrencies])
+    setAllCurrencies(sorted_data)
+  };
+
+  const showTeamSearch = (val, type) => {
+    let dropdownValues = []
+    if(type === 'Team'){
+      employees.forEach((team)=>{
+          dropdownValues.push(team.fullName.toLowerCase())
+       })
+    }
+
+    if(val !== ''){
+      dropdownValues.some((team) => {
+        if(team.includes(val.toLowerCase())){
+          // setNoData(false);
+          return true
+        }else{
+          // setNoData(true);
+        }
+      })
+    }else{
+      // setNoData(false)
+    }
+  }
+
   return (
     <div className="page-wrapper">
       <Helmet>
@@ -491,6 +571,7 @@ const ProjectView = () => {
                 <button
                   className="btn add-btn"
                   onClick={() => {
+                    getAllCurrencies();
                     openEditModal(project);
                     form.setFieldsValue({
                       ...project,
@@ -498,7 +579,7 @@ const ProjectView = () => {
                       endDate: moment(project?.endDate, "YYYY-MM-DD"),
                     });
                   }}
-                  disabled={role === 'client' || role === 'focalperson'}
+                  disabled={role === 'client' || role === 'focalperson' || (role === '' && !permissions?.projectManagement)}
                 >
                   <i className="fa fa-plus" />
                   Edit Project
@@ -543,13 +624,13 @@ const ProjectView = () => {
                       <span className="text-muted">tasks completed</span>
                     </small> */}
                   </div>
-                  <p>{project?.projectDescription}</p>
+                  <label>{project?.projectDescription}</label>
                 </div>
               </div>
 
               <div className="card">
                 <div className="card-body">
-                  <h5 className="card-title m-b-20">Uploaded image files</h5>
+                  <h5 className="card-title m-b-20">Uploaded Image Files</h5>
                   <div className="row">
                     {project?.docs?.length > 0 ? (
                       // project?.docs?.map((doc, index) => {
@@ -727,10 +808,10 @@ const ProjectView = () => {
                           return null;
                         })
                       ) : (
-                        <p>No images uploaded</p>
+                        <label>No images uploaded</label>
                       )
                     ) : (
-                      <p>No images uploaded</p>
+                      <label>No images uploaded</label>
                     )}
                   </div>
                 </div>
@@ -738,7 +819,7 @@ const ProjectView = () => {
 
               <div className="card">
                 <div className="card-body">
-                  <h5 className="card-title m-b-20">Uploaded files</h5>
+                  <h5 className="card-title m-b-20">Uploaded Files</h5>
                   <ul className="files-list">
                     {project?.docs.length > 0 ? (
                       // project?.docs.map((doc, index) => {
@@ -818,7 +899,7 @@ const ProjectView = () => {
                         return format.match(/^(jpg|jpeg|png|gif)$/i);
                       }) ? (
                         // Render "No files uploaded" message if all files are images
-                        <p>No files uploaded</p>
+                        <label>No files uploaded</label>
                       ) : (
                         // Render files
                         project?.docs.map((doc, index) => {
@@ -891,34 +972,37 @@ const ProjectView = () => {
                         })
                       )
                     ) : (
-                      <p>No files uploaded</p>
+                      <label>No files uploaded</label>
                     )}
                   </ul>
                 </div>
               </div>
 
-              <div className="card">
-                <div className="card-body">
-                  <h5 className="card-title m-b-20">Payments</h5>
-                  <div className="table-responsive">
-                    <Table
-                      locale={{
-                        emptyText: TableLoad ? (
-                          <Spin size="large" tip="Loading..." />
-                        ) : (
-                          customEmptyText
-                        ),
-                      }}
-                      loading={TableLoad}
-                      dataSource={project?.paymentSchedule}
-                      columns={paymentColumns}
-                      rowKey={(record, index) => index}
-                      pagination={false}
-                      style={{ overflowX: "auto" }}
-                    />
+              {
+                (role === '' && !permissions?.projectManagement) ? null :
+                <div className="card">
+                  <div className="card-body">
+                    <h5 className="card-title m-b-20">Payments</h5>
+                    <div className="table-responsive">
+                      <Table
+                        locale={{
+                          emptyText: TableLoad ? (
+                            <Spin size="large" tip="Loading..." />
+                          ) : (
+                            customEmptyText
+                          ),
+                        }}
+                        loading={TableLoad}
+                        dataSource={project?.paymentSchedule}
+                        columns={paymentColumns}
+                        rowKey={(record, index) => index}
+                        pagination={false}
+                        style={{ overflowX: "auto" }}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
+              }
 
               {/* <div className="project-task">
               <ul className="nav nav-tabs nav-tabs-top nav-justified mb-0">
@@ -1185,15 +1269,18 @@ const ProjectView = () => {
             <div className="col-lg-4 col-xl-3">
               <div className="card">
                 <div className="card-body">
-                  <h6 className="card-title m-b-15">Project details</h6>
+                  <h6 className="card-title m-b-15">Project Details</h6>
                   <table className="table table-striped table-border">
                     <tbody>
+                      {
+                        (role === '' && !permissions?.projectManagement) ? null :
+                        <tr>
+                          <td>Cost:</td>
+                          <td className="text-end">{project?.cost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {project?.currency}</td>
+                        </tr>
+                      }
                       <tr>
-                        <td>Cost:</td>
-                        <td className="text-end">{project?.cost}</td>
-                      </tr>
-                      <tr>
-                        <td>StartDate:</td>
+                        <td>Start Date:</td>
                         <td className="text-end">
                           {moment(project?.startDate).format("YYYY-MM-DD")}
                         </td>
@@ -1252,7 +1339,7 @@ const ProjectView = () => {
               <div className="card project-user">
                 <div className="card-body">
                   <h6 className="card-title m-b-20">
-                    Assigned Leader{" "}
+                    <label style={{width: '69%'}}>Assigned Leader</label>
                     <button
                       type="button"
                       className="float-end btn btn-primary btn-sm"
@@ -1262,9 +1349,9 @@ const ProjectView = () => {
                         openLeaderModal();
                         setSelectedLeader(project?.projectLead);
                       }}
-                      disabled={role === 'client' || role === 'focalperson'}
+                      disabled={role === 'client' || role === 'focalperson' || (role === '' && !permissions?.projectManagement)}
                     >
-                      <i className="fa fa-plus" /> Add
+                      <i className="fa fa-plus" /> Edit
                     </button>
                   </h6>
                   {LoadLeader ? (
@@ -1285,9 +1372,9 @@ const ProjectView = () => {
                                 user_icon
                               }
                             />
-                            <span className="employee-name">
+                            <label className="employee-name">
                               {getEmployeeFullName(project.projectLead)}
-                            </span>
+                            </label>
                           </div>
                           <hr
                             className="developer-divider"
@@ -1303,7 +1390,7 @@ const ProjectView = () => {
               <div className="card project-user">
                 <div className="card-body">
                   <h6 className="card-title m-b-20">
-                    Assigned Users
+                    <label style={{width: '69%'}}>Assigned Developers</label>
                     <button
                       type="button"
                       className="float-end btn btn-primary btn-sm"
@@ -1311,7 +1398,7 @@ const ProjectView = () => {
                         openUserModal();
                         setSelectedDevelopers(project?.assignedDevelopers);
                       }}
-                      disabled={role === 'client' || role === 'focalperson'}
+                      disabled={role === 'client' || role === 'focalperson' || (role === '' && !permissions?.projectManagement)}
                     >
                       <i className="fa fa-plus" /> Add
                     </button>
@@ -1331,9 +1418,9 @@ const ProjectView = () => {
                               className="avatar"
                               src={getEmployeeImage(developerId) || user_icon}
                             />
-                            <span className="employee-name">
+                            <label className="employee-name">
                               {getEmployeeFullName(developerId)}
-                            </span>
+                            </label>
                           </div>
                           <hr
                             className="developer-divider"
@@ -1454,10 +1541,25 @@ const ProjectView = () => {
                 <div className="row">
                   <div className="form-group">
                     <label>Leader</label>
-                    <Form.Item name="projectLead">
+                    <Form.Item name="projectLead" className="custom-border">
                       <Select
-                        placeholder="Select a Leader"
+                        showSearch
+                        onSearch={(val) => {
+                          showTeamSearch(val, 'Team')
+                          // onTeamChange(val)
+                        }}
+                        filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                        optionFilterProp="children"
+                        notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                        dropdownRender={(menu) => (
+                          <>
+                            {menu}
+                          </>
+                        )}
+
+                        placeholder="Select Leader"
                         onChange={(value) => setSelectedLeader(value)}
+                        className="custom-select custom-normal"
                       >
                         {employees?.map((employee) => (
                           <Select.Option
@@ -1613,11 +1715,26 @@ const ProjectView = () => {
                 <div className="row">
                   <div className="form-group">
                     <label>Add Team</label>
-                    <Form.Item name="assignedDevelopers">
+                    <Form.Item name="assignedDevelopers" className="custom-border">
                       <Select
-                        mode="multiple"
+                        showSearch
+                        onSearch={(val) => {
+                          showTeamSearch(val, 'Team')
+                          // onTeamChange(val)
+                        }}
+                        filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                        optionFilterProp="children"
+                        notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                        dropdownRender={(menu) => (
+                          <>
+                            {menu}
+                          </>
+                        )}
+
+                        // mode="multiple"
                         placeholder="Select Team Members"
                         onSelect={handleSelectDeveloper}
+                        className="custom-select custom-normal"
                       >
                         {getTeamMemberOptions()}
                       </Select>
@@ -1686,6 +1803,8 @@ const ProjectView = () => {
           closeEditModal={closeEditModal}
           getprojects={GetProjects}
           getlistprojects={emptyfunction}
+          allCurrencies={allCurrencies}
+          allDomain={allDomain}
         />
       )}
 

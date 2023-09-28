@@ -28,6 +28,7 @@ import {
   Empty,
   Form,
   Input,
+  InputNumber,
   Pagination,
   Select,
   Space,
@@ -44,20 +45,24 @@ import { itemRender } from "../../paginationfunction";
 import EditProjects from "./EditProjects";
 import { apiUploadToS3 } from "../../../Services/uploadImage";
 import { MinusCircleFilled } from "@ant-design/icons";
+import { getAllISOCodes } from 'iso-country-currency';
 
 const Projects = () => {
   const [form] = Form.useForm();
   const [html, setHtml] = React.useState("my <b>HTML</b>");
 
   const user_state = useSelector((state) => state.user.loginvalue);
+  const employee_id = user_state?.user?._id;
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
   const role = user_state?.user?.role
-  console.log(permissions,user_state)
+  //console.log(permissions,user_state)
   const nav = useNavigate();
 
   const [isLoading, setIsLoading] = useState(false);
+  const [allDomain, setAllDomain] = useState([]);
   const [createModal, setCreateModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
+  const [allCurrencies, setAllCurrencies] = useState([]);
 
   const [uploadFiles, setUploadFiles] = useState([]);
   const [selectedFiles, setSelectedFiles] = useState([]);
@@ -69,7 +74,7 @@ const Projects = () => {
   const [selectedData, setSelectedData] = useState(null);
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 10,
+    pageSize: 20,
     total: 0,
   });
 
@@ -124,21 +129,26 @@ const Projects = () => {
   };
 
   const getTeamMemberOptions = () => {
-    if (!selectedLeader) {
-      return employees.map((employee) => (
-        <Select.Option key={employee._id} value={employee._id}>
-          {employee.fullName}
-        </Select.Option>
-      ));
-    } else {
-      return employees
-        .filter((employee) => employee._id !== selectedLeader)
-        .map((employee) => (
-          <Select.Option key={employee._id} value={employee._id}>
-            {employee.fullName}
-          </Select.Option>
-        ));
-    }
+    return employees.map((employee) => (
+      <Select.Option key={employee._id} value={employee._id}>
+        {employee.fullName}
+      </Select.Option>
+    ));
+    // if (!selectedLeader) {
+    //   return employees.map((employee) => (
+    //     <Select.Option key={employee._id} value={employee._id}>
+    //       {employee.fullName}
+    //     </Select.Option>
+    //   ));
+    // } else {
+    //   return employees
+    //     .filter((employee) => employee._id !== selectedLeader)
+    //     .map((employee) => (
+    //       <Select.Option key={employee._id} value={employee._id}>
+    //         {employee.fullName}
+    //       </Select.Option>
+    //     ));
+    // }
   };
 
   const [data, setData] = useState([]);
@@ -165,13 +175,13 @@ const Projects = () => {
     ]);
     setSelectedFiles([]);
     setUploadFiles([]);
-    GetCardProjects();
-    GetListProjects();
+    //GetCardProjects();
+    //GetListProjects();
   };
 
   const openEditModal = (data) => {
     setSelectedData(data);
-    console.log(data);
+    //console.log(data);
     setEditModal(true);
   };
 
@@ -196,11 +206,15 @@ const Projects = () => {
   const [filters, setFilters] = useState({
     projectName: "",
     clientName: "",
+    projectDomain: "",
+    projectType: "",
   });
 
   const [selectedFilters, setSelectedFilters] = useState({
     projectName: "",
     clientName: "",
+    projectDomain: "",
+    projectType: "",
   });
 
   const handleFilterChange = (value, filterType) => {
@@ -218,15 +232,19 @@ const Projects = () => {
     setSelectedFilters({
       projectName: "",
       clientName: "",
+      projectDomain: "",
+      projectType: "",
     });
     setFilters({
       projectName: "",
       clientName: "",
+      projectDomain: "",
+      projectType: "",
     });
 
     setPagination({
       current: 1,
-      pageSize: 10,
+      pageSize: 20,
       total: 0,
     });
 
@@ -234,38 +252,52 @@ const Projects = () => {
   };
 
   useEffect(() => {
-    if(role === 'admin' || permissions?.projectManagement ) {
-      ViewClients();
-      fetchEmployees();
-    }else{
-      nav('/restricted', { state: { unAuthorize: true}})
-    }
+    getAllDomain();
+    fetchEmployees();
   }, []);
 
-  useEffect(() => {
-    if(role === 'admin' || permissions?.projectManagement ) {
-      setIsLoading(true);
-      GetCardProjects();
-    }else{
-      nav('/restricted', { state: { unAuthorize: true}})
-    }
-  }, [filters]);
 
   useEffect(() => {
-    if(role === 'admin' || permissions?.projectManagement ) { 
+    // if(role === 'admin' || permissions?.projectManagement ) { 
       setIsLoading(true);
       GetListProjects();
-    }else{
-      nav('/restricted', { state: { unAuthorize: true}})
-    }
+      // getAllDomain();
+    // }else{
+    //   nav('/restricted', { state: { unAuthorize: true}})
+    // }
   }, [filters, pagination.current, pagination.pageSize]);
+
+  const getAllDomain = () => {
+    apiServices("GET", "team/view-team", null, user_state)
+    .then((res) => {
+      // console.log(res?.data);
+      if (res?.data?.success === true) {
+        const all_domains = res?.data?.Team;
+        const sortedData = all_domains.slice().sort((a, b) => a.teamName.localeCompare(b.teamName));
+        setAllDomain(sortedData);
+      }
+    })
+    .catch((err) => {
+      // console.log(err);
+      message.error(
+        `${
+          err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
+            ? err?.response?.data?.validation?.body?.message
+            : "Get Domain Info Error"
+        }!`
+      );
+    });
+  }
 
   const fetchEmployees = () => {
     apiServices("GET", `user/all-employees`, null, user_state)
       .then((res) => {
         if (res.data.success === true) {
           const emps = res?.data?.User;
-          setEmployees(emps);
+          const sortedData = emps.slice().sort((a, b) => a.fullName.localeCompare(b.fullName));
+          setEmployees(sortedData);
         }
       })
       .catch((err) => {
@@ -284,14 +316,15 @@ const Projects = () => {
   const ViewClients = () => {
     apiServices(
       "GET",
-      `client/view-client?deleted=false&page=1&limit=99999`,
+      `client/all-client`,
       null,
       user_state
     )
       .then((res) => {
         if (res.data.success === true) {
-          const clients = res?.data?.clients?.docs;
-          setClients(clients);
+          const clients = res?.data?.clients;
+          const sortedData = clients.slice().sort((a, b) => a.clientName.localeCompare(b.clientName));
+          setClients(sortedData);
         }
       })
       .catch((err) => {
@@ -317,7 +350,8 @@ const Projects = () => {
       .then((res) => {
         if (res.data.success === true) {
           const focalperson = res?.data?.focalPersons.docs;
-          setFocalPersons(focalperson);
+          const sortedData = focalperson.slice().sort((a, b) => a.focalPersonName.localeCompare(b.focalPersonName));
+          setFocalPersons(sortedData);
         }
       })
       .catch((err) => {
@@ -339,22 +373,15 @@ const Projects = () => {
 
     apiServices(
       "GET",
-      `project-management/?clientName=${filters.clientName}&projectName=${filters.projectName}&page=${params.page}&limit=${params.limit}`,
+      // `project-management/?clientName=${filters.clientName}&projectName=${filters.projectName}&page=${params.page}&limit=${params.limit}`,
+      `project-management/?clientName=${filters.clientName}&projectName=${filters.projectName}&projectDomain=${filters.projectDomain}&projectType=${filters.projectType}&employeeId=${(role === '' && !permissions?.projectManagement) ? employee_id : ''}&page=${params.page}&limit=${params.limit}`,
       null,
       user_state
     )
       .then((res) => {
         if (res.data.success === true) {
-          if (params.page === 1) {
-            setTableData(res?.data?.projects?.docs);
-          } else {
-            // If it's not the first page, append the data
-            setTableData((prevData) => [
-              ...prevData,
-              ...res?.data?.projects?.docs,
-            ]);
-          }
-
+          setTableData(res?.data?.projects?.docs);
+ 
           setIsLoading(false);
           setPagination({
             ...pagination,
@@ -379,7 +406,8 @@ const Projects = () => {
   const GetCardProjects = () => {
     apiServices(
       "GET",
-      `project-management/?clientName=${filters.clientName}&projectName=${filters.projectName}&page=1&limit=99999`,
+      // `project-management/?clientName=${filters.clientName}&projectName=${filters.projectName}&page=1&limit=99999`,
+      `project-management/?clientName=${filters.clientName}&projectName=${filters.projectName}&projectDomain=${filters.projectDomain}&projectType=${filters.projectType}&page=1&limit=99999`,
       null,
       user_state
     )
@@ -415,6 +443,8 @@ const Projects = () => {
       focalPersonId: values.focalPersonId,
       startDate: moment(values.startDate).format("YYYY-MM-DD"),
       endDate: moment(values.endDate).format("YYYY-MM-DD"),
+      projectDomain: values.projectDomain,
+      currency: values.currency,
       cost: values.cost,
       costType: values.costType,
       priority: values.priority,
@@ -435,7 +465,7 @@ const Projects = () => {
           //GetGenPayrolls();
           message.success(`Project Added`);
           setIsLoading(false);
-          handleReset();
+          GetListProjects();
           closeCreateModal();
         }
       })
@@ -457,6 +487,10 @@ const Projects = () => {
   const handleViewToggle = (newView) => {
     setView(newView);
   };
+
+  const emptyfunction = () =>{
+    return null
+  }
 
   function onChange(e) {
     setHtml(e.target.value);
@@ -485,8 +519,8 @@ const Projects = () => {
       dataIndex: "projectName",
       key: "projectName",
       render: (text, record) => (
-        <Link to={`/projects/projects-view/${record?._id}`}>
-          <label>{text}</label>
+        <Link to={`/projects/projects-view/${record?._id}`} style={{color: '#333333'}}>
+          <label style={{cursor: 'pointer', fontWeight: '500'}} className="longText">{text}</label>
         </Link>
       ),
     },
@@ -495,14 +529,14 @@ const Projects = () => {
       dataIndex: "clientName",
       key: "clientName",
       render: (text, record) => (
-        <div>
+        <div style={{minWidth: 'max-content'}}>
           <img
             src={record?.client?.logo || user_icon}
             alt=""
             className="avatar"
             style={{ width: "30px", height: "30px" }}
           />
-          <span>{record?.client?.clientName}</span>
+          <label>{record?.client?.clientName}</label>
         </div>
       ),
     },
@@ -511,13 +545,22 @@ const Projects = () => {
       dataIndex: "projectLead",
       key: "projectLead",
       render: (projectLead) => (
-        <ul className="team-members">
-          <li>
-            <Tooltip title={getEmployeeFullName(projectLead)}>
-              <Avatar src={getEmployeeImage(projectLead) || user_icon} />
-            </Tooltip>
-          </li>
-        </ul>
+        // <ul className="team-members">
+        //   <li>
+        //     <Tooltip title={getEmployeeFullName(projectLead)}>
+        //       <Avatar src={getEmployeeImage(projectLead) || user_icon} />
+        //     </Tooltip>
+        //   </li>
+        // </ul>
+        <div style={{minWidth: 'max-content'}}>
+          <img
+            src={getEmployeeImage(projectLead) || user_icon}
+            alt=""
+            className="avatar"
+            style={{ width: "30px", height: "30px", cursor: 'pointer' }}
+          />
+          <label style={{cursor: 'pointer'}}>{getEmployeeFullName(projectLead)}</label>
+        </div>
       ),
     },
     {
@@ -525,12 +568,12 @@ const Projects = () => {
       dataIndex: "assignedDevelopers",
       key: "assignedDevelopers",
       render: (assignedDevelopers) => (
-        <div className="project-members m-b-15">
-        <ul className="team-members">
+        <div className="project-members" style={{margin: '4px auto'}}>
+        <ul className="team-members" style={{minWidth: 'max-content'}}>
           {assignedDevelopers?.slice(0, 4).map((developer, index) => (
             <li key={index}>
               <Tooltip title={getEmployeeFullName(developer)}>
-                <Avatar src={getEmployeeImage(developer) || user_icon} />
+                <Avatar style={{cursor: 'pointer'}} src={getEmployeeImage(developer) || user_icon} />
               </Tooltip>
             </li>
           ))}
@@ -538,7 +581,7 @@ const Projects = () => {
             <li className="dropdown avatar-dropdown">
               <Link
                 className="all-users dropdown-toggle projectTeamMember"
-                style={{display:'inline-flex'}}
+                style={{display:'inline-flex', height: '33px', width: '33px'}}
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
               >
@@ -556,6 +599,7 @@ const Projects = () => {
                       <Tooltip title={getEmployeeFullName(developer)}>
                         <Avatar
                           src={getEmployeeImage(developer) || user_icon}
+                          style={{cursor: 'pointer'}}
                         />
                       </Tooltip>
                     </a>
@@ -597,6 +641,7 @@ const Projects = () => {
       title: <b>Deadline</b>,
       dataIndex: "endDate",
       key: "endDate",
+      render: (text, record) => <label style={{minWidth: 'max-content'}}>{text}</label> 
     },
     {
       title: <b>Priority</b>,
@@ -604,7 +649,7 @@ const Projects = () => {
       key: "priority",
       render: (record) => (
         <div className="action-label">
-          <span
+          <label
             className="btn btn-white btn-sm btn-rounded"
             style={{ pointerEvents: "none" }}
           >
@@ -622,7 +667,7 @@ const Projects = () => {
               : record === "Normal Priority"
               ? " Normal"
               : " Low"}
-          </span>
+          </label>
         </div>
       ),
     },
@@ -633,7 +678,7 @@ const Projects = () => {
       key: "status",
       render: (record) => (
         <div className="action-label">
-          <span
+          <label
             className="btn btn-white btn-sm btn-rounded"
             style={{ pointerEvents: "none" }}
           >
@@ -654,7 +699,7 @@ const Projects = () => {
             )}
             {record === "Scheduled"
               ? " Scheduled"
-              : record === "On-going"
+              : record === "On-Going"
               ? " On-Going"
               : record === "Paused"
               ? " Paused"
@@ -663,7 +708,7 @@ const Projects = () => {
               : record === "Completed"
               ? " Completed"
               : ""}
-          </span>
+          </label>
         </div>
       ),
     },
@@ -676,8 +721,9 @@ const Projects = () => {
         <div className="dropdown dropdown-action profile-action">
           <a
             className="action-icon dropdown-toggle"
-            data-bs-toggle="dropdown"
+            data-bs-toggle={(role === 'admin' || permissions?.projectManagement) ? 'dropdown' : ''}
             aria-expanded="false"
+            style={{cursor: `${(role === 'admin' || permissions?.projectManagement) ? '' : 'not-allowed'}`}}
           >
             <i className="material-icons">more_vert</i>
           </a>
@@ -685,6 +731,9 @@ const Projects = () => {
             <button
               className="dropdown-item"
               onClick={() => {
+                // ViewClients();
+                // fetchEmployees();
+                getAllCurrencies();
                 openEditModal(record);
                 form.setFieldsValue({
                   ...record,
@@ -766,7 +815,7 @@ const Projects = () => {
           //GetGenPayrolls();
           message.success(`Project Deleted`);
           setIsLoading(false);
-          handleReset();
+          GetListProjects();
           closeDelete();
         }
       })
@@ -866,7 +915,7 @@ const Projects = () => {
   
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      console.log("File: ", file);
+      //console.log("File: ", file);
   
       // Check file format (extension)
       const fileExtension = file.name.split(".").pop().toLowerCase();
@@ -885,7 +934,7 @@ const Projects = () => {
   
       const uploadPromise = apiUploadToS3(file)
         .then((res) => {
-          console.log(res?.data?.result);
+          //console.log(res?.data?.result);
           return res?.data?.result;
         })
         .catch((err) => {
@@ -900,7 +949,7 @@ const Projects = () => {
     try {
       // Wait for all upload promises to resolve
       const urls = await Promise.all(uploadPromises);
-      console.log("these are ",urls)
+      //console.log("these are ",urls)
       // Add the uploaded URLs to the uploadFiles state array
       setUploadFiles((prevUploadFiles) => [...prevUploadFiles, ...urls]);
       e.target.files = null;
@@ -944,6 +993,67 @@ const Projects = () => {
     ));
   };
 
+  const showTeamSearch = (val, type) => {
+    let dropdownValues = []
+    if(type === 'Team'){
+      employees.forEach((team)=>{
+          dropdownValues.push(team.fullName.toLowerCase())
+       })
+    }else if (type === 'client'){
+      clients.forEach((client)=>{
+        dropdownValues.push(client.clientName.toLowerCase())
+     })
+    }else if (type === 'focal'){
+      focalPersons.forEach((focal)=>{
+        dropdownValues.push(focal.focalPersonName.toLowerCase())
+     })
+    }else if (type === 'domain'){
+      allDomain.forEach((dom)=>{
+        dropdownValues.push(dom.teamName.toLowerCase())
+     })
+    }
+
+    if(val !== ''){
+      dropdownValues.some((team) => {
+        if(team.includes(val.toLowerCase())){
+          // setNoData(false);
+          return true
+        }else{
+          // setNoData(true);
+        }
+      })
+    }else{
+      // setNoData(false)
+    }
+  }
+
+  const getAllCurrencies = () => {
+    const isoCodes = getAllISOCodes();
+    const uniqueCurrencies = new Set();
+    isoCodes.forEach(isoCode => {
+        // const currency = isoCode.currency;
+        const currency = {
+          currency: isoCode?.currency,
+          symbol: isoCode?.symbol
+        };
+        // uniqueCurrencies.add(currency);
+        uniqueCurrencies.add(JSON.stringify(currency));
+    });
+    const currency_d = [...uniqueCurrencies].map(currency => JSON.parse(currency));
+    const sorted_data = currency_d.sort((a, b) => a.currency.localeCompare(b.currency));
+    // setAllCurrencies([...uniqueCurrencies])
+    setAllCurrencies(sorted_data)
+  };
+
+
+const filteredColumns = columns.filter(column => {
+  if (column.dataIndex === 'clientName' && (role === '' && !permissions?.projectManagement)) {
+    return false;
+  }
+  return true;
+});
+
+
   return (
     <>
       <div className="page-wrapper">
@@ -976,7 +1086,7 @@ const Projects = () => {
               <div className="col-auto float-end ms-auto">
                 <button
                   className="btn add-btn"
-                  onClick={() => openCreateModal()}
+                  onClick={() => { openCreateModal(); getAllCurrencies(); ViewClients(); fetchEmployees(); }}
                   disabled={
                     role === "admin" 
                       ? false
@@ -991,7 +1101,10 @@ const Projects = () => {
 
                 <div className="view-icons">
                   <button
-                    onClick={() => handleViewToggle("grid")}
+                    onClick={() => {
+                      handleViewToggle("grid")
+                      handleReset();
+                    }}
                     className={`grid-view btn btn-link ${
                       view === "grid" ? "active" : ""
                     }`}
@@ -1001,7 +1114,8 @@ const Projects = () => {
                   <button
                     onClick={() => {
                       handleViewToggle("list");
-                      GetListProjects();
+                      handleReset();
+                      //GetListProjects();
                     }}
                     className={`list-view btn btn-link ${
                       view === "list" ? "active" : ""
@@ -1020,68 +1134,248 @@ const Projects = () => {
 
           {/* Search Filter */}
           <Form form={form} onFinish={handleSearch}>
-            <div className="row filter-row">
-              <div className="col-sm-6 col-md-3">
-                <div className="form-group">
-                  <Form.Item name="projectName" className="custom-border">
-                    <Input
-                      className="form-control"
-                      allowClear={false}
-                      placeholder="Select Project Name"
-                      style={{height:'50px'}}
-                      onChange={(e) =>
-                        handleFilterChange(e.target.value, "projectName")
-                      }
-                    />
-                  </Form.Item>
-                </div>
-              </div>
-              <div className="col-sm-6 col-md-3">
-                <div className="form-group">
-                  <Form.Item name="clientName" className="custom-border">
-                    <Select
-                      className="custom-select"
-                      placeholder="Select a Client"
-                      onChange={(value) => {
-                        handleFilterChange(value, "clientName");
-                      }}
-                      style={{height:'50px'}}
-                    >
-                      {clients.map((client) => (
-                        <Select.Option
-                          key={client._id}
-                          value={client.clientName}
+              {
+                (role === '' && !permissions?.projectManagement) ? 
+                  <div className="row filter-row">
+                    <div className="col-sm-6 col-md-3">
+                      <div className="form-group">
+                        <Form.Item name="projectName" className="custom-border">
+                          <Input
+                            className="form-control"
+                            allowClear={false}
+                            placeholder="Project Name"
+                            style={{height:'50px'}}
+                            onChange={(e) =>
+                              handleFilterChange(e.target.value, "projectName")
+                            }
+                          />
+                        </Form.Item>
+                      </div>
+                    </div>
+                    <div className="col-sm-6 col-md-3">
+                      <div className="form-group">
+                        <div style={{ position: "relative" }} id="area1">
+                          <Form.Item
+                            name="projectDomain"
+                            className="custom-border"
+                          >
+                            <Select
+                              showSearch
+                              onSearch={(val) => {
+                                showTeamSearch(val, 'domain')
+                              }}
+                              filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                              optionFilterProp="children"
+                              notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                              dropdownRender={(menu) => (
+                                <>
+                                  {menu}
+                                </>
+                              )}
+
+                              getPopupContainer={() =>
+                                document.getElementById("area1")
+                              }
+                              className="custom-select searchCenter"
+                              placeholder="Select Domain"
+                              style={{height:'50px'}}
+                              onChange={(value) => {
+                                handleFilterChange(value, "projectDomain");
+                              }}
+                            >
+                              {allDomain?.map((domain) => (
+                                <Select.Option
+                                  key={domain._id}
+                                  value={domain._id}
+                                >
+                                  {domain.teamName}
+                                </Select.Option>
+                              ))}
+                            </Select>
+                          </Form.Item>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="col-sm-6 col-md-3">
+                      <button
+                        type="primary"
+                        htmlType="submit"
+                        className="btn btn-success btn-block w-100"
+                        //disabled={role === 'admin' ? false : permissions?.viewAllRequest ? false : permissions?.teamRequest ? false : true}
+                        style={{marginBottom: '24px'}}
+                      >
+                        <span className="d-flex justify-content-center">Search</span>
+                      </button>
+                    </div>
+                    <div className="col-sm-6 col-md-3">
+                      <button
+                        htmlType="button"
+                        className="btn btn-success btn-block w-100"
+                        onClick={handleReset}
+                        //disabled={role === 'admin' ? false : permissions?.viewAllRequest ? false : permissions?.teamRequest ? false : true}
+                        style={{backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}}
+                      >
+                        <span className="d-flex justify-content-center">Reset</span>
+                      </button>
+                    </div>
+                  </div>
+                :
+                <div className="row filter-row">
+                  <div className="col-sm-6 col-md-2">
+                    <div className="form-group">
+                      <Form.Item name="projectName" className="custom-border">
+                        <Input
+                          className="form-control"
+                          allowClear={false}
+                          placeholder="Project Name"
+                          style={{height:'50px'}}
+                          onChange={(e) =>
+                            handleFilterChange(e.target.value, "projectName")
+                          }
+                        />
+                      </Form.Item>
+                    </div>
+                  </div>
+                  <div className="col-sm-6 col-md-2">
+                    <div className="form-group">
+                      <Form.Item name="clientName" className="custom-border">
+                        {/* <Select
+                          showSearch
+                          onSearch={(val) => {
+                            showTeamSearch(val, 'client')
+                          }}
+                          filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                          optionFilterProp="children"
+                          notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                          dropdownRender={(menu) => (
+                            <>
+                              {menu}
+                            </>
+                          )}
+                          
+                          className="custom-select searchCenter"
+                          placeholder="Select Client"
+                          onChange={(value) => {
+                            handleFilterChange(value, "clientName");
+                          }}
+                          style={{height:'50px'}}
                         >
-                          {client.clientName}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
+                          {clients.map((client) => (
+                            <Select.Option
+                              key={client._id}
+                              value={client.clientName}
+                            >
+                              {client.clientName}
+                            </Select.Option>
+                          ))}
+                        </Select> */}
+                        <Input
+                          className="form-control"
+                          allowClear={false}
+                          placeholder="Client Name"
+                          style={{height:'50px'}}
+                          onChange={(e) =>
+                            handleFilterChange(e.target.value, "clientName")
+                          }
+                        />
+                      </Form.Item>
+                    </div>
+                  </div>
+                  <div className="col-sm-6 col-md-2">
+                    <div className="form-group">
+                      <div style={{ position: "relative" }} id="area1">
+                        <Form.Item
+                          name="projectType"
+                          className="custom-border"
+                        >
+                          <Select
+                            className="custom-select searchCenter"
+                            getPopupContainer={() =>
+                              document.getElementById("area1")
+                            }
+                            placeholder="Project Type"
+                            style={{height:'50px'}}
+                            onChange={(value) => {
+                              handleFilterChange(value, "projectType");
+                            }}
+                          >
+                            <Select.Option value="Hourly">Hourly</Select.Option>
+                            <Select.Option value="Fixed">Fixed</Select.Option>
+                            <Select.Option value="Monthly">Monthly</Select.Option>
+                          </Select>
+                        </Form.Item>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-sm-6 col-md-2">
+                    <div className="form-group">
+                      <div style={{ position: "relative" }} id="area1">
+                        <Form.Item
+                          name="projectDomain"
+                          className="custom-border"
+                        >
+                          <Select
+                            showSearch
+                            onSearch={(val) => {
+                              showTeamSearch(val, 'domain')
+                            }}
+                            filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                            optionFilterProp="children"
+                            notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                            dropdownRender={(menu) => (
+                              <>
+                                {menu}
+                              </>
+                            )}
+
+                            getPopupContainer={() =>
+                              document.getElementById("area1")
+                            }
+                            className="custom-select searchCenter"
+                            placeholder="Select Domain"
+                            style={{height:'50px'}}
+                            onChange={(value) => {
+                              handleFilterChange(value, "projectDomain");
+                            }}
+                          >
+                            {allDomain?.map((domain) => (
+                              <Select.Option
+                                key={domain._id}
+                                value={domain._id}
+                              >
+                                {domain.teamName}
+                              </Select.Option>
+                            ))}
+                          </Select>
+                        </Form.Item>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-sm-6 col-md-2">
+                    <button
+                      type="primary"
+                      htmlType="submit"
+                      className="btn btn-success btn-block w-100"
+                      //disabled={role === 'admin' ? false : permissions?.viewAllRequest ? false : permissions?.teamRequest ? false : true}
+                      style={{marginBottom: '24px'}}
+                    >
+                      <span className="d-flex justify-content-center">Search</span>
+                    </button>
+                  </div>
+                  <div className="col-sm-6 col-md-2">
+                    <button
+                      htmlType="button"
+                      className="btn btn-success btn-block w-100"
+                      onClick={handleReset}
+                      //disabled={role === 'admin' ? false : permissions?.viewAllRequest ? false : permissions?.teamRequest ? false : true}
+                      style={{backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}}
+                    >
+                      <span className="d-flex justify-content-center">Reset</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
-              <div className="col-sm-6 col-md-3">
-                <button
-                  type="primary"
-                  htmlType="submit"
-                  className="btn btn-success btn-block w-100"
-                  //disabled={role === 'admin' ? false : permissions?.viewAllRequest ? false : permissions?.teamRequest ? false : true}
-                  style={{marginBottom: '24px'}}
-                >
-                  <span className="d-flex justify-content-center">Search</span>
-                </button>
-              </div>
-              <div className="col-sm-6 col-md-3">
-                <button
-                  htmlType="button"
-                  className="btn btn-success btn-block w-100"
-                  onClick={handleReset}
-                  //disabled={role === 'admin' ? false : permissions?.viewAllRequest ? false : permissions?.teamRequest ? false : true}
-                  style={{backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}}
-                >
-                  <span className="d-flex justify-content-center">Reset</span>
-                </button>
-              </div>
-            </div>
+              
+            }
           </Form>
 
           {view === "grid" ? (
@@ -1091,55 +1385,61 @@ const Projects = () => {
                 <div className="col-md-12 text-center">
                   <Spin size="large" tip="Loading..." />
                 </div>
-              ) : data?.length > 0 ? (
+              ) : tableData?.length > 0 ? (
                 // Render grid items when data is available
-                data?.map((project, index) => (
+                tableData?.map((project, index) => (
                   <div
                     className="col-lg-4 col-sm-6 col-md-4 col-xl-3"
                     key={index}
                   >
                     <div className="card">
                       <div className="card-body">
-                        <div className="dropdown dropdown-action profile-action">
-                          <a
-                            className="action-icon dropdown-toggle"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false"
-                          >
-                            <i className="material-icons">more_vert</i>
-                          </a>
-                          <div className="dropdown-menu dropdown-menu-right">
-                            <button
-                              className="dropdown-item"
-                              onClick={() => {
-                                openEditModal(project);
-                                form.setFieldsValue({
-                                  ...project,
-                                  startDate: moment(
-                                    project?.startDate,
-                                    "YYYY-MM-DD"
-                                  ),
-                                  endDate: moment(
-                                    project?.endDate,
-                                    "YYYY-MM-DD"
-                                  ),
-                                });
-                              }}
+                        {
+                          (role === 'admin' || permissions?.projectManagement) &&
+                          <div className="dropdown dropdown-action profile-action">
+                            <a
+                              className="action-icon dropdown-toggle"
+                              data-bs-toggle="dropdown"
+                              aria-expanded="false"
                             >
-                              <i className="fa fa-pencil m-r-5" />
-                              Edit
-                            </button>
-                            <button
-                              className="dropdown-item"
-                              onClick={() => {
-                                openDelete(project);
-                              }}
-                            >
-                              <i className="fa fa-trash-o m-r-5" /> Delete
-                            </button>
+                              <i className="material-icons">more_vert</i>
+                            </a>
+                            <div className="dropdown-menu dropdown-menu-right">
+                              <button
+                                className="dropdown-item"
+                                onClick={() => {
+                                  // ViewClients();
+                                  // fetchEmployees();
+                                  getAllCurrencies();
+                                  openEditModal(project);
+                                  form.setFieldsValue({
+                                    ...project,
+                                    startDate: moment(
+                                      project?.startDate,
+                                      "YYYY-MM-DD"
+                                    ),
+                                    endDate: moment(
+                                      project?.endDate,
+                                      "YYYY-MM-DD"
+                                    ),
+                                  });
+                                }}
+                              >
+                                <i className="fa fa-pencil m-r-5" />
+                                Edit
+                              </button>
+                              <button
+                                className="dropdown-item"
+                                onClick={() => {
+                                  openDelete(project);
+                                }}
+                              >
+                                <i className="fa fa-trash-o m-r-5" /> Delete
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                        <h4 className="project-title">
+                        }
+                        <h4 className="project-title longText">
                           <Link to={`/projects/projects-view/${project?._id}`}>
                             {project?.projectName}
                           </Link>
@@ -1225,6 +1525,7 @@ const Projects = () => {
                               <li className="dropdown avatar-dropdown">
                                 <a
                                   className="all-users dropdown-toggle projectTeamMember"
+                                  style={{ display: "inline-flex" }}
                                   data-bs-toggle="dropdown"
                                   aria-expanded="false"
                                 >
@@ -1312,11 +1613,40 @@ const Projects = () => {
                 // Render custom empty text when no data is available
                 <div className="col-md-12 text-center">{customEmptyText}</div>
               )}
+
+                  {
+                    tableData?.length > 0 &&
+                    <div>
+                      <Pagination
+                        style={{display: 'flex', float: 'right'}}
+                        total={pagination.total}
+                        pageSize={pagination.pageSize}
+                        defaultCurrent={1}
+                        current={pagination.current}
+                        showTotal={(total, range) =>
+                          `Showing ${range[0]} to ${range[1]} of ${total} entries`}
+                        onChange={(page, pageSize) => {
+                          setPagination({
+                            ...pagination,
+                            current: page,
+                            pageSize: pageSize,
+                          });
+                          //console.log(page, size);
+                          //setPageSize(size); setCurrentPage(page);
+                          //getEmployeeSalary(filterValues, page, size)
+                        }}
+                        showSizeChanger={true}
+                        pageSizeOptions={['20', '30', '40', '50']}
+                        itemRender={itemRender}
+                      />
+                    </div>
+                  }
             </div>
           ) : (
             <div className="row">
               <div className="col-md-12">
-                <div className="table-responsive">
+              {/* projectsListTable */}
+                <div className="table-responsive"> 
                   <Table
                     locale={{
                       emptyText: isLoading ? (
@@ -1326,9 +1656,10 @@ const Projects = () => {
                       ),
                     }}
                     className="table-striped custom-table datatable"
+                    style = {{overflowX : 'auto'}}
                     loading={isLoading}
                     //style={{ height: "400px", background: "white" }}
-                    columns={columns}
+                    columns={filteredColumns}
                     // bordered
                     dataSource={tableData}
                     //rowKey={(record) => record?._id}
@@ -1338,7 +1669,7 @@ const Projects = () => {
                       total: pagination.total,
                       showTotal: (total, range) =>
                         `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                      pageSizeOptions: ["10", "20", "30", "40"], // Options to change page size
+                      pageSizeOptions: ["20", "30", "40", "50"], // Options to change page size
                       showSizeChanger: true, // Show the page size changer
                       onChange: (page, pageSize) => {
                         setPagination({
@@ -1670,6 +2001,21 @@ const Projects = () => {
                             ]}
                           >
                             <Select
+                              showSearch
+                              onSearch={(val) => {
+                                showTeamSearch(val, 'client')
+                                // onTeamChange(val)
+                              }}
+                              filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                              optionFilterProp="children"
+                              notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                              dropdownRender={(menu) => (
+                                <>
+                                  {menu}
+                                </>
+                              )}
+
+                              className="custom-select custom-normal"
                               getPopupContainer={() =>
                                 document.getElementById("area")
                               }
@@ -1714,6 +2060,21 @@ const Projects = () => {
                             ]}
                           >
                             <Select
+                              showSearch
+                              onSearch={(val) => {
+                                showTeamSearch(val, 'focal')
+                                // onTeamChange(val)
+                              }}
+                              filterOption={(input, option) => option.children[0].toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                              optionFilterProp="children"
+                              notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                              dropdownRender={(menu) => (
+                                <>
+                                  {menu}
+                                </>
+                              )}
+
+                              className="custom-select custom-normal"
                               getPopupContainer={() =>
                                 document.getElementById("area")
                               }
@@ -1748,6 +2109,7 @@ const Projects = () => {
                             ]}
                           >
                             <Select
+                              className="custom-select custom-normal"
                               getPopupContainer={() =>
                                 document.getElementById("area")
                               }
@@ -1806,7 +2168,7 @@ const Projects = () => {
                       <div className="form-group">
                         <label>End Date</label>
                         <div style={{ position: "relative" }} id="area">
-                          <Form.Item
+                          {/* <Form.Item
                             name="endDate"
                             rules={[
                               {
@@ -1824,6 +2186,39 @@ const Projects = () => {
                               className="form-control"
                               size="large"
                             />
+                          </Form.Item> */}
+
+                          <Form.Item
+                            name="endDate"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Enter an end date",
+                              },
+                              ({ getFieldValue }) => ({
+                                validator(_, value) {
+                                  // Ensure that the end date is not before the start date
+                                  const startDate = getFieldValue('startDate');
+                                  if (!startDate || !value) {
+                                    // If either date is not selected, do not perform validation
+                                    return Promise.resolve();
+                                  }
+                                  if (value.isSameOrAfter(startDate)) {
+                                    // End date is valid
+                                    return Promise.resolve();
+                                  }
+                                  return Promise.reject('End date must not be before the start date');
+                                },
+                              }),
+                            ]}
+                            className="custom-border"
+                          >
+                            <DatePicker
+                              getPopupContainer={() => document.getElementById("area")}
+                              style={{ width: "100%" }}
+                              className="form-control"
+                              size="large"
+                            />
                           </Form.Item>
                         </div>
                       </div>
@@ -1831,6 +2226,89 @@ const Projects = () => {
                   </div>
 
                   <div className="row">
+                    <div className="col-sm-6">
+                      <div className="form-group">
+                        <label>Domain</label>
+                        <div style={{ position: "relative" }} id="area">
+                          <Form.Item
+                            name="projectDomain"
+                            className="addTeamHeight"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Domain cannot be empty",
+                              },
+                            ]}
+                          >
+                            <Select
+                              showSearch
+                              onSearch={(val) => {
+                                showTeamSearch(val, 'domain')
+                              }}
+                              filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                              optionFilterProp="children"
+                              notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                              dropdownRender={(menu) => (
+                                <>
+                                  {menu}
+                                </>
+                              )}
+
+                              getPopupContainer={() =>
+                                document.getElementById("area")
+                              }
+                              className="customselect-height custom-select"
+                              mode="multiple"
+                              placeholder="Select Domain"
+                            >
+                              {allDomain?.map((domain) => (
+                                <Select.Option
+                                  key={domain._id}
+                                  value={domain._id}
+                                >
+                                  {domain.teamName}
+                                </Select.Option>
+                              ))}
+                            </Select>
+                          </Form.Item>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="col-sm-6">
+                      <div className="form-group">
+                        <label>Currency</label>
+                        <div style={{ position: "relative" }} id="area">
+                          <Form.Item
+                            name="currency"
+                            className="custom-border"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Choose a currency",
+                              },
+                            ]}
+                          >
+                            <Select
+                              showSearch
+                              className="custom-select custom-normal"
+                              getPopupContainer={() =>
+                                document.getElementById("area")
+                              }
+                              placeholder="Select Currency"
+                            >
+                              {
+                                allCurrencies.map((currency, index) => (
+                                  <Select.Option key={index} value={currency?.currency}>
+                                    {currency?.currency}
+                                  </Select.Option>
+                                ))
+                              }
+                            </Select>
+                          </Form.Item>
+                        </div>
+                      </div>
+                    </div>
+
                     <div className="col-sm-3">
                       <div className="form-group">
                         <label>Cost</label>
@@ -1845,7 +2323,16 @@ const Projects = () => {
                             },
                           ]}
                         >
-                          <Input type="number" className="form-control" />
+                          {/* <Input type="number" className="form-control" /> */}
+                          <InputNumber
+                            className="form-control"
+                            formatter={(value) => {
+                              return `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                            }}
+                            parser={(value) => {
+                              return value.replace(/\$\s?|(,*)/g, '');
+                            }}
+                          />
                         </Form.Item>
                       </div>
                     </div>
@@ -1864,10 +2351,11 @@ const Projects = () => {
                             ]}
                           >
                             <Select
+                              className="custom-select custom-normal"
                               getPopupContainer={() =>
                                 document.getElementById("area")
                               }
-                              placeholder="Select a Cost Type"
+                              placeholder="Select Type"
                             >
                               <Select.Option value="Hourly">
                                 Hourly
@@ -1897,10 +2385,11 @@ const Projects = () => {
                             ]}
                           >
                             <Select
+                              className="custom-select custom-normal"
                               getPopupContainer={() =>
                                 document.getElementById("area")
                               }
-                              placeholder="Choose a Priority"
+                              placeholder="Choose Priority"
                             >
                               <Select.Option value="High Priority">
                                 High Priority
@@ -1925,6 +2414,7 @@ const Projects = () => {
                         <div style={{ position: "relative" }} id="area">
                           <Form.Item
                             name="projectLead"
+                            className="custom-border"
                             rules={[
                               {
                                 required: true,
@@ -1933,6 +2423,21 @@ const Projects = () => {
                             ]}
                           >
                             <Select
+                              showSearch
+                              onSearch={(val) => {
+                                showTeamSearch(val, 'Team')
+                                // onTeamChange(val)
+                              }}
+                              filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                              optionFilterProp="children"
+                              notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                              dropdownRender={(menu) => (
+                                <>
+                                  {menu}
+                                </>
+                              )}
+
+                              className="custom-select custom-normal"
                               getPopupContainer={() =>
                                 document.getElementById("area")
                               }
@@ -1982,6 +2487,7 @@ const Projects = () => {
                         <div style={{ position: "relative" }} id="area">
                           <Form.Item
                             name="assignedDevelopers"
+                            className="addTeamHeight"
                             rules={[
                               {
                                 required: true,
@@ -1990,10 +2496,24 @@ const Projects = () => {
                             ]}
                           >
                             <Select
+                              showSearch
+                              onSearch={(val) => {
+                                showTeamSearch(val, 'Team')
+                                // onTeamChange(val)
+                              }}
+                              filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                              optionFilterProp="children"
+                              notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                              dropdownRender={(menu) => (
+                                <>
+                                  {menu}
+                                </>
+                              )}
+
                               getPopupContainer={() =>
                                 document.getElementById("area")
                               }
-                              className="customselect-height"
+                              className="customselect-height custom-select"
                               mode="multiple"
                               placeholder="Select Team Members"
                               onChange={(values) =>
@@ -2079,14 +2599,17 @@ const Projects = () => {
                     <div key={index}>
                       {index > 0 && <hr />}
 
-                      <h5
+                      <label
                         style={{
                           display: "flex",
                           justifyContent: "space-evenly",
                           alignItems: "center",
+                          fontWeight: '500',
+                          fontSize: '14px',
+                          marginBottom: '15px',
                         }}
                       >
-                        Payment {index + 1}
+                        {index + 1}. Payment
                         {index === paymentSchedules.length - 1 &&
                           paymentSchedules.length > 1 && (
                             <MinusCircleFilled
@@ -2103,7 +2626,7 @@ const Projects = () => {
                               onClick={removeLastPaymentSchedule}
                             />
                           )}
-                      </h5>
+                      </label>
 
                       <div className="row">
                         <div className="col-sm-6">
@@ -2141,7 +2664,16 @@ const Projects = () => {
                                 },
                               ]}
                             >
-                              <Input className="form-control" />
+                              {/* <Input className="form-control" /> */}
+                              <InputNumber
+                                className="form-control"
+                                formatter={(value) => {
+                                  return `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                                }}
+                                parser={(value) => {
+                                  return value.replace(/\$\s?|(,*)/g, '');
+                                }}
+                              />
                             </Form.Item>
                           </div>
                         </div>
@@ -2166,7 +2698,12 @@ const Projects = () => {
                                 },
                               ]}
                             >
-                              <Input className="form-control" />
+                              {/* <Input className="form-control" /> */}
+                              <InputNumber
+                                className="form-control"
+                                max={100}
+                                min={0}
+                              />
                             </Form.Item>
                           </div>
                         </div>
@@ -2201,7 +2738,8 @@ const Projects = () => {
                   ))}
                   <div className="submit-section">
                     <Form.Item>
-                      <Button type="primary" onClick={addPaymentSchedule}>
+                      <Button type="primary" onClick={addPaymentSchedule} className="btn btn-primary submit-btn btn-add" style={{fontSize: '14px', minWidth: '30px', height: '39px', lineHeight: '0px'}}>
+                        <i className="fa fa-plus m-r-5" />
                         Add More Payments
                       </Button>
                     </Form.Item>
@@ -2232,8 +2770,10 @@ const Projects = () => {
             data={selectedData}
             editModal={editModal}
             closeEditModal={closeEditModal}
-            getprojects={GetCardProjects}
+            getprojects={emptyfunction}
             getlistprojects={GetListProjects}
+            allCurrencies={allCurrencies}
+            allDomain={allDomain}
           />
         )}
 

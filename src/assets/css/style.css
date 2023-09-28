@@ -7175,6 +7175,28 @@ textarea.form-control {
 
 /* ................. custom css styling ................ */
 
+.projectsListTable thead tr th:not(:nth-last-child(1)){
+  min-width: 170px !important;
+}
+
+.countryDropDown > div:nth-child(2) .ant-select-dropdown{
+  max-height: 220px !important;
+}
+
+.searchCenter .ant-select-selection-search{
+  display: flex !important;
+  align-items: center !important;
+}
+
+.addTeamHeight .ant-select-selector{
+  min-height: 44px !important;
+  height: auto !important;
+  border-color: #e3e3e3 !important;
+  box-shadow: none !important;
+  padding-top: 7px !important;
+  padding-bottom: 7px !important;
+}
+
 .projectTeamMember{
   margin-left: -10px;
   display: inline-flex;
@@ -7493,6 +7515,7 @@ background: #f5f5f5 !important;
 }
 .ant-picker-dropdown, .ant-select-dropdown {
 z-index: 3300;
+min-width: fit-content !important;
 }
 /* antd dropdown selected color to orange */
 .ant-select-item-option-selected:not(.ant-select-item-option-disabled){
