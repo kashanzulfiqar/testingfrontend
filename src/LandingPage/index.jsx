@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "./Navbar";
 // import BackgroundSVG from "./BackgroundSVG";
 // import image9 from "./image9.png";
@@ -29,12 +29,16 @@ import { Carousel, Modal } from 'antd';
 import { useNavigate } from "react-router-dom";
 import ImageGallery from "react-image-gallery";
 import 'react-image-gallery/styles/css/image-gallery.css';
+import { useSelector } from "react-redux";
 
 
 
 const LandingPage = () => {
 
     const nav = useNavigate();
+
+    const isLogin = useSelector((state) => state.user.loginvalue);
+    const role = isLogin?.user?.role
 
     const images = [
       {
@@ -61,6 +65,13 @@ const LandingPage = () => {
     const showModal = () => {
       setIsModalOpen(true);
     };
+
+    useEffect(() => {
+      if(isLogin){
+        nav(role === 'client' ? `/client/client-profile` : role === 'focalperson' ? `/client/focal-profile` : role === 'admin' ? `/main/dashboard` : `/employee/dashboard`)
+      }
+    }, [])
+    
     const handleOk = () => {
       setIsModalOpen(false);
     };

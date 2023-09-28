@@ -52,6 +52,7 @@ const Projects = () => {
   const [html, setHtml] = React.useState("my <b>HTML</b>");
 
   const user_state = useSelector((state) => state.user.loginvalue);
+  const employee_id = user_state?.user?._id;
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
   const role = user_state?.user?.role
   //console.log(permissions,user_state)
@@ -251,23 +252,18 @@ const Projects = () => {
   };
 
   useEffect(() => {
-    if(role === 'admin' || permissions?.projectManagement ) {
-      ViewClients();
-      fetchEmployees();
-    }else{
-      nav('/restricted', { state: { unAuthorize: true}})
-    }
+    getAllDomain();
   }, []);
 
 
   useEffect(() => {
-    if(role === 'admin' || permissions?.projectManagement ) { 
+    // if(role === 'admin' || permissions?.projectManagement ) { 
       setIsLoading(true);
       GetListProjects();
-      getAllDomain();
-    }else{
-      nav('/restricted', { state: { unAuthorize: true}})
-    }
+      // getAllDomain();
+    // }else{
+    //   nav('/restricted', { state: { unAuthorize: true}})
+    // }
   }, [filters, pagination.current, pagination.pageSize]);
 
   const getAllDomain = () => {
@@ -319,13 +315,13 @@ const Projects = () => {
   const ViewClients = () => {
     apiServices(
       "GET",
-      `client/view-client?deleted=false&page=1&limit=99999`,
+      `client/all-client`,
       null,
       user_state
     )
       .then((res) => {
         if (res.data.success === true) {
-          const clients = res?.data?.clients?.docs;
+          const clients = res?.data?.clients;
           const sortedData = clients.slice().sort((a, b) => a.clientName.localeCompare(b.clientName));
           setClients(sortedData);
         }
@@ -377,7 +373,7 @@ const Projects = () => {
     apiServices(
       "GET",
       // `project-management/?clientName=${filters.clientName}&projectName=${filters.projectName}&page=${params.page}&limit=${params.limit}`,
-      `project-management/?clientName=${filters.clientName}&projectName=${filters.projectName}&projectDomain=${filters.projectDomain}&projectType=${filters.projectType}&page=${params.page}&limit=${params.limit}`,
+      `project-management/?clientName=${filters.clientName}&projectName=${filters.projectName}&projectDomain=${filters.projectDomain}&projectType=${filters.projectType}&employeeId=${(role === '' && !permissions?.projectManagement) ? employee_id : ''}&page=${params.page}&limit=${params.limit}`,
       null,
       user_state
     )
@@ -713,8 +709,9 @@ const Projects = () => {
         <div className="dropdown dropdown-action profile-action">
           <a
             className="action-icon dropdown-toggle"
-            data-bs-toggle="dropdown"
+            data-bs-toggle={(role === 'admin' || permissions?.projectManagement) ? 'dropdown' : ''}
             aria-expanded="false"
+            style={{cursor: `${(role === 'admin' || permissions?.projectManagement) ? '' : 'not-allowed'}`}}
           >
             <i className="material-icons">more_vert</i>
           </a>
@@ -722,6 +719,8 @@ const Projects = () => {
             <button
               className="dropdown-item"
               onClick={() => {
+                // ViewClients();
+                // fetchEmployees();
                 getAllCurrencies();
                 openEditModal(record);
                 form.setFieldsValue({
@@ -1034,6 +1033,7 @@ const Projects = () => {
     setAllCurrencies(sorted_data)
   };
 
+
   return (
     <>
       <div className="page-wrapper">
@@ -1066,7 +1066,7 @@ const Projects = () => {
               <div className="col-auto float-end ms-auto">
                 <button
                   className="btn add-btn"
-                  onClick={() => { openCreateModal(); getAllCurrencies(); }}
+                  onClick={() => { openCreateModal(); getAllCurrencies(); ViewClients(); fetchEmployees(); }}
                   disabled={
                     role === "admin" 
                       ? false
@@ -1114,152 +1114,248 @@ const Projects = () => {
 
           {/* Search Filter */}
           <Form form={form} onFinish={handleSearch}>
-            <div className="row filter-row">
-              <div className="col-sm-6 col-md-2">
-                <div className="form-group">
-                  <Form.Item name="projectName" className="custom-border">
-                    <Input
-                      className="form-control"
-                      allowClear={false}
-                      placeholder="Project Name"
-                      style={{height:'50px'}}
-                      onChange={(e) =>
-                        handleFilterChange(e.target.value, "projectName")
-                      }
-                    />
-                  </Form.Item>
-                </div>
-              </div>
-              <div className="col-sm-6 col-md-2">
-                <div className="form-group">
-                  <Form.Item name="clientName" className="custom-border">
-                    <Select
-                      showSearch
-                      onSearch={(val) => {
-                        showTeamSearch(val, 'client')
-                        // onTeamChange(val)
-                      }}
-                      filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                      optionFilterProp="children"
-                      notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
-                      dropdownRender={(menu) => (
-                        <>
-                          {menu}
-                        </>
-                      )}
-                      
-                      className="custom-select searchCenter"
-                      placeholder="Select Client"
-                      onChange={(value) => {
-                        handleFilterChange(value, "clientName");
-                      }}
-                      style={{height:'50px'}}
-                    >
-                      {clients.map((client) => (
-                        <Select.Option
-                          key={client._id}
-                          value={client.clientName}
-                        >
-                          {client.clientName}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </div>
-              </div>
-              <div className="col-sm-6 col-md-2">
-                <div className="form-group">
-                  <div style={{ position: "relative" }} id="area1">
-                    <Form.Item
-                      name="projectType"
-                      className="custom-border"
-                    >
-                      <Select
-                        className="custom-select searchCenter"
-                        getPopupContainer={() =>
-                          document.getElementById("area1")
-                        }
-                        placeholder="Project Type"
-                        style={{height:'50px'}}
-                        onChange={(value) => {
-                          handleFilterChange(value, "projectType");
-                        }}
-                      >
-                        <Select.Option value="Hourly">Hourly</Select.Option>
-                        <Select.Option value="Fixed">Fixed</Select.Option>
-                        <Select.Option value="Monthly">Monthly</Select.Option>
-                      </Select>
-                    </Form.Item>
-                  </div>
-                </div>
-              </div>
-              <div className="col-sm-6 col-md-2">
-                <div className="form-group">
-                  <div style={{ position: "relative" }} id="area1">
-                    <Form.Item
-                      name="projectDomain"
-                      className="custom-border"
-                    >
-                      <Select
-                        showSearch
-                        onSearch={(val) => {
-                          showTeamSearch(val, 'domain')
-                        }}
-                        filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                        optionFilterProp="children"
-                        notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
-                        dropdownRender={(menu) => (
-                          <>
-                            {menu}
-                          </>
-                        )}
-
-                        getPopupContainer={() =>
-                          document.getElementById("area1")
-                        }
-                        className="custom-select searchCenter"
-                        placeholder="Select Domain"
-                        style={{height:'50px'}}
-                        onChange={(value) => {
-                          handleFilterChange(value, "projectDomain");
-                        }}
-                      >
-                        {allDomain?.map((domain) => (
-                          <Select.Option
-                            key={domain._id}
-                            value={domain._id}
+              {
+                (role === '' && !permissions?.projectManagement) ? 
+                  <div className="row filter-row">
+                    <div className="col-sm-6 col-md-3">
+                      <div className="form-group">
+                        <Form.Item name="projectName" className="custom-border">
+                          <Input
+                            className="form-control"
+                            allowClear={false}
+                            placeholder="Project Name"
+                            style={{height:'50px'}}
+                            onChange={(e) =>
+                              handleFilterChange(e.target.value, "projectName")
+                            }
+                          />
+                        </Form.Item>
+                      </div>
+                    </div>
+                    <div className="col-sm-6 col-md-3">
+                      <div className="form-group">
+                        <div style={{ position: "relative" }} id="area1">
+                          <Form.Item
+                            name="projectDomain"
+                            className="custom-border"
                           >
-                            {domain.teamName}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
+                            <Select
+                              showSearch
+                              onSearch={(val) => {
+                                showTeamSearch(val, 'domain')
+                              }}
+                              filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                              optionFilterProp="children"
+                              notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                              dropdownRender={(menu) => (
+                                <>
+                                  {menu}
+                                </>
+                              )}
+
+                              getPopupContainer={() =>
+                                document.getElementById("area1")
+                              }
+                              className="custom-select searchCenter"
+                              placeholder="Select Domain"
+                              style={{height:'50px'}}
+                              onChange={(value) => {
+                                handleFilterChange(value, "projectDomain");
+                              }}
+                            >
+                              {allDomain?.map((domain) => (
+                                <Select.Option
+                                  key={domain._id}
+                                  value={domain._id}
+                                >
+                                  {domain.teamName}
+                                </Select.Option>
+                              ))}
+                            </Select>
+                          </Form.Item>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="col-sm-6 col-md-3">
+                      <button
+                        type="primary"
+                        htmlType="submit"
+                        className="btn btn-success btn-block w-100"
+                        //disabled={role === 'admin' ? false : permissions?.viewAllRequest ? false : permissions?.teamRequest ? false : true}
+                        style={{marginBottom: '24px'}}
+                      >
+                        <span className="d-flex justify-content-center">Search</span>
+                      </button>
+                    </div>
+                    <div className="col-sm-6 col-md-3">
+                      <button
+                        htmlType="button"
+                        className="btn btn-success btn-block w-100"
+                        onClick={handleReset}
+                        //disabled={role === 'admin' ? false : permissions?.viewAllRequest ? false : permissions?.teamRequest ? false : true}
+                        style={{backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}}
+                      >
+                        <span className="d-flex justify-content-center">Reset</span>
+                      </button>
+                    </div>
+                  </div>
+                :
+                <div className="row filter-row">
+                  <div className="col-sm-6 col-md-2">
+                    <div className="form-group">
+                      <Form.Item name="projectName" className="custom-border">
+                        <Input
+                          className="form-control"
+                          allowClear={false}
+                          placeholder="Project Name"
+                          style={{height:'50px'}}
+                          onChange={(e) =>
+                            handleFilterChange(e.target.value, "projectName")
+                          }
+                        />
+                      </Form.Item>
+                    </div>
+                  </div>
+                  <div className="col-sm-6 col-md-2">
+                    <div className="form-group">
+                      <Form.Item name="clientName" className="custom-border">
+                        {/* <Select
+                          showSearch
+                          onSearch={(val) => {
+                            showTeamSearch(val, 'client')
+                          }}
+                          filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                          optionFilterProp="children"
+                          notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                          dropdownRender={(menu) => (
+                            <>
+                              {menu}
+                            </>
+                          )}
+                          
+                          className="custom-select searchCenter"
+                          placeholder="Select Client"
+                          onChange={(value) => {
+                            handleFilterChange(value, "clientName");
+                          }}
+                          style={{height:'50px'}}
+                        >
+                          {clients.map((client) => (
+                            <Select.Option
+                              key={client._id}
+                              value={client.clientName}
+                            >
+                              {client.clientName}
+                            </Select.Option>
+                          ))}
+                        </Select> */}
+                        <Input
+                          className="form-control"
+                          allowClear={false}
+                          placeholder="Client Name"
+                          style={{height:'50px'}}
+                          onChange={(e) =>
+                            handleFilterChange(e.target.value, "clientName")
+                          }
+                        />
+                      </Form.Item>
+                    </div>
+                  </div>
+                  <div className="col-sm-6 col-md-2">
+                    <div className="form-group">
+                      <div style={{ position: "relative" }} id="area1">
+                        <Form.Item
+                          name="projectType"
+                          className="custom-border"
+                        >
+                          <Select
+                            className="custom-select searchCenter"
+                            getPopupContainer={() =>
+                              document.getElementById("area1")
+                            }
+                            placeholder="Project Type"
+                            style={{height:'50px'}}
+                            onChange={(value) => {
+                              handleFilterChange(value, "projectType");
+                            }}
+                          >
+                            <Select.Option value="Hourly">Hourly</Select.Option>
+                            <Select.Option value="Fixed">Fixed</Select.Option>
+                            <Select.Option value="Monthly">Monthly</Select.Option>
+                          </Select>
+                        </Form.Item>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-sm-6 col-md-2">
+                    <div className="form-group">
+                      <div style={{ position: "relative" }} id="area1">
+                        <Form.Item
+                          name="projectDomain"
+                          className="custom-border"
+                        >
+                          <Select
+                            showSearch
+                            onSearch={(val) => {
+                              showTeamSearch(val, 'domain')
+                            }}
+                            filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                            optionFilterProp="children"
+                            notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                            dropdownRender={(menu) => (
+                              <>
+                                {menu}
+                              </>
+                            )}
+
+                            getPopupContainer={() =>
+                              document.getElementById("area1")
+                            }
+                            className="custom-select searchCenter"
+                            placeholder="Select Domain"
+                            style={{height:'50px'}}
+                            onChange={(value) => {
+                              handleFilterChange(value, "projectDomain");
+                            }}
+                          >
+                            {allDomain?.map((domain) => (
+                              <Select.Option
+                                key={domain._id}
+                                value={domain._id}
+                              >
+                                {domain.teamName}
+                              </Select.Option>
+                            ))}
+                          </Select>
+                        </Form.Item>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-sm-6 col-md-2">
+                    <button
+                      type="primary"
+                      htmlType="submit"
+                      className="btn btn-success btn-block w-100"
+                      //disabled={role === 'admin' ? false : permissions?.viewAllRequest ? false : permissions?.teamRequest ? false : true}
+                      style={{marginBottom: '24px'}}
+                    >
+                      <span className="d-flex justify-content-center">Search</span>
+                    </button>
+                  </div>
+                  <div className="col-sm-6 col-md-2">
+                    <button
+                      htmlType="button"
+                      className="btn btn-success btn-block w-100"
+                      onClick={handleReset}
+                      //disabled={role === 'admin' ? false : permissions?.viewAllRequest ? false : permissions?.teamRequest ? false : true}
+                      style={{backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}}
+                    >
+                      <span className="d-flex justify-content-center">Reset</span>
+                    </button>
                   </div>
                 </div>
-              </div>
-              <div className="col-sm-6 col-md-2">
-                <button
-                  type="primary"
-                  htmlType="submit"
-                  className="btn btn-success btn-block w-100"
-                  //disabled={role === 'admin' ? false : permissions?.viewAllRequest ? false : permissions?.teamRequest ? false : true}
-                  style={{marginBottom: '24px'}}
-                >
-                  <span className="d-flex justify-content-center">Search</span>
-                </button>
-              </div>
-              <div className="col-sm-6 col-md-2">
-                <button
-                  htmlType="button"
-                  className="btn btn-success btn-block w-100"
-                  onClick={handleReset}
-                  //disabled={role === 'admin' ? false : permissions?.viewAllRequest ? false : permissions?.teamRequest ? false : true}
-                  style={{backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}}
-                >
-                  <span className="d-flex justify-content-center">Reset</span>
-                </button>
-              </div>
-            </div>
+              
+            }
           </Form>
 
           {view === "grid" ? (
@@ -1278,46 +1374,51 @@ const Projects = () => {
                   >
                     <div className="card">
                       <div className="card-body">
-                        <div className="dropdown dropdown-action profile-action">
-                          <a
-                            className="action-icon dropdown-toggle"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false"
-                          >
-                            <i className="material-icons">more_vert</i>
-                          </a>
-                          <div className="dropdown-menu dropdown-menu-right">
-                            <button
-                              className="dropdown-item"
-                              onClick={() => {
-                                getAllCurrencies();
-                                openEditModal(project);
-                                form.setFieldsValue({
-                                  ...project,
-                                  startDate: moment(
-                                    project?.startDate,
-                                    "YYYY-MM-DD"
-                                  ),
-                                  endDate: moment(
-                                    project?.endDate,
-                                    "YYYY-MM-DD"
-                                  ),
-                                });
-                              }}
+                        {
+                          (role === 'admin' || permissions?.projectManagement) &&
+                          <div className="dropdown dropdown-action profile-action">
+                            <a
+                              className="action-icon dropdown-toggle"
+                              data-bs-toggle="dropdown"
+                              aria-expanded="false"
                             >
-                              <i className="fa fa-pencil m-r-5" />
-                              Edit
-                            </button>
-                            <button
-                              className="dropdown-item"
-                              onClick={() => {
-                                openDelete(project);
-                              }}
-                            >
-                              <i className="fa fa-trash-o m-r-5" /> Delete
-                            </button>
+                              <i className="material-icons">more_vert</i>
+                            </a>
+                            <div className="dropdown-menu dropdown-menu-right">
+                              <button
+                                className="dropdown-item"
+                                onClick={() => {
+                                  // ViewClients();
+                                  // fetchEmployees();
+                                  getAllCurrencies();
+                                  openEditModal(project);
+                                  form.setFieldsValue({
+                                    ...project,
+                                    startDate: moment(
+                                      project?.startDate,
+                                      "YYYY-MM-DD"
+                                    ),
+                                    endDate: moment(
+                                      project?.endDate,
+                                      "YYYY-MM-DD"
+                                    ),
+                                  });
+                                }}
+                              >
+                                <i className="fa fa-pencil m-r-5" />
+                                Edit
+                              </button>
+                              <button
+                                className="dropdown-item"
+                                onClick={() => {
+                                  openDelete(project);
+                                }}
+                              >
+                                <i className="fa fa-trash-o m-r-5" /> Delete
+                              </button>
+                            </div>
                           </div>
-                        </div>
+                        }
                         <h4 className="project-title longText">
                           <Link to={`/projects/projects-view/${project?._id}`}>
                             {project?.projectName}
@@ -2650,6 +2751,7 @@ const Projects = () => {
             getprojects={emptyfunction}
             getlistprojects={GetListProjects}
             allCurrencies={allCurrencies}
+            allDomain={allDomain}
           />
         )}
 
