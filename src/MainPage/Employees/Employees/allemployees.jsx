@@ -434,7 +434,7 @@ const AllEmployees = () => {
               <div key={index} className="col-md-4 col-sm-6 col-12 col-lg-4 col-xl-3 d-flex">
                 <div className="profile-widget" style={{width: '100%'}}>
                   <div className="profile-img">
-                    <Link to="/profile/employee-profile" state={{user_data: user}} className="avatar"><img src={user?.imageUrl ? user?.imageUrl : user_icon} alt="" /></Link>
+                    <Link to="/profile/employee-profile" onClick={() => sessionStorage.setItem(`employee_tab`, 'profile')} state={{user_data: user}} className="avatar"><img src={user?.imageUrl ? user?.imageUrl : user_icon} alt="" /></Link>
                   </div>
                   <div className="dropdown profile-action">
                     {
@@ -452,7 +452,7 @@ const AllEmployees = () => {
                     }
                     </div>
                   </div>
-                  <h4 className="user-name m-t-10 mb-0 text-ellipsis"><Link to="/profile/employee-profile" state={{user_data: user}}>{user?.fullName}</Link></h4>
+                  <h4 className="user-name m-t-10 mb-0 text-ellipsis"><Link to="/profile/employee-profile" onClick={() => sessionStorage.setItem(`employee_tab`, 'profile')} state={{user_data: user}}>{user?.fullName}</Link></h4>
                   <div className="small text-muted">{desigInfo[user?.designationId]}</div>
                 </div>
               </div>
