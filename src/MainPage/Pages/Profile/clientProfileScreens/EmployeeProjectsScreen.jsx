@@ -27,6 +27,7 @@ import { getAllISOCodes } from 'iso-country-currency';
 const EmployeeProjectsScreen = ({ employeeId }) => {
   const user_state = useSelector((state) => state.user.loginvalue);
   const role = user_state?.user?.role;
+  const user_id = user_state?.user?._id;
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
 
   const [allProjects, setAllProjects] = useState();
@@ -83,8 +84,9 @@ const EmployeeProjectsScreen = ({ employeeId }) => {
     setTableLoader(true);
     apiServices(
       "GET",
+      `project-management/?employeeId=${(employeeId !== user_id ? employeeId : (role === '' && !permissions?.projectManagement)) ? employeeId : ''}&page=${
       // `project-management/?employeeId=${employeeId}&page=${
-      `project-management/?employeeId=${(role === '' && !permissions?.projectManagement) ? employeeId : ''}&page=${
+      // `project-management/?employeeId=${(role === '' && !permissions?.projectManagement) ? employeeId : ''}&page=${
         current_page ? current_page : currentPage ? currentPage : 1
       }&limit=${page_size ? page_size : pageSize ? pageSize : 20}`,
       null,
