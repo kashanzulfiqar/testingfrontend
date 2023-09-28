@@ -30,6 +30,7 @@ const EmployeeProjectsScreen = ({ employeeId }) => {
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
 
   const [allProjects, setAllProjects] = useState();
+  const [allDomain, setAllDomain] = useState([]);
   const [allCurrencies, setAllCurrencies] = useState([]);
   const [tableLoader, setTableLoader] = useState(true);
   const [empLoader, setEmpLoader] = useState(true);
@@ -82,7 +83,8 @@ const EmployeeProjectsScreen = ({ employeeId }) => {
     setTableLoader(true);
     apiServices(
       "GET",
-      `project-management/?employeeId=${employeeId}&page=${
+      // `project-management/?employeeId=${employeeId}&page=${
+      `project-management/?employeeId=${(role === '' && !permissions?.projectManagement) ? employeeId : ''}&page=${
         current_page ? current_page : currentPage ? currentPage : 1
       }&limit=${page_size ? page_size : pageSize ? pageSize : 20}`,
       null,
@@ -217,6 +219,30 @@ const EmployeeProjectsScreen = ({ employeeId }) => {
     />
   );
 
+  const getAllDomain = () => {
+    apiServices("GET", "team/view-team", null, user_state)
+    .then((res) => {
+      // console.log(res?.data);
+      if (res?.data?.success === true) {
+        const all_domains = res?.data?.Team;
+        const sortedData = all_domains.slice().sort((a, b) => a.teamName.localeCompare(b.teamName));
+        setAllDomain(sortedData);
+      }
+    })
+    .catch((err) => {
+      // console.log(err);
+      message.error(
+        `${
+          err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
+            ? err?.response?.data?.validation?.body?.message
+            : "Get Domain Info Error"
+        }!`
+      );
+    });
+  }
+
   const getAllCurrencies = () => {
     const isoCodes = getAllISOCodes();
     const uniqueCurrencies = new Set();
@@ -279,6 +305,7 @@ const EmployeeProjectsScreen = ({ employeeId }) => {
                           className="dropdown-item"
                           href="javascript:void(0)"
                           onClick={() => {
+                            getAllDomain();
                             getAllCurrencies();
                             setOpen({
                               editOpen: true,
@@ -885,6 +912,7 @@ const EmployeeProjectsScreen = ({ employeeId }) => {
             getprojects={getAllProjectsOnEdit}
             getlistprojects={() => { }}
             allCurrencies={allCurrencies}
+            allDomain={allDomain}
           />
         )}
         {/* Delete Modal */}
