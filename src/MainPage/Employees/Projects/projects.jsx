@@ -253,6 +253,7 @@ const Projects = () => {
 
   useEffect(() => {
     getAllDomain();
+    fetchEmployees();
   }, []);
 
 
