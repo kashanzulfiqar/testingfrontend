@@ -45,6 +45,7 @@ const LeaveAdmin = () => {
     const role = user_state?.user?.role
 
 
+    const [isStatLoading, setIsStatLoading] = useState(false);
 
     const[requests,setRequests] = useState([]);
     const [tableData, setTableData] = useState([]); // Step 1
@@ -194,6 +195,11 @@ const LeaveAdmin = () => {
     });  
 
     useEffect(()=>{
+      setIsStatLoading(true);
+    },[]);  
+
+
+    useEffect(()=>{
       if(role === 'admin' || permissions?.viewAllRequest || permissions?.teamRequest) {
 
         setIsLoading(true);
@@ -240,6 +246,7 @@ const LeaveAdmin = () => {
                 console.log("error", error);
               }).finally(()=>{
                 setIsLoading(false);
+                setIsStatLoading(false);
               });
       }
       else{
@@ -269,6 +276,7 @@ const LeaveAdmin = () => {
             console.log("error", error);
           }).finally(()=>{
             setIsLoading(false);
+            setIsStatLoading(false);
           });
         }
 
@@ -527,7 +535,7 @@ const LeaveAdmin = () => {
             <div className="stats-info">
               <label>Today Present</label>
               <h4>
-              {isLoading ? (
+              {isStatLoading ? (
                 <Spin size="large" />
               ) : (
                 <>{statdata?.attendanceRecord} / {statdata?.totalEmployee}</>
@@ -552,7 +560,7 @@ const LeaveAdmin = () => {
             <label>Pending Requests</label>
             
               <h4>
-              {isLoading ? (
+              {isStatLoading ? (
                 <Spin size="large" />
               ) : (
                 <>{statdata?.pendingRequests}</>
