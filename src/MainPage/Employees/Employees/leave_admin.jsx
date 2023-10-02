@@ -444,12 +444,12 @@ const LeaveAdmin = () => {
     render: (text, record) => (
       <div>
         <a
-          className={`btn btn-white btn-sm btn-rounded dropdown-toggle ${
-            text === 'Pending'
-              ? 'text-info'
-              : text === 'Approved'
-              ? 'text-success'
-              : 'text-danger'
+          className={`btn btn-white btn-sm btn-rounded ${
+            text == 'Approved' 
+              ? ''
+              : text === 'Declined'
+              ? ''
+              : 'dropdown-toggle'
           }`}
           href={text !== 'Approved' && text !== 'Declined' ? "javascript:void(0)" : undefined}
           data-bs-toggle={text !== 'Approved' && text !== 'Declined' && (permissions?.requestApproval || role==='admin') ? "dropdown" : ""}
