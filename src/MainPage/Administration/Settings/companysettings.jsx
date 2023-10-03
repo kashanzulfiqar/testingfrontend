@@ -15,6 +15,7 @@ import Designation from "./Designation";
 import Shifts from "./Shifts";
 import TaxSlabs from "./TaxSlabs";
 import { useSelector } from "react-redux";
+import InvoiceTaxes from "./InvoiceTaxes";
 
 const Settings = ({test}) => {
 
@@ -133,6 +134,12 @@ useEffect(() => {
                         Tax Slabs
                       </a>
                    </li>
+                   <li className={showComponent === 'Invoice Tax Slabs' ? 'active' : ''}>
+                      <a href="javascript:void(0)" onClick={() => {setShowComponent('Invoice Tax Slabs') }}>
+                        <i className="fa fa-fw fa-money" style={{marginRight: '8px'}}></i>
+                        Invoice Tax Slabs
+                      </a>
+                   </li>
                    {/* <li className="">
                      <a href="#">Administrator
                        <span className="role-action">
@@ -180,7 +187,8 @@ useEffect(() => {
                 showComponent === 'Departments' ? <Departments /> :
                 showComponent === 'Designations' ? <Designation /> :
                 showComponent === 'Shifts' ? <Shifts /> : 
-                <TaxSlabs />
+                showComponent === 'Tax Slabs' ? <TaxSlabs /> : 
+                <InvoiceTaxes />
               }
              </div>
            </div>
