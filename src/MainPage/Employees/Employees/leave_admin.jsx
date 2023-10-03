@@ -449,10 +449,12 @@ const LeaveAdmin = () => {
               ? ''
               : text === 'Declined'
               ? ''
+              : text === 'Cancelled'
+              ? ''
               : 'dropdown-toggle'
           }`}
-          href={text !== 'Approved' && text !== 'Declined' ? "javascript:void(0)" : undefined}
-          data-bs-toggle={text !== 'Approved' && text !== 'Declined' && (permissions?.requestApproval || role==='admin') ? "dropdown" : ""}
+          href={text !== 'Approved' && text !== 'Declined' && text !== 'Cancelled' ? "javascript:void(0)" : undefined}
+          data-bs-toggle={text !== 'Approved' && text !== 'Declined' && text !== 'Cancelled' && (permissions?.requestApproval || role==='admin') ? "dropdown" : ""}
           aria-expanded="false"
           onClick={(e) => e.preventDefault()}
         >
@@ -469,7 +471,7 @@ const LeaveAdmin = () => {
           />{' '}
           {text}
         </a>
-        <div className={`dropdown-menu dropdown-menu-right ${text === 'Approved' || text === 'Declined' ? 'disabled' : ''}`}>
+        <div className={`dropdown-menu dropdown-menu-right ${text === 'Approved' || text === 'Declined' || text === 'Cancelled' ? 'disabled' : ''}`}>
           
           <a className={`dropdown-item ${text === 'Approved' && 'disabled'}`} href="javascript:void(0)" onClick={(e) => {
             e.preventDefault();
@@ -1010,7 +1012,7 @@ const LeaveAdmin = () => {
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'flex-start',justifyContent: 'center', gap: '2px' }}> 
-                {selectedRecord?.status !=="Approved" && selectedRecord?.status !=="Declined" && (permissions?.requestApproval
+                {selectedRecord?.status !=="Approved" && selectedRecord?.status !=="Declined" && selectedRecord?.status !=="Cancelled" && (permissions?.requestApproval
                 || role==='admin') && (
                   <>
                   <Button 
