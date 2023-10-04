@@ -251,16 +251,6 @@ const Projects = () => {
   };
 
   useEffect(() => {
-    if(role === 'admin' || permissions?.projectManagement ) {
-      ViewClients();
-      fetchEmployees();
-    }else{
-      nav('/restricted', { state: { unAuthorize: true}})
-    }
-  }, []);
-
-
-  useEffect(() => {
     if(role === 'admin' || permissions?.projectManagement ) { 
       setIsLoading(true);
       GetListProjects();
@@ -269,6 +259,17 @@ const Projects = () => {
       nav('/restricted', { state: { unAuthorize: true}})
     }
   }, [filters, pagination.current, pagination.pageSize]);
+
+
+  useEffect(() => {
+    if(role === 'admin' || permissions?.projectManagement ) {
+      ViewClients();
+      fetchEmployees();
+    }else{
+      nav('/restricted', { state: { unAuthorize: true}})
+    }
+  }, []);
+    
 
   const getAllDomain = () => {
     apiServices("GET", "team/view-team", null, user_state)
@@ -2080,11 +2081,11 @@ const Projects = () => {
                                     // If either date is not selected, do not perform validation
                                     return Promise.resolve();
                                   }
-                                  if (value.isSameOrAfter(startDate)) {
+                                  if (!value.isSame(startDate, 'day') && value.isSameOrAfter(startDate)) {
                                     // End date is valid
                                     return Promise.resolve();
                                   }
-                                  return Promise.reject('End date must not be before the start date');
+                                  return Promise.reject('End date must not be before or same as start date');
                                 },
                               }),
                             ]}
