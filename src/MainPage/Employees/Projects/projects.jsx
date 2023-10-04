@@ -252,23 +252,19 @@ const Projects = () => {
   };
 
   useEffect(() => {
-    if(role === 'admin' || permissions?.projectManagement ) {
-      ViewClients();
-      fetchEmployees();
-    }else{
-      nav('/restricted', { state: { unAuthorize: true}})
-    }
+    getAllDomain();
+    fetchEmployees();
   }, []);
 
   useEffect(() => {
-      if(role === 'admin' || permissions?.projectManagement ) { 
-        setIsLoading(true);
-        GetListProjects();
-        getAllDomain();
-      }else{
-        nav('/restricted', { state: { unAuthorize: true}})
-      }
-    }, [filters, pagination.current, pagination.pageSize]);
+    //if(role === 'admin' || permissions?.projectManagement ) { 
+      setIsLoading(true);
+      GetListProjects();
+    //   getAllDomain();
+    // }else{
+    //    nav('/restricted', { state: { unAuthorize: true}})
+    // }
+  }, [filters, pagination.current, pagination.pageSize]); 
 
 
   const getAllDomain = () => {
