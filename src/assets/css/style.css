@@ -7175,6 +7175,10 @@ textarea.form-control {
 
 /* ................. custom css styling ................ */
 
+.projectsListTable thead tr th:not(:nth-last-child(1)){
+  min-width: 170px !important;
+}
+
 .countryDropDown > div:nth-child(2) .ant-select-dropdown{
   max-height: 220px !important;
 }

@@ -419,7 +419,7 @@ const Header = (props) => {
             <label style={{marginInline: '5px', cursor: 'pointer'}}>{location?.state?.updated_user?.fullName ? ` ${location?.state?.updated_user?.fullName} ` : updated_user?.fullName ? ` ${updated_user?.fullName} ` : ProfileName ? ` ${ProfileName} ` : "Admin"}</label>
           </a>
           <div className="dropdown-menu dropdown-menu-end" style={{marginLeft: '50px !important'}}>
-          <Link to={user_state?.user?.role === 'client' ? '/client/client-profile' : user_state?.user?.role === 'focalperson' ? '/client/focal-profile' : "/profile"} className="dropdown-item">My Profile</Link>
+          <Link to={user_state?.user?.role === 'client' ? '/client/client-profile' : user_state?.user?.role === 'focalperson' ? '/client/focal-profile' : "/profile"} onClick={() => (user_state?.user?.role === 'client' || user_state?.user?.role === 'focalperson') ? '' : sessionStorage.setItem(`employee_tab`, 'profile')} className="dropdown-item">My Profile</Link>
             <Link className="dropdown-item" to="/change-password">Change Password</Link>
             {/* <Link className="dropdown-item" to="/login">Logout</Link> */}
             <a className="dropdown-item" onClick={() => {
@@ -446,7 +446,7 @@ const Header = (props) => {
         <a href="javascript:void(0)" className="nav-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="fa fa-ellipsis-v" /></a>
         <div className="dropdown-menu dropdown-menu-end dropdown-menu-right">
         {/* <Link to="/profile" className="dropdown-item">My Profile</Link> */}
-        <Link to={user_state?.user?.role === 'client' ? '/client/client-profile' : user_state?.user?.role === 'focalperson' ? '/client/focal-profile' : "/profile"} className="dropdown-item">My Profile</Link>
+        <Link to={user_state?.user?.role === 'client' ? '/client/client-profile' : user_state?.user?.role === 'focalperson' ? '/client/focal-profile' : "/profile"} onClick={() => (user_state?.user?.role === 'client' || user_state?.user?.role === 'focalperson') ? '' : sessionStorage.setItem(`employee_tab`, 'profile')} className="dropdown-item">My Profile</Link>
           <Link className="dropdown-item" to="/change-password">Change Password</Link>
           {/* <Link className="dropdown-item" to="/login">Logout</Link> */}
           <a className="dropdown-item" onClick={() => {

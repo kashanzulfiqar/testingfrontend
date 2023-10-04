@@ -43,6 +43,7 @@ const ProjectView = () => {
   const [form] = Form.useForm();
 
   const user_state = useSelector((state) => state.user.loginvalue);
+  const employee_id = user_state?.user?._id;
   const role = user_state?.user?.role;
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
   console.log(permissions,user_state)
@@ -51,6 +52,7 @@ const ProjectView = () => {
   const [paymentSchedules, setPaymentSchedules] = useState(null);
 
   const [isLoading, setIsLoading] = useState(false);
+  const [allDomain, setAllDomain] = useState([]);
   const [TableLoad, setTableLoad] = useState(false);
   const [LoadLeader, setLoadLeader] = useState(false);
   const [LoadTeam, setLoadTeam] = useState(false);
@@ -151,20 +153,45 @@ const ProjectView = () => {
   };
 
   useEffect(() => {
-    if(role === 'admin' || role === 'client' || role === 'focalperson' || permissions?.projectManagement || permissions?.clientManagement ) {
+    // if(role === 'admin' || role === 'client' || role === 'focalperson' || permissions?.projectManagement || permissions?.clientManagement ) {
       setIsLoading(true);
       GetProjects();
       fetchEmployees();
-      ViewClients();
-    }else{
-      nav('/restricted', { state: { unAuthorize: true}})
-    }
+      getAllDomain();
+      // ViewClients();
+    // }else{
+    //   nav('/restricted', { state: { unAuthorize: true}})
+    // }
   }, []);
+
+  const getAllDomain = () => {
+    apiServices("GET", "team/view-team", null, user_state)
+    .then((res) => {
+      // console.log(res?.data);
+      if (res?.data?.success === true) {
+        const all_domains = res?.data?.Team;
+        const sortedData = all_domains.slice().sort((a, b) => a.teamName.localeCompare(b.teamName));
+        setAllDomain(sortedData);
+      }
+    })
+    .catch((err) => {
+      // console.log(err);
+      message.error(
+        `${
+          err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
+            ? err?.response?.data?.validation?.body?.message
+            : "Get Domain Info Error"
+        }!`
+      );
+    });
+  }
 
   const GetProjects = () => {
     apiServices(
       "GET",
-      `project-management/?page=1&limit=99999`,
+      `project-management/?employeeId=${(role === '' && !permissions?.projectManagement) ? employee_id : ''}&page=1&limit=99999`,
       null,
       user_state
     )
@@ -552,7 +579,7 @@ const ProjectView = () => {
                       endDate: moment(project?.endDate, "YYYY-MM-DD"),
                     });
                   }}
-                  disabled={role === 'client' || role === 'focalperson'}
+                  disabled={role === 'client' || role === 'focalperson' || (role === '' && !permissions?.projectManagement)}
                 >
                   <i className="fa fa-plus" />
                   Edit Project
@@ -951,28 +978,31 @@ const ProjectView = () => {
                 </div>
               </div>
 
-              <div className="card">
-                <div className="card-body">
-                  <h5 className="card-title m-b-20">Payments</h5>
-                  <div className="table-responsive">
-                    <Table
-                      locale={{
-                        emptyText: TableLoad ? (
-                          <Spin size="large" tip="Loading..." />
-                        ) : (
-                          customEmptyText
-                        ),
-                      }}
-                      loading={TableLoad}
-                      dataSource={project?.paymentSchedule}
-                      columns={paymentColumns}
-                      rowKey={(record, index) => index}
-                      pagination={false}
-                      style={{ overflowX: "auto" }}
-                    />
+              {
+                (role === '' && !permissions?.projectManagement) ? null :
+                <div className="card">
+                  <div className="card-body">
+                    <h5 className="card-title m-b-20">Payments</h5>
+                    <div className="table-responsive">
+                      <Table
+                        locale={{
+                          emptyText: TableLoad ? (
+                            <Spin size="large" tip="Loading..." />
+                          ) : (
+                            customEmptyText
+                          ),
+                        }}
+                        loading={TableLoad}
+                        dataSource={project?.paymentSchedule}
+                        columns={paymentColumns}
+                        rowKey={(record, index) => index}
+                        pagination={false}
+                        style={{ overflowX: "auto" }}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
+              }
 
               {/* <div className="project-task">
               <ul className="nav nav-tabs nav-tabs-top nav-justified mb-0">
@@ -1242,10 +1272,13 @@ const ProjectView = () => {
                   <h6 className="card-title m-b-15">Project Details</h6>
                   <table className="table table-striped table-border">
                     <tbody>
-                      <tr>
-                        <td>Cost:</td>
-                        <td className="text-end">{project?.cost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {project?.currency}</td>
-                      </tr>
+                      {
+                        (role === '' && !permissions?.projectManagement) ? null :
+                        <tr>
+                          <td>Cost:</td>
+                          <td className="text-end">{project?.cost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {project?.currency}</td>
+                        </tr>
+                      }
                       <tr>
                         <td>Start Date:</td>
                         <td className="text-end">
@@ -1316,7 +1349,7 @@ const ProjectView = () => {
                         openLeaderModal();
                         setSelectedLeader(project?.projectLead);
                       }}
-                      disabled={role === 'client' || role === 'focalperson'}
+                      disabled={role === 'client' || role === 'focalperson' || (role === '' && !permissions?.projectManagement)}
                     >
                       <i className="fa fa-plus" /> Edit
                     </button>
@@ -1365,7 +1398,7 @@ const ProjectView = () => {
                         openUserModal();
                         setSelectedDevelopers(project?.assignedDevelopers);
                       }}
-                      disabled={role === 'client' || role === 'focalperson'}
+                      disabled={role === 'client' || role === 'focalperson' || (role === '' && !permissions?.projectManagement)}
                     >
                       <i className="fa fa-plus" /> Add
                     </button>
@@ -1771,6 +1804,7 @@ const ProjectView = () => {
           getprojects={GetProjects}
           getlistprojects={emptyfunction}
           allCurrencies={allCurrencies}
+          allDomain={allDomain}
         />
       )}
 

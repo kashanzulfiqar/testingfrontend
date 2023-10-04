@@ -39,14 +39,14 @@ import { apiServices } from "../../../Services/apiServices";
 import { apiUploadToS3 } from "../../../Services/uploadImage";
 import { MinusCircleFilled } from "@ant-design/icons";
 
-function EditProjects({ data, editModal, closeEditModal, getprojects, getlistprojects, allCurrencies }) {
+function EditProjects({ data, editModal, closeEditModal, getprojects, getlistprojects, allCurrencies, allDomain }) {
   const [form] = Form.useForm();
 
   const user_state = useSelector((state) => state.user.loginvalue);
   const role = user_state?.user?.role;
 
   const [selectedData, setSelectedData] = useState(null);
-  const [allDomain, setAllDomain] = useState([]);
+  // const [allDomain, setAllDomain] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [clients, setClients] = useState([]);
   const [focalPersons, setFocalPersons] = useState([]);
@@ -162,7 +162,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
   useEffect(() => {
     fetchEmployees();
     ViewClients();
-    getAllDomain();
+    // getAllDomain();
   }, []);
 
   const getAllDomain = () => {
@@ -206,7 +206,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Client Error"
+              : "Get All Employees Error"
           }`
         );
       });
@@ -215,13 +215,15 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
   const ViewClients = () => {
     apiServices(
       "GET",
-      `client/view-client?deleted=false&page=1&limit=99999`,
+      `client/all-client`,
+      // `client/view-client?deleted=false&page=1&limit=99999`,
       null,
       user_state
     )
       .then((res) => {
         if (res.data.success === true) {
-          const clients = res?.data?.clients?.docs;
+          // const clients = res?.data?.clients?.docs;
+          const clients = res?.data?.clients;
           const sortedData = clients.slice().sort((a, b) => a.clientName.localeCompare(b.clientName));
           setClients(sortedData);
         }
