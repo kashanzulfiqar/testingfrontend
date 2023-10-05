@@ -7175,6 +7175,18 @@ textarea.form-control {
 
 /* ................. custom css styling ................ */
 
+.taxInnerMargin > div > div{
+  margin-top: -7px !important;
+}
+.taxInnerMargin > div > div > div > div > input{
+  font-weight: 600;
+  color: #212529 !important;
+}
+
+.hideHandlerIcon .ant-input-number-handler-wrap {
+  display: none !important;
+}
+
 .projectsListTable thead tr th:not(:nth-last-child(1)){
   min-width: 170px !important;
 }
