@@ -672,7 +672,7 @@ const EditInvoice = () => {
                           <th className="col-sm-2" style={{minWidth: '245px'}}>Item</th>
                           <th className="col-md-6" style={{minWidth: '295px'}}>Description</th>
                           <th style={{minWidth: '162px'}}>Unit Cost</th>
-                          <th style={{minWidth: '162px'}}>Qty</th>
+                          <th style={{minWidth: '162px'}}>Quantity</th>
                           <th>Amount</th>
                           <th> </th>
                         </tr>
@@ -691,7 +691,7 @@ const EditInvoice = () => {
                                       {...field}
                                       name={[field.name, 'item']}
                                       className='custom-border'
-                                      style={{marginBottom: '0px'}}
+                                      style={{ marginTop: '19px', marginBottom: '22px'}}
                                       fieldKey={[field.fieldKey, 'item']}
                                       rules={[
                                         {
@@ -719,7 +719,7 @@ const EditInvoice = () => {
                                       {...field}
                                       name={[field.name, 'description']}
                                       className='custom-border'
-                                      style={{marginBottom: '0px'}}
+                                      style={{ marginTop: '19px', marginBottom: '22px'}}
                                       fieldKey={[field.fieldKey, 'description']}
                                       rules={[
                                         {
@@ -747,7 +747,7 @@ const EditInvoice = () => {
                                     {...field}
                                     name={[field.name, 'unitCost']}
                                     className='custom-border'
-                                    style={{marginBottom: '0px'}}
+                                    style={{ marginTop: '19px', marginBottom: '22px'}}
                                     fieldKey={[field.fieldKey, 'unitCost']}
                                     rules={[
                                       {
@@ -788,7 +788,7 @@ const EditInvoice = () => {
                                     {...field}
                                     name={[field.name, 'quantity']}
                                     className='custom-border'
-                                    style={{marginBottom: '0px'}}
+                                    style={{ marginTop: '19px', marginBottom: '22px'}}
                                     fieldKey={[field.fieldKey, 'quantity']}
                                     rules={[
                                       {
@@ -815,7 +815,7 @@ const EditInvoice = () => {
                                     {...field}
                                     name={[field.name, 'amount']}
                                     className='custom-border'
-                                    style={{marginBottom: '0px'}}
+                                    style={{ marginTop: '19px', marginBottom: '22px'}}
                                     fieldKey={[field.fieldKey, 'amount']}
                                   >
                                     <InputNumber
@@ -991,8 +991,8 @@ const EditInvoice = () => {
                   </div>
                 </div>
               </div>
-              <div className="submit-section">
-                <button className="btn btn-primary submit-btn m-r-10" onClick={() => setSaveType('send') } disabled={sendLoader}>
+              <div className="submit-section" style={{display: 'flex', justifyContent: 'center', gap: '10px'}}>
+                <button className="btn btn-primary submit-btn" onClick={() => setSaveType('send') } disabled={sendLoader}>
                     {
                         sendLoader ? <Spin size="small" indicator={antIcon} />
                         : 'Save & Send'

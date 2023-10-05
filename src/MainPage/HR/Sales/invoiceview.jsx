@@ -91,8 +91,8 @@ const calculateDiscountAmount = () => {
                     <div className="col-auto float-end ms-auto">
                       <div className="btn-group btn-group-sm">
                         {/* <button className="btn btn-white">CSV</button> */}
-                        <button className="btn btn-white"><i className="fa fa-download fa-lg" /> PDF</button>
-                        <button className="btn btn-white"><i className="fa fa-print fa-lg" /> Print</button>
+                        <button className="btn btn-white"><i className="fa fa-download fa-lg m-r-5" /> Export to PDF</button>
+                        {/* <button className="btn btn-white"><i className="fa fa-print fa-lg" /> Print</button> */}
                       </div>
                     </div>
                   </div>

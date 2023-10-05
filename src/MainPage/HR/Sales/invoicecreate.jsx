@@ -649,7 +649,7 @@ const Invoicecreate = () => {
                           <th className="col-sm-2" style={{minWidth: '245px'}}>Item</th>
                           <th className="col-md-6" style={{minWidth: '295px'}}>Description</th>
                           <th style={{minWidth: '162px'}}>Unit Cost</th>
-                          <th style={{minWidth: '162px'}}>Qty</th>
+                          <th style={{minWidth: '162px'}}>Quantity</th>
                           <th>Amount</th>
                           <th> </th>
                         </tr>
@@ -968,8 +968,8 @@ const Invoicecreate = () => {
                   </div>
                 </div>
               </div>
-              <div className="submit-section">
-                <button className="btn btn-primary submit-btn m-r-10" onClick={() => setSaveType('send') } disabled={sendLoader}>
+              <div className="submit-section" style={{display: 'flex', justifyContent: 'center', gap: '10px'}}>
+                <button className="btn btn-primary submit-btn" onClick={() => setSaveType('send') } disabled={sendLoader}>
                   {
                     sendLoader ? <Spin size="small" indicator={antIcon} />
                       : 'Save & Send'
