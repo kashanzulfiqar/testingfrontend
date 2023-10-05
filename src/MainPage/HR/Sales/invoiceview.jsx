@@ -1,15 +1,79 @@
 
-import React, { Component } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Helmet } from "react-helmet";
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {Applogo} from "../../../Entryfile/imagepath"
+import { useSelector } from 'react-redux';
 
 const Invoiceview = () => {
+
+  const location = useLocation();
+  const invoice_data = location?.state?.invoice_data;
+  const nav = useNavigate();
+  const permissions = useSelector((state) => state?.permissionsSlice?.data);
+
+  const user_state = useSelector((state) => state?.user?.loginvalue);
+  const role = user_state?.user?.role
+
+  const [invoiceInfo, setInvoiceInfo] = useState()
+
+  useEffect(() => {
+    if(invoice_data) {
+      setInvoiceInfo(invoice_data)
+    }else{
+      nav('/restricted', { state: { unAuthorize: true}})
+    }
+  }, [])
+  
+
+  const formatDate = (inputDate) => {
+    if(inputDate){
+      const date = new Date(inputDate);
+      const day = date.getDate();
+      const month = date.toLocaleString('default', { month: 'short' });
+      const year = date.getFullYear();
+  
+      // let daySuffix = "th";
+      // if (day === 1 || day === 21 || day === 31) {
+      //     daySuffix = "st";
+      // } else if (day === 2 || day === 22) {
+      //     daySuffix = "nd";
+      // } else if (day === 3 || day === 23) {
+      //     daySuffix = "rd";
+      // }
+  
+      // const formattedDate = `${day}${daySuffix} ${month}, ${year}`;
+      const formattedDate = `${month} ${day}, ${year}`;
+      return formattedDate;
+    }
+}
+
+const calculateSubTotal = () => {
+  let sub_total = 0;
+  invoiceInfo?.servicesDetails?.forEach((item) => {
+    sub_total += parseFloat(item?.amount) || 0;
+  });
+
+  return sub_total?.toFixed(2);
+}
+const calculateTaxAmount = () => {
+  let tax_amount = 0;
+  tax_amount = ((+invoiceInfo?.invoiceTax/100)*calculateSubTotal())
+
+  return tax_amount?.toFixed(2);
+}
+const calculateDiscountAmount = () => {
+  let disc_amount = 0;
+  let total = +calculateSubTotal() + +calculateTaxAmount();
+  disc_amount = ((+invoiceInfo?.discount/100)*total)
+
+  return disc_amount?.toFixed(2);
+}
   
       return ( 
             <div className="page-wrapper">
             <Helmet>
-                <title>Invoice - HRMS Admin Template</title>
+                <title>Invoice - DaftarPro</title>
                 <meta name="description" content="Login page"/>					
             </Helmet>
               {/* Page Content */}
@@ -20,14 +84,14 @@ const Invoiceview = () => {
                     <div className="col">
                       <h3 className="page-title">Invoice</h3>
                       <ul className="breadcrumb">
-                        <li className="breadcrumb-item"><Link to="/app/main/dashboard">Dashboard</Link></li>
+                        <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>Dashboard</Link></li>
                         <li className="breadcrumb-item active">Invoice</li>
                       </ul>
                     </div>
                     <div className="col-auto float-end ms-auto">
                       <div className="btn-group btn-group-sm">
-                        <button className="btn btn-white">CSV</button>
-                        <button className="btn btn-white">PDF</button>
+                        {/* <button className="btn btn-white">CSV</button> */}
+                        <button className="btn btn-white"><i className="fa fa-download fa-lg" /> PDF</button>
                         <button className="btn btn-white"><i className="fa fa-print fa-lg" /> Print</button>
                       </div>
                     </div>
@@ -39,39 +103,50 @@ const Invoiceview = () => {
                     <div className="card">
                       <div className="card-body">
                         <div className="row">
-                          <div className="col-sm-6 m-b-20">
-                            <img src={Applogo} className="inv-logo" alt="" />
-                            <ul className="list-unstyled">
+                          <div className="col-sm-6 m-b-20 d-grid">
+                            <img src={invoiceInfo?.clientId?.logo} className="inv-logo" alt="" />
+                            <label style={{maxWidth: '200px'}}>
+                             {invoiceInfo?.companyId?.companyAddress}
+                            </label>
+                            {/* <ul className="list-unstyled">
                               <li>Dreamguy's Technologies</li>
                               <li>3864 Quiet Valley Lane,</li>
                               <li>Sherman Oaks, CA, 91403</li>
                               <li>GST No:</li>
-                            </ul>
+                            </ul> */}
                           </div>
                           <div className="col-sm-6 m-b-20">
                             <div className="invoice-details">
-                              <h3 className="text-uppercase">Invoice #INV-0001</h3>
+                              <h3 className="text-uppercase">Invoice# {invoiceInfo?.invoiceNo}</h3>
                               <ul className="list-unstyled">
-                                <li>Date: <span>March 12, 2019</span></li>
-                                <li>Due date: <span>April 25, 2019</span></li>
+                                <li>Invoice Date: <label>{formatDate(invoiceInfo?.invoiceDate)}</label></li>
+                                <li>Due Date: <label>{formatDate(invoiceInfo?.dueDate)}</label></li>
                               </ul>
                             </div>
                           </div>
                         </div>
                         <div className="row">
                           <div className="col-sm-6 col-lg-7 col-xl-8 m-b-20">
-                            <h5>Invoice to:</h5>
+                            <label style={{fontWeight: '500', fontSize: '14px', lineHeight: '35px'}}>Invoice to:</label>
                             <ul className="list-unstyled">
-                              <li><h5><strong>Barry Cuda</strong></h5></li>
-                              <li><span>Global Technologies</span></li>
+                              <li><h5><strong>{invoiceInfo?.clientId?.clientName}</strong></h5></li>
+                              {/* <li><span>Global Technologies</span></li>
                               <li>5754 Airport Rd</li>
                               <li>Coosada, AL, 36020</li>
                               <li>United States</li>
                               <li>888-777-6655</li>
-                              <li><a href="#">barrycuda@example.com</a></li>
+                              <li><a href="#">barrycuda@example.com</a></li> */}
+                            </ul>
+                            <label style={{maxWidth: '200px'}}>
+                             {invoiceInfo?.clientId?.headOfficeAddress}
+                            </label>
+                            <ul className="list-unstyled">
+                              <li>{invoiceInfo?.clientId?.country}</li>
+                              <li>{invoiceInfo?.clientId?.clientPhoneNo}</li>
+                              <li><a href="javascript:void(0)">{invoiceInfo?.clientId?.clientEmail}</a></li>
                             </ul>
                           </div>
-                          <div className="col-sm-6 col-lg-5 col-xl-4 m-b-20">
+                          {/* <div className="col-sm-6 col-lg-5 col-xl-4 m-b-20">
                             <span className="text-muted">Payment Details:</span>
                             <ul className="list-unstyled invoice-payment-details">
                               <li><h5>Total Due: <span className="text-end">$8,750</span></h5></li>
@@ -82,7 +157,7 @@ const Invoiceview = () => {
                               <li>IBAN: <span>KFH37784028476740</span></li>
                               <li>SWIFT code: <span>BPT4E</span></li>
                             </ul>
-                          </div>
+                          </div> */}
                         </div>
                         <div className="table-responsive">
                           <table className="table table-striped table-hover">
@@ -97,46 +172,24 @@ const Invoiceview = () => {
                               </tr>
                             </thead>
                             <tbody>
-                              <tr>
+                            {invoiceInfo?.servicesDetails?.map((item, index) => (
+                              <tr key={item._id}>
+                                <td>{index + 1}</td>
+                                <td>{item.item}</td>
+                                <td className="d-none d-sm-table-cell">{item.description}</td>
+                                <td>{item.unitCost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoiceInfo?.currency}</td>
+                                <td>{item.quantity}</td>
+                                <td className="text-end">{item.amount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoiceInfo?.currency}</td>
+                              </tr>
+                            ))}
+                              {/* <tr>
                                 <td>1</td>
                                 <td>Android Application</td>
                                 <td className="d-none d-sm-table-cell">Lorem ipsum dolor sit amet, consectetur adipiscing elit</td>
                                 <td>$1000</td>
                                 <td>2</td>
                                 <td className="text-end">$2000</td>
-                              </tr>
-                              <tr>
-                                <td>2</td>
-                                <td>Ios Application</td>
-                                <td className="d-none d-sm-table-cell">Lorem ipsum dolor sit amet, consectetur adipiscing elit</td>
-                                <td>$1750</td>
-                                <td>1</td>
-                                <td className="text-end">$1750</td>
-                              </tr>
-                              <tr>
-                                <td>3</td>
-                                <td>Codeigniter Project</td>
-                                <td className="d-none d-sm-table-cell">Lorem ipsum dolor sit amet, consectetur adipiscing elit</td>
-                                <td>$90</td>
-                                <td>3</td>
-                                <td className="text-end">$270</td>
-                              </tr>
-                              <tr>
-                                <td>4</td>
-                                <td>Phonegap Project</td>
-                                <td className="d-none d-sm-table-cell">Lorem ipsum dolor sit amet, consectetur adipiscing elit</td>
-                                <td>$1200</td>
-                                <td>2</td>
-                                <td className="text-end">$2400</td>
-                              </tr>
-                              <tr>
-                                <td>5</td>
-                                <td>Website Optimization</td>
-                                <td className="d-none d-sm-table-cell">Lorem ipsum dolor sit amet, consectetur adipiscing elit</td>
-                                <td>$200</td>
-                                <td>2</td>
-                                <td className="text-end">$400</td>
-                              </tr>
+                              </tr> */}
                             </tbody>
                           </table>
                         </div>
@@ -151,15 +204,21 @@ const Invoiceview = () => {
                                     <tbody>
                                       <tr>
                                         <th>Subtotal:</th>
-                                        <td className="text-end">$7,000</td>
+                                        <td className="text-end">{calculateSubTotal()?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoiceInfo?.currency}</td>
                                       </tr>
                                       <tr>
-                                        <th>Tax: <span className="text-regular">(25%)</span></th>
-                                        <td className="text-end">$1,750</td>
+                                        <th>Tax: <span className="text-regular">({invoiceInfo?.invoiceTax}%)</span></th>
+                                        <td className="text-end">{calculateTaxAmount()?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoiceInfo?.currency}</td>
+                                      </tr>
+                                      <tr>
+                                        <th>Disscount: <span className="text-regular">({invoiceInfo?.discount}%)</span></th>
+                                        <td className="text-end">{calculateDiscountAmount()?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoiceInfo?.currency}</td>
                                       </tr>
                                       <tr>
                                         <th>Total:</th>
-                                        <td className="text-end text-primary"><h5>$8,750</h5></td>
+                                        <td className="text-end text-primary">
+                                          {invoiceInfo?.totalAmount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoiceInfo?.currency}
+                                        </td>
                                       </tr>
                                     </tbody>
                                   </table>
@@ -167,9 +226,9 @@ const Invoiceview = () => {
                               </div>
                             </div>
                           </div>
-                          <div className="invoice-info">
-                            <h5>Other information</h5>
-                            <p className="text-muted">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus sed dictum ligula, cursus blandit risus. Maecenas eget metus non tellus dignissim aliquam ut a ex. Maecenas sed vehicula dui, ac suscipit lacus. Sed finibus leo vitae lorem interdum, eu scelerisque tellus fermentum. Curabitur sit amet lacinia lorem. Nullam finibus pellentesque libero, eu finibus sapien interdum vel</p>
+                          <div className="invoice-info d-grid">
+                            <label style={{fontWeight: '500', fontSize: '14px', lineHeight: '35px'}}>Other Information</label>
+                            <label className="text-muted">{invoiceInfo?.otherInformation}</label>
                           </div>
                         </div>
                       </div>

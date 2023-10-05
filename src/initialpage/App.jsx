@@ -49,6 +49,9 @@ import ClientProfile from '../MainPage/Pages/Profile/clientprofile';
 import ClientLogin from './ClientLogin';
 import FocalProfile from '../MainPage/Pages/Profile/FocalProfile';
 import Invoices from '../MainPage/HR/Sales/invoice';
+import Invoicecreate from '../MainPage/HR/Sales/invoicecreate';
+import Invoiceview from '../MainPage/HR/Sales/invoiceview';
+import EditInvoice from '../MainPage/HR/Sales/EditInvoice';
 
 
 const App = () => {
@@ -132,6 +135,9 @@ const App = () => {
           <Route path={`client/client-profile`} element={<ClientProfile />} />
           <Route path={`client/focal-profile`} element={<FocalProfile />} />
           <Route path={`invoices`} element={<Invoices />} />
+          <Route path={`invoices/create-invoice`} element={<Invoicecreate />} />
+          <Route path={`invoices/edit-invoice`} element={<EditInvoice />} />
+          <Route path={`invoices/view-invoice`} element={<Invoiceview />} />
 
           {/* Settings  */}
           <Route path="/settings" element={<Settings />} />
