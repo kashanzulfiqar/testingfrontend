@@ -91,7 +91,15 @@ const calculateDiscountAmount = () => {
                     <div className="col-auto float-end ms-auto">
                       <div className="btn-group btn-group-sm">
                         {/* <button className="btn btn-white">CSV</button> */}
-                        <button className="btn btn-white"><i className="fa fa-download fa-lg m-r-5" /> Export to PDF</button>
+                        <button
+                          className="btn btn-white"
+                          onClick={() => {
+                            // console.log(invoiceInfo);
+                            // invoicePDF(invoiceInfo);
+                          }}
+                        >
+                          <i className="fa fa-download fa-lg m-r-5" /> Export to PDF
+                        </button>
                         {/* <button className="btn btn-white"><i className="fa fa-print fa-lg" /> Print</button> */}
                       </div>
                     </div>
@@ -103,12 +111,18 @@ const calculateDiscountAmount = () => {
                     <div className="card">
                       <div className="card-body">
                         <div className="row">
-                          <div className="col-sm-6 m-b-20 d-grid">
-                            <img src={invoiceInfo?.client?.logo} className="inv-logo" alt="" />
+                          {/* <div className="col-sm-6 m-b-20 d-grid"> */}
+                          <div className="col-sm-6 m-b-20">
+                            {/* <img src={invoiceInfo?.client?.logo} className="inv-logo" alt="" /> */}
                             {/* <img src={invoiceInfo?.clientId?.logo} className="inv-logo" alt="" /> */}
-                            <label style={{maxWidth: '200px'}}>
-                             {invoiceInfo?.companyId?.companyAddress}
-                            </label>
+                            <h5><strong>{invoiceInfo?.company?.companyName}</strong></h5>
+                            <ul className="list-unstyled">
+                              <li>
+                              <label style={{maxWidth: '200px'}}>
+                                {invoiceInfo?.company?.companyAddress}
+                              </label>
+                              </li>
+                            </ul>
                             {/* <ul className="list-unstyled">
                               <li>Dreamguy's Technologies</li>
                               <li>3864 Quiet Valley Lane,</li>
@@ -146,7 +160,7 @@ const calculateDiscountAmount = () => {
                             <ul className="list-unstyled">
                               <li>{invoiceInfo?.client?.country}</li>
                               <li>{invoiceInfo?.client?.clientPhoneNo}</li>
-                              <li><a href="javascript:void(0)">{invoiceInfo?.client?.clientEmail}</a></li>
+                              <li><a href="javascript:void(0)">{invoiceInfo?.client?.invoiceEmail}</a></li>
                               {/* <li>{invoiceInfo?.clientId?.country}</li>
                               <li>{invoiceInfo?.clientId?.clientPhoneNo}</li>
                               <li><a href="javascript:void(0)">{invoiceInfo?.clientId?.clientEmail}</a></li> */}
