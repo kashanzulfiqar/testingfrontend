@@ -387,8 +387,17 @@ const EditInvoice = () => {
                       className="custom-border"
                       rules={[
                         {
+                          whitespace: true,
                           required: true,
-                          message: "please enter invoice no",
+                          validator: (_, value) => {
+                            if(!value || value.trim() === ''){
+                              return Promise.reject("please enter invoice no");
+                            }
+                            else if (/\s{2,}/.test(value)) {
+                              return Promise.reject("please remove consecutive spaces");
+                            }
+                            return Promise.resolve();
+                          },
                         },
                       ]}
                     >
@@ -981,10 +990,19 @@ const EditInvoice = () => {
                           name='otherInformation'
                           className='custom-border'
                           rules={[
-                              {
-                                required: true,
-                                message: "please enter other information",
+                            {
+                              whitespace: true,
+                              required: true,
+                              validator: (_, value) => {
+                                if(!value || value.trim() === ''){
+                                  return Promise.reject("please enter other information");
+                                }
+                                else if (/\s{2,}/.test(value)) {
+                                  return Promise.reject("please remove consecutive spaces");
+                                }
+                                return Promise.resolve();
                               },
+                            },
                             ]}
                         >
                           <Input.TextArea className="form-control" />

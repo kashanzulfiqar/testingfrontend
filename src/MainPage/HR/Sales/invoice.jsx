@@ -3,7 +3,7 @@ import React, { useState,useEffect } from 'react';
 import { Helmet } from "react-helmet";
 import { Link, useNavigate } from 'react-router-dom';
 
-import { DatePicker, Empty, Select, Table, Form, Pagination, Button, message, Spin } from 'antd';
+import { DatePicker, Empty, Select, Table, Form, Pagination, Button, message, Spin, Input } from 'antd';
 import 'antd/dist/antd.css';
 import {itemRender,onShowSizeChange} from "../../paginationfunction"
 import "../../antdstyle.css"
@@ -45,7 +45,7 @@ const Invoices = () => {
 
   const getAllInvoices = (values, current_page, page_size) => {
     setTableLoader(true);
-    apiServices("GET", `invoices?${values === '' ? '' : values?.fromDate === '' ? '' : values?.fromDate ? `invoiceFrom=${values?.fromDate}` : filterValues?.fromDate ? `invoiceFrom=${filterValues?.fromDate}` : ''}${values === '' ? '' : values?.toDate === '' ? '' : values?.toDate ? `&invoiceTo=${values?.toDate}` : filterValues?.toDate ? `&invoiceTo=${filterValues?.toDate}` : ''}${values === '' ? '' : values?.status === '' ? '' : values?.status ? `&status=${values?.status}` : filterValues?.status ? `&status=${filterValues?.status}` : ''}&page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}`, null, user_state)
+    apiServices("GET", `invoices?${values === '' ? '' : values?.clientName === '' ? '' : values?.clientName ? `clientName=${values?.clientName}` : filterValues?.clientName ? `clientName=${filterValues?.clientName}` : ''}${values === '' ? '' : values?.fromDate === '' ? '' : values?.fromDate ? `&invoiceFrom=${values?.fromDate}` : filterValues?.fromDate ? `&invoiceFrom=${filterValues?.fromDate}` : ''}${values === '' ? '' : values?.toDate === '' ? '' : values?.toDate ? `&invoiceTo=${values?.toDate}` : filterValues?.toDate ? `&invoiceTo=${filterValues?.toDate}` : ''}${values === '' ? '' : values?.status === '' ? '' : values?.status ? `&status=${values?.status}` : filterValues?.status ? `&status=${filterValues?.status}` : ''}&page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}`, null, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
           setAllInvoices(res?.data?.Invoices?.docs);
@@ -69,11 +69,12 @@ const Invoices = () => {
   
   const onFilterFinish = (values) => {
     let formatted_data = {
+      clientName: values?.clientName ? values?.clientName : '',
       fromDate: values?.fromDate ? moment(values?.fromDate).format('YYYY-MM-DD') : '',
       toDate: values?.toDate ? moment(values?.toDate).format('YYYY-MM-DD') : '',
       status: values?.status ? values?.status : ''
     }
-    if(formatted_data?.fromDate || formatted_data?.status){
+    if(formatted_data?.clientName || formatted_data?.fromDate || formatted_data?.status){
       getAllInvoices(formatted_data, currentPage, pageSize);
       setFilterValues(formatted_data)
       // console.log(formatted_data);
@@ -153,7 +154,8 @@ const handleClose = () => {
         title: 'Client',
         dataIndex: 'clientId',
         render: (text, record) => (
-          <label>{record?.clientId?.clientName}</label>
+          // <label>{record?.clientId?.clientName}</label>
+          <label>{record?.client?.clientName}</label>
           ),
       },
 
@@ -323,7 +325,27 @@ const handleClose = () => {
           autoComplete='off'
         >
         <div className="row filter-row">
-          <div className="col-sm-6 col-md-3">  
+          <div className="col-sm-6 col-md-2">  
+            <div className=' form-groupfilterDateMonth' style={{ position: 'relative' }} id='area'>
+                <Form.Item
+                  name="clientName"
+                  className="custom-border"
+                  rules={[
+                    {
+                      validator: (_, value) => {
+                        if (/\s{2,}/.test(value)) {
+                          return Promise.reject("please remove consecutive spaces");
+                        }
+                        return Promise.resolve();
+                      },
+                    },
+                  ]}
+                >
+                  <Input className='form-control' style={{height:'50px'}} placeholder='Client Name' />
+                </Form.Item>
+            </div>
+          </div>
+          <div className="col-sm-6 col-md-2">  
             <div className=' form-groupfilterDateMonth' style={{ position: 'relative' }} id='area'>
                 <Form.Item
                   name="fromDate"
@@ -357,7 +379,7 @@ const handleClose = () => {
                 </Form.Item>
             </div>
           </div>
-          <div className="col-sm-6 col-md-3">
+          <div className="col-sm-6 col-md-2">
             <Form.Item
               name="toDate"
               className="custom-border"
@@ -385,7 +407,7 @@ const handleClose = () => {
               />
             </Form.Item>
           </div>
-          <div className="col-sm-6 col-md-3">  
+          <div className="col-sm-6 col-md-2">  
             <div style={{ position: 'relative' }} id='area1'>
               <Form.Item
                 name="status"
@@ -429,15 +451,18 @@ const handleClose = () => {
               </Form.Item>
             </div>
           </div>
-          <div className="col-sm-6 col-md-3" style={{display: 'flex', alignItems: 'flex-start', gap: '13px'}}>  
+          <div className="col-sm-6 col-md-2">  
             <button 
               href="javascript:void(0)"
               type="submit"
               className="btn btn-success btn-block w-50"
               // disabled={role === 'admin' ? false : permissions?.viewAllUsers ? false : true}
+              style={{minWidth: '100%', marginBottom: '24px'}}
             > 
               Search 
-            </button>  
+            </button>
+          </div>
+          <div className="col-sm-6 col-md-2">  
             <button
               href="javascript:void(0)" type="reset"
               onClick={() => {
@@ -447,7 +472,7 @@ const handleClose = () => {
                 setCurrentPage(1)
                 setFromInvoiceDate('')
               }}
-              className="btn btn-success btn-block w-50 resetButton" style={{backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}} 
+              className="btn btn-success btn-block w-50 resetButton" style={{minWidth: '100%', marginBottom: '24px', backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}} 
               // disabled={role === 'admin' ? false : permissions?.viewAllUsers ? false : true}
             >
               Reset 
@@ -482,7 +507,7 @@ const handleClose = () => {
                     <div>
                       <Pagination
                         style={{display: 'flex', float: 'right'}}
-                        total={paginationDetail?.total}
+                        total={paginationDetail?.totalDocs}
                         pageSize={pageSize}
                         defaultCurrent={1}
                         current={currentPage}
