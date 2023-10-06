@@ -39,16 +39,19 @@ const EditInvoice = () => {
   useEffect(() => {
     if(edit_invoice_data) {
         getAllClients();
-        getClientInfo(edit_invoice_data?.clientId?._id)
-        getAllProjects(edit_invoice_data?.clientId?._id)
+        getClientInfo(edit_invoice_data?.client?._id)
+        getAllProjects(edit_invoice_data?.client?._id)
+        // getClientInfo(edit_invoice_data?.clientId?._id)
+        // getAllProjects(edit_invoice_data?.clientId?._id)
         getAllCurrencies();
         getAllTaxSlabs();
         calculateTotal()
         console.log(edit_invoice_data);
         let data = {
             ...edit_invoice_data,
-            clientId: edit_invoice_data?.clientId?._id,
-            invoiceTaxSlabId: edit_invoice_data?.invoiceTaxSlabId.map(item => item._id),
+            clientId: edit_invoice_data?.client?._id,
+            // clientId: edit_invoice_data?.clientId?._id,
+            // invoiceTaxSlabId: edit_invoice_data?.invoiceTaxSlabId.map(item => item._id),
             invoiceDate: moment(edit_invoice_data?.invoiceDate, 'YYYY-MM-DD'),
             dueDate: moment(edit_invoice_data?.dueDate, 'YYYY-MM-DD'),
         }
