@@ -104,7 +104,8 @@ const calculateDiscountAmount = () => {
                       <div className="card-body">
                         <div className="row">
                           <div className="col-sm-6 m-b-20 d-grid">
-                            <img src={invoiceInfo?.clientId?.logo} className="inv-logo" alt="" />
+                            <img src={invoiceInfo?.client?.logo} className="inv-logo" alt="" />
+                            {/* <img src={invoiceInfo?.clientId?.logo} className="inv-logo" alt="" /> */}
                             <label style={{maxWidth: '200px'}}>
                              {invoiceInfo?.companyId?.companyAddress}
                             </label>
@@ -129,7 +130,8 @@ const calculateDiscountAmount = () => {
                           <div className="col-sm-6 col-lg-7 col-xl-8 m-b-20">
                             <label style={{fontWeight: '500', fontSize: '14px', lineHeight: '35px'}}>Invoice to:</label>
                             <ul className="list-unstyled">
-                              <li><h5><strong>{invoiceInfo?.clientId?.clientName}</strong></h5></li>
+                              <li><h5><strong>{invoiceInfo?.client?.clientName}</strong></h5></li>
+                              {/* <li><h5><strong>{invoiceInfo?.clientId?.clientName}</strong></h5></li> */}
                               {/* <li><span>Global Technologies</span></li>
                               <li>5754 Airport Rd</li>
                               <li>Coosada, AL, 36020</li>
@@ -138,12 +140,16 @@ const calculateDiscountAmount = () => {
                               <li><a href="#">barrycuda@example.com</a></li> */}
                             </ul>
                             <label style={{maxWidth: '200px'}}>
-                             {invoiceInfo?.clientId?.headOfficeAddress}
+                             {invoiceInfo?.client?.headOfficeAddress}
+                             {/* {invoiceInfo?.clientId?.headOfficeAddress} */}
                             </label>
                             <ul className="list-unstyled">
-                              <li>{invoiceInfo?.clientId?.country}</li>
+                              <li>{invoiceInfo?.client?.country}</li>
+                              <li>{invoiceInfo?.client?.clientPhoneNo}</li>
+                              <li><a href="javascript:void(0)">{invoiceInfo?.client?.clientEmail}</a></li>
+                              {/* <li>{invoiceInfo?.clientId?.country}</li>
                               <li>{invoiceInfo?.clientId?.clientPhoneNo}</li>
-                              <li><a href="javascript:void(0)">{invoiceInfo?.clientId?.clientEmail}</a></li>
+                              <li><a href="javascript:void(0)">{invoiceInfo?.clientId?.clientEmail}</a></li> */}
                             </ul>
                           </div>
                           {/* <div className="col-sm-6 col-lg-5 col-xl-4 m-b-20">
