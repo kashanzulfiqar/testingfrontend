@@ -18,6 +18,7 @@ const Invoicecreate = () => {
   const user_state = useSelector((state) => state?.user?.loginvalue);
   const role = user_state?.user?.role
 
+  const [wordCount, setWordCount] = useState('')
   const [taxValue, setTaxValue] = useState('')
   const [saveType, setSaveType] = useState('')
   const [subTotal, setSubTotal] = useState('0.00')
@@ -375,7 +376,7 @@ const Invoicecreate = () => {
                         },
                       ]}
                     >
-                      <Input className="form-control" />
+                      <Input className="form-control" maxLength={18} />
                     </Form.Item>
                   </div>
                 </div>
@@ -688,8 +689,8 @@ const Invoicecreate = () => {
                                               return Promise.reject('please enter item');
                                             } else if (/\s{2,}/.test(value)) {
                                               return Promise.reject('please remove consecutive spaces');
-                                            } else if (value.length < 3) {
-                                              return Promise.reject('length must be 3 characters long');
+                                            } else if (value.length < 2) {
+                                              return Promise.reject('length must be 2 characters long');
                                             }
                                             return Promise.resolve();
                                           },
@@ -958,7 +959,8 @@ const Invoicecreate = () => {
                       </div> */}
                       <div className="form-group">
                         <label>
-                          Other Information <span className="text-danger">*</span>
+                          Other Information <span className="text-danger">{'* '}</span>
+                          <span className="time" style={{fontSize: '12px', color: '#9e9e9e'}}>( {wordCount?.length} / 150 ) </span>
                         </label>
                         <Form.Item
                           name='otherInformation'
@@ -979,7 +981,7 @@ const Invoicecreate = () => {
                             },
                             ]}
                         >
-                          <Input.TextArea className="form-control" />
+                          <Input.TextArea className="form-control" maxLength={150} onChange={(e) => setWordCount(e.target.value)} />
                         </Form.Item>
                       </div>
                     </div>

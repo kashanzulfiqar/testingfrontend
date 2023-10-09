@@ -12,6 +12,7 @@ import { LoadingOutlined } from '@ant-design/icons';
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { apiServices } from '../../../Services/apiServices';
 import Modal from "@mui/material/Modal";
+import invoicePDF from './invoicePDF';
 
 const Invoices = () => {
   
@@ -160,7 +161,7 @@ const handleClose = () => {
       },
 
       {
-        title: 'Created Date',
+        title: 'Invoice Date',
         dataIndex: 'invoiceDate',
         render: (text, record) => (
           <label>{formatDate(text || '')}</label>
@@ -197,7 +198,7 @@ const handleClose = () => {
                         <div className="dropdown-menu dropdown-menu-right">
                           <Link className="dropdown-item" to="/invoices/edit-invoice" state={{edit_invoice_data: record}}><i className="fa fa-pencil m-r-5" /> Edit</Link>
                           <Link className="dropdown-item" to="/invoices/view-invoice" state={{invoice_data: record}}><i className="fa fa-eye m-r-5" /> View</Link>
-                          <a className="dropdown-item" href="#"><i className="fa fa-file-pdf-o m-r-5" /> Download</a>
+                          <a className="dropdown-item" href="javascript:void(0)" onClick={() => { invoicePDF(record); }}><i className="fa fa-file-pdf-o m-r-5" /> Download</a>
                           <a className="dropdown-item" href="javascript:void(0)" onClick={() => { setOpen({ isDelOpen: true, data: record }) }}><i className="fa fa-trash-o m-r-5" /> Delete</a>
                         </div>
             </div>

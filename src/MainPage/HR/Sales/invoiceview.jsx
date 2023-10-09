@@ -4,6 +4,7 @@ import { Helmet } from "react-helmet";
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {Applogo} from "../../../Entryfile/imagepath"
 import { useSelector } from 'react-redux';
+import invoicePDF from './invoicePDF';
 
 const Invoiceview = () => {
 
@@ -94,8 +95,7 @@ const calculateDiscountAmount = () => {
                         <button
                           className="btn btn-white"
                           onClick={() => {
-                            // console.log(invoiceInfo);
-                            // invoicePDF(invoiceInfo);
+                            invoicePDF(invoiceInfo);
                           }}
                         >
                           <i className="fa fa-download fa-lg m-r-5" /> Export to PDF
