@@ -21,6 +21,7 @@ const EditInvoice = () => {
   const user_state = useSelector((state) => state?.user?.loginvalue);
   const role = user_state?.user?.role
 
+  const [wordCount, setWordCount] = useState('')
   const [taxValue, setTaxValue] = useState('')
   const [saveType, setSaveType] = useState('')
   const [subTotal, setSubTotal] = useState('0.00')
@@ -46,7 +47,6 @@ const EditInvoice = () => {
         getAllCurrencies();
         getAllTaxSlabs();
         calculateTotal()
-        console.log(edit_invoice_data);
         let data = {
             ...edit_invoice_data,
             clientId: edit_invoice_data?.client?._id,
@@ -57,6 +57,7 @@ const EditInvoice = () => {
         }
         form.setFieldsValue(data);
         setCurrencyIs(edit_invoice_data?.currency)
+        setWordCount(edit_invoice_data?.otherInformation)
       }else{
         nav('/restricted', { state: { unAuthorize: true}})
       }
@@ -401,7 +402,7 @@ const EditInvoice = () => {
                         },
                       ]}
                     >
-                      <Input className="form-control" />
+                      <Input className="form-control" maxLength={18} />
                     </Form.Item>
                   </div>
                 </div>
@@ -714,8 +715,8 @@ const EditInvoice = () => {
                                               return Promise.reject('please enter item');
                                             } else if (/\s{2,}/.test(value)) {
                                               return Promise.reject('please remove consecutive spaces');
-                                            } else if (value.length < 3) {
-                                              return Promise.reject('length must be 3 characters long');
+                                            } else if (value.length < 2) {
+                                              return Promise.reject('length must be 2 characters long');
                                             }
                                             return Promise.resolve();
                                           },
@@ -984,7 +985,8 @@ const EditInvoice = () => {
                       </div> */}
                       <div className="form-group">
                         <label>
-                          Other Information <span className="text-danger">*</span>
+                          Other Information <span className="text-danger">{'* '}</span>
+                          <span className="time" style={{fontSize: '12px', color: '#9e9e9e'}}>( {wordCount?.length} / 150 ) </span>
                         </label>
                         <Form.Item
                           name='otherInformation'
@@ -1005,7 +1007,7 @@ const EditInvoice = () => {
                             },
                             ]}
                         >
-                          <Input.TextArea className="form-control" />
+                          <Input.TextArea className="form-control" maxLength={150} onChange={(e) => setWordCount(e.target.value)} />
                         </Form.Item>
                       </div>
                     </div>
