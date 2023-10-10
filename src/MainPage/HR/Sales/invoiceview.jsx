@@ -166,18 +166,18 @@ const calculateDiscountAmount = () => {
                               <li><a href="javascript:void(0)">{invoiceInfo?.clientId?.clientEmail}</a></li> */}
                             </ul>
                           </div>
-                          {/* <div className="col-sm-6 col-lg-5 col-xl-4 m-b-20">
+                          <div className="col-sm-6 col-lg-5 col-xl-4 m-b-20">
                             <span className="text-muted">Payment Details:</span>
                             <ul className="list-unstyled invoice-payment-details">
-                              <li><h5>Total Due: <span className="text-end">$8,750</span></h5></li>
-                              <li>Bank name: <span>Profit Bank Europe</span></li>
-                              <li>Country: <span>United Kingdom</span></li>
-                              <li>City: <span>London E1 8BF</span></li>
-                              <li>Address: <span>3 Goodman Street</span></li>
-                              <li>IBAN: <span>KFH37784028476740</span></li>
-                              <li>SWIFT code: <span>BPT4E</span></li>
+                              <li>Total Due: <span className="text-end">{invoiceInfo?.remainingAmount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoiceInfo?.currency}</span></li>
+                              <li>Bank name: <label>{invoiceInfo?.bankDetail?.bankName}</label></li>
+                              <li>Country: <label>{invoiceInfo?.bankDetail?.country}</label></li>
+                              <li>City: <label>{invoiceInfo?.bankDetail?.city}</label></li>
+                              <li>Address: <label>{invoiceInfo?.bankDetail?.address}</label></li>
+                              <li>IBAN: <label>{invoiceInfo?.bankDetail?.iban}</label></li>
+                              <li>SWIFT code: <label>{invoiceInfo?.bankDetail?.swiftCode}</label></li>
                             </ul>
-                          </div> */}
+                          </div>
                         </div>
                         <div className="table-responsive">
                           <table className="table table-striped table-hover">

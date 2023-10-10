@@ -642,7 +642,7 @@ const Payments = () => {
                               const t_amount = open?.data?.totalAmount;
                               if (parseFloat(value) > parseFloat(t_amount)) {
                                 return Promise.reject(
-                                  "amount must be less than or equal to total amount"
+                                  "amount must be less than or equal to invoice total amount"
                                 );
                               }
                               return Promise.resolve();

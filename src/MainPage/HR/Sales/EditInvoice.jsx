@@ -29,6 +29,7 @@ const EditInvoice = () => {
   const [allClients, setAllClients] = useState([])
   const [allProjects, setAllProjects] = useState([])
   const [allTaxSlabs, setAllTaxSlabs] = useState([])
+  const [allBanks, setAllBanks] = useState([])
   const [projectsLoader, setProjectsLoader] = useState(false)
   const [email, setEmail] = useState('')
   const [billingEmail, setBillingEmail] = useState('')
@@ -47,6 +48,7 @@ const EditInvoice = () => {
         getAllCurrencies();
         getAllTaxSlabs();
         calculateTotal()
+        getAllBanks();
         let data = {
             ...edit_invoice_data,
             clientId: edit_invoice_data?.client?._id,
@@ -63,7 +65,26 @@ const EditInvoice = () => {
     }
   }, [])
 
-
+  const getAllBanks = () => {
+    apiServices("GET", `bank-details`, null, user_state)
+    .then((res) => {
+      if (res.data.success === true) {
+        const banks = res?.data?.bankDetail;
+        const sortedData = banks.slice().sort((a, b) => a.bankName.localeCompare(b.bankName));
+        setAllBanks(sortedData);
+      }
+    }).catch((err) => {
+      message.error(
+        `${
+          err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
+            ? err?.response?.data?.validation?.body?.message
+            : "Get All Banks Error"
+        }`
+      );
+    });
+  }
 
   const getAllClients = () => {
     apiServices("GET", `client/all-client`, null, user_state)
@@ -234,6 +255,10 @@ const EditInvoice = () => {
     }else if (type === 'tax'){
       allTaxSlabs.forEach((tax)=>{
         dropdownValues.push(tax.title.toLowerCase())
+     })
+    }else if (type === 'bank'){
+      allBanks.forEach((bank)=>{
+        dropdownValues.push(bank.bankName.toLowerCase())
      })
     }
 
@@ -618,6 +643,53 @@ const EditInvoice = () => {
                       > */}
                         <Input className="form-control" value={billingEmail} disabled style={{color: '#212529'}} />
                       {/* </Form.Item> */}
+                  </div>
+                </div>
+                <div className="col-sm-6 col-md-3">
+                  <div className="form-group">
+                    <label>Bank <span className="text-danger">*</span></label>
+                    <div style={{ position: "relative" }} id="area">
+                      <Form.Item
+                        name="bankDetailId"
+                        className="custom-border"
+                        rules={[
+                          {
+                            required: true,
+                            message: "please select bank",
+                          },
+                        ]}
+                      >
+                        <Select
+                          showSearch
+                          onSearch={(val) => {
+                            searchHandler(val, 'bank')
+                          }}
+                          filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                          optionFilterProp="children"
+                          notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                          dropdownRender={(menu) => (
+                            <>
+                              {menu}
+                            </>
+                          )}
+
+                          className="custom-select custom-normal"
+                          getPopupContainer={() =>
+                            document.getElementById("area")
+                          }
+                          placeholder="Select bank"
+                        >
+                          {allBanks?.map((bank) => (
+                            <Select.Option
+                              key={bank._id}
+                              value={bank._id}
+                            >
+                              {bank.bankName}
+                            </Select.Option>
+                          ))}
+                        </Select>
+                      </Form.Item>
+                    </div>
                   </div>
                 </div>
                 <div className="col-sm-6 col-md-3">

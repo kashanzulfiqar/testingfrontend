@@ -84,74 +84,87 @@ function invoicePDF(invoice_data) {
   // doc.text(x, 20, invoice_data?.company?.companyName); // 8 diff
 
   doc.setFont(undefined, "bold");
-  doc.text(x + 130, 20, "INVOICE#: ");
+  doc.text(x + 120, 20, "INVOICE#: ");
   const widthofDate = doc.getTextWidth("INVOICE#:  ");
   doc.setFont(undefined, "normal");
-  doc.text(x + widthofDate + 130, 20, invoice_data?.invoiceNo);
+  doc.text(x + widthofDate + 120, 20, invoice_data?.invoiceNo);
 
   doc.setFont(undefined, "bold");
-  doc.text(x + 130, 26, "Invoice Date: ");
+  doc.text(x + 120, 26, "Invoice Date: ");
   const widthofInvoiceDate = doc.getTextWidth("Invoice Date:  ");
   doc.setFont(undefined, "normal");
-  doc.text(x + widthofInvoiceDate + 130, 26, getFormattedDate(invoice_data?.invoiceDate));
+  doc.text(x + widthofInvoiceDate + 120, 26, getFormattedDate(invoice_data?.invoiceDate));
   
   doc.setFont(undefined, "bold");
-  doc.text(x + 130, 32, "Due Date: ");
+  doc.text(x + 120, 32, "Due Date: ");
   const widthofDueDate = doc.getTextWidth("Due Date:  ");
   doc.setFont(undefined, "normal");
-  doc.text(x + widthofDueDate + 130, 32, getFormattedDate(invoice_data?.dueDate));
+  doc.text(x + widthofDueDate + 120, 32, getFormattedDate(invoice_data?.dueDate));
+
+  doc.setFont(undefined, "bold");
+  doc.setTextColor(142, 142, 142);
+  doc.text(x + 120, 44, "Payment Details:");
+  doc.setFont(undefined, "normal");
+  doc.setTextColor(50, 50, 50);
+
+  //------------------
 
   // doc.setFont(undefined, "bold");
-  // doc.setTextColor(142, 142, 142);
-  // doc.text(x + 130, 44, "Payment Details:");
+  doc.text(x + 120, 50, "Total Due: ");
+  const widthofTotalDue = doc.getTextWidth("Total Due:  ");
   // doc.setFont(undefined, "normal");
-  // doc.setTextColor(50, 50, 50);
+  doc.text(x + widthofTotalDue + 120, 50, `${invoice_data?.remainingAmount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${invoice_data?.currency}`);
 
-  // //------------------
+  //------------------
 
-  // // doc.setFont(undefined, "bold");
-  // doc.text(x + 130, 50, "Total Due: ");
-  // const widthofTotalDue = doc.getTextWidth("Total Due:  ");
-  // // doc.setFont(undefined, "normal");
-  // doc.text(x + widthofTotalDue + 130, 50, `${'3978'?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${invoice_data?.currency}`);
+  // doc.setFont(undefined, "bold");
+  doc.text(x + 120, 56, "Bank Name: ");
+  const widthofDueDate3 = doc.getTextWidth("Bank Name:  ");
+  // doc.setFont(undefined, "normal");
+  doc.text(x + widthofDueDate3 + 120, 56, invoice_data?.bankDetail?.bankName);
 
-  // //------------------
+  //------------------
 
-  // // doc.setFont(undefined, "bold");
-  // doc.text(x + 130, 56, "Bank Name: ");
-  // const widthofDueDate3 = doc.getTextWidth("Bank Name:  ");
-  // // doc.setFont(undefined, "normal");
-  // doc.text(x + widthofDueDate3 + 130, 56, 'Meezan Bank');
+  doc.text(x + 120, 62, "IBAN: ");
+  const widthofDueDate4 = doc.getTextWidth("IBAN:  ");
+  doc.text(x + widthofDueDate4 + 120, 62, invoice_data?.bankDetail?.iban);
 
-  // //------------------
+  //------------------
 
-  // doc.text(x + 130, 62, "IBAN: ");
-  // const widthofDueDate4 = doc.getTextWidth("IBAN:  ");
-  // doc.text(x + widthofDueDate4 + 130, 62, 'iban89898');
+  doc.text(x + 120, 68, "SWIFT code: ");
+  const widthofDueDate44 = doc.getTextWidth("SWIFT code:  ");
+  doc.text(x + widthofDueDate44 + 120, 68, invoice_data?.bankDetail?.swiftCode);
 
-  // //------------------
+  //------------------
 
-  // // doc.setFont(undefined, "bold");
-  // doc.text(x + 130, 68, "Country: ");
-  // const widthofDueDate5 = doc.getTextWidth("Country:  ");
-  // // doc.setFont(undefined, "normal");
-  // doc.text(x + widthofDueDate5 + 130, 68, 'Pakistan');
+  // doc.setFont(undefined, "bold");
+  doc.text(x + 120, 74, "Country: ");
+  const widthofDueDate5 = doc.getTextWidth("Country:  ");
+  // doc.setFont(undefined, "normal");
+  doc.text(x + widthofDueDate5 + 120, 74, invoice_data?.bankDetail?.country);
 
-  // //------------------
+  //------------------
 
-  // // doc.setFont(undefined, "bold");
-  // doc.text(x + 130, 74, "City: ");
-  // const widthofDueDate6 = doc.getTextWidth("City:  ");
-  // // doc.setFont(undefined, "normal");
-  // doc.text(x + widthofDueDate6 + 130, 74, 'Multan');
+  // doc.setFont(undefined, "bold");
+  doc.text(x + 120, 80, "City: ");
+  const widthofDueDate6 = doc.getTextWidth("City:  ");
+  // doc.setFont(undefined, "normal");
+  doc.text(x + widthofDueDate6 + 120, 80, invoice_data?.bankDetail?.city);
 
-  // //------------------
+  //------------------
 
-  // // doc.setFont(undefined, "bold");
+  // doc.setFont(undefined, "bold");
   // doc.text(x + 130, 80, "Address: ");
   // const widthofDueDate7 = doc.getTextWidth("Address:  ");
-  // // doc.setFont(undefined, "normal");
-  // doc.text(x + widthofDueDate7 + 130, 80, 'Address jkhjk kjkj');
+  // doc.setFont(undefined, "normal");
+  var leftMargin2 = 10;
+  var rightMargin2 = 128;
+  var contentWidth2 = doc.internal.pageSize.width - leftMargin2 - rightMargin2;
+  doc.text(invoice_data?.bankDetail?.address, x + 120, 86, { maxWidth: contentWidth2 });
+  // doc.text('Company address compan Company address compan Company address compan', x + widthofDueDate7 + 130, 80, { maxWidth: contentWidth2 });
+  // doc.text(x + widthofDueDate7 + 130, 80, 'Address jkhjk kjkj 9898 7766 767 jkkj kj khkj');
+  var currentYs1 = doc.getTextDimensions(invoice_data?.bankDetail?.address, { maxWidth: contentWidth2 }).h + 6 + 6;
+
 
 
 
@@ -198,7 +211,7 @@ doc.text(x, currentY2 + 11, invoice_data?.client?.invoiceEmail);
 // doc.setTextColor(50, 50, 50);
 
   doc.autoTable({
-    margin: { top: currentY2 + 11 + 10, right: 10, left: 10 },
+    margin: { top: currentY2 + currentYs1 + 11 + 10, right: 10, left: 10 },
     headStyles: headerStyles,
     head: [columnsForPDF.map((rec) => rec?.title)],
     body: dataForPDF,
