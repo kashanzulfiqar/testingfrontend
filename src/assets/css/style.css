@@ -12059,3 +12059,14 @@ styles by Qazi
   display: block;
 }
 
+.BankTable thead tr th:not(:nth-last-child(1)){
+  min-width: 175px !important;
+}
+.BankTable thead tr th:nth-child(1){
+  min-width: 40px !important;
+}
+/* .BankTable thead tr th:nth-child(3){
+  min-width: 175px !important;
+} */
+
+

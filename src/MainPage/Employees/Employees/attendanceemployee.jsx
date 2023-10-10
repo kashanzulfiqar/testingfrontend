@@ -34,6 +34,10 @@ const AttendanceEmployee = () => {
   const [isCheckedOut, setIsCheckedOut] = useState(false);
   const [isCheckedIn, setIsCheckedIn] = useState(false);
 
+  const [timer, setTimer] = useState(null);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  
+
   const [checkIn, setCheckIn] = useState({
     attendanceId: "",
     attendanceDate: "",
@@ -102,6 +106,18 @@ const AttendanceEmployee = () => {
 
           if (attendanceData?.length > 0) {
             const firstAttendanceRecord = attendanceData[0];
+
+            if (firstAttendanceRecord?.checkInTime){
+              const checkInTime = firstAttendanceRecord?.checkInTime;
+              const [hours, minutes] = checkInTime.split(':').map(Number);
+              const currentTime = new Date();
+              const startTime = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate(), hours, minutes);
+              const newElapsedTime = Date.now() - startTime.getTime();
+              
+              // Set the elapsed time and start the timer
+              setElapsedTime(newElapsedTime);
+              startTimer(startTime);
+            }
 
             //console.log("First Attendance Record:", firstAttendanceRecord);
             //console.log(firstAttendanceRecord.checkInTime);
@@ -192,6 +208,45 @@ const AttendanceEmployee = () => {
     }
   });
 
+  const startTimer = (ftime) => {
+    if (ftime){
+      //console.log("first time",ftime)
+      //const startTime = Date.now() - elapsedTime;
+      const newTimer = setInterval(() => {
+        const newElapsedTime = Date.now() - ftime.getTime();
+        setElapsedTime(newElapsedTime);
+      }, 1000); // Update every second (1000 milliseconds)
+      setTimer(newTimer);
+    }
+    else {
+      const startTime = Date.now() - elapsedTime;
+      const newTimer = setInterval(() => {
+        const newElapsedTime = Date.now() - startTime;
+        setElapsedTime(newElapsedTime);
+      }, 1000); // Update every second (1000 milliseconds)
+      setTimer(newTimer);
+    }
+    
+  };
+
+  const stopTimer = () => {
+    clearInterval(timer);
+    setTimer(null);
+  };
+
+  const formatElapsedTime = (milliseconds) => {
+    if (!milliseconds) return "--";
+  
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+  
+    return `${hours}h ${minutes}m ${seconds}s`;
+  };
+  
+  
+  
   const handleCheckIn = () => {
     setBdisbale(false);
     //let current = new Date(Date.now());
@@ -208,6 +263,7 @@ const AttendanceEmployee = () => {
       apiServices("POST", "attendance/", data, user_state)
         .then((res) => {
           if (res.data.success === true) {
+            startTimer();
             message.success("Check-In successful");
             setCheckIn({
               ...checkIn,
@@ -272,6 +328,7 @@ const AttendanceEmployee = () => {
       )
         .then((res) => {
           if (res.data.success === true) {
+            stopTimer();
             message.success("Attendance Marked");
             setCheckout({
               ...checkOut,
@@ -559,11 +616,11 @@ const AttendanceEmployee = () => {
                       </p>
                     </div>
 
-                    <div className="punch-info">
-                      <div className="punch-hours">
+                    {/* <div className="punch-info">
+                      <div className="punch-hours"> */}
                         {/* <span>{isCheckedOut ? formatHoursMinutes(checkOut.hoursWorked) : "--"}</span> */}
                         {/* <span>{isCheckedOut ? formatHoursMinutes(parseFloat(checkOut.hoursWorked) * 60) : "--"}</span> */}
-                        <label>
+                        {/* <label>
                           {isDisabled ? (
                             <Spin size="large" />
                           ) : isCheckedOut ? (
@@ -573,7 +630,22 @@ const AttendanceEmployee = () => {
                           )}
                         </label>
                       </div>
+                    </div> */}
+
+                    <div className="punch-info">
+                      <div className="punch-hours">
+                        <label>
+                          {isDisabled ? (
+                            <Spin size="large" />
+                          ) : isCheckedOut ? (
+                            formatHoursMinutes(checkOut.hoursWorked)
+                          ) : (
+                            formatElapsedTime(elapsedTime) // Create a function to format elapsed time
+                          )}
+                        </label>
+                      </div>
                     </div>
+
 
                     <div className="punch-btn-section">
                       <button
