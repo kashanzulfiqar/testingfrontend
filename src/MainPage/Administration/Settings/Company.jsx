@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
 import PhoneNoInput from "../../../Components/PhoneNoInput/index.jsx";
-import { Button, Form, Input, Spin, message } from "antd";
+import { Button, Form, Input, Spin, Upload, message } from "antd";
 import { useSelector } from "react-redux";
 import { apiServices } from "../../../Services/apiServices.js";
 import { LoadingOutlined } from '@ant-design/icons';
+import ImgCrop from "antd-img-crop";
+import { apiUploadToS3 } from "../../../Services/uploadImage.js";
+import { user_icon } from "../../../Entryfile/imagepath.jsx";
 
 const Company = () => {
   const user_state = useSelector((state) => state.user.loginvalue);
@@ -12,6 +15,8 @@ const Company = () => {
   const [allValues, setAllValues] = useState({});
   const [data, setData] = useState({});
   const [loader, setLoader] = useState(false)
+  const [imageLoader, setImageLoader] = useState(false)
+  const [image, setImage] = useState('')
 
   useEffect(() => {
     getCompanyData();
@@ -113,6 +118,54 @@ const Company = () => {
     return emailRegex.test(email);
   }
 
+  const allowedFileTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+  const beforeUpload = (file) => {
+    const isFileTypeAllowed = allowedFileTypes.includes(file.type);
+
+    if (!isFileTypeAllowed) {
+      message.error('You can only upload PNG, JPG, or JPEG files!');
+      return false;
+    }
+
+    const maxSizeInBytes = 5 * 1024 * 1024; // 5MB
+    const isSizeAllowed = file.size <= maxSizeInBytes;
+
+    if (!isSizeAllowed) {
+      message.error('File size is too large. Maximum allowed size is 5MB.');
+      return false;
+    }
+
+    return true;
+
+    // const isFileTypeAllowed = allowedFileTypes.includes(file.type);
+    // if (!isFileTypeAllowed) {
+    //   message.error('You can only upload PNG, JPG, or JPEG files!');
+    // }
+    // return isFileTypeAllowed;
+  };
+
+  const onImageUpload = (imagedata) => {
+    setImageLoader(true)
+    apiUploadToS3(imagedata).then((res) => {
+        console.log(res?.data?.result);
+        form.setFieldsValue({imageUrl: res?.data?.result})
+        setImage(res?.data?.result)
+        setImageLoader(false)
+      }
+      ).catch((err)=>{
+        setImageLoader(false)
+        message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : "upload image Error"
+            }!`
+          );
+      })
+  }
+
   return (
     <div>
       <div>
@@ -139,6 +192,40 @@ const Company = () => {
           }}
         >
           <div className="row">
+          <Form.Item
+                        name='imageUrl'
+                        className='custom-border'
+                    >   
+                        <div className="profile-img-wrap edit-img">
+                            {
+                                imageLoader ? <div className="uploadImgSpinContainer"> <Spin /> </div> :
+                                <>
+                                    <img className="inline-block" src={image || user_icon} alt="user" />
+                                    <div className="fileupload btn">
+                                    <ImgCrop
+                                        cropShape='round'
+                                        quality={1}
+                                        modalTitle='Crop Image'
+                                        modalOk='Apply'
+                                        modalClassName='CropImageModalStyle'
+                                        beforeCrop={beforeUpload}
+                                    >
+                                        <Upload
+                                            // action={(image) => onImageUpload(image)}
+                                            customRequest={({ file, onSuccess, onError }) => {
+                                              onImageUpload(file)
+                                            }}
+                                            fileList={null}
+                                            maxCount={1}
+                                        >
+                                            <div className="btn-text" style={{width: '80px', padding: '4px'}}>edit</div>
+                                        </Upload>
+                                    </ImgCrop>
+                                    </div>
+                                </>
+                            }
+                        </div>
+                    </Form.Item>
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
