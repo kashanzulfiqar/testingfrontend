@@ -200,7 +200,7 @@ const Company = () => {
                             {
                                 imageLoader ? <div className="uploadImgSpinContainer"> <Spin /> </div> :
                                 <>
-                                    <img className="inline-block" src={image || user_icon} alt="user" />
+                                    <img className="inline-block" src={image ? image : data?.imageUrl ? data?.imageUrl : user_icon} alt="user" />
                                     <div className="fileupload btn">
                                     <ImgCrop
                                         cropShape='round'
