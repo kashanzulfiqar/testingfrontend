@@ -38,8 +38,8 @@ const EditInvoice = () => {
   const [saveLoader, setSaveLoader] = useState(false);
 
   useEffect(() => {
-    if(edit_invoice_data) {
-        getAllClients();
+    if((role === 'admin' || permissions?.managePayrolls) && edit_invoice_data) {
+      getAllClients();
         getClientInfo(edit_invoice_data?.client?._id)
         getAllProjects(edit_invoice_data?.client?._id)
         // getClientInfo(edit_invoice_data?.clientId?._id)
@@ -58,9 +58,9 @@ const EditInvoice = () => {
         form.setFieldsValue(data);
         setCurrencyIs(edit_invoice_data?.currency)
         setWordCount(edit_invoice_data?.otherInformation)
-      }else{
-        nav('/restricted', { state: { unAuthorize: true}})
-      }
+    }else{
+      nav(`${role === 'client' ? '/client/client-profile' : role === 'focalperson' ? `/client/focal-profile` : role === 'admin' ? `/main/dashboard` : `/employee/dashboard`}`)
+    }
   }, [])
 
 
@@ -267,9 +267,9 @@ const EditInvoice = () => {
       const new_data = {
         ...d,
         _id: edit_invoice_data?._id,
-        sendInvoice: false,
+        sendInvoice: true,
         paidAmount: '0',
-        remainingAmount: '0'
+        remainingAmount: `${d?.totalAmount}`
       }
       setSendLoader(true)
       apiServices("PUT", "invoices", new_data, user_state)
@@ -299,7 +299,7 @@ const EditInvoice = () => {
         _id: edit_invoice_data?._id,
         sendInvoice: false,
         paidAmount: '0',
-        remainingAmount: '0'
+        remainingAmount: `${d?.totalAmount}`
       }
       setSaveLoader(true)
       apiServices("PUT", "invoices", new_data, user_state)
@@ -380,7 +380,7 @@ const EditInvoice = () => {
               }}
             >
               <div className="row">
-                <div className="col-sm-6 col-md-3">
+                {/* <div className="col-sm-6 col-md-3">
                   <div className="form-group">
                     <label>Invoice No <span className="text-danger">*</span></label>
                     <Form.Item
@@ -405,7 +405,7 @@ const EditInvoice = () => {
                       <Input className="form-control" maxLength={18} />
                     </Form.Item>
                   </div>
-                </div>
+                </div> */}
                 <div className="col-sm-6 col-md-3">
                   <div className="form-group">
                     <label>Client <span className="text-danger">*</span></label>
@@ -528,7 +528,7 @@ const EditInvoice = () => {
                           getPopupContainer={() =>
                             document.getElementById("area")
                           }
-                          placeholder="Select Currency"
+                          placeholder="Select currency"
                           onChange={(value) => setCurrencyIs(value)}
                         >
                           {

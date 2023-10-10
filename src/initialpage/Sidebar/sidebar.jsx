@@ -603,13 +603,15 @@ const Sidebar = (props) => {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
                   <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-files-o" /> <span> Sales</span> <span className="menu-arrow" /></a>
                   :
+                  (user_state?.role === 'admin' || permissions?.managePayrolls) ?
                   <a href="javascript:" className={isSideMenu == "sales" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "sales" ? "" : "sales")}><i className="la la-files-o" /> <span> Sales </span> <span className="menu-arrow" /></a>
+                  : null
                 }
                   {isSideMenu == "sales" ?
                     <ul>
                       <li><Link className={pathname.includes('estimates') ? "active" : ""} to="/app/sales/estimates">Estimates</Link></li>
                       <li><Link className={pathname.includes('invoices') ? "active" : ""} to="/invoices">Invoices</Link></li>
-                      <li><Link className={pathname.includes('payments') ? "active" : ""} to="/app/sales/payments">Payments</Link></li>
+                      <li><Link className={pathname.includes('payments') ? "active" : ""} to="/payments">Payments</Link></li>
                       <li><Link className={pathname.includes('expenses') ? "active" : ""} to="/app/sales/expenses">Expenses</Link></li>
                       <li><Link className={pathname.includes('provident-fund') ? "active" : ""} to="/app/sales/provident-fund">Provident Fund</Link></li>
                       <li><Link className={pathname.includes('taxes') ? "active" : ""} to="/app/sales/taxes">Taxes</Link></li>

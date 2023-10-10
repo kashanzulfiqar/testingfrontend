@@ -41,7 +41,11 @@ const Invoices = () => {
   });
 
   useEffect(() => {
-    getAllInvoices();
+    if(role === 'admin' || permissions?.managePayrolls) {
+      getAllInvoices();
+    }else{
+      nav(`${role === 'client' ? '/client/client-profile' : role === 'focalperson' ? `/client/focal-profile` : role === 'admin' ? `/main/dashboard` : `/employee/dashboard`}`)
+    }
   }, [])
 
   const getAllInvoices = (values, current_page, page_size) => {
@@ -194,7 +198,7 @@ const handleClose = () => {
         title: 'Action',
         render: (text, record) => (
             <div className="dropdown dropdown-action text-end">
-                <a href="#" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
+                <a href="javascript:void(0)" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
                         <div className="dropdown-menu dropdown-menu-right">
                           <Link className="dropdown-item" to="/invoices/edit-invoice" state={{edit_invoice_data: record}}><i className="fa fa-pencil m-r-5" /> Edit</Link>
                           <Link className="dropdown-item" to="/invoices/view-invoice" state={{invoice_data: record}}><i className="fa fa-eye m-r-5" /> View</Link>
