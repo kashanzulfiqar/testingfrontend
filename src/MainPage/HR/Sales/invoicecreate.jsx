@@ -15,6 +15,7 @@ const Invoicecreate = () => {
 
   const nav = useNavigate();
 
+  const permissions = useSelector((state) => state?.permissionsSlice?.data);
   const user_state = useSelector((state) => state?.user?.loginvalue);
   const role = user_state?.user?.role
 
@@ -35,9 +36,13 @@ const Invoicecreate = () => {
   const [saveLoader, setSaveLoader] = useState(false);
 
   useEffect(() => {
-    getAllClients();
-    getAllCurrencies();
-    getAllTaxSlabs();
+    if(role === 'admin' || permissions?.managePayrolls) {
+      getAllClients();
+      getAllCurrencies();
+      getAllTaxSlabs();
+    }else{
+      nav(`${role === 'client' ? '/client/client-profile' : role === 'focalperson' ? `/client/focal-profile` : role === 'admin' ? `/main/dashboard` : `/employee/dashboard`}`)
+    }
   }, [])
 
 
@@ -242,9 +247,9 @@ const Invoicecreate = () => {
     if (actionType === "send") {
       const new_data = {
         ...d,
-        sendInvoice: false,
+        sendInvoice: true,
         paidAmount: '0',
-        remainingAmount: '0'
+        remainingAmount: `${d?.totalAmount}`
       }
       setSendLoader(true)
       apiServices("POST", "invoices", new_data, user_state)
@@ -273,7 +278,7 @@ const Invoicecreate = () => {
         ...d,
         sendInvoice: false,
         paidAmount: '0',
-        remainingAmount: '0'
+        remainingAmount: `${d?.totalAmount}`
       }
       setSaveLoader(true)
       apiServices("POST", "invoices", new_data, user_state)
@@ -354,7 +359,7 @@ const Invoicecreate = () => {
               }}
             >
               <div className="row">
-                <div className="col-sm-6 col-md-3">
+                {/* <div className="col-sm-6 col-md-3">
                   <div className="form-group">
                     <label>Invoice No <span className="text-danger">*</span></label>
                     <Form.Item
@@ -379,7 +384,7 @@ const Invoicecreate = () => {
                       <Input className="form-control" maxLength={18} />
                     </Form.Item>
                   </div>
-                </div>
+                </div> */}
                 <div className="col-sm-6 col-md-3">
                   <div className="form-group">
                     <label>Client <span className="text-danger">*</span></label>
@@ -502,7 +507,7 @@ const Invoicecreate = () => {
                           getPopupContainer={() =>
                             document.getElementById("area")
                           }
-                          placeholder="Select Currency"
+                          placeholder="Select currency"
                           onChange={(value) => setCurrencyIs(value)}
                         >
                           {

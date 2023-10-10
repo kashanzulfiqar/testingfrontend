@@ -81,7 +81,7 @@ function invoicePDF(invoice_data) {
 
   doc.setFont(undefined, "bold");
 
-  doc.text(x, 20, invoice_data?.company?.companyName); // 8 diff
+  // doc.text(x, 20, invoice_data?.company?.companyName); // 8 diff
 
   doc.setFont(undefined, "bold");
   doc.text(x + 130, 20, "INVOICE#: ");
@@ -90,25 +90,92 @@ function invoicePDF(invoice_data) {
   doc.text(x + widthofDate + 130, 20, invoice_data?.invoiceNo);
 
   doc.setFont(undefined, "bold");
-  doc.text(x + 130, 28, "Invoice Date: ");
+  doc.text(x + 130, 26, "Invoice Date: ");
   const widthofInvoiceDate = doc.getTextWidth("Invoice Date:  ");
   doc.setFont(undefined, "normal");
-  doc.text(x + widthofInvoiceDate + 130, 28, getFormattedDate(invoice_data?.invoiceDate));
+  doc.text(x + widthofInvoiceDate + 130, 26, getFormattedDate(invoice_data?.invoiceDate));
   
   doc.setFont(undefined, "bold");
-  doc.text(x + 130, 36, "Due Date: ");
+  doc.text(x + 130, 32, "Due Date: ");
   const widthofDueDate = doc.getTextWidth("Due Date:  ");
   doc.setFont(undefined, "normal");
-  doc.text(x + widthofDueDate + 130, 36, getFormattedDate(invoice_data?.dueDate));
+  doc.text(x + widthofDueDate + 130, 32, getFormattedDate(invoice_data?.dueDate));
 
+  // doc.setFont(undefined, "bold");
+  // doc.setTextColor(142, 142, 142);
+  // doc.text(x + 130, 44, "Payment Details:");
+  // doc.setFont(undefined, "normal");
+  // doc.setTextColor(50, 50, 50);
+
+  // //------------------
+
+  // // doc.setFont(undefined, "bold");
+  // doc.text(x + 130, 50, "Total Due: ");
+  // const widthofTotalDue = doc.getTextWidth("Total Due:  ");
+  // // doc.setFont(undefined, "normal");
+  // doc.text(x + widthofTotalDue + 130, 50, `${'3978'?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${invoice_data?.currency}`);
+
+  // //------------------
+
+  // // doc.setFont(undefined, "bold");
+  // doc.text(x + 130, 56, "Bank Name: ");
+  // const widthofDueDate3 = doc.getTextWidth("Bank Name:  ");
+  // // doc.setFont(undefined, "normal");
+  // doc.text(x + widthofDueDate3 + 130, 56, 'Meezan Bank');
+
+  // //------------------
+
+  // doc.text(x + 130, 62, "IBAN: ");
+  // const widthofDueDate4 = doc.getTextWidth("IBAN:  ");
+  // doc.text(x + widthofDueDate4 + 130, 62, 'iban89898');
+
+  // //------------------
+
+  // // doc.setFont(undefined, "bold");
+  // doc.text(x + 130, 68, "Country: ");
+  // const widthofDueDate5 = doc.getTextWidth("Country:  ");
+  // // doc.setFont(undefined, "normal");
+  // doc.text(x + widthofDueDate5 + 130, 68, 'Pakistan');
+
+  // //------------------
+
+  // // doc.setFont(undefined, "bold");
+  // doc.text(x + 130, 74, "City: ");
+  // const widthofDueDate6 = doc.getTextWidth("City:  ");
+  // // doc.setFont(undefined, "normal");
+  // doc.text(x + widthofDueDate6 + 130, 74, 'Multan');
+
+  // //------------------
+
+  // // doc.setFont(undefined, "bold");
+  // doc.text(x + 130, 80, "Address: ");
+  // const widthofDueDate7 = doc.getTextWidth("Address:  ");
+  // // doc.setFont(undefined, "normal");
+  // doc.text(x + widthofDueDate7 + 130, 80, 'Address jkhjk kjkj');
+
+
+
+if(invoice_data?.imageUrl){
+  doc.addImage(invoice_data?.imageUrl, 'JPEG', x, 8, 20, 20);
+  doc.setFont(undefined, "bold");
+  doc.text(x, 36, invoice_data?.company?.companyName); // 8 diff
   doc.setFont(undefined, "normal");
+  var currentY = 42;
+  var leftMargin = 10;
+  var rightMargin = 130;
+  var contentWidth = doc.internal.pageSize.width - leftMargin - rightMargin;
+  doc.text(invoice_data?.company?.companyAddress, x, currentY, { maxWidth: contentWidth });
 
-//   doc.text(x, 32, invoice_data?.company?.companyAddress);
-var currentY = 26;
-var leftMargin = 10;
-var rightMargin = 130;
-var contentWidth = doc.internal.pageSize.width - leftMargin - rightMargin;
-doc.text(invoice_data?.company?.companyAddress, x, currentY, { maxWidth: contentWidth });
+}else{
+  doc.setFont(undefined, "bold");
+  doc.text(x, 20, invoice_data?.company?.companyName); // 8 diff
+  doc.setFont(undefined, "normal");
+  var currentY = 26;
+  var leftMargin = 10;
+  var rightMargin = 130;
+  var contentWidth = doc.internal.pageSize.width - leftMargin - rightMargin;
+  doc.text(invoice_data?.company?.companyAddress, x, currentY, { maxWidth: contentWidth });
+}
 
 
 currentY += doc.getTextDimensions(invoice_data?.company?.companyAddress, { maxWidth: contentWidth }).h + 6;
