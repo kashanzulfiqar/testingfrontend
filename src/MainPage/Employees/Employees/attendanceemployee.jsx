@@ -17,12 +17,14 @@ import { itemRender } from "../../paginationfunction";
 const AttendanceEmployee = () => {
   const [form] = Form.useForm();
   const [isLoading, setIsLoading] = useState(false);
-  const [Bdisbale, setBdisbale] = useState(true);
+  const [tableLoader, setTableLoader] = useState(false);
+  const [Bdisbale, setBdisbale] = useState(false);
+  const [disableAttend, setdisableAttend] = useState(false);
 
   const isDisabled = !Bdisbale;
 
   const user_state = useSelector((state) => state.user.loginvalue);
-  const role = user_state?.user?.role
+  const role = user_state?.user?.role;
 
   let AuthObj = JSON.parse(localStorage.getItem("AuthObj"));
   let userID = AuthObj?.userId;
@@ -32,18 +34,39 @@ const AttendanceEmployee = () => {
   const [isCheckedOut, setIsCheckedOut] = useState(false);
   const [isCheckedIn, setIsCheckedIn] = useState(false);
 
+  const [timer, setTimer] = useState(null);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  
+
   const [checkIn, setCheckIn] = useState({
     attendanceId: "",
     attendanceDate: "",
     checkInTime: "",
-    status:""
+    status: "",
   });
 
   const [checkOut, setCheckout] = useState({
     _id: "",
     checkOutTime: "",
     hoursWorked: "",
-    overTime: ""
+    overTime: "",
+  });
+
+  const [filters, setFilters] = useState({
+    date: "",
+    month: "",
+    year: "",
+  });
+  const [selectedFilters, setSelectedFilters] = useState({
+    date: "",
+    month: "",
+    year: "",
+  });
+  const [fetchattend, setFetchattend] = useState([]);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0,
   });
 
   const toggleMobileMenu = () => {
@@ -52,7 +75,6 @@ const AttendanceEmployee = () => {
 
   const [attendanceData, setAttendanceData] = useState(null);
 
-  
   const moment = require("moment");
   let nowdate = new Date(Date.now());
 
@@ -60,20 +82,47 @@ const AttendanceEmployee = () => {
   //const firstDate = "2023-08-10"
 
   useEffect(() => {
+    if( !disableAttend ){
+      setTableLoader(true);
+
+      fetchattendance();
+    }
+  }, [filters, pagination.current, pagination.pageSize, checkIn, checkOut]);
+
+
+  useEffect(() => {
+    setIsLoading(true);
     // Fetch user's attendance data
-    apiServices("GET", `attendance/?attendanceDate=${firstDate}`, null, user_state)
+    apiServices(
+      "GET",
+      `attendance/?attendanceDate=${firstDate}`,
+      null,
+      user_state
+    )
       .then((res) => {
         if (res.data.success === true) {
-          const attendanceData = res.data.Attendance.docs;
+          const attendanceData = res?.data?.Attendance?.docs;
           setAttendanceData(attendanceData);
-  
-          if (attendanceData.length > 0) {
+
+          if (attendanceData?.length > 0) {
             const firstAttendanceRecord = attendanceData[0];
-  
-            console.log("First Attendance Record:", firstAttendanceRecord);
-            console.log(firstAttendanceRecord.checkInTime)
-  
-            if (firstAttendanceRecord.checkOutTime) {
+
+            if (firstAttendanceRecord?.checkInTime){
+              const checkInTime = firstAttendanceRecord?.checkInTime;
+              const [hours, minutes] = checkInTime.split(':').map(Number);
+              const currentTime = new Date();
+              const startTime = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate(), hours, minutes);
+              const newElapsedTime = Date.now() - startTime.getTime();
+              
+              // Set the elapsed time and start the timer
+              setElapsedTime(newElapsedTime);
+              startTimer(startTime);
+            }
+
+            //console.log("First Attendance Record:", firstAttendanceRecord);
+            //console.log(firstAttendanceRecord.checkInTime);
+
+            if (firstAttendanceRecord?.checkOutTime) {
               //setIsCheckedOut(true);
               setCheckout({
                 ...checkOut,
@@ -83,52 +132,69 @@ const AttendanceEmployee = () => {
               });
               setIsCheckedOut(true);
               //setStatusText("Not yet checked in");
-              setStatusText(`${moment(firstAttendanceRecord.attendanceDate).format("ddd, Do MMM YYYY")} 
-                                      ${moment(firstAttendanceRecord.checkOutTime, "HH:mm").format("h:mm A")}`);
-            }
-            else if (firstAttendanceRecord.status === "Absent") {
+              setStatusText(`${moment(
+                firstAttendanceRecord.attendanceDate
+              ).format("ddd, Do MMM YYYY")} 
+                                      ${moment(
+                                        firstAttendanceRecord.checkOutTime,
+                                        "HH:mm"
+                                      ).format("h:mm A")}`);
+            } else if (firstAttendanceRecord.status === "Absent" || firstAttendanceRecord.status === "On-Leave" ) {
               setIsCheckedIn(false);
               setIsCheckedOut(false);
               setStatusText("Not yet checked in");
-            } 
-            else {
+            } else {
               setIsCheckedIn(true);
               setIsCheckedOut(false);
-              setStatusText(`${moment(firstAttendanceRecord.attendanceDate).format("ddd, Do MMM YYYY")} 
-                                      ${moment(firstAttendanceRecord.checkInTime, "HH:mm").format("h:mm A")}`);
+              setStatusText(`${moment(
+                firstAttendanceRecord.attendanceDate
+              ).format("ddd, Do MMM YYYY")} 
+                                      ${moment(
+                                        firstAttendanceRecord.checkInTime,
+                                        "HH:mm"
+                                      ).format("h:mm A")}`);
             }
             setCheckIn({
               ...checkIn,
               attendanceId: firstAttendanceRecord._id,
               checkInTime: firstAttendanceRecord.checkInTime,
               attendanceDate: firstAttendanceRecord.attendanceDate,
-              status:firstAttendanceRecord.status
+              status: firstAttendanceRecord.status,
             });
           }
         }
       })
       .catch((error) => {
         console.log("error", error);
+      }).finally(()=>{
+        setIsLoading(false);
+        setBdisbale(true);
+        setdisableAttend(true);
       });
   }, []);
-  
 
   useEffect(() => {
-
     if (isCheckedIn) {
-      setStatusText(`${moment(checkIn.attendanceDate).format("ddd, Do MMM YYYY")} 
-                                      ${moment(checkIn.checkInTime, "HH:mm").format("h:mm A")}`);
-
+      setStatusText(`${moment(checkIn.attendanceDate).format(
+        "ddd, Do MMM YYYY"
+      )} 
+                                      ${moment(
+                                        checkIn.checkInTime,
+                                        "HH:mm"
+                                      ).format("h:mm A")}`);
     } else if (isCheckedOut) {
-      if(checkOut.checkOutTime){
-      setStatusText(`${moment(checkOut.attendanceDate).format("ddd, Do MMM YYYY")}
-                                      ${moment(checkOut.checkOutTime, "HH:mm").format("h:mm A")}`);
-      }
-      else{
+      if (checkOut.checkOutTime) {
+        setStatusText(`${moment(checkOut.attendanceDate).format(
+          "ddd, Do MMM YYYY"
+        )}
+                                      ${moment(
+                                        checkOut.checkOutTime,
+                                        "HH:mm"
+                                      ).format("h:mm A")}`);
+      } else {
         setStatusText("Loading..");
       }
-    } 
-    else {
+    } else {
       setStatusText("Not yet checked in");
     }
   }, [isCheckedIn, isCheckedOut, checkIn, checkOut]);
@@ -142,6 +208,45 @@ const AttendanceEmployee = () => {
     }
   });
 
+  const startTimer = (ftime) => {
+    if (ftime){
+      //console.log("first time",ftime)
+      //const startTime = Date.now() - elapsedTime;
+      const newTimer = setInterval(() => {
+        const newElapsedTime = Date.now() - ftime.getTime();
+        setElapsedTime(newElapsedTime);
+      }, 1000); // Update every second (1000 milliseconds)
+      setTimer(newTimer);
+    }
+    else {
+      const startTime = Date.now() - elapsedTime;
+      const newTimer = setInterval(() => {
+        const newElapsedTime = Date.now() - startTime;
+        setElapsedTime(newElapsedTime);
+      }, 1000); // Update every second (1000 milliseconds)
+      setTimer(newTimer);
+    }
+    
+  };
+
+  const stopTimer = () => {
+    clearInterval(timer);
+    setTimer(null);
+  };
+
+  const formatElapsedTime = (milliseconds) => {
+    if (!milliseconds) return "--";
+  
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+  
+    return `${hours}h ${minutes}m ${seconds}s`;
+  };
+  
+  
+  
   const handleCheckIn = () => {
     setBdisbale(false);
     //let current = new Date(Date.now());
@@ -155,64 +260,58 @@ const AttendanceEmployee = () => {
         attendanceDate: attendanceDate,
         checkInTime: checkInTime,
       };
-      apiServices("POST", "attendance/", data, user_state).then((res) => {
-        if (res.data.success === true) {
-        
-          setCheckIn({
-            ...checkIn,
-            attendanceId: res?.data?.Attendance?._id,
-            checkInTime: res?.data?.Attendance?.checkInTime,
-            attendanceDate: res?.data?.Attendance?.attendanceDate,
-            status:res?.data?.Attendance?.status
+      apiServices("POST", "attendance/", data, user_state)
+        .then((res) => {
+          if (res.data.success === true) {
+            startTimer();
+            message.success("Check-In successful");
+            setCheckIn({
+              ...checkIn,
+              attendanceId: res?.data?.Attendance?._id,
+              checkInTime: res?.data?.Attendance?.checkInTime,
+              attendanceDate: res?.data?.Attendance?.attendanceDate,
+              status: res?.data?.Attendance?.status,
+            });
+          }
+          setPagination({
+            ...pagination,
+            current: 1,
           });
-        }
-        setPagination({
-          ...pagination,
-          current: 1,
+          setSelectedFilters({
+            date: "",
+            month: "",
+            year: "",
+          });
+          setFilters({
+            date: "",
+            month: "",
+            year: "",
+          });
+          setdisableAttend(false);
+          setIsCheckedIn(true);
+          setIsCheckedOut(false);
+        })
+        .catch((err) => {
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : "Error Marking Attendance"
+            }`
+          );
+        })
+        .finally(() => {
+          setBdisbale(true);
         });
-        setSelectedFilters({
-          date: "",
-          month: "",
-          year: "",
-        });
-        setFilters({
-          date: "",
-          month: "",
-          year: "",
-        });
-        setIsCheckedIn(true);
-        setIsCheckedOut(false);
-      }).catch(err=>{
-        
-        message.error(
-
-          `${
-
-            err?.response?.data?.msg
-
-              ? err?.response?.data?.msg
-
-              : err?.response?.data?.validation?.body?.message
-
-              ? err?.response?.data?.validation?.body?.message
-
-              : "Get Check In Time Error"
-
-          }`
-
-        );
-      }).finally(()=>{
-        setBdisbale(true);
-      });
     } catch (error) {
       console.log("error", error);
     }
-
-    
   };
 
   const handleCheckOut = () => {
-
+    setBdisbale(false);
     const moment = require("moment");
     let datebn = new Date(Date.now());
     let checkOutTime = moment(datebn).format("HH:mm");
@@ -226,100 +325,71 @@ const AttendanceEmployee = () => {
           checkOutTime: checkOutTime,
         },
         user_state
-      ).then((res) => {
-        if (res.data.success === true){
-        
-        setCheckout({
-          ...checkOut,
-          checkOutTime: checkOutTime,
-          hoursWorked: res?.data?.Attendance?.hoursWorked,
-          overTime: res?.data?.Attendance?.overTime,
+      )
+        .then((res) => {
+          if (res.data.success === true) {
+            stopTimer();
+            message.success("Attendance Marked");
+            setCheckout({
+              ...checkOut,
+              checkOutTime: checkOutTime,
+              hoursWorked: res?.data?.Attendance?.hoursWorked,
+              overTime: res?.data?.Attendance?.overTime,
+            });
+            setdisableAttend(false);
+          }
+        })
+        .catch((err) => {
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : "Error Marking Attendance"
+            }`
+          );
+        })
+        .finally(() => {
+          setPagination({
+            ...pagination,
+            current: 1,
+          });
+          setSelectedFilters({
+            date: "",
+            month: "",
+            year: "",
+          });
+          setFilters({
+            date: "",
+            month: "",
+            year: "",
+          });
+          setIsCheckedIn(false);
+          setIsCheckedOut(true);
+          setBdisbale(true);
         });
-      }
-
-      }).catch(err=>{
-        
-        message.error(
-
-          `${
-
-            err?.response?.data?.msg
-
-              ? err?.response?.data?.msg
-
-              : err?.response?.data?.validation?.body?.message
-
-              ? err?.response?.data?.validation?.body?.message
-
-              : "Get Check Out time error"
-
-          }`
-
-        );
-      }).finally(()=>{
-        setPagination({
-          ...pagination,
-          current: 1,
-        });
-        setSelectedFilters({
-          date: "",
-          month: "",
-          year: "",
-        });
-        setFilters({
-          date: "",
-          month: "",
-          year: "",
-        });
-        setIsCheckedIn(false);
-        setIsCheckedOut(true);
-      });
-      
     } catch (error) {
       console.log("error", error);
     }
-
-    
   };
 
-
-  const currentDate = moment(nowdate).format("DD MMM YYYY")
-  
+  const currentDate = moment(nowdate).format("DD MMM YYYY");
 
   const formatHoursMinutes = (timeString) => {
     if (!timeString) return "None";
-  
+
     const totalMinutes = parseFloat(timeString);
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
-  
+
     return `${hours}h ${minutes}m`;
   };
 
-  const [filters, setFilters] = useState({
-    date: "",
-    month: "",
-    year: "",
-  });
-  const [selectedFilters, setSelectedFilters] = useState({
-    date: "",
-    month: "",
-    year: "",
-  });
-  const[fetchattend,setFetchattend]=useState([]);
-  const [pagination, setPagination] = useState({
-    current: 1,
-    pageSize: 10, 
-    total: 0, 
-  });
   
-  useEffect(() => {
-    setIsLoading(true);
-    
-    fetchattendance();
-  }, [filters, pagination.current, pagination.pageSize,checkIn, checkOut]);
 
-  const fetchattendance=()=>{
+
+  const fetchattendance = () => {
     const params = {
       ...filters,
       page: pagination.current,
@@ -330,7 +400,7 @@ const AttendanceEmployee = () => {
     if (filters.date) apiUrl += `&attendanceDate=${filters.date}`;
     if (filters.month) apiUrl += `&attendanceMonth=${filters.month}`;
     if (filters.year) apiUrl += `&attendanceYear=${filters.year}`;
-  
+
     apiServices("GET", apiUrl, null, user_state)
       .then((res) => {
         if (res.data.success === true) {
@@ -338,20 +408,21 @@ const AttendanceEmployee = () => {
           setFetchattend(attendanceData);
           setPagination({
             ...pagination,
-            total: res.data.Attendance.total ,
+            total: res.data.Attendance.total,
           });
         }
       })
       .catch((error) => {
         console.log("error", error);
-      }).finally(()=>{
+      })
+      .finally(() => {
         setIsLoading(false);
+        setTableLoader(false);
       });
-  }
-  
+  };
+
   const [monthPickerValue, setMonthPickerValue] = useState(null);
 
-  
   const handleFilterChange = (value, filterType) => {
     setSelectedFilters({
       ...selectedFilters,
@@ -360,7 +431,8 @@ const AttendanceEmployee = () => {
   };
 
   const handleSearch = () => {
-    console.log(filters)
+    setdisableAttend(false);
+    //console.log(filters);
     setFilters(selectedFilters);
     setPagination({
       ...pagination,
@@ -370,6 +442,7 @@ const AttendanceEmployee = () => {
   };
 
   const handleReset = () => {
+    setdisableAttend(false);
     setSelectedFilters({
       date: "",
       month: "",
@@ -382,12 +455,11 @@ const AttendanceEmployee = () => {
     });
     setPagination({
       ...pagination,
-      current: 1, 
+      current: 1,
     });
 
     form.resetFields();
     //fetchattendance();
-
   };
 
   const customEmptyText = (
@@ -433,7 +505,8 @@ const AttendanceEmployee = () => {
       title: "#",
       dataIndex: "index",
       key: "index",
-      render: (text, record, index) => (pagination.current - 1) * pagination.pageSize + index + 1,
+      render: (text, record, index) =>
+        (pagination.current - 1) * pagination.pageSize + index + 1,
     },
     {
       title: "Date",
@@ -444,20 +517,33 @@ const AttendanceEmployee = () => {
       title: "Check In",
       dataIndex: "checkInTime",
       key: "checkInTime",
-      render: (checkInTime) => checkInTime ? moment(checkInTime, "HH:mm").format("h:mm A") : "--",
+      render: (checkInTime) =>
+        checkInTime ? moment(checkInTime, "HH:mm").format("h:mm A") : "--",
     },
     {
       title: "Check Out",
       dataIndex: "checkOutTime",
       key: "checkOutTime",
-      render: (checkOutTime) => checkOutTime? moment(checkOutTime, "HH:mm").format("h:mm A"):"--",
+      render: (checkOutTime) =>
+        checkOutTime ? moment(checkOutTime, "HH:mm").format("h:mm A") : "--",
     },
     {
       title: "Status",
       dataIndex: "status",
       key: "status",
       render: (status) => (
-        <span style={{ color: (status === "Late" || status === "Absent") ? "red" : status === "Present" ? "green" : "black" }}>
+        <span
+          style={{
+            color:
+              status === "Late" || status === "Absent"
+                ? "red"
+                : status === "Present" 
+                ? "green"
+                : status === "On-Leave" 
+                ? "orange"
+                : "black",
+          }}
+        >
           {status}
         </span>
       ),
@@ -472,13 +558,9 @@ const AttendanceEmployee = () => {
       title: "Overtime",
       dataIndex: "overTime",
       key: "overTime",
-      render: (overTime) => overTime?
-        formatHoursMinutes(overTime):"None",
+      render: (overTime) => (overTime ? formatHoursMinutes(overTime) : "None"),
     },
   ];
-  
-  
-  
 
   return (
     <>
@@ -496,7 +578,15 @@ const AttendanceEmployee = () => {
                   <h3 className="page-title">Attendance</h3>
                   <ul className="breadcrumb">
                     <li className="breadcrumb-item">
-                      <Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>Dashboard</Link>
+                      <Link
+                        to={
+                          role === "admin"
+                            ? "/main/dashboard"
+                            : "/employee/dashboard"
+                        }
+                      >
+                        Dashboard
+                      </Link>
                     </li>
                     <li className="breadcrumb-item active">Attendance</li>
                   </ul>
@@ -508,47 +598,83 @@ const AttendanceEmployee = () => {
               <div className="col-md-4">
                 <div className="card punch-status">
                   <div className="card-body">
-                  <h5 className="card-title d-flex gap-1">
+                    <h5 className="card-title d-flex gap-1">
                       Timesheet
-                      <h5 className="text-muted" style={{fontSize: '20px'}}>{currentDate}</h5>
+                      <h5 className="text-muted" style={{ fontSize: "20px" }}>
+                        {currentDate}
                       </h5>
+                    </h5>
 
                     <div className="punch-det">
-                      <h6><label>{isCheckedOut ? "Checked out at" : "Check in at"}</label></h6>
-                      <p><label>{statusText}</label></p>
+                      <h6>
+                        <label>
+                          {isCheckedOut ? "Checked out at" : "Check in at"}
+                        </label>
+                      </h6>
+                      <p>
+                        <label>{statusText}</label>
+                      </p>
                     </div>
-                  
+
+                    {/* <div className="punch-info">
+                      <div className="punch-hours"> */}
+                        {/* <span>{isCheckedOut ? formatHoursMinutes(checkOut.hoursWorked) : "--"}</span> */}
+                        {/* <span>{isCheckedOut ? formatHoursMinutes(parseFloat(checkOut.hoursWorked) * 60) : "--"}</span> */}
+                        {/* <label>
+                          {isDisabled ? (
+                            <Spin size="large" />
+                          ) : isCheckedOut ? (
+                            formatHoursMinutes(checkOut.hoursWorked)
+                          ) : (
+                            "--"
+                          )}
+                        </label>
+                      </div>
+                    </div> */}
 
                     <div className="punch-info">
                       <div className="punch-hours">
-                        {/* <span>{isCheckedOut ? formatHoursMinutes(checkOut.hoursWorked) : "--"}</span> */}
-                        {/* <span>{isCheckedOut ? formatHoursMinutes(parseFloat(checkOut.hoursWorked) * 60) : "--"}</span> */}
-                        <label>{isLoading ? (
-                        <Spin size="large" />
-                      ) : (isCheckedOut ? formatHoursMinutes(checkOut.hoursWorked) : "--")
-                      }
-                          </label>
+                        <label>
+                          {isDisabled ? (
+                            <Spin size="large" />
+                          ) : isCheckedOut ? (
+                            formatHoursMinutes(checkOut.hoursWorked)
+                          ) : (
+                            formatElapsedTime(elapsedTime) // Create a function to format elapsed time
+                          )}
+                        </label>
                       </div>
                     </div>
-                    
 
 
                     <div className="punch-btn-section">
                       <button
                         type="button"
-                        
                         className={`btn btn-${
-                          isCheckedOut || checkIn.status==="Absent" ? "success" : isCheckedIn ? "danger" : "primary"
+                          isCheckedOut || checkIn.status === "Absent"
+                            ? "success"
+                            : isCheckedIn
+                            ? "danger"
+                            : "primary"
                         } punch-btn`}
-
                         onClick={isCheckedIn ? handleCheckOut : handleCheckIn}
-                        disabled={isCheckedOut  || checkIn.status === "Absent" || isDisabled }
-                      >{isLoading || isDisabled ? (
-                        <Spin size="medium" />
-                      ) : (
-                        isCheckedOut || checkIn.status === "Absent" ? "Marked" : isCheckedIn ? "Check Out" : "Check In"
-                      )}
-                        </button>
+                        disabled={
+                          isCheckedOut ||
+                          checkIn.status === "Absent" ||
+                          checkIn.status === "On-Leave" ||
+                          isDisabled
+                        }
+                      >
+                        {isDisabled ? (
+                          <Spin size="medium" />
+                        ) : isCheckedOut || checkIn.status === "Absent" ? (
+                          "Marked"
+                        ) : isCheckedIn ? (
+                          "Check Out"
+                        ) : (
+                          "Check In"
+                        )}
+                      </button>
                     </div>
 
                     <div className="statistics">
@@ -560,27 +686,48 @@ const AttendanceEmployee = () => {
                         }}
                       >
                         <div className="col-md-6 col-6 text-center">
-                            <div className="stats-box">
-                              <p>Status</p>
-                              
-                              <h6><label
-                              style={{
-                                color:
-                                  (isCheckedIn || isCheckedOut) ||
-                                  (checkIn.status === "Late" || checkIn.status === "Absent" ? "red" : checkIn.status === "Present" ? "green" : "black"),
-                              }}>{isCheckedIn || isCheckedOut || checkIn.status === "Absent" ? checkIn.status : "--"}</label></h6>
-                            </div>
+                          <div className="stats-box">
+                            <p>Status</p>
+
+                            <h6>
+                              <label
+                                style={{
+                                  color:
+                                    checkIn.status === "Late"
+                                    ? "red"
+                                    : checkIn.status === "Absent"
+                                    ? "red"
+                                    : checkIn.status === "Present"
+                                    ? "green"
+                                    : checkIn.status === "On-Leave"
+                                    ? "orange"
+                                    : "black"
+                                }}
+                              >
+                                {isCheckedIn ||
+                                isCheckedOut ||
+                                checkIn.status === "Absent" ||
+                                checkIn.status === "On-Leave"
+                                  ? checkIn.status
+                                  : "--"}
+                              </label>
+                            </h6>
                           </div>
-
-                      <div className="col-md-6 col-6 text-center">
-                        <div className="stats-box">
-                          <p>Overtime</p>
-                          
-                          <h6><label>{isCheckedOut ? formatHoursMinutes(checkOut.overTime) : "--"}</label></h6>
-                          
                         </div>
-                      </div>
 
+                        <div className="col-md-6 col-6 text-center">
+                          <div className="stats-box">
+                            <p>Overtime</p>
+
+                            <h6>
+                              <label>
+                                {isCheckedOut
+                                  ? formatHoursMinutes(checkOut.overTime)
+                                  : "--"}
+                              </label>
+                            </h6>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -590,7 +737,7 @@ const AttendanceEmployee = () => {
                 <div className="card att-statistics">
                   <div className="card-body">
                     <h5 className="card-title">Statistics</h5>
-                    <div className="stats-list" style={{height:'347px'}}>
+                    <div className="stats-list" style={{ height: "347px" }}>
                       <div className="stats-info">
                         <p>
                           Today{" "}
@@ -611,7 +758,7 @@ const AttendanceEmployee = () => {
                       </div>
                       <div className="stats-info">
                         <p>
-                          <label>This Week{" "}</label>
+                          <label>This Week </label>
                           <strong>
                             28 <small>/ 40 hrs</small>
                           </strong>
@@ -629,7 +776,7 @@ const AttendanceEmployee = () => {
                       </div>
                       <div className="stats-info">
                         <p>
-                        <label>This Month{" "}</label>
+                          <label>This Month </label>
                           <strong>
                             90 <small>/ 160 hrs</small>
                           </strong>
@@ -686,184 +833,194 @@ const AttendanceEmployee = () => {
                 <div className="card recent-activity">
                   <div className="card-body">
                     <h5 className="card-title">Today Activity</h5>
-                    <div className="stats-list" style={{height:'347px'}}>
-                    <ul className="res-activity-list">
-                      <li>
-                        <p className="mb-0"><label>Check In at</label></p>
-                        <p className="res-activity-time">
-                          <i className="fa fa-clock-o" /><label>
-                          10.00 AM.
-                          </label>
-                        </p>
-                      </li>
-                      <li>
-                      <p className="mb-0"><label>Check Out at</label></p>
-                        <p className="res-activity-time">
-                          <i className="fa fa-clock-o" /><label>11.00 AM.</label>
-                          
-                        </p>
-                      </li>
-                      <li>
-                      <p className="mb-0"><label>Check In at</label></p>
-                        <p className="res-activity-time">
-                          <i className="fa fa-clock-o" />
-                          <label >11.15 AM.</label>
-                        </p>
-                      </li>
-                      <li>
-                      <p className="mb-0"><label>Check Out at</label></p>
-                        <p className="res-activity-time">
-                          <i className="fa fa-clock-o" />
-                          <label >1.30 PM.</label>
-                        </p>
-                      </li>
-                      <li>
-                      <p className="mb-0"><label>Check In at</label></p>
-                        <p className="res-activity-time">
-                          <i className="fa fa-clock-o" />
-                          <label htmlFor="">2.00 PM.</label>
-                        </p>
-                      </li>
-                      <li>
-                      <p className="mb-0"><label>Check Out at</label></p>
-                        <p className="res-activity-time">
-                          <i className="fa fa-clock-o" />
-                          <label >7.30 PM.</label>
-                        </p>
-                      </li>
-                    </ul>
+                    <div className="stats-list" style={{ height: "347px" }}>
+                      <ul className="res-activity-list">
+                        <li>
+                          <p className="mb-0">
+                            <label>Check In at</label>
+                          </p>
+                          <p className="res-activity-time">
+                            <i className="fa fa-clock-o" />
+                            <label>10.00 AM.</label>
+                          </p>
+                        </li>
+                        <li>
+                          <p className="mb-0">
+                            <label>Check Out at</label>
+                          </p>
+                          <p className="res-activity-time">
+                            <i className="fa fa-clock-o" />
+                            <label>11.00 AM.</label>
+                          </p>
+                        </li>
+                        <li>
+                          <p className="mb-0">
+                            <label>Check In at</label>
+                          </p>
+                          <p className="res-activity-time">
+                            <i className="fa fa-clock-o" />
+                            <label>11.15 AM.</label>
+                          </p>
+                        </li>
+                        <li>
+                          <p className="mb-0">
+                            <label>Check Out at</label>
+                          </p>
+                          <p className="res-activity-time">
+                            <i className="fa fa-clock-o" />
+                            <label>1.30 PM.</label>
+                          </p>
+                        </li>
+                        <li>
+                          <p className="mb-0">
+                            <label>Check In at</label>
+                          </p>
+                          <p className="res-activity-time">
+                            <i className="fa fa-clock-o" />
+                            <label htmlFor="">2.00 PM.</label>
+                          </p>
+                        </li>
+                        <li>
+                          <p className="mb-0">
+                            <label>Check Out at</label>
+                          </p>
+                          <p className="res-activity-time">
+                            <i className="fa fa-clock-o" />
+                            <label>7.30 PM.</label>
+                          </p>
+                        </li>
+                      </ul>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-        
+
             {/* Search Filter */}
-            
-    <Form form={form}>
-      <div className="row filter-row">
-      <div className="col-sm-6 col-md-3">  
-      <div className="form-group">
-          <Form.Item 
-          name="date"
-          >
-            <DatePicker
-              className="form-control"
-              onChange={(date, dateString) => handleFilterChange(dateString, "date")}
-              allowClear={false}
-            />
-          </Form.Item>
-        </div>
-        </div>
-        <div className="col-sm-6 col-md-3">
-      <div className="form-group">
-        <Form.Item
-          name="month"
-          className="custom-border"
-        >
-          <DatePicker.MonthPicker
-            className="form-control"
-            style={{
-              width: '100%',
-            }}
-            placeholder="Select Month"
-            allowClear={false}
-            format="MMMM"
-            size="large"
-            onChange={(date, dateString) => handleFilterChange(dateString, "month")
-            
-            
-          }
-          />
-        </Form.Item>
-      </div>
-    </div>
-        <div className="col-sm-6 col-md-3">
-      <div className="form-group">
-        <Form.Item
-          name="year"
-          className="custom-border"
-        >
-          <DatePicker.YearPicker
-            className="form-control"
-            style={{
-              width: '100%',
-            }}
-            placeholder="Select Year"
-            allowClear={false}
-            size="large"
-            onChange={(date, dateString) => handleFilterChange(dateString, "year")}
-          />
-        </Form.Item>
-      </div>
-    </div>
 
-        <div className="col-sm-6 col-md-3" style={{display: 'flex', alignItems: 'flex-start', gap: '13px'}}>
-          <Button
-            type="primary"
-            htmlType="submit"
-            onClick={handleSearch}
-            className="btn-success btn-block w-100"
-          >
-            Search
-          </Button>
-          <Button
-            htmlType="submit"
-            type="primary"
-            onClick={handleReset}
-            className="btn-secondary btn-block w-100"
-        style={{ backgroundColor: "#616161", borderColor: "#616161" }}
-          >
-            Reset
-          </Button>
-        </div>
-      </div>
-    </Form>
-    {/* /Search Filter */}
+            <Form form={form}>
+              <div className="row filter-row">
+                <div className="col-sm-6 col-md-3">
+                  <div className="form-group">
+                    <Form.Item name="date">
+                      <DatePicker
+                        className="form-control"
+                        onChange={(date, dateString) =>
+                          handleFilterChange(dateString, "date")
+                        }
+                        allowClear={false}
+                      />
+                    </Form.Item>
+                  </div>
+                </div>
+                <div className="col-sm-6 col-md-3">
+                  <div className="form-group">
+                    <Form.Item name="month" className="custom-border">
+                      <DatePicker.MonthPicker
+                        className="form-control"
+                        style={{
+                          width: "100%",
+                        }}
+                        placeholder="Select Month"
+                        allowClear={false}
+                        format="MMMM"
+                        size="large"
+                        onChange={(date, dateString) =>
+                          handleFilterChange(dateString, "month")
+                        }
+                      />
+                    </Form.Item>
+                  </div>
+                </div>
+                <div className="col-sm-6 col-md-3">
+                  <div className="form-group">
+                    <Form.Item name="year" className="custom-border">
+                      <DatePicker.YearPicker
+                        className="form-control"
+                        style={{
+                          width: "100%",
+                        }}
+                        placeholder="Select Year"
+                        allowClear={false}
+                        size="large"
+                        onChange={(date, dateString) =>
+                          handleFilterChange(dateString, "year")
+                        }
+                      />
+                    </Form.Item>
+                  </div>
+                </div>
 
-    <div className="row">
-      <div className="col-lg-12">
-      
-        <div className="table-responsive">
-          
-        <Table
-  dataSource={fetchattend}
-  loading={isLoading}
-  columns={columns}
-  locale={{
-    emptyText: isLoading ? (
-      <Spin size="large" tip="Loading..." />
-    ) : (
-      customEmptyText
-    ),
-  }}
-  
-  bordered
-  pagination={{
-    current: pagination.current,
-    pageSize: pagination.pageSize,
-    total: pagination.total,
-    showTotal: (total, range) =>
-      `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-    pageSizeOptions: ["10", "20", "30", "40"], // Options to change page size
-    showSizeChanger: true, // Show the page size changer
-    onChange: (page, pageSize) => {
-      setPagination({
-        ...pagination,
-        current: page,
-        pageSize: pageSize,
-      });
-    },
-    itemRender:itemRender
-  }}
+                <div
+                  className="col-sm-6 col-md-3"
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: "13px",
+                  }}
+                >
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    onClick={handleSearch}
+                    className="btn-success btn-block w-100"
+                  >
+                    Search
+                  </Button>
+                  <Button
+                    htmlType="submit"
+                    type="primary"
+                    onClick={handleReset}
+                    className="btn-secondary btn-block w-100"
+                    style={{
+                      backgroundColor: "#616161",
+                      borderColor: "#616161",
+                    }}
+                  >
+                    Reset
+                  </Button>
+                </div>
+              </div>
+            </Form>
+            {/* /Search Filter */}
 
-/>
-
-        </div>
-        
-      </div>
-    </div>
-            
+            <div className="row">
+              <div className="col-lg-12">
+                <div className="table-responsive">
+                  <Table
+                    dataSource={fetchattend}
+                    loading={tableLoader}
+                    columns={columns}
+                    locale={{
+                      emptyText: isLoading ? (
+                        <Spin size="large" tip="Loading..." />
+                      ) : (
+                        customEmptyText
+                      ),
+                    }}
+                    bordered
+                    pagination={{
+                      current: pagination.current,
+                      pageSize: pagination.pageSize,
+                      total: pagination.total,
+                      showTotal: (total, range) =>
+                        `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+                      pageSizeOptions: ["10", "20", "30", "40"], // Options to change page size
+                      showSizeChanger: true, // Show the page size changer
+                      onChange: (page, pageSize) => {
+                        setdisableAttend(false);
+                        setPagination({
+                          ...pagination,
+                          current: page,
+                          pageSize: pageSize,
+                        });
+                      },
+                      itemRender: itemRender,
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
           </div>
           {/* /Page Content */}
         </div>

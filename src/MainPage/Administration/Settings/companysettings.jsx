@@ -15,6 +15,10 @@ import Designation from "./Designation";
 import Shifts from "./Shifts";
 import TaxSlabs from "./TaxSlabs";
 import { useSelector } from "react-redux";
+import InvoiceTaxes from "./InvoiceTaxes";
+import InvoiceTags from "./InvoiceTags";
+import InvoiceCounter from "./InvoiceCounter";
+import BankDetails from "./BankDetails";
 
 const Settings = ({test}) => {
 
@@ -133,6 +137,30 @@ useEffect(() => {
                         Tax Slabs
                       </a>
                    </li>
+                   <li className={showComponent === 'Bank Details' ? 'active' : ''}>
+                      <a href="javascript:void(0)" onClick={() => {setShowComponent('Bank Details') }}>
+                        <i className="fa fa-fw fa-bank" style={{marginRight: '8px'}}></i>
+                        Bank Details
+                      </a>
+                   </li>
+                   <li className={showComponent === 'Invoice Tax Slabs' ? 'active' : ''}>
+                      <a href="javascript:void(0)" onClick={() => {setShowComponent('Invoice Tax Slabs') }}>
+                        <i className="fa fa-fw fa-money" style={{marginRight: '8px'}}></i>
+                        Invoice Tax Slabs
+                      </a>
+                   </li>
+                   <li className={showComponent === 'Invoice Tags' ? 'active' : ''}>
+                      <a href="javascript:void(0)" onClick={() => {setShowComponent('Invoice Tags') }}>
+                        <i className="fa fa-fw fa-tags" style={{marginRight: '8px'}}></i>
+                        Inovie Tags
+                      </a>
+                   </li>
+                   <li className={showComponent === 'Invoice Counter' ? 'active' : ''}>
+                      <a href="javascript:void(0)" onClick={() => {setShowComponent('Invoice Counter') }}>
+                        <i className="fa fa-fw fa-money" style={{marginRight: '8px'}}></i>
+                        Invoice Counter
+                      </a>
+                   </li>
                    {/* <li className="">
                      <a href="#">Administrator
                        <span className="role-action">
@@ -180,7 +208,11 @@ useEffect(() => {
                 showComponent === 'Departments' ? <Departments /> :
                 showComponent === 'Designations' ? <Designation /> :
                 showComponent === 'Shifts' ? <Shifts /> : 
-                <TaxSlabs />
+                showComponent === 'Tax Slabs' ? <TaxSlabs /> :
+                showComponent === 'Invoice Tax Slabs' ? <InvoiceTaxes /> :
+                showComponent === 'Invoice Tags' ? <InvoiceTags /> : 
+                showComponent === 'Invoice Counter' ? <InvoiceCounter /> : 
+                <BankDetails />
               }
              </div>
            </div>

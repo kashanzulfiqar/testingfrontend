@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Helmet } from "react-helmet";
 import { useSelector } from 'react-redux';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { DatePicker, Form, Input, InputNumber, Select, message, Empty, Spin } from 'antd';
 import { apiServices } from '../../../Services/apiServices';
 import { getAllISOCodes } from 'iso-country-currency';
@@ -10,12 +10,14 @@ import moment from 'moment';
 import { LoadingOutlined } from "@ant-design/icons";
 
 
-const Invoicecreate = () => {
+const EditInvoice = () => {
   const [form] = Form.useForm();
 
+  const location = useLocation();
+  const edit_invoice_data = location?.state?.edit_invoice_data;
   const nav = useNavigate();
-
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
+
   const user_state = useSelector((state) => state?.user?.loginvalue);
   const role = user_state?.user?.role
 
@@ -37,16 +39,31 @@ const Invoicecreate = () => {
   const [saveLoader, setSaveLoader] = useState(false);
 
   useEffect(() => {
-    if(role === 'admin' || permissions?.managePayrolls) {
+    if((role === 'admin' || permissions?.managePayrolls) && edit_invoice_data) {
       getAllClients();
-      getAllCurrencies();
-      getAllTaxSlabs();
-      getAllBanks();
+        getClientInfo(edit_invoice_data?.client?._id)
+        getAllProjects(edit_invoice_data?.client?._id)
+        // getClientInfo(edit_invoice_data?.clientId?._id)
+        // getAllProjects(edit_invoice_data?.clientId?._id)
+        getAllCurrencies();
+        getAllTaxSlabs();
+        calculateTotal()
+        getAllBanks();
+        let data = {
+            ...edit_invoice_data,
+            clientId: edit_invoice_data?.client?._id,
+            // clientId: edit_invoice_data?.clientId?._id,
+            // invoiceTaxSlabId: edit_invoice_data?.invoiceTaxSlabId.map(item => item._id),
+            invoiceDate: moment(edit_invoice_data?.invoiceDate, 'YYYY-MM-DD'),
+            dueDate: moment(edit_invoice_data?.dueDate, 'YYYY-MM-DD'),
+        }
+        form.setFieldsValue(data);
+        setCurrencyIs(edit_invoice_data?.currency)
+        setWordCount(edit_invoice_data?.otherInformation)
     }else{
       nav(`${role === 'client' ? '/client/client-profile' : role === 'focalperson' ? `/client/focal-profile` : role === 'admin' ? `/main/dashboard` : `/employee/dashboard`}`)
     }
   }, [])
-
 
   const getAllBanks = () => {
     apiServices("GET", `bank-details`, null, user_state)
@@ -68,7 +85,6 @@ const Invoicecreate = () => {
       );
     });
   }
-
 
   const getAllClients = () => {
     apiServices("GET", `client/all-client`, null, user_state)
@@ -275,21 +291,22 @@ const Invoicecreate = () => {
     if (actionType === "send") {
       const new_data = {
         ...d,
+        _id: edit_invoice_data?._id,
         sendInvoice: true,
         paidAmount: '0',
         remainingAmount: `${d?.totalAmount}`
       }
       setSendLoader(true)
-      apiServices("POST", "invoices", new_data, user_state)
+      apiServices("PUT", "invoices", new_data, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
           nav('/invoices')
-          message.success("Invoice Created Successfully!");
+          message.success("Invoice Updated Successfully!");
           setSendLoader(false)
         }
       })
       .catch((err) => {
-        setSendLoader(false)
+        setSaveLoader(false)
         // console.log(err);
         message.error(
           `${
@@ -297,23 +314,24 @@ const Invoicecreate = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Add & Send Invoice Error"
+              : "Update Invoice Error"
           }`
         );
       });
     } else if (actionType === "save") {
       const new_data = {
         ...d,
+        _id: edit_invoice_data?._id,
         sendInvoice: false,
         paidAmount: '0',
         remainingAmount: `${d?.totalAmount}`
       }
       setSaveLoader(true)
-      apiServices("POST", "invoices", new_data, user_state)
+      apiServices("PUT", "invoices", new_data, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
           nav('/invoices')
-          message.success("Invoice Created Successfully!");
+          message.success("Invoice Updated Successfully!");
           setSaveLoader(false)
         }
       })
@@ -326,14 +344,14 @@ const Invoicecreate = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Add Invoice Error"
+              : "Update Invoice Error"
           }`
         );
       });
     }
 
   }
-
+  
   const antIcon = (
     <LoadingOutlined
       style={{
@@ -382,8 +400,8 @@ const Invoicecreate = () => {
               initialValues={{
                 // itemsTable: allData?.education?.length > 0 ? allData?.education : [{}],
                 servicesDetails: [{}],
-                invoiceTax: '0',
-                discount: '0',
+                // invoiceTax: '0',
+                // discount: '0',
               }}
             >
               <div className="row">
@@ -1070,16 +1088,16 @@ const Invoicecreate = () => {
               </div>
               <div className="submit-section" style={{display: 'flex', justifyContent: 'center', gap: '10px'}}>
                 <button className="btn btn-primary submit-btn" onClick={() => setSaveType('send') } disabled={sendLoader}>
-                  {
-                    sendLoader ? <Spin size="small" indicator={antIcon} />
-                      : 'Save & Send'
-                  }
+                    {
+                        sendLoader ? <Spin size="small" indicator={antIcon} />
+                        : 'Save & Send'
+                    }
                 </button>
                 <button className="btn btn-primary submit-btn" onClick={() => setSaveType('save') } disabled={saveLoader}>
-                  {
-                    saveLoader ? <Spin size="small" indicator={antIcon} />
-                      : 'Save'
-                  }
+                    {
+                        saveLoader ? <Spin size="small" indicator={antIcon} />
+                        : 'Save'
+                    }
                 </button>
               </div>
             </Form>
@@ -1092,4 +1110,4 @@ const Invoicecreate = () => {
    
 }
 
-export default Invoicecreate;
+export default EditInvoice

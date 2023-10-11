@@ -80,8 +80,12 @@ const AttendanceAdmin = () => {
   });
 
   useEffect(() => {
-    setIsStatLoading(true);
-    fetchEmployees();
+    if (role === "admin" || permissions?.attendanceManagement) {
+      setIsStatLoading(true);
+      fetchEmployees();
+    } else {
+      navigate("/restricted", { state: { unAuthorize: true } });
+    }
   }, []);
 
   const fetchEmployees = () => {

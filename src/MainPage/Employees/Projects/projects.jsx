@@ -256,16 +256,16 @@ const Projects = () => {
     fetchEmployees();
   }, []);
 
-
   useEffect(() => {
-    // if(role === 'admin' || permissions?.projectManagement ) { 
+    //if(role === 'admin' || permissions?.projectManagement ) { 
       setIsLoading(true);
       GetListProjects();
-      // getAllDomain();
+    //   getAllDomain();
     // }else{
-    //   nav('/restricted', { state: { unAuthorize: true}})
+    //    nav('/restricted', { state: { unAuthorize: true}})
     // }
-  }, [filters, pagination.current, pagination.pageSize]);
+  }, [filters, pagination.current, pagination.pageSize]); 
+
 
   const getAllDomain = () => {
     apiServices("GET", "team/view-team", null, user_state)
@@ -2203,11 +2203,11 @@ const filteredColumns = columns.filter(column => {
                                     // If either date is not selected, do not perform validation
                                     return Promise.resolve();
                                   }
-                                  if (value.isSameOrAfter(startDate)) {
+                                  if (!value.isSame(startDate, 'day') && value.isSameOrAfter(startDate)) {
                                     // End date is valid
                                     return Promise.resolve();
                                   }
-                                  return Promise.reject('End date must not be before the start date');
+                                  return Promise.reject('End date must not be before or same as start date');
                                 },
                               }),
                             ]}

@@ -904,11 +904,11 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                                 // If either date is not selected, do not perform validation
                                 return Promise.resolve();
                               }
-                              if (value.isSameOrAfter(startDate)) {
+                              if (!value.isSame(startDate, 'day') && value.isSameOrAfter(startDate)) {
                                 // End date is valid
                                 return Promise.resolve();
                               }
-                              return Promise.reject('End date must not be before the start date');
+                              return Promise.reject('End date must not be before or same as start date');
                             },
                           }),
                         ]}
