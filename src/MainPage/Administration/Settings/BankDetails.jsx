@@ -433,6 +433,7 @@ const BankDetails = () => {
               <Table
                 loading={tableLoader}
                 className={data?.length > 0 ? "table-striped" : ""}
+                style={{ marginBottom:"100px" }}
                 locale={{
                   emptyText: tableLoader ? null : customEmptyText,
                 }}
@@ -535,6 +536,7 @@ const BankDetails = () => {
                             message: "Please enter the Bank name",
                           },
                         ]}
+                        validateTrigger="onSubmit"
                         className="custom-border"
                       >
                         <Input className="form-control" />
@@ -550,13 +552,27 @@ const BankDetails = () => {
                         name="country"
                         rules={[
                           {
+                            whitespace: true,
                             required: true,
-                            message: "Please enter the country name",
+                            validator: (_, value) => {
+                              if(value.trim() === ''){
+                                return Promise.reject("please enter country name");
+                              }
+                              else if (/\s{2,}/.test(value)) {
+                                return Promise.reject("please remove consecutive spaces");
+                              }
+                              return Promise.resolve();
+                            },
+                          },
+                          {
+                            min: 3,
+                            message: "country length must be at least 3 characters long",
                           },
                         ]}
+                        validateTrigger="onSubmit"
                         className="custom-border"
                       >
-                        <Input className="form-control" />
+                        <Input className="form-control" maxLength={50} />
                       </Form.Item>
                     </div>
                   </div>
@@ -569,13 +585,27 @@ const BankDetails = () => {
                         name="city"
                         rules={[
                           {
+                            whitespace: true,
                             required: true,
-                            message: "Please enter the city name",
+                            validator: (_, value) => {
+                              if(value.trim() === ''){
+                                return Promise.reject("please enter city name");
+                              }
+                              else if (/\s{2,}/.test(value)) {
+                                return Promise.reject("please remove consecutive spaces");
+                              }
+                              return Promise.resolve();
+                            },
+                          },
+                          {
+                            min: 3,
+                            message: "state length must be at least 3 characters long",
                           },
                         ]}
+                        validateTrigger="onSubmit"
                         className="custom-border"
                       >
-                        <Input className="form-control" />
+                        <Input className="form-control" maxLength={50} />
                       </Form.Item>
                     </div>
                   </div>
@@ -588,13 +618,27 @@ const BankDetails = () => {
                         name="address"
                         rules={[
                           {
+                            whitespace: true,
                             required: true,
-                            message: "Please enter the address",
+                            validator: (_, value) => {
+                              if(value.trim() === ''){
+                                return Promise.reject("please enter the address");
+                              }
+                              else if (/\s{2,}/.test(value)) {
+                                return Promise.reject("please remove consecutive spaces");
+                              }
+                              return Promise.resolve();
+                            },
+                          },
+                          {
+                            min: 5,
+                            message: "address length must be at least 5 characters long",
                           },
                         ]}
+                        validateTrigger="onSubmit"
                         className="custom-border"
                       >
-                        <Input className="form-control" />
+                        <Input className="form-control" maxLength={150} />
                       </Form.Item>
                     </div>
                   </div>
@@ -611,9 +655,8 @@ const BankDetails = () => {
                             message: "Please enter the IBAN number",
                           },
                           {
-                            pattern: /^[A-Za-z0-9]{24,34}$/,
-                            message:
-                              "IBAN should be between 24 to 34 alphanumeric characters",
+                            min: 24,
+                            message: "IBAN must be atleast 24 characters long",
                           },
                           {
                             validator: (_, value) => {
@@ -626,9 +669,10 @@ const BankDetails = () => {
                             },
                           },
                         ]}
+                        validateTrigger="onSubmit"
                         className="custom-border"
                       >
-                        <Input className="form-control" />
+                        <Input className="form-control" maxLength={34} />
                       </Form.Item>
                     </div>
                   </div>
@@ -645,11 +689,9 @@ const BankDetails = () => {
                             message: "Please enter the bank SWIFT Code",
                           },
                           {
-                            pattern: /^[A-Za-z0-9]{8,11}$/,
-                            message:
-                              "SWIFT code should be between 8 to 11 alphanumeric characters",
+                            min: 8,
+                            message: "SWIFT code must be between 8-11 alphanumeric characters",
                           },
-
                           {
                             validator: (_, value) => {
                               if (/\s/.test(value)) {
@@ -657,13 +699,17 @@ const BankDetails = () => {
                                   "SWFIT code should not contain spaces"
                                 );
                               }
+                              if (/[^A-Za-z0-9]/.test(value)) {
+                                return Promise.reject("SWIFT code should not contain special characters");
+                              }
                               return Promise.resolve();
                             },
                           },
                         ]}
+                        validateTrigger="onSubmit"
                         className="custom-border"
                       >
-                        <Input className="form-control" />
+                        <Input className="form-control" maxLength={11}/>
                       </Form.Item>
                     </div>
                   </div>
