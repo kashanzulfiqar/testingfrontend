@@ -601,10 +601,10 @@ const Sidebar = (props) => {
                 <li className="submenu">
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
-                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-files-o" /> <span> Sales</span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-files-o" /> <span> Finance</span> <span className="menu-arrow" /></a>
                   :
                   (user_state?.role === 'admin' || permissions?.managePayrolls) ?
-                  <a href="javascript:" className={isSideMenu == "sales" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "sales" ? "" : "sales")}><i className="la la-files-o" /> <span> Sales </span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" className={isSideMenu == "sales" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "sales" ? "" : "sales")}><i className="la la-files-o" /> <span> Finance </span> <span className="menu-arrow" /></a>
                   : null
                 }
                   {isSideMenu == "sales" ?

@@ -19,7 +19,7 @@ const Invoiceview = () => {
   const [invoiceInfo, setInvoiceInfo] = useState()
 
   useEffect(() => {
-    if((role === 'admin' || permissions?.managePayrolls) && invoice_data) {
+    if((role === 'admin' || role === 'client' || permissions?.managePayrolls) && invoice_data) {
       setInvoiceInfo(invoice_data)
     }else{
       nav(`${role === 'client' ? '/client/client-profile' : role === 'focalperson' ? `/client/focal-profile` : role === 'admin' ? `/main/dashboard` : `/employee/dashboard`}`)

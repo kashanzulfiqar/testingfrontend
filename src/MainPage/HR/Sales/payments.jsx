@@ -57,7 +57,7 @@ const Payments = () => {
 
   const getAllInvoices = (values, current_page, page_size) => {
     setTableLoader(true);
-    apiServices("GET", `invoices?${values === '' ? '' : values?.clientName === '' ? '' : values?.clientName ? `clientName=${values?.clientName}` : filterValues?.clientName ? `clientName=${filterValues?.clientName}` : ''}${values === '' ? '' : values?.invoiceNo === '' ? '' : values?.invoiceNo ? `&invoiceNo=${values?.invoiceNo}` : filterValues?.invoiceNo ? `&invoiceNo=${filterValues?.invoiceNo}` : ''}${values === '' ? '' : values?.fromDate === '' ? '' : values?.fromDate ? `&invoiceFrom=${values?.fromDate}` : filterValues?.fromDate ? `&invoiceFrom=${filterValues?.fromDate}` : ''}${values === '' ? '' : values?.toDate === '' ? '' : values?.toDate ? `&invoiceTo=${values?.toDate}` : filterValues?.toDate ? `&invoiceTo=${filterValues?.toDate}` : ''}${values === '' ? '' : values?.status === '' ? '' : values?.status ? `&status=${values?.status}` : filterValues?.status ? `&status=${filterValues?.status}` : ''}&page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}`, null, user_state)
+    apiServices("GET", `invoices?${values === '' ? '' : values?.clientName === '' ? '' : values?.clientName ? `clientName=${values?.clientName}` : filterValues?.clientName ? `clientName=${filterValues?.clientName}` : ''}${values === '' ? '' : values?.invoiceNo === '' ? '' : values?.invoiceNo ? `&invoiceNo=${encodeURIComponent(values?.invoiceNo)}` : filterValues?.invoiceNo ? `&invoiceNo=${encodeURIComponent(filterValues?.invoiceNo)}` : ''}${values === '' ? '' : values?.fromDate === '' ? '' : values?.fromDate ? `&invoiceFrom=${values?.fromDate}` : filterValues?.fromDate ? `&invoiceFrom=${filterValues?.fromDate}` : ''}${values === '' ? '' : values?.toDate === '' ? '' : values?.toDate ? `&invoiceTo=${values?.toDate}` : filterValues?.toDate ? `&invoiceTo=${filterValues?.toDate}` : ''}${values === '' ? '' : values?.status === '' ? '' : values?.status ? `&status=${values?.status}` : filterValues?.status ? `&status=${filterValues?.status}` : ''}&page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}`, null, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
           setAllInvoices(res?.data?.Invoices?.docs);
@@ -260,7 +260,7 @@ const Payments = () => {
                 }}
                 className="dropdown-item"
               ><i className="fa fa-pencil m-r-5" /> Edit</a>
-              <a className="dropdown-item" href="javascript:void(0)" onClick={() => { setOpen({ isEditOpen: false, isDelOpen: true, data: record }) }}><i className="fa fa-trash-o m-r-5" /> Delete</a>
+              {/* <a className="dropdown-item" href="javascript:void(0)" onClick={() => { setOpen({ isEditOpen: false, isDelOpen: true, data: record }) }}><i className="fa fa-trash-o m-r-5" /> Delete</a> */}
             </div>
           </div>
         ),
@@ -296,7 +296,7 @@ const Payments = () => {
               {/* {
                 (role === 'admin' || permissions?.viewAllUsers) ? 'No Employee Record found!' : 'You are Restricted to View Employees'
               } */}
-              No Invoices Record Found!
+              No Payments Record Found!
             </div>
           </div>
         }

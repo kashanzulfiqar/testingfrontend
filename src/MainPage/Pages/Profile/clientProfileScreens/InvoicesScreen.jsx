@@ -3,68 +3,119 @@ import React, { useState,useEffect } from 'react';
 import { Helmet } from "react-helmet";
 import { Link } from 'react-router-dom';
 
-import { Table } from 'antd';
+import { Empty, Table, Pagination } from 'antd';
 import 'antd/dist/antd.css';
 import "../../../antdstyle.css"
 import { onShowSizeChange, itemRender } from '../../../paginationfunction';
+import EmptyTable from "../../../../files/Icons/EmptyTable.svg";
+import { useSelector } from 'react-redux';
+import { apiServices } from '../../../../Services/apiServices';
+import invoicePDF from '../../../HR/Sales/invoicePDF';
 
-const InvoicesScreen = () => {
-  const [data, setData] = useState([
+const InvoicesScreen = ({ clientId }) => {
+
+  const user_state = useSelector((state) => state?.user?.loginvalue);
+
+  const [allInvoices, setAllInvoices] = useState([]);
+  const [tableLoader, setTableLoader] = useState(true);
+  const [deleteLoader, setDeleteLoader] = useState(false);
+  const [pageSize, setPageSize] = useState(20);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [paginationDetail, setPaginationDetail] = useState();
+
+  const d = [
     {id:1,invoicenumber:"INV-0001",client:"	Global Technologies",createddate:"11 Mar 2019",duedate:"11 Mar 2019",amount:"2099",status:"Paid"},
-         {id:2,invoicenumber:"INV-0002",client:"Delta Infotech",createddate:"11 Mar 2019",duedate:"11 Mar 2019",amount:"2099",status:"Sent"},
-  ]);
+    // {id:2,invoicenumber:"INV-0002",client:"Delta Infotech",createddate:"11 Mar 2019",duedate:"11 Mar 2019",amount:"2099",status:"Sent"},
+  ]
 
   useEffect(() => {
-    console.log('invoice');
-  }, [])
+    getAllInvoices()
+  }, [])  
 
-  useEffect( ()=>{
-    if($('.select').length > 0) {
-      $('.select').select2({
-        minimumResultsForSearch: -1,
-        width: '100%'
+  const getAllInvoices = (current_page, page_size) => {
+    setTableLoader(true);
+    apiServices("GET", `invoices/client-invoices?id=${clientId}&page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}`, null, user_state)
+      .then((res) => {
+        if (res?.data?.success === true) {
+          setAllInvoices(res?.data?.invoices?.docs);
+          setPaginationDetail(res?.data?.invoices)
+          setTableLoader(false);
+        }
+      })
+      .catch((err) => {
+        setTableLoader(false);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Get Client Invoices Error"
+          }!`
+        );
       });
-    }
-  });  
+  }
   
     const columns = [
       
       {
         title: '#',
-        dataIndex: 'id',
+        dataIndex: '',
+        render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
       },      
       {
         title: 'Invoice Number',
-        dataIndex: 'invoicenumber',
+        dataIndex: 'invoiceNo',
         render: (text, record) => (
-          <Link to="/app/sales/invoices-view" style={{color: '#333333'}}>#{text}</Link>
+          <Link
+            to="/invoices/view-invoice"
+            style={{color: '#333333'}}
+            state={{
+              invoice_data: {
+                ...record,
+                bankDetail: record?.bankDetailId,
+                bankDetailId: record?.bankDetailId?._id,
+                client: record?.clientId,
+                clientId: record?.clientId?._id,
+                company: record?.companyId,
+                companyId: record?.companyId?._id
+              }
+            }}
+          >{text}</Link>
           ),
       },     
+      // {
+      //   title: 'Client',
+      //   dataIndex: 'client',
+      // },
       {
-        title: 'Client',
-        dataIndex: 'client',
-      },
-
-      {
-        title: 'Created Date',
-        dataIndex: 'createddate',
+        title: 'Invoice Date',
+        dataIndex: 'invoiceDate',
+        render: (text, record) => (
+          <label>{formatDate(text || '')}</label>
+          ),
       },
       {
         title: 'Due Date',
-        dataIndex: 'duedate',
+        dataIndex: 'dueDate',
+        render: (text, record) => (
+          <label>{formatDate(text || '')}</label>
+          ),
       },    
       {
         title: 'Amount',
-        dataIndex: 'amount',
+        dataIndex: 'totalAmount',
         render: (text, record) => (
-        <span>$ {text}</span>
+          <span>{text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {record?.currency}</span>
           ),
       },
       {
         title: 'Status',
         dataIndex: 'status',
         render: (text, record) => (
-        <span className={text==="Paid" ? "badge bg-inverse-success" : "badge bg-inverse-info"}>{text}</span>
+        <label className={text==="Paid" ? "badge bg-inverse-success" : text==="Partially Paid" ? "badge bg-inverse-info" : text==="Pending" ? "badge bg-inverse-warning" : text==="Cancelled" ? "badge bg-inverse-danger" : ''}>
+          {text || '-'}
+        </label>
           ),
       },
       {
@@ -73,58 +124,178 @@ const InvoicesScreen = () => {
             <div className="dropdown dropdown-action text-end">
                 <a href="#" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
                         <div className="dropdown-menu dropdown-menu-right">
-                          <Link className="dropdown-item" to="/app/sales/invoices-edit"><i className="fa fa-pencil m-r-5" /> Edit</Link>
+                        <Link
+                          className="dropdown-item"
+                          to="/invoices/view-invoice"
+                          state={{
+                            invoice_data: {
+                              ...record,
+                              bankDetail: record?.bankDetailId,
+                              bankDetailId: record?.bankDetailId?._id,
+                              client: record?.clientId,
+                              clientId: record?.clientId?._id,
+                              company: record?.companyId,
+                              companyId: record?.companyId?._id
+                            }
+                          }}
+                        >
+                          <i className="fa fa-eye m-r-5" /> View
+                        </Link>
+                          <a
+                            className="dropdown-item"
+                            href="javascript:void(0)"
+                            onClick={() => { 
+                              invoicePDF({
+                                ...record,
+                                bankDetail: record?.bankDetailId,
+                                bankDetailId: record?.bankDetailId?._id,
+                                client: record?.clientId,
+                                clientId: record?.clientId?._id,
+                                company: record?.companyId,
+                                companyId: record?.companyId?._id
+                              }); 
+                            }}
+                          >
+                            <i className="fa fa-file-pdf-o m-r-5" /> Download
+                          </a>
+                          {/* <Link className="dropdown-item" to="/app/sales/invoices-edit"><i className="fa fa-pencil m-r-5" /> Edit</Link>
                           <Link className="dropdown-item" to="/app/sales/invoices-view"><i className="fa fa-eye m-r-5" /> View</Link>
                           <a className="dropdown-item" href="#"><i className="fa fa-file-pdf-o m-r-5" /> Download</a>
-                          <a className="dropdown-item" href="#"><i className="fa fa-trash-o m-r-5" /> Delete</a>
+                          <a className="dropdown-item" href="#"><i className="fa fa-trash-o m-r-5" /> Delete</a> */}
                         </div>
             </div>
           ),
       },
     ]
+
+    const formatDate = (inputDate) => {
+      if(inputDate){
+        const date = new Date(inputDate);
+        const day = date.getDate();
+        const month = date.toLocaleString('default', { month: 'short' });
+        const year = date.getFullYear();
+    
+        // let daySuffix = "th";
+        // if (day === 1 || day === 21 || day === 31) {
+        //     daySuffix = "st";
+        // } else if (day === 2 || day === 22) {
+        //     daySuffix = "nd";
+        // } else if (day === 3 || day === 23) {
+        //     daySuffix = "rd";
+        // }
+    
+        // const formattedDate = `${day}${daySuffix} ${month}, ${year}`;
+        const formattedDate = `${day} ${month} ${year}`;
+        return formattedDate;
+      }
+  }
+
+    const customEmptyText = (
+      <Empty
+        image={<img src={EmptyTable} />}
+        // image={<InboxOutlined />}
+        imageStyle={
+          {
+            // fontSize: 48,
+            // color: '#1890ff',
+          }
+        }
+        style={{
+          height: "300px",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+        }}
+        description={
+          <div style={{ display: "" }}>
+            <div
+              style={{
+                color: "#34343F",
+                fontWeight: "500",
+                fontSize: "14px",
+                margin: "7px 0px 4px 0px",
+              }}
+            >
+              {/* {
+                (role === 'admin' || permissions?.viewAllUsers) ? 'No Employee Record found!' : 'You are Restricted to View Employees'
+              } */}
+              No Invoices Record Found!
+            </div>
+          </div>
+        }
+      />
+    );
+
       return (
-        <div></div>
-        // <>
-        // <div className="page-wrapper" style={{margin: '0px', padding: '0px'}}> 
-        //   {/* Page Content */}
-        //   <div className="content container-fluid" style={{padding: '0px'}}>
-        //     {/* Page Header */}
-        //     <div className="page-header">
-        //       <div className="row align-items-center">
-        //         <div className="col">
-        //           <h3 className="page-title">Invoices</h3>
-        //           {/* <ul className="breadcrumb">
-        //             <li className="breadcrumb-item"><Link to="/app/main/dashboard">Dashboard</Link></li>
-        //             <li className="breadcrumb-item active">Invoices</li>
-        //           </ul> */}
-        //         </div>
-        //         <div className="col-auto float-end ms-auto">
-        //           <Link to="/app/sales/invoices-create" className="btn add-btn"><i className="fa fa-plus" /> Create Invoice</Link>
-        //         </div>
-        //       </div>
-        //     </div>
-        //     {/* /Page Header */}
-        //     <div className="row">
-        //       <div className="col-md-12">
-        //         <div className="table-responsive">
-        //           <Table className="table-striped"
-        //               pagination= { {total : data.length,
-        //                 showTotal : (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-        //                 showSizeChanger : true,onShowSizeChange: onShowSizeChange ,itemRender : itemRender } }
-        //               style = {{overflowX : 'auto', paddingBottom: '60px'}}
-        //               columns={columns}                 
-        //               // bordered
-        //               dataSource={data}
-        //               rowKey={record => record.id}
-        //               // onChange={this.handleTableChange}
-        //             />
-        //         </div>
-        //       </div>
-        //     </div>
-        //   </div>
-        //   {/* /Page Content */}
-        // </div>
-        // </>
+        // <div></div>
+        <>
+        <div className="page-wrapper" style={{margin: '0px', padding: '0px'}}> 
+          {/* Page Content */}
+          <div className="content container-fluid" style={{padding: '0px'}}>
+            {/* Page Header */}
+            <div className="page-header">
+              <div className="row align-items-center">
+                <div className="col">
+                  <h3 className="page-title">Invoices</h3>
+                  {/* <ul className="breadcrumb">
+                    <li className="breadcrumb-item"><Link to="/app/main/dashboard">Dashboard</Link></li>
+                    <li className="breadcrumb-item active">Invoices</li>
+                  </ul> */}
+                </div>
+                {/* <div className="col-auto float-end ms-auto">
+                  <Link to="/app/sales/invoices-create" className="btn add-btn"><i className="fa fa-plus" /> Create Invoice</Link>
+                </div> */}
+              </div>
+            </div>
+            {/* /Page Header */}
+            <div className="row">
+              <div className="col-md-12">
+                <div className="table-responsive">
+                  <Table
+                      loading={tableLoader}
+                      className={allInvoices?.length > 0 ? "table-striped" : ""}
+                      locale={{
+                        emptyText: tableLoader ? null : customEmptyText,
+                      }}
+                      pagination= {false}
+                      style = {{overflowX : 'auto', paddingBottom: '70px'}}
+                      columns={columns}                 
+                      // bordered
+                      dataSource={allInvoices}
+                      rowKey={record => record.id}
+                      // onChange={this.handleTableChange}
+                    />
+
+                  {
+                    allInvoices?.length > 0 &&
+                    <div>
+                      <Pagination
+                        style={{display: 'flex', float: 'right'}}
+                        total={paginationDetail?.total}
+                        pageSize={pageSize}
+                        defaultCurrent={1}
+                        current={currentPage}
+                        showTotal={(total, range) =>
+                          `Showing ${range[0]} to ${range[1]} of ${total} entries`}
+                        onChange={(page, size) => {
+                          console.log(page, size);
+                          setPageSize(size); setCurrentPage(page);
+                          getAllInvoices(page, size)
+                        }}
+                        showSizeChanger={true}
+                        pageSizeOptions={['20', '30', '40', '50']}
+                        itemRender={itemRender}
+                      />
+                    </div>
+                  }
+
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* /Page Content */}
+        </div>
+        </>
       
       );
    }
