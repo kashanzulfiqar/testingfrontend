@@ -198,11 +198,11 @@ const Payments = () => {
   
     const columns = [         
       {
-        title: 'Invoice ID',
+        title: 'Invoice Number',
         dataIndex: 'invoiceNo',
         render: (text, record) => (
           // <Link to="/app/sales/invoices-view" style={{color: '#333333'}}>#{text}</Link>
-          <Link to="/invoices/view-invoice" state={{invoice_data: record}} style={{color: '#333333'}}>#{text}</Link>
+          <Link to="/invoices/view-invoice" state={{invoice_data: record}} style={{color: '#333333'}}>{text}</Link>
           ),
       },     
       {
@@ -320,7 +320,7 @@ const Payments = () => {
       const month = date.toLocaleString('default', { month: 'short' });
       const year = date.getFullYear();
 
-      const formattedDate = `${month} ${day}, ${year}`;
+      const formattedDate = `${day} ${month} ${year}`;
       return formattedDate;
   }
 
