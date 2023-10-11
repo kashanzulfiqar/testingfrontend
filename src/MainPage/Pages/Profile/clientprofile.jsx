@@ -52,7 +52,7 @@ const ClientProfile = () => {
   }, [])
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    // window.scrollTo(0, 0);
     // sessionStorage.clear();
     sessionStorage.setItem(`active_tab`, `${activeTab}`)
   }, [activeTab])
@@ -336,7 +336,9 @@ const ClientProfile = () => {
                    {
                       (activeTab === 'invoices' && clientData?._id) &&
                       <div id="invoices" className="tab-pane fade show active">
-                      <InvoicesScreen />
+                      <InvoicesScreen
+                        clientId={clientData?._id}
+                      />
                       </div>
                   }
                    {/* Invoice Tab */}  
