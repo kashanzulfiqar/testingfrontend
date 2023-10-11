@@ -113,7 +113,7 @@ const calculateDiscountAmount = () => {
                         <div className="row">
                           {/* <div className="col-sm-6 m-b-20 d-grid"> */}
                           <div className="col-sm-6 m-b-20">
-                            {/* <img src={invoiceInfo?.client?.logo} className="inv-logo" alt="" /> */}
+                            <img src={invoiceInfo?.company?.imageUrl} className="inv-logo" alt="" />
                             {/* <img src={invoiceInfo?.clientId?.logo} className="inv-logo" alt="" /> */}
                             <h5><strong>{invoiceInfo?.company?.companyName}</strong></h5>
                             <ul className="list-unstyled">
