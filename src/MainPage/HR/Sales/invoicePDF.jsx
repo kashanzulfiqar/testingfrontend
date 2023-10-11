@@ -168,8 +168,8 @@ function invoicePDF(invoice_data) {
 
 
 
-if(invoice_data?.imageUrl){
-  doc.addImage(invoice_data?.imageUrl, 'JPEG', x, 8, 20, 20);
+if(invoice_data?.company?.imageUrl){
+  doc.addImage(invoice_data?.company?.imageUrl, 'JPEG', x, 8, 20, 20);
   doc.setFont(undefined, "bold");
   doc.text(x, 36, invoice_data?.company?.companyName); // 8 diff
   doc.setFont(undefined, "normal");

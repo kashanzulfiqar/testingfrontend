@@ -152,7 +152,7 @@ const handleClose = () => {
         title: 'Invoice Number',
         dataIndex: 'invoiceNo',
         render: (text, record) => (
-          <Link to="/invoices/view-invoice" state={{invoice_data: record}} style={{color: '#333333'}}>#{text}</Link>
+          <Link to="/invoices/view-invoice" state={{invoice_data: record}} style={{color: '#333333'}}>{text}</Link>
           ),
       },     
       {
