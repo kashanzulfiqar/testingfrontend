@@ -287,7 +287,7 @@ const BankDetails = () => {
       // sorter: (a, b) => a.TagName.length - b.TagName.length,
     },
     {
-      title: "address",
+      title: "Address",
       dataIndex: "address",
       render: (text, record) => (
         <label className="longText">
