@@ -12069,4 +12069,13 @@ styles by Qazi
   min-width: 175px !important;
 } */
 
+.LeaveAdminTable thead tr th:not(:nth-last-child(1)){
+  min-width: 110px !important;
+}
+.LeaveAdminTable thead tr th:nth-child(1){
+  min-width: 181px !important;
+}
+.LeaveAdminTable thead tr th:nth-child(2){
+  min-width: 170px !important;
+}
 
