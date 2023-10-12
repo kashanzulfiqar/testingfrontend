@@ -313,8 +313,8 @@ const leaves = [
         if (startDate && endDate) {
           const duration = moment.duration(endDate.diff(startDate));
           const totalDays = duration.days();
-          form.setFieldsValue({ totalDays: totalDays });
-          // form.setFieldsValue({ totalDays: totalDays+1 });
+          // form.setFieldsValue({ totalDays: totalDays });
+          form.setFieldsValue({ totalDays: totalDays+1 });
         }
         else{
           form.setFieldsValue({ totalDays: '' })
@@ -513,8 +513,8 @@ const leaves = [
       };
     
       const disabledDate = (current) => {
-        return fromDate && current < moment(fromDate).endOf('day');
-        // return fromDate && current < moment(fromDate).startOf('day');
+        // return fromDate && current < moment(fromDate).endOf('day');
+        return fromDate && current < moment(fromDate).startOf('day');
       };
 
       const [good, setGood] = useState('')
@@ -574,7 +574,7 @@ const leaves = [
             </div>
           </div>
           <div className="col-md-3">
-            <div className="stats-info">
+            <div className="stats-info" style={{minHeight: '83px'}}>
               <label>Remaining Leave</label>
               <h4>{singleUser?.remainingLeaves}</h4>
             </div>
