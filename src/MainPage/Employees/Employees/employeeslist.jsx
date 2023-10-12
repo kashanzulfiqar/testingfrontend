@@ -79,7 +79,7 @@ const Employeeslist = () => {
 
   const getEmployees = (values, current_page, page_size) => {
     setTableLoader(true);
-    apiServices("GET", `user/view-user?deleted=false${values === '' ? '' : values?.employeeName === '' ? '' : values?.employeeName ? `&employeeName=${values?.employeeName}` : filterValues?.employeeName ? `&employeeName=${filterValues?.employeeName}` : ''}${values === '' ? '' : values?.employeeId === '' ? '' : values?.employeeId ? `&employeeId=${values?.employeeId}` : filterValues?.employeeId ? `&employeeId=${filterValues?.employeeId}` : ''}${values === '' ? '' : values?.designation === '' ? '' : values?.designation ? `&designation=${values?.designation}` : filterValues?.designation ? `&designation=${filterValues?.designation}` : ''}&page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}`, null, user_state)
+    apiServices("GET", `user/view-user?deleted=false${values === '' ? '' : values?.employeeName === '' ? '' : values?.employeeName ? `&employeeName=${values?.employeeName}` : filterValues?.employeeName ? `&employeeName=${filterValues?.employeeName}` : ''}${values === '' ? '' : values?.employeeId === '' ? '' : values?.employeeId ? `&employeeId=${encodeURIComponent(values?.employeeId)}` : filterValues?.employeeId ? `&employeeId=${encodeURIComponent(filterValues?.employeeId)}` : ''}${values === '' ? '' : values?.designation === '' ? '' : values?.designation ? `&designation=${values?.designation}` : filterValues?.designation ? `&designation=${filterValues?.designation}` : ''}${values === '' ? '' : values?.status === '' ? '' : values?.status ? `&userStatus=${values?.status}` : filterValues?.status ? `&userStatus=${filterValues?.status}` : ''}&page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}`, null, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
           setUsers(res?.data?.users?.docs);
@@ -369,7 +369,7 @@ const Employeeslist = () => {
                     }
                     {
                       (role === 'admin' || permissions?.updateStatusOfEmployee) &&
-                      <a className="dropdown-item" href="javascript:void(0)" onClick={() => setOpen({ isAddOpen: false, isEditOpen: false, isDelOpen: true, data: record })}><i className="fa fa-trash-o m-r-5" /> Delete</a>
+                      <a className="dropdown-item" href="javascript:void(0)" onClick={() => setOpen({ isAddOpen: false, isEditOpen: false, isDelOpen: true, data: record })}><i className={record?.userStatus === 'Active' ? 'fa fa-user-times m-r-5' : 'fa fa-check m-r-5'} /> {record?.userStatus === 'Active' ? 'Disable' : 'Enable'}</a>
                     }
                     </div>
                   </div>
@@ -377,14 +377,16 @@ const Employeeslist = () => {
             },
           ]
 
-          const onFinishDelete = (id) => {
-            setLoader(true)
+          const onFinishDelete = (id, type) => {
+            if(type === 'disable'){
+              setLoader(true)
             apiServices("DELETE", "user/delete-user", id, user_state)
               .then((res) => {
                 if (res?.data?.success === true) {
-                  setUsers([...users.filter((user) => user._id !== id)]);
+                  // setUsers([...users.filter((user) => user._id !== id)]);
+                  getEmployees(filterValues, currentPage, pageSize);
                   handleClose();
-                  message.success("Employee Deleted Successfully!");
+                  message.success("Employee Disabled Successfully!");
                   setLoader(false)
                 }
               })
@@ -396,18 +398,48 @@ const Employeeslist = () => {
                       ? err?.response?.data?.msg
                       : err?.response?.data?.validation?.body?.message
                       ? err?.response?.data?.validation?.body?.message
-                      : "Delete Employee Error"
+                      : "Disable Employee Error"
                   }!`
                 );
               });
+            }else{
+              setLoader(true)
+              const data = {
+                _id: id
+              }
+            apiServices("PUT", "user/enable-user", data, user_state)
+              .then((res) => {
+                if (res?.data?.success === true) {
+                  // setUsers([...users.filter((user) => user._id !== id)]);
+                  getEmployees(filterValues, currentPage, pageSize);
+                  handleClose();
+                  message.success("Employee Enabled Successfully!");
+                  setLoader(false)
+                }
+              })
+              .catch((err) => {
+                setLoader(false)
+                message.error(
+                  `${
+                    err?.response?.data?.msg
+                      ? err?.response?.data?.msg
+                      : err?.response?.data?.validation?.body?.message
+                      ? err?.response?.data?.validation?.body?.message
+                      : "Enable Employee Error"
+                  }!`
+                );
+              });
+            }
           } 
 
           const onFilterFinish = (values) => {
             for (const key in values) {
               if (values[key]) {
-                getEmployees(values, currentPage, pageSize);
+                // getEmployees(values, currentPage, pageSize);
+                getEmployees(values, 1, pageSize);
                 console.log(values);
                 setFilterValues(values)
+                setCurrentPage(1);
               }
             }
           }
@@ -503,7 +535,7 @@ const Employeeslist = () => {
                 onFinish={onFilterFinish}
               >
               <div className="row filter-row">
-                <div className="col-sm-6 col-md-3">  
+                <div className="col-sm-6 col-md-2">  
                   <div className="form-group">
                   <Form.Item
                       name="employeeId"
@@ -517,7 +549,7 @@ const Employeeslist = () => {
                     </Form.Item>
                   </div>
                 </div>
-                <div className="col-sm-6 col-md-3">  
+                <div className="col-sm-6 col-md-2">  
                   <div className="form-group">
                   <Form.Item
                       name="employeeName"
@@ -531,8 +563,8 @@ const Employeeslist = () => {
                     </Form.Item>
                   </div>
                 </div>
-                <div className="col-sm-6 col-md-3">
-                <div style={{ position: 'relative' }} id='area1'>
+                <div className="col-sm-6 col-md-2">
+                  <div style={{ position: 'relative' }} id='area1'>
                     <Form.Item
                       name="designation"
                       className="custom-border"
@@ -542,7 +574,7 @@ const Employeeslist = () => {
                         style={{
                           width: '100%',
                         }}
-                        placeholder='Select Designation'
+                        placeholder='Designation'
                         size='large'
                         getPopupContainer={() => document.getElementById('area1')}
                       >
@@ -555,9 +587,39 @@ const Employeeslist = () => {
                     </Form.Item>
                   </div>
                 </div>
-                <div className="col-sm-6 col-md-3" style={{display: 'flex', alignItems: 'flex-start', gap: '13px'}}>  
-                  <button href="javascript:void(0)" type="submit" className="btn btn-success btn-block w-50" disabled={role === 'admin' ? false : permissions?.viewAllUsers ? false : true}> Search </button>  
-                  <button href="javascript:void(0)" type="reset" onClick={() => { form.resetFields(); getEmployees('', 1, pageSize); setFilterValues(null); setCurrentPage(1)}} className="btn btn-success btn-block w-50" style={{backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}} disabled={role === 'admin' ? false : permissions?.viewAllUsers ? false : true}> Reset </button>  
+                <div className="col-sm-6 col-md-2">
+                  <div style={{ position: 'relative' }} id='area1'>
+                    <Form.Item
+                      name="status"
+                      className="custom-border"
+                    >
+                      <Select
+                        className="custom-select"
+                        style={{
+                          width: '100%',
+                        }}
+                        placeholder='Status'
+                        size='large'
+                        getPopupContainer={() => document.getElementById('area1')}
+                        options={[
+                          {
+                            value: 'Active',
+                            label: "Active",
+                          },
+                          {
+                            value: 'In-Active',
+                            label: "In-Active",
+                          },
+                        ]}
+                      />
+                    </Form.Item>
+                  </div>
+                </div>
+                <div className="col-sm-6 col-md-2">  
+                  <button href="javascript:void(0)" type="submit" className="btn btn-success btn-block w-100" disabled={role === 'admin' ? false : permissions?.viewAllUsers ? false : true}> Search </button>
+                </div>
+                <div className="col-sm-6 col-md-2">
+                  <button href="javascript:void(0)" type="reset" onClick={() => { form.resetFields(); getEmployees('', 1, pageSize); setFilterValues(null); setCurrentPage(1)}} className="btn btn-success btn-block w-100" style={{backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}} disabled={role === 'admin' ? false : permissions?.viewAllUsers ? false : true}> Reset </button>  
                 </div>
               </div>
               </Form>
@@ -603,14 +665,13 @@ const Employeeslist = () => {
                     <div>
                       <Pagination
                         style={{display: 'flex', float: 'right'}}
-                        total={paginationDetail?.total}
+                        total={paginationDetail?.totalDocs}
                         pageSize={pageSize}
                         defaultCurrent={1}
                         current={currentPage}
                         showTotal={(total, range) =>
                           `Showing ${range[0]} to ${range[1]} of ${total} entries`}
                         onChange={(page, size) => {
-                          console.log(page, size);
                           setPageSize(size); setCurrentPage(page);
                           getEmployees(filterValues, page, size)
                         }}
@@ -670,9 +731,9 @@ const Employeeslist = () => {
                     }}
                   >
                     <div className="form-header">
-                      <h3 style={{ marginBottom: "30px" }}>Delete Employee</h3>
+                      <h3 style={{ marginBottom: "30px" }}>{open?.data?.userStatus === 'Active' ? 'Disable' : 'Enable'} Employee</h3>
                       <p>
-                        Are you sure you want to delete{" "}
+                        Are you sure you want to {open?.data?.userStatus === 'Active' ? 'Disable' : 'Enable'}{" "}
                         <b>{open?.data?.fullName}</b>?
                       </p>
                     </div>
@@ -682,13 +743,20 @@ const Employeeslist = () => {
                           <Button
                             htmlType="submit"
                             className="btn btn-primary continue-btn"
-                            onClick={() => onFinishDelete(open?.data?._id)}
+                            onClick={() => {
+                              // onFinishDelete(open?.data?._id);
+                              if(open?.data?.userStatus === 'Active'){
+                                onFinishDelete(open?.data?._id, 'disable')
+                              }else{
+                                onFinishDelete(open?.data?._id, 'enable')
+                              }
+                            }}
                             disabled={loader}
                             style={{width: '100%'}}
                           >
                             {
                               loader ? <Spin size="small" indicator={antIcon} />
-                                : 'Delete'
+                                : open?.data?.userStatus === 'Active' ? 'Disable' : 'Enable'
                             }
                           </Button>
                         </div>
