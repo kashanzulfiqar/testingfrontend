@@ -234,7 +234,7 @@ const EmployeeDashboard = () => {
                         </div>
                         <div className="request-btn">
                           <div className="dash-stats-list">
-                            <h4>2</h4>
+                            <h4>{userData?.userProjects}</h4>
                             <p>Total Projects</p>
                           </div>
                         </div>
