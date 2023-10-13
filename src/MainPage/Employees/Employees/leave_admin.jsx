@@ -45,7 +45,7 @@ const LeaveAdmin = () => {
     const role = user_state?.user?.role
 
 
-    const [isStatLoading, setIsStatLoading] = useState(false);
+    const [isStatLoading, setIsStatLoading] = useState(true);
 
     const[requests,setRequests] = useState([]);
     const [tableData, setTableData] = useState([]); // Step 1
@@ -532,46 +532,38 @@ const LeaveAdmin = () => {
             </div>
           </div>
           {/* /Page Header */}
-          <div className="row">
-          <div className="col-md-3">
-            <div className="stats-info">
-              <label>Today Present</label>
-              <h4>
-              {isStatLoading ? (
-                <Spin size="large" />
-              ) : (
-                <>{statdata?.attendanceRecord} / {statdata?.totalEmployee}</>
-              )}
-              </h4>
-            </div>
-          </div>
-          <div className="col-md-3">
-            <div className="stats-info">
-            <label>Planned Leaves</label>
-              <h4>8</h4>
-            </div>
-          </div>
-          <div className="col-md-3">
-            <div className="stats-info">
-            <label>Unplanned Leaves</label>
-              <h4>0</h4>
-            </div>
-          </div>
-          <div className="col-md-3">
-            <div className="stats-info">
-            <label>Pending Requests</label>
-            
-              <h4>
-              {isStatLoading ? (
-                <Spin size="large" />
-              ) : (
-                <>{statdata?.pendingRequests}</>
-              )}
-                </h4>
-              
+          {
+            isStatLoading ? 
+            <div className="row" style={{minHeight: '83px', display: 'grid', placeItems: 'center', background: '#ebebeb', borderRadius: '5px', marginBottom: '20px', marginInline: '0px'}}>
+              <Spin />
+            </div> :
+            <div className="row">
+            <div className="col-md-3">
+              <div className="stats-info">
+                <label>Sick Leave Requests</label>
+                <h4>{statdata?.sickLeaves}</h4>
               </div>
-          </div>
-          </div>
+            </div>
+            <div className="col-md-3">
+              <div className="stats-info">
+              <label>Casual Leave Requests</label>
+                <h4>{statdata?.casualLeaves}</h4>
+              </div>
+            </div>
+            <div className="col-md-3">
+              <div className="stats-info">
+              <label>Work From Home Requests</label>
+                <h4>{statdata?.wfhRequests}</h4>
+              </div>
+            </div>
+            <div className="col-md-3">
+              <div className="stats-info">
+              <label>Pending Requests</label>
+                <h4>{statdata?.pendingRequests}</h4>
+                </div>
+            </div>
+            </div>
+          }
           {/* /Leave Statistics */}
           {/* Search Filter */}
           {!id && <Form form={form} onFinish={handleSearch}>
