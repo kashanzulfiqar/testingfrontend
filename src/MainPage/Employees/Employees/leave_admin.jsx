@@ -566,7 +566,7 @@ const LeaveAdmin = () => {
           }
           {/* /Leave Statistics */}
           {/* Search Filter */}
-          {!id && <Form form={form} onFinish={handleSearch}>
+          {!id && (<Form form={form} onFinish={handleSearch}>
           <div className="row filter-row">
             <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">  
               <div className="form-group">
@@ -681,7 +681,7 @@ const LeaveAdmin = () => {
 
             </div>     
           </div>
-          </Form>}
+          </Form>)}
           
 
           {/* /Search Filter */}
