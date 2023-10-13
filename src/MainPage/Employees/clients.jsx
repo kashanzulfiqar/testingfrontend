@@ -101,8 +101,10 @@ const Clients = () => {
 
   const onFilterFinish = (values) => {
     if(values?.clientName){
-      getAllClients(values, currentPage, pageSize);
+      // getAllClients(values, currentPage, pageSize);
+      getAllClients(values, 1, pageSize);
       setFilterValues(values)
+      setCurrentPage(1);
       console.log(values);
     }
   }
