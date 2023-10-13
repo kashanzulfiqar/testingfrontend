@@ -599,7 +599,7 @@ const LeaveAdmin = () => {
                 </div>
               </div>
             </div>
-          </div>
+          {/* </div> */}
           {/* /Page Header */}
           {
             isStatLoading ? 
@@ -635,7 +635,7 @@ const LeaveAdmin = () => {
           }
           {/* /Leave Statistics */}
           {/* Search Filter */}
-          {!id && <Form form={form} onFinish={handleSearch}>
+          {!id && (<Form form={form} onFinish={handleSearch}>
           <div className="row filter-row">
             <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">  
               <div className="form-group">
@@ -765,33 +765,19 @@ const LeaveAdmin = () => {
                       </span>
                     </Button>
 
-                    <Button
-                      htmlType="button"
-                      className="btn-secondary btn-block w-50"
-                      onClick={handleReset}
-                      disabled={
-                        role === "admin"
-                          ? false
-                          : permissions?.viewAllRequest
-                          ? false
-                          : permissions?.teamRequest
-                          ? false
-                          : true
-                      }
-                      style={{
-                        backgroundColor: "#616161",
-                        borderColor: "#616161",
-                      }}
-                    >
-                      <span className="d-flex justify-content-center">
-                        Reset
-                      </span>
-                    </Button>
-                  </div>
-                </div>
-              </Form>
-            )}
+              <Button 
+                htmlType="button"
+                className="btn-secondary btn-block w-50" 
+                onClick={handleReset}
+                disabled={role === 'admin' ? false : permissions?.viewAllRequest ? false : permissions?.teamRequest ? false : true}
+                style={{ backgroundColor: "#616161", borderColor: "#616161" }}
+                >
+                  <span className="d-flex justify-content-center">Reset</span> 
+              </Button>
 
+            </div>     
+          </div>
+          </Form>)}
             {/* /Search Filter */}
             <div className="row">
               <div className="col-md-12">
