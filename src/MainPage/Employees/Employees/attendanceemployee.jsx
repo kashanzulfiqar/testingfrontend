@@ -33,10 +33,13 @@ const AttendanceEmployee = () => {
   const [statusText, setStatusText] = useState("Not yet checked in");
   const [isCheckedOut, setIsCheckedOut] = useState(false);
   const [isCheckedIn, setIsCheckedIn] = useState(false);
+  const [firstload, setFirstLoad] = useState(false);
 
   const [timer, setTimer] = useState(null);
   const [elapsedTime, setElapsedTime] = useState(0);
-  
+  const [shiftStartTime, setShiftStartTime] = useState('');
+  const [shiftEndTime, setShiftEndTime] = useState('');
+  const [shiftDuration, setShiftDuration] = useState(0);
 
   const [checkIn, setCheckIn] = useState({
     attendanceId: "",
@@ -63,6 +66,7 @@ const AttendanceEmployee = () => {
     year: "",
   });
   const [fetchattend, setFetchattend] = useState([]);
+  const [fetchattend6, setFetchattend6] = useState([]);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -73,6 +77,10 @@ const AttendanceEmployee = () => {
     setMenu(!menu);
   };
 
+  const [stats, setStats] = useState({
+    lastWeek: 0, // Set initial values as needed
+    lastMonth: 0, // Set initial values as needed
+  });
   const [attendanceData, setAttendanceData] = useState(null);
 
   const moment = require("moment");
@@ -80,15 +88,14 @@ const AttendanceEmployee = () => {
 
   const firstDate = moment(nowdate).format("YYYY-MM-DD");
   //const firstDate = "2023-08-10"
-
+  
   useEffect(() => {
-    if( !disableAttend ){
+    if (!disableAttend) {
       setTableLoader(true);
 
       fetchattendance();
     }
   }, [filters, pagination.current, pagination.pageSize, checkIn, checkOut]);
-
 
   useEffect(() => {
     setIsLoading(true);
@@ -103,20 +110,68 @@ const AttendanceEmployee = () => {
         if (res.data.success === true) {
           const attendanceData = res?.data?.Attendance?.docs;
           setAttendanceData(attendanceData);
+          const { shiftId } = res?.data?.user;
+          const shiftStartTime = shiftId.startTime;
+          const shiftEndTime = shiftId.endTime;
+
+          // Calculate shift duration
+          const shiftStart = moment(shiftStartTime, 'HH:mm:ss');
+          const shiftEnd = moment(shiftEndTime, 'HH:mm:ss');
+          const shiftDuration = moment.duration(shiftEnd.diff(shiftStart)).asMinutes();
+          setStats({
+            lastWeek: res.data.lastWeek,
+            lastMonth: res.data.lastMonth,
+          });
+          setShiftDuration(shiftDuration)
 
           if (attendanceData?.length > 0) {
             const firstAttendanceRecord = attendanceData[0];
 
-            if (firstAttendanceRecord?.checkInTime){
+            // if (firstAttendanceRecord?.checkInTime){
+            //   const checkInTime = firstAttendanceRecord?.checkInTime;
+            //   const [hours, minutes] = checkInTime.split(':').map(Number);
+            //   const currentTime = new Date();
+            //   const startTime = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate(), hours, minutes);
+            //   const newElapsedTime = Date.now() - startTime.getTime();
+
+            //   // Set the elapsed time and start the timer
+            //   setElapsedTime(newElapsedTime);
+            //   startTimer(startTime);
+            // }
+            if (firstAttendanceRecord?.checkInTime) {
               const checkInTime = firstAttendanceRecord?.checkInTime;
-              const [hours, minutes] = checkInTime.split(':').map(Number);
+              const [hours, minutes] = checkInTime.split(":").map(Number);
               const currentTime = new Date();
-              const startTime = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate(), hours, minutes);
-              const newElapsedTime = Date.now() - startTime.getTime();
-              
-              // Set the elapsed time and start the timer
-              setElapsedTime(newElapsedTime);
-              startTimer(startTime);
+              const startTime = new Date(
+                currentTime.getFullYear(),
+                currentTime.getMonth(),
+                currentTime.getDate(),
+                hours,
+                minutes
+              );
+              if (firstAttendanceRecord?.checkOutTime) {
+                const checkOutTime = firstAttendanceRecord?.checkOutTime;
+                const [outHours, outMinutes] = checkOutTime
+                  .split(":")
+                  .map(Number);
+                const outTime = new Date(
+                  currentTime.getFullYear(),
+                  currentTime.getMonth(),
+                  currentTime.getDate(),
+                  outHours,
+                  outMinutes
+                );
+
+                const newElapsedTime = outTime - startTime;
+                // Set the elapsed time
+                setElapsedTime(newElapsedTime);
+              } else {
+                let newElapsedTime = Date.now() - startTime.getTime();
+                // Start the timer only if it's a check-in
+                startTimer(startTime);
+                // Set the elapsed time
+                setElapsedTime(newElapsedTime);
+              }
             }
 
             //console.log("First Attendance Record:", firstAttendanceRecord);
@@ -139,7 +194,10 @@ const AttendanceEmployee = () => {
                                         firstAttendanceRecord.checkOutTime,
                                         "HH:mm"
                                       ).format("h:mm A")}`);
-            } else if (firstAttendanceRecord.status === "Absent" || firstAttendanceRecord.status === "On-Leave" ) {
+            } else if (
+              firstAttendanceRecord.status === "Absent" ||
+              firstAttendanceRecord.status === "On-Leave"
+            ) {
               setIsCheckedIn(false);
               setIsCheckedOut(false);
               setStatusText("Not yet checked in");
@@ -166,7 +224,8 @@ const AttendanceEmployee = () => {
       })
       .catch((error) => {
         console.log("error", error);
-      }).finally(()=>{
+      })
+      .finally(() => {
         setIsLoading(false);
         setBdisbale(true);
         setdisableAttend(true);
@@ -209,7 +268,7 @@ const AttendanceEmployee = () => {
   });
 
   const startTimer = (ftime) => {
-    if (ftime){
+    if (ftime) {
       //console.log("first time",ftime)
       //const startTime = Date.now() - elapsedTime;
       const newTimer = setInterval(() => {
@@ -217,8 +276,7 @@ const AttendanceEmployee = () => {
         setElapsedTime(newElapsedTime);
       }, 1000); // Update every second (1000 milliseconds)
       setTimer(newTimer);
-    }
-    else {
+    } else {
       const startTime = Date.now() - elapsedTime;
       const newTimer = setInterval(() => {
         const newElapsedTime = Date.now() - startTime;
@@ -226,7 +284,6 @@ const AttendanceEmployee = () => {
       }, 1000); // Update every second (1000 milliseconds)
       setTimer(newTimer);
     }
-    
   };
 
   const stopTimer = () => {
@@ -234,19 +291,34 @@ const AttendanceEmployee = () => {
     setTimer(null);
   };
 
+  const totalWorkTime = (shiftDuration/60) * 60 * 60 * 1000;
+
+  const percentageCompleted = (elapsedTime / totalWorkTime) * 100;
+  const percentageweek = (elapsedTime / totalWorkTime) * 100;
+  const percentagemonth = (elapsedTime / totalWorkTime) * 100;
+
   const formatElapsedTime = (milliseconds) => {
     if (!milliseconds) return "--";
-  
+
     const totalSeconds = Math.floor(milliseconds / 1000);
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
-  
+
     return `${hours}h ${minutes}m ${seconds}s`;
   };
-  
-  
-  
+
+  const formatTodayTime = (milliseconds) => {
+    if (!milliseconds) return "None";
+
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    return `${hours}h ${minutes}m`;
+  };
+
   const handleCheckIn = () => {
     setBdisbale(false);
     //let current = new Date(Date.now());
@@ -265,6 +337,7 @@ const AttendanceEmployee = () => {
           if (res.data.success === true) {
             startTimer();
             message.success("Check-In successful");
+            setFirstLoad(false);
             setCheckIn({
               ...checkIn,
               attendanceId: res?.data?.Attendance?._id,
@@ -330,6 +403,7 @@ const AttendanceEmployee = () => {
           if (res.data.success === true) {
             stopTimer();
             message.success("Attendance Marked");
+            setFirstLoad(false);
             setCheckout({
               ...checkOut,
               checkOutTime: checkOutTime,
@@ -386,9 +460,6 @@ const AttendanceEmployee = () => {
     return `${hours}h ${minutes}m`;
   };
 
-  
-
-
   const fetchattendance = () => {
     const params = {
       ...filters,
@@ -405,11 +476,20 @@ const AttendanceEmployee = () => {
       .then((res) => {
         if (res.data.success === true) {
           const attendanceData = res.data.Attendance.docs;
+          console.log(attendanceData);
+          setStats({
+            lastWeek: res.data.lastWeek,
+            lastMonth: res.data.lastMonth,
+          });
+          if (!firstload) {
+            setFetchattend6(attendanceData);
+          }
           setFetchattend(attendanceData);
           setPagination({
             ...pagination,
             total: res.data.Attendance.total,
           });
+          setFirstLoad(true);
         }
       })
       .catch((error) => {
@@ -537,9 +617,9 @@ const AttendanceEmployee = () => {
             color:
               status === "Late" || status === "Absent"
                 ? "red"
-                : status === "Present" 
+                : status === "Present"
                 ? "green"
-                : status === "On-Leave" 
+                : status === "On-Leave"
                 ? "orange"
                 : "black",
           }}
@@ -618,9 +698,9 @@ const AttendanceEmployee = () => {
 
                     {/* <div className="punch-info">
                       <div className="punch-hours"> */}
-                        {/* <span>{isCheckedOut ? formatHoursMinutes(checkOut.hoursWorked) : "--"}</span> */}
-                        {/* <span>{isCheckedOut ? formatHoursMinutes(parseFloat(checkOut.hoursWorked) * 60) : "--"}</span> */}
-                        {/* <label>
+                    {/* <span>{isCheckedOut ? formatHoursMinutes(checkOut.hoursWorked) : "--"}</span> */}
+                    {/* <span>{isCheckedOut ? formatHoursMinutes(parseFloat(checkOut.hoursWorked) * 60) : "--"}</span> */}
+                    {/* <label>
                           {isDisabled ? (
                             <Spin size="large" />
                           ) : isCheckedOut ? (
@@ -645,7 +725,6 @@ const AttendanceEmployee = () => {
                         </label>
                       </div>
                     </div>
-
 
                     <div className="punch-btn-section">
                       <button
@@ -694,14 +773,14 @@ const AttendanceEmployee = () => {
                                 style={{
                                   color:
                                     checkIn.status === "Late"
-                                    ? "red"
-                                    : checkIn.status === "Absent"
-                                    ? "red"
-                                    : checkIn.status === "Present"
-                                    ? "green"
-                                    : checkIn.status === "On-Leave"
-                                    ? "orange"
-                                    : "black"
+                                      ? "red"
+                                      : checkIn.status === "Absent"
+                                      ? "red"
+                                      : checkIn.status === "Present"
+                                      ? "green"
+                                      : checkIn.status === "On-Leave"
+                                      ? "orange"
+                                      : "black",
                                 }}
                               >
                                 {isCheckedIn ||
@@ -742,84 +821,123 @@ const AttendanceEmployee = () => {
                         <p>
                           Today{" "}
                           <strong>
-                            3.45 <small>/ 8 hrs</small>
+                            {isCheckedOut
+                              ? formatHoursMinutes(checkOut.hoursWorked)
+                              : formatTodayTime(
+                                  elapsedTime
+                                ) // Create a function to format elapsed time
+                            }{" "}
+                            <small>/ {formatHoursMinutes(Math.floor(shiftDuration))}</small>
                           </strong>
                         </p>
                         <div className="progress">
                           <div
                             className="progress-bar bg-primary"
                             role="progressbar"
-                            style={{ width: "31%" }}
-                            aria-valuenow={31}
+                            style={{ width: `${percentageCompleted}%` }}
+                            aria-valuenow={percentageCompleted}
                             aria-valuemin={0}
-                            aria-valuemax={100}
+                            aria-valuemax={shiftDuration}
                           />
                         </div>
                       </div>
                       <div className="stats-info">
                         <p>
-                          <label>This Week </label>
+                          <label>This Week</label>
                           <strong>
-                            28 <small>/ 40 hrs</small>
+                            {formatHoursMinutes(stats.lastWeek)}{" "}
+                            <small>/ {formatHoursMinutes(Math.floor(shiftDuration*5))}</small>
                           </strong>
                         </p>
                         <div className="progress">
                           <div
                             className="progress-bar bg-warning"
                             role="progressbar"
-                            style={{ width: "31%" }}
-                            aria-valuenow={31}
+                            style={{
+                              width: `${
+                                (parseFloat(stats.lastWeek) / (shiftDuration*5)) * 100
+                              }%`,
+                            }}
+                            aria-valuenow={parseFloat(stats.lastWeek)}
                             aria-valuemin={0}
-                            aria-valuemax={100}
+                            aria-valuemax={(shiftDuration*5)}
                           />
                         </div>
                       </div>
                       <div className="stats-info">
                         <p>
-                          <label>This Month </label>
+                          <label>This Month</label>
                           <strong>
-                            90 <small>/ 160 hrs</small>
+                            {formatHoursMinutes(stats.lastMonth)}{" "}
+                            <small>/ {formatHoursMinutes(Math.floor(shiftDuration*22))}</small>
                           </strong>
                         </p>
                         <div className="progress">
                           <div
                             className="progress-bar bg-success"
                             role="progressbar"
-                            style={{ width: "62%" }}
-                            aria-valuenow={62}
+                            style={{
+                              width: `${
+                                (parseFloat(stats.lastMonth) / (shiftDuration*22)) * 100
+                              }%`,
+                            }}
+                            aria-valuenow={parseFloat(stats.lastMonth)}
                             aria-valuemin={0}
-                            aria-valuemax={100}
+                            aria-valuemax={(shiftDuration*22)}
                           />
                         </div>
                       </div>
+
                       <div className="stats-info">
                         <p>
                           Remaining{" "}
                           <strong>
-                            90 <small>/ 160 hrs</small>
+                            {formatHoursMinutes(
+                              Math.floor((shiftDuration*22) - parseFloat(stats.lastMonth))
+                            )}{" "}
+                            <small>/ {formatHoursMinutes(Math.floor(shiftDuration*22))}</small>
                           </strong>
                         </p>
                         <div className="progress">
                           <div
                             className="progress-bar bg-danger"
                             role="progressbar"
-                            style={{ width: "62%" }}
-                            aria-valuenow={62}
+                            style={{
+                              width: `${
+                                (((shiftDuration*22) - parseFloat(stats.lastMonth)) /
+                                (shiftDuration*22)) *
+                                100
+                              }%`,
+                            }}
+                            aria-valuenow={
+                              100 * 60 - parseFloat(stats.lastMonth)
+                            }
                             aria-valuemin={0}
-                            aria-valuemax={100}
+                            aria-valuemax={100 * 60}
                           />
                         </div>
                       </div>
                       <div className="stats-info">
                         <p>
-                          Overtime <strong>4</strong>
+                          Overtime{" "}
+                          <strong>
+                            {isCheckedOut
+                            ? formatHoursMinutes(checkOut.overTime)
+                            : "None"}
+                          </strong>
                         </p>
                         <div className="progress">
                           <div
                             className="progress-bar bg-info"
                             role="progressbar"
-                            style={{ width: "22%" }}
-                            aria-valuenow={22}
+                            style={{
+                              width: `${checkOut.overTime
+                                ? 100
+                                : 0}%`,
+                            }}
+                            aria-valuenow={checkOut.overTime
+                              ? 100
+                              : 0}
                             aria-valuemin={0}
                             aria-valuemax={100}
                           />
@@ -830,9 +948,9 @@ const AttendanceEmployee = () => {
                 </div>
               </div>
               <div className="col-md-4">
-                <div className="card recent-activity">
+                {/* <div className="card recent-activity">
                   <div className="card-body">
-                    <h5 className="card-title">Today Activity</h5>
+                    <h5 className="card-title">Last 6 days</h5>
                     <div className="stats-list" style={{ height: "347px" }}>
                       <ul className="res-activity-list">
                         <li>
@@ -842,6 +960,10 @@ const AttendanceEmployee = () => {
                           <p className="res-activity-time">
                             <i className="fa fa-clock-o" />
                             <label>10.00 AM.</label>
+                            <i className="fa fa-clock-o" />
+                            <label>10.00 AM.</label>
+                            <i className="fa fa-clock-o" />
+                            <label>Absent</label>
                           </p>
                         </li>
                         <li>
@@ -851,6 +973,10 @@ const AttendanceEmployee = () => {
                           <p className="res-activity-time">
                             <i className="fa fa-clock-o" />
                             <label>11.00 AM.</label>
+                            <i className="fa fa-clock-o" />
+                            <label>11.00 AM.</label>
+                            <i className="fa fa-clock-o" />
+                            <label>Absent</label>
                           </p>
                         </li>
                         <li>
@@ -860,6 +986,10 @@ const AttendanceEmployee = () => {
                           <p className="res-activity-time">
                             <i className="fa fa-clock-o" />
                             <label>11.15 AM.</label>
+                            <i className="fa fa-clock-o" />
+                            <label>11.15 AM.</label>
+                            <i className="fa fa-clock-o" />
+                            <label>Absent</label>
                           </p>
                         </li>
                         <li>
@@ -869,6 +999,10 @@ const AttendanceEmployee = () => {
                           <p className="res-activity-time">
                             <i className="fa fa-clock-o" />
                             <label>1.30 PM.</label>
+                            <i className="fa fa-clock-o" />
+                            <label>1.30 PM.</label>
+                            <i className="fa fa-clock-o" />
+                            <label>Absent</label>
                           </p>
                         </li>
                         <li>
@@ -878,6 +1012,10 @@ const AttendanceEmployee = () => {
                           <p className="res-activity-time">
                             <i className="fa fa-clock-o" />
                             <label htmlFor="">2.00 PM.</label>
+                            <i className="fa fa-clock-o" />
+                            <label htmlFor="">2.00 PM.</label>
+                            <i className="fa fa-clock-o" />
+                            <label>Absent</label>
                           </p>
                         </li>
                         <li>
@@ -887,8 +1025,94 @@ const AttendanceEmployee = () => {
                           <p className="res-activity-time">
                             <i className="fa fa-clock-o" />
                             <label>7.30 PM.</label>
+                            <i className="fa fa-clock-o" />
+                            <label>7.30 PM.</label>
+                            <i className="fa fa-clock-o" />
+                            <label>Absent</label>
                           </p>
                         </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div> */}
+                <div className="card recent-activity">
+                  <div className="card-body">
+                    <h5 className="card-title">Last 6 Days</h5>
+                    <div className="stats-list" style={{ height: "347px" }}>
+                      <ul
+                        className="res-activity-list"
+                        style={{ marginRight: "10px" }}
+                      >
+                        {fetchattend6?.slice(0, 6).map((attendance, index) => (
+                          <li key={index}>
+                            <p className="mb-0">
+                              <label>
+                                {moment(attendance.attendanceDate).format(
+                                  "ddd, Do MMM YYYY"
+                                )}
+                              </label>
+                            </p>
+                            <p
+                              className="res-activity-time"
+                              style={{
+                                display: "flex",
+                                flexDirection: "row",
+                                justifyContent: "space-between",
+                              }}
+                            >
+                              {attendance.checkInTime ? (
+                                <a>
+                                  <i className="fa fa-clock-o" />{" "}
+                                  <label>
+                                    {attendance.checkInTime
+                                      ? moment(
+                                          attendance.checkInTime,
+                                          "HH:mm"
+                                        ).format("h:mm A")
+                                      : "--"}
+                                  </label>
+                                </a>
+                              ) : (
+                                ""
+                              )}
+
+                              {attendance.checkInTime ? (
+                                <a>
+                                  <i className="fa fa-clock-o" />{" "}
+                                  <label>
+                                    {attendance.checkOutTime
+                                      ? moment(
+                                          attendance.checkOutTime,
+                                          "HH:mm"
+                                        ).format("h:mm A")
+                                      : "--"}
+                                  </label>
+                                </a>
+                              ) : (
+                                ""
+                              )}
+
+                              <a>
+                                <span>Status:</span>{" "}
+                                <label
+                                  style={{
+                                    color:
+                                      attendance.status === "Late" ||
+                                      attendance.status === "Absent"
+                                        ? "red"
+                                        : attendance.status === "Present"
+                                        ? "green"
+                                        : attendance.status === "On-Leave"
+                                        ? "orange"
+                                        : "black",
+                                  }}
+                                >
+                                  {attendance.status}
+                                </label>
+                              </a>
+                            </p>
+                          </li>
+                        ))}
                       </ul>
                     </div>
                   </div>

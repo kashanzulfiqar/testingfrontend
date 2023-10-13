@@ -226,6 +226,10 @@ const Projects = () => {
 
   const handleSearch = () => {
     setFilters(selectedFilters);
+    setPagination({
+      ...pagination,
+      current: 1,
+    });
   };
 
   const handleReset = () => {
