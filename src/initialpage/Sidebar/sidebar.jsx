@@ -459,7 +459,10 @@ const Sidebar = (props) => {
                   {/* <a href="javascript:" className={isSideMenu == "dashboard" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "dashboard" ? "" : "dashboard")}><i className="la la-dashboard" /> <span> Dashboard</span> <span className="menu-arrow" /></a> */}
                   {isSideMenu == "dashboard" ?
                     <ul >
-                      <li><Link className={pathname.includes('main/dashboard') ? "active" : ""} to="/main/dashboard">Admin Dashboard</Link></li>
+                      {
+                        (user_state?.role === 'admin' || permissions?.companyManagement) &&
+                        <li><Link className={pathname.includes('main/dashboard') ? "active" : ""} to="/main/dashboard">Admin Dashboard</Link></li>
+                      }
                       <li><Link className={pathname.includes('employee/dashboard') ? "active" : ""}
                         to="/employee/dashboard">Employee Dashboard</Link></li>
                     </ul>

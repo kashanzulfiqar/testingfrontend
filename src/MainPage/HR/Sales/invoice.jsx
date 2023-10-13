@@ -80,8 +80,10 @@ const Invoices = () => {
       status: values?.status ? values?.status : ''
     }
     if(formatted_data?.clientName || formatted_data?.fromDate || formatted_data?.status){
-      getAllInvoices(formatted_data, currentPage, pageSize);
-      setFilterValues(formatted_data)
+      // getAllInvoices(formatted_data, currentPage, pageSize);
+      getAllInvoices(formatted_data, 1, pageSize);
+      setFilterValues(formatted_data);
+      setCurrentPage(1);
       // console.log(formatted_data);
     }
   }

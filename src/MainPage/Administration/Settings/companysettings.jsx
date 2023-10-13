@@ -152,7 +152,7 @@ useEffect(() => {
                    <li className={showComponent === 'Invoice Tags' ? 'active' : ''}>
                       <a href="javascript:void(0)" onClick={() => {setShowComponent('Invoice Tags') }}>
                         <i className="fa fa-fw fa-tags" style={{marginRight: '8px'}}></i>
-                        Inovie Tags
+                        Invoice Tags
                       </a>
                    </li>
                    <li className={showComponent === 'Invoice Counter' ? 'active' : ''}>

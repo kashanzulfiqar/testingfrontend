@@ -4,7 +4,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Helmet } from "react-helmet";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 // import { Link, withRouter } from 'react-router-dom';
 import { User, Avatar_19, Avatar_07, Avatar_06, Avatar_14 } from '../../../Entryfile/imagepath.jsx'
 
@@ -17,6 +17,8 @@ import Sidebar from '../../../initialpage/Sidebar/sidebar';
 import Offcanvas from '../../../Entryfile/offcanvance/index.jsx';
 import "../../index.css"
 import { useSelector } from 'react-redux';
+import { Spin, message } from 'antd';
+import { apiServices } from '../../../Services/apiServices.js';
 
 
 const barchartdata = [
@@ -39,23 +41,49 @@ const linechartdata = [
 ];
 const AdminDashboard = () => {
 
-  const [menu, setMenu] = useState(false)
+  const nav = useNavigate();
+  const permissions = useSelector((state) => state?.permissionsSlice?.data);
   const user_state = useSelector((state) => state.user.loginvalue);
+  const role1 = user_state?.user?.role
   const admin_name = user_state?.user?.fullName
+  
+  const [menu, setMenu] = useState(false)
+  const [loader, setLoader] = useState(true)
+  const [allData, setAllData] = useState({})
 
-  const toggleMobileMenu = () => {
-    setMenu(!menu)
-  }
 
   useEffect(() => {
-    let firstload = localStorage.getItem("firstload")
-    if (firstload === "false") {
-      setTimeout(function () {
-        window.location.reload(1)
-        localStorage.removeItem("firstload")
-      }, 1000)
+    if(role1 === 'admin' || permissions?.companyManagement) {
+      getDahsboardData();
+    }else{
+      nav(`${role1 === 'client' ? '/client/client-profile' : role1 === 'focalperson' ? `/client/focal-profile` : role1 === 'admin' ? `/main/dashboard` : `/employee/dashboard`}`)
     }
-  });
+  }, [])
+
+  const getDahsboardData = () => {
+    setLoader(true);
+    apiServices("GET", 'user/admin-dashboard', null, user_state)
+      .then((res) => {
+        // if (res?.data?.success === true) {
+          setAllData(res?.data);
+          setLoader(false);
+          console.log(res?.data);
+        // }
+      })
+      .catch((err) => {
+        setLoader(false);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Get Dashboard Data Error"
+          }!`
+        );
+      });
+  }
+  
 
   return (
     <>
@@ -82,13 +110,22 @@ const AdminDashboard = () => {
               </div>
             </div>
             {/* /Page Header */}
+            {
+              loader ?
+              <div className="row" style={{marginInline: '0px'}}>
+                <div className="card dash-widget" style={{background: '#ededed', boxShadow: 'none'}}>
+                    <div className="card-body" style={{height: '100px', display: 'grid', placeItems: 'center'}}>
+                      <Spin />
+                    </div>
+                </div>
+              </div> :
             <div className="row">
               <div className="col-md-6 col-sm-6 col-lg-6 col-xl-3">
                 <div className="card dash-widget">
                   <div className="card-body">
                     <span className="dash-widget-icon"><i className="fa fa-cubes" /></span>
                     <div className="dash-widget-info">
-                      <h3>112</h3>
+                      <h3>{allData?.projectsCount}</h3>
                       <span>Projects</span>
                     </div>
                   </div>
@@ -99,7 +136,7 @@ const AdminDashboard = () => {
                   <div className="card-body">
                     <span className="dash-widget-icon"><i className="fa fa-usd" /></span>
                     <div className="dash-widget-info">
-                      <h3>44</h3>
+                      <h3>{allData?.clientsCount}</h3>
                       <span>Clients</span>
                     </div>
                   </div>
@@ -121,13 +158,14 @@ const AdminDashboard = () => {
                   <div className="card-body">
                     <span className="dash-widget-icon"><i className="fa fa-user" /></span>
                     <div className="dash-widget-info">
-                      <h3>218</h3>
+                      <h3>{allData?.employeeCount}</h3>
                       <span>Employees</span>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+            }
             <div className="row">
               <div className="col-md-12">
                 <div className="row">
@@ -263,21 +301,21 @@ const AdminDashboard = () => {
                     <h5 className="card-title">Statistics</h5>
                     <div className="stats-list">
                       <div className="stats-info">
-                        <p>Today Leave <strong>4 <small>/ 65</small></strong></p>
+                        <p>Today Leave <strong>{allData?.statistics?.todayLeaves} <small>/ {allData?.employeeCount}</small></strong></p>
                         <div className="progress">
-                          <div className="progress-bar bg-primary" role="progressbar" style={{ width: '31%' }} aria-valuenow={31} aria-valuemin={0} aria-valuemax={100} />
+                          <div className="progress-bar bg-primary" role="progressbar" style={{ width: `${allData?.statistics?.todayLeaves / allData?.employeeCount * 100}%` }} aria-valuenow={allData?.statistics?.todayLeaves / allData?.employeeCount * 100} aria-valuemin={0} aria-valuemax={100} />
                         </div>
                       </div>
                       <div className="stats-info">
-                        <p>Pending Invoice <strong>15 <small>/ 92</small></strong></p>
+                        <p>Pending Invoice <strong>{allData?.statistics?.pendingInvoices} <small>/ {allData?.statistics?.totalInvoices}</small></strong></p>
                         <div className="progress">
-                          <div className="progress-bar bg-warning" role="progressbar" style={{ width: '31%' }} aria-valuenow={31} aria-valuemin={0} aria-valuemax={100} />
+                          <div className="progress-bar bg-warning" role="progressbar" style={{ width: `${allData?.statistics?.pendingInvoices / allData?.statistics?.totalInvoices * 100}%` }} aria-valuenow={31} aria-valuemin={0} aria-valuemax={100} />
                         </div>
                       </div>
                       <div className="stats-info">
-                        <p>Completed Projects <strong>85 <small>/ 112</small></strong></p>
+                        <p>Completed Projects <strong>{allData?.statistics?.completedProject} <small>/ {allData?.projectsCount}</small></strong></p>
                         <div className="progress">
-                          <div className="progress-bar bg-success" role="progressbar" style={{ width: '62%' }} aria-valuenow={62} aria-valuemin={0} aria-valuemax={100} />
+                          <div className="progress-bar bg-success" role="progressbar" style={{ width: `${allData?.statistics?.completedProject / allData?.projectsCount * 100}%` }} aria-valuenow={allData?.statistics?.completedProject / allData?.projectsCount * 100} aria-valuemin={0} aria-valuemax={100} />
                         </div>
                       </div>
                       <div className="stats-info">
