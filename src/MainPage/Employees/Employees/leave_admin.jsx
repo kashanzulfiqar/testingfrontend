@@ -164,6 +164,10 @@ const LeaveAdmin = () => {
 
     if (name || type || status || (from && to)) {
       setFilters(selectedFilters);
+      setPagination({
+        ...pagination,
+        current: 1,
+      });
     } else {
       message.warning("Both Start and End Date required");
     }
@@ -820,7 +824,7 @@ const LeaveAdmin = () => {
                       total: pagination.total,
                       showTotal: (total, range) =>
                         `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                      pageSizeOptions: ["10", "20", "30", "40"], // Options to change page size
+                      pageSizeOptions: ["20", "30", "40", "50"], // Options to change page size
                       showSizeChanger: true, // Show the page size changer
                       onChange: (page, pageSize) => {
                         setPagination({

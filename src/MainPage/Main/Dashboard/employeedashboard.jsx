@@ -285,7 +285,7 @@ const EmployeeDashboard = () => {
                   <section>
                     <h5 className="dash-title"><label>Work Anniversaries</label></h5>
                     <div className="card">
-                      <div className="card-body">
+                      <div className="card-body" style={{display:"flex", flexDirection:'column', alignItems:"flex-start"}}>
                       {isLoading ? (
                         <Spin size="large" />
                       ) : (
@@ -299,7 +299,7 @@ const EmployeeDashboard = () => {
 
                           return (
                             <div key={item._id} className="time-list">
-                              <div className="dash-stats-list">
+                              <div className="dash-stats-list" style={{display:"flex", flexDirection:'column', alignItems:"flex-start"}}>
                                 <h4><img src={item.imageUrl || user_icon} alt={item.fullName} className="avatar" />{item.fullName}</h4>
                                 <p>{yearsSinceJoining} years at the company</p>
                               </div>
@@ -328,7 +328,7 @@ const EmployeeDashboard = () => {
 
                           return (
                             <div key={item._id} className="time-list">
-                              <div className="dash-stats-list">
+                              <div className="dash-stats-list" style={{display:"flex", flexDirection:'column', alignItems:"flex-start"}}>
                                 
                                 <h4><img src={item.imageUrl || user_icon} alt={item.fullName} className="avatar" />{item.fullName}</h4>
                                 <p>{age} years old</p>

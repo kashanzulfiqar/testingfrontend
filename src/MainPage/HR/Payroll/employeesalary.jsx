@@ -177,8 +177,16 @@ const EmployeeSalary = () => {
 
     if ((name || id) && (!month && !year)) {
       setFilters(selectedFilters);
+      setPagination({
+        ...pagination,
+        current: 1,
+      });
     } else if (month && year) {
       setFilters(selectedFilters);
+      setPagination({
+        ...pagination,
+        current: 1,
+      });
     }
     else {
       message.warning("Both Month and Year required");
