@@ -920,7 +920,8 @@ const antIcon = (
                         <thead>
                           <tr>
                             <th>Project Name </th>
-                            <th style={{paddingRight: '140px'}}>Progress</th>
+                            {/* <th>Progress</th> */}
+                            <th>Status</th>
                             {/* <th className="text-end">Action</th> */}
                           </tr>
                         </thead>
@@ -935,10 +936,15 @@ const antIcon = (
                                 <span>9</span> <span className="text-muted">tasks completed</span>
                               </small> */}
                             </td>
-                            <td>
+                            {/* <td>
                               <div className="progress progress-xs progress-striped">
                                 <div className="progress-bar" role="progressbar" data-bs-toggle="tooltip" title="65%" style={{ width: '65%' }} />
                               </div>
+                            </td> */}
+                            <td>
+                              <label className={project?.status==="Completed" ? "badge bg-inverse-success" : project?.status==="Paused" ? "badge bg-inverse-warning" : project?.status==="Archived" ? "badge bg-inverse-danger" : "badge bg-inverse-info"}>
+                                {project?.status}
+                              </label>
                             </td>
                             {/* <td className="text-end">
                               <div className="dropdown dropdown-action">
