@@ -6,39 +6,22 @@ import React, { useEffect, useState } from 'react';
 import { Helmet } from "react-helmet";
 import { Link, useNavigate } from 'react-router-dom';
 // import { Link, withRouter } from 'react-router-dom';
-import { User, Avatar_19, Avatar_07, Avatar_06, Avatar_14 } from '../../../Entryfile/imagepath.jsx'
-
+import { User, Avatar_19, Avatar_07, Avatar_06, Avatar_14, user_icon } from '../../../Entryfile/imagepath.jsx'
 import {
   BarChart, Bar, Cell, ResponsiveContainer,
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
 } from 'recharts';
-import Header from '../../../initialpage/Sidebar/header'
-import Sidebar from '../../../initialpage/Sidebar/sidebar';
-import Offcanvas from '../../../Entryfile/offcanvance/index.jsx';
 import "../../index.css"
 import { useSelector } from 'react-redux';
-import { Spin, message } from 'antd';
+import { Button, Spin, message } from 'antd';
 import { apiServices } from '../../../Services/apiServices.js';
+import AddClientModal from '../../Pages/Profile/modals/AddClientModal.jsx';
+import { getAllISOCodes } from 'iso-country-currency';
+import Modal from "@mui/material/Modal";
+import { LoadingOutlined } from '@ant-design/icons';
+import EditProjects from '../../Employees/Projects/EditProjects.jsx';
 
 
-const barchartdata = [
-  { y: '2006', "Total Income": 100, 'Total Outcome': 90 },
-  { y: '2007', "Total Income": 75, 'Total Outcome': 65 },
-  { y: '2008', "Total Income": 50, 'Total Outcome': 40 },
-  { y: '2009', "Total Income": 75, 'Total Outcome': 65 },
-  { y: '2010', "Total Income": 50, 'Total Outcome': 40 },
-  { y: '2011', "Total Income": 75, 'Total Outcome': 65 },
-  { y: '2012', "Total Income": 100, 'Total Outcome': 90 }
-];
-const linechartdata = [
-  { y: '2006', "Total Sales": 50, 'Total Revenue': 90 },
-  { y: '2007', "Total Sales": 75, 'Total Revenue': 65 },
-  { y: '2008', "Total Sales": 50, 'Total Revenue': 40 },
-  { y: '2009', "Total Sales": 75, 'Total Revenue': 65 },
-  { y: '2010', "Total Sales": 50, 'Total Revenue': 40 },
-  { y: '2011', "Total Sales": 75, 'Total Revenue': 65 },
-  { y: '2012', "Total Sales": 100, 'Total Revenue': 50 }
-];
 const AdminDashboard = () => {
 
   const nav = useNavigate();
@@ -48,13 +31,108 @@ const AdminDashboard = () => {
   const admin_name = user_state?.user?.fullName
   
   const [menu, setMenu] = useState(false)
+  const [allDomain, setAllDomain] = useState([]);
+  const [allCurrencies, setAllCurrencies] = useState([]);
   const [loader, setLoader] = useState(true)
+  const [delLoader, setDelLoader] = useState(false)
   const [allData, setAllData] = useState({})
+  const [tableYearData, setTableYearData] = useState([])
+  const [tableMonthData, setTableMonthData] = useState([])
+  const [year, setYear] = useState('')
+  const [allInvoices, setAllInvoices] = useState([]);
+  const [allPayments, setAllPayments] = useState([]);
+  const [allClients, setAllClients] = useState([]);
+  const [allProjects, setAllProjects] = useState([]);
+  const [allRequests, setAllRequests] = useState([]);
+  const [tableLoader, setTableLoader] = useState({
+    invoice: true,
+    payment: true,
+    client: true,
+    project: true,
+    request: true,
+  });
+  const [perm, setPerm] = useState({
+    invoice: false,
+    payment: false,
+    client: false,
+    project: false,
+    request: false,
+  });
+  const [open, setOpen] = useState({
+    isAddOpen: false,
+    data: ''
+  });
+  const [open2, setOpen2] = useState({
+    editOpen: false,
+    delOpen: false,
+    data: "",
+  });
+  const [allCountries, setAllCountries] = useState([]);
+  const [paginationDetail, setPaginationDetail] = useState();
+
 
 
   useEffect(() => {
     if(role1 === 'admin' || permissions?.companyManagement) {
       getDahsboardData();
+      // --------------------------
+      if(role1 === 'admin' || permissions?.managePayrolls){
+        getAllInvoices();
+        getAllPayments();
+        setPerm(prev => {
+          return { ...prev, invoice: true, payment: true }
+        })
+      }else{
+        setPerm(prev => {
+          return { ...prev, invoice: false, payment: false }
+        })
+        setTableLoader(prev => { 
+          return {...prev, invoice: false, payment: false}
+        });
+      }
+      // --------------------------
+      if(role1 === 'admin' || permissions?.clientManagement){
+        getAllClients();
+        setPerm(prev => {
+          return { ...prev, client: true }
+        })
+      }else{
+        setPerm(prev => {
+          return { ...prev, client: false }
+        })
+        setTableLoader(prev => { 
+          return {...prev, client: false}
+        });
+      }
+      // --------------------------
+      if(role1 === 'admin' || permissions?.projectManagement){
+        getAllProjects();
+        setPerm(prev => {
+          return { ...prev, project: true }
+        })
+      }else{
+        setPerm(prev => {
+          return { ...prev, project: false }
+        })
+        setTableLoader(prev => { 
+          return {...prev, project: false}
+        });
+      }
+      // --------------------------
+      if(role1 === 'admin' || permissions?.viewAllRequest){
+        getAllRequests();
+        setPerm(prev => {
+          return { ...prev, request: true }
+        })
+      }else{
+        setPerm(prev => {
+          return { ...prev, request: false }
+        })
+        setTableLoader(prev => { 
+          return {...prev, request: false}
+        });
+      }
+      
     }else{
       nav(`${role1 === 'client' ? '/client/client-profile' : role1 === 'focalperson' ? `/client/focal-profile` : role1 === 'admin' ? `/main/dashboard` : `/employee/dashboard`}`)
     }
@@ -66,8 +144,22 @@ const AdminDashboard = () => {
       .then((res) => {
         // if (res?.data?.success === true) {
           setAllData(res?.data);
+
+          const d = res?.data?.expenses;
+          const latestYearData = d?.reduce((max, obj) => (obj?.year > max?.year ? obj : max), d[0]);
+          monthHandler(latestYearData)
+
+          const recentYear = Math.max(...d?.map(item => item?.year));
+          const sortedYears = d?.filter(item => item?.year >= recentYear - 9)?.sort((a, b) => a?.year - b?.year);
+          const yearsToInclude = Array.from({ length: 10 }, (_, index) => recentYear - 9 + index);
+          yearsToInclude?.forEach(year => {
+            if (!sortedYears?.some(item => item?.year === year)) {
+              sortedYears?.push({ year });
+            }
+          });
+          const sortedYears1 = sortedYears?.filter(item => item?.year >= recentYear - 9)?.sort((a, b) => a?.year - b?.year);
+          setTableYearData(sortedYears1)
           setLoader(false);
-          console.log(res?.data);
         // }
       })
       .catch((err) => {
@@ -83,14 +175,301 @@ const AdminDashboard = () => {
         );
       });
   }
+
+  const getAllInvoices = () => {
+    apiServices("GET", `invoices?page=${1}&limit=${3}`, null, user_state)
+      .then((res) => {
+        if (res?.data?.success === true) {
+          setAllInvoices(res?.data?.Invoices?.docs);
+          setTableLoader(prev => { 
+            return {...prev, invoice: false}
+          });
+        }
+      })
+      .catch((err) => {
+        setTableLoader(prev => { 
+          return {...prev, invoice: false}
+        });
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Get All Invoices Error"
+          }!`
+        );
+      });
+  }
+
+  const getAllPayments = () => {
+    apiServices("GET", `invoices?status=${'Paid'}&page=${1}&limit=${3}`, null, user_state)
+      .then((res) => {
+        if (res?.data?.success === true) {
+          setAllPayments(res?.data?.Invoices?.docs);
+          setTableLoader(prev => { 
+            return {...prev, payment: false}
+          });
+        }
+      })
+      .catch((err) => {
+        setTableLoader(prev => { 
+          return {...prev, payment: false}
+        });
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Get All Payments Error"
+          }!`
+        );
+      });
+  }
+
+  const getAllClients = () => {
+    setTableLoader(prev => { 
+      return {...prev, client: true}
+    });
+    apiServices("GET", `client/view-client?deleted=false&page=${1}&limit=${5}`, null, user_state)
+      .then((res) => {
+        if (res?.data?.success === true) {
+          setAllClients(res?.data?.clients?.docs);
+          setTableLoader(prev => { 
+            return {...prev, client: false}
+          });
+        }
+      })
+      .catch((err) => {
+        setTableLoader(prev => { 
+          return {...prev, client: false}
+        });
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Get All Clients Error"
+          }!`
+        );
+      });
+  }
+
+  const onFinishDelete = (id) => {
+    setDelLoader(true)
+    apiServices("DELETE", "client/delete-client", id, user_state)
+      .then((res) => {
+        if (res?.data?.success === true) {
+          getAllClients();
+          setOpen({ isDelOpen: false, data: '' })
+          message.success("Client Deleted Successfully!");
+          setDelLoader(false)
+        }
+      })
+      .catch((err) => {
+        setDelLoader(false)
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Client Delete Error"
+          }!`
+        );
+      });
+  }
+
+  const getAllProjects = () => {
+    setTableLoader(prev => { 
+      return {...prev, project: true}
+    });
+    apiServices("GET", `project-management?page=${1}&limit=${5}`, null, user_state)
+      .then((res) => {
+        if (res.data.success === true) {
+          setAllProjects(res?.data?.projects?.docs);
+          setTableLoader(prev => { 
+            return {...prev, project: false}
+          });
+        }
+      })
+      .catch((err) => {
+        setTableLoader(prev => { 
+          return {...prev, project: false}
+        });
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Get Project Error"
+          }`
+        );
+      });
+  };
+
+  const getAllDomain = () => {
+    apiServices("GET", "team/view-team", null, user_state)
+    .then((res) => {
+      // console.log(res?.data);
+      if (res?.data?.success === true) {
+        const all_domains = res?.data?.Team;
+        const sortedData = all_domains.slice().sort((a, b) => a.teamName.localeCompare(b.teamName));
+        setAllDomain(sortedData);
+      }
+    })
+    .catch((err) => {
+      // console.log(err);
+      message.error(
+        `${
+          err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
+            ? err?.response?.data?.validation?.body?.message
+            : "Get Domain Info Error"
+        }!`
+      );
+    });
+  }
+
+  const getAllCurrencies = () => {
+    const isoCodes = getAllISOCodes();
+    const uniqueCurrencies = new Set();
+    isoCodes.forEach(isoCode => {
+        // const currency = isoCode.currency;
+        const currency = {
+          currency: isoCode?.currency,
+          symbol: isoCode?.symbol
+        };
+        // uniqueCurrencies.add(currency);
+        uniqueCurrencies.add(JSON.stringify(currency));
+    });
+    const currency_d = [...uniqueCurrencies].map(currency => JSON.parse(currency));
+    const sorted_data = currency_d.sort((a, b) => a.currency.localeCompare(b.currency));
+    // setAllCurrencies([...uniqueCurrencies])
+    setAllCurrencies(sorted_data)
+  };
+
+  const DeleteProject = (id) => {
+    setDelLoader(true);
+    apiServices("DELETE", `project-management/`, id, user_state)
+      .then((res) => {
+        if (res.data.success === true) {
+          message.success(`Project Deleted Successfully!`);
+          setDelLoader(false);
+          getAllProjects();
+          closeModal();
+        }
+      })
+
+      .catch((err) => {
+        setLoader(false)
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Error Deleting Project"
+          }`
+        );
+      });
+  };
+
+  const getAllRequests = async () => {
+    setTableLoader(prev => { 
+      return {...prev, request: true}
+    });
+    apiServices("GET", `requests/view-all-request?page=${1}&limit=${2}`, null, user_state)
+      .then((res) => {
+        if (res.data.success === true) {
+          setAllRequests(res?.data?.Requests?.docs);
+          setTableLoader(prev => { 
+            return {...prev, request: false}
+          });
+        }
+      })
+      .catch((err) => {
+        setTableLoader(prev => { 
+          return {...prev, request: false}
+        });
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Get All Requests Error"
+          }!`
+        );
+      });
+  };
+
+  const closeModal = () => {
+    setOpen2({
+      editOpen: false,
+      delOpen: false,
+      data: "",
+    });
+  };
+
+  const monthHandler = (data) => {
+    const allMonths = [
+      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    ];
+
+    function fillMissingMonths(data) {
+      const monthMap = {};
+      data?.forEach(item => (monthMap[item?.month] = item));
+    
+      const result = allMonths?.map(month => {
+        return monthMap[month] || { month, totalRevenue: 0 };
+        // return monthMap[month] || { month };
+      });
+    
+      return result;
+    }
+    
+    const filledData = fillMissingMonths(data?.months);
+    setTableMonthData(filledData)
+    setYear(data?.year)
+  }
+
+  const formatDate = (inputDate) => {
+    if(inputDate){
+      const date = new Date(inputDate);
+      const day = date.getDate();
+      const month = date.toLocaleString('default', { month: 'short' });
+      const year = date.getFullYear();
+  
+      const formattedDate = `${day} ${month} ${year}`;
+      return formattedDate;
+    }
+}
+
+const getAllCountries = () => {
+  const isoCodes = getAllISOCodes();
+  const sorted_data = isoCodes.sort((a, b) => a.countryName.localeCompare(b.countryName));
+  setAllCountries(sorted_data)
+};
+const antIcon = (
+  <LoadingOutlined
+    style={{
+      fontSize: 24,
+      color: '#fff'
+    }}
+    spin
+  />
+);
   
 
   return (
     <>
       <div className={`main-wrapper ${menu ? 'slide-nav' : ''}`}>
-
-        {/* <Header onMenuClick={(value) => toggleMobileMenu()} />
-        <Sidebar /> */}
         <div className="page-wrapper">
           <Helmet>
             <title>Dashboard - DaftarPro</title>
@@ -175,23 +554,34 @@ const AdminDashboard = () => {
                         <h3 className="card-title">Total Revenue</h3>
                         {/* <button onClick={() => {}}>SVG</button> */}
 
-                        <ResponsiveContainer width='100%' height={300}>
-                          <BarChart
-
-                            data={barchartdata}
-                            margin={{
-                              top: 5, right: 5, left: 5, bottom: 5,
-                            }}
-                          >
-                            <CartesianGrid />
-                            <XAxis dataKey="y" />
-                            <YAxis />
-
-                            <Legend />
-                            <Bar dataKey="Total Income" fill="#ff9b44" />
-                            <Bar dataKey="Total Outcome" fill="#fc6075" />
-                          </BarChart>
-                        </ResponsiveContainer>
+                        {
+                          loader ? <Spin style={{height: '300px', display: 'grid', placeItems: 'center'}} /> :
+                          allData?.expenses?.length > 0 ?
+                          <ResponsiveContainer width='100%' height={300}>
+                            <BarChart
+                              data={tableYearData}
+                              margin={{
+                                top: 5, right: 5, left: 5, bottom: 5,
+                              }}
+                              onClick={(value) => {
+                                if(value?.activePayload[0]?.payload?.months){
+                                  monthHandler(value?.activePayload[0]?.payload)
+                                }
+                              }}
+                            >
+                              <CartesianGrid />
+                              <XAxis dataKey="year" />
+                              <YAxis tickFormatter={(value) => value >= 1000 ? `${(value / 1000).toFixed(1)}k` : value} />
+                              <Tooltip
+                                labelFormatter={(value) => `Year : ${value}`}
+                                formatter={(value) => <label>{value.toLocaleString()}</label>}
+                              />
+                              <Legend />
+                              <Bar dataKey="totalRevenue" name='Total Revenue' fill="#ff9b44" maxBarSize={20} />
+                            </BarChart>
+                          </ResponsiveContainer> :
+                          <label style={{height: '300px', display: 'grid', placeItems: 'center', color: 'grey'}}>No Record Found!</label>
+                        }
 
                       </div>
                     </div>
@@ -199,19 +589,28 @@ const AdminDashboard = () => {
                   <div className="col-md-6 text-center">
                     <div className="card">
                       <div className="card-body">
-                        <h3 className="card-title">Sales Overview</h3>
-                        <ResponsiveContainer width='100%' height={300}>
-                          <LineChart data={linechartdata}
-                            margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
-                            <CartesianGrid />
-                            <XAxis dataKey="y" />
-                            <YAxis />
-
-                            <Legend />
-                            <Line type="monotone" dataKey="Total Sales" stroke="#ff9b44" fill="#00c5fb" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 7 }} />
-                            <Line type="monotone" dataKey="Total Revenue" stroke="#fc6075" fill="#0253cc" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 7 }} />
-                          </LineChart>
-                        </ResponsiveContainer>
+                        <h3 className="card-title">Sales Overview {year ? ` - ${year}` : ''}</h3>
+                        {
+                          loader ? <Spin style={{height: '300px', display: 'grid', placeItems: 'center'}} /> :
+                          allData?.expenses?.length > 0 ?
+                          <ResponsiveContainer width='100%' height={300}>
+                            {/* <LineChart data={linechartdata} */}
+                            <LineChart data={tableMonthData}
+                              margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
+                              <CartesianGrid />
+                              <XAxis dataKey="month" interval={0} />
+                              <YAxis tickFormatter={(value) => value >= 1000 ? `${(value / 1000).toFixed(1)}k` : value} />
+                              <Tooltip
+                                formatter={(value) => <label>{value === 0 ? 'N/A' : value?.toLocaleString()}</label>}
+                              />
+                              <Legend />
+                              <Line type="monotone" dataKey="totalRevenue" name='Total Revenue' stroke="#ff9b44" fill="#00c5fb" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 7 }} />
+                              {/* <Line type="monotone" dataKey="Total Sales" stroke="#ff9b44" fill="#00c5fb" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 7 }} /> */}
+                              {/* <Line type="monotone" dataKey="Total Revenue" stroke="#fc6075" fill="#0253cc" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 7 }} /> */}
+                            </LineChart>
+                          </ResponsiveContainer> :
+                          <label style={{height: '300px', display: 'grid', placeItems: 'center', color: 'grey'}}>No Record Found!</label>
+                        }
 
                       </div>
                     </div>
@@ -375,43 +774,39 @@ const AdminDashboard = () => {
                 <div className="card flex-fill">
                   <div className="card-body">
                     <h4 className="card-title">Today Absent <span className="badge bg-inverse-danger ml-2">5</span></h4>
-                    <div className="leave-info-box">
-                      <div className="media d-flex align-items-center">
-                        <Link to="/app/profile/employee-profile" className="avatar"><img alt="" src={User} /></Link>
-                        <div className="media-body">
-                          <div className="text-sm my-0">Martin Lewis</div>
+                    {
+                      tableLoader?.request ? <Spin style={{display: 'grid', placeItems: 'center', height: '263px'}} /> :
+                      !perm?.request ? <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '285px', textAlign: 'center'}}>You don't have permission to view <br /> Requests!</label> :
+                      allRequests?.length > 0 ?
+                      allRequests?.map((req) => (
+                        <div className="leave-info-box">
+                          <div className="media d-flex align-items-center">
+                            {/* <Link to="/app/profile/employee-profile" className="avatar"><img alt="" src={User} /></Link> */}
+                            <img className="avatar" alt="" src={req?.user?.imageUrl} />
+                            <div className="media-body">
+                              <div className="text-sm my-0">{req?.user?.fullName}</div>
+                            </div>
+                          </div>
+                          <div className="row align-items-center mt-3">
+                            <div className="col-6">
+                              <label className="mb-0" style={{fontWeight: '500', fontSize: '12px'}}>{formatDate(req?.startDate || '')}</label>
+                              <label className="text-sm text-muted">Leave Date</label>
+                            </div>
+                            <div className="col-6 text-end">
+                              <span className={req?.status==="Approved" ? "badge bg-inverse-success" : req?.status==="Pending" ? "badge bg-inverse-warning" : req?.status==="Declined" ? "badge bg-inverse-danger" : ''}>
+                                {req?.status}
+                              </span>
+                            </div>
+                          </div>
                         </div>
+                      )) : <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '290px'}}>No Record Found!</label>
+                    }
+                    {
+                      (allRequests?.length > 0 && perm?.request) && 
+                      <div className="load-more text-center">
+                        <Link to="/employee/request-admin" className="text-dark">See More</Link>
                       </div>
-                      <div className="row align-items-center mt-3">
-                        <div className="col-6">
-                          <h6 className="mb-0">4 Sep 2019</h6>
-                          <span className="text-sm text-muted">Leave Date</span>
-                        </div>
-                        <div className="col-6 text-end">
-                          <span className="badge bg-inverse-danger">Pending</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="leave-info-box">
-                      <div className="media d-flex align-items-center">
-                        <Link to="/app/profile/employee-profile" className="avatar"><img alt="" src={User} /></Link>
-                        <div className="media-body">
-                          <div className="text-sm my-0">Martin Lewis</div>
-                        </div>
-                      </div>
-                      <div className="row align-items-center mt-3">
-                        <div className="col-6">
-                          <h6 className="mb-0">4 Sep 2019</h6>
-                          <span className="text-sm text-muted">Leave Date</span>
-                        </div>
-                        <div className="col-6 text-end">
-                          <span className="badge bg-inverse-success">Approved</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="load-more text-center">
-                      <a className="text-dark" href="#">Load More</a>
-                    </div>
+                    }
                   </div>
                 </div>
               </div>
@@ -424,58 +819,51 @@ const AdminDashboard = () => {
                     <h3 className="card-title mb-0">Invoices</h3>
                   </div>
                   <div className="card-body">
-                    <div className="table-responsive">
-                      <table className="table table-nowrap custom-table mb-0">
-                        <thead>
-                          <tr>
-                            <th>Invoice ID</th>
-                            <th>Client</th>
-                            <th>Due Date</th>
-                            <th>Total</th>
-                            <th>Status</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <td><Link to="/app/sales/invoices-view">#INV-0001</Link></td>
-                            <td>
-                              <h2><a href="#">Global Technologies</a></h2>
-                            </td>
-                            <td>11 Mar 2019</td>
-                            <td>$380</td>
-                            <td>
-                              <span className="badge bg-inverse-warning">Partially Paid</span>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td><Link to="/app/sales/invoices-view">#INV-0002</Link></td>
-                            <td>
-                              <h2><a href="#">Delta Infotech</a></h2>
-                            </td>
-                            <td>8 Feb 2019</td>
-                            <td>$500</td>
-                            <td>
-                              <span className="badge bg-inverse-success">Paid</span>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td><Link to="/app/sales/invoices-view">#INV-0003</Link></td>
-                            <td>
-                              <h2><a href="#">Cream Inc</a></h2>
-                            </td>
-                            <td>23 Jan 2019</td>
-                            <td>$60</td>
-                            <td>
-                              <span className="badge bg-inverse-danger">Unpaid</span>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
+                    <div className="table-responsive" style={{minHeight: '203px'}}>
+                      {
+                        tableLoader?.invoice ? <Spin style={{display: 'grid', placeItems: 'center', height: '203px'}} /> :
+                        !perm?.invoice ? <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '241px'}}>You don't have permission to view Invoices!</label> :
+                        allInvoices?.length > 0 ?
+                        <table className="table table-nowrap custom-table mb-0">
+                          <thead>
+                            <tr>
+                              <th>Invoice Number</th>
+                              <th>Client</th>
+                              <th>Due Date</th>
+                              <th>Total</th>
+                              <th>Status</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {
+                              allInvoices?.map((invoice) => (
+                                <tr>
+                                  <td><Link to="/invoices/view-invoice" state={{invoice_data: invoice}}>{invoice?.invoiceNo}</Link></td>
+                                  <td>
+                                    <h2><a href="#">{invoice?.client?.clientName}</a></h2>
+                                  </td>
+                                  <td>{formatDate(invoice?.dueDate || '')}</td>
+                                  <td>{invoice?.totalAmount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoice?.currency}</td>
+                                  <td>
+                                    <label className={invoice?.status==="Paid" ? "badge bg-inverse-success" : invoice?.status==="Partially Paid" ? "badge bg-inverse-info" : invoice?.status==="Pending" ? "badge bg-inverse-warning" : invoice?.status==="Cancelled" ? "badge bg-inverse-danger" : ''}>
+                                      {invoice?.status}
+                                    </label>
+                                  </td>
+                                </tr>
+                              ))
+                            }
+                          </tbody>
+                        </table>  :
+                          <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '241px'}}>No Record Found!</label>
+                      }
                     </div>
                   </div>
-                  <div className="card-footer">
-                    <Link to="/app/sales/invoices">View all invoices</Link>
-                  </div>
+                  {
+                    (allInvoices?.length > 0 && perm?.invoice) && 
+                    <div className="card-footer">
+                      <Link to="/invoices">View all invoices</Link>
+                    </div>
+                  }
                 </div>
               </div>
               <div className="col-md-6 d-flex">
@@ -484,11 +872,15 @@ const AdminDashboard = () => {
                     <h3 className="card-title mb-0">Payments</h3>
                   </div>
                   <div className="card-body">
-                    <div className="table-responsive">
+                    <div className="table-responsive" style={{minHeight: '203px'}}>
+                    {
+                      tableLoader?.payment ? <Spin style={{display: 'grid', placeItems: 'center', height: '203px'}} /> :
+                      !perm?.payment ? <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '241px'}}>You don't have permission to view Payments!</label> :
+                      allPayments?.length > 0 ?
                       <table className="table custom-table table-nowrap mb-0">
                         <thead>
                           <tr>
-                            <th>Invoice ID</th>
+                            <th>Invoice Number</th>
                             <th>Client</th>
                             <th>Payment Type</th>
                             <th>Paid Date</th>
@@ -496,40 +888,31 @@ const AdminDashboard = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          <tr>
-                            <td><Link to="/app/sales/invoices-view">#INV-0001</Link></td>
-                            <td>
-                              <h2><a href="#">Global Technologies</a></h2>
-                            </td>
-                            <td>Paypal</td>
-                            <td>11 Mar 2019</td>
-                            <td>$380</td>
-                          </tr>
-                          <tr>
-                            <td><Link to="/app/sales/invoices-view">#INV-0002</Link></td>
-                            <td>
-                              <h2><a href="#">Delta Infotech</a></h2>
-                            </td>
-                            <td>Paypal</td>
-                            <td>8 Feb 2019</td>
-                            <td>$500</td>
-                          </tr>
-                          <tr>
-                            <td><Link to="/app/sales/invoices-view">#INV-0003</Link></td>
-                            <td>
-                              <h2><a href="#">Cream Inc</a></h2>
-                            </td>
-                            <td>Paypal</td>
-                            <td>23 Jan 2019</td>
-                            <td>$60</td>
-                          </tr>
+                        {
+                          allPayments?.map((payment) => (
+                            <tr>
+                              <td><Link to="/invoices/view-invoice" state={{invoice_data: payment}}>{payment?.invoiceNo}</Link></td>
+                              <td>
+                                <h2><a href="#">{payment?.client?.clientName}</a></h2>
+                              </td>
+                              <td>{payment?.paymentType}</td>
+                              <td>{formatDate(payment?.paymentDate || '')}</td>
+                              <td>{payment?.paidAmount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {payment?.currency}</td>
+                            </tr>
+                          ))
+                        }
                         </tbody>
-                      </table>
+                      </table> :
+                        <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '241px'}}>No Record Found!</label>
+                      }
                     </div>
                   </div>
-                  <div className="card-footer">
-                    <Link to="/app/sales/payments">View all payments</Link>
-                  </div>
+                  {
+                    (allPayments?.length > 0 && perm?.payment) && 
+                    <div className="card-footer">
+                      <Link to="/payments">View all payments</Link>
+                    </div>
+                  }
                 </div>
               </div>
             </div>
@@ -540,26 +923,35 @@ const AdminDashboard = () => {
                     <h3 className="card-title mb-0">Clients</h3>
                   </div>
                   <div className="card-body">
-                    <div className="table-responsive">
+                    <div className="table-responsive" style={{minHeight: '385px'}}>
+                    {
+                      tableLoader?.client ? <Spin style={{display: 'grid', placeItems: 'center', height: '402px'}} /> :
+                      !perm?.client ? <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '402px'}}>You don't have permission to view Clients!</label> :
+                      allClients?.length > 0 ?
                       <table className="table custom-table mb-0">
                         <thead>
                           <tr>
-                            <th>Name</th>
+                            <th style={{paddingLeft: '20px'}}>Name</th>
                             <th>Email</th>
-                            <th>Status</th>
+                            <th>Phone No</th>
                             <th className="text-end">Action</th>
                           </tr>
                         </thead>
                         <tbody>
-                          <tr>
+                        {
+                          allClients?.map((client) => (
+                          <tr style={{height: '62px'}}>
                             <td>
                               <h2 className="table-avatar">
-                                <a href="#" className="avatar"><img alt="" src={Avatar_19} /></a>
-                                <Link to="/app/profile/client-profile">Barry Cuda <span>CEO</span></Link>
+                                {/* <a href="#" className="avatar"><img alt="" src={Avatar_19} /></a>
+                                <Link to="/app/profile/client-profile">Barry Cuda <span>CEO</span></Link> */}
+                                <Link to="/client/client-profile" state={{client_data: client}} onClick={() => sessionStorage.setItem(`clients_tab`, 'projects')} className="avatar"><img alt="" src={client?.logo || user_icon} /></Link>
+                                <Link to="/client/client-profile" state={{client_data: client}} onClick={() => sessionStorage.setItem(`clients_tab`, 'projects')}>{client?.clientName}</Link>
                               </h2>
                             </td>
-                            <td>barrycuda@example.com</td>
-                            <td>
+                            <td>{client?.clientEmail}</td>
+                            <td>{client?.clientPhoneNo}</td>
+                            {/* <td>
                               <div className="dropdown action-label">
                                 <a className="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
                                   <i className="fa fa-dot-circle-o text-success" /> Active
@@ -569,140 +961,31 @@ const AdminDashboard = () => {
                                   <a className="dropdown-item" href="#"><i className="fa fa-dot-circle-o text-danger" /> Inactive</a>
                                 </div>
                               </div>
-                            </td>
+                            </td> */}
                             <td className="text-end">
                               <div className="dropdown dropdown-action">
-                                <a href="#" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
+                                <a href="javascript:void(0)" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
                                 <div className="dropdown-menu dropdown-menu-right">
-                                  <a className="dropdown-item" href="#"><i className="fa fa-pencil m-r-5" /> Edit</a>
-                                  <a className="dropdown-item" href="#"><i className="fa fa-trash-o m-r-5" /> Delete</a>
+                                  <a className="dropdown-item" href="javascript:void(0)" onClick={() => { setOpen({ isAddOpen: true, data: client }); getAllCountries() }}><i className="fa fa-pencil m-r-5" /> Edit</a>
+                                  <a className="dropdown-item" href="javascript:void(0)" onClick={() => { setOpen({ isDelOpen: true, data: client }) }}><i className="fa fa-trash-o m-r-5" /> Delete</a>
                                 </div>
                               </div>
                             </td>
                           </tr>
-                          <tr>
-                            <td>
-                              <h2 className="table-avatar">
-                                <a href="#" className="avatar"><img alt="" src={Avatar_19} /></a>
-                                <Link to="/app/profile/client-profile">Tressa Wexler <span>Manager</span></Link>
-                              </h2>
-                            </td>
-                            <td>tressawexler@example.com</td>
-                            <td>
-                              <div className="dropdown action-label">
-                                <a className="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-                                  <i className="fa fa-dot-circle-o text-danger" /> Inactive
-                                </a>
-                                <div className="dropdown-menu dropdown-menu-right">
-                                  <a className="dropdown-item" href="#"><i className="fa fa-dot-circle-o text-success" /> Active</a>
-                                  <a className="dropdown-item" href="#"><i className="fa fa-dot-circle-o text-danger" /> Inactive</a>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="text-end">
-                              <div className="dropdown dropdown-action">
-                                <a href="#" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
-                                <div className="dropdown-menu dropdown-menu-right">
-                                  <a className="dropdown-item" href="#"><i className="fa fa-pencil m-r-5" /> Edit</a>
-                                  <a className="dropdown-item" href="#"><i className="fa fa-trash-o m-r-5" /> Delete</a>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <h2 className="table-avatar">
-                                <Link to="/app/profile/client-profile" className="avatar"><img alt="" src={Avatar_07} /></Link>
-                                <Link to="/app/profile/client-profile">Ruby Bartlett <span>CEO</span></Link>
-                              </h2>
-                            </td>
-                            <td>rubybartlett@example.com</td>
-                            <td>
-                              <div className="dropdown action-label">
-                                <a className="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-                                  <i className="fa fa-dot-circle-o text-danger" /> Inactive
-                                </a>
-                                <div className="dropdown-menu dropdown-menu-right">
-                                  <a className="dropdown-item" href="#"><i className="fa fa-dot-circle-o text-success" /> Active</a>
-                                  <a className="dropdown-item" href="#"><i className="fa fa-dot-circle-o text-danger" /> Inactive</a>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="text-end">
-                              <div className="dropdown dropdown-action">
-                                <a href="#" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
-                                <div className="dropdown-menu dropdown-menu-right">
-                                  <a className="dropdown-item" href="#"><i className="fa fa-pencil m-r-5" /> Edit</a>
-                                  <a className="dropdown-item" href="#"><i className="fa fa-trash-o m-r-5" /> Delete</a>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <h2 className="table-avatar">
-                                <Link to="/app/profile/client-profile" className="avatar"><img alt="" src={Avatar_06} /></Link>
-                                <Link to="/app/profile/client-profile"> Misty Tison <span>CEO</span></Link>
-                              </h2>
-                            </td>
-                            <td>mistytison@example.com</td>
-                            <td>
-                              <div className="dropdown action-label">
-                                <a className="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-                                  <i className="fa fa-dot-circle-o text-success" /> Active
-                                </a>
-                                <div className="dropdown-menu dropdown-menu-right">
-                                  <a className="dropdown-item" href="#"><i className="fa fa-dot-circle-o text-success" /> Active</a>
-                                  <a className="dropdown-item" href="#"><i className="fa fa-dot-circle-o text-danger" /> Inactive</a>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="text-end">
-                              <div className="dropdown dropdown-action">
-                                <a href="#" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
-                                <div className="dropdown-menu dropdown-menu-right">
-                                  <a className="dropdown-item" href="#"><i className="fa fa-pencil m-r-5" /> Edit</a>
-                                  <a className="dropdown-item" href="#"><i className="fa fa-trash-o m-r-5" /> Delete</a>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <h2 className="table-avatar">
-                                <Link to="/app/profile/client-profile" className="avatar"><img alt="" src={Avatar_14} /></Link>
-                                <Link to="/app/profile/client-profile"> Daniel Deacon <span>CEO</span></Link>
-                              </h2>
-                            </td>
-                            <td>danieldeacon@example.com</td>
-                            <td>
-                              <div className="dropdown action-label">
-                                <a className="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-                                  <i className="fa fa-dot-circle-o text-danger" /> Inactive
-                                </a>
-                                <div className="dropdown-menu dropdown-menu-right">
-                                  <a className="dropdown-item" href="#"><i className="fa fa-dot-circle-o text-success" /> Active</a>
-                                  <a className="dropdown-item" href="#"><i className="fa fa-dot-circle-o text-danger" /> Inactive</a>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="text-end">
-                              <div className="dropdown dropdown-action">
-                                <a href="#" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
-                                <div className="dropdown-menu dropdown-menu-right">
-                                  <a className="dropdown-item" href="#"><i className="fa fa-pencil m-r-5" /> Edit</a>
-                                  <a className="dropdown-item" href="#"><i className="fa fa-trash-o m-r-5" /> Delete</a>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
+                          ))
+                        }
                         </tbody>
-                      </table>
+                      </table> :
+                        <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '402px'}}>No Record Found!</label>
+                      }
                     </div>
                   </div>
-                  <div className="card-footer">
-                    <Link to="/app/employees/clients">View all clients</Link>
-                  </div>
+                  {
+                    (allClients?.length > 0 && perm?.client) && 
+                    <div className="card-footer">
+                      <Link to="/clients">View all clients</Link>
+                    </div>
+                  }
                 </div>
               </div>
               <div className="col-md-6 d-flex">
@@ -711,146 +994,247 @@ const AdminDashboard = () => {
                     <h3 className="card-title mb-0">Recent Projects</h3>
                   </div>
                   <div className="card-body">
-                    <div className="table-responsive">
+                    <div className="table-responsive" style={{minHeight: '385px'}}>
+                    {
+                      tableLoader?.project ? <Spin style={{display: 'grid', placeItems: 'center', height: '402px'}} /> :
+                      !perm?.project ? <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '402px'}}>You don't have permission to view Projects!</label> :
+                      allProjects?.length > 0 ?
                       <table className="table custom-table mb-0">
                         <thead>
                           <tr>
                             <th>Project Name </th>
-                            <th>Progress</th>
+                            {/* <th>Progress</th> */}
                             <th className="text-end">Action</th>
                           </tr>
                         </thead>
                         <tbody>
-                          <tr>
+                        {
+                          allProjects?.map((project) => (
+                          <tr style={{height: '62px'}}>
                             <td>
-                              <h2><Link to="/app/projects/projects-view">Office Management</Link></h2>
-                              <small className="block text-ellipsis">
+                              <h2><Link to={`/projects/projects-view/${project?._id}`}>{project?.projectName}</Link></h2>
+                              {/* <small className="block text-ellipsis">
                                 <span>1</span> <span className="text-muted">open tasks, </span>
                                 <span>9</span> <span className="text-muted">tasks completed</span>
-                              </small>
+                              </small> */}
                             </td>
-                            <td>
+                            {/* <td>
                               <div className="progress progress-xs progress-striped">
                                 <div className="progress-bar" role="progressbar" data-bs-toggle="tooltip" title="65%" style={{ width: '65%' }} />
                               </div>
-                            </td>
+                            </td> */}
                             <td className="text-end">
                               <div className="dropdown dropdown-action">
-                                <a href="#" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
+                                <a href="javascript:void(0)" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
                                 <div className="dropdown-menu dropdown-menu-right">
-                                  <a className="dropdown-item" href="#"><i className="fa fa-pencil m-r-5" /> Edit</a>
-                                  <a className="dropdown-item" href="#"><i className="fa fa-trash-o m-r-5" /> Delete</a>
+                                  <a
+                                    className="dropdown-item"
+                                    href="javascript:void(0)"
+                                    onClick={() => {
+                                      getAllDomain();
+                                      getAllCurrencies();
+                                      setOpen2({
+                                        editOpen: true,
+                                        delOpen: false,
+                                        data: project,
+                                      });
+                                    }}
+                                  >
+                                    <i className="fa fa-pencil m-r-5" /> Edit
+                                  </a>
+                                  <a
+                                    className="dropdown-item"
+                                    href="javascript:void(0)"
+                                    onClick={() => {
+                                      setOpen2({
+                                        editOpen: false,
+                                        delOpen: true,
+                                        data: project,
+                                      });
+                                    }}
+                                  >
+                                    <i className="fa fa-trash-o m-r-5" /> Delete
+                                  </a>
                                 </div>
                               </div>
                             </td>
                           </tr>
-                          <tr>
-                            <td>
-                              <h2><Link to="/app/projects/projects-view">Project Management</Link></h2>
-                              <small className="block text-ellipsis">
-                                <span>2</span> <span className="text-muted">open tasks, </span>
-                                <span>5</span> <span className="text-muted">tasks completed</span>
-                              </small>
-                            </td>
-                            <td>
-                              <div className="progress progress-xs progress-striped">
-                                <div className="progress-bar" role="progressbar" data-bs-toggle="tooltip" title="15%" style={{ width: '15%' }} />
-                              </div>
-                            </td>
-                            <td className="text-end">
-                              <div className="dropdown dropdown-action">
-                                <a href="#" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
-                                <div className="dropdown-menu dropdown-menu-right">
-                                  <a className="dropdown-item" href="#"><i className="fa fa-pencil m-r-5" /> Edit</a>
-                                  <a className="dropdown-item" href="#"><i className="fa fa-trash-o m-r-5" /> Delete</a>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <h2><Link to="/app/projects/projects-view">Video Calling App</Link></h2>
-                              <small className="block text-ellipsis">
-                                <span>3</span> <span className="text-muted">open tasks, </span>
-                                <span>3</span> <span className="text-muted">tasks completed</span>
-                              </small>
-                            </td>
-                            <td>
-                              <div className="progress progress-xs progress-striped">
-                                <div className="progress-bar" role="progressbar" data-bs-toggle="tooltip" title="49%" style={{ width: '49%' }} />
-                              </div>
-                            </td>
-                            <td className="text-end">
-                              <div className="dropdown dropdown-action">
-                                <a href="#" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
-                                <div className="dropdown-menu dropdown-menu-right">
-                                  <a className="dropdown-item" href="#"><i className="fa fa-pencil m-r-5" /> Edit</a>
-                                  <a className="dropdown-item" href="#"><i className="fa fa-trash-o m-r-5" /> Delete</a>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <h2><Link to="/app/projects/projects-view">Hospital Administration</Link></h2>
-                              <small className="block text-ellipsis">
-                                <span>12</span> <span className="text-muted">open tasks, </span>
-                                <span>4</span> <span className="text-muted">tasks completed</span>
-                              </small>
-                            </td>
-                            <td>
-                              <div className="progress progress-xs progress-striped">
-                                <div className="progress-bar" role="progressbar" data-bs-toggle="tooltip" title="88%" style={{ width: '88%' }} />
-                              </div>
-                            </td>
-                            <td className="text-end">
-                              <div className="dropdown dropdown-action">
-                                <a href="#" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
-                                <div className="dropdown-menu dropdown-menu-right">
-                                  <a className="dropdown-item" href="#"><i className="fa fa-pencil m-r-5" /> Edit</a>
-                                  <a className="dropdown-item" href="#"><i className="fa fa-trash-o m-r-5" /> Delete</a>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <h2><Link to="/app/projects/projects-view">Digital Marketplace</Link></h2>
-                              <small className="block text-ellipsis">
-                                <span>7</span> <span className="text-muted">open tasks, </span>
-                                <span>14</span> <span className="text-muted">tasks completed</span>
-                              </small>
-                            </td>
-                            <td>
-                              <div className="progress progress-xs progress-striped">
-                                <div className="progress-bar" role="progressbar" data-bs-toggle="tooltip" title="100%" style={{ width: '100%' }} />
-                              </div>
-                            </td>
-                            <td className="text-end">
-                              <div className="dropdown dropdown-action">
-                                <a href="#" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
-                                <div className="dropdown-menu dropdown-menu-right">
-                                  <a className="dropdown-item" ><i className="fa fa-pencil m-r-5" /> Edit</a>
-                                  <a className="dropdown-item"><i className="fa fa-trash-o m-r-5" /> Delete</a>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
+                          ))
+                        }
                         </tbody>
-                      </table>
+                      </table> :
+                       <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '402px'}}>No Record Found!</label>
+                     }
                     </div>
                   </div>
-                  <div className="card-footer">
-                    <Link to="/app/projects/project_dashboard">View all projects</Link>
-                  </div>
+                  {
+                    (allProjects?.length > 0 && perm?.project) && 
+                    <div className="card-footer">
+                      <Link to="/projects/project_dashboard">View all projects</Link>
+                    </div>
+                  }
                 </div>
               </div>
             </div>
           </div>
           {/* /Page Content */}
+
+        {
+          open?.isAddOpen &&
+          <AddClientModal
+            open={open}
+            setOpen={setOpen}
+            user_state={user_state}
+            allClients={allClients}
+            setAllClients={setAllClients}
+            setPaginationDetail={setPaginationDetail}
+            paginationDetail={paginationDetail}
+            allCountries={allCountries}
+          />
+        }
+          {/* Delete Client Modal */}
+          <Modal
+            open={open.isDelOpen}
+            onClose={() => { setOpen({ isDelOpen: false, data: '' }) }}
+            aria-labelledby="modal-modal-title"
+            aria-describedby="modal-modal-description"
+            disableRestoreFocus
+            BackdropProps={{
+              style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
+            }}
+          >
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content" style={{ height: "280px" }}>
+                <div
+                  className="modal-body"
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                  }}
+                >
+                  <div className="form-header">
+                    <h3 style={{ marginBottom: "30px" }}>Delete Client</h3>
+                    <p>
+                      Are you sure you want to delete{" "}
+                      <b>{open?.data?.clientName}</b>?
+                    </p>
+                  </div>
+                  <div className="modal-btn delete-action">
+                    <div className="row">
+                      <div className="col-6">
+                        <Button
+                          htmlType="submit"
+                          className="btn btn-primary continue-btn"
+                          onClick={() => onFinishDelete(open?.data?._id)}
+                          disabled={delLoader}
+                          style={{width: '100%'}}
+                        >
+                          {
+                            delLoader ? <Spin size="small" indicator={antIcon} />
+                              : 'Delete'
+                          }
+                        </Button>
+                      </div>
+                      <div className="col-6">
+                        <Button
+                          onClick={() => { setOpen({ isDelOpen: false, data: '' }) }}
+                          className="btn btn-primary submit-btn"
+                          style={{width: '100%'}}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Modal>
+         {/* /Delete Client Modal */}
+
+         {/* /Edit Project Modal */}
+         {open2?.editOpen && (
+           <EditProjects
+           data={open2?.data}
+           editModal={open2?.editOpen}
+           closeEditModal={closeModal}
+           getprojects={getAllProjects}
+           getlistprojects={() => { }}
+           allCurrencies={allCurrencies}
+           allDomain={allDomain}
+           />
+        )}
+        {/* /Edit Project Modal */}
+
+        {/* /Delete Project Modal */}
+        <Modal
+          open={open2?.delOpen}
+          onClose={closeModal}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+          disableRestoreFocus
+          BackdropProps={{
+            style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
+          }}
+        >
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content" style={{ height: "280px" }}>
+              <div
+                className="modal-body"
+                style={{
+                  display: "flex",
+
+                  flexDirection: "column",
+
+                  justifyContent: "center",
+                }}
+              >
+                <div className="form-header">
+                  <h3 style={{ marginBottom: "30px" }}>Delete Project</h3>
+                  <p>
+                    Are you sure you want to Delete{" "}
+                    <b>{open2?.data?.projectName}</b>?
+                  </p>
+                </div>
+
+                <div className="modal-btn delete-action">
+                  <div className="row">
+                    <div className="col-6">
+                      <Button
+                        htmlType="submit"
+                        className="btn btn-primary continue-btn"
+                        onClick={() => DeleteProject(open2?.data?._id)}
+                        style={{ width: "100%" }}
+                        disabled={delLoader}
+                      >
+                        {
+                        delLoader ? <Spin size="small" indicator={antIcon} />
+                          : 'Delete'
+                        }
+                      </Button>
+                    </div>
+
+                    <div className="col-6">
+                      <Button
+                        onClick={closeModal}
+                        className="btn btn-primary submit-btn"
+                        style={{ width: "100%" }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Modal>
+        {/* /Delete Project Modal */}
+
         </div>
       </div>
-      <Offcanvas />
+      {/* <Offcanvas /> */}
     </>
   );
 }
