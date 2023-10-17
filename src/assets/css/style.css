@@ -7175,6 +7175,14 @@ textarea.form-control {
 
 /* ................. custom css styling ................ */
 
+/* admin dashboard graph styling */
+.recharts-surface {
+  padding-right: 0px;
+}
+.recharts-responsive-container{
+  margin-left: -15px;
+}
+
 .taxInnerMargin > div > div{
   margin-top: -7px !important;
 }
