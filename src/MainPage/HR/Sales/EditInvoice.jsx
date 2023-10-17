@@ -58,6 +58,7 @@ const EditInvoice = () => {
             dueDate: moment(edit_invoice_data?.dueDate, 'YYYY-MM-DD'),
         }
         form.setFieldsValue(data);
+        calculateTotal();
         setCurrencyIs(edit_invoice_data?.currency)
         setWordCount(edit_invoice_data?.otherInformation)
     }else{
