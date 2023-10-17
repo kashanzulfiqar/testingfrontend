@@ -15,11 +15,8 @@ import "../../index.css"
 import { useSelector } from 'react-redux';
 import { Button, Spin, message } from 'antd';
 import { apiServices } from '../../../Services/apiServices.js';
-import AddClientModal from '../../Pages/Profile/modals/AddClientModal.jsx';
 import { getAllISOCodes } from 'iso-country-currency';
-import Modal from "@mui/material/Modal";
 import { LoadingOutlined } from '@ant-design/icons';
-import EditProjects from '../../Employees/Projects/EditProjects.jsx';
 
 
 const AdminDashboard = () => {
@@ -257,31 +254,6 @@ const AdminDashboard = () => {
       });
   }
 
-  const onFinishDelete = (id) => {
-    setDelLoader(true)
-    apiServices("DELETE", "client/delete-client", id, user_state)
-      .then((res) => {
-        if (res?.data?.success === true) {
-          getAllClients();
-          setOpen({ isDelOpen: false, data: '' })
-          message.success("Client Deleted Successfully!");
-          setDelLoader(false)
-        }
-      })
-      .catch((err) => {
-        setDelLoader(false)
-        message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
-              ? err?.response?.data?.validation?.body?.message
-              : "Client Delete Error"
-          }!`
-        );
-      });
-  }
-
   const getAllProjects = () => {
     setTableLoader(prev => { 
       return {...prev, project: true}
@@ -306,74 +278,6 @@ const AdminDashboard = () => {
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
               : "Get Project Error"
-          }`
-        );
-      });
-  };
-
-  const getAllDomain = () => {
-    apiServices("GET", "team/view-team", null, user_state)
-    .then((res) => {
-      // console.log(res?.data);
-      if (res?.data?.success === true) {
-        const all_domains = res?.data?.Team;
-        const sortedData = all_domains.slice().sort((a, b) => a.teamName.localeCompare(b.teamName));
-        setAllDomain(sortedData);
-      }
-    })
-    .catch((err) => {
-      // console.log(err);
-      message.error(
-        `${
-          err?.response?.data?.msg
-            ? err?.response?.data?.msg
-            : err?.response?.data?.validation?.body?.message
-            ? err?.response?.data?.validation?.body?.message
-            : "Get Domain Info Error"
-        }!`
-      );
-    });
-  }
-
-  const getAllCurrencies = () => {
-    const isoCodes = getAllISOCodes();
-    const uniqueCurrencies = new Set();
-    isoCodes.forEach(isoCode => {
-        // const currency = isoCode.currency;
-        const currency = {
-          currency: isoCode?.currency,
-          symbol: isoCode?.symbol
-        };
-        // uniqueCurrencies.add(currency);
-        uniqueCurrencies.add(JSON.stringify(currency));
-    });
-    const currency_d = [...uniqueCurrencies].map(currency => JSON.parse(currency));
-    const sorted_data = currency_d.sort((a, b) => a.currency.localeCompare(b.currency));
-    // setAllCurrencies([...uniqueCurrencies])
-    setAllCurrencies(sorted_data)
-  };
-
-  const DeleteProject = (id) => {
-    setDelLoader(true);
-    apiServices("DELETE", `project-management/`, id, user_state)
-      .then((res) => {
-        if (res.data.success === true) {
-          message.success(`Project Deleted Successfully!`);
-          setDelLoader(false);
-          getAllProjects();
-          closeModal();
-        }
-      })
-
-      .catch((err) => {
-        setLoader(false)
-        message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
-              ? err?.response?.data?.validation?.body?.message
-              : "Error Deleting Project"
           }`
         );
       });
@@ -406,14 +310,6 @@ const AdminDashboard = () => {
           }!`
         );
       });
-  };
-
-  const closeModal = () => {
-    setOpen2({
-      editOpen: false,
-      delOpen: false,
-      data: "",
-    });
   };
 
   const monthHandler = (data) => {
@@ -465,8 +361,6 @@ const antIcon = (
     spin
   />
 );
-  
-
   return (
     <>
       <div className={`main-wrapper ${menu ? 'slide-nav' : ''}`}>
@@ -571,7 +465,19 @@ const antIcon = (
                             >
                               <CartesianGrid />
                               <XAxis dataKey="year" />
-                              <YAxis tickFormatter={(value) => value >= 1000 ? `${(value / 1000).toFixed(1)}k` : value} />
+                              {/* <YAxis tickFormatter={(value) => value >= 1000 ? `${(value / 1000).toFixed(1)}k` : value} /> */}
+                              <YAxis 
+                                tickFormatter={(value) => {
+                                if (value >= 1e9) {
+                                  return `${(value / 1e9).toFixed(1)}B`;
+                                } else if (value >= 1e6) {
+                                  return `${(value / 1e6).toFixed(1)}M`;
+                                } else if (value >= 1e3) {
+                                  return `${(value / 1e3).toFixed(1)}K`;
+                                } else {
+                                  return value;
+                                }
+                              }} />
                               <Tooltip
                                 labelFormatter={(value) => `Year : ${value}`}
                                 formatter={(value) => <label>{value.toLocaleString()}</label>}
@@ -599,7 +505,18 @@ const antIcon = (
                               margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
                               <CartesianGrid />
                               <XAxis dataKey="month" interval={0} />
-                              <YAxis tickFormatter={(value) => value >= 1000 ? `${(value / 1000).toFixed(1)}k` : value} />
+                              {/* <YAxis tickFormatter={(value) => value >= 1000 ? `${(value / 1000).toFixed(1)}k` : value} /> */}
+                              <YAxis tickFormatter={(value) => {
+                                if (value >= 1e9) {
+                                  return `${(value / 1e9).toFixed(1)}B`;
+                                } else if (value >= 1e6) {
+                                  return `${(value / 1e6).toFixed(1)}M`;
+                                } else if (value >= 1e3) {
+                                  return `${(value / 1e3).toFixed(1)}K`;
+                                } else {
+                                  return value;
+                                }
+                              }} />
                               <Tooltip
                                 formatter={(value) => <label>{value === 0 ? 'N/A' : value?.toLocaleString()}</label>}
                               />
@@ -782,15 +699,15 @@ const antIcon = (
                         <div className="leave-info-box">
                           <div className="media d-flex align-items-center">
                             {/* <Link to="/app/profile/employee-profile" className="avatar"><img alt="" src={User} /></Link> */}
-                            <img className="avatar" alt="" src={req?.user?.imageUrl} />
+                            <img className="avatar" alt="" src={req?.user?.imageUrl || user_icon} />
                             <div className="media-body">
                               <div className="text-sm my-0">{req?.user?.fullName}</div>
                             </div>
                           </div>
                           <div className="row align-items-center mt-3">
-                            <div className="col-6">
+                            <div className="col-6 d-grid">
                               <label className="mb-0" style={{fontWeight: '500', fontSize: '12px'}}>{formatDate(req?.startDate || '')}</label>
-                              <label className="text-sm text-muted">Leave Date</label>
+                              <label className="text-sm text-muted mt-1">Leave Date</label>
                             </div>
                             <div className="col-6 text-end">
                               <span className={req?.status==="Approved" ? "badge bg-inverse-success" : req?.status==="Pending" ? "badge bg-inverse-warning" : req?.status==="Declined" ? "badge bg-inverse-danger" : ''}>
@@ -934,7 +851,7 @@ const antIcon = (
                             <th style={{paddingLeft: '20px'}}>Name</th>
                             <th>Email</th>
                             <th>Phone No</th>
-                            <th className="text-end">Action</th>
+                            {/* <th className="text-end">Action</th> */}
                           </tr>
                         </thead>
                         <tbody>
@@ -962,7 +879,7 @@ const antIcon = (
                                 </div>
                               </div>
                             </td> */}
-                            <td className="text-end">
+                            {/* <td className="text-end">
                               <div className="dropdown dropdown-action">
                                 <a href="javascript:void(0)" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
                                 <div className="dropdown-menu dropdown-menu-right">
@@ -970,7 +887,7 @@ const antIcon = (
                                   <a className="dropdown-item" href="javascript:void(0)" onClick={() => { setOpen({ isDelOpen: true, data: client }) }}><i className="fa fa-trash-o m-r-5" /> Delete</a>
                                 </div>
                               </div>
-                            </td>
+                            </td> */}
                           </tr>
                           ))
                         }
@@ -1003,8 +920,8 @@ const antIcon = (
                         <thead>
                           <tr>
                             <th>Project Name </th>
-                            {/* <th>Progress</th> */}
-                            <th className="text-end">Action</th>
+                            <th style={{paddingRight: '140px'}}>Progress</th>
+                            {/* <th className="text-end">Action</th> */}
                           </tr>
                         </thead>
                         <tbody>
@@ -1018,12 +935,12 @@ const antIcon = (
                                 <span>9</span> <span className="text-muted">tasks completed</span>
                               </small> */}
                             </td>
-                            {/* <td>
+                            <td>
                               <div className="progress progress-xs progress-striped">
                                 <div className="progress-bar" role="progressbar" data-bs-toggle="tooltip" title="65%" style={{ width: '65%' }} />
                               </div>
-                            </td> */}
-                            <td className="text-end">
+                            </td>
+                            {/* <td className="text-end">
                               <div className="dropdown dropdown-action">
                                 <a href="javascript:void(0)" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
                                 <div className="dropdown-menu dropdown-menu-right">
@@ -1057,7 +974,7 @@ const antIcon = (
                                   </a>
                                 </div>
                               </div>
-                            </td>
+                            </td> */}
                           </tr>
                           ))
                         }
@@ -1079,158 +996,6 @@ const antIcon = (
           </div>
           {/* /Page Content */}
 
-        {
-          open?.isAddOpen &&
-          <AddClientModal
-            open={open}
-            setOpen={setOpen}
-            user_state={user_state}
-            allClients={allClients}
-            setAllClients={setAllClients}
-            setPaginationDetail={setPaginationDetail}
-            paginationDetail={paginationDetail}
-            allCountries={allCountries}
-          />
-        }
-          {/* Delete Client Modal */}
-          <Modal
-            open={open.isDelOpen}
-            onClose={() => { setOpen({ isDelOpen: false, data: '' }) }}
-            aria-labelledby="modal-modal-title"
-            aria-describedby="modal-modal-description"
-            disableRestoreFocus
-            BackdropProps={{
-              style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
-            }}
-          >
-            <div className="modal-dialog modal-dialog-centered">
-              <div className="modal-content" style={{ height: "280px" }}>
-                <div
-                  className="modal-body"
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                  }}
-                >
-                  <div className="form-header">
-                    <h3 style={{ marginBottom: "30px" }}>Delete Client</h3>
-                    <p>
-                      Are you sure you want to delete{" "}
-                      <b>{open?.data?.clientName}</b>?
-                    </p>
-                  </div>
-                  <div className="modal-btn delete-action">
-                    <div className="row">
-                      <div className="col-6">
-                        <Button
-                          htmlType="submit"
-                          className="btn btn-primary continue-btn"
-                          onClick={() => onFinishDelete(open?.data?._id)}
-                          disabled={delLoader}
-                          style={{width: '100%'}}
-                        >
-                          {
-                            delLoader ? <Spin size="small" indicator={antIcon} />
-                              : 'Delete'
-                          }
-                        </Button>
-                      </div>
-                      <div className="col-6">
-                        <Button
-                          onClick={() => { setOpen({ isDelOpen: false, data: '' }) }}
-                          className="btn btn-primary submit-btn"
-                          style={{width: '100%'}}
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Modal>
-         {/* /Delete Client Modal */}
-
-         {/* /Edit Project Modal */}
-         {open2?.editOpen && (
-           <EditProjects
-           data={open2?.data}
-           editModal={open2?.editOpen}
-           closeEditModal={closeModal}
-           getprojects={getAllProjects}
-           getlistprojects={() => { }}
-           allCurrencies={allCurrencies}
-           allDomain={allDomain}
-           />
-        )}
-        {/* /Edit Project Modal */}
-
-        {/* /Delete Project Modal */}
-        <Modal
-          open={open2?.delOpen}
-          onClose={closeModal}
-          aria-labelledby="modal-modal-title"
-          aria-describedby="modal-modal-description"
-          disableRestoreFocus
-          BackdropProps={{
-            style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
-          }}
-        >
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content" style={{ height: "280px" }}>
-              <div
-                className="modal-body"
-                style={{
-                  display: "flex",
-
-                  flexDirection: "column",
-
-                  justifyContent: "center",
-                }}
-              >
-                <div className="form-header">
-                  <h3 style={{ marginBottom: "30px" }}>Delete Project</h3>
-                  <p>
-                    Are you sure you want to Delete{" "}
-                    <b>{open2?.data?.projectName}</b>?
-                  </p>
-                </div>
-
-                <div className="modal-btn delete-action">
-                  <div className="row">
-                    <div className="col-6">
-                      <Button
-                        htmlType="submit"
-                        className="btn btn-primary continue-btn"
-                        onClick={() => DeleteProject(open2?.data?._id)}
-                        style={{ width: "100%" }}
-                        disabled={delLoader}
-                      >
-                        {
-                        delLoader ? <Spin size="small" indicator={antIcon} />
-                          : 'Delete'
-                        }
-                      </Button>
-                    </div>
-
-                    <div className="col-6">
-                      <Button
-                        onClick={closeModal}
-                        className="btn btn-primary submit-btn"
-                        style={{ width: "100%" }}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Modal>
-        {/* /Delete Project Modal */}
 
         </div>
       </div>
