@@ -196,7 +196,8 @@ const AttendanceEmployee = () => {
                                       ).format("h:mm A")}`);
             } else if (
               firstAttendanceRecord.status === "Absent" ||
-              firstAttendanceRecord.status === "On-Leave"
+              firstAttendanceRecord.status === "On-Leave" ||
+              firstAttendanceRecord.status === "Holiday"
             ) {
               setIsCheckedIn(false);
               setIsCheckedOut(false);
@@ -621,6 +622,8 @@ const AttendanceEmployee = () => {
                 ? "green"
                 : status === "On-Leave"
                 ? "orange"
+                : status === "Holiday"
+                ? "blue"
                 : "black",
           }}
         >
@@ -741,6 +744,7 @@ const AttendanceEmployee = () => {
                           isCheckedOut ||
                           checkIn.status === "Absent" ||
                           checkIn.status === "On-Leave" ||
+                          checkIn.status === "Holiday" ||
                           isDisabled
                         }
                       >
@@ -780,13 +784,16 @@ const AttendanceEmployee = () => {
                                       ? "green"
                                       : checkIn.status === "On-Leave"
                                       ? "orange"
+                                      : checkIn.status === "Holiday"
+                                      ? "blue"
                                       : "black",
                                 }}
                               >
                                 {isCheckedIn ||
                                 isCheckedOut ||
                                 checkIn.status === "Absent" ||
-                                checkIn.status === "On-Leave"
+                                checkIn.status === "On-Leave" ||
+                                checkIn.status === "Holiday"
                                   ? checkIn.status
                                   : "--"}
                               </label>
@@ -1104,6 +1111,8 @@ const AttendanceEmployee = () => {
                                         ? "green"
                                         : attendance.status === "On-Leave"
                                         ? "orange"
+                                        : attendance.status === "Holiday"
+                                        ? "blue"
                                         : "black",
                                   }}
                                 >
