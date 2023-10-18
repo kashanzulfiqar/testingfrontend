@@ -19,6 +19,7 @@ import InvoiceTaxes from "./InvoiceTaxes";
 import InvoiceTags from "./InvoiceTags";
 import InvoiceCounter from "./InvoiceCounter";
 import BankDetails from "./BankDetails";
+import ExpenseCategory from "./ExpenseCategory";
 
 const Settings = ({test}) => {
 
@@ -161,6 +162,12 @@ useEffect(() => {
                         Invoice Counter
                       </a>
                    </li>
+                   <li className={showComponent === 'Expense Categories' ? 'active' : ''}>
+                      <a href="javascript:void(0)" onClick={() => {setShowComponent('Expense Categories') }}>
+                        <i className="fa fa-fw fa-sitemap" style={{marginRight: '8px'}}></i>
+                        Expense Categories
+                      </a>
+                   </li>
                    {/* <li className="">
                      <a href="#">Administrator
                        <span className="role-action">
@@ -212,7 +219,8 @@ useEffect(() => {
                 showComponent === 'Invoice Tax Slabs' ? <InvoiceTaxes /> :
                 showComponent === 'Invoice Tags' ? <InvoiceTags /> : 
                 showComponent === 'Invoice Counter' ? <InvoiceCounter /> : 
-                <BankDetails />
+                showComponent === 'Bank Details' ? <BankDetails /> : 
+                <ExpenseCategory />
               }
              </div>
            </div>

@@ -733,7 +733,7 @@ const AttendanceEmployee = () => {
                       <button
                         type="button"
                         className={`btn btn-${
-                          isCheckedOut || checkIn.status === "Absent"
+                          isCheckedOut || checkIn.status === "Absent" || checkIn.status === "Holiday"
                             ? "success"
                             : isCheckedIn
                             ? "danger"
@@ -750,7 +750,7 @@ const AttendanceEmployee = () => {
                       >
                         {isDisabled ? (
                           <Spin size="medium" />
-                        ) : isCheckedOut || checkIn.status === "Absent" ? (
+                        ) : isCheckedOut || checkIn.status === "Absent" || checkIn.status === "Holiday" ? (
                           "Marked"
                         ) : isCheckedIn ? (
                           "Check Out"
