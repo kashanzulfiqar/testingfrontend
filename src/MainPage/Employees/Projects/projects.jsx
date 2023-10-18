@@ -81,6 +81,8 @@ const Projects = () => {
   const [clients, setClients] = useState([]);
   const [focalPersons, setFocalPersons] = useState([]);
   const [employees, setEmployees] = useState([]);
+  const [flag, setFlag] = useState(false);
+  const [categoryObj, setCategoryObj] = useState();
 
   const [selectedClient, setSelectedClient] = useState(null);
   const [selectedLeader, setSelectedLeader] = useState(null);
@@ -246,13 +248,13 @@ const Projects = () => {
       projectType: "",
     });
 
+    form.resetFields();
     setPagination({
       current: 1,
       pageSize: 20,
       total: 0,
     });
 
-    form.resetFields();
   };
 
   useEffect(() => {
@@ -262,8 +264,11 @@ const Projects = () => {
 
   useEffect(() => {
     //if(role === 'admin' || permissions?.projectManagement ) { 
-      setIsLoading(true);
-      GetListProjects();
+      if(!flag){
+        setIsLoading(true);
+        GetListProjects();
+      }
+      
     //   getAllDomain();
     // }else{
     //    nav('/restricted', { state: { unAuthorize: true}})
@@ -366,13 +371,13 @@ const Projects = () => {
       });
   };
 
-  const GetListProjects = () => {
+  const GetListProjects = (page, pageSize) => {
     //setLoader(true);
 
     const params = {
       ...filters,
-      page: pagination.current,
-      limit: pagination.pageSize,
+      page: page || pagination.current,
+      limit: pageSize ? pageSize : pagination.pageSize,
     };
 
     apiServices(
@@ -384,14 +389,21 @@ const Projects = () => {
     )
       .then((res) => {
         if (res.data.success === true) {
+          setCategoryObj(res?.data?.projects);
           setTableData(res?.data?.projects?.docs);
  
           setIsLoading(false);
+          // setPagination({
+          //   ...pagination,
+          //   total: res.data.projects.totalDocs,
+          // });
+          setFlag(true);
           setPagination({
             ...pagination,
+            current : res.data.projects.page,
             total: res.data.projects.totalDocs,
           });
-        }
+      }
       })
       .catch((err) => {
         message.error(
@@ -404,6 +416,8 @@ const Projects = () => {
           }`
         );
         setIsLoading(false);
+      }).then(()=>{
+        setFlag(false);
       });
   };
 
@@ -817,9 +831,15 @@ const Projects = () => {
           //setData((prevData) => [...prevData, ...payrolls]);
           //setFilters(selectedPayFilters);
           //GetGenPayrolls();
+          if(categoryObj?.docs?.length === 1){
+            //console.log(categoryObj.totalPages)
+            GetListProjects((categoryObj.totalPages-1),null);
+          }
+          else{
+            GetListProjects()
+          }
           message.success(`Project Deleted`);
           setIsLoading(false);
-          GetListProjects();
           closeDelete();
         }
       })
@@ -834,78 +854,6 @@ const Projects = () => {
           }`
         );
         closeDelete();
-        setIsLoading(false);
-      });
-  };
-
-  const UpdateProject = (values) => {
-    //setLoader(true);
-    setIsLoading(true);
-
-    let data = {
-      _id: selectedData._id,
-      projectName: values.projectName,
-      projectDescription: values.projectDescription,
-      clientId: values.clientId,
-      focalPersonId: values.focalPersonId,
-      startDate: moment(values.startDate).format("YYYY-MM-DD"),
-      endDate: moment(values.endDate).format("YYYY-MM-DD"),
-      cost: values.cost,
-      costType: values.costType,
-      priority: values.priority,
-      projectLead: values.projectLead,
-      assignedDevelopers: values.assignedDevelopers,
-      status: values.status,
-      docs: uploadFiles,
-      paymentSchedule: [
-        {
-          paymentTitle: "Payment 1",
-          dueDate: "2023-09-10",
-          amountInPercent: "10",
-          amountInFigure: "1500",
-          paid: false,
-        },
-        {
-          paymentTitle: "Payment 1",
-          dueDate: "2023-09-10",
-          amountInPercent: "10",
-          amountInFigure: "1500",
-          paid: false,
-        },
-        {
-          paymentTitle: "Payment 1",
-          dueDate: "2023-09-10",
-          amountInPercent: "10",
-          amountInFigure: "1500",
-          paid: false,
-        },
-      ],
-      deleted: false,
-      companyId: selectedData.companyId,
-    };
-
-    apiServices("PUT", `project-management/`, data, user_state)
-      .then((res) => {
-        if (res.data.success === true) {
-          message.success(`Project Details Updated Successfully`);
-          setIsLoading(false);
-          handleReset();
-          setSelectedData(null);
-          closeEditModal();
-        }
-      })
-      .catch((err) => {
-        message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
-              ? err?.response?.data?.validation?.body?.message
-              : "Error Updating Project Details"
-          }`
-        );
-        closeEditModal();
-        setSelectedData(null);
         setIsLoading(false);
       });
   };
