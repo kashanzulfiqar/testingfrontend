@@ -360,6 +360,10 @@ const AttendanceAdmin = () => {
               abbreviation = "L";
               color = "red"; // Change this color as needed
               break;
+            case "Holiday":
+              abbreviation = "H";
+              color = "blue"; // Change this color as needed
+              break;
             default:
               abbreviation = "-";
               color = "black";
@@ -825,6 +829,8 @@ const AttendanceAdmin = () => {
                                               ? "green"
                                               : dayRecord.status === "On-Leave"
                                               ? "red"
+                                              : dayRecord.status === "Holiday"
+                                              ? "blue"
                                               : "red",
                                         }}
                                       >
