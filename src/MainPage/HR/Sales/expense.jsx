@@ -1,89 +1,298 @@
 
 import React, { useState ,useEffect  } from 'react';
 import { Helmet } from "react-helmet";
-import { Link } from 'react-router-dom';
-import { Avatar_04, Avatar_03,PlaceHolder} from "../../../Entryfile/imagepath"
+import { Link, useNavigate } from 'react-router-dom';
+import { Avatar_04, Avatar_03,PlaceHolder, user_icon} from "../../../Entryfile/imagepath"
 
-import { Table } from 'antd';
+import { Form, Table, Input, DatePicker, Pagination, Empty, Select, Spin, message, Button } from 'antd';
 import 'antd/dist/antd.css';
 import {itemRender,onShowSizeChange} from "../../paginationfunction"
 import "../../antdstyle.css"
-import Offcanvas from '../../../Entryfile/offcanvance';
+import { useSelector } from 'react-redux';
+import { LoadingOutlined } from '@ant-design/icons';
+import EmptyTable from "../../../files/Icons/EmptyTable.svg";
+import Modal from "@mui/material/Modal";
+import { apiServices } from '../../../Services/apiServices';
+import ExpenseModal from './ExpenseModal';
 
 const Expenses = () => {
-  const [data, setData] = useState([
-    {id:1,item:"Dell Laptop",purchasefrom:"Amazon",purchasedate:"5 Jan 2019",image:Avatar_04,name:"John Doe",amount:"1215",paidby:"Cash",status:"Active"},
-         {id:2,item:"Mac System",purchasefrom:"Amazon",purchasedate:"5 Jan 2019",image:Avatar_03,name:"Richard Miles",amount:"1215",paidby:"Cheque",status:"Inactive"},
-  ]);
-  useEffect( ()=>{
-    if($('.select').length > 0) {
-      $('.select').select2({
-        minimumResultsForSearch: -1,
-        width: '100%'
-      });
+
+  const moment = require('moment');
+
+  const [form] = Form.useForm();
+  const [form2] = Form.useForm();
+  const nav = useNavigate();
+
+  const permissions = useSelector((state) => state?.permissionsSlice?.data);
+
+  const user_state = useSelector((state) => state?.user?.loginvalue);
+  const role = user_state?.user?.role
+
+  const [allExpenses, setAllExpenses] = useState([]);
+  const [allEmployees, setAllEmployees] = useState([]);
+  const [tableLoader, setTableLoader] = useState(true);
+  const [loader, setLoader] = useState(false)
+  const [pageSize, setPageSize] = useState(20);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [paginationDetail, setPaginationDetail] = useState();
+  const [filterValues, setFilterValues] = useState();
+  const [fromExpenseDate, setFromExpenseDate] = useState('');
+  const [open, setOpen] = useState({
+    isAddOpen: false,
+    isDelOpen: false,
+    data: ''
+  });
+
+  useEffect(() => {
+    if(role === 'admin' || permissions?.managePayrolls) {
+      getAllExpenses();
+      getAllEmployees();
+    }else{
+      nav(`${role === 'client' ? '/client/client-profile' : role === 'focalperson' ? `/client/focal-profile` : role === 'admin' ? `/main/dashboard` : `/employee/dashboard`}`)
     }
-  });  
+  }, [])
+
+  const getAllExpenses = (values, current_page, page_size) => {
+    setTableLoader(true);
+    apiServices("GET", `expenses?${values === '' ? '' : values?.itemName === '' ? '' : values?.itemName ? `itemName=${values?.itemName}` : filterValues?.itemName ? `itemName=${filterValues?.itemName}` : ''}${values === '' ? '' : values?.purchasedBy === '' ? '' : values?.purchasedBy ? `&purchasedBy=${values?.purchasedBy}` : filterValues?.purchasedBy ? `&purchasedBy=${filterValues?.purchasedBy}` : ''}${values === '' ? '' : values?.paidBy === '' ? '' : values?.paidBy ? `&paidBy=${values?.paidBy}` : filterValues?.paidBy ? `&paidBy=${filterValues?.paidBy}` : ''}${values === '' ? '' : values?.purchaseFrom === '' ? '' : values?.purchaseFrom ? `&purchaseFrom=${values?.purchaseFrom}` : filterValues?.purchaseFrom ? `&purchaseFrom=${filterValues?.purchaseFrom}` : ''}${values === '' ? '' : values?.purchaseTo === '' ? '' : values?.purchaseTo ? `&purchaseTo=${values?.purchaseTo}` : filterValues?.purchaseTo ? `&purchaseTo=${filterValues?.purchaseTo}` : ''}&page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}`, null, user_state)
+      .then((res) => {
+          if (res?.data?.success === true) {
+              setAllExpenses(res?.data?.Expenses?.docs);
+              setPaginationDetail(res?.data?.Expenses)
+              setTableLoader(false);
+            }
+          })
+          .catch((err) => {
+        setTableLoader(false);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Get All Expanses Error"
+          }!`
+        );
+      });
+  }
+  
+  const getAllEmployees = () => {
+    apiServices("GET", `user/all-employees`, null, user_state)
+      .then((res) => {
+        if (res?.data?.success === true) {
+            const sortedData = res?.data?.User.slice().sort((a, b) => a.fullName.localeCompare(b.fullName));
+            setAllEmployees(sortedData);
+          }
+        })
+        .catch((err) => {
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Get All Employees Error"
+          }!`
+        );
+      });
+  }
+
+  const onFilterFinish = (values) => {
+    let formatted_data = {
+      itemName: values?.itemName ? values?.itemName : '',
+      purchasedBy: values?.purchasedBy ? values?.purchasedBy : '',
+      paidBy: values?.paidBy ? values?.paidBy : '',
+      purchaseFrom: values?.purchaseFrom ? moment(values?.purchaseFrom).format('YYYY-MM-DD') : '',
+      purchaseTo: values?.purchaseTo ? moment(values?.purchaseTo).format('YYYY-MM-DD') : '',
+    }
+    if(formatted_data?.itemName || formatted_data?.purchasedBy || formatted_data?.paidBy || formatted_data?.purchaseFrom){
+      getAllExpenses(formatted_data, 1, pageSize);
+      setFilterValues(formatted_data);
+      setCurrentPage(1);
+    }
+  }
+
+  const onHandleDelete = (id) => {
+    setLoader(true);
+    apiServices("DELETE", "expenses", id, user_state)
+      .then((res) => {
+        if (res?.data?.success === true) {
+          getAllExpenses(filterValues,currentPage, pageSize);
+          handleClose('delete');
+          message.success("Expense Deleted Successfully!");
+          setLoader(false);
+        }
+      })
+      .catch((err) => {
+        setLoader(false);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Delete Expense Error"
+          }`
+        );
+      });
+  };
+
+  const onHandleStatus = (data, type) => {
+    setTableLoader(true);
+    const formatted_data = {
+      status: `${type}`,
+      _id: data?._id,
+    }
+    apiServices("PUT", "expenses", formatted_data, user_state)
+    .then((res) => {
+        if (res?.data?.success === true) {
+        message.success('Status Updated Successfully!')
+        handleClose('update');
+        }
+    })
+    .catch((err) => {
+        setTableLoader(false);
+        message.error(
+        `${
+            err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
+            ? err?.response?.data?.validation?.body?.message
+            : "Update Status Info Error"
+        }!`
+        );
+    });
+  }
+
+const handleClose = (type) => {
+  if(type === 'update'){
+    setOpen({
+      isAddOpen: false,
+      isDelOpen: false,
+      data: ''
+    });
+    form2.resetFields();
+    getAllExpenses(filterValues, currentPage, pageSize)
+  }else if(type === 'delete'){
+    setOpen({
+      isAddOpen: false,
+      isDelOpen: false,
+      data: ''
+    });
+  }else{
+    setOpen({
+      isAddOpen: false,
+      isDelOpen: false,
+      data: ''
+    });
+    form2.resetFields(); 
+  }
+};
+
+const searchHandler = (val, type) => {
+  let dropdownValues = []
+  if (type === 'employee'){
+    allEmployees.forEach((emp)=>{
+      dropdownValues.push(emp.fullName.toLowerCase())
+   })
+  }
+
+  if(val !== ''){
+    dropdownValues.some((team) => {
+      if(team.includes(val.toLowerCase())){
+        // setNoData(false);
+        return true
+      }else{
+        // setNoData(true);
+      }
+    })
+  }else{
+    // setNoData(false)
+  }
+}
+
+const formatDate = (inputDate) => {
+  if(inputDate){
+    const date = new Date(inputDate);
+    const day = date.getDate();
+    const month = date.toLocaleString('default', { month: 'short' });
+    const year = date.getFullYear();
+
+    const formattedDate = `${day} ${month} ${year}`;
+    return formattedDate;
+  }
+}
   
     const columns = [
            
       {
         title: 'Item',
-        dataIndex: 'item',
+        dataIndex: 'itemName',
+        fixed: 'left',
         render: (text, record) => (            
         <strong>{text}</strong>
-          ), 
-        sorter: (a, b) => a.item.length - b.item.length,
+          ),
+      },     
+      {
+        title: 'Category',
+        dataIndex: 'category',
+        render: (text, record) => (
+          <label>{record?.category?.expenseCategoryName}</label>
+            ),
       },     
       {
         title: 'Purchase From',
-        dataIndex: 'purchasefrom',
-        sorter: (a, b) => a.purchasefrom.length - b.purchasefrom.length,
+        dataIndex: 'purchaseFrom',
+        render: (text, record) => (
+          <label>{text}</label>
+            ),
       },     
       {
         title: 'Purchase Date',
-        dataIndex: 'purchasedate',
-        sorter: (a, b) => a.purchasedate.length - b.purchasedate.length,
+        dataIndex: 'purchaseDate',
+        render: (text, record) => (
+          <label>{formatDate(text || '')}</label>
+            ),
       },
       {
         title: 'Purchased By',
-        dataIndex: 'name',
+        dataIndex: 'purchasedBy',
         render: (text, record) => (            
             <h2 className="table-avatar">
-              <Link to="/app/profile/employee-profile" className="avatar"><img alt="" src={record.image} /></Link>
-              <Link to="/app/profile/employee-profile">{text} <span>{record.role}</span></Link>
+              <a href='javascript:void(0)' className="avatar"><img alt="" src={record?.purchasedBy?.imageUrl || user_icon} /></a>
+              <a href='javascript:void(0)'><label>{record?.purchasedBy?.fullName}</label></a>
+              {/* <Link to="/app/profile/employee-profile" className="avatar"><img alt="" src={record.image} /></Link>
+              <Link to="/app/profile/employee-profile">{text} <span>{record.role}</span></Link> */}
             </h2>
-          ), 
-          sorter: (a, b) => a.name.length - b.name.length,
+          ),
       },      
       {
         title: 'Amount',
         dataIndex: 'amount',
         render: (text, record) => (
-        <span>$ {text}</span>
+        <label>{text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {record?.currency}</label>
           ),
-        sorter: (a, b) => a.amount.length - b.amount.length,
       },
 
       {
         title: 'Paid By',
-        dataIndex: 'paidby', 
-        sorter: (a, b) => a.paidby.length - b.paidby.length,
+        dataIndex: 'paidBy',
       },  
       {
         title: 'Status',
         dataIndex: 'status',
         render: (text, record) => (
           <div className="dropdown action-label">
-              <a className="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-                <i className={text==="Pending" ?"fa fa-dot-circle-o text-danger" : "fa fa-dot-circle-o text-success"} /> {text}
+              <a className="btn btn-white btn-sm btn-rounded dropdown-toggle" href="javascript:void(0)" data-bs-toggle="dropdown" aria-expanded="false">
+                <i className={text==="Pending" ?"fa fa-dot-circle-o text-warning" : "fa fa-dot-circle-o text-success"} /> {text}
               </a>
               <div className="dropdown-menu">
-                <a className="dropdown-item" href="#"><i className="fa fa-dot-circle-o text-success" /> Approved</a>
-                <a className="dropdown-item" href="#"><i className="fa fa-dot-circle-o text-danger" /> Pending</a>
+                {/* style={{cursor: 'default', background: '#FF9B44', color: 'white'}} */}
+                <a className="dropdown-item" href="javascript:void(0)" onClick={() => text !== 'Approved' ? onHandleStatus(record, 'Approved') : ''} style={text === 'Approved' ? {cursor: 'default', background: '#FF9B44', color: 'white'} : {}}><i className="fa fa-dot-circle-o text-success" /> Approved</a>
+                <a className="dropdown-item" href="javascript:void(0)" onClick={() => text !== 'Pending' ? onHandleStatus(record, 'Pending') : ''} style={text === 'Pending' ? {cursor: 'default', background: '#FF9B44', color: 'white'} : {}}><i className="fa fa-dot-circle-o text-warning" /> Pending</a>
               </div>
           </div>
           ),
-        sorter: (a, b) => a.status.length - b.status.length,
       },
       {
         title: 'Action',
@@ -91,18 +300,74 @@ const Expenses = () => {
             <div className="dropdown dropdown-action text-end">
                   <a href="#" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
                       <div className="dropdown-menu dropdown-menu-right">
-                        <a className="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#edit_expense"><i className="fa fa-pencil m-r-5" /> Edit</a>
-                        <a className="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#delete_expense"><i className="fa fa-trash-o m-r-5" /> Delete</a>
+                        <a className="dropdown-item" href='javascript:void(0)' onClick={() => { setOpen({ isAddOpen: true, data: record }); }}><i className="fa fa-pencil m-r-5" /> Edit</a>
+                        <a className="dropdown-item" href='javascript:void(0)' onClick={() => { setOpen({ isDelOpen: true, data: record }); }}><i className="fa fa-trash-o m-r-5" /> Delete</a>
                       </div>
             </div>
           ),
       },
     ]
+
+    const customEmptyText = (
+      <Empty
+        image={<img src={EmptyTable} />}
+        // image={<InboxOutlined />}
+        imageStyle={
+          {
+            // fontSize: 48,
+            // color: '#1890ff',
+          }
+        }
+        style={{
+          height: "300px",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+        }}
+        description={
+          <div style={{ display: "" }}>
+            <div
+              style={{
+                color: "#34343F",
+                fontWeight: "500",
+                fontSize: "14px",
+                margin: "7px 0px 4px 0px",
+              }}
+            >
+              {/* {
+                (role === 'admin' || permissions?.viewAllUsers) ? 'No Employee Record found!' : 'You are Restricted to View Employees'
+              } */}
+              No Expenses Record Found!
+            </div>
+          </div>
+        }
+      />
+    );
+  
+    
+  const antIcon = (
+    <LoadingOutlined
+      style={{
+        fontSize: 24,
+        color: '#fff'
+      }}
+      spin
+    />
+  );
+
+  const handleFromDateChange = (date) => {
+    setFromExpenseDate(date);
+  };
+  const disabledDate = (current) => {
+    return fromExpenseDate && current < moment(fromExpenseDate).endOf('day');
+    // return fromDate && current < moment(fromDate).startOf('day');
+  };
+
       return (
         <>
         <div className="page-wrapper">
             <Helmet>
-                <title>Expenses - HRMS Admin Template</title>
+                <title>Expenses - DaftarPro</title>
                 <meta name="description" content="Login page"/>					
             </Helmet>
         {/* Page Content */}
@@ -113,306 +378,325 @@ const Expenses = () => {
               <div className="col">
                 <h3 className="page-title">Expenses</h3>
                 <ul className="breadcrumb">
-                  <li className="breadcrumb-item"><Link to="/app/main/dashboard">Dashboard</Link></li>
+                  <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>Dashboard</Link></li>
                   <li className="breadcrumb-item active">Expenses</li>
                 </ul>
               </div>
               <div className="col-auto float-end ms-auto">
-                <a href="#" className="btn add-btn" data-bs-toggle="modal" data-bs-target="#add_expense"><i className="fa fa-plus" /> Add Expense</a>
+                <a href="javascript:void(0)" className="btn add-btn" onClick={() => { setOpen({ isAddOpen: true, data: '' }); }}><i className="fa fa-plus" /> Add Expense</a>
               </div>
             </div>
           </div>
           {/* /Page Header */}
           {/* Search Filter */}
+          <Form
+            form={form}
+            onFinish={onFilterFinish}
+            autoComplete='off'
+          >
           <div className="row filter-row">
-            <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">  
-              <div className="form-group form-focus">
-                <input type="text" className="form-control floating" />
-                <label className="focus-label">Item Name</label>
+            <div className="col-sm-6 col-md-2">  
+              <div className=' form-groupfilterDateMonth' style={{ position: 'relative' }} id='area'>
+                  <Form.Item
+                    name="itemName"
+                    className="custom-border"
+                    rules={[
+                      {
+                        validator: (_, value) => {
+                          if (/\s{2,}/.test(value)) {
+                            return Promise.reject("please remove consecutive spaces");
+                          }
+                          return Promise.resolve();
+                        },
+                      },
+                    ]}
+                  >
+                    <Input className='form-control' style={{height:'50px'}} placeholder='Item Name' />
+                  </Form.Item>
               </div>
             </div>
-            <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">  
-              <div className="form-group form-focus select-focus">
-                <select className="select floating"> 
-                  <option> -- Select -- </option>
-                  <option>Loren Gatlin</option>
-                  <option>Tarah Shropshire</option>
-                </select>
-                <label className="focus-label">Purchased By</label>
+            <div className="col-sm-6 col-md-2" style={{paddingLeft: '0px'}}>  
+              <div style={{ position: 'relative' }} id='area1'>
+                <Form.Item
+                  name="purchasedBy"
+                  className="custom-border"
+                >
+                  <Select
+                    showSearch
+                    onSearch={(val) => {
+                      searchHandler(val, 'employee')
+                    }}
+                    filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                    optionFilterProp="children"
+                    notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                    dropdownRender={(menu) => (
+                      <>
+                        {menu}
+                      </>
+                    )}
+                    className="custom-select searchCenter"
+                    style={{
+                      width: '100%',
+                    }}
+                    placeholder='Purchased By'
+                    size='large'
+                    getPopupContainer={() => document.getElementById('area1')}
+                  >
+                    {
+                      allEmployees?.map((emp, index) => {
+                      return (
+                          <Option key={index} value={emp?._id}>{emp?.fullName}</Option>
+                      )
+                      })
+                    }
+                  </Select>
+                </Form.Item>
               </div>
             </div>
-            <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12"> 
-              <div className="form-group form-focus select-focus">
-                <select className="select floating"> 
-                  <option> -- Select -- </option>
-                  <option> Cash </option>
-                  <option> Cheque </option>
-                </select>
-                <label className="focus-label">Paid By</label>
+            <div className="col-sm-6 col-md-2" style={{paddingLeft: '0px'}}>
+              <div style={{ position: 'relative' }} id='area1'>
+                <Form.Item
+                  name="paidBy"
+                  className="custom-border"
+                >
+                  <Select
+                    className="custom-select"
+                    style={{
+                      width: '100%',
+                    }}
+                    placeholder='Paid By'
+                    size='large'
+                    getPopupContainer={() => document.getElementById('area1')}
+                    options={[
+                      {
+                        value: 'Cash',
+                        label: "Cash",
+                      },
+                      {
+                        value: 'Cheque',
+                        label: "Cheque",
+                      },
+                      {
+                        value: 'Bank Transfer',
+                        label: "Bank Transfer",
+                      },
+                    ]}
+                  />
+                </Form.Item>
+              </div>  
+            </div>
+            <div className="col-sm-6 col-md-2" style={{paddingLeft: '0px'}}>  
+              <div className=' form-groupfilterDateMonth' style={{ position: 'relative' }} id='area'>
+                  <Form.Item
+                    name="purchaseFrom"
+                    className="custom-border"
+                    rules={[
+                      ({ getFieldValue }) => ({
+                        validator(rule, value) {
+                          if ( !value && getFieldValue("purchaseTo")) {
+                            return Promise.reject(
+                              "please select date"
+                              );
+                            }
+                          return Promise.resolve();
+                        },
+                      }),
+                    ]}
+                  >
+                    <DatePicker 
+                      allowClear={false}
+                      size='large'
+                      placeholder='From'
+                      className='form-control filterDate'
+                      style={{minHeight: '50px', display: 'flex'}} 
+                      getPopupContainer={() => document.getElementById('area')}
+                      onChange={e => {
+                        handleFromDateChange(e);
+                        if(e === null || e){
+                          form.setFieldsValue({ toDate: '' });
+                        }}}
+                    />
+                  </Form.Item>
               </div>
             </div>
-            <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">  
-              <div className="form-group form-focus select-focus">
-                <div>
-                  <input className="form-control floating datetimepicker" type="date" />
-                </div>
-                <label className="focus-label">From</label>
-              </div>
+            <div className="col-sm-6 col-md-2" style={{paddingLeft: '0px'}}>
+              <Form.Item
+                name="purchaseTo"
+                className="custom-border"
+                rules={[
+                  ({ getFieldValue }) => ({
+                    validator(rule, value) {
+                      if ( !value && getFieldValue("purchaseFrom")) {
+                        return Promise.reject(
+                          "please select date"
+                          );
+                        }
+                      return Promise.resolve();
+                    },
+                  }),
+                ]}
+              >
+                <DatePicker 
+                  allowClear={false}
+                  size='large'
+                  placeholder='To'
+                  className='form-control filterDate'
+                  style={{minHeight: '50px', display: 'flex'}} 
+                  getPopupContainer={() => document.getElementById('area')}
+                  disabledDate={disabledDate}
+                />
+              </Form.Item>
             </div>
-            <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">  
-              <div className="form-group form-focus select-focus">
-                <div>
-                  <input className="form-control floating datetimepicker" type="date" />
-                </div>
-                <label className="focus-label">To</label>
-              </div>
+            <div className="col-sm-6 col-md-2" style={{paddingLeft: '0px', display: 'flex', gap: '5px'}}>  
+              <button 
+                href="javascript:void(0)"
+                type="submit"
+                className="btn btn-success btn-block w-50"
+                // disabled={role === 'admin' ? false : permissions?.viewAllUsers ? false : true}
+                style={{marginBottom: '24px', paddingInline: '10px'}}
+              > 
+                Search 
+              </button>
+              <button
+                href="javascript:void(0)" type="reset"
+                onClick={() => {
+                  form.resetFields();
+                  getAllExpenses('', 1, pageSize);
+                  setFilterValues(null);
+                  setCurrentPage(1)
+                  setFromExpenseDate('')
+                }}
+                className="btn btn-success btn-block w-50 resetButton" style={{marginBottom: '24px', backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}} 
+                // disabled={role === 'admin' ? false : permissions?.viewAllUsers ? false : true}
+              >
+                Reset 
+              </button>  
             </div>
-            <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">  
-              <a href="#" className="btn btn-success btn-block w-100"> Search </a>  
-            </div>     
           </div>
+          </Form>
           {/* /Search Filter */}
           <div className="row">
             <div className="col-md-12">
-              <div className="table-responsive">
-               <Table className="table-striped"
-                  pagination= { {total : data.length,
-                    showTotal : (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                    showSizeChanger : true,onShowSizeChange: onShowSizeChange ,itemRender : itemRender } }
-                  style = {{overflowX : 'auto'}}
+              <div className="table-responsive expenseTable">
+               <Table
+                  loading={tableLoader}
+                  className={allExpenses?.length > 0 ? "table-striped" : ""}
+                  locale={{
+                    emptyText: tableLoader ? null : customEmptyText,
+                  }}
+                  pagination={false}
+                  style = {{overflowX : 'auto', paddingBottom: '70px'}}
                   columns={columns}                 
                   // bordered
-                  dataSource={data}
+                  dataSource={allExpenses}
                   rowKey={record => record.id}
                   // onChange={this.handleTableChange}
                 />
+                {
+                    allExpenses?.length > 0 &&
+                    <div>
+                      <Pagination
+                        style={{display: 'flex', float: 'right'}}
+                        total={paginationDetail?.totalDocs}
+                        pageSize={pageSize}
+                        defaultCurrent={1}
+                        current={currentPage}
+                        showTotal={(total, range) =>
+                          `Showing ${range[0]} to ${range[1]} of ${total} entries`}
+                        onChange={(page, size) => {
+                          setPageSize(size); setCurrentPage(page);
+                          getAllExpenses(filterValues, page, size)
+                        }}
+                        showSizeChanger={true}
+                        pageSizeOptions={['20', '30', '40', '50']}
+                        itemRender={itemRender}
+                      />
+                    </div>
+                  }
               </div>
             </div>
           </div>
         </div>
         {/* /Page Content */}
-        {/* Add Expense Modal */}
-        <div id="add_expense" className="modal custom-modal fade" role="dialog">
-          <div className="modal-dialog modal-dialog-centered modal-lg" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Add Expense</h5>
-                <button type="button" className="close" data-bs-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">×</span>
-                </button>
-              </div>
-              <div className="modal-body">
-                <form>
-                  <div className="row">
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label>Item Name</label>
-                        <input className="form-control" type="text" />
-                      </div>
-                    </div>
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label>Purchase From</label>
-                        <input className="form-control" type="text" />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="row">
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label>Purchase Date</label>
-                        <div><input className="form-control datetimepicker" type="date" /></div>
-                      </div>
-                    </div>
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label>Purchased By </label>
-                        <select className="select">
-                          <option>Daniel Porter</option>
-                          <option>Roger Dixon</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="row">
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label>Amount</label>
-                        <input placeholder="$50" className="form-control" type="text" />
-                      </div>
-                    </div>
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label>Paid By</label>
-                        <select className="select">
-                          <option>Cash</option>
-                          <option>Cheque</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="row">
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label>Status</label>
-                        <select className="select">
-                          <option>Pending</option>
-                          <option>Approved</option>
-                        </select>
-                      </div>
-                    </div>
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label>Attachments</label>
-                        <input className="form-control" type="file" />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="attach-files">
-                    <ul>
-                      <li>
-                        <img src={PlaceHolder} alt="" />
-                        <a href="#" className="fa fa-close file-remove" />
-                      </li>
-                      <li>
-                        <img src={PlaceHolder} alt="" />
-                        <a href="#" className="fa fa-close file-remove" />
-                      </li>
-                    </ul>
-                  </div>
-                  <div className="submit-section">
-                    <button className="btn btn-primary submit-btn">Submit</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* /Add Expense Modal */}
-        {/* Edit Expense Modal */}
-        <div id="edit_expense" className="modal custom-modal fade" role="dialog">
-          <div className="modal-dialog modal-dialog-centered modal-lg" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Edit Expense</h5>
-                <button type="button" className="close" data-bs-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">×</span>
-                </button>
-              </div>
-              <div className="modal-body">
-                <form>
-                  <div className="row">
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label>Item Name</label>
-                        <input className="form-control" defaultValue="Dell Laptop" type="text" />
-                      </div>
-                    </div>
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label>Purchase From</label>
-                        <input className="form-control" defaultValue="Amazon" type="text" />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="row">
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label>Purchase Date</label>
-                        <div><input className="form-control datetimepicker" type="date" /></div>
-                      </div>
-                    </div>
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label>Purchased By </label>
-                        <select className="select">
-                          <option>Daniel Porter</option>
-                          <option>Roger Dixon</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="row">
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label>Amount</label>
-                        <input placeholder="$50" className="form-control" defaultValue="$10000" type="text" />
-                      </div>
-                    </div>
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label>Paid By</label>
-                        <select className="select">
-                          <option>Cash</option>
-                          <option>Cheque</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="row">
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label>Status</label>
-                        <select className="select">
-                          <option>Pending</option>
-                          <option>Approved</option>
-                        </select>
-                      </div>
-                    </div>
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label>Attachments</label>
-                        <input className="form-control" type="file" />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="attach-files">
-                    <ul>
-                      <li>
-                        <img src={PlaceHolder} alt="" />
-                        <a href="#" className="fa fa-close file-remove" />
-                      </li>
-                      <li>
-                        <img src={PlaceHolder} alt="" />
-                        <a href="#" className="fa fa-close file-remove" />
-                      </li>
-                    </ul>
-                  </div>
-                  <div className="submit-section">
-                    <button className="btn btn-primary submit-btn">Save</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* /Edit Expense Modal */}
+
+        {/* Expense Modal */}
+        {
+          open?.isAddOpen &&
+          <ExpenseModal
+            form={form2}
+            open={open}
+            handleClose={handleClose}
+            user_state={user_state}
+            allExpenses={allExpenses}
+            setAllExpenses={setAllExpenses}
+            setPaginationDetail={setPaginationDetail}
+            paginationDetail={paginationDetail}
+            allEmployees={allEmployees}
+          />
+        }
+        {/* /Expense Modal */}
+
         {/* Delete Expense Modal */}
-        <div className="modal custom-modal fade" id="delete_expense" role="dialog">
+        <Modal
+          open={open.isDelOpen}
+          onClose={() => handleClose('delete')}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+          disableRestoreFocus
+          BackdropProps={{
+            style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
+          }}
+        >
           <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-body">
+            <div className="modal-content" style={{ height: "280px" }}>
+              <div
+                className="modal-body"
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                }}
+              >
                 <div className="form-header">
-                  <h3>Delete Expense</h3>
-                  <p>Are you sure want to delete?</p>
+                  <h3 style={{ marginBottom: "30px" }}>Delete Expense</h3>
+                  <p>
+                    Are you sure you want to delete{" "}
+                    <b>{open?.data?.itemName}</b>?
+                  </p>
                 </div>
                 <div className="modal-btn delete-action">
                   <div className="row">
                     <div className="col-6">
-                      <a href="" className="btn btn-primary continue-btn">Delete</a>
+                      <Button
+                        htmlType="submit"
+                        className="btn btn-primary continue-btn"
+                        onClick={() => onHandleDelete(open?.data?._id)}
+                        disabled={loader}
+                        style={{width: '100%'}}
+                      >
+                        {
+                          loader ? <Spin size="small" indicator={antIcon} />
+                            : 'Delete'
+                        }
+                      </Button>
                     </div>
                     <div className="col-6">
-                      <a href="" data-bs-dismiss="modal" className="btn btn-primary cancel-btn">Cancel</a>
+                      <Button
+                        onClick={() => handleClose('delete')}
+                        className="btn btn-primary submit-btn"
+                        style={{width: '100%'}}
+                      >
+                        Cancel
+                      </Button>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </Modal>
         {/* Delete Expense Modal */}
       </div>
-      <Offcanvas/>
         </>
         
       );
