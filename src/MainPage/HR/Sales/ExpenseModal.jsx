@@ -140,18 +140,18 @@ const onFileUpload = async (files) => {
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
 
-      const fileExtension = file.name.split(".").pop().toLowerCase();
-      if (!acceptableFormats.includes(fileExtension)) {
-        message.error(`File format not supported: ${file.name}`);
+      const fileExtension = file?.name?.split(".")?.pop()?.toLowerCase();
+      if (!acceptableFormats?.includes(fileExtension)) {
+        message.error(`File format not supported: ${file?.name}`);
         continue;
       }
   
       if (file.size > 10485760) {
-        message.error(`File size exceeds 10MB: ${file.name}`);
+        message.error(`File size exceeds 10MB: ${file?.name}`);
         continue;
       }
   
-      validFiles.push(file);
+      validFiles?.push(file);
   
       const uploadPromise = apiUploadToS3(file)
         .then((res) => {
@@ -161,7 +161,7 @@ const onFileUpload = async (files) => {
         .catch((err) => {
           message.error(`File upload error: ${file.name}`);
         });
-      uploadPromises.push(uploadPromise);
+      uploadPromises?.push(uploadPromise);
     }
   
     setSelectedFiles((prevSelectedFiles) => [...prevSelectedFiles, ...validFiles]);
@@ -677,7 +677,7 @@ const antIcon = (
                             {/* </Form.Item> */}
                         </div>
                     </div>
-                    <div className='col-12' style={{display: 'flex', gap: '15px', rowGap: '25px', flexWrap: 'wrap'}}>
+                    <div className='col-12' style={{display: 'flex', gap: '15px', rowGap: '25px', flexWrap: 'wrap', marginTop: '12px'}}>
                     {
                         uploadFiles?.map((img, index) => {
                             const parts = img.split(".");
@@ -704,12 +704,17 @@ const antIcon = (
                                         rel="noopener noreferrer"
                                         >
                                         <div className="uploaded-img">
+                                        <div className="img-container1">
                                             <img
                                             src={thumbnailUrl}
                                             className="img-fluid"
                                             alt={`Image ${index + 1}`}
                                             style={{ borderRadius: "10px", border: '1px solid #d1d1d1', boxShadow: '2px 2px 12px -5px #6d6d6d' }}
                                             />
+                                            <div className="overlay1">
+                                                <span className="view-text1">View</span>
+                                            </div>
+                                        </div>
                                             {/* <div className="download-icon hidden" style={{background: 'none', borderRadius: '0px', padding: '0px'}}>
                                                 <a href={downloadLink} style={{padding: '7px 6px 5px 7px', background: 'white', borderRadius: '50px'}} download>
                                                     <i className="fa fa-download" />
@@ -731,12 +736,17 @@ const antIcon = (
                                         rel="noopener noreferrer"
                                         >
                                         <div className="uploaded-img" style={{ borderRadius: "10px", border: '1px solid #d1d1d1', boxShadow: '2px 2px 12px -5px #6d6d6d', background: '#ddd' }}>
+                                        <div className="img-container1">
                                             <span className="files-icon" style={{height: '102px', width: '102px', display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', paddingTop: '15px', gap: '6px'}}>
                                                 <i
                                                     className={`fa fa-file-${format.toLowerCase() === 'pdf' ? 'pdf' : 'text'}-o`}
                                                     style={{fontSize: '30px', color: '#777'}}
                                                 /> {format.toUpperCase()}
                                             </span>
+                                            <div className="overlay1">
+                                                <span className="view-text1">View</span>
+                                            </div>
+                                        </div>
                                             {/* <div className="download-icon hidden" style={{background: 'none', borderRadius: '0px', padding: '0px'}}>
                                                 <a href={downloadLink} style={{padding: '7px 6px 5px 7px', background: 'white', borderRadius: '50px'}} download>
                                                     <i className="fa fa-download" />
