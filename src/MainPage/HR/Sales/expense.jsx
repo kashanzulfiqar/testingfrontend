@@ -337,7 +337,7 @@ const formatDate = (inputDate) => {
               {/* {
                 (role === 'admin' || permissions?.viewAllUsers) ? 'No Employee Record found!' : 'You are Restricted to View Employees'
               } */}
-              No Expenses Record Found!
+              No Expense Record Found!
             </div>
           </div>
         }
@@ -359,8 +359,8 @@ const formatDate = (inputDate) => {
     setFromExpenseDate(date);
   };
   const disabledDate = (current) => {
-    return fromExpenseDate && current < moment(fromExpenseDate).endOf('day');
-    // return fromDate && current < moment(fromDate).startOf('day');
+    // return fromExpenseDate && current < moment(fromExpenseDate).endOf('day');
+    return fromExpenseDate && current < moment(fromExpenseDate).startOf('day');
   };
 
       return (
@@ -396,7 +396,7 @@ const formatDate = (inputDate) => {
           >
           <div className="row filter-row">
             <div className="col-sm-6 col-md-2">  
-              <div className=' form-groupfilterDateMonth' style={{ position: 'relative' }} id='area'>
+              <div className=' form-groupfilterDateMonth'>
                   <Form.Item
                     name="itemName"
                     className="custom-border"
@@ -416,7 +416,7 @@ const formatDate = (inputDate) => {
               </div>
             </div>
             <div className="col-sm-6 col-md-2" style={{paddingLeft: '0px'}}>  
-              <div style={{ position: 'relative' }} id='area1'>
+              <div style={{ position: 'relative' }} id='area11'>
                 <Form.Item
                   name="purchasedBy"
                   className="custom-border"
@@ -440,7 +440,7 @@ const formatDate = (inputDate) => {
                     }}
                     placeholder='Purchased By'
                     size='large'
-                    getPopupContainer={() => document.getElementById('area1')}
+                    getPopupContainer={() => document.getElementById('area11')}
                   >
                     {
                       allEmployees?.map((emp, index) => {
@@ -454,7 +454,7 @@ const formatDate = (inputDate) => {
               </div>
             </div>
             <div className="col-sm-6 col-md-2" style={{paddingLeft: '0px'}}>
-              <div style={{ position: 'relative' }} id='area1'>
+              <div style={{ position: 'relative' }} id='area11'>
                 <Form.Item
                   name="paidBy"
                   className="custom-border"
@@ -466,7 +466,7 @@ const formatDate = (inputDate) => {
                     }}
                     placeholder='Paid By'
                     size='large'
-                    getPopupContainer={() => document.getElementById('area1')}
+                    getPopupContainer={() => document.getElementById('area11')}
                     options={[
                       {
                         value: 'Cash',
@@ -486,7 +486,7 @@ const formatDate = (inputDate) => {
               </div>  
             </div>
             <div className="col-sm-6 col-md-2" style={{paddingLeft: '0px'}}>  
-              <div className=' form-groupfilterDateMonth' style={{ position: 'relative' }} id='area'>
+              <div className=' form-group filterDateMonth' style={{ position: 'relative' }} id='area11'>
                   <Form.Item
                     name="purchaseFrom"
                     className="custom-border"
@@ -509,7 +509,7 @@ const formatDate = (inputDate) => {
                       placeholder='From'
                       className='form-control filterDate'
                       style={{minHeight: '50px', display: 'flex'}} 
-                      getPopupContainer={() => document.getElementById('area')}
+                      getPopupContainer={() => document.getElementById('area11')}
                       onChange={e => {
                         handleFromDateChange(e);
                         if(e === null || e){
@@ -520,6 +520,7 @@ const formatDate = (inputDate) => {
               </div>
             </div>
             <div className="col-sm-6 col-md-2" style={{paddingLeft: '0px'}}>
+            <div className=' form-group filterDateMonth' style={{ position: 'relative' }} id='area11'>
               <Form.Item
                 name="purchaseTo"
                 className="custom-border"
@@ -542,10 +543,11 @@ const formatDate = (inputDate) => {
                   placeholder='To'
                   className='form-control filterDate'
                   style={{minHeight: '50px', display: 'flex'}} 
-                  getPopupContainer={() => document.getElementById('area')}
+                  getPopupContainer={() => document.getElementById('area11')}
                   disabledDate={disabledDate}
                 />
               </Form.Item>
+              </div>
             </div>
             <div className="col-sm-6 col-md-2" style={{paddingLeft: '0px', display: 'flex', gap: '5px'}}>  
               <button 
