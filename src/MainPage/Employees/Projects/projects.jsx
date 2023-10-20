@@ -44,7 +44,7 @@ import { apiServices } from "../../../Services/apiServices";
 import { itemRender } from "../../paginationfunction";
 import EditProjects from "./EditProjects";
 import { apiUploadToS3 } from "../../../Services/uploadImage";
-import { MinusCircleFilled } from "@ant-design/icons";
+import { LoadingOutlined, MinusCircleFilled } from "@ant-design/icons";
 import { getAllISOCodes } from 'iso-country-currency';
 
 const Projects = () => {
@@ -83,6 +83,7 @@ const Projects = () => {
   const [employees, setEmployees] = useState([]);
   const [flag, setFlag] = useState(false);
   const [categoryObj, setCategoryObj] = useState();
+  const [loader, setLoader] = useState(false);
 
   const [selectedClient, setSelectedClient] = useState(null);
   const [selectedLeader, setSelectedLeader] = useState(null);
@@ -177,6 +178,7 @@ const Projects = () => {
     ]);
     setSelectedFiles([]);
     setUploadFiles([]);
+    setLoader(false);
     //GetCardProjects();
     //GetListProjects();
   };
@@ -191,6 +193,7 @@ const Projects = () => {
     setSelectedData(null);
     setEditModal(false);
     form.resetFields();
+    setLoader(false);
   };
 
   const openDelete = (proj) => {
@@ -203,6 +206,7 @@ const Projects = () => {
     setToDelete(null);
     setDeleteProj(false);
     form.resetFields();
+    setLoader(false);
   };
 
   const [filters, setFilters] = useState({
@@ -451,7 +455,7 @@ const Projects = () => {
   };
 
   const AddProject = (values) => {
-    //setLoader(true);
+    setLoader(true);
     setIsLoading(true);
 
     let data = {
@@ -485,6 +489,7 @@ const Projects = () => {
           setIsLoading(false);
           GetListProjects();
           closeCreateModal();
+          setLoader(false);
         }
       })
       .catch((err) => {
@@ -499,6 +504,7 @@ const Projects = () => {
         );
         closeCreateModal();
         setIsLoading(false);
+        setLoader(false);
       });
   };
 
@@ -531,19 +537,29 @@ const Projects = () => {
     reader.readAsDataURL(fileList[0]);
   };
 
+  const antIcon = (
+    <LoadingOutlined
+      style={{
+        fontSize: 24,
+        color: "#fff",
+      }}
+      spin
+    />
+  );
+
   const columns = [
     {
-      title: <b>Project Name</b>,
+      title: "Project Name",
       dataIndex: "projectName",
       key: "projectName",
       render: (text, record) => (
         <Link to={`/projects/projects-view/${record?._id}`} style={{color: '#333333'}}>
-          <label style={{cursor: 'pointer', fontWeight: '500'}} className="longText">{text}</label>
+          <label style={{cursor: 'pointer'}} className="longText">{text}</label>
         </Link>
       ),
     },
     {
-      title: <b>Client Name</b>,
+      title: "Client Name",
       dataIndex: "clientName",
       key: "clientName",
       render: (text, record) => (
@@ -559,7 +575,7 @@ const Projects = () => {
       ),
     },
     {
-      title: <b>Leader</b>,
+      title: "Leader",
       dataIndex: "projectLead",
       key: "projectLead",
       render: (projectLead) => (
@@ -582,7 +598,7 @@ const Projects = () => {
       ),
     },
     {
-      title: <b>Team</b>,
+      title: "Team",
       dataIndex: "assignedDevelopers",
       key: "assignedDevelopers",
       render: (assignedDevelopers) => (
@@ -656,13 +672,13 @@ const Projects = () => {
       ),
     },
     {
-      title: <b>Deadline</b>,
+      title: "Deadline",
       dataIndex: "endDate",
       key: "endDate",
       render: (text, record) => <label style={{minWidth: 'max-content'}}>{text}</label> 
     },
     {
-      title: <b>Priority</b>,
+      title: "Priority",
       dataIndex: "priority",
       key: "priority",
       render: (record) => (
@@ -691,7 +707,7 @@ const Projects = () => {
     },
 
     {
-      title: <b>Status</b>,
+      title: "Status",
       dataIndex: "status",
       key: "status",
       render: (record) => (
@@ -731,7 +747,7 @@ const Projects = () => {
       ),
     },
     {
-      title: <b>Action</b>,
+      title: "Action",
       dataIndex: "action",
       key: "action",
       align: "right",
@@ -817,6 +833,7 @@ const Projects = () => {
 
   const DeleteProject = () => {
     //setLoader(true);
+    setLoader(true);
     setIsLoading(true);
 
     let data = {
@@ -840,6 +857,7 @@ const Projects = () => {
           }
           message.success(`Project Deleted`);
           setIsLoading(false);
+          setLoader(false);
           closeDelete();
         }
       })
@@ -855,6 +873,7 @@ const Projects = () => {
         );
         closeDelete();
         setIsLoading(false);
+        setLoader(false);
       });
   };
 
@@ -1608,57 +1627,51 @@ const filteredColumns = columns.filter(column => {
                       ),
                     }}
                     className="table-striped custom-table datatable"
-                    style = {{overflowX : 'auto'}}
+                    style = {{overflowX : 'auto', paddingBottom: '70px'}}
                     loading={isLoading}
                     //style={{ height: "400px", background: "white" }}
                     columns={filteredColumns}
                     // bordered
                     dataSource={tableData}
                     //rowKey={(record) => record?._id}
-                    pagination={{
-                      current: pagination.current,
-                      pageSize: pagination.pageSize,
-                      total: pagination.total,
-                      showTotal: (total, range) =>
-                        `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                      pageSizeOptions: ["20", "30", "40", "50"], // Options to change page size
-                      showSizeChanger: true, // Show the page size changer
-                      onChange: (page, pageSize) => {
-                        setPagination({
-                          ...pagination,
-                          current: page,
-                          pageSize: pageSize,
-                        });
-                      },
-                      itemRender: itemRender,
-                    }}
-                    // onChange={this.handleTableChange}
+                    pagination={false}
+                    // pagination={{
+                    //   current: pagination.current,
+                    //   pageSize: pagination.pageSize,
+                    //   total: pagination.total,
+                    //   showTotal: (total, range) =>
+                    //     `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+                    //   pageSizeOptions: ["20", "30", "40", "50"], // Options to change page size
+                    //   showSizeChanger: true, // Show the page size changer
+                    //   onChange: (page, pageSize) => {
+                    //     setPagination({
+                    //       ...pagination,
+                    //       current: page,
+                    //       pageSize: pageSize,
+                    //     });
+                    //   },
+                    //   itemRender: itemRender,
+                    // }}
                   />
+                  {
+                    tableData?.length > 0 &&
+                    <div>
+                      <Pagination
+                        style={{display: 'flex', float: 'right'}}
+                        current={pagination.current}
+                        pageSize={pagination.pageSize}
+                        total={pagination.total}
+                        showTotal={(total, range) =>
+                          `Showing ${range[0]} to ${range[1]} of ${total} entries`
+                        }
+                        pageSizeOptions={["20", "30", "40", "50"]}
+                        showSizeChanger
+                        onChange={(page, pageSize) => setPagination({...pagination, current: page, pageSize: pageSize,})}
+                        itemRender={itemRender}
+                      />
+                    </div>
+                  }
                 </div>
-                {/* {
-                  data?.length > 0 &&
-                  <div>
-                    <Pagination
-                      style={{display: 'flex', float: 'right'}}
-                      total={pagination.total}
-                      pageSize={pagination.pageSize}
-                      defaultCurrent={1}
-                      current={pagination.current}
-                      showTotal={(total, range) =>
-                        `Showing ${range[0]} to ${range[1]} of ${total} entries`}
-                      onChange={(page, size) => {
-                        
-                        console.log(page, size);
-                        //setPageSize(size); setCurrentPage(page);
-                        //getEmployeeSalary(filterValues, page, size)
-                        GetListProjects(page, size);
-                      }}
-                      showSizeChanger={true}
-                      pageSizeOptions={['10', '20', '30', '0']}
-                      itemRender={itemRender}
-                    />
-                  </div>
-                    } */}
               </div>
             </div>
           )}
@@ -2704,8 +2717,14 @@ const filteredColumns = columns.filter(column => {
                         type="primary"
                         htmlType="submit"
                         className="btn btn-primary submit-btn"
+                        disabled={loader}
                       >
-                        Submit
+                        {loader ? (
+                        <Spin size="small" indicator={antIcon} />
+                      ) : (
+                        "Submit"
+                      )}
+                        
                       </Button>
                     </Form.Item>
                   </div>
@@ -2762,8 +2781,13 @@ const filteredColumns = columns.filter(column => {
                         className="btn btn-primary continue-btn"
                         onClick={() => DeleteProject(toDelete)}
                         style={{ width: "100%" }}
-                      >
-                        Delete
+                        disabled={loader}
+                        >
+                          {loader ? (
+                          <Spin size="small" indicator={antIcon} />
+                        ) : (
+                          "Delete"
+                        )}
                       </Button>
                     </div>
                     <div className="col-6">
