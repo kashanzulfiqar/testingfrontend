@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Helmet } from "react-helmet";
 import { Link, useNavigate } from 'react-router-dom';
 import Offcanvas from '../../../Entryfile/offcanvance';
-import { Button, Empty, Form, Input, Select, Spin, Table, message } from 'antd';
+import { Button, Empty, Form, Input, Pagination, Select, Spin, Table, message } from 'antd';
 import { itemRender } from '../../paginationfunction';
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { useSelector } from 'react-redux';
@@ -370,23 +370,7 @@ const ExpenseCategory = () => {
                 locale={{
                     emptyText: isLoading ? null : customEmptyText,
                   }}
-                pagination={{
-                  current: pagination.current,
-                  pageSize: pagination.pageSize,
-                  total: pagination.total,
-                  showTotal: (total, range) =>
-                    `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                  pageSizeOptions: ["20", "30", "40", "50"], // Options to change page size
-                  showSizeChanger: true, // Show the page size changer
-                  onChange: (page, pageSize) => {
-                    setPagination({
-                      ...pagination,
-                      current: page,
-                      pageSize: pageSize,
-                    });
-                  },
-                  itemRender: itemRender,
-                }}
+                pagination={false}
                 // pagination={{
                 //   total: category?.length,
                 //   pageSize: pageSize,
@@ -405,13 +389,31 @@ const ExpenseCategory = () => {
                 //   onChange: (page, size) => setCurrentPage(page),
                 //   itemRender: itemRender,
                 // }}
-                style={{ overflowX: "auto" }}
+                style = {{overflowX : 'auto', paddingBottom: '70px'}}
                 columns={columns}
                 bordered
                 dataSource={category}
                 rowKey={(record) => record.id}
                 // onChange={this.handleTableChange}
               />
+              {
+                    category?.length > 0 &&
+                    <div>
+                      <Pagination
+                        style={{display: 'flex', float: 'right'}}
+                        current={pagination.current}
+                        pageSize={pagination.pageSize}
+                        total={pagination.total}
+                        showTotal={(total, range) =>
+                          `Showing ${range[0]} to ${range[1]} of ${total} entries`
+                        }
+                        pageSizeOptions={["20", "30", "40", "50"]}
+                        showSizeChanger
+                        onChange={(page, pageSize) => setPagination({...pagination, current: page, pageSize: pageSize,})}
+                        itemRender={itemRender}
+                      />
+                    </div>
+                  }
             </div>
           </div>
         </div>

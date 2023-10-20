@@ -32,7 +32,7 @@ import {
 import { Modal } from "@mui/material";
 import moment from "moment";
 import { apiServices } from "../../../Services/apiServices";
-import { MinusCircleFilled } from "@ant-design/icons";
+import { LoadingOutlined, MinusCircleFilled } from "@ant-design/icons";
 import EditProjects from "./EditProjects";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 //import EditProjects from "./EditProjects";
@@ -64,6 +64,7 @@ const ProjectView = () => {
   const [clients, setClients] = useState([]);
   const [focalPersons, setFocalPersons] = useState([]);
   const [allCurrencies, setAllCurrencies] = useState([]);
+  const [loader, setLoader] = useState(false);
 
   const [selectedClient, setSelectedClient] = useState(null);
   const [selectedLeader, setSelectedLeader] = useState(null);
@@ -122,6 +123,7 @@ const ProjectView = () => {
     setOpenUser(false);
     form.resetFields();
     setSelectedDevelopers([]);
+    setLoader(false);
     //setFocalPersons([]);
     //setSelectedLeader(null);
     //setSelectedTeamMembers([]);
@@ -135,6 +137,7 @@ const ProjectView = () => {
     setOpenLeader(false);
     form.resetFields();
     setSelectedLeader(null);
+    setLoader(false);
     //setFocalPersons([]);
     //setSelectedLeader(null);
     //setSelectedTeamMembers([]);
@@ -150,6 +153,7 @@ const ProjectView = () => {
     setSelectedData(null);
     setEditModal(false);
     form.resetFields();
+    setLoader(false);
   };
 
   useEffect(() => {
@@ -222,6 +226,16 @@ const ProjectView = () => {
       });
   };
 
+  const antIcon = (
+    <LoadingOutlined
+      style={{
+        fontSize: 24,
+        color: "#fff",
+      }}
+      spin
+    />
+  );
+
   const fetchEmployees = () => {
     apiServices("GET", `user/all-employees`, null, user_state)
       .then((res) => {
@@ -291,7 +305,7 @@ const ProjectView = () => {
   };
 
   const UpdateTeam = () => {
-    //setLoader(true);
+    setLoader(true);
     //setIsLoading(true);
 
     let data = {
@@ -316,6 +330,7 @@ const ProjectView = () => {
       .then((res) => {
         if (res.data.success === true) {
           message.success(`Project Team Updated Successfully`);
+          setLoader(false);
         }
       })
       .catch((err) => {
@@ -328,6 +343,7 @@ const ProjectView = () => {
               : "Error Updating Team"
           }`
         );
+        setLoader(false);
       })
       .finally(() => {
         GetProjects();
@@ -624,7 +640,7 @@ const ProjectView = () => {
                       <span className="text-muted">tasks completed</span>
                     </small> */}
                   </div>
-                  <label>{project?.projectDescription}</label>
+                  <label style={{display:"block"}}>{project?.projectDescription}</label>
                 </div>
               </div>
 
@@ -1598,8 +1614,13 @@ const ProjectView = () => {
                       type="primary"
                       htmlType="submit"
                       className="btn btn-primary submit-btn"
-                    >
-                      Submit
+                      disabled={loader}
+                      >
+                        {loader ? (
+                        <Spin size="small" indicator={antIcon} />
+                      ) : (
+                        "Submit"
+                      )}
                     </Button>
                   </Form.Item>
                 </div>
@@ -1783,8 +1804,13 @@ const ProjectView = () => {
                       type="primary"
                       htmlType="submit"
                       className="btn btn-primary submit-btn"
-                    >
-                      Submit
+                      disabled={loader}
+                      >
+                        {loader ? (
+                        <Spin size="small" indicator={antIcon} />
+                      ) : (
+                        "Submit"
+                      )}
                     </Button>
                   </Form.Item>
                 </div>

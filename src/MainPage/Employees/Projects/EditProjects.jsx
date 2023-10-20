@@ -37,7 +37,7 @@ import { Modal } from "@mui/material";
 import moment from "moment";
 import { apiServices } from "../../../Services/apiServices";
 import { apiUploadToS3 } from "../../../Services/uploadImage";
-import { MinusCircleFilled } from "@ant-design/icons";
+import { LoadingOutlined, MinusCircleFilled } from "@ant-design/icons";
 
 function EditProjects({ data, editModal, closeEditModal, getprojects, getlistprojects, allCurrencies, allDomain }) {
   const [form] = Form.useForm();
@@ -57,6 +57,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
   const [selectedDevelopers, setSelectedDevelopers] = useState([]);
   const [uploadFiles, setUploadFiles] = useState([]);
   const [selectedFiles, setSelectedFiles] = useState([]);
+  const [loader, setLoader] = useState(false);
 
   const [paymentSchedules, setPaymentSchedules] = useState([
     // Initial payment schedule
@@ -264,7 +265,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
   };
 
   const UpdateProject = (values) => {
-    //setLoader(true);
+    setLoader(true);
     //setIsLoading(true);
 
     let data = {
@@ -295,6 +296,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
           message.success(`Project Details Updated Successfully`);
           getprojects();
           getlistprojects();
+          setLoader(false);
         }
       })
       .catch((err) => {
@@ -310,6 +312,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
       })
       .finally(() => {
         closeEditModal();
+        setLoader(false);
       });
   };
 
@@ -435,6 +438,16 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
   //           );
   //       })
   //   }
+
+  const antIcon = (
+    <LoadingOutlined
+      style={{
+        fontSize: 24,
+        color: "#fff",
+      }}
+      spin
+    />
+  );
 
   const paymentColumns = [
     {
@@ -1321,8 +1334,13 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                     type="primary"
                     htmlType="submit"
                     className="btn btn-primary submit-btn"
-                  >
-                    Submit
+                    disabled={loader}
+                    >
+                      {loader ? (
+                      <Spin size="small" indicator={antIcon} />
+                    ) : (
+                      "Submit"
+                    )}
                   </Button>
                 </Form.Item>
               </div>

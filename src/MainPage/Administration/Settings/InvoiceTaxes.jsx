@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Helmet } from "react-helmet";
 import { Link, useNavigate } from 'react-router-dom';
 import Offcanvas from '../../../Entryfile/offcanvance';
-import { Button, Empty, Form, Input, Select, Spin, Table, message } from 'antd';
+import { Button, Empty, Form, Input, Pagination, Select, Spin, Table, message } from 'antd';
 import { itemRender } from '../../paginationfunction';
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { useSelector } from 'react-redux';
@@ -437,31 +437,54 @@ const InvoiceTaxes = () => {
                 className={
                     taxes?.length > 0 ? "table-striped antTableResponsive" : ""
                   }
-                pagination={{
-                  total: taxes?.length,
-                  pageSize: pageSize,
-                  defaultCurrent: 1,
-                  current: currentPage,
-                  // pageSize: 1,
-                  // hideOnSinglePage: true,
-                  showTotal: (total, range) =>
-                    `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                  showSizeChanger: true,
-                  onShowSizeChange: (current, size) => {
-                    setPageSize(size);
-                    setCurrentPage(1);
-                  },
-                  pageSizeOptions: ["20", "30", "40", "50"],
-                  onChange: (page, size) => setCurrentPage(page),
-                  itemRender: itemRender,
-                }}
-                style={{ overflowX: "auto" }}
+                // pagination={{
+                //   total: taxes?.length,
+                //   pageSize: pageSize,
+                //   defaultCurrent: 1,
+                //   current: currentPage,
+                //   // pageSize: 1,
+                //   // hideOnSinglePage: true,
+                //   showTotal: (total, range) =>
+                //     `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+                //   showSizeChanger: true,
+                //   onShowSizeChange: (current, size) => {
+                //     setPageSize(size);
+                //     setCurrentPage(1);
+                //   },
+                //   pageSizeOptions: ["20", "30", "40", "50"],
+                //   onChange: (page, size) => setCurrentPage(page),
+                //   itemRender: itemRender,
+                // }}
+                pagination={false}
+                style = {{overflowX : 'auto', paddingBottom: '70px'}}
                 columns={columns}
                 bordered
                 dataSource={taxes}
                 rowKey={(record) => record.id}
                 // onChange={this.handleTableChange}
               />
+              {
+                    taxes?.length > 0 &&
+                    <div>
+                      <Pagination
+                        style={{display: 'flex', float: 'right'}}
+                        total={taxes?.length}
+                        pageSize={pageSize}
+                        current={currentPage}
+                        showTotal={(total, range) =>
+                          `Showing ${range[0]} to ${range[1]} of ${total} entries`
+                        }
+                        showSizeChanger
+                        onShowSizeChange={(current, size) => {
+                          setPageSize(size);
+                          setCurrentPage(1);
+                        }}
+                        pageSizeOptions={["20", "30", "40", "50"]}
+                        onChange={(page, size) => setCurrentPage(page)}
+                        itemRender={itemRender}
+                      />
+                    </div>
+                  }
             </div>
           </div>
         </div>
