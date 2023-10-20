@@ -459,7 +459,7 @@ const InvoiceTaxes = () => {
                 style = {{overflowX : 'auto', paddingBottom: '70px'}}
                 columns={columns}
                 bordered
-                dataSource={taxes}
+                dataSource={taxes.slice((currentPage - 1) * pageSize, currentPage * pageSize)}
                 rowKey={(record) => record.id}
                 // onChange={this.handleTableChange}
               />
