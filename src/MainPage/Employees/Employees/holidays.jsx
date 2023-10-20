@@ -49,11 +49,11 @@ const Holidays = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [page, setPage] = useState(1);
-  const [size, setSize] = useState(10);
+  const [size, setSize] = useState(20);
 
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 10,
+    pageSize: 20,
     total: 10,
   });
 
@@ -487,7 +487,7 @@ const Holidays = () => {
                         showTotal={(total, range) =>
                           `Showing ${range[0]} to ${range[1]} of ${total} entries`
                         }
-                        pageSizeOptions={["10","20", "30", "40", "50"]}
+                        pageSizeOptions={["20", "30", "40", "50"]}
                         showSizeChanger
                         onChange={handlePageChange}
                         itemRender={itemRender}
