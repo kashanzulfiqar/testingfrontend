@@ -20,6 +20,8 @@ const AttendanceEmployee = () => {
   const [tableLoader, setTableLoader] = useState(false);
   const [Bdisbale, setBdisbale] = useState(false);
   const [disableAttend, setdisableAttend] = useState(false);
+  const [page, setPage] = useState(1);
+  const [size, setSize] = useState(20);
 
   const isDisabled = !Bdisbale;
 
@@ -486,6 +488,8 @@ const AttendanceEmployee = () => {
             setFetchattend6(attendanceData);
           }
           setFetchattend(attendanceData);
+          setPage(parseInt(res?.data?.Attendance?.page, 10));
+          setSize(parseInt(res?.data?.Attendance?.limit, 10));
           setPagination({
             ...pagination,
             total: res.data.Attendance.total,
@@ -587,7 +591,7 @@ const AttendanceEmployee = () => {
       dataIndex: "index",
       key: "index",
       render: (text, record, index) =>
-        (pagination.current - 1) * pagination.pageSize + index + 1,
+        (page - 1) * size + index + 1,
     },
     {
       title: "Date",
