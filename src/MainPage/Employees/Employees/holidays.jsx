@@ -369,6 +369,17 @@ const Holidays = () => {
     />
   );
 
+  const handlePageChange = (page, pageSize) => {
+    // Update the pagination state
+    setPagination({
+      ...pagination,
+      current: page,
+      pageSize: pageSize,
+    });
+    setIsLoading(true);
+    getHolidays(page, pageSize);
+  };
+
   const toggleMobileMenu = () => {
     setMenu(!menu);
   };
@@ -434,50 +445,51 @@ const Holidays = () => {
                 locale={{
                     emptyText: isLoading ? null : customEmptyText,
                   }}
-                pagination={{
-                  current: pagination.current,
-                  pageSize: pagination.pageSize,
-                  total: pagination.total,
-                  showTotal: (total, range) =>
-                    `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                  pageSizeOptions: ["10", "20", "40", "50"], // Options to change page size
-                  showSizeChanger: true, // Show the page size changer
-                  onChange: (page, pageSize) => {
-                    setPagination({
-                      ...pagination,
-                      current: page,
-                      pageSize: pageSize,
-                    });
-                    setIsLoading(true);
-                    getHolidays(page, pageSize)
-                  },
-                  itemRender: itemRender,
-                }}
+                pagination={false}
                 // pagination={{
-                //   total: category?.length,
-                //   pageSize: pageSize,
-                //   defaultCurrent: 1,
-                //   current: currentPage,
-                //   // pageSize: 1,
-                //   // hideOnSinglePage: true,
+                //   current: pagination.current,
+                //   pageSize: pagination.pageSize,
+                //   total: pagination.total,
                 //   showTotal: (total, range) =>
                 //     `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                //   showSizeChanger: true,
-                //   onShowSizeChange: (current, size) => {
-                //     setPageSize(size);
-                //     setCurrentPage(1);
+                //   pageSizeOptions: ["10", "20", "40", "50"], // Options to change page size
+                //   showSizeChanger: true, // Show the page size changer
+                //   onChange: (page, pageSize) => {
+                //     setPagination({
+                //       ...pagination,
+                //       current: page,
+                //       pageSize: pageSize,
+                //     });
+                //     setIsLoading(true);
+                //     getHolidays(page, pageSize)
                 //   },
-                //   pageSizeOptions: ["10", "20", "40", "50"],
-                //   onChange: (page, size) => setCurrentPage(page),
                 //   itemRender: itemRender,
                 // }}
-                style={{ overflowX: "auto" }}
+                style = {{overflowX : 'auto', paddingBottom: '70px'}}
                 columns={columns}
                 bordered
                 dataSource={holidays}
                 rowKey={(record) => record.id}
                 // onChange={this.handleTableChange}
               />
+              {
+                    holidays?.length > 0 &&
+                    <div>
+                      <Pagination
+                        style={{display: 'flex', float: 'right'}}
+                        current={pagination.current}
+                        pageSize={pagination.pageSize}
+                        total={pagination.total}
+                        showTotal={(total, range) =>
+                          `Showing ${range[0]} to ${range[1]} of ${total} entries`
+                        }
+                        pageSizeOptions={["10","20", "30", "40", "50"]}
+                        showSizeChanger
+                        onChange={handlePageChange}
+                        itemRender={itemRender}
+                      />
+                    </div>
+                  }
             </div>
           </div>
         </div>
