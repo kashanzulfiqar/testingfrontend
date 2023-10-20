@@ -520,7 +520,11 @@ const Sidebar = (props) => {
                             to="/employee/allemployees">All Employees</Link>
                           </li>
                         }
-                        <li><Link className={pathname.includes('employee/holidays') ? "active" : ""} to="/employee/holidays">Holidays</Link></li>
+                        { (user_state?.role === 'admin' || permissions?.companyManagement) &&
+                          <li>
+                          <Link className={pathname.includes('employee/holidays') ? "active" : ""} to="/employee/holidays">Holidays</Link>
+                          </li>
+                          }
                         <li>
                           {
                             (user_state?.role === 'admin' || permissions?.viewAllRequest || permissions?.teamRequest) &&
