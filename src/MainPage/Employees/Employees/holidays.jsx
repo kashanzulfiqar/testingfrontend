@@ -48,6 +48,8 @@ const Holidays = () => {
     data: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [size, setSize] = useState(10);
 
   const [pagination, setPagination] = useState({
     current: 1,
@@ -85,6 +87,8 @@ const Holidays = () => {
           setHolidayObj(res?.data?.Holiday)
           setHolidays(res?.data?.Holiday?.docs);
           //setFlag(true);
+          setPage(parseInt(res?.data?.Holiday?.page, 10));
+          setSize(parseInt(res?.data?.Holiday?.limit, 10));
           setPagination({
             ...pagination,
             current : parseInt(res?.data?.Holiday?.page, 10),
@@ -202,7 +206,7 @@ const Holidays = () => {
       dataIndex: "index",
       key: "index",
       render: (text, record, index) =>
-        (pagination.current - 1) * pagination.pageSize + index + 1,
+        (page - 1) * size + index + 1,
     },
     {
       title: "Title",
