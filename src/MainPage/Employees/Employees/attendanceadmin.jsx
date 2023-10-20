@@ -11,6 +11,7 @@ import {
   Avatar_12,
   Avatar_13,
   Avatar_16,
+  user_icon,
 } from "../../../Entryfile/imagepath";
 import Tableavatar from "../../../_components/tableavatar/tableavatar";
 import Sidebar from "../../../initialpage/Sidebar/sidebar";
@@ -289,7 +290,17 @@ const AttendanceAdmin = () => {
       // width: 170,
       fixed: "left",
       render: (text, record) => (
-        <div style={{ minWidth: "120px", width: "max-content" }}>{text}</div>
+        
+          <div className="table-avatar" style={{ display:"flex", alignItems:"center" ,minWidth: "120px", width: "max-content" }}>
+          <label className="avatar"><img alt="" src={record?.employeeImageUrl || user_icon} /></label>
+            <label>{text}</label>
+            </div>
+        // <h2 className="table-avatar">
+        //   <label className="avatar"><img alt="" src={record?.user?.imageUrl || user_icon} /></label>
+        //   <label>{record?.user?.fullName}</label>
+        //   {/* <label>{text} <span>{record?.user?.role}</span></label> */}
+        // </h2>
+        // </div>
       ),
     },
     ...Array.from({ length: daysInMonth }, (_, index) => {
@@ -397,6 +408,7 @@ const AttendanceAdmin = () => {
     const rowData = {
       key: employee._id,
       employeeName: employee.fullName,
+      employeeImageUrl: employee.imageUrl,
     };
 
     const employeeAttendance = employeeAttendanceData?.find(
