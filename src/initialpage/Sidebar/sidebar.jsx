@@ -575,7 +575,12 @@ const Sidebar = (props) => {
                             "active" : pathname.includes('cts-view') ? "active" : ""}
                             to="/projects/project_dashboard">Projects</Link></li>
                       }
-                      <li><Link onClick={() => localStorage.setItem("minheight", "true")} to="/tasks/tasks">Tasks</Link></li>
+                      {/* <li><Link onClick={() => localStorage.setItem("minheight", "true")} to="/tasks/tasks">Tasks</Link></li> */}
+                      {/* <li><Link onClick={() => localStorage.setItem("minheight", "true")} to="/projects/tasks">Tasks</Link></li> */}
+                      { 
+                        (user_state?.role === 'admin' || permissions?.projectManagement) &&
+                        <li><Link onClick={() => localStorage.setItem("minheight", "true")} to="/projects/tasks">Tasks</Link></li>
+                      }
                       <li><Link className={pathname.includes('task-board') ? "active" : ""} to="/app/projects/task-board">Task Board</Link></li>
                     </ul>
                     : ""
