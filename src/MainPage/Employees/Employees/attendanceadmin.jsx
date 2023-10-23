@@ -29,10 +29,13 @@ import {
   Spin,
   message,
   Empty,
+  TimePicker,
 } from "antd";
 import moment from "moment";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import Modal from "@mui/material/Modal";
+import { EditOutlined } from "@mui/icons-material";
+import { LoadingOutlined } from "@ant-design/icons";
 
 const { Option } = Select;
 
@@ -65,9 +68,24 @@ const AttendanceAdmin = () => {
   const user_state = useSelector((state) => state.user.loginvalue);
   const role = user_state?.user?.role;
 
+  const [loader, setLoader] = useState(false);
+
+  const [open, setOpen] = useState({
+    isAddOpen: false,
+    isDelOpen: false,
+    data: "",
+  });
+
+  const handleClose = () => {
+    setOpen({ isAddOpen: false, isDelOpen: false, data: "" });
+    setSelectedStatus("");
+    form.resetFields();
+  };
+
   const [employeeAttendanceData, setEmployeeAttendanceData] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [employees, setEmployees] = useState([]);
+  const [selectedStatus, setSelectedStatus] = useState("");
 
   const [filters, setFilters] = useState({
     name: "",
@@ -113,7 +131,7 @@ const AttendanceAdmin = () => {
 
   useEffect(() => {
     if (role === "admin" || permissions?.attendanceManagement) {
-      
+      setIsLoading(true);
       fetchAttendanceData();
     } else {
       navigate("/restricted", { state: { unAuthorize: true } });
@@ -121,7 +139,6 @@ const AttendanceAdmin = () => {
   }, [filters]);
 
   const fetchAttendanceData = async () => {
-    setIsLoading(true);
     apiServices(
       "GET",
       `attendance/employeesattendance?attendanceMonth=${filters.month}&attendanceYear=${filters.year}&search=${filters.name}`,
@@ -175,6 +192,16 @@ const AttendanceAdmin = () => {
   const closeModal = () => {
     setIsModalVisible(false);
   };
+
+  const antIcon = (
+    <LoadingOutlined
+      style={{
+        fontSize: 24,
+        color: "#fff",
+      }}
+      spin
+    />
+  );
 
   const formatHoursMinutes = (timeString) => {
     if (!timeString) return "None";
@@ -290,11 +317,20 @@ const AttendanceAdmin = () => {
       // width: 170,
       fixed: "left",
       render: (text, record) => (
-        
-          <div className="table-avatar" style={{ display:"flex", alignItems:"center" ,minWidth: "120px", width: "max-content" }}>
-          <label className="avatar"><img alt="" src={record?.employeeImageUrl || user_icon} /></label>
-            <label>{text}</label>
-            </div>
+        <div
+          className="table-avatar"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            minWidth: "120px",
+            width: "max-content",
+          }}
+        >
+          <label className="avatar">
+            <img alt="" src={record?.employeeImageUrl || user_icon} />
+          </label>
+          <label>{text}</label>
+        </div>
         // <h2 className="table-avatar">
         //   <label className="avatar"><img alt="" src={record?.user?.imageUrl || user_icon} /></label>
         //   <label>{record?.user?.fullName}</label>
@@ -388,7 +424,10 @@ const AttendanceAdmin = () => {
                   color: color,
                   cursor: abbreviation !== "-" ? "pointer" : "default",
                 }}
-                onClick={() => openModal(dayRecord, abbreviation)}
+                onClick={() => {
+                  openModal(dayRecord, abbreviation);
+                  //console.log(dayRecord)
+                }}
               >
                 {abbreviation}
               </span>
@@ -400,38 +439,118 @@ const AttendanceAdmin = () => {
   ];
 
   const dataSource = employees
-  ?.filter((employee) => {
-    // Filter employees based on the search criteria (employee name)
-    return employee.fullName.toLowerCase().includes(filters.name.toLowerCase());
-  })
-  ?.map((employee) => {
-    const rowData = {
-      key: employee._id,
-      employeeName: employee.fullName,
-      employeeImageUrl: employee.imageUrl,
-    };
+    ?.filter((employee) => {
+      // Filter employees based on the search criteria (employee name)
+      return employee.fullName
+        .toLowerCase()
+        .includes(filters.name.toLowerCase());
+    })
+    ?.map((employee) => {
+      const rowData = {
+        key: employee._id,
+        employeeName: employee.fullName,
+        employeeImageUrl: employee.imageUrl,
+      };
 
-    const employeeAttendance = employeeAttendanceData?.find(
-      (data) => data.employeeId === employee._id
-    );
+      const employeeAttendance = employeeAttendanceData?.find(
+        (data) => data.employeeId === employee._id
+      );
 
-    if (employeeAttendance) {
-      // Employee has attendance records
-      employeeAttendance?.records.forEach((record) => {
-        const day = moment(record.attendanceDate).date();
-        rowData[`day${day}`] = record;
-      });
-    } else {
-      // Employee has no attendance records
-      for (let i = 1; i <= daysInMonth; i++) {
-        rowData[`day${i}`] = { status: "-" };
+      if (employeeAttendance) {
+        // Employee has attendance records
+        employeeAttendance?.records.forEach((record) => {
+          const day = moment(record.attendanceDate).date();
+          rowData[`day${day}`] = record;
+        });
+      } else {
+        // Employee has no attendance records
+        for (let i = 1; i <= daysInMonth; i++) {
+          rowData[`day${i}`] = { status: "-" };
+        }
       }
-    }
 
-    return rowData;
-  });
+      return rowData;
+    });
 
-  
+  const onFinish = (values, info) => {
+    //console.log(info)
+    setLoader(true);
+    // let updated_data = {
+    //   ...values,
+    //   companyId: info?.companyId,
+    //   _id: info?._id,
+    // };
+    let updated_data = {
+      _id: info?._id,
+      userId: info?.userId,
+      attendanceDate: info?.attendanceDate,
+      attendanceMonth: info?.attendanceMonth,
+      attendanceYear: info?.attendanceYear,
+      checkInTime: values?.checkInTime
+        ? moment(values.checkInTime).format("HH:mm")
+        : "", // Replace with the new check-in time
+      checkOutTime: values?.checkOutTime
+        ? moment(values.checkOutTime).format("HH:mm")
+        : "", // Replace with the new check-out time
+      status: selectedStatus ? selectedStatus : info?.status,
+      // status: selectedStatus,
+      // status: values.status,
+      //hoursWorked: info?.hoursWorked,
+      //lateArrival: "new_late_arrival", // Replace with the new late arrival value
+      //status: "new_status", // Replace with the new status
+      //overTime: info?.overTime,
+    };
+    apiServices("PUT", "attendance/update-attendance", updated_data, user_state)
+      .then((res) => {
+        // console.log(res?.data);
+        if (res?.data?.success === true) {
+          // console.log(data);
+          // setCategory(
+          //   category.map((category) => {
+          //     if (category._id === info._id) {
+          //       return {
+          //         ...category,
+          //         ...values,
+          //       };
+          //     } else {
+          //       return {
+          //         ...category,
+          //       };
+          //     }
+          //   })
+          // );
+          const updatedDayRecord = {
+            ...dayRecord,
+            checkInTime: updated_data.checkInTime,
+            checkOutTime: updated_data.checkOutTime,
+            status: updated_data.status,
+            hoursWorked: res.data.Attendance.hoursWorked,
+            overTime: res.data.Attendance.overTime,
+          };
+
+          // Update the dayRecord state with the new values
+          setDayRecord(updatedDayRecord);
+          fetchAttendanceData();
+          handleClose();
+          message.success("Attendance Updated Successfully");
+          setLoader(false);
+        }
+      })
+      .catch((err) => {
+        setLoader(false);
+        // console.log(err);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Update Attendance Error"
+          }!`
+        );
+      });
+  };
+
   // const dataSource = employeeAttendanceData.map((employeeData) => {
   //   const rowData = {
   //     key: employeeData.employeeId,
@@ -464,7 +583,15 @@ const AttendanceAdmin = () => {
                   <h3 className="page-title">Attendance</h3>
                   <ul className="breadcrumb">
                     <li className="breadcrumb-item">
-                      <Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>Dashboard</Link>
+                      <Link
+                        to={
+                          role === "admin"
+                            ? "/main/dashboard"
+                            : "/employee/dashboard"
+                        }
+                      >
+                        Dashboard
+                      </Link>
                     </li>
                     <li className="breadcrumb-item active">Attendance</li>
                   </ul>
@@ -480,9 +607,7 @@ const AttendanceAdmin = () => {
                     {isStatLoading ? (
                       <Spin size="large" />
                     ) : (
-                      <>
-                        {statdata?.todayPresent}
-                      </>
+                      <>{statdata?.todayPresent}</>
                     )}
                   </h4>
                 </div>
@@ -689,7 +814,26 @@ const AttendanceAdmin = () => {
               >
                 <div className="modal-content">
                   <div className="modal-header">
-                    <h5 className="modal-title">Attendance Details</h5>
+                    <h5
+                      className="modal-title"
+                      style={{ display: "flex", alignItems: "center" }}
+                    >
+                      Attendance Details
+                      <Button
+                        type="text" // Set the button type to 'text' for a simple, text-only button
+                        icon={<EditOutlined />} // Use the EditOutlined icon
+                        // Add an onClick handler for the edit functionality
+                        onClick={() => {
+                          setOpen({
+                            isAddOpen: true,
+                            isDelOpen: false,
+                            data: dayRecord,
+                          });
+                          setSelectedStatus(dayRecord.status);
+                          //console.log(dayRecord);
+                        }}
+                      />
+                    </h5>
 
                     <button
                       type="button"
@@ -723,22 +867,20 @@ const AttendanceAdmin = () => {
                                   <label>{"Check in at"}</label>
                                 </h6>
                                 <p>
-                                  { 
-                                  (dayRecord.checkInTime) ?
-                                  <label>
-                                    {moment(dayRecord.attendanceDate).format(
-                                      "ddd, Do MMM YYYY"
-                                    )}
-                                    {"  "}
-                                    {moment(
-                                      dayRecord.checkInTime,
-                                      "HH:mm"
-                                    ).format("h:mm A")}
-                                  </label>
-                                  :
-                                  "--"
-                                  }
-                                  
+                                  {dayRecord.checkInTime ? (
+                                    <label>
+                                      {moment(dayRecord.attendanceDate).format(
+                                        "ddd, Do MMM YYYY"
+                                      )}
+                                      {"  "}
+                                      {moment(
+                                        dayRecord.checkInTime,
+                                        "HH:mm"
+                                      ).format("h:mm A")}
+                                    </label>
+                                  ) : (
+                                    "--"
+                                  )}
                                 </p>
                               </div>
 
@@ -805,81 +947,245 @@ const AttendanceAdmin = () => {
                           <div className="card recent-activity">
                             <div className="card-body">
                               <h5 className="card-title">Today Activity</h5>
-                              <div className="stats-list" style={{height:'365px'}}>
-                              <ul className="res-activity-list">
-                                <li>
-                                  <h4 className="mb-0">
-                                    <label>Check In at</label>
-                                  </h4>
-                                  <h5 className="res-activity-time">
-                                    <i className="fa fa-clock-o" />
-                                    <label>
-                                      <h5>
-                                        {dayRecord.checkInTime
-                                          ? moment(
-                                              dayRecord.checkInTime,
-                                              "HH:mm"
-                                            ).format("h:mm A")
-                                          : "--"}
-                                      </h5>
-                                    </label>
-                                  </h5>
-                                </li>
-                                <br />
-                                <br />
-                                <div className="text-center">
-                                  <div className="stats-box">
-                                    <h2>Status</h2>
-
-                                    <h4>
-                                      <label
-                                        style={{
-                                          color:
-                                            dayRecord.status === "Late"
-                                              ? "orange"
-                                              : dayRecord.status === "Present"
-                                              ? "green"
-                                              : dayRecord.status === "On-Leave"
-                                              ? "red"
-                                              : dayRecord.status === "Holiday"
-                                              ? "blue"
-                                              : "red",
-                                        }}
-                                      >
-                                        {dayRecord.status}
-                                      </label>
+                              <div
+                                className="stats-list"
+                                style={{ height: "365px" }}
+                              >
+                                <ul className="res-activity-list">
+                                  <li>
+                                    <h4 className="mb-0">
+                                      <label>Check In at</label>
                                     </h4>
-                                  </div>
-                                </div>
-                                <br />
-                                <br />
+                                    <h5 className="res-activity-time">
+                                      <i className="fa fa-clock-o" />
+                                      <label>
+                                        <h5>
+                                          {dayRecord.checkInTime
+                                            ? moment(
+                                                dayRecord.checkInTime,
+                                                "HH:mm"
+                                              ).format("h:mm A")
+                                            : "--"}
+                                        </h5>
+                                      </label>
+                                    </h5>
+                                  </li>
+                                  <br />
+                                  <br />
+                                  <div className="text-center">
+                                    <div className="stats-box">
+                                      <h2>Status</h2>
 
-                                <li>
-                                  <h4 className="mb-0">
-                                    <label>Check Out at</label>
-                                  </h4>
-                                  <h5 className="res-activity-time">
-                                    <i className="fa fa-clock-o" />
-                                    <label>
-                                      <h5>
-                                        {dayRecord.checkOutTime
-                                          ? moment(
-                                              dayRecord.checkOutTime,
-                                              "HH:mm"
-                                            ).format("h:mm A")
-                                          : "--"}
-                                      </h5>
-                                    </label>
-                                  </h5>
-                                </li>
-                                {/* Add more entries as needed */}
-                              </ul>
+                                      <h4>
+                                        <label
+                                          style={{
+                                            color:
+                                              dayRecord.status === "Late"
+                                                ? "orange"
+                                                : dayRecord.status === "Present"
+                                                ? "green"
+                                                : dayRecord.status ===
+                                                  "On-Leave"
+                                                ? "red"
+                                                : dayRecord.status === "Holiday"
+                                                ? "blue"
+                                                : "red",
+                                          }}
+                                        >
+                                          {dayRecord.status}
+                                        </label>
+                                      </h4>
+                                    </div>
+                                  </div>
+                                  <br />
+                                  <br />
+
+                                  <li>
+                                    <h4 className="mb-0">
+                                      <label>Check Out at</label>
+                                    </h4>
+                                    <h5 className="res-activity-time">
+                                      <i className="fa fa-clock-o" />
+                                      <label>
+                                        <h5>
+                                          {dayRecord.checkOutTime
+                                            ? moment(
+                                                dayRecord.checkOutTime,
+                                                "HH:mm"
+                                              ).format("h:mm A")
+                                            : "--"}
+                                        </h5>
+                                      </label>
+                                    </h5>
+                                  </li>
+                                  {/* Add more entries as needed */}
+                                </ul>
                               </div>
                             </div>
                           </div>
                         </div>
                       </div>
                     )}
+                  </div>
+                </div>
+              </div>
+            </Modal>
+
+            <Modal
+              open={open.isAddOpen}
+              onClose={handleClose}
+              aria-labelledby="modal-modal-title"
+              aria-describedby="modal-modal-description"
+              disableRestoreFocus
+              BackdropProps={{
+                style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
+              }}
+            >
+              <div
+                className="modal-dialog modal-dialog-centered"
+                role="document"
+              >
+                <div className="modal-content">
+                  <div className="modal-header">
+                    <h5 className="modal-title">Update Attendance</h5>
+                    <button
+                      type="button"
+                      className="close"
+                      onClick={handleClose}
+                    >
+                      <span aria-hidden="true">×</span>
+                    </button>
+                  </div>
+                  <div className="modal-body">
+                    <Form
+                      // form={form}
+                      name="control-hooks"
+                      onFinish={(val) => onFinish(val, open?.data)}
+                      onFinishFailed={({ errorFields }) => {
+                        const consecutiveSpacesError = errorFields.find(
+                          (field) =>
+                            field.errors
+                              .toString()
+                              .includes("consecutive spaces")
+                        );
+                        if (consecutiveSpacesError) {
+                          message.error("Please Remove Consecutive Spaces!");
+                        } else {
+                          message.error("Please Fill Required Fields!");
+                        }
+                      }}
+                      initialValues={{
+                        //checkInTime: open?.data ? open?.data?.holidayTitle : "",
+                        checkInTime: open?.data.checkInTime
+                          ? moment(open?.data?.checkInTime, "h:mm A")
+                          : "",
+                        checkOutTime: open?.data.checkOutTime
+                          ? moment(open?.data?.checkOutTime, "h:mm A")
+                          : "",
+                        //status: open?.data?.status ? open?.data?.status : "",
+                      }}
+                      autoComplete="off"
+                    >
+                      <div className="form-group">
+                        <label>Check In Time</label>
+                        <div style={{ position: "relative" }} id="area">
+                          <Form.Item
+                            name="checkInTime"
+                            className="custom-border"
+                          >
+                            <TimePicker
+                              getPopupContainer={() =>
+                                document.getElementById("area")
+                              }
+                              format="HH:mm" // Format for 24-hour time
+                              style={{ width: "100%" }}
+                              //allowClear={false}
+                              className="form-control"
+                              size="large"
+                            />
+                          </Form.Item>
+                        </div>
+                      </div>
+                      <div className="form-group">
+                        <label>Check Out Time</label>
+                        <div style={{ position: "relative" }} id="area">
+                          <Form.Item
+                            name="checkOutTime"
+                            className="custom-border"
+                            rules={[
+                              // Add a custom validation rule for check-out time
+                              ({ getFieldValue }) => ({
+                                validator(_, value) {
+                                  const checkInTime =
+                                    getFieldValue("checkInTime");
+
+                                  // If check-in time is empty and check-out time has a value, show an error
+                                  if (!checkInTime && value) {
+                                    return Promise.reject(
+                                      "Check In Time is required when Check Out Time is filled."
+                                    );
+                                  }
+
+                                  // If both are empty, no issue
+                                  // If check-in is empty and check-out is empty, no issue
+                                  return Promise.resolve();
+                                },
+                              }),
+                            ]}
+                            validateTrigger="onSubmit"
+                          >
+                            <TimePicker
+                              getPopupContainer={() =>
+                                document.getElementById("area")
+                              }
+                              format="HH:mm" // Format for 24-hour time
+                              style={{ width: "100%" }}
+                              className="form-control"
+                              size="large"
+                            />
+                          </Form.Item>
+                        </div>
+                      </div>
+                      <div className="form-group form-focus">
+                        <Form.Item name="status" className="custom-border">
+                          <label>Status</label>
+                          <Select
+                            placeholder="Select Status"
+                            style={{ width: "100%" }}
+                            value={selectedStatus}
+                            onChange={(value) => setSelectedStatus(value)}
+                          >
+                            <Select.Option value="Present">
+                              Present
+                            </Select.Option>
+                            <Select.Option value="Late">Late</Select.Option>
+                            <Select.Option value="Absent">Absent</Select.Option>
+                            <Select.Option value="On-Leave">
+                              On Leave
+                            </Select.Option>
+                            <Select.Option value="Holiday">
+                              Holiday
+                            </Select.Option>
+                          </Select>
+                        </Form.Item>
+                      </div>
+
+                      <div className="submit-section">
+                        <Form.Item>
+                          <Button
+                            htmlType="submit"
+                            className="btn btn-primary submit-btn"
+                            disabled={loader}
+                          >
+                            {loader ? (
+                              <Spin size="small" indicator={antIcon} />
+                            ) : (
+                              "Submit"
+                            )}
+                          </Button>
+                        </Form.Item>
+                      </div>
+                    </Form>
                   </div>
                 </div>
               </div>
