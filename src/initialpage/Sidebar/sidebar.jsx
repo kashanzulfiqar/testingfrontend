@@ -583,7 +583,7 @@ const Sidebar = (props) => {
                       {/* <li><Link onClick={() => localStorage.setItem("minheight", "true")} to="/projects/tasks">Tasks</Link></li> */}
                       { 
                         (user_state?.role === 'admin' || permissions?.projectManagement) &&
-                        <li><Link onClick={() => localStorage.setItem("minheight", "true")} to="/projects/tasks">Tasks</Link></li>
+                        <li><Link onClick={() => localStorage.setItem("minheight", "true")} className={pathname.includes('/projects/tasks') ? "active" : ""} to="/projects/tasks">Tasks</Link></li>
                       }
                       <li><Link className={pathname.includes('task-board') ? "active" : ""} to="/app/projects/task-board">Task Board</Link></li>
                     </ul>

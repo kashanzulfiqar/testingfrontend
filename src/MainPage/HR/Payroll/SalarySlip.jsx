@@ -117,6 +117,18 @@ const SalarySlip = () => {
               }
             },
             {
+              title: "Credit Salary",
+              dataIndex: "creditSalary",
+              width:300,
+              render: (text,record) => {
+                return (
+                  <label>
+                    {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                  </label>
+                );
+              }
+            },
+            {
               title: "Actions",
               width:76,
               render: (text, record) => (
@@ -328,7 +340,7 @@ const SalarySlip = () => {
                     locale={{
                       emptyText: tableLoader ? null : customEmptyText,
                     }}
-                    // style = {{overflowX : 'auto'}}
+                    style = {{paddingBottom: '70px'}}
                     columns={columns}
                     dataSource={data}
                     pagination={false}
