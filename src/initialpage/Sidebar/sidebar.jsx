@@ -27,12 +27,34 @@ const Sidebar = (props) => {
   const MenuMore = () => {
     document.getElementById("more-menu-hidden").classList.toggle("hidden");
   }
+  
 
+  const [oldOpenMenu, setOldOpenMenu] = useState("");
   const [isSideMenu, setSideMenu] = useState("");
   const [isSideMenunew, setSideMenuNew] = useState("dashboard")
   const [level2Menu, setLevel2Menu] = useState("")
   const [level3Menu, setLevel3Menu] = useState("")
 
+  useEffect(() => {
+    if(document.body.classList.contains('mini-sidebar')){
+      setOldOpenMenu(isSideMenu)
+      setSideMenu('')
+    }else{
+      setSideMenu(oldOpenMenu)
+    }
+  }, [props.barMenu])
+  
+  const mouseHandle = (type) => {
+    if(document.body.classList.contains('mini-sidebar')){
+      document.body.classList.toggle('expand-menu');
+      setOldOpenMenu(isSideMenu)
+      if(type === 'leave'){
+        setSideMenu('')
+      }else{
+        setSideMenu(oldOpenMenu)
+      }
+      }
+  }
 
   const toggleSidebar = (value) => {
     console.log(value);
@@ -65,7 +87,12 @@ const Sidebar = (props) => {
 
     <React.Fragment>
       {/* <Header /> */}
-      <div id="sidebar" className="sidebar">
+      <div
+        id="sidebar"
+        className="sidebar"
+        onMouseEnter={mouseHandle}
+        onMouseLeave={() => mouseHandle('leave')}
+        >
         <Scrollbars>
           <div className="sidebar-inner slimscroll">
             <div id="sidebar-menu" className="sidebar-menu">
