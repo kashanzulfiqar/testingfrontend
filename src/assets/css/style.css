@@ -7255,7 +7255,11 @@ textarea.form-control {
 
 /* for all table head styles */
 .ant-table-thead > tr > th{
-  /* text-wrap: nowrap !important; */
+  text-wrap: nowrap !important;
+}
+/* for permission table only head styles */
+.customCellWidth .ant-table-thead > tr > th{
+  text-wrap: wrap !important;
 }
 
 /* ant date picker last column spacing fix */
