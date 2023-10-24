@@ -284,7 +284,7 @@ const Header = (props) => {
         </Link>
       </div>
       {/* /Logo */}
-      <a id="toggle_btn" href="javascript:" style={{ display: pathname.includes('tasks') ? "none" : pathname.includes('compose') ? "none" : "" }} onClick={handlesidebar}>
+      <a id="toggle_btn" href="javascript:" onClick={handlesidebar}>
         <span className="bar-icon"><span />
           <span />
           <span />

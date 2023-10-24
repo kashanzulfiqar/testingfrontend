@@ -7392,11 +7392,11 @@ background: #f5f5f5 !important;
   /* position: sticky;
   bottom: 0; */
 }
-.brandStyle > a {
-  color: #dbdcdd;
+.brandStyle > a > span > a {
+  color: #dbdcdd !important;
 }
-.brandStyle > a:hover{
-  color: #FF9B44;
+.brandStyle > a > span > a:hover{
+  color: #FF9B44 !important;
 }
 
 
