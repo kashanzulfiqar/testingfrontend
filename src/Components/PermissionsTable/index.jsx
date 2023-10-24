@@ -81,6 +81,45 @@ const PermissionsTable = ({ permissions, setPermissions, disabled }) => {
   const columns = [
             
     {
+      title: (text, record) => {
+        const full_permissions = permissions?.every((item) =>
+        item?.subPermissions?.every((subObj) => subObj?.checked === true)
+      );
+        const full_permissions_some = permissions.some((item) => item.subPermissions.some((subObj) => subObj.checked))
+        return(            
+            <>
+              {
+                <Tooltip placement="topLeft" title={full_permissions ? 'Un-Check All Modules' : 'Check All Modules'}>
+                  <Checkbox
+                    checked={full_permissions}
+                    indeterminate={ full_permissions ? false : full_permissions_some }
+                    onChange={(e) => handleMasterCheckbox(e)}
+                    disabled={disabled}
+                    style={{color: `${(!disabled && full_permissions_some) ? '#ff9b44' : '#B8B8B8'}`}}
+                  />
+                </Tooltip>
+              }
+            </>
+        )},
+      dataIndex: '',
+      render: (text, record) => {
+        const all_permissions = record?.subPermissions?.every((subObj) => subObj?.checked === true);
+        const all_permissions_some = record?.subPermissions?.some(subObj => subObj.checked === true);
+        return(            
+            <>
+              {
+                <Checkbox
+                  checked={all_permissions}
+                  indeterminate={all_permissions ? false : all_permissions_some}
+                  onChange={(e) => handleCheckboxAll(e, record)}
+                  disabled={disabled}
+                  style={{color: `${(!disabled && all_permissions_some) ? '#ff9b44' : '#B8B8B8'}`}}
+                /> 
+              }
+            </>
+        )},
+    },
+    {
       title: 'Module Permission',
       dataIndex: 'title',
       style: { minWidth: '350px', maxWidth: '350px', width: '350px' }
@@ -158,7 +197,8 @@ const PermissionsTable = ({ permissions, setPermissions, disabled }) => {
         )},
     },
     {
-        title: 'Reports To Employee',
+        // title: 'Reports To Employee',
+        title: 'Is Reported To',
         dataIndex: 'roleId',
         render: (text, record) => {
           const sub = record?.subPermissions?.find(permission => permission.title === "Reports to Employee");

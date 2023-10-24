@@ -17,7 +17,7 @@ const EmployeeDashboard = () => {
   const [menu, setMenu] = useState(false)
   const user_state = useSelector((state) => state.user.loginvalue);
   const [userData, setUserData] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const toggleMobileMenu = () => {
     setMenu(!menu)
@@ -157,20 +157,23 @@ const EmployeeDashboard = () => {
           {/* Page Content */}
           <div className="content container-fluid">
             <div className="row">
-              <div className="col-md-12">{isLoading ? (
-                <Spin size="large" />
-              ) : (
-
+              <div className="col-md-12">
                 <div className="welcome-box">
-                  <div className="welcome-img">
-                    <img alt="" src={userData?.user?.imageUrl || user_icon} />
-                  </div>
-                  <div className="welcome-det">
-                    <h3>{userData? `Welcome, ${userData?.user?.fullName }`:" "} </h3>
-                    <p><label>{todayDate}</label></p>
-                  </div>
+                  {
+                    isLoading ? (
+                      <Spin style={{height: '66px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center'}} />
+                    ) :
+                    <>
+                      <div className="welcome-img">
+                        <img alt="" src={userData?.user?.imageUrl || user_icon} />
+                      </div>
+                      <div className="welcome-det">
+                        <h3>{userData? `Welcome, ${userData?.user?.fullName }`:" "} </h3>
+                        <p><label>{todayDate}</label></p>
+                      </div>
+                    </>
+                  }
                 </div>
-              )}
               </div>
             </div>
             <div className="row">
@@ -186,7 +189,7 @@ const EmployeeDashboard = () => {
                   pagination={false}
                   locale={{
                     emptyText: isLoading ? (
-                      <Spin size="large" style={{height: '280px', display: 'flex', justifyContent: 'center', alignItems: 'center'}} tip="Loading..." />
+                      <Spin style={{height: '280px', display: 'flex', justifyContent: 'center', alignItems: 'center'}} tip="Loading..." />
                     ) : (
                       customEmptyText
                     ),
@@ -206,7 +209,7 @@ const EmployeeDashboard = () => {
                   pagination={false}
                   locale={{
                     emptyText: isLoading ? (
-                      <Spin size="large" style={{height: '280px', display: 'flex', justifyContent: 'center', alignItems: 'center'}} tip="Loading..." />
+                      <Spin style={{height: '280px', display: 'flex', justifyContent: 'center', alignItems: 'center'}} tip="Loading..." />
                     ) : (
                       customEmptyText
                     ),
@@ -265,7 +268,7 @@ const EmployeeDashboard = () => {
                       <div className="card-body">
                         <div className="time-list">
                         {isLoading ? (
-                          <Spin size="large" /> // Display Spin while loading
+                          <Spin style={{height: '31px', width: '100%', marginTop: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center'}} /> // Display Spin while loading
                         ) : (
                           <>
                           <div className="dash-stats-list">
@@ -287,7 +290,7 @@ const EmployeeDashboard = () => {
                     <div className="card">
                       <div className="card-body" style={{display:"flex", flexDirection:'column', alignItems:"flex-start"}}>
                       {isLoading ? (
-                        <Spin size="large" />
+                        <Spin style={{height: '38px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center'}} />
                       ) : (
                         userData?.workAnniversary.length === 0 ? (
                           <p>No Work anniversaries today</p>
@@ -316,7 +319,7 @@ const EmployeeDashboard = () => {
                     <div className="card">
                       <div className="card-body">
                       {isLoading ? (
-                        <Spin size="large" />
+                        <Spin style={{height: '38px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center'}} />
                       ) : (
                         userData?.todayBirthdays.length === 0 ? (
                           <p>No birthdays today</p>
