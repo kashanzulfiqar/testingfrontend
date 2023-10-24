@@ -239,6 +239,7 @@ const Header = (props) => {
 
   const handlesidebar = () => {
     document.body.classList.toggle('mini-sidebar');
+    props.onBarToggle()
   }
   const onMenuClik = () => {
     props.onMenuClick()
