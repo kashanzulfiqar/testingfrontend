@@ -263,8 +263,8 @@ const handleClose = () => {
     setFromInvoiceDate(date);
   };
   const disabledDate = (current) => {
-    return fromInvoiceDate && current < moment(fromInvoiceDate).endOf('day');
-    // return fromDate && current < moment(fromDate).startOf('day');
+    // return fromInvoiceDate && current < moment(fromInvoiceDate).endOf('day');
+    return fromInvoiceDate && current < moment(fromInvoiceDate).startOf('day');
   };
 
 
