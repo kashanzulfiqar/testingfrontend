@@ -293,7 +293,7 @@ const EmployeeDashboard = () => {
                         <Spin style={{height: '38px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center'}} />
                       ) : (
                         userData?.workAnniversary.length === 0 ? (
-                          <p>No Work anniversaries today</p>
+                          <p>No work anniversaries today</p>
                         ) : (
                         workAnniversaryData.map((item) => {
                           const joiningDate = new Date(item.joiningDate);
@@ -340,6 +340,26 @@ const EmployeeDashboard = () => {
                           );
                         })
                         ))}
+                      </div>
+                    </div>
+                  </section>
+
+                  <section>
+                    <h5 className="dash-title"><label>UPCOMING HOLIDAY</label></h5>
+                    <div className="card">
+                      <div className="card-body">
+                      {isLoading ? (
+                        <Spin style={{height: '38px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center'}} />
+                      ) : (
+                        userData?.upcomingHoliday === null ? (
+                          <label style={{marginBottom: '16px'}}>No upcoming holiday</label>
+                        ) : 
+                        <label style={{textAlign: 'center', display: 'grid', placeContent: 'center', gap: '8px'}}>
+                          <h4 style={{margin: '0px'}}>{userData?.upcomingHoliday?.holidayTitle}</h4>
+                          <h4 style={{margin: '0px'}}><label>{moment(userData?.upcomingHoliday?.holidayDate).format("ddd, DD MMM YYYY")}</label></h4>
+                        </label>
+                        // <h4 className='holiday-title mb-0'>{moment(userData?.upcomingHoliday?.holidayDate).format("ddd, DD MMM YYYY")} {userData?.upcomingHoliday?.holidayTitle}</h4>
+                        )}
                       </div>
                     </div>
                   </section>

@@ -618,7 +618,7 @@ const antIcon = (
                         </div>
                         </div>
                     </div>
-                    <div className="col-md-6">
+                    {/* <div className="col-md-6">
                         <div className="form-group">
                         <label>
                             Status <span className="text-danger">*</span>
@@ -655,7 +655,7 @@ const antIcon = (
                         </Form.Item>
                         </div>
                         </div>
-                    </div>
+                    </div> */}
                     <div className="col-md-6">
                         <div className="form-group">
                             <label>Upload Files</label>

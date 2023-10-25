@@ -278,22 +278,22 @@ const formatDate = (inputDate) => {
         title: 'Paid By',
         dataIndex: 'paidBy',
       },  
-      {
-        title: 'Status',
-        dataIndex: 'status',
-        render: (text, record) => (
-          <div className="dropdown action-label">
-              <a className="btn btn-white btn-sm btn-rounded dropdown-toggle" href="javascript:void(0)" data-bs-toggle="dropdown" aria-expanded="false">
-                <i className={text==="Pending" ?"fa fa-dot-circle-o text-warning" : "fa fa-dot-circle-o text-success"} /> {text}
-              </a>
-              <div className="dropdown-menu">
-                {/* style={{cursor: 'default', background: '#FF9B44', color: 'white'}} */}
-                <a className="dropdown-item" href="javascript:void(0)" onClick={() => text !== 'Approved' ? onHandleStatus(record, 'Approved') : ''} style={text === 'Approved' ? {cursor: 'default', background: '#FF9B44', color: 'white'} : {}}><i className="fa fa-dot-circle-o text-success" /> Approved</a>
-                <a className="dropdown-item" href="javascript:void(0)" onClick={() => text !== 'Pending' ? onHandleStatus(record, 'Pending') : ''} style={text === 'Pending' ? {cursor: 'default', background: '#FF9B44', color: 'white'} : {}}><i className="fa fa-dot-circle-o text-warning" /> Pending</a>
-              </div>
-          </div>
-          ),
-      },
+      // {
+      //   title: 'Status',
+      //   dataIndex: 'status',
+      //   render: (text, record) => (
+      //     <div className="dropdown action-label">
+      //         <a className="btn btn-white btn-sm btn-rounded dropdown-toggle" href="javascript:void(0)" data-bs-toggle="dropdown" aria-expanded="false">
+      //           <i className={text==="Pending" ?"fa fa-dot-circle-o text-warning" : "fa fa-dot-circle-o text-success"} /> {text}
+      //         </a>
+      //         <div className="dropdown-menu">
+      //           {/* style={{cursor: 'default', background: '#FF9B44', color: 'white'}} */}
+      //           <a className="dropdown-item" href="javascript:void(0)" onClick={() => text !== 'Approved' ? onHandleStatus(record, 'Approved') : ''} style={text === 'Approved' ? {cursor: 'default', background: '#FF9B44', color: 'white'} : {}}><i className="fa fa-dot-circle-o text-success" /> Approved</a>
+      //           <a className="dropdown-item" href="javascript:void(0)" onClick={() => text !== 'Pending' ? onHandleStatus(record, 'Pending') : ''} style={text === 'Pending' ? {cursor: 'default', background: '#FF9B44', color: 'white'} : {}}><i className="fa fa-dot-circle-o text-warning" /> Pending</a>
+      //         </div>
+      //     </div>
+      //     ),
+      // },
       {
         title: 'Action',
         render: (text, record) => (

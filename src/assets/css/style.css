@@ -7175,6 +7175,11 @@ textarea.form-control {
 
 /* ................. custom css styling ................ */
 
+.registerSelect > div:nth-child(1){
+  background: #fbfbfb !important;
+  height: 46px !important;
+}
+
 .ant-tooltip-inner{
   border-radius: 5px !important;
   background-color: #121212bf !important;
@@ -7235,6 +7240,21 @@ textarea.form-control {
   z-index: 301 !important;
 }
 .taskTable tbody tr:nth-child(odd) > td:nth-child(1){
+  background: #f5f5f5 !important;
+  }
+
+/* invoice table style */
+.invoiceTable thead tr th:not(:nth-child(1), :nth-child(9)) {
+  min-width: 130px !important;
+}
+.invoiceTable tbody > tr > td{
+  text-wrap: nowrap !important;
+}
+.invoiceTable thead > tr > th:nth-child(2){
+  background-color: #FFFFFF !important;
+  z-index: 301 !important;
+}
+.invoiceTable tbody tr:nth-child(odd) > td:nth-child(2){
   background: #f5f5f5 !important;
   }
 
