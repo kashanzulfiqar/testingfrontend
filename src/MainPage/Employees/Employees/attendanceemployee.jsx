@@ -71,7 +71,7 @@ const AttendanceEmployee = () => {
   const [fetchattend6, setFetchattend6] = useState([]);
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 10,
+    pageSize: 20,
     total: 0,
   });
 
@@ -455,6 +455,7 @@ const AttendanceEmployee = () => {
 
   const formatHoursMinutes = (timeString) => {
     if (!timeString) return "None";
+    if (isNaN(timeString)) return "0h 0m";
 
     const totalMinutes = parseFloat(timeString);
     const hours = Math.floor(totalMinutes / 60);
@@ -1242,7 +1243,7 @@ const AttendanceEmployee = () => {
                       total: pagination.total,
                       showTotal: (total, range) =>
                         `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                      pageSizeOptions: ["10", "20", "30", "40"], // Options to change page size
+                      pageSizeOptions: ["20", "30", "40", "50"], // Options to change page size
                       showSizeChanger: true, // Show the page size changer
                       onChange: (page, pageSize) => {
                         setdisableAttend(false);
