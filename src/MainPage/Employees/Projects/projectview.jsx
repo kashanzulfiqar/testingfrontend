@@ -768,17 +768,14 @@ const ProjectView = () => {
                                 className="col-md-3 col-sm-4 col-lg-4 col-xl-3"
                               >
                                 <div className="uploaded-box">
-                                  <a
-                                    href={fullImageUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                  >
-                                    <div className="uploaded-img">
+                                  <a>
+                                    <div className="uploaded-img" style={{display:"flex", flexDirection:"column", maxHeight:"200px", maxWidth:"200px"}}>
                                       <img
                                         src={thumbnailUrl}
                                         className="img-fluid"
                                         alt={`Image ${index + 1}`}
                                         style={{ borderRadius: "10px" }}
+                                        onClick={() => window.open(fullImageUrl, "_blank")}
                                       />
                                       <div className="download-icon hidden">
                                         <a href={downloadLink} download>
@@ -1286,6 +1283,7 @@ const ProjectView = () => {
               <div className="card">
                 <div className="card-body">
                   <h6 className="card-title m-b-15">Project Details</h6>
+                  <div className="table-responsive">
                   <table className="table table-striped table-border">
                     <tbody>
                       {
@@ -1337,6 +1335,7 @@ const ProjectView = () => {
                       </tr>
                     </tbody>
                   </table>
+                  </div>
                   {/* <p className="m-b-5">
                     Progress <span className="text-success float-end">40%</span>
                   </p>
