@@ -153,6 +153,7 @@ const handleClose = () => {
       {
         title: 'Invoice Number',
         dataIndex: 'invoiceNo',
+        fixed: 'left',
         render: (text, record) => (
           <Link to="/invoices/view-invoice" state={{invoice_data: record}} style={{color: '#333333'}}>{text}</Link>
           ),
@@ -188,6 +189,13 @@ const handleClose = () => {
           ),
       },
       {
+        title: 'Converted Amount',
+        dataIndex: 'convertedAmount',
+        render: (text, record) => (
+          <span>{text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {record?.company?.preferredCurrency}</span>
+          ),
+      },
+      {
         title: 'Status',
         dataIndex: 'status',
         render: (text, record) => (
@@ -200,7 +208,7 @@ const handleClose = () => {
         title: 'Action',
         render: (text, record) => (
             <div className="dropdown dropdown-action text-end">
-                <a href="javascript:void(0)" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
+                <a href="javascript:void(0)" style={{minWidth: '60px'}} className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
                         <div className="dropdown-menu dropdown-menu-right">
                           <Link className="dropdown-item" to="/invoices/edit-invoice" state={{edit_invoice_data: record}}><i className="fa fa-pencil m-r-5" /> Edit</Link>
                           <Link className="dropdown-item" to="/invoices/view-invoice" state={{invoice_data: record}}><i className="fa fa-eye m-r-5" /> View</Link>
@@ -490,7 +498,7 @@ const handleClose = () => {
         {/* /Search Filter */}
         <div className="row">
           <div className="col-md-12">
-            <div className="table-responsive">
+            <div className="table-responsive invoiceTable">
                <Table
                   loading={tableLoader}
                   className={allInvoices?.length > 0 ? "table-striped" : ""}

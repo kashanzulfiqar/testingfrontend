@@ -44,10 +44,10 @@ const SalarySlip = () => {
     }
   }, [])
 
-  const getEmployeeSalary = (current_page, page_size) => {
+  const getEmployeeSalary = (values, current_page, page_size) => {
     setTableLoader(true);
     // apiServices("GET", `user/view-user?deleted=false${values === '' ? '' : values?.employeeName === '' ? '' : values?.employeeName ? `&employeeName=${values?.employeeName}` : filterValues?.employeeName ? `&employeeName=${filterValues?.employeeName}` : ''}${values === '' ? '' : values?.employeeId === '' ? '' : values?.employeeId ? `&employeeId=${values?.employeeId}` : filterValues?.employeeId ? `&employeeId=${filterValues?.employeeId}` : ''}${values === '' ? '' : values?.designation === '' ? '' : values?.designation ? `&designation=${values?.designation}` : filterValues?.designation ? `&designation=${filterValues?.designation}` : ''}&page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}`, null, user_state)
-    apiServices("GET", `payrolls/employee-payroll?page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}`, null, user_state)
+    apiServices("GET", `payrolls/employee-payroll?${values === '' ? '' : values?.payMonth === '' ? '' : values?.payMonth ? `payMonth=${values?.payMonth}` : filterValues?.payMonth ? `payMonth=${filterValues?.payMonth}` : ''}${values === '' ? '' : values?.payYear === '' ? '' : values?.payYear ? `&payYear=${values?.payYear}` : filterValues?.payYear ? `&payYear=${filterValues?.payYear}` : ''}&page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}`, null, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
           setData(res?.data?.payrolls?.docs)
@@ -175,7 +175,15 @@ const SalarySlip = () => {
 
 
           const onFilterFinish = (values) => {
-            console.log(values);
+            const formatted_data = {
+              payMonth: values?.month ? moment(values?.month).format('MMMM') : '',
+              payYear: values?.year ? moment(values?.year).format('YYYY') : '',
+            }
+            if(formatted_data?.payYear || formatted_data?.payMonth){
+              getEmployeeSalary(formatted_data, 1, pageSize);
+              setFilterValues(formatted_data);
+              setCurrentPage(1);
+            }
           }
 
           const antIcon = (
@@ -214,25 +222,12 @@ const SalarySlip = () => {
                       margin: "7px 0px 4px 0px",
                     }}
                   >
-                    'No Record found!'
+                    No Record Found!
                   </div>
                 </div>
               }
             />
           );
-
-    const [allValues, setAllValues] = useState({});
-    const onHandleChange = (type, value) => {
-        const updatedValues = {
-          [type]: `${value}`,
-        };
-
-        form.setFieldsValue(updatedValues);
-        setAllValues({
-          ...allValues,
-          [type]: `${value}`,
-        });
-    };
 
 
       return ( 
@@ -260,15 +255,12 @@ const SalarySlip = () => {
              </div>
              {/* /Page Header */}
              {/* Search Filter */}
-              {/* <Form
+              <Form
                 form={form}
                 onFinish={onFilterFinish}
-                onFinishFailed={() => {
-                  message.error("Please Fill Required Fields!")
-                }}
               >
               <div className="row filter-row">
-                <div className="col-sm-6 col-md-3">  
+                {/* <div className="col-sm-6 col-md-3">  
                   <div className="form-group">
                   <Form.Item
                       name="employeeName"
@@ -281,55 +273,47 @@ const SalarySlip = () => {
                     />
                     </Form.Item>
                   </div>
-                </div>
-                <div className="col-sm-6 col-md-3">
+                </div> */}
+                <div className="col-sm-6 col-md-4">
                 <div className='filterDateMonth' style={{ position: 'relative' }} id='area'>
                     <Form.Item
                       name="month"
                       className="custom-border"
-                      rules={[
-                        {
-                          whitespace: true,
-                          required: true,
-                          message: "please select month",
-                        },
-                      ]}
+                      // rules={[
+                      //   {
+                      //     whitespace: true,
+                      //     required: true,
+                      //     message: "please select month",
+                      //   },
+                      // ]}
                     >
-                      <Input
-                        style={{ display: "none" }}
-                        value={allValues?.month}
-                      />
-                      <DatePicker onChange={(date, datestring) => { onHandleChange("month", datestring); }} format="MMMM" allowClear={false} size='large' picker="month" placeholder='Select Month' className='form-control filterDate' style={{minHeight: '50px', display: 'flex'}} getPopupContainer={() => document.getElementById('area')} />
+                      <DatePicker format="MMMM" allowClear={false} size='large' picker="month" placeholder='Select Month' className='form-control filterDate' style={{minHeight: '50px', display: 'flex'}} getPopupContainer={() => document.getElementById('area')} />
                     </Form.Item>
                   </div>
                 </div>
-                <div className="col-sm-6 col-md-3">
-                <div style={{ position: 'relative' }} id='area'>
+                <div className="col-sm-6 col-md-4">
+                <div style={{ position: 'relative' }} id='area1'>
                     <Form.Item
                       name="year"
                       className="custom-border"
-                      rules={[
-                        {
-                          whitespace: true,
-                          required: true,
-                          message: "please select year",
-                        },
-                      ]}
+                      // rules={[
+                      //   {
+                      //     whitespace: true,
+                      //     required: true,
+                      //     message: "please select year",
+                      //   },
+                      // ]}
                     >
-                      <Input
-                        style={{ display: "none" }}
-                        value={allValues?.year}
-                      />
-                      <DatePicker onChange={(date, datestring) => { onHandleChange("year", datestring); }} allowClear={false} size='large' picker="year" placeholder='Select Year' className='form-control filterDate' style={{minHeight: '50px', display: 'flex'}} getPopupContainer={() => document.getElementById('area')} />
+                      <DatePicker allowClear={false} size='large' picker="year" placeholder='Select Year' className='form-control filterDate' style={{minHeight: '50px', display: 'flex'}} getPopupContainer={() => document.getElementById('area1')} />
                     </Form.Item>
                   </div>
                 </div>
-                <div className="col-sm-6 col-md-3" style={{display: 'flex', alignItems: 'flex-start', gap: '13px'}}>  
+                <div className="col-sm-6 col-md-4" style={{display: 'flex', alignItems: 'flex-start', gap: '13px'}}>  
                   <button href="javascript:void(0)" type="submit" className="btn btn-success btn-block w-50"> Search </button>  
-                  <button href="javascript:void(0)" type="reset" onClick={() => { form.resetFields(); getEmployees('', 1, pageSize); setFilterValues(null); setCurrentPage(1)}} className="btn btn-success btn-block w-50" style={{backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}}> Reset </button>  
+                  <button href="javascript:void(0)" type="reset" onClick={() => { form.resetFields(); getEmployeeSalary('', 1, pageSize); setFilterValues(null); setCurrentPage(1)}} className="btn btn-success btn-block w-50" style={{backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}}> Reset </button>  
                 </div>
               </div>
-              </Form> */}
+              </Form>
              {/* /Search Filter */}
              <div className="row">
                <div className="col-md-12">
@@ -359,7 +343,7 @@ const SalarySlip = () => {
                         onChange={(page, size) => {
                           console.log(page, size);
                           setPageSize(size); setCurrentPage(page);
-                          getEmployeeSalary(page, size)
+                          getEmployeeSalary(filterValues, page, size)
                         }}
                         showSizeChanger={true}
                         pageSizeOptions={['20', '30', '40', '50']}
