@@ -33,7 +33,7 @@ const Holidays = () => {
   const nav = useNavigate();
   const user_state = useSelector((state) => state.user.loginvalue);
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
-  console.log(permissions)
+  //console.log(permissions)
   const company_id = user_state?.user?.companyId;
   const role = user_state?.user?.role;
 
@@ -67,12 +67,8 @@ const Holidays = () => {
   });
 
   useEffect(() => {
-    if(role === 'admin' || permissions?.companyManagement) {
-      setIsLoading(true);
-      getHolidays();
-    }else{
-      navigate('/restricted', { state: { unAuthorize: true}})
-    }
+    setIsLoading(true);
+    getHolidays();
   }, []);
 
   const getHolidays = (page, pageSize) => {
@@ -231,9 +227,13 @@ const Holidays = () => {
         <div className="dropdown dropdown-action text-end">
           <a
             href="javascript:void(0)"
-            className="action-icon dropdown-toggle"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
+            // className="action-icon dropdown-toggle"
+            // data-bs-toggle="dropdown"
+            // aria-expanded="false"
+            className={`action-icon dropdown-toggle ${role === "admin" || permissions.companyManagement ? '' : 'disabled'}`}
+            style={{ cursor: role == "admin" || permissions.companyManagement ? "pointer" : "not-allowed" }}
+            data-bs-toggle={role === "admin" || permissions.companyManagement ? 'dropdown' : ''}
+            aria-expanded={role === "admin" || permissions.companyManagement ? 'true' : 'false'}
           >
             <i className="material-icons">more_vert</i>
           </a>
@@ -248,13 +248,6 @@ const Holidays = () => {
                   data: row,
                 });
               }}
-              disabled={
-                role === "admin" 
-                  ? false
-                  : permissions?.companyManagement
-                  ? false
-                  : true
-              }
             >
               <i className="fa fa-pencil m-r-5" /> Edit
             </a>
@@ -268,13 +261,6 @@ const Holidays = () => {
                   data: row,
                 });
               }}
-              disabled={
-                role === "admin" 
-                  ? false
-                  : permissions?.companyManagement
-                  ? false
-                  : true
-              }
             >
               <i className="fa fa-trash-o m-r-5" /> Delete
             </a>
@@ -299,7 +285,7 @@ const Holidays = () => {
           // else{
           //}
           if(holidayObj?.docs?.length === 1){
-            console.log(holidayObj.totalPages)
+            //console.log(holidayObj.totalPages)
             getHolidays((holidayObj.pages-1),null);
           }
           else{
@@ -392,7 +378,7 @@ const Holidays = () => {
     <>
       <div className={`main-wrapper ${menu ? "slide-nav" : ""}`}>
         {/* <Header onMenuClick={(value) => toggleMobileMenu()} /> */}
-        <Sidebar />
+        {/* <Sidebar /> */}
         <div className="page-wrapper">
           <Helmet>
             <title>Holidays - DaftarPro</title>

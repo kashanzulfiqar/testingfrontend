@@ -49,6 +49,7 @@ const AttendanceAdmin = () => {
   const [isStatLoading, setIsStatLoading] = useState(false);
   const [selectedMonthYear, setSelectedMonthYear] = useState("");
   const [statdata, setStatdata] = useState(null);
+  const [specific, setSpecific] = useState(null);
 
   const toggleMobileMenu = () => {
     setMenu(!menu);
@@ -425,6 +426,7 @@ const AttendanceAdmin = () => {
                   cursor: abbreviation !== "-" ? "pointer" : "default",
                 }}
                 onClick={() => {
+                  setSpecific(record)
                   openModal(dayRecord, abbreviation);
                   //console.log(dayRecord)
                 }}
@@ -450,7 +452,11 @@ const AttendanceAdmin = () => {
         key: employee._id,
         employeeName: employee.fullName,
         employeeImageUrl: employee.imageUrl,
+        shiftStart: employee?.shiftId?.startTime,
+        shiftMaxStart: employee?.shiftId?.maxStartTime,
+        shiftEnd: employee?.shiftId?.endTime,
       };
+      //setSpecific(rowData);
 
       const employeeAttendance = employeeAttendanceData?.find(
         (data) => data.employeeId === employee._id
@@ -819,20 +825,6 @@ const AttendanceAdmin = () => {
                       style={{ display: "flex", alignItems: "center" }}
                     >
                       Attendance Details
-                      <Button
-                        type="text" // Set the button type to 'text' for a simple, text-only button
-                        icon={<EditOutlined />} // Use the EditOutlined icon
-                        // Add an onClick handler for the edit functionality
-                        onClick={() => {
-                          setOpen({
-                            isAddOpen: true,
-                            isDelOpen: false,
-                            data: dayRecord,
-                          });
-                          setSelectedStatus(dayRecord.status);
-                          //console.log(dayRecord);
-                        }}
-                      />
                     </h5>
 
                     <button
@@ -1024,6 +1016,25 @@ const AttendanceAdmin = () => {
                             </div>
                           </div>
                         </div>
+                        <div className="submit-section" style={{marginTop:"0"}}>
+                        <Form.Item>
+                          <Button
+                            className="btn btn-primary submit-btn"
+                            onClick={() => {
+                              setOpen({
+                                isAddOpen: true,
+                                isDelOpen: false,
+                                data: dayRecord,
+                              });
+                              setSelectedStatus(dayRecord.status);
+                              //console.log(dayRecord);
+                              //console.log(specific);
+                            }}
+                          >
+                            Edit Attendance
+                          </Button>
+                        </Form.Item>
+                      </div>
                       </div>
                     )}
                   </div>
@@ -1092,6 +1103,45 @@ const AttendanceAdmin = () => {
                           <Form.Item
                             name="checkInTime"
                             className="custom-border"
+                            rules={[
+                              // Add a custom validation rule for check-in time
+                              ({ getFieldValue }) => ({
+                                validator(_, value) {
+                                  const status = getFieldValue("status");
+                      
+                                  if (
+                                    (selectedStatus === "Absent" || selectedStatus === "Holiday" || selectedStatus === "On-Leave") &&
+                                    value
+                                  ) {
+                                    return Promise.reject(
+                                      `Check In Time cannot be set while the status is ${selectedStatus}.`
+                                    );
+                                  }
+
+                                  if ((selectedStatus === "Present" || selectedStatus === "Late") && !value) {
+                                    return Promise.reject("Check In Time is required.");
+                                  }
+
+                                  if (
+                                    selectedStatus === "Late" &&
+                                    value &&
+                                    moment(value, "HH:mm").isSameOrBefore(moment(specific?.shiftMaxStart, "HH:mm"))
+                                  ) {
+                                    return Promise.reject(
+                                      `Check-in time must be later than shift max start time: ${moment(specific?.shiftMaxStart, "HH:mm").format("HH:mm")}`
+                                    );
+                                  }
+
+                                  if (selectedStatus === "Present" && value && moment(value, "HH:mm").isAfter(moment(specific?.shiftMaxStart, "HH:mm"))){
+                                    return Promise.reject(`Check-in time must be earlier than shift max start time: ${moment(specific?.shiftMaxStart, "HH:mm").format("HH:mm")}`);
+                                  }
+                      
+                                  // If status allows or if value is empty, no issue
+                                  return Promise.resolve();
+                                },
+                              }),
+                            ]}
+                            validateTrigger="onSubmit"
                           >
                             <TimePicker
                               getPopupContainer={() =>
@@ -1116,6 +1166,17 @@ const AttendanceAdmin = () => {
                               // Add a custom validation rule for check-out time
                               ({ getFieldValue }) => ({
                                 validator(_, value) {
+                                  const status = getFieldValue("status");
+
+                                  if (
+                                    (selectedStatus === "Absent" || selectedStatus === "Holiday" || selectedStatus === "On-Leave") &&
+                                    value
+                                  ) {
+                                    return Promise.reject(
+                                      `Check Out Time cannot be set while the status is ${selectedStatus}.`
+                                    );
+                                  }
+
                                   const checkInTime =
                                     getFieldValue("checkInTime");
 
@@ -1124,6 +1185,10 @@ const AttendanceAdmin = () => {
                                     return Promise.reject(
                                       "Check In Time is required when Check Out Time is filled."
                                     );
+                                  }
+
+                                  if (value && value.isBefore(checkInTime, "minute")) {
+                                    return Promise.reject("Check Out Time cannot be before Check In Time.");
                                   }
 
                                   // If both are empty, no issue
@@ -1147,12 +1212,37 @@ const AttendanceAdmin = () => {
                         </div>
                       </div>
                       <div className="form-group form-focus">
-                        <Form.Item name="status" className="custom-border">
                           <label>Status</label>
+                        <Form.Item
+                          name="status"
+                          className="custom-border"
+                          rules={[
+                            ({ getFieldValue }) => ({
+                              validator(_, value) {
+                                const checkInTime = getFieldValue("checkInTime");
+                                const checkOutTime = getFieldValue("checkOutTime");
+                    
+                                // Define the statuses that should not be allowed when check-in or check-out time is present
+                                const disallowedStatuses = ["Absent", "On-Leave", "Holiday"];
+                    
+                                // Check if either check-in or check-out time is present and the selected status is in the disallowed list
+                                if ((checkInTime || checkOutTime) && disallowedStatuses.includes(value)) {
+                                  return Promise.reject(
+                                    `Status cannot be set to ${value} when Check In or Check Out time is present.`
+                                  );
+                                }
+                    
+                                // If not in the disallowed statuses or if both check-in and check-out time are empty, no issue
+                                return Promise.resolve();
+                              },
+                            }),
+                          ]}
+                          validateTrigger="onSubmit"
+                        >
                           <Select
                             placeholder="Select Status"
                             style={{ width: "100%" }}
-                            value={selectedStatus}
+                            defaultValue={selectedStatus}
                             onChange={(value) => setSelectedStatus(value)}
                           >
                             <Select.Option value="Present">
