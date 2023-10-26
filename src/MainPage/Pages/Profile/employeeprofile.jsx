@@ -253,7 +253,8 @@ const handleClose = () => {
         if (typeof value === 'number') {
             return String(value);
         }else if(value === undefined || value === '' || value === null || !value){
-            return ''
+            // return ''
+            return null
         }else if(key === 'dateOfBirth' || key === 'joiningDate'){
             return moment(value).format('YYYY-MM-DD');
         }
@@ -560,6 +561,52 @@ const allowedFileTypes = ['image/png', 'image/jpeg', 'image/jpg'];
       })
   }
 
+  const onRemoveProfileImage = () => {
+    setImageLoader(true)
+
+    let d1 = {
+      ...allData,
+      imageUrl: null
+    }
+    Object.keys(d1).forEach((key) => {
+      if (key === 'password') {
+        delete d1[key];
+      }
+    });
+    apiServices("PUT", "user/update-user", d1, user_state)
+    .then((res) => {
+      if (res?.data?.success === true) {
+        setImage(null)
+        localStorage.setItem('updated_user', JSON.stringify({imageUrl: null}))
+        nav('/profile', {state: {updated_user: {imageUrl: null}}})
+
+        setAllData((prev) => ({
+          ...prev,
+          imageUrl: null
+        }))
+        localStorage.setItem('allDataLocal', JSON.stringify({...d1, password: user_data?.password}));
+        // setImage(res?.data?.result)
+        setImageLoader(false)
+        message.success('Profile picture removed successfully!')
+      }
+    })
+    .catch((err) => {
+      setImageLoader(false)
+      setImage(null)
+      localStorage.setItem('updated_user', JSON.stringify({imageUrl: null}))
+      nav('/profile', {state: {updated_user: {imageUrl: null}}})
+      message.error(
+        `${
+          err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
+            ? err?.response?.data?.validation?.body?.message
+            : "Remove profile picture Error"
+        }!`
+      );
+    });
+  }
+
 const antIcon = (
   <LoadingOutlined
     style={{
@@ -604,35 +651,44 @@ const antIcon = (
                         <div className="profile-img">
                           {
                             location?.pathname === '/profile' ?
-                            <div className="profile-img-wrap edit-img">
-                                {
-                                    imageLoader ? <div className="uploadImgSpinContainer"> <Spin /> </div> :
-                                    <>
-                                        <img className="inline-block" src={image ? image : allData?.imageUrl || user_icon} alt="user" />
-                                        <div className="fileupload btn">
-                                        <ImgCrop
-                                            cropShape='round'
-                                            quality={1}
-                                            modalTitle='Crop Image'
-                                            modalOk='Apply'
-                                            modalClassName='CropImageModalStyle'
-                                            beforeCrop={beforeUpload}
-                                        >
-                                            <Upload
-                                                // action={(image) => onImageUpload(image)}
-                                                customRequest={({ file, onSuccess, onError }) => {
-                                                  onImageUpload(file)
-                                                }}
-                                                fileList={null}
-                                                maxCount={1}
-                                            >
-                                                <div className="btn-text" style={{width: '80px', padding: '4px'}}>edit</div>
-                                            </Upload>
-                                        </ImgCrop>
-                                        </div>
-                                    </>
-                                }
-                            </div> :
+                            <div>
+                              <div className="profile-img-wrap edit-img">
+                                  {
+                                      imageLoader ? <div className="uploadImgSpinContainer"> <Spin /> </div> :
+                                      <>
+                                          <img className="inline-block" src={image ? image : allData?.imageUrl || user_icon} alt="user" />
+                                          <div className="fileupload btn">
+                                          <ImgCrop
+                                              cropShape='round'
+                                              quality={1}
+                                              modalTitle='Crop Image'
+                                              modalOk='Apply'
+                                              modalClassName='CropImageModalStyle'
+                                              beforeCrop={beforeUpload}
+                                          >
+                                              <Upload
+                                                  // action={(image) => onImageUpload(image)}
+                                                  customRequest={({ file, onSuccess, onError }) => {
+                                                    onImageUpload(file)
+                                                  }}
+                                                  fileList={null}
+                                                  maxCount={1}
+                                              >
+                                                  <div className="btn-text" style={{width: '80px', padding: '4px'}}>edit</div>
+                                              </Upload>
+                                          </ImgCrop>
+                                          </div>
+                                      </>
+                                  }
+                              </div>
+                              {
+                              ((image || allData?.imageUrl) && !imageLoader) &&
+                              <a href="javascript:void(0)"
+                                onClick={() => onRemoveProfileImage()}
+                                className="fa fa-closee file-remove" style={{color: '#fb1612', position: 'absolute', top: '-1px' ,right: '-4px', fontSize: '19px', fontFamily: 'cursive', padding: '5px 7px 6px', background: 'white', borderRadius: '50%'}} > <i className='fa fa-times' /> </a>
+                              }
+                            </div>
+                            :
                             <a href="javascript:void(0)" style={{cursor: 'default'}}><img alt="" src={allData?.imageUrl || user_icon} /></a>
                           }
                         </div>
