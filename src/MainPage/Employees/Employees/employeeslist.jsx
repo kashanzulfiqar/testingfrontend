@@ -162,7 +162,8 @@ const Employeeslist = () => {
         if (typeof value === 'number') {
             return String(value);
         }else if(value === undefined || value === '' || value === null || !value){
-            return ''
+            // return ''
+            return null
         }else if(key === 'dateOfBirth' || key === 'joiningDate'){
             return moment(value).format('YYYY-MM-DD');
         }
@@ -217,7 +218,8 @@ const Employeeslist = () => {
         if (typeof value === 'number') {
             return String(value);
         }else if(value === undefined || value === '' || value === null || !value){
-            return ''
+            // return ''
+            return null
         }else if(key === 'dateOfBirth' || key === 'joiningDate'){
             return moment(value).format('YYYY-MM-DD');
         }
