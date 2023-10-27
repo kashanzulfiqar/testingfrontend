@@ -7,7 +7,7 @@ import Sidebar from "../../../initialpage/Sidebar/sidebar";
 import moment from "moment";
 import { useSelector } from "react-redux";
 import { apiServices } from "../../../Services/apiServices";
-import { Empty, message } from "antd";
+import { Empty, Pagination, message } from "antd";
 // import InfiniteScroll from "react-infinite-scroll-component";
 import { ItemRender } from "antd/lib/upload/interface";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
@@ -1226,6 +1226,7 @@ const AttendanceEmployee = () => {
               <div className="col-lg-12">
                 <div className="table-responsive">
                   <Table
+                    className="table-striped"
                     dataSource={fetchattend}
                     loading={tableLoader}
                     columns={columns}
@@ -1237,26 +1238,31 @@ const AttendanceEmployee = () => {
                       ),
                     }}
                     bordered
-                    pagination={{
-                      current: pagination.current,
-                      pageSize: pagination.pageSize,
-                      total: pagination.total,
-                      showTotal: (total, range) =>
-                        `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                      pageSizeOptions: ["20", "30", "40", "50"], // Options to change page size
-                      showSizeChanger: true, // Show the page size changer
-                      onChange: (page, pageSize) => {
-                        setdisableAttend(false);
-                        setPagination({
-                          ...pagination,
-                          current: page,
-                          pageSize: pageSize,
-                        });
-                      },
-                      itemRender: itemRender,
-                    }}
+                    pagination={false}
                   />
                 </div>
+                {
+                    fetchattend?.length > 0 &&
+                    <div>
+                      <Pagination
+                        style={{display: 'flex', float: 'right'}}
+                        current={pagination.current}
+                        pageSize={pagination.pageSize}
+                        total={pagination.total}
+                        showTotal={(total, range) =>
+                          `Showing ${range[0]} to ${range[1]} of ${total} entries`
+                        }
+                        pageSizeOptions={["20", "30", "40", "50"]}
+                        showSizeChanger
+                        onChange={(page, pageSize) => {
+                          setdisableAttend(false) 
+                          setPagination({...pagination, current: page, pageSize: pageSize,})
+                        }}
+                        itemRender={itemRender}
+                        disabled={tableLoader}
+                      />
+                    </div>
+                  }
               </div>
             </div>
           </div>

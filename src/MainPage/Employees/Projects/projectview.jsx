@@ -36,8 +36,7 @@ import { LoadingOutlined, MinusCircleFilled } from "@ant-design/icons";
 import EditProjects from "./EditProjects";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 //import EditProjects from "./EditProjects";
-import { getAllISOCodes } from 'iso-country-currency';
-
+import { getAllISOCodes } from "iso-country-currency";
 
 const ProjectView = () => {
   const [form] = Form.useForm();
@@ -46,7 +45,7 @@ const ProjectView = () => {
   const employee_id = user_state?.user?._id;
   const role = user_state?.user?.role;
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
-  console.log(permissions,user_state)
+  //console.log(permissions,user_state)
   const nav = useNavigate();
 
   const [paymentSchedules, setPaymentSchedules] = useState(null);
@@ -113,7 +112,7 @@ const ProjectView = () => {
   //const originalProjectName = projectName.replace(/[-_]/g, ' ');
 
   const project = data?.find((p) => p?._id === _id);
-  console.log("this is project :", project);
+  //console.log("this is project :", project);
 
   const openUserModal = () => {
     setOpenUser(true);
@@ -158,11 +157,11 @@ const ProjectView = () => {
 
   useEffect(() => {
     // if(role === 'admin' || role === 'client' || role === 'focalperson' || permissions?.projectManagement || permissions?.clientManagement ) {
-      setIsLoading(true);
-      GetProjects();
-      fetchEmployees();
-      getAllDomain();
-      // ViewClients();
+    setIsLoading(true);
+    GetProjects();
+    fetchEmployees();
+    getAllDomain();
+    // ViewClients();
     // }else{
     //   nav('/restricted', { state: { unAuthorize: true}})
     // }
@@ -170,32 +169,36 @@ const ProjectView = () => {
 
   const getAllDomain = () => {
     apiServices("GET", "team/view-team", null, user_state)
-    .then((res) => {
-      // console.log(res?.data);
-      if (res?.data?.success === true) {
-        const all_domains = res?.data?.Team;
-        const sortedData = all_domains.slice().sort((a, b) => a.teamName.localeCompare(b.teamName));
-        setAllDomain(sortedData);
-      }
-    })
-    .catch((err) => {
-      // console.log(err);
-      message.error(
-        `${
-          err?.response?.data?.msg
-            ? err?.response?.data?.msg
-            : err?.response?.data?.validation?.body?.message
-            ? err?.response?.data?.validation?.body?.message
-            : "Get Domain Info Error"
-        }!`
-      );
-    });
-  }
+      .then((res) => {
+        // console.log(res?.data);
+        if (res?.data?.success === true) {
+          const all_domains = res?.data?.Team;
+          const sortedData = all_domains
+            .slice()
+            .sort((a, b) => a.teamName.localeCompare(b.teamName));
+          setAllDomain(sortedData);
+        }
+      })
+      .catch((err) => {
+        // console.log(err);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Get Domain Info Error"
+          }!`
+        );
+      });
+  };
 
   const GetProjects = () => {
     apiServices(
       "GET",
-      `project-management/?employeeId=${(role === '' && !permissions?.projectManagement) ? employee_id : ''}&page=1&limit=99999`,
+      `project-management/?employeeId=${
+        role === "" && !permissions?.projectManagement ? employee_id : ""
+      }&page=1&limit=99999`,
       null,
       user_state
     )
@@ -258,12 +261,7 @@ const ProjectView = () => {
   };
 
   const ViewClients = () => {
-    apiServices(
-      "GET",
-      `client/all-client`,
-      null,
-      user_state
-    )
+    apiServices("GET", `client/all-client`, null, user_state)
       .then((res) => {
         if (res.data.success === true) {
           const clients = res?.data?.clients?.docs;
@@ -461,12 +459,12 @@ const ProjectView = () => {
       dataIndex: "amountInFigure",
       key: "amountInFigure",
       render: (amount) => {
-
-        return(
+        return (
           <>
-            {amount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {project?.currency}
+            {amount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}{" "}
+            {project?.currency}
           </>
-        )
+        );
       },
     },
     {
@@ -487,7 +485,7 @@ const ProjectView = () => {
       render: (paid, record) => (
         <Checkbox
           checked={paid}
-          disabled={paid || role === 'client' || role === 'focalperson' } // Disable the checkbox if already paid
+          disabled={paid || role === "client" || role === "focalperson"} // Disable the checkbox if already paid
           onChange={() => handlePaidChange(record)} // Handle checkbox change
           //style={{ pointerEvents: paid ? 'none' : 'auto' }}
         />
@@ -509,49 +507,53 @@ const ProjectView = () => {
     // },
   ];
 
-  const emptyfunction = () =>{
-    return null
-  }
+  const emptyfunction = () => {
+    return null;
+  };
 
   const getAllCurrencies = () => {
     const isoCodes = getAllISOCodes();
     const uniqueCurrencies = new Set();
-    isoCodes.forEach(isoCode => {
-        // const currency = isoCode.currency;
-        const currency = {
-          currency: isoCode?.currency,
-          symbol: isoCode?.symbol
-        };
-        // uniqueCurrencies.add(currency);
-        uniqueCurrencies.add(JSON.stringify(currency));
+    isoCodes.forEach((isoCode) => {
+      // const currency = isoCode.currency;
+      const currency = {
+        currency: isoCode?.currency,
+        symbol: isoCode?.symbol,
+      };
+      // uniqueCurrencies.add(currency);
+      uniqueCurrencies.add(JSON.stringify(currency));
     });
-    const currency_d = [...uniqueCurrencies].map(currency => JSON.parse(currency));
-    const sorted_data = currency_d.sort((a, b) => a.currency.localeCompare(b.currency));
+    const currency_d = [...uniqueCurrencies].map((currency) =>
+      JSON.parse(currency)
+    );
+    const sorted_data = currency_d.sort((a, b) =>
+      a.currency.localeCompare(b.currency)
+    );
     // setAllCurrencies([...uniqueCurrencies])
-    setAllCurrencies(sorted_data)
+    setAllCurrencies(sorted_data);
   };
 
   const showTeamSearch = (val, type) => {
-    let dropdownValues = []
-    if(type === 'Team'){
-      employees.forEach((team)=>{
-          dropdownValues.push(team.fullName.toLowerCase())
-       })
+    let dropdownValues = [];
+    if (type === "Team") {
+      employees.forEach((team) => {
+        dropdownValues.push(team.fullName.toLowerCase());
+      });
     }
 
-    if(val !== ''){
+    if (val !== "") {
       dropdownValues.some((team) => {
-        if(team.includes(val.toLowerCase())){
+        if (team.includes(val.toLowerCase())) {
           // setNoData(false);
-          return true
-        }else{
+          return true;
+        } else {
           // setNoData(true);
         }
-      })
-    }else{
+      });
+    } else {
       // setNoData(false)
     }
-  }
+  };
 
   return (
     <div className="page-wrapper">
@@ -595,7 +597,11 @@ const ProjectView = () => {
                       endDate: moment(project?.endDate, "YYYY-MM-DD"),
                     });
                   }}
-                  disabled={role === 'client' || role === 'focalperson' || (role === '' && !permissions?.projectManagement)}
+                  disabled={
+                    role === "client" ||
+                    role === "focalperson" ||
+                    (role === "" && !permissions?.projectManagement)
+                  }
                 >
                   <i className="fa fa-plus" />
                   Edit Project
@@ -640,7 +646,9 @@ const ProjectView = () => {
                       <span className="text-muted">tasks completed</span>
                     </small> */}
                   </div>
-                  <label style={{display:"block"}}>{project?.projectDescription}</label>
+                  <label style={{ display: "block" }}>
+                    {project?.projectDescription}
+                  </label>
                 </div>
               </div>
 
@@ -733,18 +741,27 @@ const ProjectView = () => {
                       //   return null;
                       // })
                       project?.docs?.some((doc) => {
-                        const parts = doc.split(".");
-                        const format = parts[parts.length - 1];
-                        return (
-                          doc.includes("res.cloudinary.com") &&
-                          format.match(/^(jpg|jpeg|png|gif)$/i)
-                        );
+                        if (!doc) {
+                          console.log("NULL file detected");
+                          return null;
+                        } else {
+                          const parts = doc?.split(".");
+                          const format = parts[parts.length - 1];
+                          return (
+                            doc.includes("res.cloudinary.com") &&
+                            format.match(/^(jpg|jpeg|png|gif)$/i)
+                          );
+                        }
                       }) ? (
                         project?.docs?.map((doc, index) => {
+                          if (!doc) {
+                            console.log("NULL file detected");
+                            return null;
+                          }
                           // Split the link to check for the file format
-                          const parts = doc.split(".");
+                          const parts = doc?.split(".");
                           const format = parts[parts.length - 1];
-  
+
                           // Check if it's a cloudinary link and the format is an image
                           if (
                             doc.includes("res.cloudinary.com") &&
@@ -754,14 +771,14 @@ const ProjectView = () => {
                             const imageId = doc.match(/v\d+\/(.+?)\./)[1];
                             // Construct the thumbnail URL
                             const thumbnailUrl = `https://res.cloudinary.com/dcxpovyr9/image/upload/c_thumb,w_200,h_200/${imageId}.png`;
-  
+
                             const fullImageUrl = `https://res.cloudinary.com/dcxpovyr9/image/upload/${imageId}.${format}`;
-  
+
                             const downloadLink = `${doc.replace(
                               "/upload/",
                               "/upload/fl_attachment/"
                             )}`;
-  
+
                             return (
                               <div
                                 key={index}
@@ -769,13 +786,23 @@ const ProjectView = () => {
                               >
                                 <div className="uploaded-box">
                                   <a>
-                                    <div className="uploaded-img" style={{display:"flex", flexDirection:"column", maxHeight:"200px", maxWidth:"200px"}}>
+                                    <div
+                                      className="uploaded-img"
+                                      style={{
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        maxHeight: "200px",
+                                        maxWidth: "200px",
+                                      }}
+                                    >
                                       <img
                                         src={thumbnailUrl}
                                         className="img-fluid"
                                         alt={`Image ${index + 1}`}
                                         style={{ borderRadius: "10px" }}
-                                        onClick={() => window.open(fullImageUrl, "_blank")}
+                                        onClick={() =>
+                                          window.open(fullImageUrl, "_blank")
+                                        }
                                       />
                                       <div className="download-icon hidden">
                                         <a href={downloadLink} download>
@@ -904,28 +931,37 @@ const ProjectView = () => {
                       //   );
                       // })
                       project?.docs?.every((doc) => {
-                        // Split the link to get the file format
-                        const parts = doc.split(".");
-                        const format = parts[parts.length - 1];
-                
-                        // Check if it's an image format (jpg, jpeg, png, gif)
-                        return format.match(/^(jpg|jpeg|png|gif)$/i);
+                        if (!doc) {
+                          console.log("NULL file detected");
+                          return null;
+                        } else {
+                          // Split the link to get the file format
+                          const parts = doc?.split(".");
+                          const format = parts[parts.length - 1];
+
+                          // Check if it's an image format (jpg, jpeg, png, gif)
+                          return format.match(/^(jpg|jpeg|png|gif)$/i);
+                        }
                       }) ? (
                         // Render "No files uploaded" message if all files are images
                         <label>No files uploaded</label>
                       ) : (
                         // Render files
                         project?.docs.map((doc, index) => {
+                          if (!doc) {
+                            console.log("NULL file detected");
+                            return null;
+                          }
                           // Split the link to get the file format
-                          const parts = doc.split(".");
+                          const parts = doc?.split(".");
                           const format = parts[parts.length - 1];
-  
+
                           // Check if it's an image format (jpg, jpeg, png, gif)
                           if (format.match(/^(jpg|jpeg|png|gif)$/i)) {
                             // Ignore image files
                             return null;
                           }
-  
+
                           // Construct the thumbnail URL based on file format
                           let thumbnailUrl = "";
                           if (format.toLowerCase() === "pdf") {
@@ -933,12 +969,12 @@ const ProjectView = () => {
                           } else {
                             thumbnailUrl = "/path-to-generic-file-icon.png"; // Replace with the path to your generic file icon
                           }
-  
+
                           const downloadLink = `${doc.replace(
                             "/upload/",
                             "/upload/fl_attachment/"
                           )}`;
-  
+
                           return (
                             <li key={index}>
                               <div
@@ -991,8 +1027,7 @@ const ProjectView = () => {
                 </div>
               </div>
 
-              {
-                (role === '' && !permissions?.projectManagement) ? null :
+              {role === "" && !permissions?.projectManagement ? null : (
                 <div className="card">
                   <div className="card-body">
                     <h5 className="card-title m-b-20">Payments</h5>
@@ -1015,7 +1050,7 @@ const ProjectView = () => {
                     </div>
                   </div>
                 </div>
-              }
+              )}
 
               {/* <div className="project-task">
               <ul className="nav nav-tabs nav-tabs-top nav-justified mb-0">
@@ -1284,57 +1319,62 @@ const ProjectView = () => {
                 <div className="card-body">
                   <h6 className="card-title m-b-15">Project Details</h6>
                   <div className="table-responsive">
-                  <table className="table table-striped table-border">
-                    <tbody>
-                      {
-                        (role === '' && !permissions?.projectManagement) ? null :
+                    <table className="table table-striped table-border">
+                      <tbody>
+                        {role === "" &&
+                        !permissions?.projectManagement ? null : (
+                          <tr>
+                            <td>Cost:</td>
+                            <td className="text-end">
+                              {project?.cost
+                                ?.toString()
+                                .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}{" "}
+                              {project?.currency}
+                            </td>
+                          </tr>
+                        )}
                         <tr>
-                          <td>Cost:</td>
-                          <td className="text-end">{project?.cost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {project?.currency}</td>
+                          <td>Start Date:</td>
+                          <td className="text-end">
+                            {moment(project?.startDate).format("YYYY-MM-DD")}
+                          </td>
                         </tr>
-                      }
-                      <tr>
-                        <td>Start Date:</td>
-                        <td className="text-end">
-                          {moment(project?.startDate).format("YYYY-MM-DD")}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>Deadline:</td>
-                        <td className="text-end">
-                          {moment(project?.endDate).format("YYYY-MM-DD")}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>Priority:</td>
-                        <td className="text-end">
-                          <span
-                            className={`badge ${
-                              project?.priority === "High Priority"
-                                ? "bg-danger"
+                        <tr>
+                          <td>Deadline:</td>
+                          <td className="text-end">
+                            {moment(project?.endDate).format("YYYY-MM-DD")}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Priority:</td>
+                          <td className="text-end">
+                            <span
+                              className={`badge ${
+                                project?.priority === "High Priority"
+                                  ? "bg-danger"
+                                  : project?.priority === "Normal Priority"
+                                  ? "bg-warning"
+                                  : project?.priority === "Low Priority"
+                                  ? "bg-success"
+                                  : ""
+                              }`}
+                              style={{ pointerEvents: "none" }}
+                            >
+                              {project?.priority === "High Priority"
+                                ? "High"
                                 : project?.priority === "Normal Priority"
-                                ? "bg-warning"
-                                : project?.priority === "Low Priority"
-                                ? "bg-success"
-                                : ""
-                            }`}
-                            style={{ pointerEvents: "none" }}
-                          >
-                            {project?.priority === "High Priority"
-                              ? "High"
-                              : project?.priority === "Normal Priority"
-                              ? "Normal"
-                              : "Low"}
-                          </span>
-                        </td>
-                      </tr>
+                                ? "Normal"
+                                : "Low"}
+                            </span>
+                          </td>
+                        </tr>
 
-                      <tr>
-                        <td>Status:</td>
-                        <td className="text-end">{project?.status}</td>
-                      </tr>
-                    </tbody>
-                  </table>
+                        <tr>
+                          <td>Status:</td>
+                          <td className="text-end">{project?.status}</td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                   {/* <p className="m-b-5">
                     Progress <span className="text-success float-end">40%</span>
@@ -1354,7 +1394,7 @@ const ProjectView = () => {
               <div className="card project-user">
                 <div className="card-body">
                   <h6 className="card-title m-b-20">
-                    <label style={{width: '69%'}}>Assigned Leader</label>
+                    <label style={{ width: "69%" }}>Assigned Leader</label>
                     <button
                       type="button"
                       className="float-end btn btn-primary btn-sm"
@@ -1364,7 +1404,11 @@ const ProjectView = () => {
                         openLeaderModal();
                         setSelectedLeader(project?.projectLead);
                       }}
-                      disabled={role === 'client' || role === 'focalperson' || (role === '' && !permissions?.projectManagement)}
+                      disabled={
+                        role === "client" ||
+                        role === "focalperson" ||
+                        (role === "" && !permissions?.projectManagement)
+                      }
                     >
                       <i className="fa fa-plus" /> Edit
                     </button>
@@ -1405,7 +1449,7 @@ const ProjectView = () => {
               <div className="card project-user">
                 <div className="card-body">
                   <h6 className="card-title m-b-20">
-                    <label style={{width: '69%'}}>Assigned Developers</label>
+                    <label style={{ width: "69%" }}>Assigned Developers</label>
                     <button
                       type="button"
                       className="float-end btn btn-primary btn-sm"
@@ -1413,7 +1457,11 @@ const ProjectView = () => {
                         openUserModal();
                         setSelectedDevelopers(project?.assignedDevelopers);
                       }}
-                      disabled={role === 'client' || role === 'focalperson' || (role === '' && !permissions?.projectManagement)}
+                      disabled={
+                        role === "client" ||
+                        role === "focalperson" ||
+                        (role === "" && !permissions?.projectManagement)
+                      }
                     >
                       <i className="fa fa-plus" /> Add
                     </button>
@@ -1560,18 +1608,19 @@ const ProjectView = () => {
                       <Select
                         showSearch
                         onSearch={(val) => {
-                          showTeamSearch(val, 'Team')
+                          showTeamSearch(val, "Team");
                           // onTeamChange(val)
                         }}
-                        filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                        filterOption={(input, option) =>
+                          option.children
+                            .toLowerCase()
+                            .indexOf(input.toLowerCase()) >= 0
+                        }
                         optionFilterProp="children"
-                        notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
-                        dropdownRender={(menu) => (
-                          <>
-                            {menu}
-                          </>
-                        )}
-
+                        notFoundContent={
+                          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                        }
+                        dropdownRender={(menu) => <>{menu}</>}
                         placeholder="Select Leader"
                         onChange={(value) => setSelectedLeader(value)}
                         className="custom-select custom-normal"
@@ -1614,8 +1663,8 @@ const ProjectView = () => {
                       htmlType="submit"
                       className="btn btn-primary submit-btn"
                       disabled={loader}
-                      >
-                        {loader ? (
+                    >
+                      {loader ? (
                         <Spin size="small" indicator={antIcon} />
                       ) : (
                         "Submit"
@@ -1735,22 +1784,26 @@ const ProjectView = () => {
                 <div className="row">
                   <div className="form-group">
                     <label>Add Team</label>
-                    <Form.Item name="assignedDevelopers" className="custom-border">
+                    <Form.Item
+                      name="assignedDevelopers"
+                      className="custom-border"
+                    >
                       <Select
                         showSearch
                         onSearch={(val) => {
-                          showTeamSearch(val, 'Team')
+                          showTeamSearch(val, "Team");
                           // onTeamChange(val)
                         }}
-                        filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                        filterOption={(input, option) =>
+                          option.children
+                            .toLowerCase()
+                            .indexOf(input.toLowerCase()) >= 0
+                        }
                         optionFilterProp="children"
-                        notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
-                        dropdownRender={(menu) => (
-                          <>
-                            {menu}
-                          </>
-                        )}
-
+                        notFoundContent={
+                          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                        }
+                        dropdownRender={(menu) => <>{menu}</>}
                         // mode="multiple"
                         placeholder="Select Team Members"
                         onSelect={handleSelectDeveloper}
@@ -1804,8 +1857,8 @@ const ProjectView = () => {
                       htmlType="submit"
                       className="btn btn-primary submit-btn"
                       disabled={loader}
-                      >
-                        {loader ? (
+                    >
+                      {loader ? (
                         <Spin size="small" indicator={antIcon} />
                       ) : (
                         "Submit"

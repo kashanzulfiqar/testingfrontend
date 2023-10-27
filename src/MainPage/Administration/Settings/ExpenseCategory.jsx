@@ -411,6 +411,7 @@ const ExpenseCategory = () => {
                         showSizeChanger
                         onChange={(page, pageSize) => setPagination({...pagination, current: page, pageSize: pageSize,})}
                         itemRender={itemRender}
+                        disabled={isLoading}
                       />
                     </div>
                   }
