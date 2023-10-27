@@ -462,7 +462,8 @@ const Holidays = () => {
                 rowKey={(record) => record.id}
                 // onChange={this.handleTableChange}
               />
-              {
+            </div>
+            {
                     holidays?.length > 0 &&
                     <div>
                       <Pagination
@@ -477,10 +478,10 @@ const Holidays = () => {
                         showSizeChanger
                         onChange={handlePageChange}
                         itemRender={itemRender}
+                        disabled={isLoading}
                       />
                     </div>
                   }
-            </div>
           </div>
         </div>
           </div>

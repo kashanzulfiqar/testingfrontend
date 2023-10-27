@@ -121,9 +121,9 @@ const LeaveAdmin = () => {
         if (res.data.success === true) {
           message.success(`Leave request updated to ${newStatus}`);
 
-          handleReset();
+          //handleReset();
           //navigate('/employee/request-admin')
-          //fetchleaves();
+          fetchleaves();
 
           dispatch(counter(pending_counter - 1));
         }
@@ -823,7 +823,8 @@ const LeaveAdmin = () => {
                       // Handle table onChange event here if needed
                     }}
                   />
-                  {
+                </div>
+                {
                     tableData?.length > 0 &&
                     <div>
                       <Pagination
@@ -835,13 +836,13 @@ const LeaveAdmin = () => {
                           `Showing ${range[0]} to ${range[1]} of ${total} entries`
                         }
                         pageSizeOptions={["20", "30", "40", "50"]}
-                        showSizeChanger
+                        showSizeChanger={true}
                         onChange={(page, pageSize) => setPagination({...pagination, current: page, pageSize: pageSize,})}
                         itemRender={itemRender}
+                        disabled={isLoading}
                       />
                     </div>
                   }
-                </div>
                 {id && (
                   <div style={{ textAlign: "center", marginTop: "16px" }}>
                     <button

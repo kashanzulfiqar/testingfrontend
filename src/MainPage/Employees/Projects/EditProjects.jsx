@@ -320,52 +320,82 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
 
   
   const onFileUpload = async (files) => {
+    setLoader(true);
     const uploadPromises = [];
     const validFiles = []; // To store valid files
+    const existingFileNames = selectedFiles.map((file) => file?.name);
   
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      console.log("File: ", file);
+      //console.log("File: ", file);
   
       // Check file format (extension)
-      const fileExtension = file.name.split(".").pop().toLowerCase();
+      const fileExtension = file?.name?.split(".").pop().toLowerCase();
       if (!acceptableFormats.includes(fileExtension)) {
-        message.error(`File format not supported: ${file.name}`);
+        message.error(`File format not supported: ${file?.name}`);
+        setLoader(false);
         continue; // Skip this file and continue with the next one
       }
   
       // Check file size
-      if (file.size > 10485760) {
-        message.error(`File size exceeds 10MB: ${file.name}`);
+      if (file?.size > 10485760) {
+        message.error(`File size exceeds 10MB: ${file?.name}`);
+        setLoader(false);
         continue; // Skip this file and continue with the next one
       }
-  
-      validFiles.push(file); // Add valid files to the array
+
+      if (existingFileNames.includes(file?.name)) {
+        message.error(`File already selected: ${file?.name}`);
+        setLoader(false);
+        continue; // Skip this file and continue with the next one
+      }
+   // Add valid files to the array
   
       const uploadPromise = apiUploadToS3(file)
         .then((res) => {
-          console.log(res?.data?.result);
+          //console.log(res?.data?.result);
+          setLoader(false);
+          message.success(`File: ${file?.name} ready to upload`)
+          validFiles.push(file);
+          setSelectedFiles((prevSelectedFiles) => {
+            const uniqueValidFiles = validFiles.filter((newFile) => {
+              // Check if a file with the same name already exists in the selectedFiles
+              return !prevSelectedFiles.some((existingFile) => existingFile?.name === newFile?.name);
+            });
+            return [...prevSelectedFiles, ...uniqueValidFiles];
+          });
+          
           return res?.data?.result;
         })
         .catch((err) => {
-          message.error(`File upload error: ${file.name}`);
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : `File upload error: ${file.name}`
+            }`
+          );
+          setLoader(false);
         });
       uploadPromises.push(uploadPromise);
     }
-  
     // Add valid files to selectedFiles
-    setSelectedFiles((prevSelectedFiles) => [...prevSelectedFiles, ...validFiles]);
-  
+    //setLoader(false);
+    
     try {
       // Wait for all upload promises to resolve
       const urls = await Promise.all(uploadPromises);
-      console.log("these are ",urls)
+      //console.log("these are ",urls)
       // Add the uploaded URLs to the uploadFiles state array
       setUploadFiles((prevUploadFiles) => [...prevUploadFiles, ...urls]);
-      e.target.files = null;
+      //e.target.files = null;
+      setLoader(false);
     } catch (error) {
       // Handle any errors that occurred during file uploads
       console.error("File upload error:", error);
+      setLoader(false);
     }
   };
 
@@ -411,7 +441,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
           color="blue" // You can customize the color as needed
           className="custom-tag"
         >
-          {file.name || generateCustomFileName(file, index)}
+          {file?.name || generateCustomFileName(file, index)}
         </Tag>
       </Space>
     ));
