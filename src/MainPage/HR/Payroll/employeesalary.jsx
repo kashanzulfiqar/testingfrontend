@@ -69,13 +69,13 @@ const EmployeeSalary = () => {
 
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 10,
+    pageSize: 20,
     total: 0,
   });
 
   const [pagination2, setPagination2] = useState({
     current: 1,
-    pageSize: 10,
+    pageSize: 20,
     total: 0,
   });
 
@@ -214,7 +214,7 @@ const EmployeeSalary = () => {
 
     setPagination({
       current: 1,
-      pageSize: 10,
+      pageSize: 20,
       total: 0,
     })
   };
@@ -817,7 +817,7 @@ const EmployeeSalary = () => {
     setDownloadTable(false);
     setPagination2({
       current: 1,
-      pageSize: 10,
+      pageSize: 20,
       total: 0,
     });
     PayFilterReset();
@@ -1473,6 +1473,7 @@ const EmployeeSalary = () => {
                         showSizeChanger={true}
                         pageSizeOptions={['20', '30', '40', '50']}
                         itemRender={itemRender}
+                        disabled={isLoading}
                       />
                     </div>
                   }
