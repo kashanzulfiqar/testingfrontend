@@ -15,15 +15,17 @@ import {
   Spin,
   Steps,
   message,
+  Select
 } from "antd";
 import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
 import DaftarProLogo from "../files/Icons/DaftraProLogo.svg";
 import SuccessIcon from "../files/Icons/SuccessIcon.svg";
 import PhoneNoInput from "../Components/PhoneNoInput/index.jsx";
 import { apiServices } from "../Services/apiServices";
-import Select from "react-select";
+import Select2 from "react-select";
 import styled from "styled-components";
 import { LoadingOutlined } from '@ant-design/icons';
+import { getAllISOCodes } from 'iso-country-currency';
 
 
 const options = [
@@ -40,6 +42,29 @@ const Registrationpage = (props) => {
   const [eye, seteye] = useState(true);
   const [compId, setCompId] = useState("");
   const [loader, setLoader] = useState(false)
+  const [allCurrencies, setAllCurrencies] = useState([]);
+
+  useEffect(() => {
+    getAllCurrencies();
+  }, [])
+
+  const getAllCurrencies = () => {
+    const isoCodes = getAllISOCodes();
+    const uniqueCurrencies = new Set();
+    isoCodes.forEach(isoCode => {
+        // const currency = isoCode.currency;
+        const currency = {
+          currency: isoCode?.currency,
+          symbol: isoCode?.symbol
+        };
+        // uniqueCurrencies.add(currency);
+        uniqueCurrencies.add(JSON.stringify(currency));
+    });
+    const currency_d = [...uniqueCurrencies].map(currency => JSON.parse(currency));
+    const sorted_data = currency_d.sort((a, b) => a.currency.localeCompare(b.currency));
+    // setAllCurrencies([...uniqueCurrencies])
+    setAllCurrencies(sorted_data)
+  };
 
   const next = () => {
     setCurrent(current + 1);
@@ -419,6 +444,42 @@ const Registrationpage = (props) => {
                     maxLength={150}
                   />
                 </Form.Item>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
+                 Preferred Currency <span className="text-danger">*</span>
+                </label>
+                <div style={{ position: "relative" }} id="area">
+                      <Form.Item
+                        name="preferredCurrency"
+                        className="custom-border"
+                        rules={[
+                          {
+                            required: true,
+                            message: "please select currency",
+                          },
+                        ]}
+                      >
+                        <Select
+                          showSearch
+                          className="custom-select custom-normal registerSelect"
+                          getPopupContainer={() =>
+                            document.getElementById("area")
+                          }
+                          placeholder="Select currency"
+                        >
+                          {
+                            allCurrencies.map((currency, index) => (
+                              <Select.Option key={index} value={currency?.currency}>
+                                {currency?.currency}
+                              </Select.Option>
+                            ))
+                          }
+                        </Select>
+                      </Form.Item>
+                    </div>
               </div>
             </div>
             <div className="col-sm-6">
@@ -851,9 +912,9 @@ const Registrationpage = (props) => {
                       id="flexCheckChecked"
                       style={{ width: "23px", height: "23px" }}
                     ></input>
-                    <p style={{ marginTop: "5px", marginLeft: '15px' }}>
+                    <label style={{ marginTop: "5px", marginLeft: '15px', fontSize: '15px' }}>
                       I agree to the term of services and privacy policy
-                    </p>
+                    </label>
                   </div>
                 </Form.Item>
               </div>
@@ -1032,7 +1093,7 @@ const Registrationpage = (props) => {
                     style={{ display: "none" }}
                     value={adminValues?.gender}
                   />
-                  <Select
+                  <Select2
                     // value={adminValues?.gender}
                     onChange={(val) => {
                       onHandleAdminChange("gender", val.value);
@@ -1286,9 +1347,9 @@ const Registrationpage = (props) => {
                   <div>{steps[current].content}</div>
 
                   <div className="account-footer">
-                    <p>
+                    <label>
                       Already have an account? <Link to="/login">Login</Link>
-                    </p>
+                    </label>
                   </div>
                 </div>
                 {/* /Account Form */}

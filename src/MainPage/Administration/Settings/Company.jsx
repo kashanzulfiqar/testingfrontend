@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import PhoneNoInput from "../../../Components/PhoneNoInput/index.jsx";
-import { Button, Form, Input, Spin, Upload, message } from "antd";
+import { Button, Form, Input, Spin, Upload, message, Select } from "antd";
 import { useSelector } from "react-redux";
 import { apiServices } from "../../../Services/apiServices.js";
 import { LoadingOutlined } from '@ant-design/icons';
 import ImgCrop from "antd-img-crop";
 import { apiUploadToS3 } from "../../../Services/uploadImage.js";
 import { user_icon } from "../../../Entryfile/imagepath.jsx";
+import { getAllISOCodes } from 'iso-country-currency';
 
 const Company = () => {
   const user_state = useSelector((state) => state.user.loginvalue);
@@ -17,9 +18,11 @@ const Company = () => {
   const [loader, setLoader] = useState(false)
   const [imageLoader, setImageLoader] = useState(false)
   const [image, setImage] = useState('')
+  const [allCurrencies, setAllCurrencies] = useState([]);
 
   useEffect(() => {
     getCompanyData();
+    getAllCurrencies();
   }, []);
 
   const getCompanyData = () => {
@@ -165,6 +168,24 @@ const Company = () => {
           );
       })
   }
+
+  const getAllCurrencies = () => {
+    const isoCodes = getAllISOCodes();
+    const uniqueCurrencies = new Set();
+    isoCodes.forEach(isoCode => {
+        // const currency = isoCode.currency;
+        const currency = {
+          currency: isoCode?.currency,
+          symbol: isoCode?.symbol
+        };
+        // uniqueCurrencies.add(currency);
+        uniqueCurrencies.add(JSON.stringify(currency));
+    });
+    const currency_d = [...uniqueCurrencies].map(currency => JSON.parse(currency));
+    const sorted_data = currency_d.sort((a, b) => a.currency.localeCompare(b.currency));
+    // setAllCurrencies([...uniqueCurrencies])
+    setAllCurrencies(sorted_data)
+  };
 
   return (
     <div>
@@ -389,6 +410,42 @@ const Company = () => {
                     maxLength={150}
                   />
                 </Form.Item>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
+                 Preferred Currency <span className="text-danger">*</span>
+                </label>
+                <div style={{ position: "relative" }} id="area">
+                      <Form.Item
+                        name="preferredCurrency"
+                        className="custom-border"
+                        rules={[
+                          {
+                            required: true,
+                            message: "please select a currency",
+                          },
+                        ]}
+                      >
+                        <Select
+                          showSearch
+                          className="custom-select custom-normal"
+                          getPopupContainer={() =>
+                            document.getElementById("area")
+                          }
+                          placeholder="Select currency"
+                        >
+                          {
+                            allCurrencies.map((currency, index) => (
+                              <Select.Option key={index} value={currency?.currency}>
+                                {currency?.currency}
+                              </Select.Option>
+                            ))
+                          }
+                        </Select>
+                      </Form.Item>
+                    </div>
               </div>
             </div>
             <div className="col-sm-6">

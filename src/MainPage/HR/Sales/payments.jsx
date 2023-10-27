@@ -115,9 +115,10 @@ const Payments = () => {
     let formatted_data = {
       ...values,
       _id: open_data?._id,
-      paidAmount: values?.paidAmount ? `${values?.paidAmount}` : '',
+      paidAmountInPreferredCurrency: values?.paidAmountInPreferredCurrency ? `${values?.paidAmountInPreferredCurrency}` : '',
+      // paidAmount: values?.paidAmount ? `${values?.paidAmount}` : '',
       paymentDate: values?.paymentDate ? moment(values?.paymentDate).format('YYYY-MM-DD') : '',
-      remainingAmount: `${(+open_data?.totalAmount - values?.paidAmount)?.toFixed(2)}`
+      // remainingAmount: `${(+open_data?.totalAmount - values?.paidAmount)?.toFixed(2)}`
     }
     console.log(formatted_data);
 
@@ -161,7 +162,7 @@ const Payments = () => {
 
   const handleClose = () => {
     setOpen({
-      isDeditOpen: false,
+      isEditOpen: false,
       isDelOpen: false,
       data: ''
     });
@@ -231,10 +232,13 @@ const Payments = () => {
           )},
       },    
       {
-        title: 'Paid Amount',
-        dataIndex: 'paidAmount',
+        title: 'Received Amount',
+        dataIndex: 'paidAmountInPreferredCurrency',
+        // title: 'Paid Amount',
+        // dataIndex: 'paidAmount',
         render: (text, record) => (
-        <span>{text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {record?.currency}</span>
+        <span>{text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || 0} {record?.company?.preferredCurrency}</span>
+        // <span>{text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {record?.currency}</span>
           ),
       },
       {
@@ -632,24 +636,25 @@ const Payments = () => {
                         Paid Amount <span className="text-danger">*</span>
                       </label>
                       <Form.Item
-                        name="paidAmount"
+                        name="paidAmountInPreferredCurrency"
+                        // name="paidAmount"
                         rules={[
                           {
                             // whitespace: true,
                             required: true,
                             message: 'please enter amount'
                           },
-                          ({ getFieldValue }) => ({
-                            validator: (_, value) => {
-                              const t_amount = open?.data?.totalAmount;
-                              if (parseFloat(value) > parseFloat(t_amount)) {
-                                return Promise.reject(
-                                  "amount must be less than or equal to invoice total amount"
-                                );
-                              }
-                              return Promise.resolve();
-                            },
-                          }),
+                          // ({ getFieldValue }) => ({
+                          //   validator: (_, value) => {
+                          //     const t_amount = open?.data?.totalAmount;
+                          //     if (parseFloat(value) > parseFloat(t_amount)) {
+                          //       return Promise.reject(
+                          //         "amount must be less than or equal to invoice total amount"
+                          //       );
+                          //     }
+                          //     return Promise.resolve();
+                          //   },
+                          // }),
                         ]}
                         className="custom-border"
                       >

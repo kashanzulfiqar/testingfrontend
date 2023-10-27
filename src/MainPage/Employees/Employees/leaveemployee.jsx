@@ -827,7 +827,7 @@ const leaves = [
                           else if (/\s{2,}/.test(value)) {
                             return Promise.reject("please remove consecutive spaces");
                           }
-                          else if (value.length <= 5) {
+                          else if (value.length < 5) {
                             return Promise.reject("reason length must be at least 5 characters long");
                           }
                           return Promise.resolve();

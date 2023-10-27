@@ -44,7 +44,7 @@ import { apiServices } from "../../../Services/apiServices";
 import { itemRender } from "../../paginationfunction";
 import EditProjects from "./EditProjects";
 import { apiUploadToS3 } from "../../../Services/uploadImage";
-import { MinusCircleFilled } from "@ant-design/icons";
+import { LoadingOutlined, MinusCircleFilled } from "@ant-design/icons";
 import { getAllISOCodes } from 'iso-country-currency';
 
 const Projects = () => {
@@ -81,6 +81,9 @@ const Projects = () => {
   const [clients, setClients] = useState([]);
   const [focalPersons, setFocalPersons] = useState([]);
   const [employees, setEmployees] = useState([]);
+  const [flag, setFlag] = useState(false);
+  const [categoryObj, setCategoryObj] = useState();
+  const [loader, setLoader] = useState(false);
 
   const [selectedClient, setSelectedClient] = useState(null);
   const [selectedLeader, setSelectedLeader] = useState(null);
@@ -175,6 +178,7 @@ const Projects = () => {
     ]);
     setSelectedFiles([]);
     setUploadFiles([]);
+    setLoader(false);
     //GetCardProjects();
     //GetListProjects();
   };
@@ -189,6 +193,7 @@ const Projects = () => {
     setSelectedData(null);
     setEditModal(false);
     form.resetFields();
+    setLoader(false);
   };
 
   const openDelete = (proj) => {
@@ -201,6 +206,7 @@ const Projects = () => {
     setToDelete(null);
     setDeleteProj(false);
     form.resetFields();
+    setLoader(false);
   };
 
   const [filters, setFilters] = useState({
@@ -246,13 +252,13 @@ const Projects = () => {
       projectType: "",
     });
 
+    form.resetFields();
     setPagination({
       current: 1,
       pageSize: 20,
       total: 0,
     });
 
-    form.resetFields();
   };
 
   useEffect(() => {
@@ -262,8 +268,11 @@ const Projects = () => {
 
   useEffect(() => {
     //if(role === 'admin' || permissions?.projectManagement ) { 
-      setIsLoading(true);
-      GetListProjects();
+      if(!flag){
+        setIsLoading(true);
+        GetListProjects();
+      }
+      
     //   getAllDomain();
     // }else{
     //    nav('/restricted', { state: { unAuthorize: true}})
@@ -366,13 +375,13 @@ const Projects = () => {
       });
   };
 
-  const GetListProjects = () => {
+  const GetListProjects = (page, pageSize) => {
     //setLoader(true);
 
     const params = {
       ...filters,
-      page: pagination.current,
-      limit: pagination.pageSize,
+      page: page || pagination.current,
+      limit: pageSize ? pageSize : pagination.pageSize,
     };
 
     apiServices(
@@ -384,14 +393,21 @@ const Projects = () => {
     )
       .then((res) => {
         if (res.data.success === true) {
+          setCategoryObj(res?.data?.projects);
           setTableData(res?.data?.projects?.docs);
  
           setIsLoading(false);
+          // setPagination({
+          //   ...pagination,
+          //   total: res.data.projects.totalDocs,
+          // });
+          setFlag(true);
           setPagination({
             ...pagination,
+            current : res.data.projects.page,
             total: res.data.projects.totalDocs,
           });
-        }
+      }
       })
       .catch((err) => {
         message.error(
@@ -404,6 +420,8 @@ const Projects = () => {
           }`
         );
         setIsLoading(false);
+      }).then(()=>{
+        setFlag(false);
       });
   };
 
@@ -437,7 +455,7 @@ const Projects = () => {
   };
 
   const AddProject = (values) => {
-    //setLoader(true);
+    setLoader(true);
     setIsLoading(true);
 
     let data = {
@@ -471,6 +489,7 @@ const Projects = () => {
           setIsLoading(false);
           GetListProjects();
           closeCreateModal();
+          setLoader(false);
         }
       })
       .catch((err) => {
@@ -485,6 +504,7 @@ const Projects = () => {
         );
         closeCreateModal();
         setIsLoading(false);
+        setLoader(false);
       });
   };
 
@@ -517,19 +537,29 @@ const Projects = () => {
     reader.readAsDataURL(fileList[0]);
   };
 
+  const antIcon = (
+    <LoadingOutlined
+      style={{
+        fontSize: 24,
+        color: "#fff",
+      }}
+      spin
+    />
+  );
+
   const columns = [
     {
-      title: <b>Project Name</b>,
+      title: "Project Name",
       dataIndex: "projectName",
       key: "projectName",
       render: (text, record) => (
         <Link to={`/projects/projects-view/${record?._id}`} style={{color: '#333333'}}>
-          <label style={{cursor: 'pointer', fontWeight: '500'}} className="longText">{text}</label>
+          <label style={{cursor: 'pointer'}} className="longText">{text}</label>
         </Link>
       ),
     },
     {
-      title: <b>Client Name</b>,
+      title: "Client Name",
       dataIndex: "clientName",
       key: "clientName",
       render: (text, record) => (
@@ -545,7 +575,7 @@ const Projects = () => {
       ),
     },
     {
-      title: <b>Leader</b>,
+      title: "Leader",
       dataIndex: "projectLead",
       key: "projectLead",
       render: (projectLead) => (
@@ -568,7 +598,7 @@ const Projects = () => {
       ),
     },
     {
-      title: <b>Team</b>,
+      title: "Team",
       dataIndex: "assignedDevelopers",
       key: "assignedDevelopers",
       render: (assignedDevelopers) => (
@@ -642,13 +672,13 @@ const Projects = () => {
       ),
     },
     {
-      title: <b>Deadline</b>,
+      title: "Deadline",
       dataIndex: "endDate",
       key: "endDate",
       render: (text, record) => <label style={{minWidth: 'max-content'}}>{text}</label> 
     },
     {
-      title: <b>Priority</b>,
+      title: "Priority",
       dataIndex: "priority",
       key: "priority",
       render: (record) => (
@@ -677,7 +707,7 @@ const Projects = () => {
     },
 
     {
-      title: <b>Status</b>,
+      title: "Status",
       dataIndex: "status",
       key: "status",
       render: (record) => (
@@ -717,7 +747,7 @@ const Projects = () => {
       ),
     },
     {
-      title: <b>Action</b>,
+      title: "Action",
       dataIndex: "action",
       key: "action",
       align: "right",
@@ -803,6 +833,7 @@ const Projects = () => {
 
   const DeleteProject = () => {
     //setLoader(true);
+    setLoader(true);
     setIsLoading(true);
 
     let data = {
@@ -817,9 +848,16 @@ const Projects = () => {
           //setData((prevData) => [...prevData, ...payrolls]);
           //setFilters(selectedPayFilters);
           //GetGenPayrolls();
+          if(categoryObj?.docs?.length === 1){
+            //console.log(categoryObj.totalPages)
+            GetListProjects((categoryObj.totalPages-1),null);
+          }
+          else{
+            GetListProjects()
+          }
           message.success(`Project Deleted`);
           setIsLoading(false);
-          GetListProjects();
+          setLoader(false);
           closeDelete();
         }
       })
@@ -835,78 +873,7 @@ const Projects = () => {
         );
         closeDelete();
         setIsLoading(false);
-      });
-  };
-
-  const UpdateProject = (values) => {
-    //setLoader(true);
-    setIsLoading(true);
-
-    let data = {
-      _id: selectedData._id,
-      projectName: values.projectName,
-      projectDescription: values.projectDescription,
-      clientId: values.clientId,
-      focalPersonId: values.focalPersonId,
-      startDate: moment(values.startDate).format("YYYY-MM-DD"),
-      endDate: moment(values.endDate).format("YYYY-MM-DD"),
-      cost: values.cost,
-      costType: values.costType,
-      priority: values.priority,
-      projectLead: values.projectLead,
-      assignedDevelopers: values.assignedDevelopers,
-      status: values.status,
-      docs: uploadFiles,
-      paymentSchedule: [
-        {
-          paymentTitle: "Payment 1",
-          dueDate: "2023-09-10",
-          amountInPercent: "10",
-          amountInFigure: "1500",
-          paid: false,
-        },
-        {
-          paymentTitle: "Payment 1",
-          dueDate: "2023-09-10",
-          amountInPercent: "10",
-          amountInFigure: "1500",
-          paid: false,
-        },
-        {
-          paymentTitle: "Payment 1",
-          dueDate: "2023-09-10",
-          amountInPercent: "10",
-          amountInFigure: "1500",
-          paid: false,
-        },
-      ],
-      deleted: false,
-      companyId: selectedData.companyId,
-    };
-
-    apiServices("PUT", `project-management/`, data, user_state)
-      .then((res) => {
-        if (res.data.success === true) {
-          message.success(`Project Details Updated Successfully`);
-          setIsLoading(false);
-          handleReset();
-          setSelectedData(null);
-          closeEditModal();
-        }
-      })
-      .catch((err) => {
-        message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
-              ? err?.response?.data?.validation?.body?.message
-              : "Error Updating Project Details"
-          }`
-        );
-        closeEditModal();
-        setSelectedData(null);
-        setIsLoading(false);
+        setLoader(false);
       });
   };
 
@@ -914,41 +881,70 @@ const Projects = () => {
 
   
   const onFileUpload = async (files) => {
+    setLoader(true);
     const uploadPromises = [];
     const validFiles = []; // To store valid files
+    const existingFileNames = selectedFiles.map((file) => file?.name);
   
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       //console.log("File: ", file);
   
       // Check file format (extension)
-      const fileExtension = file.name.split(".").pop().toLowerCase();
+      const fileExtension = file?.name?.split(".").pop().toLowerCase();
       if (!acceptableFormats.includes(fileExtension)) {
-        message.error(`File format not supported: ${file.name}`);
+        message.error(`File format not supported: ${file?.name}`);
+        setLoader(false);
         continue; // Skip this file and continue with the next one
       }
   
       // Check file size
-      if (file.size > 10485760) {
-        message.error(`File size exceeds 10MB: ${file.name}`);
+      if (file?.size > 10485760) {
+        message.error(`File size exceeds 10MB: ${file?.name}`);
+        setLoader(false);
         continue; // Skip this file and continue with the next one
       }
-  
-      validFiles.push(file); // Add valid files to the array
+
+      if (existingFileNames.includes(file?.name)) {
+        message.error(`File already selected: ${file?.name}`);
+        setLoader(false);
+        continue; // Skip this file and continue with the next one
+      }
+   // Add valid files to the array
   
       const uploadPromise = apiUploadToS3(file)
         .then((res) => {
           //console.log(res?.data?.result);
+          setLoader(false);
+          message.success(`File: ${file?.name} ready to upload`)
+          validFiles.push(file);
+          setSelectedFiles((prevSelectedFiles) => {
+            const uniqueValidFiles = validFiles.filter((newFile) => {
+              // Check if a file with the same name already exists in the selectedFiles
+              return !prevSelectedFiles.some((existingFile) => existingFile?.name === newFile?.name);
+            });
+            return [...prevSelectedFiles, ...uniqueValidFiles];
+          });
+          //console.log(res?.data?.result)
           return res?.data?.result;
         })
         .catch((err) => {
-          message.error(`File upload error: ${file.name}`);
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : `File upload error: ${file.name}`
+            }`
+          );
+          setLoader(false);
         });
       uploadPromises.push(uploadPromise);
     }
+    //setLoader(false);
   
     // Add valid files to selectedFiles
-    setSelectedFiles((prevSelectedFiles) => [...prevSelectedFiles, ...validFiles]);
   
     try {
       // Wait for all upload promises to resolve
@@ -956,10 +952,12 @@ const Projects = () => {
       //console.log("these are ",urls)
       // Add the uploaded URLs to the uploadFiles state array
       setUploadFiles((prevUploadFiles) => [...prevUploadFiles, ...urls]);
-      e.target.files = null;
+      //e.target.files = null;
+      setLoader(false);
     } catch (error) {
       // Handle any errors that occurred during file uploads
       console.error("File upload error:", error);
+      setLoader(false);
     }
   };
   
@@ -991,7 +989,7 @@ const Projects = () => {
           color="blue" // You can customize the color as needed
           className="custom-tag"
         >
-          {file.name || generateCustomFileName(file, index)}
+          {file?.name || generateCustomFileName(file, index)}
         </Tag>
       </Space>
     ));
@@ -1630,6 +1628,7 @@ const filteredColumns = columns.filter(column => {
                         showTotal={(total, range) =>
                           `Showing ${range[0]} to ${range[1]} of ${total} entries`}
                         onChange={(page, pageSize) => {
+                          GetListProjects(page, pageSize)
                           setPagination({
                             ...pagination,
                             current: page,
@@ -1642,6 +1641,7 @@ const filteredColumns = columns.filter(column => {
                         showSizeChanger={true}
                         pageSizeOptions={['20', '30', '40', '50']}
                         itemRender={itemRender}
+                        disabled={isLoading}
                       />
                     </div>
                   }
@@ -1660,57 +1660,52 @@ const filteredColumns = columns.filter(column => {
                       ),
                     }}
                     className="table-striped custom-table datatable"
-                    style = {{overflowX : 'auto'}}
+                    style = {{overflowX : 'auto', paddingBottom: '70px'}}
                     loading={isLoading}
                     //style={{ height: "400px", background: "white" }}
                     columns={filteredColumns}
                     // bordered
                     dataSource={tableData}
                     //rowKey={(record) => record?._id}
-                    pagination={{
-                      current: pagination.current,
-                      pageSize: pagination.pageSize,
-                      total: pagination.total,
-                      showTotal: (total, range) =>
-                        `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                      pageSizeOptions: ["20", "30", "40", "50"], // Options to change page size
-                      showSizeChanger: true, // Show the page size changer
-                      onChange: (page, pageSize) => {
-                        setPagination({
-                          ...pagination,
-                          current: page,
-                          pageSize: pageSize,
-                        });
-                      },
-                      itemRender: itemRender,
-                    }}
-                    // onChange={this.handleTableChange}
+                    pagination={false}
+                    // pagination={{
+                    //   current: pagination.current,
+                    //   pageSize: pagination.pageSize,
+                    //   total: pagination.total,
+                    //   showTotal: (total, range) =>
+                    //     `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+                    //   pageSizeOptions: ["20", "30", "40", "50"], // Options to change page size
+                    //   showSizeChanger: true, // Show the page size changer
+                    //   onChange: (page, pageSize) => {
+                    //     setPagination({
+                    //       ...pagination,
+                    //       current: page,
+                    //       pageSize: pageSize,
+                    //     });
+                    //   },
+                    //   itemRender: itemRender,
+                    // }}
                   />
                 </div>
-                {/* {
-                  data?.length > 0 &&
-                  <div>
-                    <Pagination
-                      style={{display: 'flex', float: 'right'}}
-                      total={pagination.total}
-                      pageSize={pagination.pageSize}
-                      defaultCurrent={1}
-                      current={pagination.current}
-                      showTotal={(total, range) =>
-                        `Showing ${range[0]} to ${range[1]} of ${total} entries`}
-                      onChange={(page, size) => {
-                        
-                        console.log(page, size);
-                        //setPageSize(size); setCurrentPage(page);
-                        //getEmployeeSalary(filterValues, page, size)
-                        GetListProjects(page, size);
-                      }}
-                      showSizeChanger={true}
-                      pageSizeOptions={['10', '20', '30', '0']}
-                      itemRender={itemRender}
-                    />
-                  </div>
-                    } */}
+                {
+                    tableData?.length > 0 &&
+                    <div>
+                      <Pagination
+                        style={{display: 'flex', float: 'right'}}
+                        current={pagination.current}
+                        pageSize={pagination.pageSize}
+                        total={pagination.total}
+                        showTotal={(total, range) =>
+                          `Showing ${range[0]} to ${range[1]} of ${total} entries`
+                        }
+                        pageSizeOptions={["20", "30", "40", "50"]}
+                        showSizeChanger
+                        onChange={(page, pageSize) => setPagination({...pagination, current: page, pageSize: pageSize,})}
+                        itemRender={itemRender}
+                        disabled={isLoading}
+                      />
+                    </div>
+                  }
               </div>
             </div>
           )}
@@ -2756,8 +2751,14 @@ const filteredColumns = columns.filter(column => {
                         type="primary"
                         htmlType="submit"
                         className="btn btn-primary submit-btn"
+                        disabled={loader}
                       >
-                        Submit
+                        {loader ? (
+                        <Spin size="small" indicator={antIcon} />
+                      ) : (
+                        "Submit"
+                      )}
+                        
                       </Button>
                     </Form.Item>
                   </div>
@@ -2814,8 +2815,13 @@ const filteredColumns = columns.filter(column => {
                         className="btn btn-primary continue-btn"
                         onClick={() => DeleteProject(toDelete)}
                         style={{ width: "100%" }}
-                      >
-                        Delete
+                        disabled={loader}
+                        >
+                          {loader ? (
+                          <Spin size="small" indicator={antIcon} />
+                        ) : (
+                          "Delete"
+                        )}
                       </Button>
                     </div>
                     <div className="col-6">

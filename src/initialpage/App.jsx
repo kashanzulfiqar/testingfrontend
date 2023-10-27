@@ -53,6 +53,8 @@ import Invoicecreate from '../MainPage/HR/Sales/invoicecreate';
 import Invoiceview from '../MainPage/HR/Sales/invoiceview';
 import EditInvoice from '../MainPage/HR/Sales/EditInvoice';
 import Payments from '../MainPage/HR/Sales/payments';
+import Expenses from '../MainPage/HR/Sales/expense';
+import Tasks from '../MainPage/Employees/Projects/Tasks';
 
 
 const App = () => {
@@ -140,6 +142,8 @@ const App = () => {
           <Route path={`invoices/edit-invoice`} element={<EditInvoice />} />
           <Route path={`invoices/view-invoice`} element={<Invoiceview />} />
           <Route path={`payments`} element={<Payments />} />
+          <Route path={`expenses`} element={<Expenses />} />
+          <Route path={`projects/tasks`} element={<Tasks />} />
 
           {/* Settings  */}
           <Route path="/settings" element={<Settings />} />

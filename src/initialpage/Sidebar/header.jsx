@@ -239,6 +239,7 @@ const Header = (props) => {
 
   const handlesidebar = () => {
     document.body.classList.toggle('mini-sidebar');
+    props.onBarToggle()
   }
   const onMenuClik = () => {
     props.onMenuClick()
@@ -283,7 +284,7 @@ const Header = (props) => {
         </Link>
       </div>
       {/* /Logo */}
-      <a id="toggle_btn" href="javascript:" style={{ display: pathname.includes('tasks') ? "none" : pathname.includes('compose') ? "none" : "" }} onClick={handlesidebar}>
+      <a id="toggle_btn" href="javascript:" onClick={handlesidebar}>
         <span className="bar-icon"><span />
           <span />
           <span />
@@ -413,7 +414,7 @@ const Header = (props) => {
         {/* /Message Notifications */}
         <li className="nav-item dropdown has-arrow main-drop">
           <a href="javascript:void(0)" className="dropdown-toggle nav-link" data-bs-toggle="dropdown">
-            <span className="user-img me-1"><img src={location?.state?.updated_user?.imageUrl ? location?.state?.updated_user?.imageUrl : updated_user?.imageUrl ? updated_user?.imageUrl : imageURL ? imageURL : user_icon} alt="profile" style={{width: '30px', height: '30px'}} />
+            <span className="user-img me-1"><img src={(location?.state?.updated_user?.imageUrl === null || updated_user?.imageUrl === null) ? user_icon : location?.state?.updated_user?.imageUrl ? location?.state?.updated_user?.imageUrl : updated_user?.imageUrl ? updated_user?.imageUrl : imageURL ? imageURL : user_icon} alt="profile" style={{width: '30px', height: '30px'}} />
             {/* <span className="user-img me-1"><img src={Avatar_21} alt="" /> */}
               <span className="status online" /></span>
             <label style={{marginInline: '5px', cursor: 'pointer'}}>{location?.state?.updated_user?.fullName ? ` ${location?.state?.updated_user?.fullName} ` : updated_user?.fullName ? ` ${updated_user?.fullName} ` : ProfileName ? ` ${ProfileName} ` : "Admin"}</label>

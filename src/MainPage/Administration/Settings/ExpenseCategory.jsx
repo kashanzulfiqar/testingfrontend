@@ -11,7 +11,7 @@ import { Modal } from '@mui/material';
 import { LoadingOutlined } from '@ant-design/icons';
 
 
-const InvoiceTaxes = () => {
+const ExpenseCategory = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const user_state = useSelector((state) => state.user.loginvalue);
@@ -20,10 +20,16 @@ const InvoiceTaxes = () => {
   //console.log(permissions,user_state)
   //const nav = useNavigate();
 
-  const [taxes, setTaxes] = useState([]);
-  const [pageSize, setPageSize] = useState(20);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [category, setCategory] = useState([]);
+  const [categoryObj, setCategoryObj] = useState();
   const [loader, setLoader] = useState(false);
+  const [flag, setFlag] = useState(false);
+
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 20,
+    total: 10,
+  });
 
   const [open, setOpen] = useState({
     isAddOpen: false,
@@ -46,20 +52,35 @@ const InvoiceTaxes = () => {
   });  
 
   useEffect( ()=>{
-    setIsLoading(true);
-    ViewTaxes();
-  },[]);  
+    if(!flag){
+      setIsLoading(true);
+      //console.log("flag false")
+      viewCategory();
+    }
+    
+  },[pagination.current, pagination.pageSize]);  
 
-  const ViewTaxes = () => {
+  const viewCategory = (page, pageSize) => {
+    const params = {
+      page: page || pagination.current,
+      limit: pageSize ? pageSize : pagination.pageSize,
+    };
     apiServices(
       "GET",
-      `invoices-tax-slab`,
+      `expenses-category/?page=${params.page}&limit=${params.limit}`,
       null,
       user_state
     )
       .then((res) => {
         if (res.data.success === true) {
-            setTaxes(res?.data?.invoicesTaxSlab)
+            setCategoryObj(res?.data?.Categories);
+            setCategory(res?.data?.Categories?.docs)
+            setFlag(true);
+            setPagination({
+              ...pagination,
+              current : res.data.Categories.page,
+              total: res.data.Categories.totalDocs,
+            });
             //console.log(res?.data?.invoicesTaxSlab)
         }
       })
@@ -70,24 +91,33 @@ const InvoiceTaxes = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Error getting invoice taxes"
+              : "Error getting expense category"
           }`
         );
       }).then(()=>{
         setIsLoading(false);
+        setFlag(false);
       });
   };
 
   const onHandleDelete = (id) => {
     setLoader(true);
-    apiServices("DELETE", "invoices-tax-slab", id, user_state)
+    apiServices("DELETE", "expenses-category", id, user_state)
       .then((res) => {
         // console.log(res?.data);
         if (res?.data?.success === true) {
           // console.log(data);
-          setTaxes([...taxes.filter((tax) => tax._id !== id)]);
+          // setCategory([...category.filter((category) => category._id !== id)]);
+          if(categoryObj?.docs?.length === 1){
+            console.log(categoryObj.totalPages)
+            viewCategory((categoryObj.totalPages-1),null);
+          }
+          else{
+            viewCategory()
+          }
           handleClose();
-          message.success("Tax Slab Deleted Successfully!");
+          message.success("Expense Category Deleted Successfully!");
+          //viewCategory();
           setLoader(false);
         }
       })
@@ -100,7 +130,7 @@ const InvoiceTaxes = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Delete Tax Slab Error"
+              : "Delete Expense Category Error"
           }!`
         );
       });
@@ -115,27 +145,28 @@ const InvoiceTaxes = () => {
         companyId: info?.companyId,
         _id: info?._id,
       };
-      apiServices("PUT", "invoices-tax-slab", updated_data, user_state)
+      apiServices("PUT", "expenses-category", updated_data, user_state)
         .then((res) => {
           // console.log(res?.data);
           if (res?.data?.success === true) {
             // console.log(data);
-            setTaxes(
-              taxes.map((taxslab) => {
-                if (taxslab._id === info._id) {
-                  return {
-                    ...taxslab,
-                    ...values,
-                  };
-                } else {
-                  return {
-                    ...taxslab,
-                  };
-                }
-              })
-            );
+            // setCategory(
+            //   category.map((category) => {
+            //     if (category._id === info._id) {
+            //       return {
+            //         ...category,
+            //         ...values,
+            //       };
+            //     } else {
+            //       return {
+            //         ...category,
+            //       };
+            //     }
+            //   })
+            // );
+            viewCategory();
             handleClose();
-            message.success("Tax Slab Updated Successfully");
+            message.success("Expense Category Updated Successfully");
             setLoader(false);
           }
         })
@@ -153,21 +184,21 @@ const InvoiceTaxes = () => {
           );
         });
     } else {
-      apiServices("POST", "invoices-tax-slab", values, user_state)
+      apiServices("POST", "expenses-category", values, user_state)
         .then((res) => {
           // console.log(res?.data);
           if (res?.data?.success === true) {
             // console.log(data);
-            setTaxes([
-              ...taxes,
-              {
-                ...values,
-                _id: res?.data?.taxSlab?._id,
-                status: res?.data?.taxSlab?.status,
-              },
-            ]);
+            // setCategory([
+            //   ...category,
+            //   {
+            //     ...values,
+            //     _id: res?.data?.Category?._id,
+            //   },
+            // ]);
+            viewCategory();
             handleClose();
-            message.success("Tax Slab Added Successfully");
+            message.success("Expense Category Added Successfully");
             setLoader(false);
           }
         })
@@ -180,44 +211,13 @@ const InvoiceTaxes = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Add Tax Slab Info Error"
+                : "Add Expense Category Error"
             }!`
           );
         });
     }
   };
 
-  const handleUpdateStatus = (record, newStatus) => {
-
-    let updatedData = {
-        title: record?.title,
-        status: newStatus,
-        companyId: record?.companyId,
-        _id: record?._id,
-      };
-
-    const apiUrl = `invoices-tax-slab`; 
-    apiServices("PUT", apiUrl, updatedData, user_state)
-      .then((res) => {
-        if (res.data.success === true) {
-            setTaxes((taxes) =>
-            taxes.map((taxslab) =>
-              taxslab._id === record._id
-                ? {
-                    ...taxslab,
-                    status: newStatus, 
-                  }
-                : taxslab
-            )
-          );
-          message.success(`Tax status updated to ${newStatus}`);
-        }
-      })
-      .catch((error) => {
-        console.log("error", error);
-        message.error('Failed to update tax status');
-      });
-  };
 
   const customEmptyText = (
     <Empty
@@ -245,12 +245,12 @@ const InvoiceTaxes = () => {
               margin: "7px 0px 4px 0px",
             }}
           >
-            No tax slab added yet
+            No expense category added yet
           </div>
           <div
             style={{ color: "#464665", fontWeight: "300", fontSize: "13px" }}
           >
-            Click 'Add New Tax Slab' Button To Create <br /> A New Invoice Tax Slab{" "}
+            Click 'Add Category' Button To Create <br /> A New Expense Category{" "}
           </div>
         </div>
       }
@@ -268,89 +268,22 @@ const InvoiceTaxes = () => {
   );
 
   const columns = [
+    // {
+    //   title: "#",
+    //   dataIndex: "",
+    //   render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
+    // },
     {
       title: "#",
-      dataIndex: "",
-      render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
+      dataIndex: "index",
+      key: "index",
+      width: 50,
+      render: (text, record, index) =>
+        (pagination.current - 1) * pagination.pageSize + index + 1,
     },
     {
-      title: "Slab Name",
-      dataIndex: "title",
-    },
-    {
-      title: "Tax Percentage (%)",
-      dataIndex: "taxPercent",
-      
-    },
-    {
-      title: "Status",
-      dataIndex: "status",
-      render: (text, record) => (
-        <div>
-          <a
-            className={`btn btn-white btn-sm btn-rounded dropdown-toggle`}
-            href={text !== 'Active' && text !== 'In-Active' ? "javascript:void(0)" : undefined}
-            data-bs-toggle={"dropdown"}
-            aria-expanded="false"
-            onClick={(e) => e.preventDefault()}
-          >
-            <i
-              className={`fa ${
-                text === 'Active'
-                  ? 'fa-dot-circle-o text-success'
-                  : text === 'In-Active'
-                  ? 'fa-dot-circle-o text-danger'
-                  : 'fa-dot-circle-o text-danger'
-              }`}
-            />{' '}
-            {text}
-          </a>
-          {/* <div className={`dropdown-menu dropdown-menu-right`}>
-            
-            <a className={`dropdown-item ${text === 'Active'}`} href="javascript:void(0)" onClick={(e) => {
-              e.preventDefault();
-              handleUpdateStatus(record, 'Active')
-            }}>
-  
-              <i className="fa fa-dot-circle-o text-success" /> Active
-            </a>
-            <a className={`dropdown-item ${text === 'In-Active'}`} href="javascript:void(0)" onClick={(e) => {
-              e.preventDefault();
-              handleUpdateStatus(record, 'In-Active')
-              }}>
-  
-              <i className="fa fa-dot-circle-o text-danger" /> In-Active
-            </a>
-          </div> */}
-          <div className={`dropdown-menu dropdown-menu-right`}>
-        <a
-          className={`dropdown-item ${text === 'Active' ? 'disabled text-muted' : ''}`}
-          href="javascript:void(0)"
-          onClick={(e) => {
-            if (text !== 'Active') {
-              e.preventDefault();
-              handleUpdateStatus(record, 'Active');
-            }
-          }}
-        >
-          <i className="fa fa-dot-circle-o text-success" /> Active
-        </a>
-        <a
-          className={`dropdown-item ${text === 'In-Active' ? 'disabled text-muted' : ''}`}
-          href="javascript:void(0)"
-          onClick={(e) => {
-            if (text !== 'In-Active') {
-              e.preventDefault();
-              handleUpdateStatus(record, 'In-Active');
-            }
-          }}
-        >
-          <i className="fa fa-dot-circle-o text-danger" /> In-Active
-        </a>
-      </div>
-        </div>
-      ),
-      
+      title: "Category Name",
+      dataIndex: "expenseCategoryName",
     },
     {
       title: "Actions",
@@ -405,7 +338,7 @@ const InvoiceTaxes = () => {
         <div className="page-header">
           <div className="row align-items-center pt-3 pb-3">
             <div className="col">
-              <h3 className="page-title">Invoice Tax Slabs</h3>
+              <h3 className="page-title">Expense Categories</h3>
             </div>
             <div className="col-auto float-end ms-auto">
               <a
@@ -420,7 +353,7 @@ const InvoiceTaxes = () => {
                 }}
                 data-bs-target="#add_leavetype"
               >
-                <i className="fa fa-plus" /> Add New Tax Slab
+                <i className="fa fa-plus" /> Add Category
               </a>
             </div>
           </div>
@@ -431,14 +364,15 @@ const InvoiceTaxes = () => {
             <div className="table-responsive">
               <Table
                 loading={isLoading}
+                className={
+                  category?.length > 0 ? "table-striped" : ""
+                }
                 locale={{
                     emptyText: isLoading ? null : customEmptyText,
                   }}
-                className={
-                    taxes?.length > 0 ? "table-striped antTableResponsive" : ""
-                  }
+                pagination={false}
                 // pagination={{
-                //   total: taxes?.length,
+                //   total: category?.length,
                 //   pageSize: pageSize,
                 //   defaultCurrent: 1,
                 //   current: currentPage,
@@ -451,37 +385,33 @@ const InvoiceTaxes = () => {
                 //     setPageSize(size);
                 //     setCurrentPage(1);
                 //   },
-                //   pageSizeOptions: ["20", "30", "40", "50"],
+                //   pageSizeOptions: ["10", "20", "40", "50"],
                 //   onChange: (page, size) => setCurrentPage(page),
                 //   itemRender: itemRender,
                 // }}
-                pagination={false}
                 style = {{overflowX : 'auto', paddingBottom: '70px'}}
                 columns={columns}
                 bordered
-                dataSource={taxes.slice((currentPage - 1) * pageSize, currentPage * pageSize)}
+                dataSource={category}
                 rowKey={(record) => record.id}
                 // onChange={this.handleTableChange}
               />
               {
-                    taxes?.length > 0 &&
+                    category?.length > 0 &&
                     <div>
                       <Pagination
                         style={{display: 'flex', float: 'right'}}
-                        total={taxes?.length}
-                        pageSize={pageSize}
-                        current={currentPage}
+                        current={pagination.current}
+                        pageSize={pagination.pageSize}
+                        total={pagination.total}
                         showTotal={(total, range) =>
                           `Showing ${range[0]} to ${range[1]} of ${total} entries`
                         }
-                        showSizeChanger
-                        onShowSizeChange={(current, size) => {
-                          setPageSize(size);
-                          setCurrentPage(1);
-                        }}
                         pageSizeOptions={["20", "30", "40", "50"]}
-                        onChange={(page, size) => setCurrentPage(page)}
+                        showSizeChanger
+                        onChange={(page, pageSize) => setPagination({...pagination, current: page, pageSize: pageSize,})}
                         itemRender={itemRender}
+                        disabled={isLoading}
                       />
                     </div>
                   }
@@ -505,13 +435,12 @@ const InvoiceTaxes = () => {
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">
-                {open?.data ? "Update" : "Add"} Tax Slab
+                {open?.data ? "Update" : "Add"} Category
               </h5>
               <button type="button" className="close" onClick={handleClose}>
                 <span aria-hidden="true">×</span>
               </button>
             </div>
-            {open?.data ? (
             <div className="modal-body">
               <Form
                 // form={form}
@@ -526,249 +455,54 @@ const InvoiceTaxes = () => {
                   }
                 }}
                 initialValues={{
-                  title: open?.data ? open?.data?.title : "",
-                  taxPercent: open?.data
-                    ? open?.data?.taxPercent
-                    : "",
-                  status: open?.data ? open?.data?.status : "",
+                  expenseCategoryName: open?.data ? open?.data?.expenseCategoryName : "",
                 }}
+                autoComplete="off"
               >
-                <div className="row">
-                  <div className="col-12">
-                    <div className="form-group">
-                      <label>
-                        Slab Name <span className="text-danger">*</span>
-                      </label>
-                      <Form.Item
-                        name="title"
-                        rules={[
-                          {
-                            whitespace: true,
-                            required: true,
-                            validator: (_, value) => {
-                              if(value.trim() === ''){
-                                return Promise.reject("please enter slab name");
-                              }
-                              else if (/\s{2,}/.test(value)) {
-                                return Promise.reject("please remove consecutive spaces");
-                              }
-                              return Promise.resolve();
-                            },
-                          },
-                        ]}
-                        className="custom-border"
-                      >
-                        <Input className="form-control" maxLength={50} autoFocus />
-                      </Form.Item>
-                    </div>
-                  </div>
-                  <div className="col-sm-6">
-                    <div className="form-group">
-                      <label>
-                        Tax (%) <span className="text-danger">*</span>
-                      </label>
-                      <Form.Item
-                        name="taxPercent"
-                        rules={[
-                          {
-                            required: true,
-                            validator: (_, value) => {
-                              if(value.trim() === ''){
-                                return Promise.reject("please enter tax percentage");
-                              }
-                              else if (value > 100) {
-                                return Promise.reject("tax percentage must not be more than 100");
-                              }
-                              return Promise.resolve();
-                            },
-                          },
-                        ]}
-                        className="custom-border"
-                      >
-                        <Input
-                          className="form-control"
-                          onKeyPress={(e) => {
-                            if (
-                              e.key === '.' &&
-                              e.target.value.includes('.')
-                            ) {
-                              e.preventDefault();
-                            } else if (
-                              e.which !== 46 &&
-                              (e.which < 48 || e.which > 57)
-                            ) {
-                              e.preventDefault();
-                            }
-                          }}
-                          maxLength={50}
-                        />
-                      </Form.Item>
-                    </div>
-                  </div>
-                  <div className="col-sm-6">
-                    <div className="form-group">
-                      <label>
-                        Status <span className="text-danger">*</span>
-                      </label>
-                      <Form.Item
-                        name="status"
-                        rules={[
-                          {
-                            required: true,
-                            message: "please select a status",
-                          },
-                        ]}
-                        className="custom-border"
-                      >
-                        <Select
-                              className="custom-select custom-normal"
-                            //   getPopupContainer={() =>
-                            //     document.getElementById("area")
-                            //   }
-                              placeholder="Select a Status"
-                            >
-                              <Select.Option value="Active">
-                                Active
-                              </Select.Option>
-                              <Select.Option value="In-Active">
-                                In-Active
-                              </Select.Option>
-                            </Select>
-                      </Form.Item>
-                    </div>
-                  </div>
-                  <div className="submit-section">
-                    <Form.Item>
-                        <Button
-                            htmlType="submit"
-                            className="btn btn-primary submit-btn"
-                            disabled={loader}
-                        >
-                            {loader ? (
-                            <Spin size="small" indicator={antIcon} />
-                            ) : (
-                            "Submit"
-                            )}
-                        </Button>
-                    </Form.Item>
-                  </div>
+                <div className="form-group">
+                  <label>
+                    Category Name <span className="text-danger">*</span>
+                  </label>
+                  <Form.Item
+                    name="expenseCategoryName"
+                    rules={[
+                      {
+                        whitespace: true,
+                        required: true,
+                        validator: (_, value) => {
+                          if(value.trim() === ''){
+                            return Promise.reject("please enter category name");
+                          }
+                          else if (/\s{2,}/.test(value)) {
+                            return Promise.reject("please remove consecutive spaces");
+                          }
+                          return Promise.resolve();
+                        },
+                      },
+                    ]}
+                    className="custom-border"
+                  >
+                    <Input className="form-control" maxLength={50} autoFocus />
+                  </Form.Item>
+                </div>
+                <div className="submit-section">
+                  <Form.Item>
+                    <Button
+                      htmlType="submit"
+                      className="btn btn-primary submit-btn"
+                      disabled={loader}
+                    >
+                      {loader ? (
+                        <Spin size="small" indicator={antIcon} />
+                      ) : (
+                        "Submit"
+                      )}
+                    </Button>
+                  </Form.Item>
                 </div>
               </Form>
             </div>
-            )
-            :
-            (
-              <div className="modal-body">
-              <Form
-                // form={form}
-                name="control-hooks"
-                onFinish={(val) => onFinish(val)}
-                onFinishFailed={({errorFields}) => {
-                  const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
-                  if(consecutiveSpacesError){
-                    message.error("Please Remove Consecutive Spaces!")
-                  }else{
-                    message.error("Please Fill Required Fields!")
-                  }
-                }}
-                initialValues={{
-                  title: "",
-                  taxPercent: "",
-                }}
-              >
-                <div className="row">
-                  <div className="col-sm-6">
-                    <div className="form-group">
-                      <label>
-                          Slab Name <span className="text-danger">*</span>
-                      </label>
-                      <Form.Item
-                        name="title"
-                        rules={[
-                          {
-                            whitespace: true,
-                            required: true,
-                            validator: (_, value) => {
-                              if(value.trim() === ''){
-                                return Promise.reject("please enter slab name");
-                              }
-                              else if (/\s{2,}/.test(value)) {
-                                return Promise.reject("please remove consecutive spaces");
-                              }
-                              return Promise.resolve();
-                            },
-                          },
-                        ]}
-                        className="custom-border"
-                      >
-                        <Input className="form-control" maxLength={50} autoFocus />
-                      </Form.Item>
-                    </div>
-                  </div>
-                  <div className="col-sm-6">
-                    <div className="form-group">
-                      <label>
-                        Tax (%) <span className="text-danger">*</span>
-                      </label>
-                      <Form.Item
-                        name="taxPercent"
-                        rules={[
-                          {
-                            required: true,
-                            validator: (_, value) => {
-                              if(value.trim() === ''){
-                                return Promise.reject("please enter tax percentage");
-                              }
-                              else if (value > 100) {
-                                return Promise.reject("tax percentage must not be more than 100");
-                              }
-                              return Promise.resolve();
-                            },
-                          },
-                        ]}
-                        className="custom-border"
-                      >
-                        <Input
-                          className="form-control"
-                          onKeyPress={(e) => {
-                            if (
-                              e.key === '.' &&
-                              e.target.value.includes('.')
-                            ) {
-                              e.preventDefault();
-                            } else if (
-                              e.which !== 46 &&
-                              (e.which < 48 || e.which > 57)
-                            ) {
-                              e.preventDefault();
-                            }
-                          }}
-                          maxLength={50}
-                        />
-                      </Form.Item>
-                    </div>
-                  </div>
-                  
-                  <div className="submit-section">
-                    <Form.Item>
-                        <Button
-                            htmlType="submit"
-                            className="btn btn-primary submit-btn"
-                            disabled={loader}
-                        >
-                            {loader ? (
-                            <Spin size="small" indicator={antIcon} />
-                            ) : (
-                            "Submit"
-                            )}
-                        </Button>
-                    </Form.Item>
-                  </div>
-                </div>
-              </Form>
-            </div>
-            )
-            }
+            
             
           </div>
         </div>
@@ -796,9 +530,9 @@ const InvoiceTaxes = () => {
               }}
             >
               <div className="form-header">
-                <h3 style={{ marginBottom: "30px" }}>Delete Tax Slab</h3>
+                <h3 style={{ marginBottom: "30px" }}>Delete Category</h3>
                 <p>
-                  Are you sure you want to delete <b>{open?.data?.title}</b>?
+                  Are you sure you want to delete <b>{open?.data?.expenseCategoryName}</b>?
                 </p>
               </div>
               <div className="modal-btn delete-action">
@@ -937,4 +671,4 @@ const InvoiceTaxes = () => {
    
 }
 
-export default InvoiceTaxes;
+export default ExpenseCategory;

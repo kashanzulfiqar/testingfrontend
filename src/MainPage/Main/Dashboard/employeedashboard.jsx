@@ -17,7 +17,7 @@ const EmployeeDashboard = () => {
   const [menu, setMenu] = useState(false)
   const user_state = useSelector((state) => state.user.loginvalue);
   const [userData, setUserData] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const toggleMobileMenu = () => {
     setMenu(!menu)
@@ -69,7 +69,8 @@ const EmployeeDashboard = () => {
         }
       }
       style={{
-        height: "282px",
+        height: "357px",
+        // height: "282px",
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
@@ -157,20 +158,23 @@ const EmployeeDashboard = () => {
           {/* Page Content */}
           <div className="content container-fluid">
             <div className="row">
-              <div className="col-md-12">{isLoading ? (
-                <Spin size="large" />
-              ) : (
-
+              <div className="col-md-12">
                 <div className="welcome-box">
-                  <div className="welcome-img">
-                    <img alt="" src={userData?.user?.imageUrl || user_icon} />
-                  </div>
-                  <div className="welcome-det">
-                    <h3>{userData? `Welcome, ${userData?.user?.fullName }`:" "} </h3>
-                    <p><label>{todayDate}</label></p>
-                  </div>
+                  {
+                    isLoading ? (
+                      <Spin style={{height: '66px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center'}} />
+                    ) :
+                    <>
+                      <div className="welcome-img">
+                        <img alt="" src={userData?.user?.imageUrl || user_icon} />
+                      </div>
+                      <div className="welcome-det">
+                        <h3>{userData? `Welcome, ${userData?.user?.fullName }`:" "} </h3>
+                        <p><label>{todayDate}</label></p>
+                      </div>
+                    </>
+                  }
                 </div>
-              )}
               </div>
             </div>
             <div className="row">
@@ -181,12 +185,14 @@ const EmployeeDashboard = () => {
                 <Table
                   columns={columnsWfh}
                   className='fixedTableHeader'
-                  style={{height: '349px', background: 'white'}}
+                  style={{height: '424px', background: 'white'}}
+                  // style={{height: '349px', background: 'white'}}
                   dataSource={dataSourceWfh.map((item, index) => ({ ...item, index: index + 1 }))}
                   pagination={false}
                   locale={{
                     emptyText: isLoading ? (
-                      <Spin size="large" style={{height: '280px', display: 'flex', justifyContent: 'center', alignItems: 'center'}} tip="Loading..." />
+                      <Spin style={{height: '357px', display: 'flex', justifyContent: 'center', alignItems: 'center'}} tip="Loading..." />
+                      // <Spin style={{height: '280px', display: 'flex', justifyContent: 'center', alignItems: 'center'}} tip="Loading..." />
                     ) : (
                       customEmptyText
                     ),
@@ -201,12 +207,12 @@ const EmployeeDashboard = () => {
                 <Table
                   columns={columnsWfh}
                   className='fixedTableHeader'
-                  style={{height: '349px', background: 'white'}}
+                  style={{height: '424px', background: 'white'}}
                   dataSource={dataSourceLeave.map((item, index) => ({ ...item, index: index + 1 }))}
                   pagination={false}
                   locale={{
                     emptyText: isLoading ? (
-                      <Spin size="large" style={{height: '280px', display: 'flex', justifyContent: 'center', alignItems: 'center'}} tip="Loading..." />
+                      <Spin style={{height: '357px', display: 'flex', justifyContent: 'center', alignItems: 'center'}} tip="Loading..." />
                     ) : (
                       customEmptyText
                     ),
@@ -265,7 +271,7 @@ const EmployeeDashboard = () => {
                       <div className="card-body">
                         <div className="time-list">
                         {isLoading ? (
-                          <Spin size="large" /> // Display Spin while loading
+                          <Spin style={{height: '31px', width: '100%', marginTop: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center'}} /> // Display Spin while loading
                         ) : (
                           <>
                           <div className="dash-stats-list">
@@ -287,10 +293,10 @@ const EmployeeDashboard = () => {
                     <div className="card">
                       <div className="card-body" style={{display:"flex", flexDirection:'column', alignItems:"flex-start"}}>
                       {isLoading ? (
-                        <Spin size="large" />
+                        <Spin style={{height: '38px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center'}} />
                       ) : (
                         userData?.workAnniversary.length === 0 ? (
-                          <p>No Work anniversaries today</p>
+                          <p>No work anniversaries today</p>
                         ) : (
                         workAnniversaryData.map((item) => {
                           const joiningDate = new Date(item.joiningDate);
@@ -316,7 +322,7 @@ const EmployeeDashboard = () => {
                     <div className="card">
                       <div className="card-body">
                       {isLoading ? (
-                        <Spin size="large" />
+                        <Spin style={{height: '38px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center'}} />
                       ) : (
                         userData?.todayBirthdays.length === 0 ? (
                           <p>No birthdays today</p>
@@ -337,6 +343,26 @@ const EmployeeDashboard = () => {
                           );
                         })
                         ))}
+                      </div>
+                    </div>
+                  </section>
+
+                  <section>
+                    <h5 className="dash-title"><label>UPCOMING HOLIDAY</label></h5>
+                    <div className="card">
+                      <div className="card-body">
+                      {isLoading ? (
+                        <Spin style={{height: '38px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center'}} />
+                      ) : (
+                        userData?.upcomingHoliday === null ? (
+                          <label style={{marginBottom: '16px'}}>No upcoming holiday</label>
+                        ) : 
+                        <label style={{textAlign: 'center', display: 'grid', placeContent: 'center', gap: '8px'}}>
+                          <h4 style={{margin: '0px'}}>{userData?.upcomingHoliday?.holidayTitle}</h4>
+                          <h4 style={{margin: '0px'}}><label>{moment(userData?.upcomingHoliday?.holidayDate).format("ddd, DD MMM YYYY")}</label></h4>
+                        </label>
+                        // <h4 className='holiday-title mb-0'>{moment(userData?.upcomingHoliday?.holidayDate).format("ddd, DD MMM YYYY")} {userData?.upcomingHoliday?.holidayTitle}</h4>
+                        )}
                       </div>
                     </div>
                   </section>

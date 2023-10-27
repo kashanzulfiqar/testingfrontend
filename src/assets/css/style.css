@@ -7175,6 +7175,126 @@ textarea.form-control {
 
 /* ................. custom css styling ................ */
 
+.registerSelect > div:nth-child(1){
+  background: #fbfbfb !important;
+  height: 46px !important;
+}
+
+.ant-tooltip-inner{
+  border-radius: 5px !important;
+  background-color: #121212bf !important;
+}
+.ant-tooltip-arrow > span{
+  background-color: #ffffffbf !important;
+}
+
+/* task modal tag dropdown hide */
+.hideDropdownMenu > div:nth-child(2) > div > div{
+  display: none !important;
+}
+
+/* Expense file hover styles */
+.img-container1 {
+  position: relative;
+}
+.overlay1 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s;
+  border-radius: 10px;
+}
+.img-container1:hover .overlay1 {
+  opacity: 1;
+  pointer-events: auto;
+}
+.view-text1 {
+  font-size: 13px;
+  font-weight: bold;
+}
+
+
+.uploadInput::file-selector-button {
+  height: 42px;
+  width: 108%;
+  /* background: transparent; */
+}
+
+/* task table style */
+.taskTable thead tr th:not(:nth-last-child(1)) {
+  min-width: 160px !important;
+}
+.taskTable tbody > tr > td{
+  text-wrap: nowrap !important;
+}
+.taskTable thead > tr > th:nth-child(1){
+  background-color: #FFFFFF !important;
+  z-index: 301 !important;
+}
+.taskTable tbody tr:nth-child(odd) > td:nth-child(1){
+  background: #f5f5f5 !important;
+  }
+
+/* invoice table style */
+.invoiceTable thead tr th:not(:nth-child(1), :nth-child(9)) {
+  min-width: 130px !important;
+}
+.invoiceTable tbody > tr > td{
+  text-wrap: nowrap !important;
+}
+.invoiceTable thead > tr > th:nth-child(2){
+  background-color: #FFFFFF !important;
+  z-index: 301 !important;
+}
+.invoiceTable tbody tr:nth-child(odd) > td:nth-child(2){
+  background: #f5f5f5 !important;
+  }
+
+/* expense table style */
+.expenseTable thead tr th:not(:nth-last-child(1)) {
+  min-width: 110px !important;
+}
+.expenseTable tbody > tr > td{
+  text-wrap: nowrap !important;
+}
+.expenseTable thead > tr > th:nth-child(1){
+  background-color: #FFFFFF !important;
+  z-index: 301 !important;
+}
+.expenseTable tbody tr:nth-child(odd) > td:nth-child(1){
+  background: #f5f5f5 !important;
+  }
+
+/* for all table head styles */
+.ant-table-thead > tr > th{
+  text-wrap: nowrap !important;
+}
+/* for permission table only head styles */
+.customCellWidth .ant-table-thead > tr > th{
+  text-wrap: wrap !important;
+}
+
+/* ant date picker last column spacing fix */
+.ant-picker-date-panel .ant-picker-content th {
+    width: 36px !important;
+}
+
+/* admin dashboard graph styling */
+.recharts-surface {
+  padding-right: 0px;
+}
+.recharts-responsive-container{
+  margin-left: -15px;
+}
+
 .taxInnerMargin > div > div{
   margin-top: -7px !important;
 }
@@ -7296,11 +7416,11 @@ background: #f5f5f5 !important;
   /* position: sticky;
   bottom: 0; */
 }
-.brandStyle > a {
-  color: #dbdcdd;
+.brandStyle > a > span > a {
+  color: #dbdcdd !important;
 }
-.brandStyle > a:hover{
-  color: #FF9B44;
+.brandStyle > a > span > a:hover{
+  color: #FF9B44 !important;
 }
 
 
@@ -7338,6 +7458,12 @@ background: #f5f5f5 !important;
   color: black !important;
 }
 
+.taskLongDesc{
+  white-space: nowrap; 
+  max-width: 150px; 
+  overflow: hidden;
+  text-overflow: ellipsis; 
+}
 .longText{
   -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
@@ -7348,8 +7474,11 @@ background: #f5f5f5 !important;
 .resetButton:hover{
   background-color: #898989 !important;
 }
-.customCellWidth tr >th:nth-child(1){
+.customCellWidth tr >th:nth-child(2){
   min-width: 190px !important;
+}
+.customCellWidth tr >th{
+  /* vertical-align: middle !important; */
 }
 .ant-tooltip{
   z-index: 3000;

@@ -163,6 +163,7 @@ const AllEmployees = () => {
                 ...d,
                 _id: res?.data?.User?._id,
                 companyId: company_id,
+                userStatus: 'Active'
               },
               ...prev,
             ]))
@@ -191,7 +192,8 @@ const AllEmployees = () => {
           if (typeof value === 'number') {
               return String(value);
           }else if(value === undefined || value === '' || value === null || !value){
-              return ''
+              // return ''
+              return null
           }else if(key === 'dateOfBirth' || key === 'joiningDate'){
               return moment(value).format('YYYY-MM-DD');
           }

@@ -27,12 +27,34 @@ const Sidebar = (props) => {
   const MenuMore = () => {
     document.getElementById("more-menu-hidden").classList.toggle("hidden");
   }
+  
 
+  const [oldOpenMenu, setOldOpenMenu] = useState("");
   const [isSideMenu, setSideMenu] = useState("");
   const [isSideMenunew, setSideMenuNew] = useState("dashboard")
   const [level2Menu, setLevel2Menu] = useState("")
   const [level3Menu, setLevel3Menu] = useState("")
 
+  useEffect(() => {
+    if(document.body.classList.contains('mini-sidebar')){
+      setOldOpenMenu(isSideMenu)
+      setSideMenu('')
+    }else{
+      setSideMenu(oldOpenMenu)
+    }
+  }, [props.barMenu])
+  
+  const mouseHandle = (type) => {
+    if(document.body.classList.contains('mini-sidebar')){
+      document.body.classList.toggle('expand-menu');
+      setOldOpenMenu(isSideMenu)
+      if(type === 'leave'){
+        setSideMenu('')
+      }else{
+        setSideMenu(oldOpenMenu)
+      }
+      }
+  }
 
   const toggleSidebar = (value) => {
     console.log(value);
@@ -65,7 +87,12 @@ const Sidebar = (props) => {
 
     <React.Fragment>
       {/* <Header /> */}
-      <div id="sidebar" className="sidebar">
+      <div
+        id="sidebar"
+        className="sidebar"
+        onMouseEnter={mouseHandle}
+        onMouseLeave={() => mouseHandle('leave')}
+        >
         <Scrollbars>
           <div className="sidebar-inner slimscroll">
             <div id="sidebar-menu" className="sidebar-menu">
@@ -520,7 +547,9 @@ const Sidebar = (props) => {
                             to="/employee/allemployees">All Employees</Link>
                           </li>
                         }
-                        <li><Link className={pathname.includes('employee/holidays') ? "active" : ""} to="/employee/holidays">Holidays</Link></li>
+                        <li>
+                          <Link className={pathname.includes('employee/holidays') ? "active" : ""} to="/employee/holidays">Holidays</Link>
+                        </li>
                         <li>
                           {
                             (user_state?.role === 'admin' || permissions?.viewAllRequest || permissions?.teamRequest) &&
@@ -575,7 +604,12 @@ const Sidebar = (props) => {
                             "active" : pathname.includes('cts-view') ? "active" : ""}
                             to="/projects/project_dashboard">Projects</Link></li>
                       }
-                      <li><Link onClick={() => localStorage.setItem("minheight", "true")} to="/tasks/tasks">Tasks</Link></li>
+                      {/* <li><Link onClick={() => localStorage.setItem("minheight", "true")} to="/tasks/tasks">Tasks</Link></li> */}
+                      {/* <li><Link onClick={() => localStorage.setItem("minheight", "true")} to="/projects/tasks">Tasks</Link></li> */}
+                      { 
+                        (user_state?.role === 'admin' || permissions?.projectManagement) &&
+                        <li><Link onClick={() => localStorage.setItem("minheight", "true")} className={pathname.includes('/projects/tasks') ? "active" : ""} to="/projects/tasks">Tasks</Link></li>
+                      }
                       <li><Link className={pathname.includes('task-board') ? "active" : ""} to="/app/projects/task-board">Task Board</Link></li>
                     </ul>
                     : ""
@@ -615,7 +649,7 @@ const Sidebar = (props) => {
                       <li><Link className={pathname.includes('estimates') ? "active" : ""} to="/app/sales/estimates">Estimates</Link></li>
                       <li><Link className={pathname.includes('invoices') ? "active" : ""} to="/invoices">Invoices</Link></li>
                       <li><Link className={pathname.includes('payments') ? "active" : ""} to="/payments">Payments</Link></li>
-                      <li><Link className={pathname.includes('expenses') ? "active" : ""} to="/app/sales/expenses">Expenses</Link></li>
+                      <li><Link className={pathname.includes('expenses') ? "active" : ""} to="/expenses">Expenses</Link></li>
                       <li><Link className={pathname.includes('provident-fund') ? "active" : ""} to="/app/sales/provident-fund">Provident Fund</Link></li>
                       <li><Link className={pathname.includes('taxes') ? "active" : ""} to="/app/sales/taxes">Taxes</Link></li>
                     </ul>
@@ -841,7 +875,12 @@ const Sidebar = (props) => {
                 }
                 
               </ul>
-              <label className='brandStyle'><a target='_blank' href='https://devgate.ca'>Powered By Devgate</a></label>
+              <ul>
+                <li className='brandStyle' style={{minHeight: '53px', padding: '0px'}}>
+                  <Link to="javascript:void(0)" style={{cursor: 'default', padding: '0px'}}><span style={{marginLeft: '0px'}}><a target='_blank' style={{padding: '7px 0px'}} href='https://devgate.ca'>Powered By Devgate</a></span></Link>
+                </li>
+              </ul>
+              {/* <label className='brandStyle'><a target='_blank' href='https://devgate.ca'>Powered By Devgate</a></label> */}
             </div>
           </div>
 

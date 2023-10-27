@@ -13,6 +13,7 @@ import {
   Table,
   message,
   Empty,
+  Pagination,
 } from "antd";
 import "antd/dist/antd.css";
 import { itemRender, onShowSizeChange } from "../../paginationfunction";
@@ -120,9 +121,9 @@ const LeaveAdmin = () => {
         if (res.data.success === true) {
           message.success(`Leave request updated to ${newStatus}`);
 
-          handleReset();
+          //handleReset();
           //navigate('/employee/request-admin')
-          //fetchleaves();
+          fetchleaves();
 
           dispatch(counter(pending_counter - 1));
         }
@@ -796,24 +797,25 @@ const LeaveAdmin = () => {
                       ),
                     }}
                     loading={isLoading}
-                    pagination={{
-                      current: pagination.current,
-                      pageSize: pagination.pageSize,
-                      total: pagination.total,
-                      showTotal: (total, range) =>
-                        `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                      pageSizeOptions: ["20", "30", "40", "50"], // Options to change page size
-                      showSizeChanger: true, // Show the page size changer
-                      onChange: (page, pageSize) => {
-                        setPagination({
-                          ...pagination,
-                          current: page,
-                          pageSize: pageSize,
-                        });
-                      },
-                      itemRender: itemRender,
-                    }}
-                    style={{ overflowX: "auto" }}
+                    pagination={false}
+                    // pagination={{
+                    //   current: pagination.current,
+                    //   pageSize: pagination.pageSize,
+                    //   total: pagination.total,
+                    //   showTotal: (total, range) =>
+                    //     `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+                    //   pageSizeOptions: ["20", "30", "40", "50"], // Options to change page size
+                    //   showSizeChanger: true, // Show the page size changer
+                    //   onChange: (page, pageSize) => {
+                    //     setPagination({
+                    //       ...pagination,
+                    //       current: page,
+                    //       pageSize: pageSize,
+                    //     });
+                    //   },
+                    //   itemRender: itemRender,
+                    // }}
+                    style = {{overflowX : 'auto', paddingBottom: '70px'}}
                     columns={columns}
                     dataSource={tableData} // Step 4
                     rowKey={(record) => record?._id} // Assuming _id is the unique key
@@ -822,6 +824,25 @@ const LeaveAdmin = () => {
                     }}
                   />
                 </div>
+                {
+                    tableData?.length > 0 &&
+                    <div>
+                      <Pagination
+                        style={{display: 'flex', float: 'right'}}
+                        current={pagination.current}
+                        pageSize={pagination.pageSize}
+                        total={pagination.total}
+                        showTotal={(total, range) =>
+                          `Showing ${range[0]} to ${range[1]} of ${total} entries`
+                        }
+                        pageSizeOptions={["20", "30", "40", "50"]}
+                        showSizeChanger={true}
+                        onChange={(page, pageSize) => setPagination({...pagination, current: page, pageSize: pageSize,})}
+                        itemRender={itemRender}
+                        disabled={isLoading}
+                      />
+                    </div>
+                  }
                 {id && (
                   <div style={{ textAlign: "center", marginTop: "16px" }}>
                     <button

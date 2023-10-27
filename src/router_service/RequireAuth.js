@@ -20,9 +20,14 @@ const RequireAuth = ({Role}) => {
     // let AuthRole = res?.acesstoken
 
     const [menu, setMenu] = useState(false);
+    const [barMenu, setBarMenu] = useState(true);
 
     const toggleMobileMenu = () => {
       setMenu(!menu);
+      document.body.classList.remove('mini-sidebar');
+    };
+    const toggleBar = () => {
+      setBarMenu(!barMenu);
     };
     
     useEffect(() => {
@@ -55,8 +60,8 @@ const RequireAuth = ({Role}) => {
         AuthRole
             ?
             <div className={`main-wrapper ${menu ? 'slide-nav' : ''}`}> 
-                <Header onMenuClick={toggleMobileMenu} /> 
-                <Sidebar /> 
+                <Header onMenuClick={toggleMobileMenu} onBarToggle={toggleBar} /> 
+                <Sidebar barMenu={barMenu} /> 
                 <Outlet />
             </div>
             :

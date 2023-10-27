@@ -7,7 +7,7 @@ import Sidebar from "../../../initialpage/Sidebar/sidebar";
 import moment from "moment";
 import { useSelector } from "react-redux";
 import { apiServices } from "../../../Services/apiServices";
-import { Empty, message } from "antd";
+import { Empty, Pagination, message } from "antd";
 // import InfiniteScroll from "react-infinite-scroll-component";
 import { ItemRender } from "antd/lib/upload/interface";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
@@ -20,6 +20,8 @@ const AttendanceEmployee = () => {
   const [tableLoader, setTableLoader] = useState(false);
   const [Bdisbale, setBdisbale] = useState(false);
   const [disableAttend, setdisableAttend] = useState(false);
+  const [page, setPage] = useState(1);
+  const [size, setSize] = useState(20);
 
   const isDisabled = !Bdisbale;
 
@@ -69,7 +71,7 @@ const AttendanceEmployee = () => {
   const [fetchattend6, setFetchattend6] = useState([]);
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 10,
+    pageSize: 20,
     total: 0,
   });
 
@@ -196,7 +198,8 @@ const AttendanceEmployee = () => {
                                       ).format("h:mm A")}`);
             } else if (
               firstAttendanceRecord.status === "Absent" ||
-              firstAttendanceRecord.status === "On-Leave"
+              firstAttendanceRecord.status === "On-Leave" ||
+              firstAttendanceRecord.status === "Holiday"
             ) {
               setIsCheckedIn(false);
               setIsCheckedOut(false);
@@ -452,6 +455,7 @@ const AttendanceEmployee = () => {
 
   const formatHoursMinutes = (timeString) => {
     if (!timeString) return "None";
+    if (isNaN(timeString)) return "0h 0m";
 
     const totalMinutes = parseFloat(timeString);
     const hours = Math.floor(totalMinutes / 60);
@@ -485,6 +489,8 @@ const AttendanceEmployee = () => {
             setFetchattend6(attendanceData);
           }
           setFetchattend(attendanceData);
+          setPage(parseInt(res?.data?.Attendance?.page, 10));
+          setSize(parseInt(res?.data?.Attendance?.limit, 10));
           setPagination({
             ...pagination,
             total: res.data.Attendance.total,
@@ -586,7 +592,7 @@ const AttendanceEmployee = () => {
       dataIndex: "index",
       key: "index",
       render: (text, record, index) =>
-        (pagination.current - 1) * pagination.pageSize + index + 1,
+        (page - 1) * size + index + 1,
     },
     {
       title: "Date",
@@ -621,6 +627,8 @@ const AttendanceEmployee = () => {
                 ? "green"
                 : status === "On-Leave"
                 ? "orange"
+                : status === "Holiday"
+                ? "blue"
                 : "black",
           }}
         >
@@ -730,7 +738,7 @@ const AttendanceEmployee = () => {
                       <button
                         type="button"
                         className={`btn btn-${
-                          isCheckedOut || checkIn.status === "Absent"
+                          isCheckedOut || checkIn.status === "Absent" || checkIn.status === "Holiday"
                             ? "success"
                             : isCheckedIn
                             ? "danger"
@@ -741,12 +749,13 @@ const AttendanceEmployee = () => {
                           isCheckedOut ||
                           checkIn.status === "Absent" ||
                           checkIn.status === "On-Leave" ||
+                          checkIn.status === "Holiday" ||
                           isDisabled
                         }
                       >
                         {isDisabled ? (
                           <Spin size="medium" />
-                        ) : isCheckedOut || checkIn.status === "Absent" ? (
+                        ) : isCheckedOut || checkIn.status === "Absent" || checkIn.status === "Holiday" ? (
                           "Marked"
                         ) : isCheckedIn ? (
                           "Check Out"
@@ -780,13 +789,16 @@ const AttendanceEmployee = () => {
                                       ? "green"
                                       : checkIn.status === "On-Leave"
                                       ? "orange"
+                                      : checkIn.status === "Holiday"
+                                      ? "blue"
                                       : "black",
                                 }}
                               >
                                 {isCheckedIn ||
                                 isCheckedOut ||
                                 checkIn.status === "Absent" ||
-                                checkIn.status === "On-Leave"
+                                checkIn.status === "On-Leave" ||
+                                checkIn.status === "Holiday"
                                   ? checkIn.status
                                   : "--"}
                               </label>
@@ -1104,6 +1116,8 @@ const AttendanceEmployee = () => {
                                         ? "green"
                                         : attendance.status === "On-Leave"
                                         ? "orange"
+                                        : attendance.status === "Holiday"
+                                        ? "blue"
                                         : "black",
                                   }}
                                 >
@@ -1212,6 +1226,7 @@ const AttendanceEmployee = () => {
               <div className="col-lg-12">
                 <div className="table-responsive">
                   <Table
+                    className="table-striped"
                     dataSource={fetchattend}
                     loading={tableLoader}
                     columns={columns}
@@ -1223,26 +1238,31 @@ const AttendanceEmployee = () => {
                       ),
                     }}
                     bordered
-                    pagination={{
-                      current: pagination.current,
-                      pageSize: pagination.pageSize,
-                      total: pagination.total,
-                      showTotal: (total, range) =>
-                        `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                      pageSizeOptions: ["10", "20", "30", "40"], // Options to change page size
-                      showSizeChanger: true, // Show the page size changer
-                      onChange: (page, pageSize) => {
-                        setdisableAttend(false);
-                        setPagination({
-                          ...pagination,
-                          current: page,
-                          pageSize: pageSize,
-                        });
-                      },
-                      itemRender: itemRender,
-                    }}
+                    pagination={false}
                   />
                 </div>
+                {
+                    fetchattend?.length > 0 &&
+                    <div>
+                      <Pagination
+                        style={{display: 'flex', float: 'right'}}
+                        current={pagination.current}
+                        pageSize={pagination.pageSize}
+                        total={pagination.total}
+                        showTotal={(total, range) =>
+                          `Showing ${range[0]} to ${range[1]} of ${total} entries`
+                        }
+                        pageSizeOptions={["20", "30", "40", "50"]}
+                        showSizeChanger
+                        onChange={(page, pageSize) => {
+                          setdisableAttend(false) 
+                          setPagination({...pagination, current: page, pageSize: pageSize,})
+                        }}
+                        itemRender={itemRender}
+                        disabled={tableLoader}
+                      />
+                    </div>
+                  }
               </div>
             </div>
           </div>

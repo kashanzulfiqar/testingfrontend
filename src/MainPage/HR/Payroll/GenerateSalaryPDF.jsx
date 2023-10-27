@@ -30,7 +30,7 @@ function GenerateSalaryPDF(row, view, screen, print) {
   for (var i = 0; i < arr?.length; i++) {
     arr[i] = arr[i].charAt(0).toUpperCase() + arr[i].slice(1);
   }
-  const capitlized_name = arr.join(" ");
+  const capitlized_name = arr?.join(" ");
   
   doc.text(x, 65, 'Employee Name: ');
   const widthofEmployeeName = doc.getTextWidth('Employee Name: ');

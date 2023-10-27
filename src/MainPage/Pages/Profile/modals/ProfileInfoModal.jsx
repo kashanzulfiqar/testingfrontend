@@ -65,6 +65,7 @@ const [addRoleOpen, setAddRoleOpen] = useState(false)
             joiningDate: moment(user_data?.joiningDate, 'YYYY-MM-DD'),
         }
         form.setFieldsValue(data)
+        setImage(user_data?.imageUrl);
         getRolePermissions(user_data?.roleId)
     }
   }, [])
@@ -314,6 +315,11 @@ const getTaxSlab = () => {
       })
   }
 
+  const onRemoveProfileImage = () => {
+    form.setFieldsValue({ imageUrl: '' })
+    setImage('')
+  }
+
   const antIcon = (
     <LoadingOutlined
       style={{
@@ -388,12 +394,15 @@ const getTaxSlab = () => {
                     <Form.Item
                         name='imageUrl'
                         className='custom-border'
+                        style={{display: 'grid', placeContent: 'center'}}
                     >   
+                    <div>
                         <div className="profile-img-wrap edit-img">
                             {
                                 imageLoader ? <div className="uploadImgSpinContainer"> <Spin /> </div> :
                                 <>
-                                    <img className="inline-block" src={image ? image : user_data?.imageUrl ? user_data?.imageUrl : user_icon} alt="user" />
+                                    {/* <img className="inline-block" src={image ? image : user_data?.imageUrl ? user_data?.imageUrl : user_icon} alt="user" /> */}
+                                    <img className="inline-block" src={image ? image : user_icon} alt="user" />
                                     <div className="fileupload btn">
                                     <ImgCrop
                                         cropShape='round'
@@ -418,6 +427,13 @@ const getTaxSlab = () => {
                                 </>
                             }
                         </div>
+                        {
+                          image &&
+                          <a href="javascript:void(0)"
+                            onClick={() => onRemoveProfileImage()}
+                            className="fa fa-closee file-remove" style={{color: '#fb1612', position: 'absolute', top: '-1px' ,right: '-4px', fontSize: '19px', fontFamily: 'cursive', padding: '5px 7px 6px', background: 'white', borderRadius: '50%'}} > <i className='fa fa-times' /> </a>
+                        }
+                    </div>
                     </Form.Item>
                     <div className="row">
                         <div className="col-md-6">

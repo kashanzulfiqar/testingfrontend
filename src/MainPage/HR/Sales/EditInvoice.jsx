@@ -58,6 +58,7 @@ const EditInvoice = () => {
             dueDate: moment(edit_invoice_data?.dueDate, 'YYYY-MM-DD'),
         }
         form.setFieldsValue(data);
+        calculateTotal();
         setCurrencyIs(edit_invoice_data?.currency)
         setWordCount(edit_invoice_data?.otherInformation)
     }else{
@@ -366,7 +367,7 @@ const EditInvoice = () => {
         
       <div className="page-wrapper">
         <Helmet>
-            <title>Create Invoice - DaftarPro</title>
+            <title>Update Invoice - DaftarPro</title>
             <meta name="description" content="Login page"/>					
         </Helmet>
       {/* Page Content */}
@@ -375,10 +376,10 @@ const EditInvoice = () => {
         <div className="page-header">
           <div className="row">
             <div className="col-sm-12">
-              <h3 className="page-title">Create Invoice</h3>
+              <h3 className="page-title">Update Invoice</h3>
               <ul className="breadcrumb">
                 <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>Dashboard</Link></li>
-                <li className="breadcrumb-item active">Create Invoice</li>
+                <li className="breadcrumb-item active">Update Invoice</li>
               </ul>
             </div>
           </div>
@@ -548,6 +549,7 @@ const EditInvoice = () => {
                         ]}
                       >
                         <Select
+                          disabled
                           showSearch
                           className="custom-select custom-normal"
                           getPopupContainer={() =>
