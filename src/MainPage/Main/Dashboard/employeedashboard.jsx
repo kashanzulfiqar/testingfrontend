@@ -293,26 +293,36 @@ const EmployeeDashboard = () => {
                     <div className="card">
                       <div className="card-body" style={{display:"flex", flexDirection:'column', alignItems:"flex-start"}}>
                       {isLoading ? (
-                        <Spin style={{height: '38px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center'}} />
-                      ) : (
-                        userData?.workAnniversary.length === 0 ? (
-                          <p>No work anniversaries today</p>
-                        ) : (
-                        workAnniversaryData.map((item) => {
-                          const joiningDate = new Date(item.joiningDate);
-                          const today = new Date();
-                          const yearsSinceJoining = today.getFullYear() - joiningDate.getFullYear();
+    <Spin style={{ height: '38px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }} />
+  ) : (
+    workAnniversaryData.some(item => {
+      const joiningDate = new Date(item.joiningDate);
+      const today = new Date();
+      const yearsSinceJoining = today.getFullYear() - joiningDate.getFullYear();
+      return yearsSinceJoining > 0;
+    }) ? (
+      workAnniversaryData.map((item) => {
+        const joiningDate = new Date(item.joiningDate);
+        const today = new Date();
+        const yearsSinceJoining = today.getFullYear() - joiningDate.getFullYear();
 
-                          return (
-                            <div key={item._id} className="time-list">
-                              <div className="dash-stats-list" style={{display:"flex", flexDirection:'column', alignItems:"flex-start"}}>
-                                <h4><img src={item.imageUrl || user_icon} alt={item.fullName} className="avatar" />{item.fullName}</h4>
-                                <p>{yearsSinceJoining} years at the company</p>
-                              </div>
-                            </div>
-                          );
-                        })
-                        ))}
+        if (yearsSinceJoining > 0) {
+          return (
+            <div key={item._id} className="time-list">
+              <div className="dash-stats-list" style={{ display: "flex", flexDirection: 'column', alignItems: "flex-start" }}>
+                <h4><img src={item.imageUrl || user_icon} alt={item.fullName} className="avatar" />{item.fullName}</h4>
+                <p>{yearsSinceJoining} years at the company</p>
+              </div>
+            </div>
+          );
+        } else {
+          return null; // If yearsSinceJoining is 0, don't render anything
+        }
+      })
+    ) : (
+      <p>No work anniversaries today</p>
+    )
+  )}
                       </div>
                     </div>
                   </section>
