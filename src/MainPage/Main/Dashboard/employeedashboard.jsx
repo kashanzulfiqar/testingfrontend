@@ -69,7 +69,8 @@ const EmployeeDashboard = () => {
         }
       }
       style={{
-        height: "282px",
+        height: "357px",
+        // height: "282px",
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
@@ -184,12 +185,14 @@ const EmployeeDashboard = () => {
                 <Table
                   columns={columnsWfh}
                   className='fixedTableHeader'
-                  style={{height: '349px', background: 'white'}}
+                  style={{height: '424px', background: 'white'}}
+                  // style={{height: '349px', background: 'white'}}
                   dataSource={dataSourceWfh.map((item, index) => ({ ...item, index: index + 1 }))}
                   pagination={false}
                   locale={{
                     emptyText: isLoading ? (
-                      <Spin style={{height: '280px', display: 'flex', justifyContent: 'center', alignItems: 'center'}} tip="Loading..." />
+                      <Spin style={{height: '357px', display: 'flex', justifyContent: 'center', alignItems: 'center'}} tip="Loading..." />
+                      // <Spin style={{height: '280px', display: 'flex', justifyContent: 'center', alignItems: 'center'}} tip="Loading..." />
                     ) : (
                       customEmptyText
                     ),
@@ -204,12 +207,12 @@ const EmployeeDashboard = () => {
                 <Table
                   columns={columnsWfh}
                   className='fixedTableHeader'
-                  style={{height: '349px', background: 'white'}}
+                  style={{height: '424px', background: 'white'}}
                   dataSource={dataSourceLeave.map((item, index) => ({ ...item, index: index + 1 }))}
                   pagination={false}
                   locale={{
                     emptyText: isLoading ? (
-                      <Spin style={{height: '280px', display: 'flex', justifyContent: 'center', alignItems: 'center'}} tip="Loading..." />
+                      <Spin style={{height: '357px', display: 'flex', justifyContent: 'center', alignItems: 'center'}} tip="Loading..." />
                     ) : (
                       customEmptyText
                     ),
