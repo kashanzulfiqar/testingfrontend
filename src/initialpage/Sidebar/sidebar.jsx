@@ -650,6 +650,7 @@ const Sidebar = (props) => {
                       <li><Link className={pathname.includes('invoices') ? "active" : ""} to="/invoices">Invoices</Link></li>
                       <li><Link className={pathname.includes('payments') ? "active" : ""} to="/payments">Payments</Link></li>
                       <li><Link className={pathname.includes('expenses') ? "active" : ""} to="/expenses">Expenses</Link></li>
+                      <li><Link className={pathname.includes('profit-loss') ? "active" : ""} to="/profit-loss">Profit & Loss</Link></li>
                       <li><Link className={pathname.includes('provident-fund') ? "active" : ""} to="/app/sales/provident-fund">Provident Fund</Link></li>
                       <li><Link className={pathname.includes('taxes') ? "active" : ""} to="/app/sales/taxes">Taxes</Link></li>
                     </ul>
