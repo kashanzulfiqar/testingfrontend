@@ -7175,6 +7175,16 @@ textarea.form-control {
 
 /* ................. custom css styling ................ */
 
+/* show legend on profit loss graph screen */
+.showLegend .recharts-legend-wrapper{
+  display: block !important;
+}
+.showLegend .recharts-legend-wrapper > ul{
+  display: flex;
+  place-content: center;
+  gap: 20px;
+}
+
 .registerSelect > div:nth-child(1){
   background: #fbfbfb !important;
   height: 46px !important;
@@ -7243,6 +7253,21 @@ textarea.form-control {
   background: #f5f5f5 !important;
   }
 
+/* profit Loss table style */
+.profitLossTable thead tr th:not(:nth-child(1), :nth-child(7)) {
+  min-width: 130px !important;
+}
+.profitLossTable tbody > tr > td{
+  text-wrap: nowrap !important;
+}
+.profitLossTable thead > tr > th:nth-child(2){
+  background-color: #FFFFFF !important;
+  z-index: 301 !important;
+}
+.profitLossTable tbody tr:nth-child(odd) > td:nth-child(2){
+  /* background: #f5f5f5 !important; */
+}
+
 /* invoice table style */
 .invoiceTable thead tr th:not(:nth-child(1), :nth-child(9)) {
   min-width: 130px !important;
@@ -7256,7 +7281,7 @@ textarea.form-control {
 }
 .invoiceTable tbody tr:nth-child(odd) > td:nth-child(2){
   background: #f5f5f5 !important;
-  }
+}
 
 /* expense table style */
 .expenseTable thead tr th:not(:nth-last-child(1)) {
