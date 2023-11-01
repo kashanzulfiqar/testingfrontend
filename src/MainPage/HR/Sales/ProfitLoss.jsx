@@ -329,16 +329,13 @@ const ProfitLoss = () => {
           <div className="dropdown dropdown-action text-end">
             <a href="javascript:void(0)" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
             <div className="dropdown-menu dropdown-menu-right">
-              {/* <a href="javascript:void(0)"
-                onClick={() => {
-                setOpen({ isAddOpen: false, isEditOpen: true, isDelOpen: false, data: record });
-                // formedit.setFieldsValue({
-                //   ...record,
-                //   paymentDate: record?.paymentDate ? moment(record?.paymentDate, 'YYYY-MM-DD') : '',
-                // });
-                }}
-                className="dropdown-item"
-              ><i className="fa fa-pencil m-r-5" /> Edit</a> */}
+            <Link to="/profit-loss/view" className="dropdown-item" onClick={() => sessionStorage.setItem(`profit_loss`, 'record')} state={{record: record}}>
+              <i className="fa fa-eye m-r-5" /> View
+            </Link>
+            {/* <a className="dropdown-item" href="javascript:void(0)"
+              onClick={() => {
+                console.log(record);
+              }}><i className="fa fa-eye m-r-5" /> View</a> */}
               <a className="dropdown-item" href="javascript:void(0)" onClick={() => { setOpen({ isEditOpen: false, isDelOpen: true, data: record }) }}><i className="fa fa-trash-o m-r-5" /> Delete</a>
             </div>
           </div>

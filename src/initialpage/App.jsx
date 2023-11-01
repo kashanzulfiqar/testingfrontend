@@ -56,6 +56,7 @@ import Payments from '../MainPage/HR/Sales/payments';
 import Expenses from '../MainPage/HR/Sales/expense';
 import Tasks from '../MainPage/Employees/Projects/Tasks';
 import ProfitLoss from '../MainPage/HR/Sales/ProfitLoss';
+import ViewPL from '../MainPage/HR/Sales/ViewProfitLoss';
 
 
 const App = () => {
@@ -161,7 +162,11 @@ const App = () => {
           {/* Projects */}
           <Route path="/projects/project_dashboard" element={<Projects />} />
           <Route path="/projects/projects-view/:_id" element={<ProjectView />} />
+          <Route path="/profit-loss/view" element={<ViewPL />} />
 
+          {/* <Link to={`/projects/projects-view/${record?._id}`} style={{color: '#333333'}}>
+          <label style={{cursor: 'pointer'}} className="longText">{text}</label>
+        </Link> */}
 
 
         </Route>
