@@ -322,7 +322,7 @@ const ViewPL = () => {
                 <Spin />
               </div>
             ) : (
-              <div className="row">
+              <div className="row" style={{marginBottom:"20px"}}>
                 <div className="col-md-3">
                     <div className="stats-info">
                     <label>Payrolls</label>
@@ -365,7 +365,7 @@ const ViewPL = () => {
             <div className="row">
             <div className="col-md-5">
             <div className="table-heading">
-              <div className="table-heading-text">Expense</div>
+              <div className="table-heading-text" style={{marginBottom:"15px"}}>Expense</div>
             </div>
             <div className="table-responsive PLTable">
               <Table
@@ -389,7 +389,7 @@ const ViewPL = () => {
           </div>
           <div className="col-md-7">
           <div className="table-heading">
-              <div className="table-heading-text">Invoices</div>
+              <div className="table-heading-text" style={{marginBottom:"15px"}}>Invoices</div>
             </div>
             <div className="table-responsive PLTable2">
               <Table
