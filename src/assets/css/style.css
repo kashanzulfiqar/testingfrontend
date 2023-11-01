@@ -12233,3 +12233,21 @@ styles by Qazi
   min-width: 170px !important;
 }
 
+.PLTable
+ thead tr th:nth-child(1){
+  min-width: 40px !important;
+}
+.PLTable thead tr th:nth-child(3){
+  min-width: 170px !important;
+}
+
+.PLTable2
+ thead tr th:nth-child(1){
+  min-width: 40px !important;
+}
+.PLTable2 thead tr th:nth-child(3){
+  min-width: 170px !important;
+}
+.PLTable2 thead tr th:nth-child(4){
+  min-width: 170px !important;
+}
