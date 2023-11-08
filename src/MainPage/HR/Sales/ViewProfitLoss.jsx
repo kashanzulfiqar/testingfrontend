@@ -116,7 +116,7 @@ const ViewPL = () => {
 
   const getAllExpenses = () => {
     setTableLoader(true);
-    apiServices("GET", `expenses?purchaseFrom=${startDate}&purchase${endDate}&limit=99999&page=1`, null, user_state)
+    apiServices("GET", `expenses?purchaseFrom=${startDate}&purchaseTo=${endDate}&limit=99999&page=1`, null, user_state)
       .then((res) => {
           if (res?.data?.success === true) {
               setAllExpenses(res?.data?.Expenses?.docs);
