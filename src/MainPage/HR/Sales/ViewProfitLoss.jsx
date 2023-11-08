@@ -225,7 +225,7 @@ const ViewPL = () => {
         record?.convertedAmount ? 
         `${record?.convertedAmount} ${PCurrency}`
         :
-        "None"
+        `0.00 ${PCurrency}`
       ),
     },
   ];
@@ -255,7 +255,7 @@ const ViewPL = () => {
         record?.paidAmountInPreferredCurrency ? 
         `${record?.paidAmountInPreferredCurrency} ${PCurrency}`
         :
-        "None"
+        `0.00 ${PCurrency}`
       ),
       
     },
@@ -343,8 +343,9 @@ const ViewPL = () => {
                 </div>
                 <div className="col-md-3">
                   <div className="stats-info">
-                    <label>Invoices</label>
+                    <label>Expense</label>
                     <div style={{ display: "flex", flexDirection:"row", alignItems: "baseline", justifyContent:"center"}}>
+                        
                         <h4 style={{ marginRight: "5px" }}>{record?.generalExpense}</h4>
                         <h8>{record?.companyId?.preferredCurrency}</h8>
                     </div>
@@ -352,9 +353,9 @@ const ViewPL = () => {
                 </div>
                 <div className="col-md-3">
                   <div className="stats-info">
-                    <label>Expense</label>
+                    <label>Invoices</label>
                     <div style={{ display: "flex", flexDirection:"row", alignItems: "baseline", justifyContent:"center"}}>
-                        <h4 style={{ marginRight: "5px" }}>{record?.totalRevenue}</h4>
+                    <h4 style={{ marginRight: "5px" }}>{record?.totalRevenue}</h4>
                         <h8>{record?.companyId?.preferredCurrency}</h8>
                     </div>
                   </div>
