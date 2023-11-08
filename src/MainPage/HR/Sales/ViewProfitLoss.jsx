@@ -343,19 +343,19 @@ const ViewPL = () => {
                 </div>
                 <div className="col-md-3">
                   <div className="stats-info">
-                    <label>Expense</label>
+                    <label>Invoices</label>
                     <div style={{ display: "flex", flexDirection:"row", alignItems: "baseline", justifyContent:"center"}}>
-                        
-                        <h4 style={{ marginRight: "5px" }}>{record?.generalExpense}</h4>
+                    <h4 style={{ marginRight: "5px" }}>{record?.totalRevenue}</h4>
                         <h8>{record?.companyId?.preferredCurrency}</h8>
                     </div>
                   </div>
                 </div>
                 <div className="col-md-3">
                   <div className="stats-info">
-                    <label>Invoices</label>
+                    <label>Expense</label>
                     <div style={{ display: "flex", flexDirection:"row", alignItems: "baseline", justifyContent:"center"}}>
-                    <h4 style={{ marginRight: "5px" }}>{record?.totalRevenue}</h4>
+                        
+                        <h4 style={{ marginRight: "5px" }}>{record?.generalExpense}</h4>
                         <h8>{record?.companyId?.preferredCurrency}</h8>
                     </div>
                   </div>
