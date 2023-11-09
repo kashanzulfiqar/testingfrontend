@@ -7175,6 +7175,123 @@ textarea.form-control {
 
 /* ................. custom css styling ................ */
 
+/* hide now button from week view timesheet timepicker */
+.ant-picker-now{
+  display: none !important;
+}
+
+/* formDurationInput style */
+.formDurationInput .ant-form-item{
+  margin: 0px !important;
+}
+
+/* timesheet timepicker week input style */
+.timePickerWithData{
+  width: 76px !important;
+  padding-left: 13px !important;
+  color: rgba(102, 102, 102, 0.2) !important;
+  border: 2px solid rgb(188, 188, 188) !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+}
+.timePickerWithData input{
+  font-size: 17px !important;
+  font-weight: 500 !important;
+  color: #333 !important;
+}
+.timePickerWithData input:placeholder-shown{
+  text-overflow: unset !important;
+}
+
+/* timesheet datepicker input style */
+.hideDatePickerInput .ant-picker-input {
+  display: none !important;
+}
+.hideDatePickerInput {
+  /* margin-right: -43px !important; */
+  background: transparent !important;
+  border: none !important;
+  z-index: -1 !important;
+  /* width: 32px !important; */
+  width: 229px !important;
+}
+
+/* timesheet day week Segment style */
+.segmentStyle{
+  border-radius: 8px;
+  width: 170px;
+  border: 2px solid #DEE2E6;
+  background: #fff;
+  height: 38px !important;
+}
+.segmentStyle:hover{
+  background: #fff !important;
+}
+.segmentStyle .ant-segmented-item-label{
+  line-height: 31px !important;
+  font-size: 15px !important;
+  color: #6C757DA8 !important
+}
+.segmentStyle .ant-segmented-item-selected{
+  background: #EDEDED !important;
+  border-radius: 4px !important;
+}
+.segmentStyle .ant-segmented-item-selected .ant-segmented-item-label{
+  color: #333333 !important;
+}
+.segmentStyle .ant-segmented-group > .ant-segmented-thumb{
+  background: #EDEDED !important;
+  border-radius: 4px !important;
+}
+
+
+/* Timesheet day table style */
+.timeSheetDayTable thead tr th {
+  min-width: 150px !important;
+  /* padding: 0px !important; */
+  /* padding-top: 5px !important; */
+  padding: 5px !important;
+}
+.timeSheetDayTable tbody{
+  display: none !important;
+}
+
+/* Timesheet Week table style */
+.timeSheetWeekTable thead tr th {
+  min-width: 90px !important;
+  /* padding: 0px !important; */
+  /* padding-top: 5px !important; */
+  padding: 5px !important;
+}
+.timeSheetWeekTable thead tr th:nth-child(1), .timeSheetWeekTable thead tr th:nth-last-child(1) {
+  vertical-align: middle !important;
+  text-align: center !important;
+  font-weight: 700 !important;
+  font-size: 16px !important;
+}
+.timeSheetWeekTable tbody tr td:not(:nth-child(1)){
+  vertical-align: middle !important;
+  text-align: center !important;
+
+  width: 0px !important;
+  padding-inline: 20px !important;
+}
+
+.NextPrevButtons:hover{
+  background-color: #f2f2f2 !important;
+  transition: .3 all;
+}
+.NextPrevButtons1:hover{
+  background-color: #ff8419 !important;
+  border-color: #ff8419 !important;
+  transition: .3 all;
+}
+.SubmitForApprovalButton:hover{
+  /* background-color: #FF9B44 !important;
+  color: #fff !important;
+  transition: .3s all; */
+}
+
 /* show legend on profit loss graph screen */
 .showLegend .recharts-legend-wrapper{
   display: block !important;
@@ -7680,7 +7797,8 @@ background: #f5f5f5 !important;
   height: 30px;
 }
 .ant-picker-dropdown, .ant-select-dropdown {
-z-index: 3300;
+z-index: 1001;
+/* z-index: 3300; */
 min-width: fit-content !important;
 }
 /* antd dropdown selected color to orange */
@@ -12175,6 +12293,13 @@ styles by Qazi
     -webkit-box-orient: vertical;
     display: -webkit-box;
     max-width: 190px;
+    overflow: hidden;
+}
+.longText2{
+  -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    display: -webkit-box;
+    max-width: 600px;
     overflow: hidden;
 }
 
