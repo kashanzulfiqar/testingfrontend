@@ -611,47 +611,57 @@ let t_data = [
                         <label>
                             Enter Duration <span className="text-danger">*</span>
                         </label>
-                        <Form.Item
-                            name="hoursWorked"
-                            rules={[
-                            {
-                                required: true,
-                                message: "please enter task duration",
-                            },
-                            ]}
-                            className="custom-border"
-                        >
-                            <TimePicker
-                                allowClear={false}
-                                className="form-control"
-                                placeholder="HH:mm"
-                                format={"HH:mm"}
-                            />
-                        </Form.Item>
+                        <div style={{ position: "relative" }} id="area96">
+                          <Form.Item
+                              name="hoursWorked"
+                              rules={[
+                              {
+                                  required: true,
+                                  message: "please enter task duration",
+                              },
+                              ]}
+                              className="custom-border"
+                          >
+                              <TimePicker
+                                  allowClear={false}
+                                  className="form-control"
+                                  placeholder="HH:mm"
+                                  format={"HH:mm"}
+                                  getPopupContainer={() =>
+                                    document.getElementById("area96")
+                                  }
+                              />
+                          </Form.Item>
                         </div>
+                      </div>
                     </div>
                     <div className="col-12">
                         <div className="form-group">
                         <label>
                             Date <span className="text-danger">*</span>
                         </label>
-                        <Form.Item
-                            name="date"
-                            rules={[
-                            {
-                                required: true,
-                                message: "please select date",
-                            },
-                            ]}
-                            className="custom-border"
-                        >
-                            <DatePicker
-                                allowClear={false}
-                                className="form-control"
-                                placeholder="YYYY-MM-DD"
-                                format={"YYYY-MM-DD"}
-                            />
-                        </Form.Item>
+                        <div style={{ position: "relative" }} id="area97">
+                          <Form.Item
+                              name="date"
+                              rules={[
+                              {
+                                  required: true,
+                                  message: "please select date",
+                              },
+                              ]}
+                              className="custom-border"
+                          >
+                              <DatePicker
+                                  allowClear={false}
+                                  className="form-control"
+                                  placeholder="YYYY-MM-DD"
+                                  format={"YYYY-MM-DD"}
+                                  getPopupContainer={() =>
+                                    document.getElementById("area97")
+                                  }
+                              />
+                          </Form.Item>
+                        </div>
                         </div>
                     </div>
                     <div className="col-12">
