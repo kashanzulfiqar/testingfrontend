@@ -573,7 +573,17 @@ const Sidebar = (props) => {
                         <Link className={pathname.includes('ce-employee') ? "active" : ""} to="/employee/attendance-employee">Attendance (Employee)</Link>
                         {/* <li><Link className={pathname.includes('departments') ? "active" : ""} to="/app/employee/departments">Departments</Link></li> */}
                         {/* <li><Link className={pathname.includes('designations') ? "active" : ""} to="/app/employee/designations">Designations</Link></li> */}
-                        <li><Link className={pathname.includes('employee/timesheet') ? "active" : ""} to="/employee/timesheet">Timesheet</Link></li>
+                        {/* <li><Link className={pathname.includes('employee/timesheet') ? "active" : ""} to="/employee/timesheet">Timesheet</Link></li> */}
+                        <li className="submenu">
+                          <a href="javascript:void(0)" className={level2Menu === "Timesheet" ? "subdrop" : ""} onClick={() => toggleLvelTwo(level2Menu === "Timesheet" ? "" : "Timesheet")}><span> Timesheet</span> <span className="menu-arrow" /></a>
+                          {level2Menu === "Timesheet" ?
+                            <ul>
+                              <li><Link className={pathname.includes('employee-timesheet') ? "active" : ""} to="/employee-timesheet">Timesheet (Employee)</Link></li>
+                              {/* <li><Link className={pathname.includes('admin-timesheet') ? "active" : ""} to="/admin-timesheet">Timesheet (Admin)</Link></li> */}
+                            </ul>
+                            : ""
+                          }
+                        </li>
                         {/* <li><Link className={pathname.includes('shift-scheduling') || pathname.includes('shift-list') ? "active" : ""}
                           to="/app/employee/shift-scheduling">Shift &amp; Schedule</Link></li> */}
                         {/* <li><Link className={pathname.includes('overtime') ? "active" : ""} to="/app/employee/overtime">Overtime</Link></li> */}
