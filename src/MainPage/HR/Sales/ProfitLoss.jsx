@@ -408,6 +408,11 @@ const ProfitLoss = () => {
     }
   }
 
+  const disabledDate = (current) => {
+    // Disable dates that are in the future
+    return current && current.isAfter();
+  };
+
       return (
         <>
         <div className="page-wrapper">
@@ -719,7 +724,7 @@ const ProfitLoss = () => {
                       <label>
                         Month <span className="text-danger">*</span>
                       </label>
-                        <div className='filterDateMonth' style={{ position: 'relative' }} id='area2'>
+                        <div className='filterDateMonth disableAlign' style={{ position: 'relative' }} id='area2'>
                             <Form.Item
                                 name="month"
                                 className="custom-border"
@@ -730,7 +735,7 @@ const ProfitLoss = () => {
                                   },
                                 ]}
                             >
-                                <DatePicker format="MMMM" allowClear={false} size='large' picker="month" placeholder='Select Month' className='form-control filterDate' style={{minHeight: '50px', display: 'flex'}} getPopupContainer={() => document.getElementById('area2')} />
+                                <DatePicker disabledDate={disabledDate} format="MMMM" allowClear={false} size='large' picker="month" placeholder='Select Month' className='form-control filterDate' style={{minHeight: '50px', display: 'flex'}} getPopupContainer={() => document.getElementById('area2')} />
                             </Form.Item>
                         </div>
                     </div>
@@ -740,7 +745,7 @@ const ProfitLoss = () => {
                       <label>
                         Year <span className="text-danger">*</span>
                       </label>
-                        <div style={{ position: 'relative' }} id='area3'>
+                        <div className='disableAlign' style={{ position: 'relative' }} id='area3'>
                             <Form.Item
                                 name="year"
                                 className="custom-border"
@@ -751,7 +756,7 @@ const ProfitLoss = () => {
                                   },
                                 ]}
                             >
-                                <DatePicker allowClear={false} size='large' picker="year" placeholder='Select Year' className='form-control filterDate' style={{minHeight: '50px', display: 'flex'}} getPopupContainer={() => document.getElementById('area3')} />
+                                <DatePicker disabledDate={disabledDate} allowClear={false} size='large' picker="year" placeholder='Select Year' className='form-control filterDate' style={{minHeight: '50px', display: 'flex'}} getPopupContainer={() => document.getElementById('area3')} />
                             </Form.Item>
                         </div>
                     </div>
