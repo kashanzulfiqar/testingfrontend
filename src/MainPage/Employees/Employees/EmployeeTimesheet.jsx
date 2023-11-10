@@ -259,7 +259,7 @@ const EmployeeTimesheet = () => {
                               setTableStartDate(date?._d);
                               setShowCalendar(false)
                               if(view === 'Week'){
-                                getCurrentWeekDates()
+                                // getCurrentWeekDates()
                               } 
                             }}
                         />
