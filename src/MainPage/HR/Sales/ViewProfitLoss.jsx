@@ -59,6 +59,16 @@ const ViewPL = () => {
   const { startDate, endDate } = getMonthStartEndDate((record?.month), (record?.year));
   console.log("Start Date:", startDate);
   console.log("End Date:", endDate);
+
+  var moment = require('moment');
+
+  // Assuming record.month is a number between 1 and 12
+  var monthNumber = record?.month;
+
+  // Creating a Moment object with the monthNumber
+  var monthName = moment().month(monthNumber - 1).format('MMMM');
+
+  //console.log(monthName);
   
 
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
@@ -286,7 +296,7 @@ const ViewPL = () => {
             <div className="page-header">
               <div className="row align-items-center">
                 <div className="col">
-                  <h3 className="page-title">Expenses</h3>
+                  <h3 className="page-title">{`Expenses - ${record?.month ? monthName : ""} ${record?.year ? record?.year : ""}`}</h3>
                   <ul className="breadcrumb">
                     <li className="breadcrumb-item">
                       <Link
