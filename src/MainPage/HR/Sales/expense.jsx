@@ -44,7 +44,7 @@ const Expenses = () => {
   });
 
   useEffect(() => {
-    if(role === 'admin' || permissions?.managePayrolls) {
+    if(role === 'admin' || permissions?.expenseManagement) {
       getAllExpenses();
       getAllEmployees();
     }else{
