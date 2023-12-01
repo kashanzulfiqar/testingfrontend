@@ -522,7 +522,8 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
             },
           ]}
         >
-          <Input className="form-control" />
+          <Input className="form-control"
+          placeholder="Enter title" />
         </Form.Item>
       ),
     },
@@ -544,6 +545,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
           {/* <Input type="number" className="form-control" /> */}
           <InputNumber
             className="form-control"
+            placeholder="Enter an amount"
             formatter={(value) => {
               return `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
             }}
@@ -572,6 +574,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
           {/* <Input type="number" className="form-control" /> */}
           <InputNumber
             className="form-control"
+            placeholder="Enter percentage"
             max={100}
             min={0}
           />

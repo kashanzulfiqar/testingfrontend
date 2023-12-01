@@ -466,6 +466,34 @@ const Projects = () => {
     setLoader(true);
     setIsLoading(true);
 
+    const { paymentSchedule, cost } = values;
+
+    // Calculate total amount from payment schedule
+    const totalAmountInFigure = paymentSchedule.reduce(
+      (total, schedule) => total + parseFloat(schedule.amountInFigure || 0),
+      0
+    );
+  
+    if (totalAmountInFigure > cost) {
+      const errorMessage = 'Total amount exceeds the project cost.';
+      const errorFields = [];
+
+      paymentSchedule.forEach((schedule, index) => {
+        const scheduleAmount = parseFloat(schedule.amountInFigure || 0);
+  
+        if (scheduleAmount + totalAmountInFigure - scheduleAmount > cost) {
+          errorFields.push({
+            name: ['paymentSchedule', index, 'amountInFigure'],
+            errors: [errorMessage],
+          });
+        }
+      });
+
+      form.setFields(errorFields);
+      setLoader(false);
+      return; // Prevent submission if total exceeds cost
+    }
+
     let data = {
       projectName: values.projectName,
       projectDescription: values.projectDescription,

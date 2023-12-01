@@ -103,8 +103,16 @@ const AdminTimeSheet = () => {
   const handleSearch = () => {
     const { id, name, month, year } = selectedFilters;
 
-    if (name || month) {
+    if (month) {
       setSelectedMonth(month);
+      setFilters(selectedFilters);
+      setPagination({
+        ...pagination,
+        current: 1,
+      });
+    }
+    else if (name && !month) {
+      setSelectedMonth(moment().format('YYYY-MM'));
       setFilters(selectedFilters);
       setPagination({
         ...pagination,
@@ -224,9 +232,13 @@ const AdminTimeSheet = () => {
 
   useEffect(() => {
     setIsLoading(true);
-    fetchEmployees();
-    firstAPI();
-
+    if (employees?.length === 0){
+      fetchEmployees();
+      firstAPI();
+    }
+    else if (employees?.length>0){
+      firstAPI();
+    }
   }, [filters, pagination.current, pagination.pageSize]);
 
   const firstAPI = () => {
