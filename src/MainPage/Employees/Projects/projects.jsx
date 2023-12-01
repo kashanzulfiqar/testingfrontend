@@ -1192,7 +1192,7 @@ const Projects = () => {
       ),
     },
   ];
-
+ 
   const showTeamSearch = (val, type) => {
     let dropdownValues = []
     if(type === 'Team'){

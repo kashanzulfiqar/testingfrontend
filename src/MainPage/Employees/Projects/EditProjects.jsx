@@ -293,7 +293,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
       form.setFields(errorFields);
       setLoader(false);
       return; // Prevent submission if total exceeds cost
-    }
+    } 
 
     let data = {
       _id: selectedData._id,
