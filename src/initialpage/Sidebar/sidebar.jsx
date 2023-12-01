@@ -579,7 +579,9 @@ const Sidebar = (props) => {
                           {level2Menu === "Timesheet" ?
                             <ul>
                               <li><Link className={pathname.includes('employee-timesheet') ? "active" : ""} to="/employee-timesheet">Timesheet (Employee)</Link></li>
-                              {/* <li><Link className={pathname.includes('admin-timesheet') ? "active" : ""} to="/admin-timesheet">Timesheet (Admin)</Link></li> */}
+                              
+                                <li><Link className={pathname.includes('admin-timesheet') ? "active" : ""} to="/admin-timesheet">Timesheet (Admin)</Link></li>
+                              
                             </ul>
                             : ""
                           }

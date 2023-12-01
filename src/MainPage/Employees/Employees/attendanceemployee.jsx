@@ -82,6 +82,7 @@ const AttendanceEmployee = () => {
   const [stats, setStats] = useState({
     lastWeek: 0, // Set initial values as needed
     lastMonth: 0, // Set initial values as needed
+    endTime: "", // Set initial values as needed
   });
   const [attendanceData, setAttendanceData] = useState(null);
 
@@ -123,6 +124,7 @@ const AttendanceEmployee = () => {
           setStats({
             lastWeek: res.data.lastWeek,
             lastMonth: res.data.lastMonth,
+            endTime: res.data.user.shiftId.endTime,
           });
           setShiftDuration(shiftDuration)
 
@@ -295,10 +297,12 @@ const AttendanceEmployee = () => {
   };
 
   const totalWorkTime = (shiftDuration/60) * 60 * 60 * 1000;
+  const WWorkTime = ((shiftDuration*5)/60) * 60 * 60 * 1000;
+  const MWorkTime = ((shiftDuration*22)/60) * 60 * 60 * 1000;
 
   const percentageCompleted = (elapsedTime / totalWorkTime) * 100;
-  const percentageweek = (elapsedTime / totalWorkTime) * 100;
-  const percentagemonth = (elapsedTime / totalWorkTime) * 100;
+  const percentageweek = ((elapsedTime + (stats?.lastWeek * 60000)) / WWorkTime) * 100;
+  const percentagemonth = ((elapsedTime + (stats?.lastMonth * 60000)) / MWorkTime) * 100;
 
   const formatElapsedTime = (milliseconds) => {
     if (!milliseconds) return "--";
@@ -480,10 +484,11 @@ const AttendanceEmployee = () => {
       .then((res) => {
         if (res.data.success === true) {
           const attendanceData = res.data.Attendance.docs;
-          console.log(attendanceData);
+          //console.log(attendanceData);
           setStats({
             lastWeek: res.data.lastWeek,
             lastMonth: res.data.lastMonth,
+            endTime: res.data.user.shiftId.endTime,
           });
           if (!firstload) {
             setFetchattend6(attendanceData);
@@ -857,7 +862,15 @@ const AttendanceEmployee = () => {
                         <p>
                           <label>This Week</label>
                           <strong>
-                            {formatHoursMinutes(stats.lastWeek)}{" "}
+                            {isCheckedOut
+                              ? ( stats?.lastWeek ? 
+                                formatHoursMinutes(stats.lastWeek) 
+                                : formatTodayTime((elapsedTime + (stats.lastWeek * 60000))))
+                              : formatTodayTime(
+                                  (elapsedTime + (stats.lastWeek * 60000))
+                                ) // Create a function to format elapsed time
+                            }{" "}
+                            {/* {formatHoursMinutes(stats.lastWeek)}{" "} */}
                             <small>/ {formatHoursMinutes(Math.floor(shiftDuration*5))}</small>
                           </strong>
                         </p>
@@ -867,10 +880,10 @@ const AttendanceEmployee = () => {
                             role="progressbar"
                             style={{
                               width: `${
-                                (parseFloat(stats.lastWeek) / (shiftDuration*5)) * 100
+                                isCheckedOut ? ( stats.lastWeek ? ((parseFloat(stats.lastWeek) / (shiftDuration*5)) * 100) : percentageweek) : percentageweek
                               }%`,
                             }}
-                            aria-valuenow={parseFloat(stats.lastWeek)}
+                            aria-valuenow={isCheckedOut ? ( stats.lastWeek ? ((parseFloat(stats.lastWeek) / (shiftDuration*5)) * 100) : percentageweek) : percentageweek}
                             aria-valuemin={0}
                             aria-valuemax={(shiftDuration*5)}
                           />
@@ -880,7 +893,16 @@ const AttendanceEmployee = () => {
                         <p>
                           <label>This Month</label>
                           <strong>
-                            {formatHoursMinutes(stats.lastMonth)}{" "}
+                          {isCheckedOut
+                              ? ( stats?.lastMonth ? 
+                                formatHoursMinutes(stats.lastMonth) 
+                                : formatTodayTime((elapsedTime + (stats.lastMonth * 60000))))
+                              //? formatHoursMinutes(stats.lastMonth)
+                              : formatTodayTime(
+                                (elapsedTime + (stats?.lastMonth * 60000))
+                                ) // Create a function to format elapsed time
+                            }{" "}
+                            {/* {formatHoursMinutes(stats.lastMonth)}{" "} */}
                             <small>/ {formatHoursMinutes(Math.floor(shiftDuration*22))}</small>
                           </strong>
                         </p>
@@ -890,10 +912,10 @@ const AttendanceEmployee = () => {
                             role="progressbar"
                             style={{
                               width: `${
-                                (parseFloat(stats.lastMonth) / (shiftDuration*22)) * 100
+                                isCheckedOut ? ( stats.lastMonth ? ((parseFloat(stats.lastMonth) / (shiftDuration*22)) * 100) : percentagemonth) : percentagemonth
                               }%`,
                             }}
-                            aria-valuenow={parseFloat(stats.lastMonth)}
+                            aria-valuenow={isCheckedOut ? ( stats.lastMonth ? ((parseFloat(stats.lastMonth) / (shiftDuration*22)) * 100) : percentagemonth) : percentagemonth}
                             aria-valuemin={0}
                             aria-valuemax={(shiftDuration*22)}
                           />
@@ -904,9 +926,23 @@ const AttendanceEmployee = () => {
                         <p>
                           Remaining{" "}
                           <strong>
-                            {formatHoursMinutes(
+                          {isCheckedOut
+                              ? ( stats?.lastMonth ? 
+                                formatHoursMinutes(Math.floor((shiftDuration*22) - parseFloat(stats.lastMonth)))
+                                : formatHoursMinutes(
+                                  Math.ceil((shiftDuration*22) - parseFloat(((elapsedTime/60000)+stats.lastMonth)))
+                                )
+                                )
+                              // formatHoursMinutes(
+                              //   Math.floor((shiftDuration*22) - parseFloat(stats.lastMonth))
+                              // )
+                              : formatHoursMinutes(
+                                Math.ceil((shiftDuration*22) - parseFloat(((elapsedTime/60000)+stats.lastMonth)))
+                              ) // Create a function to format elapsed time
+                            }{" "}
+                            {/* {formatHoursMinutes(
                               Math.floor((shiftDuration*22) - parseFloat(stats.lastMonth))
-                            )}{" "}
+                            )}{" "} */}
                             <small>/ {formatHoursMinutes(Math.floor(shiftDuration*22))}</small>
                           </strong>
                         </p>
@@ -916,13 +952,15 @@ const AttendanceEmployee = () => {
                             role="progressbar"
                             style={{
                               width: `${
-                                (((shiftDuration*22) - parseFloat(stats.lastMonth)) /
+                                (((shiftDuration*22) - parseFloat(stats.lastMonth + (elapsedTime/60000))) /
                                 (shiftDuration*22)) *
                                 100
                               }%`,
                             }}
                             aria-valuenow={
-                              100 * 60 - parseFloat(stats.lastMonth)
+                              (((shiftDuration*22) - parseFloat(stats.lastMonth + (elapsedTime/60000))) /
+                                (shiftDuration*22)) *
+                                100
                             }
                             aria-valuemin={0}
                             aria-valuemax={100 * 60}

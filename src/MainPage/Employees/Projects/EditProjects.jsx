@@ -267,6 +267,33 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
   const UpdateProject = (values) => {
     setLoader(true);
     //setIsLoading(true);
+    const { paymentSchedule, cost } = values;
+
+    // Calculate total amount from payment schedule
+    const totalAmountInFigure = paymentSchedule.reduce(
+      (total, schedule) => total + parseFloat(schedule.amountInFigure || 0),
+      0
+    );
+  
+    if (totalAmountInFigure > cost) {
+      const errorMessage = 'Total amount exceeds the project cost.';
+      const errorFields = [];
+
+      paymentSchedule.forEach((schedule, index) => {
+        const scheduleAmount = parseFloat(schedule.amountInFigure || 0);
+  
+        if (scheduleAmount + totalAmountInFigure - scheduleAmount > cost) {
+          errorFields.push({
+            name: ['paymentSchedule', index, 'amountInFigure'],
+            errors: [errorMessage],
+          });
+        }
+      });
+
+      form.setFields(errorFields);
+      setLoader(false);
+      return; // Prevent submission if total exceeds cost
+    } 
 
     let data = {
       _id: selectedData._id,
@@ -495,7 +522,8 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
             },
           ]}
         >
-          <Input className="form-control" />
+          <Input className="form-control"
+          placeholder="Enter title" />
         </Form.Item>
       ),
     },
@@ -517,6 +545,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
           {/* <Input type="number" className="form-control" /> */}
           <InputNumber
             className="form-control"
+            placeholder="Enter an amount"
             formatter={(value) => {
               return `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
             }}
@@ -545,6 +574,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
           {/* <Input type="number" className="form-control" /> */}
           <InputNumber
             className="form-control"
+            placeholder="Enter percentage"
             max={100}
             min={0}
           />

@@ -58,6 +58,7 @@ import Tasks from '../MainPage/Employees/Projects/Tasks';
 import ProfitLoss from '../MainPage/HR/Sales/ProfitLoss';
 import ViewPL from '../MainPage/HR/Sales/ViewProfitLoss';
 import EmployeeTimesheet from '../MainPage/Employees/Employees/EmployeeTimesheet';
+import AdminTimeSheet from '../MainPage/Employees/Employees/timesheetAdmin';
 
 
 const App = () => {
@@ -149,6 +150,7 @@ const App = () => {
           <Route path={`profit-loss`} element={<ProfitLoss />} />
           <Route path={`projects/tasks`} element={<Tasks />} />
           <Route path={`employee-timesheet`} element={<EmployeeTimesheet />} />
+          <Route path={`admin-timesheet`} element={<AdminTimeSheet />} />
 
           {/* Settings  */}
           <Route path="/settings" element={<Settings />} />
