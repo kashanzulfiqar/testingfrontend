@@ -1495,7 +1495,7 @@ const filteredColumns = columns.filter(column => {
                             getPopupContainer={() =>
                               document.getElementById("area1")
                             }
-                            placeholder="Project Type"
+                            placeholder="Cost Type"
                             style={{height:'50px'}}
                             onChange={(value) => {
                               handleFilterChange(value, "projectType");
@@ -2826,7 +2826,11 @@ const filteredColumns = columns.filter(column => {
                   </div>
 
                   <div className="form-group">
-                    <label>Upload Files</label>
+                    <label>Upload Files{" "} 
+                      <small style={{ color: 'grey', fontSize: 'small' }}>
+                        (Allowed formats: pdf, doc, docx, jpg, jpeg, png, gif, xls, xlsx)
+                      </small>
+                    </label>
                     <input
                       className="form-control"
                       multiple

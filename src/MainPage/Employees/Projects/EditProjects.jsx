@@ -1357,7 +1357,11 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
               </div>
 
               <div className="form-group">
-                <label>Upload Files</label>
+                <label>Upload Files{" "}
+                  <small style={{ color: 'grey', fontSize: 'small' }}>
+                    (Allowed formats: pdf, doc, docx, jpg, jpeg, png, gif, xls, xlsx)
+                  </small>
+                </label>
                 <input
                   className="form-control"
                   multiple
