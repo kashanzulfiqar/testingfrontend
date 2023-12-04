@@ -1284,6 +1284,7 @@ const filteredColumns = columns.filter(column => {
                 </ul>
               </div>
               <div className="col-auto float-end ms-auto">
+                { (role === "admin" || permissions?.projectManagement) &&
                 <button
                   className="btn add-btn"
                   onClick={() => { openCreateModal(); getAllCurrencies(); ViewClients(); fetchEmployees(); }}
@@ -1298,7 +1299,8 @@ const filteredColumns = columns.filter(column => {
                   <i className="fa fa-plus" />
                   Create Project
                 </button>
-
+                }
+              
                 <div className="view-icons">
                   <button
                     onClick={() => {
@@ -1655,10 +1657,21 @@ const filteredColumns = columns.filter(column => {
                             {project?.projectDescription}
                           </p>
                         </div>
-
                         <div className="pro-deadline m-b-15">
                           <div className="sub-title">Deadline:</div>
                           <div className="text-muted">{project?.endDate}</div>
+                        </div>
+                        <div className="pro-deadline m-b-15">
+                          <div className="sub-title">Status:</div>
+                          <div style={{
+                            color: 
+                              project?.status === 'Scheduled' ? 'red' :
+                              project?.status === 'On-Going' ? 'orange' :
+                              (project?.status === 'Paused' || project?.status === 'Archived') ? 'grey' :
+                              project?.status === 'Completed' ? 'green' : 'inherit'
+                          }}>
+                            {project?.status}
+                          </div>
                         </div>
                         <div className="project-members m-b-15">
                           <div>Project Leader :</div>
