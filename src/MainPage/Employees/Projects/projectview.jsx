@@ -585,7 +585,7 @@ const ProjectView = () => {
             </div>
 
             <div className="col-auto float-end ms-auto">
-              {!isLoading && (
+              {!isLoading && (role === 'admin' || permissions?.projectManagement) && 
                 <button
                   className="btn add-btn"
                   onClick={() => {
@@ -606,7 +606,7 @@ const ProjectView = () => {
                   <i className="fa fa-plus" />
                   Edit Project
                 </button>
-              )}
+              }
 
               {/* <Link
                 to="/app/projects/task-board"
@@ -1395,7 +1395,8 @@ const ProjectView = () => {
                 <div className="card-body">
                   <h6 className="card-title m-b-20">
                     <label style={{ width: "69%" }}>Assigned Leader</label>
-                    <button
+                    {(role === 'admin' || permissions?.projectManagement) &&
+                      <button
                       type="button"
                       className="float-end btn btn-primary btn-sm"
                       // data-bs-toggle="modal"
@@ -1412,6 +1413,7 @@ const ProjectView = () => {
                     >
                       <i className="fa fa-plus" /> Edit
                     </button>
+                    }
                   </h6>
                   {LoadLeader ? (
                     <Spin size="medium" />
@@ -1450,7 +1452,8 @@ const ProjectView = () => {
                 <div className="card-body">
                   <h6 className="card-title m-b-20">
                     <label style={{ width: "69%" }}>Assigned Developers</label>
-                    <button
+                    { (role === 'admin' || permissions?.projectManagement) &&
+                      <button
                       type="button"
                       className="float-end btn btn-primary btn-sm"
                       onClick={() => {
@@ -1465,6 +1468,7 @@ const ProjectView = () => {
                     >
                       <i className="fa fa-plus" /> Add
                     </button>
+                    }
                   </h6>
                   {LoadTeam ? (
                     <Spin size="medium" />
