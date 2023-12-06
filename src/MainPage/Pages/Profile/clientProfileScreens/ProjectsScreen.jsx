@@ -319,6 +319,18 @@ const ProjectsScreen = ({ isID, isRole }) => {
                         {formattedDate(project?.endDate)}
                       </div>
                     </div>
+                    <div className="pro-deadline m-b-15">
+                          <div className="sub-title">Status:</div>
+                          <div style={{
+                            color: 
+                              project?.status === 'Scheduled' ? 'red' :
+                              project?.status === 'On-Going' ? 'orange' :
+                              (project?.status === 'Paused' || project?.status === 'Archived') ? 'grey' :
+                              project?.status === 'Completed' ? 'green' : 'inherit'
+                          }}>
+                            {project?.status}
+                          </div>
+                        </div>
                     <div className="project-members m-b-15">
                       <div>Project Leader:</div>
                       <ul className="team-members">
