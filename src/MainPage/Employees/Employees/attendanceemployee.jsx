@@ -883,10 +883,10 @@ const AttendanceEmployee = () => {
                             role="progressbar"
                             style={{
                               width: `${
-                                isCheckedOut ? ( stats.lastWeek ? ((parseFloat(stats.lastWeek) / (shiftDuration*5)) * 100) : percentageweek) : percentageweek
+                                isCheckedOut ? ( !statDisable ? ((parseFloat(stats.lastWeek) / (shiftDuration*5)) * 100) : percentageweek) : percentageweek
                               }%`,
                             }}
-                            aria-valuenow={isCheckedOut ? ( stats.lastWeek ? ((parseFloat(stats.lastWeek) / (shiftDuration*5)) * 100) : percentageweek) : percentageweek}
+                            aria-valuenow={isCheckedOut ? ( !statDisable ? ((parseFloat(stats.lastWeek) / (shiftDuration*5)) * 100) : percentageweek) : percentageweek}
                             aria-valuemin={0}
                             aria-valuemax={(shiftDuration*5)}
                           />
@@ -915,10 +915,10 @@ const AttendanceEmployee = () => {
                             role="progressbar"
                             style={{
                               width: `${
-                                isCheckedOut ? ( stats.lastMonth ? ((parseFloat(stats.lastMonth) / (shiftDuration*22)) * 100) : percentagemonth) : percentagemonth
+                                isCheckedOut ? ( !statDisable ? ((parseFloat(stats.lastMonth) / (shiftDuration*22)) * 100) : percentagemonth) : percentagemonth
                               }%`,
                             }}
-                            aria-valuenow={isCheckedOut ? ( stats.lastMonth ? ((parseFloat(stats.lastMonth) / (shiftDuration*22)) * 100) : percentagemonth) : percentagemonth}
+                            aria-valuenow={isCheckedOut ? ( !statDisable ? ((parseFloat(stats.lastMonth) / (shiftDuration*22)) * 100) : percentagemonth) : percentagemonth}
                             aria-valuemin={0}
                             aria-valuemax={(shiftDuration*22)}
                           />
