@@ -129,6 +129,15 @@ const AttendanceEmployee = () => {
           });
           setShiftDuration(shiftDuration)
 
+          const timeParts = res?.data?.user?.shiftId?.endTime?.split(":");
+          const hours = parseInt(timeParts[0], 10);
+          const minutes = parseInt(timeParts[1], 10);
+          const seconds = parseInt(timeParts[2], 10);
+
+          // Calculate total milliseconds
+          const milliseconds = (hours * 60 * 60 + minutes * 60 + seconds) * 1000;
+          setShiftEndTime(milliseconds);
+
           if (attendanceData?.length > 0) {
             const firstAttendanceRecord = attendanceData[0];
 
@@ -492,6 +501,16 @@ const AttendanceEmployee = () => {
             lastMonth: res.data.lastMonth,
             endTime: res.data.user.shiftId.endTime,
           });
+
+          const timeParts = res?.data?.user?.shiftId?.endTime?.split(":");
+          const hours = parseInt(timeParts[0], 10);
+          const minutes = parseInt(timeParts[1], 10);
+          const seconds = parseInt(timeParts[2], 10);
+
+          // Calculate total milliseconds
+          const milliseconds = (hours * 60 * 60 + minutes * 60 + seconds) * 1000;
+          setShiftEndTime(milliseconds);
+
           if (!firstload) {
             setFetchattend6(attendanceData);
           }
@@ -657,6 +676,28 @@ const AttendanceEmployee = () => {
       render: (overTime) => (overTime ? formatHoursMinutes(overTime) : "None"),
     },
   ];
+
+  const dayEnd = "23:59:59";
+
+  const [hours, minutes, seconds] = dayEnd.split(':').map(Number);
+  const absolutetime = ((hours * 60 * 60 + minutes * 60 + seconds) * 1000) - shiftEndTime;
+  //console.log(absolutetime);
+
+  const now = new Date();
+  const currentHours = now.getHours();
+  const currentMinutes = now.getMinutes();
+  const currentSeconds = now.getSeconds();
+
+  const currentTimeInMilliseconds =
+  currentHours * 60 * 60 * 1000 +
+  currentMinutes * 60 * 1000 +
+  currentSeconds * 1000;
+
+  let liveOvertime = 0;
+
+  if (!isCheckedOut && isCheckedIn && currentTimeInMilliseconds > shiftEndTime) {
+    liveOvertime = currentTimeInMilliseconds - shiftEndTime;
+  }
 
   return (
     <>
@@ -976,7 +1017,7 @@ const AttendanceEmployee = () => {
                           <strong>
                             {isCheckedOut
                             ? formatHoursMinutes(checkOut.overTime)
-                            : "None"}
+                            : formatTodayTime(liveOvertime)}
                           </strong>
                         </p>
                         <div className="progress">
@@ -984,15 +1025,23 @@ const AttendanceEmployee = () => {
                             className="progress-bar bg-info"
                             role="progressbar"
                             style={{
-                              width: `${checkOut.overTime
-                                ? 100
-                                : 0}%`,
+                              width: `${
+                                isCheckedOut 
+                                ? (checkOut.overTime
+                                  ? ((checkOut.overTime*60000)/absolutetime)*100
+                                  : 0) 
+                                : ((!isCheckedOut && isCheckedIn && currentTimeInMilliseconds > shiftEndTime) ? (liveOvertime/absolutetime)*100 : 0)
+                              }%`,
                             }}
-                            aria-valuenow={checkOut.overTime
-                              ? 100
-                              : 0}
+                            aria-valuenow={
+                              isCheckedOut 
+                              ? (checkOut.overTime
+                                ? ((checkOut.overTime*60000)/absolutetime)*100
+                                : 0) 
+                              : ((!isCheckedOut && isCheckedIn && currentTimeInMilliseconds > shiftEndTime) ? (liveOvertime/absolutetime)*100 : 0)
+                            }
                             aria-valuemin={0}
-                            aria-valuemax={100}
+                            aria-valuemax={absolutetime}
                           />
                         </div>
                       </div>
