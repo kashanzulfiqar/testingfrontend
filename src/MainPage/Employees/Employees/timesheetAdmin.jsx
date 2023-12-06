@@ -125,36 +125,30 @@ const AdminTimeSheet = () => {
   };
 
   const handleReset = () => { 
-    const { id, name, month, year } = selectedFilters;
 
-    if (name || month) {
-      setSelectedFilters({
-        id: "",
-        name: "",
-        month: "",
-        year: "",
-      });
-  
-      setSelectedMonth(moment().format('YYYY-MM'));
-  
-      setFilters({
-        id:"",
-        name: "",
-        month: "",
-        year: "",
-      });
-  
-      form.resetFields();
-  
-      setPagination({
-        current: 1,
-        pageSize: 20,
-        total: 0,
-      })
-    }
-    else{
-      return
-    }
+    setSelectedFilters({
+      id: "",
+      name: "",
+      month: "",
+      year: "",
+    });
+
+    setSelectedMonth(moment().format('YYYY-MM'));
+
+    setFilters({
+      id:"",
+      name: "",
+      month: "",
+      year: "",
+    });
+
+    form.resetFields();
+
+    setPagination({
+      current: 1,
+      pageSize: 20,
+      total: 0,
+    })
     
   };
 
@@ -250,7 +244,7 @@ const AdminTimeSheet = () => {
 
     apiServices(
       "GET",
-      `timesheet/?page=${params.page}&limit=999999&timesheetFrom=${startDate}&timesheetTo=${endDate}`,
+      `timesheet/?employeeName=${filters.name}&page=${params.page}&limit=999999&timesheetFrom=${startDate}&timesheetTo=${endDate}`,
       null,
       user_state
     )
