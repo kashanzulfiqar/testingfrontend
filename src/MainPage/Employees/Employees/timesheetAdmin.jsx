@@ -225,13 +225,19 @@ const AdminTimeSheet = () => {
   );
 
   useEffect(() => {
-    setIsLoading(true);
     // if (employees?.length === 0){
     //   fetchEmployees();
     //   firstAPI();
     // }
     // else if (employees?.length>0){
-      firstAPI();
+      if (
+        role === "admin" 
+      ) {
+        setIsLoading(true);
+        firstAPI();
+      } else {
+        nav("/restricted", { state: { unAuthorize: true } });
+      }
     //}
   }, [filters, pagination.current, pagination.pageSize]);
 
@@ -244,7 +250,7 @@ const AdminTimeSheet = () => {
 
     apiServices(
       "GET",
-      `timesheet/?employeeName=${filters.name}&page=${params.page}&limit=999999&timesheetFrom=${startDate}&timesheetTo=${endDate}`,
+      `timesheet/?userName=${filters.name}&page=${params.page}&limit=999999&timesheetFrom=${startDate}&timesheetTo=${endDate}`,
       null,
       user_state
     )
