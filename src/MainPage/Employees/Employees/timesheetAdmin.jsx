@@ -232,13 +232,13 @@ const AdminTimeSheet = () => {
 
   useEffect(() => {
     setIsLoading(true);
-    if (employees?.length === 0){
-      fetchEmployees();
+    // if (employees?.length === 0){
+    //   fetchEmployees();
+    //   firstAPI();
+    // }
+    // else if (employees?.length>0){
       firstAPI();
-    }
-    else if (employees?.length>0){
-      firstAPI();
-    }
+    //}
   }, [filters, pagination.current, pagination.pageSize]);
 
   const firstAPI = () => {
@@ -373,20 +373,23 @@ const AdminTimeSheet = () => {
         const { userId } = entry;
 
         // Create a key for the user if it doesn't exist
-        if (!userData[userId]) {
-          userData[userId] = [];
-        }
+        const userIdValue = userId._id;
 
-        // Find the corresponding user data array and push the entry
-        const userWeekData = userData[userId].find(
-          (userEntry) =>
-            userEntry.startDate === startDate && userEntry.endDate === endDate
-        );
+      // Create a key for the user if it doesn't exist
+      if (!userData[userIdValue]) {
+        userData[userIdValue] = [];
+      }
+
+      // Find the corresponding user data array and push the entry
+      const userWeekData = userData[userIdValue].find(
+        (userEntry) =>
+          userEntry.startDate === startDate && userEntry.endDate === endDate
+      );
 
         if (userWeekData) {
           userWeekData.data.push(entry);
         } else {
-          userData[userId].push({
+          userData[userIdValue].push({
             startDate,
             endDate,
             data: [entry],
@@ -438,47 +441,75 @@ const AdminTimeSheet = () => {
     return data;
   }
   
-  // Usage:
-  // Assuming `yourData` contains the object you provided earlier
+  
   const updatedData = calculateTotals(groupedUserData);
-  //console.log(updatedData); 
+  //console.log("this is updated",updatedData); 
 
-  // for (const userId in updatedData) {
-  //   console.log(`User ID: ${userId}, Monthly Total: ${updatedData[userId].monthlyTotal}`);
-  // }// Contains the data object with weekTotal and monthlyTotal added
   
-  function combineData(userResponse, calculatedData) {
-    const newDataStructure = [];
+  function transformData(inputData) {
+    const transformedData = [];
   
-    userResponse.forEach(user => {
-      const userId = user._id;
-      const userData = calculatedData[userId];
+    for (const userId in inputData) {
+      const userData = inputData[userId];
+      const userObject = {
+        _id: userId,
+        fullName: userData[0]?.data[0]?.userId.fullName || '',
+        imageUrl: userData[0]?.data[0]?.userId.imageUrl || null,
+        monthlyTotal: inputData[userId].monthlyTotal || '00:00',
+      };
   
-      if (userData) {
-        const { fullName, imageUrl, shiftId } = user;
-  
-        const newUserObj = {
-          ...user,
-          ...userData,
-          fullName,
-          imageUrl,
-          shiftId,
+      const weeksData = {};
+      userData.forEach((week, index) => {
+        const weekData = {
+          startDate: week.startDate,
+          endDate: week.endDate,
+          data: week.data,
+          weekTotal: week.weekTotal,
         };
+        weeksData[index] = weekData;
+      });
   
-        newDataStructure.push(newUserObj);
-      }
-    });
+      // Push weeksData to userObject
+      Object.assign(userObject, weeksData);
+      transformedData.push(userObject);
+    }
   
-    return newDataStructure;
+    return transformedData;
   }
+    
+  const newData = transformData(updatedData);
+  //console.log("without api",newData);
   
-  // Assuming 'employees' contains the user response and 'updatedData' contains the calculated data
-  const newData = combineData(employees, updatedData);
-  //console.log(newData); // Use this new data structure as needed
+  // function combineData(userResponse, calculatedData) {
+  //   const newDataStructure = [];
   
+  //   userResponse.forEach(user => {
+  //     const userId = user._id;
+  //     const userData = calculatedData[userId];
+  
+  //     if (userData) {
+  //       const { fullName, imageUrl, shiftId } = user;
+  
+  //       const newUserObj = {
+  //         ...user,
+  //         ...userData,
+  //         fullName,
+  //         imageUrl,
+  //         shiftId,
+  //       };
+  
+  //       newDataStructure.push(newUserObj);
+  //     }
+  //   });
+  
+  //   return newDataStructure;
+  // }
+  
+  // const newData = combineData(employees, updatedData);
+  // console.log("without api",newData);
   
   const weekData = calculateWeeksInMonth(startDate, endDate);
-  console.log("Result:", weekData);
+  //console.log("Result:", weekData);
 
   function sortUserDataByDate(usersData) {
     usersData?.forEach(userData => {
@@ -551,7 +582,7 @@ const AdminTimeSheet = () => {
 
 // Call the function with your newData and weekData
 const FinalData = updateDataWithMissingWeeks(newData, weekData);
-console.log(FinalData)
+//console.log(FinalData)
 
 const generateWeekColumns = (weekData, finalData) => {
   const weekColumns = weekData?.weeksData?.map((week, index) => ({

@@ -19,6 +19,7 @@ const AttendanceEmployee = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [tableLoader, setTableLoader] = useState(false);
   const [Bdisbale, setBdisbale] = useState(false);
+  const [statDisable, setstatDisable] = useState(false);
   const [disableAttend, setdisableAttend] = useState(false);
   const [page, setPage] = useState(1);
   const [size, setSize] = useState(20);
@@ -449,6 +450,7 @@ const AttendanceEmployee = () => {
           setIsCheckedIn(false);
           setIsCheckedOut(true);
           setBdisbale(true);
+          setstatDisable(true);
         });
     } catch (error) {
       console.log("error", error);
@@ -509,6 +511,7 @@ const AttendanceEmployee = () => {
       .finally(() => {
         setIsLoading(false);
         setTableLoader(false);
+        setstatDisable(false);
       });
   };
 
@@ -863,7 +866,7 @@ const AttendanceEmployee = () => {
                           <label>This Week</label>
                           <strong>
                             {isCheckedOut
-                              ? ( stats?.lastWeek ? 
+                              ? ( !statDisable ? 
                                 formatHoursMinutes(stats.lastWeek) 
                                 : formatTodayTime((elapsedTime + (stats.lastWeek * 60000))))
                               : formatTodayTime(
@@ -894,7 +897,7 @@ const AttendanceEmployee = () => {
                           <label>This Month</label>
                           <strong>
                           {isCheckedOut
-                              ? ( stats?.lastMonth ? 
+                              ? ( !statDisable ? 
                                 formatHoursMinutes(stats.lastMonth) 
                                 : formatTodayTime((elapsedTime + (stats.lastMonth * 60000))))
                               //? formatHoursMinutes(stats.lastMonth)
@@ -927,7 +930,7 @@ const AttendanceEmployee = () => {
                           Remaining{" "}
                           <strong>
                           {isCheckedOut
-                              ? ( stats?.lastMonth ? 
+                              ? ( !statDisable ? 
                                 formatHoursMinutes(Math.floor((shiftDuration*22) - parseFloat(stats.lastMonth)))
                                 : formatHoursMinutes(
                                   Math.ceil((shiftDuration*22) - parseFloat(((elapsedTime/60000)+stats.lastMonth)))
