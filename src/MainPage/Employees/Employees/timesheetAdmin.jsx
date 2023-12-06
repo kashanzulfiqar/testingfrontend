@@ -225,13 +225,19 @@ const AdminTimeSheet = () => {
   );
 
   useEffect(() => {
-    setIsLoading(true);
     // if (employees?.length === 0){
     //   fetchEmployees();
     //   firstAPI();
     // }
     // else if (employees?.length>0){
-      firstAPI();
+      if (
+        role === "admin" 
+      ) {
+        setIsLoading(true);
+        firstAPI();
+      } else {
+        nav("/restricted", { state: { unAuthorize: true } });
+      }
     //}
   }, [filters, pagination.current, pagination.pageSize]);
 
