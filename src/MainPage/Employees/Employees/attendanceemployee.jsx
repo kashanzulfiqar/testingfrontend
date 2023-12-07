@@ -996,18 +996,26 @@ const AttendanceEmployee = () => {
                             role="progressbar"
                             style={{
                               width: `${
-                                (((shiftDuration*22) - parseFloat(stats.lastMonth + (elapsedTime/60000))) /
+                                isCheckedOut ? ( !statDisable ? ((((shiftDuration*22) - parseFloat(stats.lastMonth)) /
                                 (shiftDuration*22)) *
-                                100
+                                100) : ((((shiftDuration*22) - parseFloat(stats.lastMonth + (elapsedTime/60000))) /
+                                (shiftDuration*22)) *
+                                100)) : ((((shiftDuration*22) - parseFloat(stats.lastMonth + (elapsedTime/60000))) /
+                                (shiftDuration*22)) *
+                                100)
                               }%`,
                             }}
                             aria-valuenow={
-                              (((shiftDuration*22) - parseFloat(stats.lastMonth + (elapsedTime/60000))) /
+                              isCheckedOut ? ( !statDisable ? ((((shiftDuration*22) - parseFloat(stats.lastMonth)) /
                                 (shiftDuration*22)) *
-                                100
+                                100) : ((((shiftDuration*22) - parseFloat(stats.lastMonth + (elapsedTime/60000))) /
+                                (shiftDuration*22)) *
+                                100)) : ((((shiftDuration*22) - parseFloat(stats.lastMonth + (elapsedTime/60000))) /
+                                (shiftDuration*22)) *
+                                100)
                             }
                             aria-valuemin={0}
-                            aria-valuemax={100 * 60}
+                            aria-valuemax={(shiftDuration*22)}
                           />
                         </div>
                       </div>
