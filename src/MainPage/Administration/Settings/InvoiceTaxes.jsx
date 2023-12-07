@@ -463,7 +463,8 @@ const InvoiceTaxes = () => {
                 rowKey={(record) => record.id}
                 // onChange={this.handleTableChange}
               />
-              {
+            </div>
+            {
                     taxes?.length > 0 &&
                     <div>
                       <Pagination
@@ -485,7 +486,6 @@ const InvoiceTaxes = () => {
                       />
                     </div>
                   }
-            </div>
           </div>
         </div>
       </div>
