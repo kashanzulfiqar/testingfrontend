@@ -396,7 +396,9 @@ const ExpenseCategory = () => {
                 rowKey={(record) => record.id}
                 // onChange={this.handleTableChange}
               />
-              {
+              
+            </div>
+            {
                     category?.length > 0 &&
                     <div>
                       <Pagination
@@ -415,7 +417,6 @@ const ExpenseCategory = () => {
                       />
                     </div>
                   }
-            </div>
           </div>
         </div>
       </div>
