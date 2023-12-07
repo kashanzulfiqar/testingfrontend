@@ -863,7 +863,7 @@ const AttendanceEmployee = () => {
                               <label>
                                 {isCheckedOut
                                   ? formatHoursMinutes(checkOut.overTime)
-                                  : "--"}
+                                  : formatTodayTime(liveOvertime)}
                               </label>
                             </h6>
                           </div>
