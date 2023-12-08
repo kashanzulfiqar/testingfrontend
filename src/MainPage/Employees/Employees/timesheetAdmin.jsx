@@ -623,25 +623,32 @@ const generateWeekColumns = (weekData, finalData) => {
     {
       title: "Action",
       render: (text, record) => (
-        <Button
-      type="default"
-      onClick={() => {
-        // OpenEditModal(record);
-        console.log(record);
-      }}
-      style={{
-        color: "orange",
-        border: "1px solid orange",
-        borderRadius: "245px",
-        textDecoration: "none",
-        background: "transparent",
-        fontSize: "12px",
-        padding: "2px 6px", // Adjust the padding here
-        lineHeight: 1, // Adjust the font size here
-      }}
-    >
-      View Details
-    </Button>
+        <div
+          style={{
+            display: 'inline-block',
+            border: '1px solid orange',
+            borderRadius: '245px',
+            fontSize: '12px',
+            padding: '2px 6px',
+            background: 'transparent',
+          }}
+        >
+          <Link 
+            //to="/admin-timesheet/viewdetails" 
+            className="dropdown-item" 
+            style={{
+              color: 'orange',
+              textDecoration: 'none',
+            }}
+            onClick={() => {
+              sessionStorage.setItem(`time_sheet`, 'record')
+              console.log(record)
+            }} 
+            state={{record: record}}>
+              View Details
+          </Link>
+        </div>
+        
       ),
     }
     
