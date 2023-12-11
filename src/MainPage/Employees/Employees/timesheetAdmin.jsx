@@ -257,7 +257,9 @@ const AdminTimeSheet = () => {
       .then((res) => {
         if (res.data.success === true) {
           //const newPayrolls = res?.data?.payrolls || [];
-          setData(res?.data?.Timesheet?.docs)
+          const response = res?.data?.Timesheet?.docs
+          //const submittedForApprovalData = response.filter(entry => entry.submittedForApproval === true);
+          setData(response?.filter(entry => entry.submittedForApproval === true))
           //console.log(data)
           setPagination({
             ...pagination,
@@ -266,8 +268,17 @@ const AdminTimeSheet = () => {
           
         }
       })
-      .catch((error) => {
-        console.log("error", error);
+      .catch((err) => {
+        console.log("error", err);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Error Fetching Timesheets"
+          }`
+        );
       })
       .finally(() => {
         setIsLoading(false);
@@ -551,7 +562,7 @@ const AdminTimeSheet = () => {
             startDate: week.startDate,
             endDate: week.endDate,
             data: null,
-            weekTotal: "00:00"
+            weekTotal: "--"
           };
           // Update the userData with the missing week
           userData[Object.keys(userData).length] = missingWeek;
@@ -686,8 +697,7 @@ const generateWeekColumns = (weekData, finalData) => {
   <div className="col-auto float-end ms-auto d-flex gap-2">
     <Form form={form}>
       <div className="row filter-row justify-content-end">
-
-      <div className="col-sm-6 col-md-4 col-lg-3 col-xl-3">
+        <div className="col-sm-6 col-md-6 col-lg-4 col-xl-4">
           <div className="form-group">
             <Form.Item name="month">
               <DatePicker.MonthPicker
@@ -704,7 +714,7 @@ const generateWeekColumns = (weekData, finalData) => {
             </Form.Item>
           </div>
         </div>
-        <div className="col-sm-6 col-md-4 col-lg-3 col-xl-3">
+        <div className="col-sm-6 col-md-6 col-lg-4 col-xl-4">
           <div className="form-group">
             <Form.Item name="name" className="custom-border">
               <Input
@@ -717,20 +727,20 @@ const generateWeekColumns = (weekData, finalData) => {
           </div>
         </div>
         
-        <div className="col-sm-6 col-md-4 col-lg-3 col-xl-3">
+        <div className="col-sm-6 col-md-4 col-lg-2 col-xl-2">
           <div className="form-group">
             <Button
               type="primary"
               htmlType="submit"
               onClick={handleSearch}
               className="btn-success btn-block w-100"
-              style={{ borderRadius: "5px" }}
+              style={{ borderRadius: "5px", display: "flex", justifyContent: "center", alignItems: "center" }}
             >
               SEARCH
             </Button>
           </div>
         </div>
-        <div className="col-sm-6 col-md-4 col-lg-3 col-xl-3">
+        <div className="col-sm-6 col-md-4 col-lg-2 col-xl-2">
           <div className="form-group">
             <Button
               htmlType="submit"
@@ -740,6 +750,9 @@ const generateWeekColumns = (weekData, finalData) => {
                 backgroundColor: "#616161",
                 borderColor: "#616161",
                 borderRadius: "5px",
+                display: "flex", 
+                justifyContent: "center",
+                alignItems: "center"
               }}
             >
               RESET
