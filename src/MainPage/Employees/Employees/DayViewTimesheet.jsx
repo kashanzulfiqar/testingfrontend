@@ -408,7 +408,7 @@ let t_data = [
                                                     ...record,
                                                     projectId: record?.projectId?._id,
                                                     taskId: record?.taskId?._id,
-                                                    hoursWorked: moment(record?.hoursWorked, 'HH:mm'),
+                                                    hoursWorked: record?.hoursWorked ? moment(record?.hoursWorked, 'HH:mm') : "",
                                                     date: moment(record?.date, 'YYYY-MM-DD')
                                                 }
                                                 form2.setFieldsValue(data);
