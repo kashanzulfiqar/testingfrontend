@@ -28,6 +28,7 @@ function WeekViewTimeSheet({ tableStartDate, setTableStartDate, selectedDate, se
     const [loader, setLoader] = useState(false);
     const [taskLoader, setTaskLoader] = useState(false);
     const [tableLoader, setTableLoader] = useState(true);
+    const [saveButton, setSaveButton] = useState(true);
     const [descLength, setDescLength] = useState(0);
     const [cardReason, setCardReason] = useState('');
     const [oldDurationValue, setOldDurationValue] = useState('');
@@ -434,11 +435,13 @@ const Dayscolumns = daysOfWeek.map((day, index) => (
                                   handleCancel();
                                   formduration.resetFields();
                                   console.log(specific_date_data);
+                                  setSaveButton(true);
                                 }
                               }}
                               onChange={(value) => {
                                 // handleTimePickerChange(new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index).toISOString().split('T')[0], record?.projectId, record.taskId, moment(value).format('HH:mm'), 'Update');
                                 handleTimePickerChange(moment(new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index)).format('YYYY-MM-DD'), record?.projectId, record.taskId, moment(value).format('HH:mm'), 'Update');
+                                setSaveButton(false);
                                 // console.log(specific_date_data);
                               }
                               }
@@ -479,10 +482,13 @@ const Dayscolumns = daysOfWeek.map((day, index) => (
                                     setDescLength(0);
                                     formduration.setFieldsValue({ [idd]: ''})
                                     console.log(record, moment(new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index)).format('YYYY-MM-DD'));
+                                    setSaveButton(true);
                                 }
                               }}
-                              onChange={(value) =>
-                                handleTimePickerChange(moment(new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index)).format('YYYY-MM-DD'), record?.projectId, record?.taskId, moment(value).format('HH:mm'), 'Add')
+                              onChange={(value) => {
+                                handleTimePickerChange(moment(new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index)).format('YYYY-MM-DD'), record?.projectId, record?.taskId, moment(value).format('HH:mm'), 'Add');
+                                setSaveButton(false);
+                              }
                               }
                               suffixIcon={false}
                             />
@@ -509,92 +515,92 @@ const Dayscolumns = daysOfWeek.map((day, index) => (
     }
     ));
 
-    let t_data = [
-    {
-        _id: 1,
-        projectId: {
-            _id: "652e535c13934c8ecc420eea",
-            projectName: 'Monndaine'
-        },
-        taskId: {
-            _id: "65361fcb4215f750c657235aX",
-            title: 'ADS 1213'
-        },
-        hoursWorked: "",
-        date: "2023-11-06",
-        reason: "lkklklj444 lkjlkjlk lkjlkj lklkjl lkjlkj lkjklj lkjlkj jhg h gf jhk hkj iuy kj kjh iuy uiyiuyiu yuiiy ytytrytryt yttyryt rytrytry ytytrty ygjhh kj444."
-    },
-    {
-        _id: 11,
-        projectId: {
-            _id: "652e535c13934c8ecc420eea",
-            projectName: 'Monndaine'
-        },
-        taskId: {
-            _id: "65361fcb4215f750c657235aX",
-            title: 'ADS 1213'
-        },
-        hoursWorked: "",
-        date: "2023-11-07",
-        reason: "lkklklj444 lkjlkjlk lkjlkj lklkjl lkjlkj lkjklj lkjlkj jhg h gf jhk hkj iuy kj kjh iuy uiyiuyiu yuiiy ytytrytryt yttyryt rytrytry ytytrty ygjhh kj444."
-    },
-    {
-        _id: 4,
-        projectId: {
-            _id: "652e535c13934c8ecc420eea",
-            projectName: 'Monndaine'
-        },
-        taskId: {
-            _id: "65361fcb4215f750c657235aX",
-            title: 'ADS 1213'
-        },
-        hoursWorked: "02:00",
-        date: "2023-11-14",
-        reason: "lkklklj444 lkjlkjlk lkjlkj lklkjl lkjlkj lkjklj lkjlkj jhg h gf jhk hkj iuy kj kjh iuy uiyiuyiu yuiiy ytytrytryt yttyryt rytrytry ytytrty ygjhh kj444."
-    },
-    {
-        _id: 2,
-        projectId: {
-            _id: "652e535c13934c8ecc420eea",
-            projectName: 'Monndaine3'
-        },
-        taskId: {
-            _id: "65361fcb4215f750c657235aX1",
-            title: 'ADS 1213'
-        },
-        hoursWorked: "03:00",
-        date: "2023-11-07",
-        reason: "lkklklj333"
-    },
-    {
-        _id: 22,
-        projectId: {
-            _id: "652e535c13934c8ecc420eea",
-            projectName: 'Monndaine3'
-        },
-        taskId: {
-            _id: "65361fcb4215f750c657235aX1",
-            title: 'ADS 1213'
-        },
-        hoursWorked: "",
-        date: "2023-11-06",
-        reason: "lkklklj333"
-    },
-    {
-        _id: 3,
-        projectId: {
-            _id: "652e535c13934c8ecc420eea",
-            projectName: 'Monndaine 2'
-        },
-        taskId: {
-            _id: "65361fcb4215f750c657235a",
-            title: 'ADS 1213 2'
-        },
-        hoursWorked: "10:00",
-        date: "2023-11-07",
-        reason: "lkklklj33310000"
-    },
-]
+//     let t_data = [
+//     {
+//         _id: 1,
+//         projectId: {
+//             _id: "652e535c13934c8ecc420eea",
+//             projectName: 'Monndaine'
+//         },
+//         taskId: {
+//             _id: "65361fcb4215f750c657235aX",
+//             title: 'ADS 1213'
+//         },
+//         hoursWorked: "",
+//         date: "2023-11-06",
+//         reason: "lkklklj444 lkjlkjlk lkjlkj lklkjl lkjlkj lkjklj lkjlkj jhg h gf jhk hkj iuy kj kjh iuy uiyiuyiu yuiiy ytytrytryt yttyryt rytrytry ytytrty ygjhh kj444."
+//     },
+//     {
+//         _id: 11,
+//         projectId: {
+//             _id: "652e535c13934c8ecc420eea",
+//             projectName: 'Monndaine'
+//         },
+//         taskId: {
+//             _id: "65361fcb4215f750c657235aX",
+//             title: 'ADS 1213'
+//         },
+//         hoursWorked: "",
+//         date: "2023-11-07",
+//         reason: "lkklklj444 lkjlkjlk lkjlkj lklkjl lkjlkj lkjklj lkjlkj jhg h gf jhk hkj iuy kj kjh iuy uiyiuyiu yuiiy ytytrytryt yttyryt rytrytry ytytrty ygjhh kj444."
+//     },
+//     {
+//         _id: 4,
+//         projectId: {
+//             _id: "652e535c13934c8ecc420eea",
+//             projectName: 'Monndaine'
+//         },
+//         taskId: {
+//             _id: "65361fcb4215f750c657235aX",
+//             title: 'ADS 1213'
+//         },
+//         hoursWorked: "02:00",
+//         date: "2023-11-14",
+//         reason: "lkklklj444 lkjlkjlk lkjlkj lklkjl lkjlkj lkjklj lkjlkj jhg h gf jhk hkj iuy kj kjh iuy uiyiuyiu yuiiy ytytrytryt yttyryt rytrytry ytytrty ygjhh kj444."
+//     },
+//     {
+//         _id: 2,
+//         projectId: {
+//             _id: "652e535c13934c8ecc420eea",
+//             projectName: 'Monndaine3'
+//         },
+//         taskId: {
+//             _id: "65361fcb4215f750c657235aX1",
+//             title: 'ADS 1213'
+//         },
+//         hoursWorked: "03:00",
+//         date: "2023-11-07",
+//         reason: "lkklklj333"
+//     },
+//     {
+//         _id: 22,
+//         projectId: {
+//             _id: "652e535c13934c8ecc420eea",
+//             projectName: 'Monndaine3'
+//         },
+//         taskId: {
+//             _id: "65361fcb4215f750c657235aX1",
+//             title: 'ADS 1213'
+//         },
+//         hoursWorked: "",
+//         date: "2023-11-06",
+//         reason: "lkklklj333"
+//     },
+//     {
+//         _id: 3,
+//         projectId: {
+//             _id: "652e535c13934c8ecc420eea",
+//             projectName: 'Monndaine 2'
+//         },
+//         taskId: {
+//             _id: "65361fcb4215f750c657235a",
+//             title: 'ADS 1213 2'
+//         },
+//         hoursWorked: "10:00",
+//         date: "2023-11-07",
+//         reason: "lkklklj33310000"
+//     },
+// ]
 
     const antIcon = (
     <LoadingOutlined
@@ -813,7 +819,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => (
                           >
                             <div>
                               <small style={{ fontSize: '10px', color: 'rgba(0, 0, 0, 0.5)', display: 'flex', justifyContent: 'flex-end'}}>{descLength} / 150</small>
-                              <Input.TextArea rows={2} defaultValue={showCard?.data?.reason} value={cardReason} style={{resize: 'none'}} className='form-control' onChange={(e) => { setCardReason(e.target.value); setDescLength(e.target.value.length);}} maxLength={150} />
+                              <Input.TextArea rows={2} defaultValue={showCard?.data?.reason} value={cardReason} style={{resize: 'none'}} className='form-control' onChange={(e) => { setCardReason(e.target.value); setDescLength(e.target.value.length); setSaveButton(false)}} maxLength={150} />
                             </div>
                           </Form.Item>
                         </Form>
@@ -852,7 +858,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => (
                         handleCreate()
                         }
                       }}
-                      disabled={loader}
+                      disabled={loader || saveButton}
                       className='NextPrevButtons'
                       style={{border: '2px solid #DEE2E6', borderRadius: '8px', background: '#fff', color: '#666', minWidth: '90px', height: '42px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
                   >
