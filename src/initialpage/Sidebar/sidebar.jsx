@@ -663,18 +663,18 @@ const Sidebar = (props) => {
                       {
                         (user_state?.role === 'admin' || permissions?.managePayrolls) &&
                         <>
-                        <li><Link className={pathname.includes('estimates') ? "active" : ""} to="/app/sales/estimates">Estimates</Link></li>
-                        <li><Link className={pathname.includes('invoices') ? "active" : ""} to="/invoices">Invoices</Link></li>
-                        <li><Link className={pathname.includes('payments') ? "active" : ""} to="/payments">Payments</Link></li>
-                        <li><Link className={pathname.includes('profit-loss') ? "active" : ""} to="/profit-loss">Profit & Loss</Link></li>
-                        <li><Link className={pathname.includes('provident-fund') ? "active" : ""} to="/app/sales/provident-fund">Provident Fund</Link></li>
-                        <li><Link className={pathname.includes('taxes') ? "active" : ""} to="/app/sales/taxes">Taxes</Link></li>
+                          <li><Link className={pathname.includes('estimates') ? "active" : ""} to="/app/sales/estimates">Estimates</Link></li>
+                          <li><Link className={pathname.includes('invoices') ? "active" : ""} to="/invoices">Invoices</Link></li>
+                          <li><Link className={pathname.includes('payments') ? "active" : ""} to="/payments">Payments</Link></li>
+                          <li><Link className={pathname.includes('profit-loss') ? "active" : ""} to="/profit-loss">Profit & Loss</Link></li>
+                          <li><Link className={pathname.includes('provident-fund') ? "active" : ""} to="/app/sales/provident-fund">Provident Fund</Link></li>
+                          <li><Link className={pathname.includes('taxes') ? "active" : ""} to="/app/sales/taxes">Taxes</Link></li>
                         </>
                       }
                       {
                         (user_state?.role === 'admin' || permissions?.expenseManagement) &&
                         <>
-                        <li><Link className={pathname.includes('expenses') ? "active" : ""} to="/expenses">Expenses</Link></li>
+                          <li><Link className={pathname.includes('expenses') ? "active" : ""} to="/expenses">Expenses</Link></li>
                         </>
                       }
                     </ul>

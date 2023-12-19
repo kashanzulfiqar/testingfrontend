@@ -371,63 +371,70 @@ let t_data = [
                 tableLoader ? <div style={{display: 'flex', justifyContent: 'center', height: '150px', background: '#efefef', alignItems: 'center', borderRadius: '10px'}}> <Spin size='middle' /> </div> :
                 allData?.length > 0 ?
                 allData?.map((record, index) => (
-                    <div key={index} style={{background: '#fff', border: '1px solid #DEE2E6', borderRadius: '7px', display: 'flex', height: '220px', margin: '20px 0px', padding: '30px 40px', justifyContent: 'space-between'}}>
-                    
-                        <div style={{display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '14px'}}>
-                            <h4 className="project-title" style={{color: '#333', display: 'flex', alignItems: 'center', gap: '13px'}}>
-                                {/* <Link to={`/projects/projects-view/${project?._id}`}> */}
-                                <img src={folderOpenIcon} width='29px' />
-                                <label>{record?.projectId?.projectName}</label>
-                                {/* </Link> */}
-                            </h4>
-                            <h4 className="project-title" style={{color: '#333', display: 'flex', alignItems: 'center', gap: '18px'}}>
-                                <img src={checkTickIcon} width='25px' />
-                                <label>{record?.taskId?.title}</label>
-                            </h4>
-                            {
-                              record?.reason?.length > 0 &&
-                              <div style={{marginRight: '25px'}}>
-                                  <p style={{margin: '0px'}}>
-                                      <label className="text-muted longText2">{record?.reason}</label>
-                                  </p>
-                              </div>
-                            }
-                        </div>
-        
-                        <div style={{display: 'flex', alignItems: 'center', gap: '45px'}}>
-                            <h3>{record?.hoursWorked}</h3>
-                            <div className="dropdown dropdown-action text-end">
-                                    <a onClick={() => setShowCalendar(false)} href="javascript:void(0)" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons" style={{fontSize: '28px', marginTop: '-3px'}}>more_vert</i></a>
-                                    <div className="dropdown-menu dropdown-menu-right">
-                                        <a className="dropdown-item" href="javascript:void(0)"
-                                            onClick={() => {
-                                                setOpen({ isAddOpen: true, data: record });
-                                                getAllProjects()
-                                                getAllTasks(record?.projectId?._id)
-                                                let data = {
-                                                    ...record,
-                                                    projectId: record?.projectId?._id,
-                                                    taskId: record?.taskId?._id,
-                                                    hoursWorked: record?.hoursWorked ? moment(record?.hoursWorked, 'HH:mm') : "",
-                                                    date: moment(record?.date, 'YYYY-MM-DD')
-                                                }
-                                                form2.setFieldsValue(data);
-                                                setDescLength(record?.reason?.length)
-                                            }}
-                                        >
-                                            <i className="fa fa-pencil m-r-5" /> Edit
-                                        </a>
-                                        <a className="dropdown-item" href="javascript:void(0)"
-                                            onClick={() => {
-                                                setOpen({ isAddOpen: false, isEditOpen: false, isDelOpen: true, data: record });
-                                            }}
-                                        >
-                                            <i className="fa fa-trash-o m-r-5" /> Delete
-                                        </a>
-                                    </div>
+                  <>
+                    {/* <div key={index} style={{background: '#fff', border: '1px solid #DEE2E6', borderRadius: '7px', display: 'flex', height: '220px', margin: '20px 0px', padding: '30px 40px', justifyContent: 'space-between'}}> */}
+                    <div key={index} style={{background: '#fff', border: '1px solid #DEE2E6', display: 'grid', borderRadius: '7px', height: '220px', margin: '20px 0px', padding: '30px 40px'}}>
+                        <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                          <div style={{display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '14px'}}>
+                              <h4 className="project-title" style={{color: '#333', display: 'flex', alignItems: 'center', gap: '13px'}}>
+                                  {/* <Link to={`/projects/projects-view/${project?._id}`}> */}
+                                  <img src={folderOpenIcon} width='29px' />
+                                  <label>{record?.projectId?.projectName}</label>
+                                  {/* </Link> */}
+                              </h4>
+                              <h4 className="project-title" style={{color: '#333', display: 'flex', alignItems: 'center', gap: '18px'}}>
+                                  <img src={checkTickIcon} width='25px' />
+                                  <label>{record?.taskId?.title}</label>
+                              </h4>
+                              {
+                                record?.reason?.length > 0 &&
+                                <div style={{marginRight: '25px'}}>
+                                    <p style={{margin: '0px'}}>
+                                        <label className="text-muted longText2">{record?.reason}</label>
+                                    </p>
                                 </div>
+                              }
+                          </div>
+                          <div style={{display: 'flex', alignItems: 'center', gap: '45px'}}>
+                              <h3>{record?.hoursWorked}</h3>
+                              <div className="dropdown dropdown-action text-end">
+                                <a disabled={record?.submittedForApproval} onClick={() => setShowCalendar(false)} href="javascript:void(0)" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons" style={{fontSize: '28px', marginTop: '-3px'}}>more_vert</i></a>
+                                <div className="dropdown-menu dropdown-menu-right">
+                                    <a className="dropdown-item" href="javascript:void(0)"
+                                        onClick={() => {
+                                            setOpen({ isAddOpen: true, data: record });
+                                            getAllProjects()
+                                            getAllTasks(record?.projectId?._id)
+                                            let data = {
+                                                ...record,
+                                                projectId: record?.projectId?._id,
+                                                taskId: record?.taskId?._id,
+                                                hoursWorked: record?.hoursWorked ? moment(record?.hoursWorked, 'HH:mm') : '',
+                                                date: moment(record?.date, 'YYYY-MM-DD')
+                                            }
+                                            form2.setFieldsValue(data);
+                                            setDescLength(record?.reason?.length)
+                                        }}
+                                    >
+                                        <i className="fa fa-pencil m-r-5" /> Edit
+                                    </a>
+                                    <a className="dropdown-item" href="javascript:void(0)"
+                                        onClick={() => {
+                                            setOpen({ isAddOpen: false, isEditOpen: false, isDelOpen: true, data: record });
+                                        }}
+                                    >
+                                        <i className="fa fa-trash-o m-r-5" /> Delete
+                                    </a>
+                                </div>
+                              </div>
+                          </div>
                         </div>
+                        {
+                          record?.submittedForApproval &&
+                          <label style={{fontSize: '16px', fontWeight: '400', color: '#00b112', marginLeft: 'auto', marginTop: 'auto',marginBottom: 'auto', paddingRight: '15px'}}>Submitted For Approval</label>
+                        }
                     </div>
+                  </>
                 ))
 
                 :
