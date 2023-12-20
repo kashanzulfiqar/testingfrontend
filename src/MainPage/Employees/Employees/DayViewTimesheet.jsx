@@ -398,7 +398,8 @@ let t_data = [
                           <div style={{display: 'flex', alignItems: 'center', gap: '45px'}}>
                               <h3>{record?.hoursWorked}</h3>
                               <div className="dropdown dropdown-action text-end">
-                                <a disabled={record?.submittedForApproval} onClick={() => setShowCalendar(false)} href="javascript:void(0)" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons" style={{fontSize: '28px', marginTop: '-3px'}}>more_vert</i></a>
+                                {/* <a disabled={record?.submittedForApproval} onClick={() => setShowCalendar(false)} href="javascript:void(0)" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons" style={{fontSize: '28px', marginTop: '-3px'}}>more_vert</i></a> */}
+                                <a onClick={() => setShowCalendar(false)} href="javascript:void(0)" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons" style={{fontSize: '28px', marginTop: '-3px'}}>more_vert</i></a>
                                 <div className="dropdown-menu dropdown-menu-right">
                                     <a className="dropdown-item" href="javascript:void(0)"
                                         onClick={() => {
