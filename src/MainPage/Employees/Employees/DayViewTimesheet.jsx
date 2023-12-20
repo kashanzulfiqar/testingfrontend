@@ -26,6 +26,7 @@ function DayViewTimesheet({ tableStartDate, setTableStartDate, selectedDate, set
   const [allTasks, setAllTasks] = useState([]);
   const [descLength, setDescLength] = useState(0);
   const [loader, setLoader] = useState(false);
+  const [buttonDisable, setButtonDisable] = useState(true);
   const [taskLoader, setTaskLoader] = useState(false);
   const [tableLoader, setTableLoader] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -201,6 +202,9 @@ let t_data = [
         _id: open?.data?._id,
         hoursWorked: moment(values?.hoursWorked).format('HH:mm'),
         date: moment(values?.date).format('YYYY-MM-DD'),
+
+        submittedForApproval: false,
+        status: 'No-Status'
     }
 
     setLoader(true);
@@ -339,6 +343,28 @@ let t_data = [
           key: day,
         }
       ));
+
+      const onFormValuesChange = () => {
+        const currentValues = form2.getFieldsValue();
+        const initalValues = open?.data;
+        let current_data = {
+          reason: currentValues?.reason,
+          projectId: currentValues?.projectId,
+          taskId: currentValues?.taskId,
+          hoursWorked: currentValues?.hoursWorked ? moment(currentValues?.hoursWorked).format('HH:mm') : '',
+          date: moment(currentValues?.date).format('YYYY-MM-DD')
+        }
+        let initial_data = {
+          reason: initalValues?.reason,
+          projectId: initalValues?.projectId?._id,
+          taskId: initalValues?.taskId?._id,
+          hoursWorked: initalValues?.hoursWorked,
+          date: moment(initalValues?.date).format('YYYY-MM-DD')
+        }
+        const areObjectsEqual = JSON.stringify(current_data) === JSON.stringify(initial_data);
+        setButtonDisable(areObjectsEqual ? true : false)
+        // console.log(areObjectsEqual ? "Same" : "Not Same");
+      }
 
       const antIcon = (
         <LoadingOutlined
@@ -499,6 +525,7 @@ let t_data = [
                     open?.data ? onFinishEdit(values) : onFinishAdd(values)
                     }
                 }
+                onValuesChange={onFormValuesChange}
                 onFinishFailed={({errorFields}) => {
                     const phoneErrorExists = errorFields.find(field => field.errors.toString().includes('please enter phone number'));
                     if(phoneErrorExists){
@@ -707,7 +734,7 @@ let t_data = [
                     </div>
                 </div>
                 <div className="submit-section">
-                    <button type='submit' className="btn btn-primary submit-btn" disabled={loader}>
+                    <button type='submit' className="btn btn-primary submit-btn" disabled={loader || open?.data ? buttonDisable : false}>
                     {
                         loader ? <Spin size="small" indicator={antIcon} />
                         : 'Submit'
