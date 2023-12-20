@@ -65,7 +65,8 @@ function WeekViewTimeSheet({ tableStartDate, setTableStartDate, selectedDate, se
     // console.log(currentWeekDates, from_data, to_data);
 
     setTableLoader(true)
-    apiServices("GET", `timesheet?page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}${from_data ? `&timesheetFrom=${from_data}` : ''}${to_data ? `&timesheetTo=${to_data}` : ''}`, null, user_state)
+    // apiServices("GET", `timesheet?page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}${from_data ? `&timesheetFrom=${from_data}` : ''}${to_data ? `&timesheetTo=${to_data}` : ''}`, null, user_state)
+    apiServices("GET", `timesheet?page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=99999${from_data ? `&timesheetFrom=${from_data}` : ''}${to_data ? `&timesheetTo=${to_data}` : ''}`, null, user_state)
       .then((res) => {
           if (res?.data?.success === true) {
             setAllData(res?.data?.Timesheet?.docs);
@@ -141,40 +142,77 @@ function WeekViewTimeSheet({ tableStartDate, setTableStartDate, selectedDate, se
   }
 
   const onFinishAdd = (values) => {
-    let data = {
-        ...values,
-    }
-    setLoader(true);
-
-    currentWeekDates.map((date, index) => {
-      let new_data = {
-        ...data,
-        date
+    let d = {
+      projectId: {
+        _id: values?.projectId,
+        projectName: allProjects?.find(proj => proj?._id === values?.projectId)?.projectName
+      },
+      taskId: {
+        _id: values?.taskId,
+        title: allTasks?.find(task => task?._id === values?.taskId)?.title
       }
-      apiServices("POST", 'timesheet', new_data, user_state)
-        .then((res) => {
-            if (res?.data?.success === true) {
-                if(index === 6){
-                  getData(currentPage, pageSize);
-                  handleClose();
-                  message.success('Timesheet Added Successfully!');
-                  setLoader(false);
-                }
-              }
-            })
-            .catch((err) => {
-          setLoader(false);
-          message.error(
-            `${
-              err?.response?.data?.msg
-                ? err?.response?.data?.msg
-                : err?.response?.data?.validation?.body?.message
-                ? err?.response?.data?.validation?.body?.message
-                : "Add Timesheet Error"
-            }!`
-          );
-        });
-    })
+    }
+    // when table is empty
+    if(allData.length === 0){
+      setAllData([d, ...allData]);
+      handleClose();
+    }
+    // when table is not empty or filled with data
+    let foundMatch = false;
+    for (const item of allData) {
+      const projectId = item?.projectId?._id;
+      const taskId = item?.taskId?._id;
+
+      if (projectId === values?.projectId && taskId === values?.taskId) {
+        // message.error('Data Already Exist for this Project & Task!');
+        foundMatch = true;
+        break
+      }
+    }
+
+    if (foundMatch) {
+      message.error('Data Already Exist for this Project & Task!');
+    } else {
+      setAllData([d, ...allData]);
+      handleClose();
+      formduration.resetFields();
+    }
+
+
+    // let data = {
+    //     ...values,
+    // }
+    // setLoader(true);
+
+    // currentWeekDates.map((date, index) => {
+    //   let new_data = {
+    //     ...data,
+    //     date
+    //   }
+    //   apiServices("POST", 'timesheet', new_data, user_state)
+    //     .then((res) => {
+    //         if (res?.data?.success === true) {
+    //             if(index === 6){
+    //               getData(currentPage, pageSize);
+    //               handleClose();
+    //               message.success('Timesheet Added Successfully!');
+    //               setLoader(false);
+    //             }
+    //           }
+    //         })
+    //         .catch((err) => {
+    //       setLoader(false);
+    //       message.error(
+    //         `${
+    //           err?.response?.data?.msg
+    //             ? err?.response?.data?.msg
+    //             : err?.response?.data?.validation?.body?.message
+    //             ? err?.response?.data?.validation?.body?.message
+    //             : "Add Timesheet Error"
+    //         }!`
+    //       );
+    //     });
+    // })
   }
 
     const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -231,6 +269,9 @@ function WeekViewTimeSheet({ tableStartDate, setTableStartDate, selectedDate, se
       _id: showCard?.data?._id,
       hoursWorked: updatedDuration,
       reason: cardReason,
+
+      submittedForApproval: false,
+      status: 'No-Status'
     }
 
     setLoader(true);
@@ -272,8 +313,9 @@ function WeekViewTimeSheet({ tableStartDate, setTableStartDate, selectedDate, se
           if (res?.data?.success === true) {
               getData(currentPage, pageSize);
               setShowCard({isShown: false, data: ''});
-              message.success('Timesheet Updated Successfully!');
+              message.success('Timesheet Created Successfully!');
               setLoader(false);
+              formduration.resetFields();
             }
           })
           .catch((err) => {
@@ -284,7 +326,7 @@ function WeekViewTimeSheet({ tableStartDate, setTableStartDate, selectedDate, se
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Updating Timesheet Error"
+              : "Create Timesheet Error"
           }!`
         );
       });
@@ -418,7 +460,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => (
                         specific_date_data ?
                           <TimePicker
                               allowClear={false}
-                              disabled={allData.some(item => item?.submittedForApproval === true)}
+                              // disabled={allData.some(item => item?.submittedForApproval === true)}
                               className="form-control timePickerWithData"
                               placeholder="00:00"
                               format={"HH:mm"}
@@ -462,7 +504,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => (
                             name={`${index}${index2}`}
                           >
                             <TimePicker
-                              disabled={allData.some(item => item?.submittedForApproval === true)}
+                              // disabled={allData.some(item => item?.submittedForApproval === true)}
                               allowClear={false}
                               className="form-control timePickerWithData"
                               placeholder="00:00"
@@ -499,8 +541,8 @@ const Dayscolumns = daysOfWeek.map((day, index) => (
             )
             }else{
               // const totalMinutes = allData?.filter(item => item.date === new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index).toISOString().split('T')[0])
-              const totalMinutes = allData?.filter(item => moment(item.date).format('YYYY-MM-DD') === moment(new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index)).format('YYYY-MM-DD'))
-              ?.reduce((acc, item) => acc + item.hoursWorked.split(':').reduce((acc, val, idx) => acc + parseInt(val ? val : 0, 10) * (idx === 0 ? 60 : 1), 0), 0);
+              const totalMinutes = allData?.filter(item => moment(item?.date).format('YYYY-MM-DD') === moment(new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index)).format('YYYY-MM-DD'))
+              ?.reduce((acc, item) => acc + item?.hoursWorked?.split(':')?.reduce((acc, val, idx) => acc + parseInt(val ? val : 0, 10) * (idx === 0 ? 60 : 1), 0), 0);
 
               const hours = Math.floor(totalMinutes / 60) || 0;
               const minutes = totalMinutes % 60 || 0;
@@ -630,6 +672,16 @@ const Dayscolumns = daysOfWeek.map((day, index) => (
         spin
     />
     );
+    const antIcon4 = (
+    <LoadingOutlined
+        style={{
+        fontSize: 22,
+        color: '#FF9B44',
+        width: '120px'
+        }}
+        spin
+    />
+    );
 
     const groupedData = allData.reduce((result, item) => {
         const key = `${item.projectId._id}-${item.taskId._id}`;
@@ -644,12 +696,12 @@ const Dayscolumns = daysOfWeek.map((day, index) => (
           };
         }
         result[key].data.push(item);
-        result[key].totalDuration += durationToMinutes(item.hoursWorked);
+        result[key].totalDuration += durationToMinutes(item?.hoursWorked ? item?.hoursWorked : '00:00');
         return result;
       }, {});
       
       function durationToMinutes(duration) {
-        const [hours, minutes] = duration.split(":").map(Number)
+        const [hours, minutes] = duration?.split(":").map(Number)
         return hours * 60 + minutes || 0;
       }
       
@@ -746,7 +798,23 @@ const Dayscolumns = daysOfWeek.map((day, index) => (
             }
             {
               (!showCard?.isShown && rows?.length > 1 && allData.some(item => item?.submittedForApproval === true)) &&
-              <div style={{display: 'flex', justifyContent: 'flex-end'}}>
+              <div style={{display: 'flex', justifyContent: 'flex-end', gap: '15px'}}>
+                {
+                  (!showCard?.isShown && rows?.length > 1 && allData.some(item => item?.submittedForApproval === false)) &&
+                  <div style={{display: 'flex', justifyContent: 'flex-end'}}>
+                    <button
+                        onClick={handleSubmitApproval}
+                        className='SubmitForApprovalButton'
+                        disabled={loader}
+                        style={{border: '2px solid #FF9B44', borderRadius: '8px', background: '#fff', color: '#FF9B44', minWidth: '90px', height: '42px', paddingTop: '3px', margin: '30px 0px 15px 0px', paddingInline: '18px'}}
+                    >
+                      {
+                        loader ? <Spin size="small" indicator={antIcon4} />
+                        : <span style={{fontSize: '16px', fontWeight: '500'}}>Submit Changes</span>
+                      }
+                    </button>
+                  </div>
+                }
                 <button
                     disabled
                     style={{border: '2px solid #00B112', borderRadius: '8px', background: '#fff', color: '#00B112', minWidth: '90px', height: '42px', paddingTop: '3px', margin: '30px 0px 15px 0px', paddingInline: '18px'}}
@@ -756,7 +824,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => (
               </div>
             }
 
-        {
+        {/* {
           allData?.length > 0 &&
           <div>
             <Pagination
@@ -776,7 +844,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => (
               itemRender={itemRender}
             />
           </div>
-        }
+        } */}
 
             {/* Bottom info card */}
             {
