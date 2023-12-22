@@ -268,7 +268,7 @@ function WeekViewTimeSheet({ tableStartDate, setTableStartDate, selectedDate, se
     let u_data = {
       _id: showCard?.data?._id,
       hoursWorked: updatedDuration,
-      reason: cardReason,
+      notes: cardReason,
 
       submittedForApproval: false,
       status: 'No-Status'
@@ -304,7 +304,7 @@ function WeekViewTimeSheet({ tableStartDate, setTableStartDate, selectedDate, se
       projectId: showCard?.data?.projectId?._id,
       taskId: showCard?.data?.taskId?._id,
       hoursWorked: updatedDuration,
-      reason: cardReason,
+      notes: cardReason,
     }
 
     setLoader(true);
@@ -461,7 +461,8 @@ const Dayscolumns = daysOfWeek.map((day, index) => (
                           <TimePicker
                               allowClear={false}
                               // disabled={allData.some(item => item?.submittedForApproval === true)}
-                              className="form-control timePickerWithData"
+                              disabled={allData.some(item => item?.status === 'Approved')}
+                              className={`form-control timePickerWithData ${specific_date_data?.status === "Pending" ? 'timePickerPending' : specific_date_data?.status === "Approved" ? 'timePickerApproved' : specific_date_data?.status === "Declined" ? 'timePickerDeclined' : null }`}
                               placeholder="00:00"
                               format={"HH:mm"}
                               defaultValue={specific_date_data?.hoursWorked ? moment(specific_date_data?.hoursWorked, 'HH:mm') : ''}
@@ -470,9 +471,9 @@ const Dayscolumns = daysOfWeek.map((day, index) => (
                               onClick={() => {
                                 if(!showCard?.isShown || (showCard?.isShown && (specific_date_data?._id !== showCard?.data?._id))){
                                   setShowCard({ isShown: true, data: specific_date_data });
-                                  setCardReason(specific_date_data?.reason);
+                                  setCardReason(specific_date_data?.notes);
                                   setUpdatedDuration(specific_date_data?.hoursWorked)
-                                  setDescLength(specific_date_data?.reason?.length);
+                                  setDescLength(specific_date_data?.notes?.length);
                                   setOldDurationValue(specific_date_data?.hoursWorked);
                                   handleCancel();
                                   formduration.resetFields();
@@ -505,6 +506,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => (
                           >
                             <TimePicker
                               // disabled={allData.some(item => item?.submittedForApproval === true)}
+                              disabled={allData.some(item => item?.status === 'Approved')}
                               allowClear={false}
                               className="form-control timePickerWithData"
                               placeholder="00:00"
@@ -683,19 +685,19 @@ const Dayscolumns = daysOfWeek.map((day, index) => (
     />
     );
 
-    const groupedData = allData.reduce((result, item) => {
-        const key = `${item.projectId._id}-${item.taskId._id}`;
+    const groupedData = allData?.reduce((result, item) => {
+        const key = `${item?.projectId?._id}-${item?.taskId?._id}`;
         if (!result[key]) {
           result[key] = {
-            projectId: item.projectId,
+            projectId: item?.projectId,
             // projectId: item.projectId.projectName,
-            taskId: item.taskId,
+            taskId: item?.taskId,
             // taskId: item.taskId.title,
             data: [],
             totalDuration: 0,
           };
         }
-        result[key].data.push(item);
+        result[key].data?.push(item);
         result[key].totalDuration += durationToMinutes(item?.hoursWorked ? item?.hoursWorked : '00:00');
         return result;
       }, {});
@@ -797,6 +799,24 @@ const Dayscolumns = daysOfWeek.map((day, index) => (
               </div>
             }
             {
+              allData.some(item => item?.status === 'Approved') ?
+              <div style={{display: 'flex', justifyContent: 'flex-end'}}>
+                <button
+                    disabled
+                    style={{border: '2px solid #00B112', borderRadius: '8px', background: '#fff', color: '#00B112', minWidth: '90px', height: '42px', paddingTop: '3px', margin: '30px 0px 15px 0px', paddingInline: '18px'}}
+                >
+                  <span style={{fontSize: '16px', fontWeight: '500'}}>Approved</span>
+                </button>
+              </div> :
+              allData.some(item => item?.status === 'Declined') ?
+              <div style={{display: 'flex', justifyContent: 'flex-end'}}>
+                <button
+                    disabled
+                    style={{border: '2px solid #DD0000', borderRadius: '8px', background: '#fff', color: '#DD0000', minWidth: '90px', height: '42px', paddingTop: '3px', margin: '30px 0px 15px 0px', paddingInline: '18px'}}
+                >
+                  <span style={{fontSize: '16px', fontWeight: '500'}}>Declined</span>
+                </button>
+              </div> :
               (!showCard?.isShown && rows?.length > 1 && allData.some(item => item?.submittedForApproval === true)) &&
               <div style={{display: 'flex', justifyContent: 'flex-end', gap: '15px'}}>
                 {
@@ -887,7 +907,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => (
                           >
                             <div>
                               <small style={{ fontSize: '10px', color: 'rgba(0, 0, 0, 0.5)', display: 'flex', justifyContent: 'flex-end'}}>{descLength} / 150</small>
-                              <Input.TextArea rows={2} defaultValue={showCard?.data?.reason} value={cardReason} style={{resize: 'none'}} className='form-control' onChange={(e) => { setCardReason(e.target.value); setDescLength(e.target.value.length); setSaveButton(false)}} maxLength={150} />
+                              <Input.TextArea rows={2} defaultValue={showCard?.data?.notes} value={cardReason} style={{resize: 'none'}} className='form-control' onChange={(e) => { setCardReason(e.target.value); setDescLength(e.target.value.length); setSaveButton(false)}} maxLength={150} />
                             </div>
                           </Form.Item>
                         </Form>

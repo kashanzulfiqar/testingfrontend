@@ -7175,6 +7175,32 @@ textarea.form-control {
 
 /* ................. custom css styling ................ */
 
+.accordian-table2 thead > tr > th{
+  font-size: 18px !important;
+}
+.accordian-table2 table{
+  border-right: none !important;
+}
+
+.accordian-table thead{
+  /* display: none; */
+}
+
+.accordian-table tbody tr td{
+  width: 80px !important;
+  text-wrap: nowrap !important;
+}
+.accordian-table tbody tr td:nth-child(1){
+  padding-left: 17px !important;
+}
+
+/* admin timesheet view detail button */
+.view-detail-style:hover{
+ background-color: #FF9B44 !important;
+ color: #fff !important;
+ transition: .4s all;
+}
+
 /* align on disable dates in profit loss datepicker on generate */
 .disableAlign .ant-picker-cell-disabled::before{
   top: 23% !important;
@@ -7203,6 +7229,18 @@ textarea.form-control {
   border: 2px solid rgb(188, 188, 188) !important;
   border-radius: 8px !important;
   background: transparent !important;
+}
+.timePickerPending{
+  border: 2px solid #ff9b4491  !important;
+  box-shadow: -1px 0px 6px 2px #FF9B4454;
+}
+.timePickerApproved{
+  border: 2px solid #55ce6396  !important;
+  box-shadow: -1px 0px 6px 2px #55ce634d;
+}
+.timePickerDeclined{
+  border: 2px solid #ff000078 !important;
+  box-shadow: -1px 0px 6px 2px #ff000059;
 }
 .timePickerWithData input{
   font-size: 17px !important;
@@ -7300,6 +7338,11 @@ textarea.form-control {
 .NextPrevButtons1:hover{
   background-color: #ff8419 !important;
   border-color: #ff8419 !important;
+  transition: .3 all;
+}
+.NextPrevButtons2:hover{
+  background-color: #41c750 !important;
+  border-color: #41c750 !important;
   transition: .3 all;
 }
 .SubmitForApprovalButton:hover{

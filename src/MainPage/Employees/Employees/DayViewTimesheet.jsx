@@ -348,14 +348,14 @@ let t_data = [
         const currentValues = form2.getFieldsValue();
         const initalValues = open?.data;
         let current_data = {
-          reason: currentValues?.reason,
+          notes: currentValues?.notes,
           projectId: currentValues?.projectId,
           taskId: currentValues?.taskId,
           hoursWorked: currentValues?.hoursWorked ? moment(currentValues?.hoursWorked).format('HH:mm') : '',
           date: moment(currentValues?.date).format('YYYY-MM-DD')
         }
         let initial_data = {
-          reason: initalValues?.reason,
+          notes: initalValues?.notes,
           projectId: initalValues?.projectId?._id,
           taskId: initalValues?.taskId?._id,
           hoursWorked: initalValues?.hoursWorked,
@@ -413,10 +413,10 @@ let t_data = [
                                   <label>{record?.taskId?.title}</label>
                               </h4>
                               {
-                                record?.reason?.length > 0 &&
+                                record?.notes?.length > 0 &&
                                 <div style={{marginRight: '25px'}}>
                                     <p style={{margin: '0px'}}>
-                                        <label className="text-muted longText2">{record?.reason}</label>
+                                        <label className="text-muted longText2">{record?.notes}</label>
                                     </p>
                                 </div>
                               }
@@ -425,7 +425,7 @@ let t_data = [
                               <h3>{record?.hoursWorked}</h3>
                               <div className="dropdown dropdown-action text-end">
                                 {/* <a disabled={record?.submittedForApproval} onClick={() => setShowCalendar(false)} href="javascript:void(0)" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons" style={{fontSize: '28px', marginTop: '-3px'}}>more_vert</i></a> */}
-                                <a onClick={() => setShowCalendar(false)} href="javascript:void(0)" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons" style={{fontSize: '28px', marginTop: '-3px'}}>more_vert</i></a>
+                                <a disabled={record?.status === 'Approved'} onClick={() => setShowCalendar(false)} href="javascript:void(0)" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons" style={{fontSize: '28px', marginTop: '-3px'}}>more_vert</i></a>
                                 <div className="dropdown-menu dropdown-menu-right">
                                     <a className="dropdown-item" href="javascript:void(0)"
                                         onClick={() => {
@@ -440,7 +440,7 @@ let t_data = [
                                                 date: moment(record?.date, 'YYYY-MM-DD')
                                             }
                                             form2.setFieldsValue(data);
-                                            setDescLength(record?.reason?.length)
+                                            setDescLength(record?.notes?.length)
                                         }}
                                     >
                                         <i className="fa fa-pencil m-r-5" /> Edit
@@ -457,7 +457,11 @@ let t_data = [
                           </div>
                         </div>
                         {
-                          record?.submittedForApproval &&
+                          record?.status === 'Approved' ?
+                          <label style={{fontSize: '16px', fontWeight: '400', color: '#00b112', marginLeft: 'auto', marginTop: 'auto',marginBottom: 'auto', paddingRight: '15px'}}>Approved</label>
+                          : record?.status === 'Declined' ?
+                          <label style={{fontSize: '16px', fontWeight: '400', color: '#DD0000', marginLeft: 'auto', marginTop: 'auto',marginBottom: 'auto', paddingRight: '15px'}}>Declined</label>
+                          : record?.submittedForApproval &&
                           <label style={{fontSize: '16px', fontWeight: '400', color: '#00b112', marginLeft: 'auto', marginTop: 'auto',marginBottom: 'auto', paddingRight: '15px'}}>Submitted For Approval</label>
                         }
                     </div>
@@ -706,7 +710,7 @@ let t_data = [
                             <small style={{marginTop: '5px', fontSize: '10px', color: 'rgba(0, 0, 0, 0.5)'}}>{descLength} / 150</small>
                         </label>
                         <Form.Item
-                            name="reason"
+                            name="notes"
                             rules={[
                             {
                                 whitespace: true,
