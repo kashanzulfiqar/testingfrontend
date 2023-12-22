@@ -262,7 +262,10 @@ const ViewDetailTimesheet = () => {
           dataIndex: 'date',
           key: 'date',
           render: (text, record) => (            
-            <>{moment(text).format('dddd')}</>
+            <>
+              {moment(text).format('dddd')} <br />
+              {moment(text).format('DD-MMM-YYYY')}
+            </>
           ),
         },
         {
