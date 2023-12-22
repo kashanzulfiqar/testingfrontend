@@ -639,13 +639,19 @@ const generateWeekColumns = (weekData, finalData) => {
             display: 'inline-block',
             border: '1px solid orange',
             borderRadius: '245px',
-            fontSize: '12px',
-            padding: '2px 6px',
+            fontSize: '13px',
+            padding: '4px 10px',
             background: 'transparent',
+            color: '#FF9B44',
+            minWidth: 'max-content',
+            cursor: 'pointer'
           }}
+          className="view-detail-style"
+          onClick={() => nav('/admin-timesheet/details', { state: record})}
         >
-          <Link 
-            //to="/admin-timesheet/viewdetails" 
+          View Details
+          {/* <Link 
+            // to="/admin-timesheet/details" 
             className="dropdown-item" 
             style={{
               color: 'orange',
@@ -657,7 +663,7 @@ const generateWeekColumns = (weekData, finalData) => {
             }} 
             state={{record: record}}>
               View Details
-          </Link>
+          </Link> */}
         </div>
         
       ),
