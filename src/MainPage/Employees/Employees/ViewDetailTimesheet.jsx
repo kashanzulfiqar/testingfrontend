@@ -276,10 +276,12 @@ const ViewDetailTimesheet = () => {
               return (
                 <div>
                   {record?.mergeObjects.map((item, index) => (
-                    <span key={index}>
+                    <>
+                    <label key={index}>
                       {item?.projectId?.projectName}
+                    </label>
                       {index < record?.mergeObjects.length - 1 && <br />}
-                    </span>
+                    </>
                   ))}
                 </div>
               )},
@@ -295,10 +297,12 @@ const ViewDetailTimesheet = () => {
               return (
                 <div>
                   {record?.mergeObjects.map((item, index) => (
-                    <span key={index}>
+                    <>
+                    <label key={index}>
                       {item?.taskId?.title}
+                    </label>
                       {index < record?.mergeObjects.length - 1 && <br />}
-                    </span>
+                    </>
                   ))}
                 </div>
               )
