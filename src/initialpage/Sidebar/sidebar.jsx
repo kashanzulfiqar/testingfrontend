@@ -580,7 +580,7 @@ const Sidebar = (props) => {
                             <ul>
                               <li><Link className={pathname.includes('employee-timesheet') ? "active" : ""} to="/employee-timesheet">Timesheet (Employee)</Link></li>
                               
-                              { (user_state?.role === 'admin') &&
+                              { (user_state?.role === 'admin' || permissions?.timesheetManagement) &&
                                 <li><Link className={pathname.includes('admin-timesheet') ? "active" : ""} to="/admin-timesheet">Timesheet (Admin)</Link></li>
                               }
                               

@@ -231,7 +231,7 @@ const AdminTimeSheet = () => {
     // }
     // else if (employees?.length>0){
       if (
-        role === "admin" 
+        role === "admin" || permissions?.timesheetManagement
       ) {
         setIsLoading(true);
         firstAPI();
