@@ -153,12 +153,16 @@ const ViewDetailTimesheet = () => {
       // console.log( 'week_data', week_data);
       // console.log( 'week_data updated', allData[week_no]?.data?.map(obj => ({ ...obj, status: 'Declined', ...val })));
 
+      const week_detail = `week no ${week_no+1}, ${moment(week_data?.sort((a, b) => a.date.localeCompare(b.date))[0]?.date).format('DD-MM-YYYY')}, ${moment(week_data?.sort((a, b) => a.date.localeCompare(b.date))[week_data?.length-1]?.date).format('DD-MM-YYYY')}`;
+      // console.log(week_detail);
+
       setLoader(true);
   
       week_data?.map((item, index) => {
         let updated_data = {
           _id: item?._id,
           approved: false,
+          week: week_detail,
           ...val
         }
 
@@ -204,6 +208,8 @@ const ViewDetailTimesheet = () => {
 
     const onHandleApprove = (week_data, week_no) => {
       // console.log( 'week_data', week_data);
+      const week_detail = `week no ${week_no+1}, ${moment(week_data?.sort((a, b) => a.date.localeCompare(b.date))[0]?.date).format('DD-MM-YYYY')}, ${moment(week_data?.sort((a, b) => a.date.localeCompare(b.date))[week_data?.length-1]?.date).format('DD-MM-YYYY')}`;
+      // console.log(week_detail);
 
       setLoader(true);
   
@@ -211,6 +217,7 @@ const ViewDetailTimesheet = () => {
         let updated_data = {
           _id: item?._id,
           approved: true,
+          week: week_detail
         }
   
         apiServices("PUT", 'timesheet', updated_data, user_state)
