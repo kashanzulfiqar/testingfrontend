@@ -41,7 +41,8 @@ const { Panel } = Collapse;
 const ViewDetailTimesheet = () => {
     const user_state = useSelector((state) => state.user.loginvalue);
     const permissions = useSelector((state) => state?.permissionsSlice?.data);
-    const role = user_state?.user?.role
+    const role = user_state?.user?.role;
+    const login_user_id = user_state?.user?._id;
     
     const location = useLocation();
     const month_data = location?.state;
@@ -61,8 +62,9 @@ const ViewDetailTimesheet = () => {
 
 
     useEffect(() => {
-      setAllData(month_data);
-      console.log(month_data);
+      const allDataLocal = JSON.parse(localStorage.getItem("allDataLocalStorage"));
+      setAllData(allDataLocal ? allDataLocal : month_data);
+      // console.log('month_data', month_data);
 
       week1();
       week2();
@@ -131,7 +133,7 @@ const ViewDetailTimesheet = () => {
     }, []);
     
     setAllData4(mergedData)
-    console.log(mergedData);
+    // console.log(mergedData);
     }
     const week5 = () => {
       const mergedData = month_data[4]?.data?.reduce((acc, currentItem) => {
@@ -187,7 +189,15 @@ const ViewDetailTimesheet = () => {
                   ...allData[week_no],
                   data: allData[week_no]?.data?.map(obj => ({ ...obj, status: 'Declined', ...val }))
                 }
-              })
+              });
+              let d = {
+                ...allData,
+                [week_no]: {
+                  ...allData[week_no],
+                  data: allData[week_no]?.data?.map(obj => ({ ...obj, status: 'Declined', ...val }))
+                }
+              }
+              localStorage.setItem(`allDataLocalStorage`, JSON.stringify(d));
             }
           }})
           .catch((err) => {
@@ -233,7 +243,16 @@ const ViewDetailTimesheet = () => {
                   ...allData[week_no],
                   data: allData[week_no]?.data?.map(obj => ({ ...obj, status: 'Approved' }))
                 }
-              })
+              });
+              let d = {
+                ...allData,
+                [week_no]: {
+                  ...allData[week_no],
+                  data: allData[week_no]?.data?.map(obj => ({ ...obj, status: 'Approved' }))
+                }
+              }
+              localStorage.setItem(`allDataLocalStorage`, JSON.stringify(d));
+
               // let d = {
               //   ...allData,
               //   week_no: {
@@ -610,26 +629,27 @@ const ViewDetailTimesheet = () => {
                         </button>
                       </div> :
                       <div style={{display: 'flex', gap: '15px', justifyContent: 'flex-end', marginRight: '25px'}}>
-                        <button
+                        <Button
+                            disabled={login_user_id === allData?._id}
                             onClick={() => setOpen({ isOpen: true, data: allData[0]?.data, week_no: 0})}
                             className='NextPrevButtons'
                             style={{border: '1px solid #DD0000', borderRadius: '8px', background: '#fff', color: '#666', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
                         >
                           <span style={{fontSize: '16px', fontWeight: '500', color: '#DD0000'}}>DECLINE</span>
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                           onClick={() => {
                             onHandleApprove(allData[0]?.data, 0);
                           }}
                           className='NextPrevButtons2'
-                          disabled={loader}
+                          disabled={loader || login_user_id === allData?._id}
                           style={{border: '1px solid #55CE63', borderRadius: '8px', background: '#55CE63', color: '#fff', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
                         >
                           {
                             loader ? <Spin size="small" indicator={antIcon} />
                             : <span style={{fontSize: '16px', fontWeight: '500'}}>APPROVE</span>
                           }
-                        </button>
+                        </Button>
                       </div>
                     }
                     
@@ -697,26 +717,27 @@ const ViewDetailTimesheet = () => {
                         </button>
                       </div> :
                       <div style={{display: 'flex', gap: '15px', justifyContent: 'flex-end', marginRight: '25px'}}>
-                        <button
+                        <Button
+                            disabled={login_user_id === allData?._id}
                             onClick={() => setOpen({ isOpen: true, data: allData[1]?.data, week_no: 1})}
                             className='NextPrevButtons'
                             style={{border: '1px solid #DD0000', borderRadius: '8px', background: '#fff', color: '#666', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
                         >
                           <span style={{fontSize: '16px', fontWeight: '500', color: '#DD0000'}}>DECLINE</span>
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                           onClick={() => {
                             onHandleApprove(allData[1]?.data, 1);
                           }}
                           className='NextPrevButtons2'
-                          disabled={loader}
+                          disabled={loader || login_user_id === allData?._id}
                           style={{border: '1px solid #55CE63', borderRadius: '8px', background: '#55CE63', color: '#fff', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
                         >
                           {
                             loader ? <Spin size="small" indicator={antIcon} />
                             : <span style={{fontSize: '16px', fontWeight: '500'}}>APPROVE</span>
                           }
-                        </button>
+                        </Button>
                       </div>
                     }
 
@@ -786,26 +807,27 @@ const ViewDetailTimesheet = () => {
                         </button>
                       </div> :
                       <div style={{display: 'flex', gap: '15px', justifyContent: 'flex-end', marginRight: '25px'}}>
-                        <button
+                        <Button
+                            disabled={login_user_id === allData?._id}
                             onClick={() => setOpen({ isOpen: true, data: allData[2]?.data, week_no: 2})}
                             className='NextPrevButtons'
                             style={{border: '1px solid #DD0000', borderRadius: '8px', background: '#fff', color: '#666', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
                         >
                           <span style={{fontSize: '16px', fontWeight: '500', color: '#DD0000'}}>DECLINE</span>
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                           onClick={() => {
                             onHandleApprove(allData[2]?.data, 2);
                           }}
                           className='NextPrevButtons2'
-                          disabled={loader}
+                          disabled={loader || login_user_id === allData?._id}
                           style={{border: '1px solid #55CE63', borderRadius: '8px', background: '#55CE63', color: '#fff', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
                         >
                           {
                             loader ? <Spin size="small" indicator={antIcon} />
                             : <span style={{fontSize: '16px', fontWeight: '500'}}>APPROVE</span>
                           }
-                        </button>
+                        </Button>
                       </div>
                     }
                     
@@ -874,26 +896,27 @@ const ViewDetailTimesheet = () => {
                         </button>
                       </div> :
                       <div style={{display: 'flex', gap: '15px', justifyContent: 'flex-end', marginRight: '25px'}}>
-                        <button
+                        <Button
+                            disabled={login_user_id === allData?._id}
                             onClick={() => setOpen({ isOpen: true, data: allData[3]?.data, week_no: 3})}
                             className='NextPrevButtons'
                             style={{border: '1px solid #DD0000', borderRadius: '8px', background: '#fff', color: '#666', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
                         >
                           <span style={{fontSize: '16px', fontWeight: '500', color: '#DD0000'}}>DECLINE</span>
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                           onClick={() => {
                             onHandleApprove(allData[3]?.data, 3);
                           }}
                           className='NextPrevButtons2'
-                          disabled={loader}
+                          disabled={loader || login_user_id === allData?._id}
                           style={{border: '1px solid #55CE63', borderRadius: '8px', background: '#55CE63', color: '#fff', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
                         >
                           {
                             loader ? <Spin size="small" indicator={antIcon} />
                             : <span style={{fontSize: '16px', fontWeight: '500'}}>APPROVE</span>
                           }
-                        </button>
+                        </Button>
                       </div>
                     }
                     
@@ -962,26 +985,27 @@ const ViewDetailTimesheet = () => {
                         </button>
                       </div> :
                       <div style={{display: 'flex', gap: '15px', justifyContent: 'flex-end', marginRight: '25px'}}>
-                        <button
+                        <Button
+                            disabled={login_user_id === allData?._id}
                             onClick={() => setOpen({ isOpen: true, data: allData[4]?.data, week_no: 4})}
                             className='NextPrevButtons'
                             style={{border: '1px solid #DD0000', borderRadius: '8px', background: '#fff', color: '#666', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
                         >
                           <span style={{fontSize: '16px', fontWeight: '500', color: '#DD0000'}}>DECLINE</span>
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                           onClick={() => {
                             onHandleApprove(allData[4]?.data, 4);
                           }}
                           className='NextPrevButtons2'
-                          disabled={loader}
+                          disabled={loader || login_user_id === allData?._id}
                           style={{border: '1px solid #55CE63', borderRadius: '8px', background: '#55CE63', color: '#fff', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
                         >
                           {
                             loader ? <Spin size="small" indicator={antIcon} />
                             : <span style={{fontSize: '16px', fontWeight: '500'}}>APPROVE</span>
                           }
-                        </button>
+                        </Button>
                       </div>
                     }
                     
