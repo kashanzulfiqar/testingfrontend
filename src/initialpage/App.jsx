@@ -99,8 +99,12 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    if(location?.pathname !== "/profile/employee-profile")
-    localStorage.removeItem('allDataLocal');
+    if(location?.pathname !== "/profile/employee-profile"){
+      localStorage.removeItem('allDataLocal');
+    }
+    if(location?.pathname !== "/admin-timesheet/details"){
+      localStorage.removeItem('allDataLocalStorage')
+    }
   }, [location])
 
 

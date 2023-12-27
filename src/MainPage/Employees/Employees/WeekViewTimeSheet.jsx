@@ -66,7 +66,7 @@ function WeekViewTimeSheet({ tableStartDate, setTableStartDate, selectedDate, se
 
     setTableLoader(true)
     // apiServices("GET", `timesheet?page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}${from_data ? `&timesheetFrom=${from_data}` : ''}${to_data ? `&timesheetTo=${to_data}` : ''}`, null, user_state)
-    apiServices("GET", `timesheet?page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=99999${from_data ? `&timesheetFrom=${from_data}` : ''}${to_data ? `&timesheetTo=${to_data}` : ''}`, null, user_state)
+    apiServices("GET", `timesheet?page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=99999${from_data ? `&timesheetFrom=${from_data}` : ''}${to_data ? `&timesheetTo=${to_data}` : ''}&employeeOnly=${true}`, null, user_state)
       .then((res) => {
           if (res?.data?.success === true) {
             setAllData(res?.data?.Timesheet?.docs);
@@ -470,15 +470,19 @@ const Dayscolumns = daysOfWeek.map((day, index) => (
                               value={specific_date_data?.hoursWorked ? moment(specific_date_data?.hoursWorked, 'HH:mm') : ''}
                               onClick={() => {
                                 if(!showCard?.isShown || (showCard?.isShown && (specific_date_data?._id !== showCard?.data?._id))){
-                                  setShowCard({ isShown: true, data: specific_date_data });
-                                  setCardReason(specific_date_data?.notes);
-                                  setUpdatedDuration(specific_date_data?.hoursWorked)
-                                  setDescLength(specific_date_data?.notes?.length);
-                                  setOldDurationValue(specific_date_data?.hoursWorked);
-                                  handleCancel();
-                                  formduration.resetFields();
-                                  console.log(specific_date_data);
-                                  setSaveButton(true);
+                                  if(allData.some(item => item?.status === 'Approved')){
+
+                                  }else{
+                                    setShowCard({ isShown: true, data: specific_date_data });
+                                    setCardReason(specific_date_data?.notes);
+                                    setUpdatedDuration(specific_date_data?.hoursWorked)
+                                    setDescLength(specific_date_data?.notes?.length);
+                                    setOldDurationValue(specific_date_data?.hoursWorked);
+                                    handleCancel();
+                                    formduration.resetFields();
+                                    console.log(specific_date_data);
+                                    setSaveButton(true);
+                                  }
                                 }
                               }}
                               onChange={(value) => {
@@ -513,20 +517,23 @@ const Dayscolumns = daysOfWeek.map((day, index) => (
                               format={"HH:mm"}
                               onClick={() => {
                                 if(!showCard?.isShown || (showCard?.isShown && (`${index}${index2}` !== showCard?.data?.indexId))){
-                                  let d = {
-                                    projectId: {_id: record?.projectId?._id, projectName: record?.projectId?.projectName},
-                                    taskId: {_id: record?.taskId?._id, title: record?.taskId?.title},
-                                    date: moment(new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index)).format('YYYY-MM-DD'),
-                                    indexId: `${index}${index2}`
+                                  if(allData.some(item => item?.status === 'Approved')){
+                                  }else{
+                                    let d = {
+                                      projectId: {_id: record?.projectId?._id, projectName: record?.projectId?.projectName},
+                                      taskId: {_id: record?.taskId?._id, title: record?.taskId?.title},
+                                      date: moment(new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index)).format('YYYY-MM-DD'),
+                                      indexId: `${index}${index2}`
+                                    }
+                                    let idd = showCard?.data?.indexId;
+                                    setShowCard({ isShown: true, data: d });
+                                      setCardReason('');
+                                      setUpdatedDuration('')
+                                      setDescLength(0);
+                                      formduration.setFieldsValue({ [idd]: ''})
+                                      console.log(record, moment(new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index)).format('YYYY-MM-DD'));
+                                      setSaveButton(true);
                                   }
-                                  let idd = showCard?.data?.indexId;
-                                  setShowCard({ isShown: true, data: d });
-                                    setCardReason('');
-                                    setUpdatedDuration('')
-                                    setDescLength(0);
-                                    formduration.setFieldsValue({ [idd]: ''})
-                                    console.log(record, moment(new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index)).format('YYYY-MM-DD'));
-                                    setSaveButton(true);
                                 }
                               }}
                               onChange={(value) => {
@@ -809,7 +816,23 @@ const Dayscolumns = daysOfWeek.map((day, index) => (
                 </button>
               </div> :
               allData.some(item => item?.status === 'Declined') ?
-              <div style={{display: 'flex', justifyContent: 'flex-end'}}>
+              <div style={{display: 'flex', justifyContent: 'flex-end', gap: '15px'}}>
+                {
+                  (!showCard?.isShown && rows?.length > 1 && allData.some(item => item?.submittedForApproval === false)) &&
+                  <div style={{display: 'flex', justifyContent: 'flex-end'}}>
+                    <button
+                        onClick={handleSubmitApproval}
+                        className='SubmitForApprovalButton'
+                        disabled={loader}
+                        style={{border: '2px solid #FF9B44', borderRadius: '8px', background: '#fff', color: '#FF9B44', minWidth: '90px', height: '42px', paddingTop: '3px', margin: '30px 0px 15px 0px', paddingInline: '18px'}}
+                    >
+                      {
+                        loader ? <Spin size="small" indicator={antIcon4} />
+                        : <span style={{fontSize: '16px', fontWeight: '500'}}>Submit Changes</span>
+                      }
+                    </button>
+                  </div>
+                }
                 <button
                     disabled
                     style={{border: '2px solid #DD0000', borderRadius: '8px', background: '#fff', color: '#DD0000', minWidth: '90px', height: '42px', paddingTop: '3px', margin: '30px 0px 15px 0px', paddingInline: '18px'}}

@@ -250,7 +250,7 @@ const AdminTimeSheet = () => {
 
     apiServices(
       "GET",
-      `timesheet/?userName=${filters.name}&page=${params.page}&limit=999999&timesheetFrom=${startDate}&timesheetTo=${endDate}`,
+      `timesheet/?userName=${filters.name}&page=${params.page}&limit=999999&timesheetFrom=${startDate}&timesheetTo=${endDate}&employeeOnly=${false}`,
       null,
       user_state
     )

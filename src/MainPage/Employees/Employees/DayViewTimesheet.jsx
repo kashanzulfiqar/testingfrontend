@@ -89,7 +89,7 @@ let t_data = [
     // console.log(current_date);
 
     setTableLoader(true)
-    apiServices("GET", `timesheet?page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}${current_date ? `&timesheetFrom=${current_date}` : ''}${current_date ? `&timesheetTo=${current_date}` : ''}`, null, user_state)
+    apiServices("GET", `timesheet?page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}${current_date ? `&timesheetFrom=${current_date}` : ''}${current_date ? `&timesheetTo=${current_date}` : ''}&employeeOnly=${true}`, null, user_state)
       .then((res) => {
           if (res?.data?.success === true) {
             setAllData(res?.data?.Timesheet?.docs);
