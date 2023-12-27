@@ -972,16 +972,16 @@ const AttendanceEmployee = () => {
                           <strong>
                           {isCheckedOut
                               ? ( !statDisable ? 
-                                formatHoursMinutes(Math.floor((shiftDuration*22) - parseFloat(stats.lastMonth)))
+                                formatHoursMinutes(Math.max(0, Math.floor((shiftDuration*22) - parseFloat(stats.lastMonth))))
                                 : formatHoursMinutes(
-                                  Math.ceil((shiftDuration*22) - parseFloat(((elapsedTime/60000)+stats.lastMonth)))
+                                  Math.max(0, Math.ceil((shiftDuration*22) - parseFloat(((elapsedTime/60000)+stats.lastMonth))))
                                 )
                                 )
                               // formatHoursMinutes(
                               //   Math.floor((shiftDuration*22) - parseFloat(stats.lastMonth))
                               // )
                               : formatHoursMinutes(
-                                Math.ceil((shiftDuration*22) - parseFloat(((elapsedTime/60000)+stats.lastMonth)))
+                                Math.max(0, Math.ceil((shiftDuration*22) - parseFloat(((elapsedTime/60000)+stats.lastMonth))))
                               ) // Create a function to format elapsed time
                             }{" "}
                             {/* {formatHoursMinutes(
