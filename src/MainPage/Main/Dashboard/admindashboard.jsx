@@ -814,7 +814,7 @@ const antIcon = (
                               </td>
                               <td>{payment?.paymentType}</td>
                               <td>{formatDate(payment?.paymentDate || '')}</td>
-                              <td>{payment?.paidAmount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {payment?.currency}</td>
+                              <td>{payment?.paidAmountInPreferredCurrency?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {payment?.company?.preferredCurrency}</td>
                             </tr>
                           ))
                         }
