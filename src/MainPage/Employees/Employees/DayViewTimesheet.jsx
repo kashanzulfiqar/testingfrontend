@@ -546,7 +546,7 @@ let t_data = [
             }
 
         <h3 style={{display: 'flex', justifyContent: 'flex-end', gap: '15px', margin: '30px 25px 30px 0px'}}>
-          <label>Total:</label>
+          <label style={{color: '#6C757D'}}>Total:</label>
           <label>{tableLoader ? '--:--' : totalTime()}</label>
         </h3>
 

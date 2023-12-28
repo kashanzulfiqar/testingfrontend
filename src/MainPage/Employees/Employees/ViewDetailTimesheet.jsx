@@ -152,130 +152,96 @@ const ViewDetailTimesheet = () => {
     }
 
     const onDecline = (val, week_data, week_no) => {
-      // console.log( 'week_data', week_data);
-      // console.log( 'week_data updated', allData[week_no]?.data?.map(obj => ({ ...obj, status: 'Declined', ...val })));
 
       const week_detail = `week no ${week_no+1}, ${moment(week_data?.sort((a, b) => a.date.localeCompare(b.date))[0]?.date).format('DD-MM-YYYY')}, ${moment(week_data?.sort((a, b) => a.date.localeCompare(b.date))[week_data?.length-1]?.date).format('DD-MM-YYYY')}`;
-      // console.log(week_detail);
+      let data = {
+        _id: week_data?.map(item => item?._id),
+        week: week_detail,
+        approved: false,
+        ...val
+      }
 
       setLoader(true);
-  
-      week_data?.map((item, index) => {
-        let updated_data = {
-          _id: item?._id,
-          approved: false,
-          week: week_detail,
-          ...val
-        }
-
-        setAllData({
-          ...allData,
-          [week_no]: {
-            ...allData[week_no],
-            data: allData[week_no]?.data?.map(obj => ({ ...obj, status: 'Declined', ...val }))
-          }
-        })
-  
-        apiServices("PUT", 'timesheet', updated_data, user_state)
-        .then((res) => {
-          if (res?.data?.success === true) {
-            if(index === week_data?.length - 1){
-              message.success('Timesheet Declined Successfully!');
-              setLoader(false);
-              handleClose();
-              setAllData({
-                ...allData,
-                [week_no]: {
-                  ...allData[week_no],
-                  data: allData[week_no]?.data?.map(obj => ({ ...obj, status: 'Declined', ...val }))
-                }
-              });
-              let d = {
-                ...allData,
-                [week_no]: {
-                  ...allData[week_no],
-                  data: allData[week_no]?.data?.map(obj => ({ ...obj, status: 'Declined', ...val }))
-                }
+      apiServices("PUT", 'timesheet', data, user_state)
+      .then((res) => {
+        if (res?.data?.success === true) {
+            message.success('Timesheet Declined Successfully!');
+            setLoader(false);
+            handleClose();
+            setAllData({
+              ...allData,
+              [week_no]: {
+                ...allData[week_no],
+                data: allData[week_no]?.data?.map(obj => ({ ...obj, status: 'Declined', ...val }))
               }
-              localStorage.setItem(`allDataLocalStorage`, JSON.stringify(d));
+            });
+            let d = {
+              ...allData,
+              [week_no]: {
+                ...allData[week_no],
+                data: allData[week_no]?.data?.map(obj => ({ ...obj, status: 'Declined', ...val }))
+              }
             }
-          }})
-          .catch((err) => {
-          setLoader(false);
-          message.error(
-            `${
-              err?.response?.data?.msg
-                ? err?.response?.data?.msg
-                : err?.response?.data?.validation?.body?.message
-                ? err?.response?.data?.validation?.body?.message
-                : "Timesheet Declined Error"
-            }!`
-          );
-        });
-      })
+            localStorage.setItem(`allDataLocalStorage`, JSON.stringify(d));
+        }})
+        .catch((err) => {
+        setLoader(false);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Timesheet Declined Error"
+          }!`
+        );
+      });
     };
     
 
     const onHandleApprove = (week_data, week_no) => {
-      // console.log( 'week_data', week_data);
+
       const week_detail = `week no ${week_no+1}, ${moment(week_data?.sort((a, b) => a.date.localeCompare(b.date))[0]?.date).format('DD-MM-YYYY')}, ${moment(week_data?.sort((a, b) => a.date.localeCompare(b.date))[week_data?.length-1]?.date).format('DD-MM-YYYY')}`;
-      // console.log(week_detail);
+      let data = {
+        _id: week_data?.map(item => item?._id),
+        week: week_detail,
+        approved: true,
+      }
 
       setLoader(true);
-  
-      week_data?.map((item, index) => {
-        let updated_data = {
-          _id: item?._id,
-          approved: true,
-          week: week_detail
-        }
-  
-        apiServices("PUT", 'timesheet', updated_data, user_state)
-        .then((res) => {
-          if (res?.data?.success === true) {
-            if(index === week_data?.length - 1){
-              message.success('Timesheet Approved Successfully!');
-              setLoader(false);
-              // console.log(allData[week_no]?.data?.map(obj => ({ ...obj, status: 'Approved' })));
-              setAllData({
-                ...allData,
-                [week_no]: {
-                  ...allData[week_no],
-                  data: allData[week_no]?.data?.map(obj => ({ ...obj, status: 'Approved' }))
-                }
-              });
-              let d = {
-                ...allData,
-                [week_no]: {
-                  ...allData[week_no],
-                  data: allData[week_no]?.data?.map(obj => ({ ...obj, status: 'Approved' }))
-                }
+      apiServices("PUT", 'timesheet', data, user_state)
+      .then((res) => {
+        if (res?.data?.success === true) {
+            message.success('Timesheet Approved Successfully!');
+            setLoader(false);
+            setAllData({
+              ...allData,
+              [week_no]: {
+                ...allData[week_no],
+                data: allData[week_no]?.data?.map(obj => ({ ...obj, status: 'Approved' }))
               }
-              localStorage.setItem(`allDataLocalStorage`, JSON.stringify(d));
-
-              // let d = {
-              //   ...allData,
-              //   week_no: {
-              //     ...allData[week_no],
-              //     data: allData[week_no]?.data?.map(obj => ({ ...obj, status: 'Approved' }))
-              //   }
-              // }
-              // nav('/admin-timesheet/details', { state: d})
+            });
+            let d = {
+              ...allData,
+              [week_no]: {
+                ...allData[week_no],
+                data: allData[week_no]?.data?.map(obj => ({ ...obj, status: 'Approved' }))
+              }
             }
-          }})
-          .catch((err) => {
-          setLoader(false);
-          message.error(
-            `${
-              err?.response?.data?.msg
-                ? err?.response?.data?.msg
-                : err?.response?.data?.validation?.body?.message
-                ? err?.response?.data?.validation?.body?.message
-                : "Timesheet Approved Error"
-            }!`
-          );
-        });
-      })
+            localStorage.setItem(`allDataLocalStorage`, JSON.stringify(d));
+        }})
+        .catch((err) => {
+        setLoader(false);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Timesheet Approved Error"
+          }!`
+        );
+      });
     }
     
     const handleClose = () => {
@@ -631,7 +597,7 @@ const ViewDetailTimesheet = () => {
                       <div style={{display: 'flex', gap: '15px', justifyContent: 'flex-end', marginRight: '25px'}}>
                         <Button
                             disabled={login_user_id === allData?._id}
-                            onClick={() => setOpen({ isOpen: true, data: allData[4]?.data, week_no: 4})}
+                            onClick={() => setOpen({ isOpen: true, data: allData[0]?.data, week_no: 0})}
                             className={login_user_id !== allData?._id && `NextPrevButtons`}
                             style={{border: `${login_user_id === allData?._id ? '1px solid #ff8181' : '1px solid #DD0000'}`, borderRadius: '8px', background: '#fff', color: `${login_user_id === allData?._id ? '#ff8181' : '#DD0000'}`, minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
                         >
@@ -719,7 +685,7 @@ const ViewDetailTimesheet = () => {
                       <div style={{display: 'flex', gap: '15px', justifyContent: 'flex-end', marginRight: '25px'}}>
                         <Button
                             disabled={login_user_id === allData?._id}
-                            onClick={() => setOpen({ isOpen: true, data: allData[4]?.data, week_no: 4})}
+                            onClick={() => setOpen({ isOpen: true, data: allData[1]?.data, week_no: 1})}
                             className={login_user_id !== allData?._id && `NextPrevButtons`}
                             style={{border: `${login_user_id === allData?._id ? '1px solid #ff8181' : '1px solid #DD0000'}`, borderRadius: '8px', background: '#fff', color: `${login_user_id === allData?._id ? '#ff8181' : '#DD0000'}`, minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
                         >
@@ -809,7 +775,7 @@ const ViewDetailTimesheet = () => {
                       <div style={{display: 'flex', gap: '15px', justifyContent: 'flex-end', marginRight: '25px'}}>
                         <Button
                             disabled={login_user_id === allData?._id}
-                            onClick={() => setOpen({ isOpen: true, data: allData[4]?.data, week_no: 4})}
+                            onClick={() => setOpen({ isOpen: true, data: allData[2]?.data, week_no: 2})}
                             className={login_user_id !== allData?._id && `NextPrevButtons`}
                             style={{border: `${login_user_id === allData?._id ? '1px solid #ff8181' : '1px solid #DD0000'}`, borderRadius: '8px', background: '#fff', color: `${login_user_id === allData?._id ? '#ff8181' : '#DD0000'}`, minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
                         >
@@ -898,7 +864,7 @@ const ViewDetailTimesheet = () => {
                       <div style={{display: 'flex', gap: '15px', justifyContent: 'flex-end', marginRight: '25px'}}>
                         <Button
                             disabled={login_user_id === allData?._id}
-                            onClick={() => setOpen({ isOpen: true, data: allData[4]?.data, week_no: 4})}
+                            onClick={() => setOpen({ isOpen: true, data: allData[3]?.data, week_no: 3})}
                             className={login_user_id !== allData?._id && `NextPrevButtons`}
                             style={{border: `${login_user_id === allData?._id ? '1px solid #ff8181' : '1px solid #DD0000'}`, borderRadius: '8px', background: '#fff', color: `${login_user_id === allData?._id ? '#ff8181' : '#DD0000'}`, minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
                         >
