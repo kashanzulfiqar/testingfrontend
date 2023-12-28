@@ -39,6 +39,9 @@ import { LoadingOutlined } from '@ant-design/icons';
 const { Panel } = Collapse;
 
 const ViewDetailTimesheet = () => {
+
+    const [form] = Form.useForm();
+
     const user_state = useSelector((state) => state.user.loginvalue);
     const permissions = useSelector((state) => state?.permissionsSlice?.data);
     const role = user_state?.user?.role;
@@ -57,6 +60,7 @@ const ViewDetailTimesheet = () => {
     const [loader, setLoader] = useState(false);
     const [open, setOpen] = useState({
       isOpen: false,
+      isViewOpen: false
     });
   const [reasonLength, setReasonLength] = useState('0')
 
@@ -245,7 +249,7 @@ const ViewDetailTimesheet = () => {
     }
     
     const handleClose = () => {
-      setOpen({ isOpen: false, data: null, week_no: null});
+      setOpen({ isOpen: false, isViewOpen: false, data: null, week_no: null});
     };
 
     const columns = [
@@ -267,12 +271,12 @@ const ViewDetailTimesheet = () => {
           render: (text, record) => {
               return (
                 <div>
-                  {record?.mergeObjects.map((item, index) => (
+                  {record?.mergeObjects?.map((item, index) => (
                     <>
-                    <label key={index}>
+                    <label key={index} style={{marginBottom: `${index < record?.mergeObjects?.length - 1 && '17px'}`}}>
                       {item?.projectId?.projectName}
                     </label>
-                      {index < record?.mergeObjects.length - 1 && <br />}
+                      {index < record?.mergeObjects?.length - 1 && <br />}
                     </>
                   ))}
                 </div>
@@ -288,12 +292,12 @@ const ViewDetailTimesheet = () => {
           render: (text, record) => {
               return (
                 <div>
-                  {record?.mergeObjects.map((item, index) => (
+                  {record?.mergeObjects?.map((item, index) => (
                     <>
-                    <label key={index}>
+                    <label key={index} style={{marginBottom: `${index < record?.mergeObjects?.length - 1 && '17px'}`}}>
                       {item?.taskId?.title}
                     </label>
-                      {index < record?.mergeObjects.length - 1 && <br />}
+                      {index < record?.mergeObjects?.length - 1 && <br />}
                     </>
                   ))}
                 </div>
@@ -310,13 +314,48 @@ const ViewDetailTimesheet = () => {
           render: (text, record) => {
               return (
                 <div>
-                  {record?.mergeObjects.map((item, index) => (
-                    <span key={index}>
-                      {item?.hoursWorked || '--:--'}
-                      {index < record?.mergeObjects.length - 1 && <br />}
-                    </span>
+                  {record?.mergeObjects?.map((item, index) => (
+                    <>
+                      <label key={index} style={{marginBottom: `${index < record?.mergeObjects?.length - 1 && '17px'}`}}>
+                        {item?.hoursWorked || '--:--'}
+                      </label>
+                      {index < record?.mergeObjects?.length - 1 && <br />}
+                    </>
                   ))}
                 </div>
+              )},
+        },
+        {
+          title: 'Action',
+          dataIndex: '',
+          key: 'viewDetail',
+          render: (text, record) => {
+              return (
+                <>
+                  {record?.mergeObjects?.map((item, index) => (
+                    <>
+                    <div
+                      style={{
+                        display: 'inline-block',
+                        border: '1px solid orange',
+                        borderRadius: '245px',
+                        fontSize: '13px',
+                        padding: '4px 10px',
+                        background: 'transparent',
+                        color: '#FF9B44',
+                        minWidth: 'max-content',
+                        cursor: 'pointer',
+                        marginBottom: `${index < record?.mergeObjects?.length - 1 && '10px'}`
+                      }}
+                      className="view-detail-style"
+                      onClick={() => {setOpen({ isOpen: false, isViewOpen: true, data: item}); form.setFieldsValue({notes: item?.notes})}}
+                    >
+                      View Detail
+                    </div>
+                      {index < record?.mergeObjects?.length - 1 && <br />}
+                    </>
+                  ))}
+                </>
               )},
         },
       ];
@@ -1077,6 +1116,58 @@ const ViewDetailTimesheet = () => {
           </div>
         </div>
       </Modal>
+
+            {/* ----- View Detail Modal ----- */}
+            <Modal
+              open={open.isViewOpen}
+              onClose={handleClose}
+              aria-labelledby="modal-modal-title"
+              // className="modal custom-modal fade"
+              aria-describedby="modal-modal-description"
+              disableRestoreFocus
+              BackdropProps={{
+                style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
+              }}
+            >
+              <div className="modal-dialog modal-dialog-centered" role="document">
+                <div className="modal-content">
+                  <div className="modal-header">
+                    <h5 className="modal-title">
+                      {moment(open?.data?.date).format('dddd')} <span style={{marginInline: '6px'}}>|</span> {moment(open?.data?.date).format('DD-MMM-YYYY')}
+                    </h5>
+                    <button type="button" className="close" onClick={handleClose}>
+                      <span aria-hidden="true">×</span>
+                    </button>
+                  </div>
+                  <div className="modal-body">
+                    <Form
+                      form={form}
+                      name="control-hooks"
+                    >
+                      <div className="form-group" style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+                        <div>
+                          <h4 style={{fontWeight: '500', marginBottom: '-15px'}}>{open?.data?.projectId?.projectName}</h4>
+                          <br />
+                          <h4 className="mb-0" style={{color: '#0409217D', fontWeight: '450'}}>{open?.data?.taskId?.title}</h4>
+                        </div>
+                        <h4 className="mb-0">{open?.data?.hoursWorked}</h4>
+                      </div>
+                      <div className="form-group">
+                        <label style={{display: 'flex', justifyContent: 'space-between'}}>
+                          <div>Notes</div>
+                        </label>
+                        <Form.Item
+                          name="notes"
+                          className="custom-border"
+                        >
+                          <Input.TextArea disabled rows={3} style={{resize: 'none'}} className='dateDisable form-control' />
+                        </Form.Item>
+                      </div>
+                    </Form>
+                  </div>
+                </div>
+              </div>
+            </Modal>
 
 
     </>

@@ -551,7 +551,8 @@ let t_data = [
         </h3>
 
             { tableLoader ? null :
-              (!allData.some(item => item?.submittedForApproval === true)) &&
+              allData?.length === 0 ? null :
+              (!allData?.some(item => item?.submittedForApproval === true)) &&
               <div style={{display: 'flex', justifyContent: 'flex-end'}}>
                 <button
                     onClick={handleSubmitApproval}
