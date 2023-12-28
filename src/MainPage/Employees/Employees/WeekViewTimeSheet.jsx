@@ -817,12 +817,24 @@ const Dayscolumns = daysOfWeek.map((day, index) => (
                     </button>
                   </div>
                 }
-                <button
+                {
+                  allData.every(item => item?.status === 'Approved') &&
+                  <button
+                      disabled
+                      style={{border: '2px solid #00B112', borderRadius: '8px', background: '#fff', color: '#00B112', minWidth: '90px', height: '42px', paddingTop: '3px', margin: '30px 0px 15px 0px', paddingInline: '18px'}}
+                  >
+                    <span style={{fontSize: '16px', fontWeight: '500'}}>Approved</span>
+                  </button>
+                }
+                {
+                  allData.some(item => item?.status === 'Pending') &&
+                  <button
                     disabled
                     style={{border: '2px solid #00B112', borderRadius: '8px', background: '#fff', color: '#00B112', minWidth: '90px', height: '42px', paddingTop: '3px', margin: '30px 0px 15px 0px', paddingInline: '18px'}}
-                >
-                  <span style={{fontSize: '16px', fontWeight: '500'}}>Approved</span>
-                </button>
+                  >
+                    <span style={{fontSize: '16px', fontWeight: '500'}}>Submitted for Approval</span>
+                  </button>
+                }
               </div> :
               allData.some(item => item?.status === 'Declined') ?
               <div style={{display: 'flex', justifyContent: 'flex-end', gap: '15px'}}>
@@ -842,12 +854,24 @@ const Dayscolumns = daysOfWeek.map((day, index) => (
                     </button>
                   </div>
                 }
-                <button
+                {
+                  allData.every(item => item?.status === 'Declined') &&
+                  <button
+                      disabled
+                      style={{border: '2px solid #DD0000', borderRadius: '8px', background: '#fff', color: '#DD0000', minWidth: '90px', height: '42px', paddingTop: '3px', margin: '30px 0px 15px 0px', paddingInline: '18px'}}
+                  >
+                    <span style={{fontSize: '16px', fontWeight: '500'}}>Declined</span>
+                  </button>
+                }
+                {
+                  allData.some(item => item?.status === 'Pending') &&
+                  <button
                     disabled
-                    style={{border: '2px solid #DD0000', borderRadius: '8px', background: '#fff', color: '#DD0000', minWidth: '90px', height: '42px', paddingTop: '3px', margin: '30px 0px 15px 0px', paddingInline: '18px'}}
-                >
-                  <span style={{fontSize: '16px', fontWeight: '500'}}>Declined</span>
-                </button>
+                    style={{border: '2px solid #00B112', borderRadius: '8px', background: '#fff', color: '#00B112', minWidth: '90px', height: '42px', paddingTop: '3px', margin: '30px 0px 15px 0px', paddingInline: '18px'}}
+                  >
+                    <span style={{fontSize: '16px', fontWeight: '500'}}>Submitted for Approval</span>
+                  </button>
+                }
               </div> :
               (!showCard?.isShown && rows?.length > 1 && allData.some(item => item?.submittedForApproval === true)) &&
               <div style={{display: 'flex', justifyContent: 'flex-end', gap: '15px'}}>
