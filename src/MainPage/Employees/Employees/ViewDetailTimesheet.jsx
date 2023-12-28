@@ -631,19 +631,19 @@ const ViewDetailTimesheet = () => {
                       <div style={{display: 'flex', gap: '15px', justifyContent: 'flex-end', marginRight: '25px'}}>
                         <Button
                             disabled={login_user_id === allData?._id}
-                            onClick={() => setOpen({ isOpen: true, data: allData[0]?.data, week_no: 0})}
-                            className='NextPrevButtons'
-                            style={{border: '1px solid #DD0000', borderRadius: '8px', background: '#fff', color: '#666', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
+                            onClick={() => setOpen({ isOpen: true, data: allData[4]?.data, week_no: 4})}
+                            className={login_user_id !== allData?._id && `NextPrevButtons`}
+                            style={{border: `${login_user_id === allData?._id ? '1px solid #ff8181' : '1px solid #DD0000'}`, borderRadius: '8px', background: '#fff', color: `${login_user_id === allData?._id ? '#ff8181' : '#DD0000'}`, minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
                         >
-                          <span style={{fontSize: '16px', fontWeight: '500', color: '#DD0000'}}>DECLINE</span>
+                          <span style={{fontSize: '16px', fontWeight: '500'}}>DECLINE</span>
                         </Button>
                         <Button
                           onClick={() => {
                             onHandleApprove(allData[0]?.data, 0);
                           }}
-                          className='NextPrevButtons2'
+                          className={login_user_id !== allData?._id && `NextPrevButtons2`}
                           disabled={loader || login_user_id === allData?._id}
-                          style={{border: '1px solid #55CE63', borderRadius: '8px', background: '#55CE63', color: '#fff', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
+                          style={{border: `${login_user_id === allData?._id ? '1px solid #7bd485' : '1px solid #55CE63'}`, borderRadius: '8px', background: `${login_user_id === allData?._id ? '#7bd485' : '#55CE63'}`, color: '#fff', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
                         >
                           {
                             loader ? <Spin size="small" indicator={antIcon} />
@@ -719,19 +719,19 @@ const ViewDetailTimesheet = () => {
                       <div style={{display: 'flex', gap: '15px', justifyContent: 'flex-end', marginRight: '25px'}}>
                         <Button
                             disabled={login_user_id === allData?._id}
-                            onClick={() => setOpen({ isOpen: true, data: allData[1]?.data, week_no: 1})}
-                            className='NextPrevButtons'
-                            style={{border: '1px solid #DD0000', borderRadius: '8px', background: '#fff', color: '#666', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
+                            onClick={() => setOpen({ isOpen: true, data: allData[4]?.data, week_no: 4})}
+                            className={login_user_id !== allData?._id && `NextPrevButtons`}
+                            style={{border: `${login_user_id === allData?._id ? '1px solid #ff8181' : '1px solid #DD0000'}`, borderRadius: '8px', background: '#fff', color: `${login_user_id === allData?._id ? '#ff8181' : '#DD0000'}`, minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
                         >
-                          <span style={{fontSize: '16px', fontWeight: '500', color: '#DD0000'}}>DECLINE</span>
+                          <span style={{fontSize: '16px', fontWeight: '500'}}>DECLINE</span>
                         </Button>
                         <Button
                           onClick={() => {
                             onHandleApprove(allData[1]?.data, 1);
                           }}
-                          className='NextPrevButtons2'
+                          className={login_user_id !== allData?._id && `NextPrevButtons2`}
                           disabled={loader || login_user_id === allData?._id}
-                          style={{border: '1px solid #55CE63', borderRadius: '8px', background: '#55CE63', color: '#fff', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
+                          style={{border: `${login_user_id === allData?._id ? '1px solid #7bd485' : '1px solid #55CE63'}`, borderRadius: '8px', background: `${login_user_id === allData?._id ? '#7bd485' : '#55CE63'}`, color: '#fff', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
                         >
                           {
                             loader ? <Spin size="small" indicator={antIcon} />
@@ -809,19 +809,19 @@ const ViewDetailTimesheet = () => {
                       <div style={{display: 'flex', gap: '15px', justifyContent: 'flex-end', marginRight: '25px'}}>
                         <Button
                             disabled={login_user_id === allData?._id}
-                            onClick={() => setOpen({ isOpen: true, data: allData[2]?.data, week_no: 2})}
-                            className='NextPrevButtons'
-                            style={{border: '1px solid #DD0000', borderRadius: '8px', background: '#fff', color: '#666', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
+                            onClick={() => setOpen({ isOpen: true, data: allData[4]?.data, week_no: 4})}
+                            className={login_user_id !== allData?._id && `NextPrevButtons`}
+                            style={{border: `${login_user_id === allData?._id ? '1px solid #ff8181' : '1px solid #DD0000'}`, borderRadius: '8px', background: '#fff', color: `${login_user_id === allData?._id ? '#ff8181' : '#DD0000'}`, minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
                         >
-                          <span style={{fontSize: '16px', fontWeight: '500', color: '#DD0000'}}>DECLINE</span>
+                          <span style={{fontSize: '16px', fontWeight: '500'}}>DECLINE</span>
                         </Button>
                         <Button
                           onClick={() => {
                             onHandleApprove(allData[2]?.data, 2);
                           }}
-                          className='NextPrevButtons2'
+                          className={login_user_id !== allData?._id && `NextPrevButtons2`}
                           disabled={loader || login_user_id === allData?._id}
-                          style={{border: '1px solid #55CE63', borderRadius: '8px', background: '#55CE63', color: '#fff', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
+                          style={{border: `${login_user_id === allData?._id ? '1px solid #7bd485' : '1px solid #55CE63'}`, borderRadius: '8px', background: `${login_user_id === allData?._id ? '#7bd485' : '#55CE63'}`, color: '#fff', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
                         >
                           {
                             loader ? <Spin size="small" indicator={antIcon} />
@@ -898,19 +898,19 @@ const ViewDetailTimesheet = () => {
                       <div style={{display: 'flex', gap: '15px', justifyContent: 'flex-end', marginRight: '25px'}}>
                         <Button
                             disabled={login_user_id === allData?._id}
-                            onClick={() => setOpen({ isOpen: true, data: allData[3]?.data, week_no: 3})}
-                            className='NextPrevButtons'
-                            style={{border: '1px solid #DD0000', borderRadius: '8px', background: '#fff', color: '#666', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
+                            onClick={() => setOpen({ isOpen: true, data: allData[4]?.data, week_no: 4})}
+                            className={login_user_id !== allData?._id && `NextPrevButtons`}
+                            style={{border: `${login_user_id === allData?._id ? '1px solid #ff8181' : '1px solid #DD0000'}`, borderRadius: '8px', background: '#fff', color: `${login_user_id === allData?._id ? '#ff8181' : '#DD0000'}`, minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
                         >
-                          <span style={{fontSize: '16px', fontWeight: '500', color: '#DD0000'}}>DECLINE</span>
+                          <span style={{fontSize: '16px', fontWeight: '500'}}>DECLINE</span>
                         </Button>
                         <Button
                           onClick={() => {
                             onHandleApprove(allData[3]?.data, 3);
                           }}
-                          className='NextPrevButtons2'
+                          className={login_user_id !== allData?._id && `NextPrevButtons2`}
                           disabled={loader || login_user_id === allData?._id}
-                          style={{border: '1px solid #55CE63', borderRadius: '8px', background: '#55CE63', color: '#fff', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
+                          style={{border: `${login_user_id === allData?._id ? '1px solid #7bd485' : '1px solid #55CE63'}`, borderRadius: '8px', background: `${login_user_id === allData?._id ? '#7bd485' : '#55CE63'}`, color: '#fff', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
                         >
                           {
                             loader ? <Spin size="small" indicator={antIcon} />
@@ -988,18 +988,18 @@ const ViewDetailTimesheet = () => {
                         <Button
                             disabled={login_user_id === allData?._id}
                             onClick={() => setOpen({ isOpen: true, data: allData[4]?.data, week_no: 4})}
-                            className='NextPrevButtons'
-                            style={{border: '1px solid #DD0000', borderRadius: '8px', background: '#fff', color: '#666', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
+                            className={login_user_id !== allData?._id && `NextPrevButtons`}
+                            style={{border: `${login_user_id === allData?._id ? '1px solid #ff8181' : '1px solid #DD0000'}`, borderRadius: '8px', background: '#fff', color: `${login_user_id === allData?._id ? '#ff8181' : '#DD0000'}`, minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
                         >
-                          <span style={{fontSize: '16px', fontWeight: '500', color: '#DD0000'}}>DECLINE</span>
+                          <span style={{fontSize: '16px', fontWeight: '500'}}>DECLINE</span>
                         </Button>
                         <Button
                           onClick={() => {
                             onHandleApprove(allData[4]?.data, 4);
                           }}
-                          className='NextPrevButtons2'
+                          className={login_user_id !== allData?._id && `NextPrevButtons2`}
                           disabled={loader || login_user_id === allData?._id}
-                          style={{border: '1px solid #55CE63', borderRadius: '8px', background: '#55CE63', color: '#fff', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
+                          style={{border: `${login_user_id === allData?._id ? '1px solid #7bd485' : '1px solid #55CE63'}`, borderRadius: '8px', background: `${login_user_id === allData?._id ? '#7bd485' : '#55CE63'}`, color: '#fff', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
                         >
                           {
                             loader ? <Spin size="small" indicator={antIcon} />
