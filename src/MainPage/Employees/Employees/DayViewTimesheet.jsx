@@ -9,12 +9,12 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { itemRender } from '../../paginationfunction';
 
-function DayViewTimesheet({ tableStartDate, setTableStartDate, selectedDate, setSelectedDate, open, setOpen, allProjects, getAllProjects, setShowCalendar }) {
+function DayViewTimesheet({ tableStartDate, setTableStartDate, selectedDate, setSelectedDate, open, setOpen, form2, allProjects, getAllProjects, setShowCalendar }) {
 
     const moment = require('moment');
 
     const [form] = Form.useForm();
-    const [form2] = Form.useForm();
+    // const [form2] = Form.useForm();
     const nav = useNavigate();
 
     const permissions = useSelector((state) => state?.permissionsSlice?.data);
@@ -26,6 +26,7 @@ function DayViewTimesheet({ tableStartDate, setTableStartDate, selectedDate, set
   const [allTasks, setAllTasks] = useState([]);
   const [descLength, setDescLength] = useState(0);
   const [loader, setLoader] = useState(false);
+  const [loader2, setLoader2] = useState(false);
   const [buttonDisable, setButtonDisable] = useState(true);
   const [taskLoader, setTaskLoader] = useState(false);
   const [tableLoader, setTableLoader] = useState(true);
@@ -376,6 +377,73 @@ let t_data = [
           spin
         />
       );
+      const antIcon3 = (
+        <LoadingOutlined
+            style={{
+            fontSize: 22,
+            color: '#FF9B44',
+            width: '148px'
+            }}
+            spin
+        />
+        );
+        const antIcon4 = (
+        <LoadingOutlined
+            style={{
+            fontSize: 22,
+            color: '#FF9B44',
+            width: '120px'
+            }}
+            spin
+        />
+        );
+
+      const totalTime = () => {
+        const totalMinutes = allData?.reduce((acc, item) => acc + item?.hoursWorked?.split(':')?.reduce((acc, val, idx) => acc + parseInt(val ? val : 0, 10) * (idx === 0 ? 60 : 1), 0), 0);
+        const hours = Math.floor(totalMinutes / 60) || 0;
+        const minutes = totalMinutes % 60 || 0;
+        const formattedHours = hours.toString().padStart(2, '0');
+        const formattedMinutes = minutes.toString().padStart(2, '0');
+        return `${formattedHours}:${formattedMinutes}`
+      }
+
+      const handleSubmitApproval = () => {
+        // const found = allData.some(item => item?.submittedForApproval === true)
+        let data = {
+          submittedForApproval: true,
+          status: 'Pending'
+        }
+        setLoader2(true);
+    
+        allData.map((item, index) => {
+          let updated_data = {
+            ...data,
+            _id: item?._id
+          }
+    
+          apiServices("PUT", 'timesheet', updated_data, user_state)
+          .then((res) => {
+            if (res?.data?.success === true) {
+              if(index === allData?.length - 1){
+                getData(currentPage, pageSize);
+                message.success('Timesheet Submitted Successfully!');
+                setLoader2(false);
+              }
+            }})
+            .catch((err) => {
+            setLoader2(false);
+            message.error(
+              `${
+                err?.response?.data?.msg
+                  ? err?.response?.data?.msg
+                  : err?.response?.data?.validation?.body?.message
+                  ? err?.response?.data?.validation?.body?.message
+                  : "Submit Timesheet Error"
+              }!`
+            );
+          });
+        })
+      }
 
   return (
     <div>
@@ -425,7 +493,8 @@ let t_data = [
                               <h3>{record?.hoursWorked}</h3>
                               <div className="dropdown dropdown-action text-end">
                                 {/* <a disabled={record?.submittedForApproval} onClick={() => setShowCalendar(false)} href="javascript:void(0)" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons" style={{fontSize: '28px', marginTop: '-3px'}}>more_vert</i></a> */}
-                                <a disabled={record?.status === 'Approved'} onClick={() => setShowCalendar(false)} href="javascript:void(0)" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons" style={{fontSize: '28px', marginTop: '-3px'}}>more_vert</i></a>
+                                {/* <a disabled={record?.status === 'Approved'} onClick={() => setShowCalendar(false)} href="javascript:void(0)" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons" style={{fontSize: '28px', marginTop: '-3px'}}>more_vert</i></a> */}
+                                <a onClick={() => setShowCalendar(false)} href="javascript:void(0)" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons" style={{fontSize: '28px', marginTop: '-3px'}}>more_vert</i></a>
                                 <div className="dropdown-menu dropdown-menu-right">
                                     <a className="dropdown-item" href="javascript:void(0)"
                                         onClick={() => {
@@ -471,9 +540,110 @@ let t_data = [
                 :
                 <div style={{background: '#fff',color: '#6C757D', border: '1px solid #DEE2E6', borderRadius: '7px', display: 'flex', placeContent: 'center', placeItems: 'center', fontSize: '17px', height: '200px'}}>
                     <label>
-                        Empty Timesheet. <label style={{color: '#FF9B44', textDecoration: 'underline', cursor: 'pointer', fontWeight: '700'}} onClick={() => { setOpen({ isAddOpen: true, data: '' }); setShowCalendar(false) }}>Add Entry</label>
+                        Empty Timesheet. <label style={{color: '#FF9B44', textDecoration: 'underline', cursor: 'pointer', fontWeight: '700'}} onClick={() => { setOpen({ isAddOpen: true, data: '' }); form2.setFieldsValue({date: moment(selectedDate, 'YYYY-MM-DD')}); setShowCalendar(false) }}>Add Entry</label>
                     </label>
                 </div>
+            }
+
+        <h3 style={{display: 'flex', justifyContent: 'flex-end', gap: '15px', margin: '30px 25px 30px 0px'}}>
+          <label>Total:</label>
+          <label>{tableLoader ? '--:--' : totalTime()}</label>
+        </h3>
+
+            { tableLoader ? null :
+              (!allData.some(item => item?.submittedForApproval === true)) &&
+              <div style={{display: 'flex', justifyContent: 'flex-end'}}>
+                <button
+                    onClick={handleSubmitApproval}
+                    className='SubmitForApprovalButton'
+                    disabled={loader2}
+                    style={{border: '2px solid #FF9B44', borderRadius: '8px', background: '#fff', color: '#FF9B44', minWidth: '90px', height: '42px', paddingTop: '3px', margin: '30px 0px 15px 0px', paddingInline: '18px'}}
+                >
+                  {
+                    loader2 ? <Spin size="small" indicator={antIcon3} />
+                    : <span style={{fontSize: '16px', fontWeight: '500'}}>Submit for Approval</span>
+                  }
+                  {/* <span style={{fontSize: '16px', fontWeight: '500'}}>Submit for Approval</span> */}
+                </button>
+              </div>
+            }
+            {
+              tableLoader ? null :
+              allData.some(item => item?.status === 'Approved') ?
+              <div style={{display: 'flex', justifyContent: 'flex-end', gap: '15px'}}>
+                {
+                  (allData.some(item => item?.submittedForApproval === false)) &&
+                  <div style={{display: 'flex', justifyContent: 'flex-end'}}>
+                    <button
+                        onClick={handleSubmitApproval}
+                        className='SubmitForApprovalButton'
+                        disabled={loader2}
+                        style={{border: '2px solid #FF9B44', borderRadius: '8px', background: '#fff', color: '#FF9B44', minWidth: '90px', height: '42px', paddingTop: '3px', margin: '30px 0px 15px 0px', paddingInline: '18px'}}
+                    >
+                      {
+                        loader2 ? <Spin size="small" indicator={antIcon4} />
+                        : <span style={{fontSize: '16px', fontWeight: '500'}}>Submit Updates</span>
+                      }
+                    </button>
+                  </div>
+                }
+                <button
+                    disabled
+                    style={{border: '2px solid #00B112', borderRadius: '8px', background: '#fff', color: '#00B112', minWidth: '90px', height: '42px', paddingTop: '3px', margin: '30px 0px 15px 0px', paddingInline: '18px'}}
+                >
+                  <span style={{fontSize: '16px', fontWeight: '500'}}>Approved</span>
+                </button>
+              </div> :
+              allData.some(item => item?.status === 'Declined') ?
+              <div style={{display: 'flex', justifyContent: 'flex-end', gap: '15px'}}>
+                {
+                  (allData.some(item => item?.submittedForApproval === false)) &&
+                  <div style={{display: 'flex', justifyContent: 'flex-end'}}>
+                    <button
+                        onClick={handleSubmitApproval}
+                        className='SubmitForApprovalButton'
+                        disabled={loader2}
+                        style={{border: '2px solid #FF9B44', borderRadius: '8px', background: '#fff', color: '#FF9B44', minWidth: '90px', height: '42px', paddingTop: '3px', margin: '30px 0px 15px 0px', paddingInline: '18px'}}
+                    >
+                      {
+                        loader2 ? <Spin size="small" indicator={antIcon4} />
+                        : <span style={{fontSize: '16px', fontWeight: '500'}}>Submit Updates</span>
+                      }
+                    </button>
+                  </div>
+                }
+                <button
+                    disabled
+                    style={{border: '2px solid #DD0000', borderRadius: '8px', background: '#fff', color: '#DD0000', minWidth: '90px', height: '42px', paddingTop: '3px', margin: '30px 0px 15px 0px', paddingInline: '18px'}}
+                >
+                  <span style={{fontSize: '16px', fontWeight: '500'}}>Declined</span>
+                </button>
+              </div> :
+              (allData.some(item => item?.submittedForApproval === true)) &&
+              <div style={{display: 'flex', justifyContent: 'flex-end', gap: '15px'}}>
+                {
+                  (allData.some(item => item?.submittedForApproval === false)) &&
+                  <div style={{display: 'flex', justifyContent: 'flex-end'}}>
+                    <button
+                        onClick={handleSubmitApproval}
+                        className='SubmitForApprovalButton'
+                        disabled={loader2}
+                        style={{border: '2px solid #FF9B44', borderRadius: '8px', background: '#fff', color: '#FF9B44', minWidth: '90px', height: '42px', paddingTop: '3px', margin: '30px 0px 15px 0px', paddingInline: '18px'}}
+                    >
+                      {
+                        loader2 ? <Spin size="small" indicator={antIcon4} />
+                        : <span style={{fontSize: '16px', fontWeight: '500'}}>Submit Updates</span>
+                      }
+                    </button>
+                  </div>
+                }
+                <button
+                    disabled
+                    style={{border: '2px solid #00B112', borderRadius: '8px', background: '#fff', color: '#00B112', minWidth: '90px', height: '42px', paddingTop: '3px', margin: '30px 0px 15px 0px', paddingInline: '18px'}}
+                >
+                  <span style={{fontSize: '16px', fontWeight: '500'}}>Submitted for Approval</span>
+                </button>
+              </div>
             }
 
         {

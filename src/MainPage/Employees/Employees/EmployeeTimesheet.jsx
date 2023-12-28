@@ -219,7 +219,7 @@ const EmployeeTimesheet = () => {
                 />
                 {
                   view === 'Day' ?
-                  <a href="javascript:void(0)" className="btn add-btn" onClick={() => { setOpen({ isAddOpen: true, data: '' }); getAllProjects(); setShowCalendar(false); }}><i className="fa fa-plus" /> Add Entry</a>
+                  <a href="javascript:void(0)" className="btn add-btn" onClick={() => { setOpen({ isAddOpen: true, data: '' }); form2.setFieldsValue({date: moment(selectedDate, 'YYYY-MM-DD')}); getAllProjects(); setShowCalendar(false); }}><i className="fa fa-plus" /> Add Entry</a>
                   :
                   <a href="javascript:void(0)" className="btn add-btn" onClick={() => { setOpen({ isAddWeekOpen: true, data: '' }); getAllProjects(); setShowCalendar(false); }}><i className="fa fa-plus" /> Add Row</a>
                 }
@@ -311,6 +311,7 @@ const EmployeeTimesheet = () => {
                   setSelectedDate={setSelectedDate}
                   open={open}
                   setOpen={setOpen}
+                  form2={form2}
                   allProjects={allProjects}
                   getAllProjects={getAllProjects}
                   setShowCalendar={setShowCalendar}
