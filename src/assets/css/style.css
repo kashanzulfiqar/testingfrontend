@@ -7175,6 +7175,25 @@ textarea.form-control {
 
 /* ................. custom css styling ................ */
 
+
+/* timesheet admin vie detail long text */
+.projectTitleLongDesc{
+  white-space: nowrap; 
+  max-width: 270px; 
+  overflow: hidden;
+  text-overflow: ellipsis; 
+}
+.taskTitleLongDesc{
+  white-space: nowrap; 
+  max-width: 240px; 
+  overflow: hidden;
+  text-overflow: ellipsis; 
+}
+.accordian-table2 tbody tr td{
+  width: 31%;
+}
+
+
 .accordian-table2 thead > tr > th{
   font-size: 18px !important;
 }

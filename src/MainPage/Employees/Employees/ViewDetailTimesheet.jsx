@@ -3,6 +3,7 @@ import { Helmet } from "react-helmet";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { user_icon } from "../../../Entryfile/imagepath";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
+import ViewDetailPopup from '../../../files/Icons/ViewDetailPopup.svg';
 import {
   Button,
   DatePicker,
@@ -273,10 +274,13 @@ const ViewDetailTimesheet = () => {
                 <div>
                   {record?.mergeObjects?.map((item, index) => (
                     <>
-                    <label key={index} style={{marginBottom: `${index < record?.mergeObjects?.length - 1 && '17px'}`}}>
-                      {item?.projectId?.projectName}
-                    </label>
-                      {index < record?.mergeObjects?.length - 1 && <br />}
+                    {/* <label key={index} className="projectTitleLongDesc" style={{marginBottom: `${index < record?.mergeObjects?.length - 1 && '17px'}`}}> */}
+                    <div style={{display: 'flex', alignItems: 'center', marginBottom: '10px'}}>
+                      <label key={index} className="projectTitleLongDesc">
+                        {item?.projectId?.projectName}
+                      </label>
+                    </div>
+                      {/* {index < record?.mergeObjects?.length - 1 && <br />} */}
                     </>
                   ))}
                 </div>
@@ -294,10 +298,47 @@ const ViewDetailTimesheet = () => {
                 <div>
                   {record?.mergeObjects?.map((item, index) => (
                     <>
-                    <label key={index} style={{marginBottom: `${index < record?.mergeObjects?.length - 1 && '17px'}`}}>
-                      {item?.taskId?.title}
-                    </label>
-                      {index < record?.mergeObjects?.length - 1 && <br />}
+                    <div style={{display: 'flex', alignItems: 'flex-start', marginBottom: '10px'}}>
+                      <label key={index} className="taskTitleLongDesc">
+                      {/* <label key={index} className="taskTitleLongDesc" style={{marginBottom: `${index < record?.mergeObjects?.length - 1 && '17px'}`}}> */}
+                        {item?.taskId?.title}
+                      </label>
+                      {
+                        item?.notes &&
+                        // <label
+                        //   style={{
+                        //     fontSize: '13px',
+                        //     color: '#FF9B44',
+                        //     cursor: 'pointer',
+                        //     textDecoration: 'underline',
+                        //     marginLeft: '10px'
+                        //   }}
+                        //   onClick={() => {setOpen({ isOpen: false, isViewOpen: true, data: item}); form.setFieldsValue({notes: item?.notes})}}
+                        // >
+                        //     View Notes
+                        // </label>
+                            <img
+                              src={ViewDetailPopup}
+                              style={{
+                                cursor: 'pointer',
+                                marginLeft: '10px',
+                              }}
+                              onClick={() => {
+                                setOpen({ isOpen: false, isViewOpen: true, data: item});
+                                let d = {
+                                  // date: moment(item?.date, 'YYYY-MM-DD'),
+                                  date: moment(item?.date).format('DD-MMM-YYYY'),
+                                  projectName: item?.projectId?.projectName ,
+                                  title: item?.taskId?.title ,
+                                  hoursWorked: item?.hoursWorked ,
+                                  notes: item?.notes,
+                                }
+                                form.setFieldsValue(d);
+                              }}
+                            />
+                      }
+                    </div>
+                      {/* {index < record?.mergeObjects?.length - 1 && <br />} */}
                     </>
                   ))}
                 </div>
@@ -316,48 +357,51 @@ const ViewDetailTimesheet = () => {
                 <div>
                   {record?.mergeObjects?.map((item, index) => (
                     <>
-                      <label key={index} style={{marginBottom: `${index < record?.mergeObjects?.length - 1 && '17px'}`}}>
-                        {item?.hoursWorked || '--:--'}
-                      </label>
-                      {index < record?.mergeObjects?.length - 1 && <br />}
+                      {/* <label key={index} style={{marginBottom: `${index < record?.mergeObjects?.length - 1 && '17px'}`}}> */}
+                      <div style={{display: 'flex', alignItems: 'center', marginBottom: '10px'}}>
+                        <label key={index}>
+                          {item?.hoursWorked || '--:--'}
+                        </label>
+                      </div>
+                      {/* {index < record?.mergeObjects?.length - 1 && <br />} */}
                     </>
                   ))}
                 </div>
               )},
         },
-        {
-          title: 'Action',
-          dataIndex: '',
-          key: 'viewDetail',
-          render: (text, record) => {
-              return (
-                <>
-                  {record?.mergeObjects?.map((item, index) => (
-                    <>
-                    <div
-                      style={{
-                        display: 'inline-block',
-                        border: '1px solid orange',
-                        borderRadius: '245px',
-                        fontSize: '13px',
-                        padding: '4px 10px',
-                        background: 'transparent',
-                        color: '#FF9B44',
-                        minWidth: 'max-content',
-                        cursor: 'pointer',
-                        marginBottom: `${index < record?.mergeObjects?.length - 1 && '10px'}`
-                      }}
-                      className="view-detail-style"
-                      onClick={() => {setOpen({ isOpen: false, isViewOpen: true, data: item}); form.setFieldsValue({notes: item?.notes})}}
-                    >
-                      View Detail
-                    </div>
-                      {index < record?.mergeObjects?.length - 1 && <br />}
-                    </>
-                  ))}
-                </>
-              )},
-        },
+        // {
+        //   title: 'Action',
+        //   dataIndex: '',
+        //   key: 'viewDetail',
+        //   render: (text, record) => {
+        //       return (
+        //         <>
+        //           {record?.mergeObjects?.map((item, index) => (
+        //             <>
+        //             <div
+        //               style={{
+        //                 display: 'inline-block',
+        //                 border: '1px solid orange',
+        //                 borderRadius: '245px',
+        //                 fontSize: '13px',
+        //                 padding: '4px 10px',
+        //                 background: 'transparent',
+        //                 color: '#FF9B44',
+        //                 minWidth: 'max-content',
+        //                 cursor: 'pointer',
+        //                 marginBottom: `${index < record?.mergeObjects?.length - 1 && '10px'}`
+        //               }}
+        //               className="view-detail-style"
+        //               onClick={() => {setOpen({ isOpen: false, isViewOpen: true, data: item}); form.setFieldsValue({notes: item?.notes})}}
+        //             >
+        //               View Detail
+        //             </div>
+        //               {index < record?.mergeObjects?.length - 1 && <br />}
+        //             </>
+        //           ))}
+        //         </>
+        //       )},
+        // },
       ];
       const data = [
         {
@@ -1122,18 +1166,21 @@ const ViewDetailTimesheet = () => {
               open={open.isViewOpen}
               onClose={handleClose}
               aria-labelledby="modal-modal-title"
+              className="modalScroll"
               // className="modal custom-modal fade"
               aria-describedby="modal-modal-description"
               disableRestoreFocus
               BackdropProps={{
                 style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
               }}
+              sx={{overflowY: 'auto'}}
             >
               <div className="modal-dialog modal-dialog-centered" role="document">
                 <div className="modal-content">
                   <div className="modal-header">
                     <h5 className="modal-title">
-                      {moment(open?.data?.date).format('dddd')} <span style={{marginInline: '6px'}}>|</span> {moment(open?.data?.date).format('DD-MMM-YYYY')}
+                      Details
+                      {/* {moment(open?.data?.date).format('dddd')} <span style={{marginInline: '6px'}}>|</span> {moment(open?.data?.date).format('DD-MMM-YYYY')} */}
                     </h5>
                     <button type="button" className="close" onClick={handleClose}>
                       <span aria-hidden="true">×</span>
@@ -1144,13 +1191,73 @@ const ViewDetailTimesheet = () => {
                       form={form}
                       name="control-hooks"
                     >
-                      <div className="form-group" style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+                      {/* <div className="form-group" style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
                         <div>
                           <h4 style={{fontWeight: '500', marginBottom: '-15px'}}>{open?.data?.projectId?.projectName}</h4>
                           <br />
                           <h4 className="mb-0" style={{color: '#0409217D', fontWeight: '450'}}>{open?.data?.taskId?.title}</h4>
                         </div>
                         <h4 className="mb-0">{open?.data?.hoursWorked}</h4>
+                      </div> */}
+
+                      <div className="form-group">
+                        <label>
+                          Date
+                        </label>
+                          <Form.Item
+                          name='date'
+                          className='custom-border'
+                          >
+                            {/* <DatePicker style={{backgroundColor: '#e9ecef'}} disabled={true} className={'dateDisable form-control'} /> */}
+                            <Input className='form-control' style={{color: '#6C757D', backgroundColor: 'transparent', cursor: 'default'}} disabled/>
+                          </Form.Item>
+                      </div>
+                      <div className="form-group">
+                        <label>
+                          Project
+                        </label>
+                          <Form.Item
+                          name='projectName'
+                          className='custom-border'
+                          >
+                              {/* <Select
+                                  disabled={true}
+                                  className="custom-select custom-normal"
+                                  style={{
+                                  width: '100%',
+                                  }}
+                              /> */}
+                            <Input className='form-control' style={{color: '#6C757D', backgroundColor: 'transparent', cursor: 'default'}} disabled/>
+                          </Form.Item>
+                      </div>
+                      <div className="form-group">
+                        <label>
+                          Task Name
+                        </label>
+                          <Form.Item
+                          name='title'
+                          className='custom-border'
+                          >
+                              {/* <Select
+                                  disabled={true}
+                                  className="custom-select custom-normal"
+                                  style={{
+                                  width: '100%',
+                                  }}
+                              /> */}
+                            <Input className='form-control' style={{color: '#6C757D', backgroundColor: 'transparent', cursor: 'default'}} disabled/>
+                          </Form.Item>
+                      </div>
+                      <div className="form-group">
+                        <label>
+                          Hours
+                        </label>
+                          <Form.Item
+                          name='hoursWorked'
+                          className='custom-border'
+                          >
+                            <Input className='form-control' style={{color: '#6C757D', backgroundColor: 'transparent', cursor: 'default'}} disabled/>
+                          </Form.Item>
                       </div>
                       <div className="form-group">
                         <label style={{display: 'flex', justifyContent: 'space-between'}}>
@@ -1158,9 +1265,9 @@ const ViewDetailTimesheet = () => {
                         </label>
                         <Form.Item
                           name="notes"
-                          className="custom-border"
+                          className="custom-border mb-0"
                         >
-                          <Input.TextArea disabled rows={3} style={{resize: 'none'}} className='dateDisable form-control' />
+                          <Input.TextArea disabled rows={3} style={{resize: 'none', color: '#6C757D', backgroundColor: 'transparent', cursor: 'default'}} className='form-control' />
                         </Form.Item>
                       </div>
                     </Form>
