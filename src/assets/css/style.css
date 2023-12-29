@@ -7175,6 +7175,211 @@ textarea.form-control {
 
 /* ................. custom css styling ................ */
 
+
+/* timesheet admin vie detail long text */
+.projectTitleLongDesc{
+  white-space: nowrap; 
+  max-width: 270px; 
+  overflow: hidden;
+  text-overflow: ellipsis; 
+}
+.taskTitleLongDesc{
+  white-space: nowrap; 
+  max-width: 240px; 
+  overflow: hidden;
+  text-overflow: ellipsis; 
+}
+.accordian-table2 tbody tr td{
+  width: 31%;
+}
+
+
+.accordian-table2 thead > tr > th{
+  font-size: 18px !important;
+}
+.accordian-table2 table{
+  border-right: none !important;
+}
+
+.accordian-table thead{
+  /* display: none; */
+}
+
+.accordian-table tbody tr td{
+  width: 80px !important;
+  text-wrap: nowrap !important;
+}
+.accordian-table tbody tr td:nth-child(1){
+  padding-left: 17px !important;
+}
+
+/* admin timesheet view detail button */
+.view-detail-style:hover{
+ background-color: #FF9B44 !important;
+ color: #fff !important;
+ transition: .4s all;
+}
+
+/* align on disable dates in profit loss datepicker on generate */
+.disableAlign .ant-picker-cell-disabled::before{
+  top: 23% !important;
+}
+
+/* removed Empty space at the bottom of timepicker */
+.ant-picker-time-panel-column::after{
+  height: 0px !important;
+}
+
+/* hide now button from week view timesheet timepicker */
+.ant-picker-now{
+  display: none !important;
+}
+
+/* formDurationInput style */
+.formDurationInput .ant-form-item{
+  margin: 0px !important;
+}
+
+/* timesheet timepicker week input style */
+.timePickerWithData{
+  width: 76px !important;
+  padding-left: 13px !important;
+  color: rgba(102, 102, 102, 0.2) !important;
+  border: 2px solid rgb(188, 188, 188) !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+}
+.timePickerPending{
+  border: 2px solid #ff9b4491  !important;
+  box-shadow: -1px 0px 6px 2px #FF9B4454;
+}
+.timePickerApproved{
+  border: 2px solid #55ce6396  !important;
+  box-shadow: -1px 0px 6px 2px #55ce634d;
+}
+.timePickerDeclined{
+  border: 2px solid #ff000078 !important;
+  box-shadow: -1px 0px 6px 2px #ff000059;
+}
+.timePickerWithData input{
+  font-size: 17px !important;
+  font-weight: 500 !important;
+  color: #333 !important;
+}
+.timePickerWithData input:placeholder-shown{
+  text-overflow: unset !important;
+}
+
+/* timesheet datepicker input style */
+.hideDatePickerInput .ant-picker-input {
+  display: none !important;
+}
+.hideDatePickerInput {
+  /* margin-right: -43px !important; */
+  background: transparent !important;
+  border: none !important;
+  z-index: -1 !important;
+  /* width: 32px !important; */
+  width: 229px !important;
+}
+
+/* timesheet day week Segment style */
+.segmentStyle{
+  border-radius: 8px;
+  width: 170px;
+  border: 2px solid #DEE2E6;
+  background: #fff;
+  height: 38px !important;
+}
+.segmentStyle:hover{
+  background: #fff !important;
+}
+.segmentStyle .ant-segmented-item-label{
+  line-height: 31px !important;
+  font-size: 15px !important;
+  color: #6C757DA8 !important
+}
+.segmentStyle .ant-segmented-item-selected{
+  background: #EDEDED !important;
+  border-radius: 4px !important;
+}
+.segmentStyle .ant-segmented-item-selected .ant-segmented-item-label{
+  color: #333333 !important;
+}
+.segmentStyle .ant-segmented-group > .ant-segmented-thumb{
+  background: #EDEDED !important;
+  border-radius: 4px !important;
+}
+
+
+/* Timesheet day table style */
+.timeSheetDayTable thead tr th {
+  min-width: 150px !important;
+  /* padding: 0px !important; */
+  /* padding-top: 5px !important; */
+  padding: 5px !important;
+}
+.timeSheetDayTable tbody{
+  display: none !important;
+}
+
+/* Timesheet Week table style */
+.timeSheetWeekTable thead tr th {
+  min-width: 90px !important;
+  /* padding: 0px !important; */
+  /* padding-top: 5px !important; */
+  padding: 5px !important;
+}
+.timeSheetWeekTable thead tr th:nth-child(1) {
+  vertical-align: middle !important;
+  font-weight: 700 !important;
+  font-size: 16px !important;
+  padding-left: 10px !important;
+}
+.timeSheetWeekTable thead tr th:nth-last-child(1) {
+  vertical-align: middle !important;
+  text-align: center !important;
+  font-weight: 700 !important;
+  font-size: 16px !important;
+}
+.timeSheetWeekTable tbody tr td:not(:nth-child(1)){
+  vertical-align: middle !important;
+  text-align: center !important;
+
+  width: 0px !important;
+  padding-inline: 20px !important;
+}
+
+.NextPrevButtons:hover{
+  background-color: #f2f2f2 !important;
+  transition: .3 all;
+}
+.NextPrevButtons1:hover{
+  background-color: #ff8419 !important;
+  border-color: #ff8419 !important;
+  transition: .3 all;
+}
+.NextPrevButtons2:hover{
+  background-color: #41c750 !important;
+  border-color: #41c750 !important;
+  transition: .3 all;
+}
+.SubmitForApprovalButton:hover{
+  /* background-color: #FF9B44 !important;
+  color: #fff !important;
+  transition: .3s all; */
+}
+
+/* show legend on profit loss graph screen */
+.showLegend .recharts-legend-wrapper{
+  display: block !important;
+}
+.showLegend .recharts-legend-wrapper > ul{
+  display: flex;
+  place-content: center;
+  gap: 20px;
+}
+
 .registerSelect > div:nth-child(1){
   background: #fbfbfb !important;
   height: 46px !important;
@@ -7243,6 +7448,21 @@ textarea.form-control {
   background: #f5f5f5 !important;
   }
 
+/* profit Loss table style */
+.profitLossTable thead tr th:not(:nth-child(1), :nth-child(7)) {
+  min-width: 130px !important;
+}
+.profitLossTable tbody > tr > td{
+  text-wrap: nowrap !important;
+}
+.profitLossTable thead > tr > th:nth-child(2){
+  background-color: #FFFFFF !important;
+  z-index: 301 !important;
+}
+.profitLossTable tbody tr:nth-child(odd) > td:nth-child(2){
+  /* background: #f5f5f5 !important; */
+}
+
 /* invoice table style */
 .invoiceTable thead tr th:not(:nth-child(1), :nth-child(9)) {
   min-width: 130px !important;
@@ -7256,7 +7476,7 @@ textarea.form-control {
 }
 .invoiceTable tbody tr:nth-child(odd) > td:nth-child(2){
   background: #f5f5f5 !important;
-  }
+}
 
 /* expense table style */
 .expenseTable thead tr th:not(:nth-last-child(1)) {
@@ -7655,6 +7875,7 @@ background: #f5f5f5 !important;
   height: 30px;
 }
 .ant-picker-dropdown, .ant-select-dropdown {
+/* z-index: 1001; */
 z-index: 3300;
 min-width: fit-content !important;
 }
@@ -12152,6 +12373,13 @@ styles by Qazi
     max-width: 190px;
     overflow: hidden;
 }
+.longText2{
+  -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    display: -webkit-box;
+    max-width: 600px;
+    overflow: hidden;
+}
 
 
 .customselect-height > div {
@@ -12208,3 +12436,28 @@ styles by Qazi
   min-width: 170px !important;
 }
 
+.PLTable
+ thead tr th:nth-child(1){
+  min-width: 40px !important;
+}
+.PLTable thead tr th:nth-child(3){
+  min-width: 170px !important;
+}
+
+.PLTable2
+ thead tr th:nth-child(1){
+  min-width: 40px !important;
+}
+.PLTable2 thead tr th:nth-child(3){
+  min-width: 170px !important;
+}
+.PLTable2 thead tr th:nth-child(4){
+  min-width: 170px !important;
+}
+
+.TimesheetTable thead > *{
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 300 !important;
+  background: #FFFFFF !important;
+}

@@ -19,6 +19,7 @@ const AttendanceEmployee = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [tableLoader, setTableLoader] = useState(false);
   const [Bdisbale, setBdisbale] = useState(false);
+  const [statDisable, setstatDisable] = useState(false);
   const [disableAttend, setdisableAttend] = useState(false);
   const [page, setPage] = useState(1);
   const [size, setSize] = useState(20);
@@ -82,6 +83,7 @@ const AttendanceEmployee = () => {
   const [stats, setStats] = useState({
     lastWeek: 0, // Set initial values as needed
     lastMonth: 0, // Set initial values as needed
+    endTime: "", // Set initial values as needed
   });
   const [attendanceData, setAttendanceData] = useState(null);
 
@@ -123,8 +125,18 @@ const AttendanceEmployee = () => {
           setStats({
             lastWeek: res.data.lastWeek,
             lastMonth: res.data.lastMonth,
+            endTime: res.data.user.shiftId.endTime,
           });
           setShiftDuration(shiftDuration)
+
+          const timeParts = res?.data?.user?.shiftId?.endTime?.split(":");
+          const hours = parseInt(timeParts[0], 10);
+          const minutes = parseInt(timeParts[1], 10);
+          const seconds = parseInt(timeParts[2], 10);
+
+          // Calculate total milliseconds
+          const milliseconds = (hours * 60 * 60 + minutes * 60 + seconds) * 1000;
+          setShiftEndTime(milliseconds);
 
           if (attendanceData?.length > 0) {
             const firstAttendanceRecord = attendanceData[0];
@@ -295,10 +307,12 @@ const AttendanceEmployee = () => {
   };
 
   const totalWorkTime = (shiftDuration/60) * 60 * 60 * 1000;
+  const WWorkTime = ((shiftDuration*5)/60) * 60 * 60 * 1000;
+  const MWorkTime = ((shiftDuration*22)/60) * 60 * 60 * 1000;
 
   const percentageCompleted = (elapsedTime / totalWorkTime) * 100;
-  const percentageweek = (elapsedTime / totalWorkTime) * 100;
-  const percentagemonth = (elapsedTime / totalWorkTime) * 100;
+  const percentageweek = ((elapsedTime + (stats?.lastWeek * 60000)) / WWorkTime) * 100;
+  const percentagemonth = ((elapsedTime + (stats?.lastMonth * 60000)) / MWorkTime) * 100;
 
   const formatElapsedTime = (milliseconds) => {
     if (!milliseconds) return "--";
@@ -445,6 +459,7 @@ const AttendanceEmployee = () => {
           setIsCheckedIn(false);
           setIsCheckedOut(true);
           setBdisbale(true);
+          setstatDisable(true);
         });
     } catch (error) {
       console.log("error", error);
@@ -480,11 +495,22 @@ const AttendanceEmployee = () => {
       .then((res) => {
         if (res.data.success === true) {
           const attendanceData = res.data.Attendance.docs;
-          console.log(attendanceData);
+          //console.log(attendanceData);
           setStats({
             lastWeek: res.data.lastWeek,
             lastMonth: res.data.lastMonth,
+            endTime: res.data.user.shiftId.endTime,
           });
+
+          const timeParts = res?.data?.user?.shiftId?.endTime?.split(":");
+          const hours = parseInt(timeParts[0], 10);
+          const minutes = parseInt(timeParts[1], 10);
+          const seconds = parseInt(timeParts[2], 10);
+
+          // Calculate total milliseconds
+          const milliseconds = (hours * 60 * 60 + minutes * 60 + seconds) * 1000;
+          setShiftEndTime(milliseconds);
+
           if (!firstload) {
             setFetchattend6(attendanceData);
           }
@@ -504,6 +530,7 @@ const AttendanceEmployee = () => {
       .finally(() => {
         setIsLoading(false);
         setTableLoader(false);
+        setstatDisable(false);
       });
   };
 
@@ -649,6 +676,28 @@ const AttendanceEmployee = () => {
       render: (overTime) => (overTime ? formatHoursMinutes(overTime) : "None"),
     },
   ];
+
+  const dayEnd = "23:59:59";
+
+  const [hours, minutes, seconds] = dayEnd.split(':').map(Number);
+  const absolutetime = ((hours * 60 * 60 + minutes * 60 + seconds) * 1000) - shiftEndTime;
+  //console.log(absolutetime);
+
+  const now = new Date();
+  const currentHours = now.getHours();
+  const currentMinutes = now.getMinutes();
+  const currentSeconds = now.getSeconds();
+
+  const currentTimeInMilliseconds =
+  currentHours * 60 * 60 * 1000 +
+  currentMinutes * 60 * 1000 +
+  currentSeconds * 1000;
+
+  let liveOvertime = 0;
+
+  if (!isCheckedOut && isCheckedIn && currentTimeInMilliseconds > shiftEndTime) {
+    liveOvertime = currentTimeInMilliseconds - shiftEndTime;
+  }
 
   return (
     <>
@@ -814,7 +863,7 @@ const AttendanceEmployee = () => {
                               <label>
                                 {isCheckedOut
                                   ? formatHoursMinutes(checkOut.overTime)
-                                  : "--"}
+                                  : formatTodayTime(liveOvertime)}
                               </label>
                             </h6>
                           </div>
@@ -857,7 +906,15 @@ const AttendanceEmployee = () => {
                         <p>
                           <label>This Week</label>
                           <strong>
-                            {formatHoursMinutes(stats.lastWeek)}{" "}
+                            {isCheckedOut
+                              ? ( !statDisable ? 
+                                formatHoursMinutes(stats.lastWeek) 
+                                : formatTodayTime((elapsedTime + (stats.lastWeek * 60000))))
+                              : formatTodayTime(
+                                  (elapsedTime + (stats.lastWeek * 60000))
+                                ) // Create a function to format elapsed time
+                            }{" "}
+                            {/* {formatHoursMinutes(stats.lastWeek)}{" "} */}
                             <small>/ {formatHoursMinutes(Math.floor(shiftDuration*5))}</small>
                           </strong>
                         </p>
@@ -867,10 +924,10 @@ const AttendanceEmployee = () => {
                             role="progressbar"
                             style={{
                               width: `${
-                                (parseFloat(stats.lastWeek) / (shiftDuration*5)) * 100
+                                isCheckedOut ? ( !statDisable ? ((parseFloat(stats.lastWeek) / (shiftDuration*5)) * 100) : percentageweek) : percentageweek
                               }%`,
                             }}
-                            aria-valuenow={parseFloat(stats.lastWeek)}
+                            aria-valuenow={isCheckedOut ? ( !statDisable ? ((parseFloat(stats.lastWeek) / (shiftDuration*5)) * 100) : percentageweek) : percentageweek}
                             aria-valuemin={0}
                             aria-valuemax={(shiftDuration*5)}
                           />
@@ -880,7 +937,16 @@ const AttendanceEmployee = () => {
                         <p>
                           <label>This Month</label>
                           <strong>
-                            {formatHoursMinutes(stats.lastMonth)}{" "}
+                          {isCheckedOut
+                              ? ( !statDisable ? 
+                                formatHoursMinutes(stats.lastMonth) 
+                                : formatTodayTime((elapsedTime + (stats.lastMonth * 60000))))
+                              //? formatHoursMinutes(stats.lastMonth)
+                              : formatTodayTime(
+                                (elapsedTime + (stats?.lastMonth * 60000))
+                                ) // Create a function to format elapsed time
+                            }{" "}
+                            {/* {formatHoursMinutes(stats.lastMonth)}{" "} */}
                             <small>/ {formatHoursMinutes(Math.floor(shiftDuration*22))}</small>
                           </strong>
                         </p>
@@ -890,10 +956,10 @@ const AttendanceEmployee = () => {
                             role="progressbar"
                             style={{
                               width: `${
-                                (parseFloat(stats.lastMonth) / (shiftDuration*22)) * 100
+                                isCheckedOut ? ( !statDisable ? ((parseFloat(stats.lastMonth) / (shiftDuration*22)) * 100) : percentagemonth) : percentagemonth
                               }%`,
                             }}
-                            aria-valuenow={parseFloat(stats.lastMonth)}
+                            aria-valuenow={isCheckedOut ? ( !statDisable ? ((parseFloat(stats.lastMonth) / (shiftDuration*22)) * 100) : percentagemonth) : percentagemonth}
                             aria-valuemin={0}
                             aria-valuemax={(shiftDuration*22)}
                           />
@@ -904,9 +970,23 @@ const AttendanceEmployee = () => {
                         <p>
                           Remaining{" "}
                           <strong>
-                            {formatHoursMinutes(
+                          {isCheckedOut
+                              ? ( !statDisable ? 
+                                formatHoursMinutes(Math.max(0, Math.floor((shiftDuration*22) - parseFloat(stats.lastMonth))))
+                                : formatHoursMinutes(
+                                  Math.max(0, Math.ceil((shiftDuration*22) - parseFloat(((elapsedTime/60000)+stats.lastMonth))))
+                                )
+                                )
+                              // formatHoursMinutes(
+                              //   Math.floor((shiftDuration*22) - parseFloat(stats.lastMonth))
+                              // )
+                              : formatHoursMinutes(
+                                Math.max(0, Math.ceil((shiftDuration*22) - parseFloat(((elapsedTime/60000)+stats.lastMonth))))
+                              ) // Create a function to format elapsed time
+                            }{" "}
+                            {/* {formatHoursMinutes(
                               Math.floor((shiftDuration*22) - parseFloat(stats.lastMonth))
-                            )}{" "}
+                            )}{" "} */}
                             <small>/ {formatHoursMinutes(Math.floor(shiftDuration*22))}</small>
                           </strong>
                         </p>
@@ -916,16 +996,26 @@ const AttendanceEmployee = () => {
                             role="progressbar"
                             style={{
                               width: `${
-                                (((shiftDuration*22) - parseFloat(stats.lastMonth)) /
+                                isCheckedOut ? ( !statDisable ? ((((shiftDuration*22) - parseFloat(stats.lastMonth)) /
                                 (shiftDuration*22)) *
-                                100
+                                100) : ((((shiftDuration*22) - parseFloat(stats.lastMonth + (elapsedTime/60000))) /
+                                (shiftDuration*22)) *
+                                100)) : ((((shiftDuration*22) - parseFloat(stats.lastMonth + (elapsedTime/60000))) /
+                                (shiftDuration*22)) *
+                                100)
                               }%`,
                             }}
                             aria-valuenow={
-                              100 * 60 - parseFloat(stats.lastMonth)
+                              isCheckedOut ? ( !statDisable ? ((((shiftDuration*22) - parseFloat(stats.lastMonth)) /
+                                (shiftDuration*22)) *
+                                100) : ((((shiftDuration*22) - parseFloat(stats.lastMonth + (elapsedTime/60000))) /
+                                (shiftDuration*22)) *
+                                100)) : ((((shiftDuration*22) - parseFloat(stats.lastMonth + (elapsedTime/60000))) /
+                                (shiftDuration*22)) *
+                                100)
                             }
                             aria-valuemin={0}
-                            aria-valuemax={100 * 60}
+                            aria-valuemax={(shiftDuration*22)}
                           />
                         </div>
                       </div>
@@ -935,7 +1025,7 @@ const AttendanceEmployee = () => {
                           <strong>
                             {isCheckedOut
                             ? formatHoursMinutes(checkOut.overTime)
-                            : "None"}
+                            : formatTodayTime(liveOvertime)}
                           </strong>
                         </p>
                         <div className="progress">
@@ -943,15 +1033,23 @@ const AttendanceEmployee = () => {
                             className="progress-bar bg-info"
                             role="progressbar"
                             style={{
-                              width: `${checkOut.overTime
-                                ? 100
-                                : 0}%`,
+                              width: `${
+                                isCheckedOut 
+                                ? (checkOut.overTime
+                                  ? ((checkOut.overTime*60000)/absolutetime)*100
+                                  : 0) 
+                                : ((!isCheckedOut && isCheckedIn && currentTimeInMilliseconds > shiftEndTime) ? (liveOvertime/absolutetime)*100 : 0)
+                              }%`,
                             }}
-                            aria-valuenow={checkOut.overTime
-                              ? 100
-                              : 0}
+                            aria-valuenow={
+                              isCheckedOut 
+                              ? (checkOut.overTime
+                                ? ((checkOut.overTime*60000)/absolutetime)*100
+                                : 0) 
+                              : ((!isCheckedOut && isCheckedIn && currentTimeInMilliseconds > shiftEndTime) ? (liveOvertime/absolutetime)*100 : 0)
+                            }
                             aria-valuemin={0}
-                            aria-valuemax={100}
+                            aria-valuemax={absolutetime}
                           />
                         </div>
                       </div>

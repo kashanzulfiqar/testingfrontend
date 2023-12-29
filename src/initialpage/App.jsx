@@ -55,6 +55,11 @@ import EditInvoice from '../MainPage/HR/Sales/EditInvoice';
 import Payments from '../MainPage/HR/Sales/payments';
 import Expenses from '../MainPage/HR/Sales/expense';
 import Tasks from '../MainPage/Employees/Projects/Tasks';
+import ProfitLoss from '../MainPage/HR/Sales/ProfitLoss';
+import ViewPL from '../MainPage/HR/Sales/ViewProfitLoss';
+import EmployeeTimesheet from '../MainPage/Employees/Employees/EmployeeTimesheet';
+import AdminTimeSheet from '../MainPage/Employees/Employees/timesheetAdmin';
+import ViewDetailTimesheet from '../MainPage/Employees/Employees/ViewDetailTimesheet';
 
 
 const App = () => {
@@ -94,8 +99,12 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    if(location?.pathname !== "/profile/employee-profile")
-    localStorage.removeItem('allDataLocal');
+    if(location?.pathname !== "/profile/employee-profile"){
+      localStorage.removeItem('allDataLocal');
+    }
+    if(location?.pathname !== "/admin-timesheet/details"){
+      localStorage.removeItem('allDataLocalStorage')
+    }
   }, [location])
 
 
@@ -143,7 +152,11 @@ const App = () => {
           <Route path={`invoices/view-invoice`} element={<Invoiceview />} />
           <Route path={`payments`} element={<Payments />} />
           <Route path={`expenses`} element={<Expenses />} />
+          <Route path={`profit-loss`} element={<ProfitLoss />} />
           <Route path={`projects/tasks`} element={<Tasks />} />
+          <Route path={`employee-timesheet`} element={<EmployeeTimesheet />} />
+          <Route path={`admin-timesheet`} element={<AdminTimeSheet />} />
+          <Route path={`admin-timesheet/details`} element={<ViewDetailTimesheet />} />
 
           {/* Settings  */}
           <Route path="/settings" element={<Settings />} />
@@ -159,7 +172,11 @@ const App = () => {
           {/* Projects */}
           <Route path="/projects/project_dashboard" element={<Projects />} />
           <Route path="/projects/projects-view/:_id" element={<ProjectView />} />
+          <Route path="/profit-loss/view" element={<ViewPL />} />
 
+          {/* <Link to={`/projects/projects-view/${record?._id}`} style={{color: '#333333'}}>
+          <label style={{cursor: 'pointer'}} className="longText">{text}</label>
+        </Link> */}
 
 
         </Route>

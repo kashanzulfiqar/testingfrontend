@@ -267,6 +267,33 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
   const UpdateProject = (values) => {
     setLoader(true);
     //setIsLoading(true);
+    const { paymentSchedule, cost } = values;
+
+    // Calculate total amount from payment schedule
+    const totalAmountInFigure = paymentSchedule.reduce(
+      (total, schedule) => total + parseFloat(schedule.amountInFigure || 0),
+      0
+    );
+  
+    if (totalAmountInFigure > cost) {
+      const errorMessage = 'Total amount exceeds the project cost.';
+      const errorFields = [];
+
+      paymentSchedule.forEach((schedule, index) => {
+        const scheduleAmount = parseFloat(schedule.amountInFigure || 0);
+  
+        if (scheduleAmount + totalAmountInFigure - scheduleAmount > cost) {
+          errorFields.push({
+            name: ['paymentSchedule', index, 'amountInFigure'],
+            errors: [errorMessage],
+          });
+        }
+      });
+
+      form.setFields(errorFields);
+      setLoader(false);
+      return; // Prevent submission if total exceeds cost
+    } 
 
     let data = {
       _id: selectedData._id,
@@ -495,7 +522,8 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
             },
           ]}
         >
-          <Input className="form-control" />
+          <Input className="form-control"
+          placeholder="Enter title" />
         </Form.Item>
       ),
     },
@@ -517,6 +545,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
           {/* <Input type="number" className="form-control" /> */}
           <InputNumber
             className="form-control"
+            placeholder="Enter an amount"
             formatter={(value) => {
               return `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
             }}
@@ -545,6 +574,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
           {/* <Input type="number" className="form-control" /> */}
           <InputNumber
             className="form-control"
+            placeholder="Enter percentage"
             max={100}
             min={0}
           />
@@ -1262,30 +1292,52 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                   </div>
                 </div>
                 <div className="col-sm-6">
-                  <div className="form-group">
-                    <label>Team Members</label>
-                    <div className="project-members">
-                      {selectedTeamMembers?.slice(0, 4).map((teamMember) => (
-                        <a
-                          key={teamMember}
-                          data-bs-toggle="tooltip"
-                          title={getEmployeeFullName(teamMember)}
-                          className="avatar"
-                        >
-                          <img
-                            src={getEmployeeImage(teamMember) || user_icon}
-                            alt=""
-                          />
-                        </a>
-                      ))}
-                      {selectedTeamMembers?.length > 4 && (
-                        <span className="all-team">
-                          +{selectedTeamMembers?.length - 4}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
+  <div className="form-group">
+    <label>Team Members</label>
+    <div className="project-members" style={{ margin: '4px auto' }}>
+      <ul className="team-members" style={{ minWidth: 'max-content' }}>
+        {selectedTeamMembers?.slice(0, 4).map((teamMember, index) => (
+          <li key={index}>
+            <Tooltip title={getEmployeeFullName(teamMember)}>
+              <Avatar style={{ cursor: 'pointer' }} src={getEmployeeImage(teamMember) || user_icon} />
+            </Tooltip>
+          </li>
+        ))}
+        {selectedTeamMembers?.length > 4 && (
+          <li className="dropdown avatar-dropdown">
+            <Link
+              className="all-users dropdown-toggle projectTeamMember"
+              style={{ display: 'inline-flex', height: '33px', width: '33px' }}
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              +{selectedTeamMembers?.length - 4}
+            </Link>
+            {/* Dropdown menu for additional team members */}
+            <div className="dropdown-menu dropdown-menu-right">
+              <div className="avatar-group">
+                {selectedTeamMembers?.slice(4).map((teamMember, index) => (
+                  <a
+                    className="avatar avatar-xs projectTeamMember"
+                    key={index}
+                  >
+                    <Tooltip title={getEmployeeFullName(teamMember)}>
+                      <Avatar
+                        src={getEmployeeImage(teamMember) || user_icon}
+                        style={{ cursor: 'pointer' }}
+                      />
+                    </Tooltip>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </li>
+        )}
+      </ul>
+    </div>
+  </div>
+</div>
+
               </div>
 
               <div className="form-group">
@@ -1305,7 +1357,11 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
               </div>
 
               <div className="form-group">
-                <label>Upload Files</label>
+                <label>Upload Files{" "}
+                  <small style={{ color: 'grey', fontSize: 'small' }}>
+                    (Allowed formats: pdf, doc, docx, jpg, jpeg, png, gif, xls, xlsx)
+                  </small>
+                </label>
                 <input
                   className="form-control"
                   multiple

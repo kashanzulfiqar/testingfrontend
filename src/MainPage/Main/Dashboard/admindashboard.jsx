@@ -142,7 +142,7 @@ const AdminDashboard = () => {
         // if (res?.data?.success === true) {
           setAllData(res?.data);
 
-          const d = res?.data?.expenses;
+          const d = res?.data?.revenue;
           const latestYearData = d?.reduce((max, obj) => (obj?.year > max?.year ? obj : max), d[0]);
           monthHandler(latestYearData)
 
@@ -450,7 +450,7 @@ const antIcon = (
 
                         {
                           loader ? <Spin style={{height: '300px', display: 'grid', placeItems: 'center'}} /> :
-                          allData?.expenses?.length > 0 ?
+                          allData?.revenue?.length > 0 ?
                           <ResponsiveContainer width='100%' height={300}>
                             <BarChart
                               data={tableYearData}
@@ -498,7 +498,7 @@ const antIcon = (
                         <h3 className="card-title">Sales Overview {year ? ` - ${year}` : ''}</h3>
                         {
                           loader ? <Spin style={{height: '300px', display: 'grid', placeItems: 'center'}} /> :
-                          allData?.expenses?.length > 0 ?
+                          allData?.revenue?.length > 0 ?
                           <ResponsiveContainer width='100%' height={300}>
                             {/* <LineChart data={linechartdata} */}
                             <LineChart data={tableMonthData}
@@ -814,7 +814,7 @@ const antIcon = (
                               </td>
                               <td>{payment?.paymentType}</td>
                               <td>{formatDate(payment?.paymentDate || '')}</td>
-                              <td>{payment?.paidAmount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {payment?.currency}</td>
+                              <td>{payment?.paidAmountInPreferredCurrency?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {payment?.company?.preferredCurrency}</td>
                             </tr>
                           ))
                         }

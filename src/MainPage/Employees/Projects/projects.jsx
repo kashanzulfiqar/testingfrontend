@@ -24,6 +24,7 @@ import { useSelector } from "react-redux";
 import {
   Avatar,
   Button,
+  Checkbox,
   DatePicker,
   Empty,
   Form,
@@ -113,6 +114,13 @@ const Projects = () => {
     ]);
   };
 
+  const removePaymentSchedule = (indexToRemove) => {
+    const updatedSchedules = paymentSchedules.filter(
+      (_, index) => index !== indexToRemove
+    );
+    setPaymentSchedules(updatedSchedules);
+  };
+  
   const removeLastPaymentSchedule = () => {
     if (paymentSchedules.length > 1) {
       const updatedSchedules = [...paymentSchedules];
@@ -457,6 +465,34 @@ const Projects = () => {
   const AddProject = (values) => {
     setLoader(true);
     setIsLoading(true);
+
+    const { paymentSchedule, cost } = values;
+
+    // Calculate total amount from payment schedule
+    const totalAmountInFigure = paymentSchedule.reduce(
+      (total, schedule) => total + parseFloat(schedule.amountInFigure || 0),
+      0
+    );
+  
+    if (totalAmountInFigure > cost) {
+      const errorMessage = 'Total amount exceeds the project cost.';
+      const errorFields = [];
+
+      paymentSchedule.forEach((schedule, index) => {
+        const scheduleAmount = parseFloat(schedule.amountInFigure || 0);
+  
+        if (scheduleAmount + totalAmountInFigure - scheduleAmount > cost) {
+          errorFields.push({
+            name: ['paymentSchedule', index, 'amountInFigure'],
+            errors: [errorMessage],
+          });
+        }
+      });
+
+      form.setFields(errorFields);
+      setLoader(false);
+      return; // Prevent submission if total exceeds cost
+    }
 
     let data = {
       projectName: values.projectName,
@@ -995,6 +1031,168 @@ const Projects = () => {
     ));
   };
 
+  const paymentColumns = [
+    {
+      title: "Payment Title",
+      dataIndex: "paymentTitle",
+      key: "paymentTitle",
+      render: (text, record, index) => (
+        <Form.Item
+          name={["paymentSchedule", index, "paymentTitle"]}
+          className="custom-border"
+          rules={[
+            {
+              required: true,
+              message: "Enter a Payment Title",
+            },
+          ]}
+        >
+          <Input className="form-control"
+          placeholder="Enter title" />
+        </Form.Item>
+      ),
+    },
+    {
+      title: "Amount in Figure",
+      dataIndex: "amountInFigure",
+      key: "amountInFigure",
+      render: (text, record, index) => (
+        <Form.Item
+          name={["paymentSchedule", index, "amountInFigure"]}
+          className="custom-border"
+          rules={[
+            {
+              required: true,
+              message: "Please enter the amount in figure.",
+            },
+          ]}
+        >
+          {/* <Input type="number" className="form-control" /> */}
+          <InputNumber
+            className="form-control"
+            placeholder="Enter an amount"
+            formatter={(value) => {
+              return `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            }}
+            parser={(value) => {
+              return value.replace(/\$\s?|(,*)/g, '');
+            }}
+          />
+        </Form.Item>
+      ),
+    },
+    {
+      title: "Amount in Percent",
+      dataIndex: "amountInPercent",
+      key: "amountInPercent",
+      render: (text, record, index) => (
+        <Form.Item
+          name={["paymentSchedule", index, "amountInPercent"]}
+          className="custom-border"
+          rules={[
+            {
+              required: true,
+              message: "Please enter the amount in percentage.",
+            },
+          ]}
+        >
+          {/* <Input type="number" className="form-control" /> */}
+          <InputNumber
+            className="form-control"
+            placeholder="Enter percentage"
+            max={100}
+            min={0}
+          />
+        </Form.Item>
+      ),
+    },
+    {
+      title: "Due Date",
+      dataIndex: "dueDate",
+      key: "dueDate",
+      render: (text, record, index) => (
+        <div style={{ position: "relative" }} id={`dueDate-${index}`}>
+          <Form.Item
+            name={["paymentSchedule", index, "dueDate"]}
+            rules={[
+              {
+                required: true,
+                message: "Select a due date",
+              },
+            ]}
+            className="custom-border"
+            style={{ width: "max-content" }}
+          >
+            <DatePicker
+              suffixIcon={null}
+              getPopupContainer={() =>
+                document.getElementById(`dueDate-${index}`)
+              }
+              className="form-control"
+              size="large"
+            />
+          </Form.Item>
+        </div>
+      ),
+    },
+    {
+      title: "Paid",
+      dataIndex: "paid",
+      key: "paid",
+      render: (text, record, index) => (
+        <Form.Item
+          name={["paymentSchedule", index, "paid"]}
+          valuePropName="checked"
+        >
+          <Checkbox />
+        </Form.Item>
+      ),
+    },
+    // {
+    //   title: "Action",
+    //   key: "action",
+    //   render: (text, record, index) => (
+    //     <MinusCircleFilled
+    //       style={{ color: "red", cursor: "pointer" }}
+    //       //disabled={record?.paid}
+    //       onClick={() => {
+    //         removePaymentSchedule(index);
+    //         console.log(record?.paid);
+    //       }}
+    //     />
+    //   ),
+    // },
+    {
+      title: "Action",
+      key: "action",
+      render: (text, record, index) => (
+        <span
+          style={{
+            color:
+              paymentSchedules.length > 1
+                ? index === paymentSchedules.length - 1
+                  ? "red"
+                  : "#ccc"
+                : "#ccc",
+            cursor: "pointer",
+          }}
+        >
+          {/* <span style={{ color: index === paymentSchedules?.length - 1 ? 'red' : '#ccc', cursor: 'pointer' }}> */}
+          <MinusCircleFilled
+            onClick={() => {
+              if (
+                paymentSchedules.length > 1 &&
+                index === paymentSchedules?.length - 1
+              ) {
+                removePaymentSchedule(index);
+              }
+            }}
+          />
+        </span>
+      ),
+    },
+  ];
+ 
   const showTeamSearch = (val, type) => {
     let dropdownValues = []
     if(type === 'Team'){
@@ -1086,6 +1284,7 @@ const filteredColumns = columns.filter(column => {
                 </ul>
               </div>
               <div className="col-auto float-end ms-auto">
+                { (role === "admin" || permissions?.projectManagement) &&
                 <button
                   className="btn add-btn"
                   onClick={() => { openCreateModal(); getAllCurrencies(); ViewClients(); fetchEmployees(); }}
@@ -1100,7 +1299,8 @@ const filteredColumns = columns.filter(column => {
                   <i className="fa fa-plus" />
                   Create Project
                 </button>
-
+                }
+              
                 <div className="view-icons">
                   <button
                     onClick={() => {
@@ -1295,7 +1495,7 @@ const filteredColumns = columns.filter(column => {
                             getPopupContainer={() =>
                               document.getElementById("area1")
                             }
-                            placeholder="Project Type"
+                            placeholder="Cost Type"
                             style={{height:'50px'}}
                             onChange={(value) => {
                               handleFilterChange(value, "projectType");
@@ -1457,10 +1657,21 @@ const filteredColumns = columns.filter(column => {
                             {project?.projectDescription}
                           </p>
                         </div>
-
                         <div className="pro-deadline m-b-15">
                           <div className="sub-title">Deadline:</div>
                           <div className="text-muted">{project?.endDate}</div>
+                        </div>
+                        <div className="pro-deadline m-b-15">
+                          <div className="sub-title">Status:</div>
+                          <div style={{
+                            color: 
+                              project?.status === 'Scheduled' ? 'red' :
+                              project?.status === 'On-Going' ? 'orange' :
+                              (project?.status === 'Paused' || project?.status === 'Archived') ? 'grey' :
+                              project?.status === 'Completed' ? 'green' : 'inherit'
+                          }}>
+                            {project?.status}
+                          </div>
                         </div>
                         <div className="project-members m-b-15">
                           <div>Project Leader :</div>
@@ -2526,34 +2737,75 @@ const filteredColumns = columns.filter(column => {
                       </div>
                     </div>
                     <div className="col-sm-6">
-                      <div className="form-group">
-                        <label>Team Members</label>
-                        <div className="project-members">
-                          {selectedTeamMembers
-                            ?.slice(0, 4)
-                            .map((teamMember) => (
-                              <a
-                                key={teamMember}
-                                data-bs-toggle="tooltip"
-                                title={getEmployeeFullName(teamMember)}
-                                className="avatar"
-                              >
-                                <img
+                  <div className="form-group">
+                    <label>Team Members</label>
+                    <div
+                      className="project-members"
+                      style={{ margin: "4px auto" }}
+                    >
+                      <ul
+                        className="team-members"
+                        style={{ minWidth: "max-content" }}
+                      >
+                        {selectedTeamMembers
+                          ?.slice(0, 4)
+                          .map((teamMember, index) => (
+                            <li key={index}>
+                              <Tooltip title={getEmployeeFullName(teamMember)}>
+                                <Avatar
+                                  style={{ cursor: "pointer" }}
                                   src={
                                     getEmployeeImage(teamMember) || user_icon
                                   }
-                                  alt=""
                                 />
-                              </a>
-                            ))}
-                          {selectedTeamMembers?.length > 4 && (
-                            <span className="all-team">
+                              </Tooltip>
+                            </li>
+                          ))}
+                        {selectedTeamMembers?.length > 4 && (
+                          <li className="dropdown avatar-dropdown">
+                            <Link
+                              className="all-users dropdown-toggle projectTeamMember"
+                              style={{
+                                display: "inline-flex",
+                                height: "33px",
+                                width: "33px",
+                              }}
+                              data-bs-toggle="dropdown"
+                              aria-expanded="false"
+                            >
                               +{selectedTeamMembers?.length - 4}
-                            </span>
-                          )}
-                        </div>
-                      </div>
+                            </Link>
+                            {/* Dropdown menu for additional team members */}
+                            <div className="dropdown-menu dropdown-menu-right">
+                              <div className="avatar-group">
+                                {selectedTeamMembers
+                                  ?.slice(4)
+                                  .map((teamMember, index) => (
+                                    <a
+                                      className="avatar avatar-xs projectTeamMember"
+                                      key={index}
+                                    >
+                                      <Tooltip
+                                        title={getEmployeeFullName(teamMember)}
+                                      >
+                                        <Avatar
+                                          src={
+                                            getEmployeeImage(teamMember) ||
+                                            user_icon
+                                          }
+                                          style={{ cursor: "pointer" }}
+                                        />
+                                      </Tooltip>
+                                    </a>
+                                  ))}
+                              </div>
+                            </div>
+                          </li>
+                        )}
+                      </ul>
                     </div>
+                  </div>
+                </div>
                   </div>
 
                   <div className="form-group">
@@ -2574,7 +2826,11 @@ const filteredColumns = columns.filter(column => {
                   </div>
 
                   <div className="form-group">
-                    <label>Upload Files</label>
+                    <label>Upload Files{" "} 
+                      <small style={{ color: 'grey', fontSize: 'small' }}>
+                        (Allowed formats: pdf, doc, docx, jpg, jpeg, png, gif, xls, xlsx)
+                      </small>
+                    </label>
                     <input
                       className="form-control"
                       multiple
@@ -2594,147 +2850,29 @@ const filteredColumns = columns.filter(column => {
                     style={{ opacity: "0", marginTop: "0px" }}
                   />
 
-                  {paymentSchedules.map((schedule, index) => (
-                    <div key={index}>
-                      {index > 0 && <hr />}
+                  <h4
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-evenly",
+                      alignItems: "center",
+                    }}
+                  >
+                    Payment Schedules
+                  </h4>
+                  <hr
+                    className="developer-divider"
+                    style={{ opacity: "0", marginTop: "0px" }}
+                  />
+                  <div className="table-responsive">
+                    <Table
+                      dataSource={paymentSchedules}
+                      columns={paymentColumns}
+                      rowKey={(record, index) => index}
+                      pagination={false}
+                      style={{ overflowX: "auto" }}
+                    />
+                  </div>
 
-                      <label
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-evenly",
-                          alignItems: "center",
-                          fontWeight: '500',
-                          fontSize: '14px',
-                          marginBottom: '15px',
-                        }}
-                      >
-                        {index + 1}. Payment
-                        {index === paymentSchedules.length - 1 &&
-                          paymentSchedules.length > 1 && (
-                            <MinusCircleFilled
-                              style={{
-                                fontSize: 18,
-                                color:
-                                  paymentSchedules.length > 1
-                                    ? index === paymentSchedules.length - 1
-                                      ? "red"
-                                      : "#ccc"
-                                    : "#ccc",
-                                cursor: "pointer",
-                              }}
-                              onClick={removeLastPaymentSchedule}
-                            />
-                          )}
-                      </label>
-
-                      <div className="row">
-                        <div className="col-sm-6">
-                          <div className="form-group">
-                            <label>Payment Title</label>
-                            <Form.Item
-                              name={["paymentSchedule", index, "paymentTitle"]}
-                              className="custom-border"
-                              rules={[
-                                {
-                                  required: true,
-                                  message: "Enter a Payment Title",
-                                },
-                              ]}
-                            >
-                              <Input className="form-control" />
-                            </Form.Item>
-                          </div>
-                        </div>
-
-                        <div className="col-sm-6">
-                          <div className="form-group">
-                            <label>Amount in Figure</label>
-                            <Form.Item
-                              name={[
-                                "paymentSchedule",
-                                index,
-                                "amountInFigure",
-                              ]}
-                              className="custom-border"
-                              rules={[
-                                {
-                                  required: true,
-                                  message: "Please enter the amount in figure.",
-                                },
-                              ]}
-                            >
-                              {/* <Input className="form-control" /> */}
-                              <InputNumber
-                                className="form-control"
-                                formatter={(value) => {
-                                  return `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-                                }}
-                                parser={(value) => {
-                                  return value.replace(/\$\s?|(,*)/g, '');
-                                }}
-                              />
-                            </Form.Item>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="row">
-                        <div className="col-sm-6">
-                          <div className="form-group">
-                            <label>Amount in Percent</label>
-                            <Form.Item
-                              name={[
-                                "paymentSchedule",
-                                index,
-                                "amountInPercent",
-                              ]}
-                              className="custom-border"
-                              rules={[
-                                {
-                                  required: true,
-                                  message:
-                                    "Please enter the amount in percentage.",
-                                },
-                              ]}
-                            >
-                              {/* <Input className="form-control" /> */}
-                              <InputNumber
-                                className="form-control"
-                                max={100}
-                                min={0}
-                              />
-                            </Form.Item>
-                          </div>
-                        </div>
-
-                        <div className="col-sm-6">
-                          <div className="form-group">
-                            <label>Due Date</label>
-                            <div style={{ position: "relative" }} id="area"></div>
-                            <Form.Item
-                              name={["paymentSchedule", index, "dueDate"]}
-                              className="custom-border"
-                              rules={[
-                                {
-                                  required: true,
-                                  message: "Select a due date",
-                                },
-                              ]}
-                            >
-                              <DatePicker
-                              getPopupContainer={() =>
-                                document.getElementById("area")
-                              }
-                                style={{ width: "100%" }}
-                                className="form-control"
-                                size="large"
-                              />
-                            </Form.Item>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
                   <div className="submit-section">
                     <Form.Item>
                       <Button type="primary" onClick={addPaymentSchedule} className="btn btn-primary submit-btn btn-add" style={{fontSize: '14px', minWidth: '30px', height: '39px', lineHeight: '0px'}}>

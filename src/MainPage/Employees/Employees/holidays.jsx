@@ -117,12 +117,26 @@ const Holidays = () => {
   const onFinish = (values, info) => {
     //console.log(info)
     setLoader(true);
+    if (values?.holidayDate) {
+      values.holidayDate = moment(values.holidayDate).format('YYYY-MM-DD');
+    }
     if (info) {
       let updated_data = {
         ...values,
         companyId: info?.companyId,
         _id: info?._id,
       };
+      const isHolidayExisting = holidays?.some(
+        (holiday) =>
+          new Date(holiday.holidayDate).toISOString() ===
+          new Date(values?.holidayDate).toISOString()
+      );
+    
+      if (isHolidayExisting) {
+        message.error('Holiday with this date already exists!');
+        setLoader(false); 
+        return; 
+      }
       apiServices("PUT", "holidays", updated_data, user_state)
         .then((res) => {
           // console.log(res?.data);
