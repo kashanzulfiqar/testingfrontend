@@ -12454,3 +12454,10 @@ styles by Qazi
 .PLTable2 thead tr th:nth-child(4){
   min-width: 170px !important;
 }
+
+.TimesheetTable thead > *{
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 300 !important;
+  background: #FFFFFF !important;
+}

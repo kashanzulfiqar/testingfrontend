@@ -775,7 +775,7 @@ const generateWeekColumns = (weekData, finalData) => {
           {/* /Main Table */}
           <div className="row">
             <div className="col-md-12">
-              <div className="table-responsive" style={{background: 'white'}}>
+              <div className="table-responsive TimesheetTable" style={{background: 'white'}}>
                 <Table
                   locale={{
                     emptyText: isLoading ? (
