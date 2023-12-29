@@ -60,6 +60,7 @@ import ViewPL from '../MainPage/HR/Sales/ViewProfitLoss';
 import EmployeeTimesheet from '../MainPage/Employees/Employees/EmployeeTimesheet';
 import AdminTimeSheet from '../MainPage/Employees/Employees/timesheetAdmin';
 import ViewDetailTimesheet from '../MainPage/Employees/Employees/ViewDetailTimesheet';
+import AttendanceReport from '../MainPage/HR/Reports/attendancereport';
 
 
 const App = () => {
@@ -173,6 +174,8 @@ const App = () => {
           <Route path="/projects/project_dashboard" element={<Projects />} />
           <Route path="/projects/projects-view/:_id" element={<ProjectView />} />
           <Route path="/profit-loss/view" element={<ViewPL />} />
+
+          <Route path="/reports/attendance-reports" element={<AttendanceReport />} />
 
           {/* <Link to={`/projects/projects-view/${record?._id}`} style={{color: '#333333'}}>
           <label style={{cursor: 'pointer'}} className="longText">{text}</label>

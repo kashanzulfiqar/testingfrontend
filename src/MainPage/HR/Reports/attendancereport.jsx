@@ -1,157 +1,513 @@
-
-import React ,{useEffect} from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet";
-import Offcanvas from '../../../Entryfile/offcanvance';
+import { Link, useNavigate } from "react-router-dom";
+import {
+  Avatar_01,
+  Avatar_04,
+  Avatar_05,
+  Avatar_09,
+  Avatar_10,
+  Avatar_11,
+  Avatar_12,
+  Avatar_13,
+  Avatar_16,
+  user_icon,
+} from "../../../Entryfile/imagepath";
+import Tableavatar from "../../../_components/tableavatar/tableavatar";
+import Sidebar from "../../../initialpage/Sidebar/sidebar";
+import Header from "../../../initialpage/Sidebar/header";
+import Offcanvas from "../../../Entryfile/offcanvance";
+import { apiServices } from "../../../Services/apiServices";
+import { useSelector } from "react-redux";
+import {
+  Table,
+  Form,
+  Input,
+  DatePicker,
+  Select,
+  Button,
+  Spin,
+  message,
+  Empty,
+  TimePicker,
+} from "antd";
+import moment from "moment";
+import EmptyTable from "../../../files/Icons/EmptyTable.svg";
+import Modal from "@mui/material/Modal";
+import { EditOutlined } from "@mui/icons-material";
+import { LoadingOutlined } from "@ant-design/icons";
+
+const { Option } = Select;
 
 const AttendanceReport = () => {
-  useEffect( ()=>{
-    if($('.select').length > 0) {
-      $('.select').select2({
+  const permissions = useSelector((state) => state?.permissionsSlice?.data);
+  console.log("permissions", permissions)
+  const navigate = useNavigate();
+
+  const [form] = Form.useForm();
+  const [menu, setMenu] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isStatLoading, setIsStatLoading] = useState(false);
+  const [selectedMonthYear, setSelectedMonthYear] = useState("");
+  const [statdata, setStatdata] = useState(null);
+  const [specific, setSpecific] = useState(null);
+
+  const toggleMobileMenu = () => {
+    setMenu(!menu);
+  };
+
+  useEffect(() => {
+    if ($(".select").length > 0) {
+      $(".select").select2({
         minimumResultsForSearch: -1,
-        width: '100%'
+        width: "100%",
       });
     }
-  });  
+  });
 
-      return ( 
-        <>
-        {/* Page Wrapper */}
+  const [attendancerecords, setAttendanceRecords] = useState([]);
+
+  const user_state = useSelector((state) => state.user.loginvalue);
+  const role = user_state?.user?.role;
+
+  const [loader, setLoader] = useState(false);
+
+  const [open, setOpen] = useState({
+    isAddOpen: false,
+    isDelOpen: false,
+    data: "",
+  });
+
+  const handleClose = () => {
+    setOpen({ isAddOpen: false, isDelOpen: false, data: "" });
+    setSelectedStatus("");
+    form.resetFields();
+  };
+
+  const [employeeAttendanceData, setEmployeeAttendanceData] = useState([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [employees, setEmployees] = useState([]);
+  const [selectedStatus, setSelectedStatus] = useState("");
+
+  const [filters, setFilters] = useState({
+    name: "",
+    month: "",
+    year: "",
+  });
+  const [selectedFilters, setSelectedFilters] = useState({
+    name: "",
+    month: "",
+    year: "",
+  });
+
+
+  useEffect(() => {
+    if (role === "admin" || permissions?.reportManagement) {
+      setIsLoading(true);
+      setIsStatLoading(true);
+      fetchAttendanceData();
+    } else {
+      navigate("/restricted", { state: { unAuthorize: true } });
+    }
+  }, [filters]);
+
+  const fetchAttendanceData = async () => {
+    apiServices(
+      "GET",
+      `report/attendance?employeeName=${filters.name}&attendanceMonth=${filters.month ? filters.month : moment().format("MMMM")}&attendanceYear=${filters.year ? filters.year : moment().format("YYYY")}`,
+      null,
+      user_state
+    )
+      .then((res) => {
+        if (res.data.success === true) {
+          const attendanceData = res?.data?.Attendance;
+          const statData = res?.data;
+          setAttendanceRecords(attendanceData);
+          setStatdata(statData);
+        }
+      })
+      .catch((error) => {
+        console.log("error", error);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Error Fetching Attendance Reports"
+          }`
+        );
+      })
+      .finally(() => {
+        setIsLoading(false);
+        setIsStatLoading(false);
+      });
+  };
+
+  const antIcon = (
+    <LoadingOutlined
+      style={{
+        fontSize: 24,
+        color: "#fff",
+      }}
+      spin
+    />
+  );
+
+  const handleFilterChange = (value, filterType) => {
+    setSelectedFilters({
+      ...selectedFilters,
+      [filterType]: value,
+    });
+  };
+
+
+  const handleSearch = () => {
+    const { name, month, year } = selectedFilters;
+
+    if (name || (month && year)) {
+      setFilters(selectedFilters);
+    } else {
+      message.warning("Both Month and Year required");
+    }
+  };
+
+  const handleReset = () => {
+    setSelectedFilters({
+      name: "",
+      month: "",
+      year: "",
+    });
+
+    setSelectedMonthYear("");
+
+    setFilters({
+      name: "",
+      month: "",
+      year: "",
+    });
+
+    form.resetFields();
+  };
+
+
+  const customEmptyText = (
+    <Empty
+      image={<img src={EmptyTable} />}
+      // image={<InboxOutlined />}
+      imageStyle={
+        {
+          // fontSize: 48,
+          // color: '#1890ff',
+        }
+      }
+      style={{
+        height: "300px",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+      }}
+      description={
+        <div style={{ display: "" }}>
+          <div
+            style={{
+              color: "#34343F",
+              fontWeight: "500",
+              fontSize: "14px",
+              margin: "7px 0px 4px 0px",
+            }}
+          >
+            No Data
+          </div>
+          {/* <div
+          style={{ color: "#464665", fontWeight: "300", fontSize: "13px" }}
+        >
+          Click 'Add Department' Button To Create <br /> A New Department{" "}
+        </div> */}
+        </div>
+      }
+    />
+  );
+
+  const columns = [
+    {
+      title: "Employee",
+      dataIndex: "employeeName",
+      key: "employeeName",
+      render: (text, record) => (
+        <div
+          className="table-avatar"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            minWidth: "120px",
+            width: "max-content",
+          }}
+        >
+          <label className="avatar">
+            <img alt="" src={record?.imageUrl || user_icon} />
+          </label>
+          <label>{text}</label>
+        </div>
+        // <h2 className="table-avatar">
+        //   <label className="avatar"><img alt="" src={record?.user?.imageUrl || user_icon} /></label>
+        //   <label>{record?.user?.fullName}</label>
+        //   {/* <label>{text} <span>{record?.user?.role}</span></label> */}
+        // </h2>
+        // </div>
+      ),
+    },
+    {
+      title: "Total Presents",
+      dataIndex: "totalPresents",
+      key: "totalPresents",
+    },
+    {
+      title: "Total Absents",
+      dataIndex: "totalAbsents",
+      key: "totalAbsents",
+    },
+    {
+      title: "Total Leaves",
+      dataIndex: "totalLeaves",
+      key: "totalLeaves",
+    },
+    {
+      title: "Late Arrivals",
+      dataIndex: "totalLates",
+      key: "totalLates",
+    },
+    {
+      title: "Total WFH",
+      dataIndex: "totalWFH",
+      key: "totalWFH",
+    },
+    
+  ];
+
+
+  return (
+    <>
+      <div className={`main-wrapper ${menu ? "slide-nav" : ""}`}>
+        {/* <Header onMenuClick={(value) => toggleMobileMenu()} /> */}
+        {/* <Sidebar /> */}
         <div className="page-wrapper">
-            <Helmet>
-                <title>Attendance Reports - HRMS Admin Template</title>
-                <meta name="description" content="Login page"/>					
-            </Helmet>
-          {/* Page Content */}
+          <Helmet>
+            <title>Reports - DaftarPro</title>
+            <meta name="description" content="Login page" />
+          </Helmet>
           <div className="content container-fluid">
             {/* Page Header */}
             <div className="page-header">
               <div className="row">
                 <div className="col-sm-12">
-                  <h3 className="page-title">Attendance Reports</h3>
+                  <h3 className="page-title">Reports</h3>
                   <ul className="breadcrumb">
-                    <li className="breadcrumb-item"><Link to="/app/main/dashboard">Dashboard</Link></li>
+                    <li className="breadcrumb-item">
+                      <Link
+                        to={
+                          role === "admin"
+                            ? "/main/dashboard"
+                            : "/employee/dashboard"
+                        }
+                      >
+                        Dashboard
+                      </Link>
+                    </li>
                     <li className="breadcrumb-item active">Attendance Reports</li>
                   </ul>
                 </div>
               </div>
             </div>
-            {/* /Page Header */}
-            {/* Content Starts */}
-            {/* Search Filter */}
-            <div className="row filter-row">
-              <div className="col-sm-6 col-md-3">  
-                <div className="form-group form-focus">
-                  <input type="text" className="form-control floating" />
-                  <label className="focus-label">Employee Name</label>
+            {/* STATS */}
+            <div className="row">
+              <div className="col-md-4">
+                <div className="stats-info">
+                  <label>Total working days</label>
+                  <h4>
+                    {isStatLoading ? (
+                      <Spin size="large" />
+                    ) : (
+                      <>{statdata?.totalWorkingDays}</>
+                    )}
+                  </h4>
                 </div>
               </div>
-              <div className="col-sm-6 col-md-3">  
-                <div className="form-group form-focus select-focus">
-                  <div className="cal-icon">
-                    <select className="form-control floating select">
-                      <option>
-                        Jan
-                      </option>
-                      <option>
-                        Feb
-                      </option>
-                      <option>
-                        Mar
-                      </option>
-                    </select>
-                  </div>
-                  <label className="focus-label">Month</label>
+              <div className="col-md-4">
+                <div className="stats-info">
+                  <label>Total Non-working days</label>
+                  <h4>
+                    {isStatLoading ? (
+                      <Spin size="large" />
+                    ) : (
+                      <>{statdata?.totalHolidays}</>
+                    )}
+                  </h4>
                 </div>
               </div>
-              <div className="col-sm-6 col-md-3">  
-                <div className="form-group form-focus select-focus">
-                  <div className="cal-icon">
-                    <select className="form-control floating select">
-                      <option>
-                        2020
-                      </option>
-                      <option>
-                        2019
-                      </option>
-                      <option>
-                        2018
-                      </option>
-                    </select>
-                  </div>
-                  <label className="focus-label">Year</label>
+              <div className="col-md-4">
+                <div className="stats-info">
+                  <label>Total no. of Employees</label>
+                  <h4>
+                    {isStatLoading ? (
+                      <Spin size="large" />
+                    ) : (
+                      <>{statdata?.totalEmployees}</>
+                    )}
+                  </h4>
                 </div>
               </div>
-              <div className="col-sm-6 col-md-3">  
-                <a href="#" className="btn btn-success btn-block w-100"> Search </a>  
-              </div>     
             </div>
+            {/* Search Filter */}
+
+            <Form form={form} onFinish={handleSearch}>
+              <div className="row filter-row">
+
+                <div className="col-sm-6 col-md-3">
+                  <div className="form-group">
+                    <Form.Item name="name" className="custom-border">
+                      <Input
+                        className="form-control"
+                        allowClear={false}
+                        placeholder="Employee Name"
+                        onChange={(e) =>
+                          handleFilterChange(e.target.value, "name")
+                        }
+                      />
+                    </Form.Item>
+                  </div>
+                </div>
+
+                <div className="col-sm-6 col-md-3">
+                  <div className="form-group">
+                    <Form.Item name="month" className="custom-border">
+                      <DatePicker.MonthPicker
+                        className="form-control"
+                        style={{
+                          width: "100%",
+                        }}
+                        placeholder={
+                          selectedMonthYear
+                            ? "Select Month"
+                            : `${moment().format("MMMM")}`
+                        }
+                        size="large"
+                        allowClear={false}
+                        format="MMMM"
+                        onChange={(date, dateString) => {
+                          handleFilterChange(dateString, "month");
+                          setSelectedMonthYear(dateString);
+                        }}
+                      />
+                    </Form.Item>
+                  </div>
+                </div>
+
+                <div className="col-sm-6 col-md-3">
+                  <div className="">
+                    <Form.Item name="year" className="custom-border">
+                      <DatePicker.YearPicker
+                        className="form-control"
+                        style={{
+                          width: "100%",
+                        }}
+                        placeholder={
+                          selectedMonthYear
+                            ? "Select Year"
+                            : `${moment().format("YYYY")}`
+                        }
+                        size="large"
+                        allowClear={false}
+                        onChange={(date, dateString) => {
+                          handleFilterChange(dateString, "year");
+                          setSelectedMonthYear(dateString);
+                        }}
+                      />
+                    </Form.Item>
+                  </div>
+                </div>
+                <div
+                  className="col-sm-6 col-md-3"
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: "13px",
+                  }}
+                >
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    className="btn-success btn-block w-50"
+                    disabled={
+                      role === "admin"
+                        ? false
+                        : permissions?.attendanceManagement
+                        ? false
+                        : true
+                    }
+                    style={{ borderRadius: "4px", display: "flex", justifyContent: "center", alignItems: "center" }}
+                  >
+                    SEARCH
+                  </Button>
+
+                  <Button
+                    htmlType="button"
+                    className="btn-secondary btn-block w-50"
+                    onClick={handleReset}
+                    disabled={
+                      role === "admin"
+                        ? false
+                        : permissions?.attendanceManagement
+                        ? false
+                        : true
+                    }
+                    style={{
+                      backgroundColor: "#616161",
+                      borderColor: "#616161",
+                      borderRadius: "4px",
+                      display: "flex", 
+                      justifyContent: "center",
+                      alignItems: "center"
+                    }}
+                  >
+                    RESET
+                  </Button>
+                </div>
+              </div>
+            </Form>
+
             {/* /Search Filter */}
             <div className="row">
-              <div className="col-md-12">
-                <div className="table-responsive">
-                  <table className="table table-striped custom-table mb-0">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Date</th>
-                        <th>Clock In</th>
-                        <th>Clock Out</th>
-                        <th>Work Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>1</td>
-                        <td>1 Jan 2020</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                      </tr>
-                      <tr>
-                        <td>2</td>
-                        <td>2 Jan 2020</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                      </tr>
-                      <tr>
-                        <td>3</td>
-                        <td>3 Jan 2020</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                      </tr>
-                      <tr>
-                        <td>4</td>
-                        <td>4 Jan 2020</td>
-                        <td colSpan={3} className="text-danger text-center">Week Off</td>
-                      </tr>
-                      <tr>
-                        <td>5</td>
-                        <td>5 Jan 2020</td>
-                        <td colSpan={3} className="text-danger text-center">Week Off</td>
-                      </tr>
-                      <tr>
-                        <td>6</td>
-                        <td>6 Jan 2020</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                      </tr>
-                    </tbody>
-                  </table>
+              <div className="col-lg-12">
+                <div
+                  className="table-responsive TimesheetTable"
+                >
+                  <Table
+                    className="table-striped"
+                    // locale={{ emptyText: customEmptyText }}
+                    locale={{
+                      emptyText: isLoading ? (
+                        <Spin size="large" tip="Loading..." />
+                      ) : (
+                        customEmptyText
+                      ),
+                    }}
+                    style={{ height: "400px", background: "white" }}
+                    loading={isLoading}
+                    columns={columns}
+                    dataSource={attendancerecords}
+                    bordered={true}
+                    pagination={false}
+                  />
                 </div>
               </div>
             </div>
-            {/* /Content End */}
           </div>
-          {/* /Page Content */}
         </div>
-        {/* /Page Wrapper */}
-        <Offcanvas/>
-        </>
-      );
-  }
+      </div>
+      <Offcanvas />
+    </>
+  );
+};
 
 export default AttendanceReport;

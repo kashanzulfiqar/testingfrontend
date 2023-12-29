@@ -244,7 +244,7 @@ const Sidebar = (props) => {
                         <li><Link className={pathname.includes('user-') ? "active" : ""} to="/app/reports/user-reports"> User Report </Link></li>
                         <li><Link className={pathname.includes('employee-') ? "active" : ""} to="/app/reports/employee-reports"> Employee Report </Link></li>
                         <li><Link className={pathname.includes('payslip-') ? "active" : ""} to="/app/reports/payslip-reports"> Payslip Report </Link></li>
-                        <li><Link className={pathname.includes('attendance-') ? "active" : ""} to="/app/reports/attendance-reports"> Attendance Report </Link></li>
+                        <li><Link className={pathname.includes('attendance-reports') ? "active" : ""} to="/reports/attendance-reports"> Attendance Report </Link></li>
                         <li><Link className={pathname.includes('leave-') ? "active" : ""} to="/app/reports/leave-reports"> Leave Report </Link></li>
                         <li><Link className={pathname.includes('daily-') ? "active" : ""} to="/app/reports/daily-reports"> Daily Report </Link></li>
                       </ul>
@@ -736,7 +736,7 @@ const Sidebar = (props) => {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
                   <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-pie-chart" /> <span> Reports</span> <span className="menu-arrow" /></a>
                   :
-                  <a href="javascript:" className={isSideMenu == "reports" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "reports" ? "" : "reports")}><i className="la la-pie-chart" /> <span> Reports </span> <span className="menu-arrow" /></a>
+                  (user_state?.role === 'admin' || permissions?.reportManagement) && <a href="javascript:" className={isSideMenu == "reports" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "reports" ? "" : "reports")}><i className="la la-pie-chart" /> <span> Reports </span> <span className="menu-arrow" /></a>
                 }
                   {isSideMenu == "reports" ?
                     <ul>
@@ -748,7 +748,7 @@ const Sidebar = (props) => {
                       <li><Link className={pathname.includes('user-') ? "active" : ""} to="/app/reports/user-reports"> User Report </Link></li>
                       <li><Link className={pathname.includes('employee-') ? "active" : ""} to="/app/reports/employee-reports"> Employee Report </Link></li>
                       <li><Link className={pathname.includes('payslip-') ? "active" : ""} to="/app/reports/payslip-reports"> Payslip Report </Link></li>
-                      <li><Link className={pathname.includes('attendance-') ? "active" : ""} to="/app/reports/attendance-reports"> Attendance Report </Link></li>
+                      <li><Link className={pathname.includes('attendance-reports') ? "active" : ""} to="/reports/attendance-reports"> Attendance Report </Link></li>
                       <li><Link className={pathname.includes('leave-') ? "active" : ""} to="/app/reports/leave-reports"> Leave Report </Link></li>
                       <li><Link className={pathname.includes('daily-') ? "active" : ""} to="/app/reports/daily-reports"> Daily Report </Link></li>
                     </ul>
@@ -1259,7 +1259,7 @@ const Sidebar = (props) => {
                       <li><Link className={pathname.includes('user-') ? "active" : ""} to="/app/reports/user-reports"> User Report </Link></li>
                       <li><Link className={pathname.includes('employee-') ? "active" : ""} to="/app/reports/employee-reports"> Employee Report </Link></li>
                       <li><Link className={pathname.includes('payslip-') ? "active" : ""} to="/app/reports/payslip-reports"> Payslip Report </Link></li>
-                      <li><Link className={pathname.includes('attendance-') ? "active" : ""} to="/app/reports/attendance-reports"> Attendance Report </Link></li>
+                      <li><Link className={pathname.includes('attendance-reports') ? "active" : ""} to="/reports/attendance-reports"> Attendance Report </Link></li>
                       <li><Link className={pathname.includes('leave-') ? "active" : ""} to="/app/reports/leave-reports"> Leave Report </Link></li>
                       <li><Link className={pathname.includes('daily-') ? "active" : ""} to="/app/reports/daily-reports"> Daily Report </Link></li>
                     </ul>
