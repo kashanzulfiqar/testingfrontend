@@ -108,11 +108,13 @@ const AttendanceReport = () => {
     year: "",
   });
 
+  useEffect(() => {
+    setIsStatLoading(true);
+  }, []);
 
   useEffect(() => {
     if (role === "admin" || permissions?.reportManagement) {
       setIsLoading(true);
-      setIsStatLoading(true);
       fetchAttendanceData();
     } else {
       navigate("/restricted", { state: { unAuthorize: true } });
@@ -341,44 +343,34 @@ const AttendanceReport = () => {
               </div>
             </div>
             {/* STATS */}
+            {isStatLoading ? 
+            <div className="row" style={{minHeight: '83px', display: 'grid', placeItems: 'center', background: '#ebebeb', borderRadius: '5px', marginBottom: '20px', marginInline: '0px'}}>
+              <Spin />
+            </div> :
             <div className="row">
               <div className="col-md-4">
                 <div className="stats-info">
                   <label>Total working days</label>
-                  <h4>
-                    {isStatLoading ? (
-                      <Spin size="large" />
-                    ) : (
-                      <>{statdata?.totalWorkingDays}</>
-                    )}
+                  <h4>{statdata?.totalWorkingDays}
                   </h4>
                 </div>
               </div>
               <div className="col-md-4">
                 <div className="stats-info">
                   <label>Total Non-working days</label>
-                  <h4>
-                    {isStatLoading ? (
-                      <Spin size="large" />
-                    ) : (
-                      <>{statdata?.totalHolidays}</>
-                    )}
+                  <h4>{statdata?.totalHolidays}
                   </h4>
                 </div>
               </div>
               <div className="col-md-4">
                 <div className="stats-info">
                   <label>Total no. of Employees</label>
-                  <h4>
-                    {isStatLoading ? (
-                      <Spin size="large" />
-                    ) : (
-                      <>{statdata?.totalEmployees}</>
-                    )}
+                  <h4>{statdata?.totalEmployees}
                   </h4>
                 </div>
               </div>
             </div>
+            }
             {/* Search Filter */}
 
             <Form form={form} onFinish={handleSearch}>
