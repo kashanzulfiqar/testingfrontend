@@ -89,6 +89,7 @@ const Projects = () => {
   const [selectedClient, setSelectedClient] = useState(null);
   const [selectedLeader, setSelectedLeader] = useState(null);
   const [selectedTeamMembers, setSelectedTeamMembers] = useState([]);
+  const [projectType, setProjectType] = useState("");
 
   const [paymentSchedules, setPaymentSchedules] = useState([
     // Initial payment schedule
@@ -469,7 +470,7 @@ const Projects = () => {
     const { paymentSchedule, cost } = values;
 
     // Calculate total amount from payment schedule
-    const totalAmountInFigure = paymentSchedule.reduce(
+    const totalAmountInFigure = paymentSchedule?.reduce(
       (total, schedule) => total + parseFloat(schedule.amountInFigure || 0),
       0
     );
@@ -2506,6 +2507,7 @@ const filteredColumns = columns.filter(column => {
                                 document.getElementById("area")
                               }
                               placeholder="Select Project Type"
+                              onChange={(value) => setProjectType(value)}
                               options={[
                                 {
                                     value: 'Billed',
@@ -2886,7 +2888,8 @@ const filteredColumns = columns.filter(column => {
                     className="developer-divider"
                     style={{ opacity: "0", marginTop: "0px" }}
                   />
-
+                {projectType === 'Billed' && (
+                  <>
                   <h4
                     style={{
                       display: "flex",
@@ -2919,6 +2922,8 @@ const filteredColumns = columns.filter(column => {
                     </Form.Item>
                     <hr />
                   </div>
+                  </>
+                )}
 
                   <div className="submit-section">
                     <Form.Item>
