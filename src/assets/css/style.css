@@ -7175,6 +7175,22 @@ textarea.form-control {
 
 /* ................. custom css styling ................ */
 
+/* timesheet admin vie detail long text */
+.report-cards-info{
+  border: 1px solid #ededed;
+  margin-bottom: 30px;
+  -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+  -moz-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+  background-color: #ffffff;
+  text-align: center;
+  border-radius: 4px;
+  padding: 15px;
+}
+.report-cards-info h4{
+  font-size: 24px;
+  margin-bottom: 0;
+}
 
 /* timesheet admin vie detail long text */
 .projectTitleLongDesc{

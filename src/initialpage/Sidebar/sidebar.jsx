@@ -746,7 +746,7 @@ const Sidebar = (props) => {
                       <li><Link className={pathname.includes('project-') ? "active" : ""} to="/app/reports/project-reports"> Project Report </Link></li>
                       <li><Link className={pathname.includes('task-') ? "active" : ""} to="/app/reports/task-reports"> Task Report </Link></li>
                       <li><Link className={pathname.includes('user-') ? "active" : ""} to="/app/reports/user-reports"> User Report </Link></li>
-                      <li><Link className={pathname.includes('employee-') ? "active" : ""} to="/app/reports/employee-reports"> Employee Report </Link></li>
+                      <li><Link className={pathname.includes('employee-report') ? "active" : ""} to="/employee-report"> Employee Report </Link></li>
                       <li><Link className={pathname.includes('payslip-') ? "active" : ""} to="/app/reports/payslip-reports"> Payslip Report </Link></li>
                       <li><Link className={pathname.includes('attendance-reports') ? "active" : ""} to="/reports/attendance-reports"> Attendance Report </Link></li>
                       <li><Link className={pathname.includes('leave-') ? "active" : ""} to="/app/reports/leave-reports"> Leave Report </Link></li>
