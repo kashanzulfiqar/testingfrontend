@@ -72,7 +72,8 @@ export const apiServices = async (type, endpoint, data, state) => {
                     Authorization: 'Bearer ' + athtoken,
                     Accept: 'application/json'
                 },
-                data: {
+                data: endpoint === 'user/delete-user' ? data :
+                {
                     '_id': data
                 }
             }).then((res) => res)

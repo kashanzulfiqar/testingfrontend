@@ -379,10 +379,15 @@ const Employeeslist = () => {
             },
           ]
 
-          const onFinishDelete = (id, type) => {
+          const onFinishDelete = (id, type, value) => {
             if(type === 'disable'){
+              let d = {
+                _id: id,
+                employeeExitDate: moment(value?.employeeExitDate).format("YYYY-MM-DD")
+                // employeeExitDate: moment(value?.employeeExitDate).format("YYYY-MM-DDTHH:mm:ss.SSSZ")
+              }
               setLoader(true)
-            apiServices("DELETE", "user/delete-user", id, user_state)
+            apiServices("DELETE", "user/delete-user", d, user_state)
               .then((res) => {
                 if (res?.data?.success === true) {
                   // setUsers([...users.filter((user) => user._id !== id)]);
@@ -723,57 +728,133 @@ const Employeeslist = () => {
               }}
             >
               <div className="modal-dialog modal-dialog-centered">
-                <div className="modal-content" style={{ height: "280px" }}>
-                  <div
-                    className="modal-body"
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <div className="form-header">
-                      <h3 style={{ marginBottom: "30px" }}>{open?.data?.userStatus === 'Active' ? 'Disable' : 'Enable'} Employee</h3>
-                      <p>
-                        Are you sure you want to {open?.data?.userStatus === 'Active' ? 'Disable' : 'Enable'}{" "}
-                        <b>{open?.data?.fullName}</b>?
-                      </p>
-                    </div>
-                    <div className="modal-btn delete-action">
-                      <div className="row">
-                        <div className="col-6">
-                          <Button
-                            htmlType="submit"
-                            className="btn btn-primary continue-btn"
-                            onClick={() => {
-                              // onFinishDelete(open?.data?._id);
-                              if(open?.data?.userStatus === 'Active'){
-                                onFinishDelete(open?.data?._id, 'disable')
-                              }else{
-                                onFinishDelete(open?.data?._id, 'enable')
-                              }
-                            }}
-                            disabled={loader}
-                            style={{width: '100%'}}
-                          >
-                            {
-                              loader ? <Spin size="small" indicator={antIcon} />
-                                : open?.data?.userStatus === 'Active' ? 'Disable' : 'Enable'
-                            }
-                          </Button>
+                <div className="modal-content" style={{ height: open?.data?.userStatus === 'Active' ? '363px' : '280px' }}>
+                  {
+                    open?.data?.userStatus === 'Active' ?
+                    <div className="modal-body">
+                      <Form
+                        // form={form}
+                        name="control-hooks"
+                        onFinish={(val) => onFinishDelete(open?.data?._id, 'disable', val)}
+                        onFinishFailed={({errorFields}) => {
+                          console.log(errorFields.map(field => field.errors.toString().includes('consecutive')));
+                          console.log(errorFields);
+                          const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
+                          if(consecutiveSpacesError){
+                            message.error("Please Remove Consecutive Spaces!")
+                          }else{
+                            message.error("Please Fill Required Fields!")
+                          }
+                        }}
+                        // initialValues={{
+                        //   designationName: open?.data
+                        //     ? open?.data?.designationName
+                        //     : "",
+                        // }}
+                      >
+                        <div className="form-header">
+                          <h3 style={{ marginBottom: "50px", marginTop: '21px'}}>Disable {open?.data?.fullName}</h3>
                         </div>
-                        <div className="col-6">
-                          <Button
-                            onClick={handleClose}
-                            className="btn btn-primary submit-btn"
-                            style={{width: '100%'}}
+                        <div className="form-group">
+                          <label>
+                            Employee Exit Date <span className="text-danger">*</span>
+                          </label>
+                          <Form.Item
+                            name="employeeExitDate"
+                            rules={[
+                              {
+                                // whitespace: true,
+                                required: true,
+                                message: "please select date",
+                              },
+                            ]}
+                            className="custom-border"
                           >
-                            Cancel
-                          </Button>
+                            <DatePicker className='form-control' placeholder='YYYY-MM-DD' style={{minHeight: '45px'}} />
+                          </Form.Item>
+                        </div>
+                        <div className="submit-section">
+                          <Form.Item>
+                            <div className="row">
+                          <div className="col-6">
+                            <Button
+                              htmlType="submit"
+                              className="btn btn-primary continue-btn"
+                              // onClick={() => onFinishDelete(open?.data?._id)}
+                              disabled={loader}
+                              style={{width: '100%'}}
+                            >
+                              {
+                                loader ? <Spin size="small" indicator={antIcon} />
+                                  : open?.data?.userStatus === 'Active' ? 'Disable' : 'Enable'
+                              }
+                            </Button>
+                          </div>
+                          <div className="col-6">
+                            <Button
+                              onClick={handleClose}
+                              className="btn btn-primary submit-btn"
+                              style={{width: '100%'}}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                          </Form.Item>
+                        </div>
+                      </Form>
+                    </div> :
+                    <div
+                      className="modal-body"
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <div className="form-header">
+                        <h3 style={{ marginBottom: "30px" }}>{open?.data?.userStatus === 'Active' ? 'Disable' : 'Enable'} Employee</h3>
+                        <p>
+                          Are you sure you want to {open?.data?.userStatus === 'Active' ? 'Disable' : 'Enable'}{" "}
+                          <b>{open?.data?.fullName}</b>?
+                        </p>
+                      </div>
+                      <div className="modal-btn delete-action">
+                        <div className="row">
+                          <div className="col-6">
+                            <Button
+                              htmlType="submit"
+                              className="btn btn-primary continue-btn"
+                              onClick={() => {
+                                // onFinishDelete(open?.data?._id);
+                                if(open?.data?.userStatus === 'Active'){
+                                  onFinishDelete(open?.data?._id, 'disable')
+                                }else{
+                                  onFinishDelete(open?.data?._id, 'enable')
+                                }
+                              }}
+                              disabled={loader}
+                              style={{width: '100%'}}
+                            >
+                              {
+                                loader ? <Spin size="small" indicator={antIcon} />
+                                  : open?.data?.userStatus === 'Active' ? 'Disable' : 'Enable'
+                              }
+                            </Button>
+                          </div>
+                          <div className="col-6">
+                            <Button
+                              onClick={handleClose}
+                              className="btn btn-primary submit-btn"
+                              style={{width: '100%'}}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  }
                 </div>
               </div>
             </Modal>
