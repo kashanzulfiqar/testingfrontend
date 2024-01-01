@@ -357,7 +357,7 @@ const Departments = () => {
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">
-                {open?.data ? "Update" : "Add"} Department Name
+                {open?.data ? "Update" : "Add"} Department
               </h5>
               <button type="button" className="close" onClick={handleClose}>
                 <span aria-hidden="true">×</span>
@@ -378,6 +378,7 @@ const Departments = () => {
                 }}
                 initialValues={{
                   teamName: open?.data ? open?.data?.teamName : "",
+                  isTech: open?.data ? open?.data?.isTech : "",
                 }}
                 autoComplete="off"
               >
