@@ -315,7 +315,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
       assignedDevelopers: values.assignedDevelopers,
       status: values.status,
       docs: uploadFiles,
-      paymentSchedule: values?.paymentSchedule,
+      paymentSchedule: projectType === "Billed" ? values?.paymentSchedule : [],
       deleted: false,
       companyId: selectedData.companyId,
     };
@@ -476,6 +476,13 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
       </Space>
     ));
   };
+
+  const handlePaymentRow = (value) => {
+    setProjectType(value)
+    if (value==="Billed" && paymentSchedules?.length === 0) {
+        addPaymentSchedule();
+    }
+  }
 
   //   const onFileUpload = (file) =>{
   //     console.log("hello",file)
@@ -1072,7 +1079,8 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                             document.getElementById("area")
                           }
                           placeholder="Select Project Type"
-                          onChange={(value) => setProjectType(value)}
+                          onChange={(value) => handlePaymentRow(value)}
+                          //onChange={handlePaymentRow(value)}
                           options={[
                             {
                                 value: 'Billed',
@@ -1441,7 +1449,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                   columns={paymentColumns}
                   rowKey={(record, index) => index}
                   pagination={false}
-                  style={{ overflowX: "auto" }}
+                  style={{ overflowX: "auto", height: "320px", }}
                 />
               </div>
 
