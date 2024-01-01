@@ -728,7 +728,7 @@ const Employeeslist = () => {
               }}
             >
               <div className="modal-dialog modal-dialog-centered">
-                <div className="modal-content" style={{ height: open?.data?.userStatus === 'Active' ? '363px' : '280px' }}>
+                <div className="modal-content" style={{ height: open?.data?.userStatus === 'Active' ? '406px' : '280px' }}>
                   {
                     open?.data?.userStatus === 'Active' ?
                     <div className="modal-body">
@@ -752,8 +752,12 @@ const Employeeslist = () => {
                         //     : "",
                         // }}
                       >
-                        <div className="form-header">
-                          <h3 style={{ marginBottom: "50px", marginTop: '21px'}}>Disable {open?.data?.fullName}</h3>
+                        <div className="form-header" style={{ marginBottom: "50px", marginTop: '21px'}}>
+                          <h3 style={{ marginBottom: "20px"}}>Disable Employee</h3>
+                          <p style={{fontSize: '15px'}}>
+                            Are you sure you want to Disable {" "}
+                            <b>{open?.data?.fullName}</b>?
+                          </p>
                         </div>
                         <div className="form-group">
                           <label>
