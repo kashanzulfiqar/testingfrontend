@@ -3290,9 +3290,14 @@ input[type=file].form-control {
   border-radius: 50px;
   padding: 10px 20px;
 }
+.continue-btn:focus {
+  background-color: #fff !important;
+  color: #ff9b44 !important;
+}
 .continue-btn:hover,
 .cancel-btn:hover {
   color: #fff !important;
+  background-color: #ff9b44 !important;
 }
 
 .table {
