@@ -58,6 +58,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
   const [uploadFiles, setUploadFiles] = useState([]);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [loader, setLoader] = useState(false);
+  const [projectType, setProjectType] = useState("");
 
   const [paymentSchedules, setPaymentSchedules] = useState([
     // Initial payment schedule
@@ -97,6 +98,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
     fetchFocalPersons(data?.clientId);
     setSelectedFiles(data?.docs);
     setUploadFiles(data?.docs);
+    setProjectType(data?.projectType)
     // Count the number of payment schedules in the response
     const numPaymentSchedules = data?.paymentSchedule?.length;
 
@@ -270,7 +272,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
     const { paymentSchedule, cost } = values;
 
     // Calculate total amount from payment schedule
-    const totalAmountInFigure = paymentSchedule.reduce(
+    const totalAmountInFigure = paymentSchedule?.reduce(
       (total, schedule) => total + parseFloat(schedule.amountInFigure || 0),
       0
     );
@@ -1070,6 +1072,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                             document.getElementById("area")
                           }
                           placeholder="Select Project Type"
+                          onChange={(value) => setProjectType(value)}
                           options={[
                             {
                                 value: 'Billed',
@@ -1417,7 +1420,8 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                 className="developer-divider"
                 style={{ opacity: "0", marginTop: "0px" }}
               />
-
+            {projectType === 'Billed' && (
+              <>
               <h4
                 style={{
                   display: "flex",
@@ -1428,7 +1432,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                 Payment Schedules
               </h4>
               <hr
-                className="developer-divider"
+                className="developer-dividerdddd"
                 style={{ opacity: "0", marginTop: "0px" }}
               />
               <div className="table-responsive">
@@ -1450,6 +1454,8 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                 </Form.Item>
                 <hr />
               </div>
+              </>
+              )}
 
               <div className="submit-section">
                 <Form.Item>
