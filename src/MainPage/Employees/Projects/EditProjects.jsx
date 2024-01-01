@@ -304,6 +304,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
       startDate: moment(values.startDate).format("YYYY-MM-DD"),
       endDate: moment(values.endDate).format("YYYY-MM-DD"),
       projectDomain: values.projectDomain,
+      projectType: values.projectType,
       currency: values.currency,
       cost: values.cost,
       costType: values.costType,
@@ -1050,6 +1051,42 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                 </div>
                 <div className="col-sm-6">
                   <div className="form-group">
+                    <label>Project Type</label>
+                    <div style={{ position: "relative" }} id="area">
+                      <Form.Item
+                        name="projectType"
+                        className="custom-border"
+                        rules={[
+                          {
+                            required: true,
+                            message: "Choose a project type",
+                          },
+                        ]}
+                      >
+                        <Select
+                          // showSearch
+                          className="custom-select custom-normal"
+                          getPopupContainer={() =>
+                            document.getElementById("area")
+                          }
+                          placeholder="Select Project Type"
+                          options={[
+                            {
+                                value: 'Billed',
+                                label: "Billed ",
+                            },
+                            {
+                                value: 'nonBilled',
+                                label: "Non-Billed",
+                            },
+                            ]}
+                        />
+                      </Form.Item>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-sm-6">
+                  <div className="form-group">
                     <label>Currency</label>
                     <div style={{ position: "relative" }} id="area">
                       <Form.Item
@@ -1083,7 +1120,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                   </div>
                 </div>
 
-                <div className="col-sm-3">
+                <div className="col-sm-6">
                   <div className="form-group">
                     <label>Cost</label>
 
@@ -1110,7 +1147,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                     </Form.Item>
                   </div>
                 </div>
-                <div className="col-sm-3">
+                <div className="col-sm-6">
                   <div className="form-group">
                     <label>Cost Type</label>
                     <div style={{ position: "relative" }} id="area">

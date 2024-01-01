@@ -1,4 +1,4 @@
-import { Table, Button, Form, Input, message, Empty, Spin } from "antd";
+import { Table, Button, Form, Input, message, Empty, Spin, Select } from "antd";
 import React, { useEffect, useState } from "react";
 import { itemRender, onShowSizeChange } from "../../paginationfunction";
 import "antd/dist/antd.css";
@@ -406,6 +406,43 @@ const Departments = () => {
                   >
                     <Input className="form-control" maxLength={50} autoFocus />
                   </Form.Item>
+                </div>
+                <div className="form-group">
+                    <label>
+                    Department Type <span className="text-danger">*</span>
+                    </label>
+                    <div style={{ position: 'relative' }} id='area'>
+                        <Form.Item
+                        name='departmentType'
+                        className='custom-border'
+                        rules={[
+                            {
+                              // whitespace: true,
+                              required: true,
+                              message: "please select department type",
+                            },
+                          ]}
+                        >
+                            <Select
+                                className="custom-select custom-normal"
+                                getPopupContainer={() => document.getElementById('area')}
+                                style={{
+                                width: '100%',
+                                }}
+                                placeholder='Select Department Type'
+                                options={[
+                                {
+                                    value: true,
+                                    label: "Technical ",
+                                },
+                                {
+                                    value: false,
+                                    label: "Non-Technical",
+                                },
+                                ]}
+                            />
+                        </Form.Item>
+                    </div>
                 </div>
                 <div className="submit-section">
                   <Form.Item>
