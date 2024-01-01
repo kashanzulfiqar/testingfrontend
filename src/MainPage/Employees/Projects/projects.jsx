@@ -2909,7 +2909,7 @@ const filteredColumns = columns.filter(column => {
                       columns={paymentColumns}
                       rowKey={(record, index) => index}
                       pagination={false}
-                      style={{ overflowX: "auto" }}
+                      style={{ overflowX: "auto", height: "320px", }}
                     />
                   </div>
 
