@@ -413,7 +413,7 @@ const Departments = () => {
                     </label>
                     <div style={{ position: 'relative' }} id='area'>
                         <Form.Item
-                        name='departmentType'
+                        name='isTech'
                         className='custom-border'
                         rules={[
                             {
