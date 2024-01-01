@@ -61,6 +61,7 @@ import EmployeeTimesheet from '../MainPage/Employees/Employees/EmployeeTimesheet
 import AdminTimeSheet from '../MainPage/Employees/Employees/timesheetAdmin';
 import ViewDetailTimesheet from '../MainPage/Employees/Employees/ViewDetailTimesheet';
 import AttendanceReport from '../MainPage/HR/Reports/attendancereport';
+import EmployeesReport from '../MainPage/HR/Reports/EmployeesReport';
 
 
 const App = () => {
@@ -158,6 +159,7 @@ const App = () => {
           <Route path={`employee-timesheet`} element={<EmployeeTimesheet />} />
           <Route path={`admin-timesheet`} element={<AdminTimeSheet />} />
           <Route path={`admin-timesheet/details`} element={<ViewDetailTimesheet />} />
+          <Route path={`employee-report`} element={<EmployeesReport />} />
 
           {/* Settings  */}
           <Route path="/settings" element={<Settings />} />
