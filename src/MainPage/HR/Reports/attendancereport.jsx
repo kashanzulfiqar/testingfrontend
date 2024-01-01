@@ -211,6 +211,11 @@ const AttendanceReport = () => {
     });
 
     form.resetFields();
+    setPagination({
+      current: 1,
+      pageSize: 20,
+      total: 0,
+    });
   };
 
 
