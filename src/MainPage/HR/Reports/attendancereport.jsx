@@ -30,12 +30,14 @@ import {
   message,
   Empty,
   TimePicker,
+  Pagination,
 } from "antd";
 import moment from "moment";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import Modal from "@mui/material/Modal";
 import { EditOutlined } from "@mui/icons-material";
 import { LoadingOutlined } from "@ant-design/icons";
+import { itemRender } from "../../paginationfunction";
 
 const { Option } = Select;
 
@@ -51,6 +53,12 @@ const AttendanceReport = () => {
   const [selectedMonthYear, setSelectedMonthYear] = useState("");
   const [statdata, setStatdata] = useState(null);
   const [specific, setSpecific] = useState(null);
+
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 20,
+    total: 0,
+  });
 
   const toggleMobileMenu = () => {
     setMenu(!menu);
@@ -109,12 +117,17 @@ const AttendanceReport = () => {
     } else {
       navigate("/restricted", { state: { unAuthorize: true } });
     }
-  }, [filters]);
+  }, [filters, pagination.current, pagination.pageSize]);
 
   const fetchAttendanceData = async () => {
+    const params = {
+      ...filters,
+      page: pagination.current,
+      limit: pagination.pageSize,
+    };
     apiServices(
       "GET",
-      `report/attendance?employeeName=${filters.name}&attendanceMonth=${filters.month ? filters.month : moment().format("MMMM")}&attendanceYear=${filters.year ? filters.year : moment().format("YYYY")}`,
+      `report/attendance?employeeName=${filters.name}&attendanceMonth=${filters.month ? filters.month : moment().format("MMMM")}&attendanceYear=${filters.year ? filters.year : moment().format("YYYY")}&page=${params.page}&limit=${params.limit}`,
       null,
       user_state
     )
@@ -123,6 +136,10 @@ const AttendanceReport = () => {
           const attendanceData = res?.data?.Attendance;
           const statData = res?.data;
           setAttendanceRecords(attendanceData);
+          setPagination({
+            ...pagination,
+            total: res?.data?.totalDocs,
+          });
           setStatdata(statData);
         }
       })
@@ -167,6 +184,10 @@ const AttendanceReport = () => {
 
     if (name || (month && year)) {
       setFilters(selectedFilters);
+      setPagination({
+        ...pagination,
+        current: 1,
+      });
     } else {
       message.warning("Both Month and Year required");
     }
@@ -496,10 +517,30 @@ const AttendanceReport = () => {
                     loading={isLoading}
                     columns={columns}
                     dataSource={attendancerecords}
-                    bordered={true}
+                    bordered
                     pagination={false}
                   />
                 </div>
+
+                {
+                    attendancerecords?.length > 0 &&
+                    <div>
+                      <Pagination
+                        style={{display: 'flex', float: 'right'}}
+                        current={pagination.current}
+                        pageSize={pagination.pageSize}
+                        total={pagination.total}
+                        showTotal={(total, range) =>
+                          `Showing ${range[0]} to ${range[1]} of ${total} entries`
+                        }
+                        pageSizeOptions={["20", "30", "40", "50"]}
+                        showSizeChanger={true}
+                        onChange={(page, pageSize) => setPagination({...pagination, current: page, pageSize: pageSize,})}
+                        itemRender={itemRender}
+                        disabled={isLoading}
+                      />
+                    </div>
+                  }
               </div>
             </div>
           </div>
