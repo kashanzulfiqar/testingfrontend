@@ -737,6 +737,53 @@ const getTaxSlab = () => {
                     </div>
                     </div>
                     <div className="col-md-6">
+                    <div className="form-group">
+                        <label>
+                        Employee Type <span className="text-danger">*</span>
+                        </label>
+                        <div style={{ position: 'relative' }} id='area'>
+                            <Form.Item
+                            name='employeeType'
+                            className='custom-border'
+                            rules={[
+                                {
+                                  whitespace: true,
+                                  required: true,
+                                  message: "please select employee type",
+                                },
+                              ]}
+                            >
+                                <Select
+                                    className="custom-select custom-normal"
+                                    getPopupContainer={() => document.getElementById('area')}
+                                    style={{
+                                    width: '100%',
+                                    }}
+                                    placeholder='Select Employee Type'
+                                    options={[
+                                    {
+                                        value: 'Full-Time',
+                                        label: "Full Time",
+                                    },
+                                    {
+                                        value: 'Part-Time',
+                                        label: "Part Time",
+                                    },
+                                    {
+                                        value: 'Contract',
+                                        label: "Contract",
+                                    },
+                                    {
+                                        value: 'Intern',
+                                        label: "Intern",
+                                    },
+                                    ]}
+                                />
+                            </Form.Item>
+                        </div>
+                    </div>
+                    </div>
+                    <div className="col-md-6">
                         <div className="form-group">
                             <label>
                             Reports To
