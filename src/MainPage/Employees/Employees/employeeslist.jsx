@@ -502,6 +502,10 @@ const Employeeslist = () => {
             />
           );
 
+          const disabledDate = (current) => {
+            return current && current > new Date();
+          };
+
       return ( 
         <>
         <div className={`main-wrapper ${menu ? 'slide-nav': ''}`}> 
@@ -774,7 +778,7 @@ const Employeeslist = () => {
                             ]}
                             className="custom-border"
                           >
-                            <DatePicker className='form-control' placeholder='YYYY-MM-DD' style={{minHeight: '45px'}} />
+                            <DatePicker className='form-control' disabledDate={disabledDate} placeholder='YYYY-MM-DD' style={{minHeight: '45px'}} />
                           </Form.Item>
                         </div>
                         <div className="submit-section">
