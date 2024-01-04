@@ -2,14 +2,12 @@
 import React, { useState,useEffect } from 'react';
 import { Helmet } from "react-helmet";
 import { Link, useNavigate } from 'react-router-dom';
-import {Avatar_03,Avatar_04} from "../../../Entryfile/imagepath"
-import { BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ComposedChart, ReferenceLine } from 'recharts';
-import { Form, Table, Spin } from 'antd';
+import { BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ComposedChart, ReferenceLine } from 'recharts';
+import { Form, Spin } from 'antd';
 import 'antd/dist/antd.css';
-import {itemRender,onShowSizeChange} from "../../paginationfunction"
 import "../../antdstyle.css"
-import Offcanvas from '../../../Entryfile/offcanvance';
 import { useSelector } from 'react-redux';
+import { apiServices } from '../../../Services/apiServices';
 
 const EmployeesReport = () => {
 
@@ -21,175 +19,47 @@ const EmployeesReport = () => {
     const company_id = user_state?.user?.companyId
     const role = user_state?.user?.role
 
+    const [allData, setAllData] = useState();
     const [loader, setLoader] = useState(false);
     const [cardLoader, setCardLoader] = useState(false);
 
-    const barData = [
-        {
-            department: 'HR',
-            totalEmployees: 20
-        },
-        {
-            department: 'Web',
-            totalEmployees: 80
-        },
-    ];
-    const expData = [
-        {
-            experience: '0 - 2',
-            totalEmployees: 20
-        },
-        {
-            experience: '2 - 4',
-            totalEmployees: 80
-        },
-        {
-            experience: '4 - 6',
-            totalEmployees: 10
-        },
-        {
-            experience: '6 - 8',
-            totalEmployees: 20
-        },
-        {
-            experience: '8 - 10',
-            totalEmployees: 3
-        },
-        {
-            experience: '10+',
-            totalEmployees: 12
-        },
-    ];
-    const ageData = [
-      {
-          age: '20 - 25',
-          totalEmployees: 18
-      },
-      {
-          age: '25 - 30',
-          totalEmployees: 10
-      },
-      {
-          age: '30 - 35',
-          totalEmployees: 5
-      },
-      {
-          age: '35 - 40',
-          totalEmployees: 3
-      },
-      {
-          age: '40 - 45',
-          totalEmployees: 12
-      },
-      {
-          age: '45+',
-          totalEmployees: 6
-      },
-  ];
+    useEffect(() => {
+      getEmployeeReport();
+    }, [])
 
-    const vBarData = [
-        {
-            department: 'HR',
-            totalEmployees: 20
-        },
-        {
-            department: 'Executive Management',
-            totalEmployees: 50
-        },
-        {
-            department: 'Web Development',
-            totalEmployees: 80
-        },
-        {
-            department: 'BI',
-            totalEmployees: 120
-        },
-        {
-            department: 'Designing',
-            totalEmployees: 176
-        },
-        {
-            department: 'Marketing',
-            totalEmployees: 20
-        },
-        {
-            department: 'System Analyst',
-            totalEmployees: 70
-        },
-
-        {
-          department: 'Designing',
-          totalEmployees: 176
-        },
-        {
-            department: 'Marketing',
-            totalEmployees: 20
-        },
-        {
-            department: 'System Analyst',
-            totalEmployees: 70
-        },
-
-        
-        {
-          department: 'Designing',
-          totalEmployees: 176
-        },
-        {
-            department: 'Marketing',
-            totalEmployees: 20
-        },
-        {
-            department: 'System Analyst',
-            totalEmployees: 70
-        },
-        {
-            department: 'Marketing',
-            totalEmployees: 20
-        },
-        {
-            department: 'System Analyst',
-            totalEmployees: 70
-        },
-    ];
-
-    const lineData = [
-        {
-            month: "Jan",
-            employeesJoined: 5,
-            employeesLeft: 1,
-            totalEmployees: 6
-        },
-        {
-            month: "Feb",
-            employeesJoined: 10,
-            employeesLeft: 3,
-            totalEmployees: 13
-        },
-        {
-            month: "Mar",
-            employeesJoined: 100,
-            employeesLeft: 10,
-            totalEmployees: 110
-        },
-        {
-            month: "Apr",
-            employeesJoined: 70,
-            employeesLeft: 3,
-            totalEmployees: 73
-        },
-        {
-            month: "May",
-            employeesJoined: 50,
-            employeesLeft: 2,
-            totalEmployees: 52
-        },
-    ];
+    const getEmployeeReport = () => {
+      setLoader(true);
+      setCardLoader(true);
+      apiServices("GET", "report/employee", null, user_state)
+      .then((res) => {
+        // console.log(res?.data);
+        if (res?.data?.success === true) {
+          console.log(res?.data);
+          setAllData(res?.data);
+          setLoader(false);
+          setCardLoader(false);
+        }
+      })
+      .catch((err) => {
+        setLoader(false);
+        setCardLoader(false);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Get Employee Report Error"
+          }!`
+        );
+      });
+    }
 
 
 // Gender Data
-let value_male = Math.round((300/700)*100);
-let value_female = Math.round((400/700)*100);
+let gender_total = allData?.totalMale + allData?.totalFemale;
+let value_female = Math.round((allData?.totalFemale/gender_total)*100);
+let value_male = Math.round((allData?.totalMale/gender_total)*100);
 const genderData = [
   { name: 'Female', value: value_female },
   { name: 'Male', value: value_male },
@@ -197,8 +67,9 @@ const genderData = [
 const Gender_COLORS = ['#FFAB00', '#664DC9'];
 
 // Technical and Non Technical Staff Data
-let value_technical = Math.round((200/700)*100);
-let value_non_technical = Math.round((500/700)*100);
+let tech_total =  allData?.totalTechEmployees + allData?.totalNonTechEmployees;
+let value_technical = Math.round((allData?.totalTechEmployees/tech_total)*100);
+let value_non_technical = Math.round((allData?.totalNonTechEmployees/tech_total)*100);
 const techData = [
   { name: 'Technical', value: value_technical },
   { name: 'Non Technical', value: value_non_technical },
@@ -206,22 +77,23 @@ const techData = [
 const Tech_COLORS = ['#3E80EB', '#38CB89'];
 
 // Billed and Unbilled Employees Data
-let value_billed = Math.round((450/700)*100);
-let value_un_billed = Math.round((250/700)*100);
+let bill_total =  allData?.billedResources + allData?.nonBilledResources;
+let value_billed = Math.round((allData?.billedResources/bill_total)*100);
+let value_non_billed = Math.round((allData?.nonBilledResources/bill_total)*100);
 const billedData = [
   { name: 'Billed', value: value_billed },
-  { name: 'Un Billed', value: value_un_billed },
+  { name: 'Un Billed', value: value_non_billed },
 ];
 const Billed_COLORS = ['#FFAB00', '#44C4FA'];
 
 // Shift Wise Employees Data
-let value_morning = Math.round((350/500)*100);
-let value_evening = Math.round((150/500)*100);
-const shiftData = [
-  { name: 'Morning', value: value_morning },
-  { name: 'Evening', value: value_evening },
-];
-const Shift_COLORS = ['#FFAB00', '#664DC9'];
+const totalEmployeesSum = allData?.shiftWiseTotalEmployees?.reduce((sum, entry) => sum + entry.totalEmployees, 0);
+const shiftData = allData?.shiftWiseTotalEmployees?.map(entry => ({
+  // ...entry,
+  name: entry?.shiftTitle,
+  value: Math.round((entry.totalEmployees / totalEmployeesSum) * 100),
+}));
+const Shift_COLORS = ['#FFAB00', '#664DC9', '#44C4FA', '#38CB89', '#3E80EB', '#FC6075', '#dc3545', '#198754', '#607d8b'];
 
 
 const RADIAN = Math.PI / 180;
@@ -231,7 +103,8 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
   const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
   return (
-    <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
+    // <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
+    <text x={x} y={y} fill="white" textAnchor={'middle'} dominantBaseline="central">
       {`${(percent * 100).toFixed(0)}%`}
     </text>
   );
@@ -285,25 +158,25 @@ const customPieLegend = (value, entry) => (
                     <div className="report-cards-info" style={{minHeight: '83px'}}>
                         <label>Total No. of Employees</label>
                         {/* <h4>{singleUser?.casualLeaves} / {compLeaves?.casualLeaves}</h4> */}
-                        <h4>10</h4>
+                        <h4>{allData?.totalEmployees}</h4>
                     </div>
                 </div>
                 <div className="col-sm-6 col-md-3">
                     <div className="report-cards-info" style={{minHeight: '83px'}}>
                         <label>Total Intern</label>
-                        <h4>12</h4>
+                        <h4>{allData?.totalIntern}</h4>
                     </div>
                 </div>
                 <div className="col-sm-6 col-md-3">
                     <div className="report-cards-info" style={{minHeight: '83px'}}>
                         <label>Total Contractor</label>
-                        <h4>15</h4>
+                        <h4>{allData?.totalContractor}</h4>
                     </div>
                 </div>
                 <div className="col-sm-6 col-md-3">
                     <div className="report-cards-info" style={{minHeight: '83px'}}>
                         <label>Avg Salary</label>
-                        <h4>109,898</h4>
+                        <h4>{allData?.averageSalary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</h4>
                     </div>
                 </div>
             </div>
@@ -322,7 +195,8 @@ const customPieLegend = (value, entry) => (
                   <div className="card-body">
                     {
                       loader ? <Spin style={{height: '300px', display: 'grid', placeItems: 'center'}} /> :
-                      genderData?.length > 0 ?
+                      // genderData?.length > 0 ?
+                      (allData?.totalMale || allData?.totalFemale) ?
                       <ResponsiveContainer width='100%' height={400}>
                       <PieChart 
                         className='showLegend'
@@ -371,15 +245,15 @@ const customPieLegend = (value, entry) => (
                   <div className="card-body">
                     {
                       loader ? <Spin style={{height: '300px', display: 'grid', placeItems: 'center'}} /> :
-                      vBarData?.length > 0 ?
+                      allData?.departWiseEmployees?.length > 0 ?
                       <ResponsiveContainer
-                        width='100%'
+                        width='98%'
                         height={400}
                       >
                         <BarChart
                           layout="vertical"
                           barCategoryGap={1}
-                          data={vBarData}
+                          data={allData?.departWiseEmployees}
                           margin={{
                             top: 20, right: 5, left: 15, bottom: 5,
                           }}
@@ -390,7 +264,7 @@ const customPieLegend = (value, entry) => (
                             // scale="band"
                             // tickLine={false}
                             // textOverflow="ellipsis"
-                            width={130}
+                            width={100}
                           />
                           <Tooltip
                             labelFormatter={(value) => <label>Department : {value}</label>}
@@ -415,7 +289,8 @@ const customPieLegend = (value, entry) => (
                   <div className="card-body">
                     {
                       loader ? <Spin style={{height: '300px', display: 'grid', placeItems: 'center'}} /> :
-                      techData?.length > 0 ?
+                      // techData?.length > 0 ?
+                      (allData?.totalTechEmployees || allData?.totalNonTechEmployees) ?
                       <ResponsiveContainer width='100%' height={400}>
                       <PieChart 
                         className='showLegend'
@@ -465,7 +340,8 @@ const customPieLegend = (value, entry) => (
                   <div className="card-body">
                     {
                       loader ? <Spin style={{height: '300px', display: 'grid', placeItems: 'center'}} /> :
-                      billedData?.length > 0 ?
+                      // billedData?.length > 0 ?
+                      (allData?.billedResources || allData?.nonBilledResources) ?
                       <ResponsiveContainer width='100%' height={400}>
                       <PieChart 
                         className='showLegend'
@@ -515,15 +391,15 @@ const customPieLegend = (value, entry) => (
                   <div className="card-body">
                     {
                       loader ? <Spin style={{height: '300px', display: 'grid', placeItems: 'center'}} /> :
-                      lineData?.length > 0 ?
+                      allData?.annualEmployeeReview?.length > 0 ?
                       <ResponsiveContainer width='100%' height={400}>
                         {/* <LineChart data={lineData} */}
-                        <ComposedChart data={lineData}
+                        <ComposedChart data={allData?.annualEmployeeReview?.sort((a, b) => 'JanFebMarAprMayJunJulAugSepOctNovDec'.indexOf(a.monthName) - 'JanFebMarAprMayJunJulAugSepOctNovDec'.indexOf(b.monthName))}
                             margin={{ top: 20, right: 5, left: 5, bottom: 5}}
                             className='showLegend'
                         >
                           <CartesianGrid />
-                          <XAxis dataKey="month" interval={0} />
+                          <XAxis dataKey="monthName" interval={0} />
                           <YAxis tickFormatter={(value) => {
                             if (value >= 1e9) {
                               return `${(value / 1e9).toFixed(1)}B`;
@@ -536,7 +412,8 @@ const customPieLegend = (value, entry) => (
                             }
                           }} />
                           <Tooltip
-                            formatter={(value) => <label>{value === 0 ? 'N/A' : value?.toLocaleString()}</label>}
+                            // formatter={(value) => <label>{value === 0 ? 'N/A' : value?.toLocaleString()}</label>}
+                            formatter={(value) => <label>{value?.toLocaleString()}</label>}
                           />
                           {/* <Legend /> */}
                           {/* <Legend
@@ -550,11 +427,11 @@ const customPieLegend = (value, entry) => (
                                 }
                             }}
                             /> */}
-                          <Bar dataKey="totalEmployees" name='Total Employees' fill="#ff9b44" maxBarSize={20} />
+                          <Bar dataKey="totalEmployee" name='Total Employees' fill="#ff9b44" maxBarSize={20} />
                           {/* <Line type="monotone" dataKey="employeesJoined" name='Employees Joined' stroke="#ff9b44" fill="#00c5fb" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 7 }} /> */}
-                          <Line type="monotone" dataKey="employeesJoined" name='Employees Joined' stroke="#3E80EB" fill="#00c5fb" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 7 }} />
+                          <Line type="linear" dataKey="employeeJoined" name='Employees Joined' stroke="#3E80EB" fill="#00c5fb" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 7 }} />
                           {/* <Line type="monotone" dataKey="employeesLeft" name='Employees Left' stroke="#fc6075" fill="#0253cc" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 7 }} /> */}
-                          <Line type="monotone" dataKey="employeesLeft" name='Employees Left' stroke="#fc6075" fill="#fc6075" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 7 }} />
+                          <Line type="linear" dataKey="employeeExited" name='Employees Left' stroke="#FC6075" fill="#FC6075" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 7 }} />
                         </ComposedChart>
                       </ResponsiveContainer> :
                       <label style={{height: '300px', display: 'grid', placeItems: 'center', color: 'grey'}}>No Record Found!</label>
@@ -568,7 +445,7 @@ const customPieLegend = (value, entry) => (
                   <div style={{backgroundColor: '#F5F5F5', display: 'flex', padding: '25px', border: '1px solid #E5E5E5', borderRadius: '8px 8px 0px 0px'}}>
                     <h3 className="card-title mb-0">Shift Wise Employees</h3>
                   </div>
-                  <div className="card-body">
+                  <div className="card-body shiftLegendStyle" style={{display: 'flex', justifyContent: 'center'}}>
                     {
                       loader ? <Spin style={{height: '300px', display: 'grid', placeItems: 'center'}} /> :
                       shiftData?.length > 0 ?
@@ -588,7 +465,7 @@ const customPieLegend = (value, entry) => (
                           startAngle={90}
                           endAngle={450}
                         >
-                          {techData.map((entry, index) => (
+                          {shiftData.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={Shift_COLORS[index % Shift_COLORS.length]} />
                           ))}
                         </Pie>
@@ -621,10 +498,10 @@ const customPieLegend = (value, entry) => (
                   <div className="card-body">
                     {
                       loader ? <Spin style={{height: '300px', display: 'grid', placeItems: 'center'}} /> :
-                      expData?.length > 0 ?
+                      allData?.experienceWiseEmployees?.length > 0 ?
                       <ResponsiveContainer width='100%' height={400}>
                         <BarChart
-                          data={expData}
+                          data={allData?.experienceWiseEmployees?.sort((a, b) => parseInt(a.experience) - parseInt(b.experience))}
                           margin={{
                             top: 20, right: 5, left: 5, bottom: 5,
                           }}
@@ -665,10 +542,10 @@ const customPieLegend = (value, entry) => (
                   <div className="card-body">
                     {
                       loader ? <Spin style={{height: '300px', display: 'grid', placeItems: 'center'}} /> :
-                      ageData?.length > 0 ?
+                      allData?.ageWiseEmployees?.length > 0 ?
                       <ResponsiveContainer width='100%' height={400}>
                         <BarChart
-                          data={ageData}
+                          data={allData?.ageWiseEmployees?.sort((a, b) => parseInt(a.age) - parseInt(b.age))}
                           margin={{
                             top: 20, right: 5, left: 5, bottom: 5,
                           }}
@@ -704,73 +581,14 @@ const customPieLegend = (value, entry) => (
             </div>
           </div>
         </div>
+        {/* Graphs Row */}
 
 
-
-        {/* Search Filter */}
-        {/* <div className="row filter-row mb-4">
-            <div className="col-sm-6 col-md-3">  
-            <div className="form-group form-focus">
-                <input className="form-control floating" type="text" />
-                <label className="focus-label">Employee</label>
-            </div>
-            </div>
-            <div className="col-sm-6 col-md-3"> 
-            <div className="form-group form-focus select-focus">
-                <select className="select floating"> 
-                <option>Select Department</option>
-                <option>Designing</option>
-                <option>Development</option>
-                <option>Finance</option>
-                <option>Hr &amp; Finance</option>
-                </select>
-                <label className="focus-label">Department</label>
-            </div>
-            </div>
-            <div className="col-sm-6 col-md-3">  
-            <div className="form-group form-focus select-focus">
-                <div>
-                <input className="form-control floating datetimepicker" type="date" />
-                </div>
-                <label className="focus-label">From</label>
-            </div>
-            </div>
-            <div className="col-sm-6 col-md-3">  
-            <div className="form-group form-focus select-focus">
-                <div>
-                <input className="form-control floating datetimepicker" type="date" />
-                </div>
-                <label className="focus-label">To</label>
-            </div>
-            </div>
-            <div className="col-sm-6 col-md-3">  
-            <a href="#" className="btn btn-success btn-block w-100"> Search </a>  
-            </div>     
-        </div> */}
-        {/* /Search Filter */}
-        {/* <div className="row">
-            <div className="col-md-12">
-            <div className="table-responsive">
-            <Table className="table-striped"
-                    pagination= { {total : data.length,
-                        showTotal : (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                        showSizeChanger : true,onShowSizeChange: onShowSizeChange ,itemRender : itemRender } }
-                    style = {{overflowX : 'auto'}}
-                    columns={columns}                 
-                    // bordered
-                    dataSource={data}
-                    rowKey={record => record.id}
-                    // onChange={this.handleTableChange}
-                />
-            </div>
-            </div>
-        </div> */}
         {/* /Content End */}
         </div>
         {/* /Page Content */}
     </div>
     {/* /Page Wrapper */}
-    <Offcanvas/>
     </>
     );
 }
