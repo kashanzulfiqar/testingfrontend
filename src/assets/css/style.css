@@ -7184,7 +7184,11 @@ textarea.form-control {
 .shiftLegendStyle .recharts-default-legend{
  flex-wrap: wrap;
  display: flex;
- row-gap: 0px !important;
+ row-gap: 15px !important;
+ margin-top: 22px !important;
+}
+.shiftLegendStyle .recharts-legend-item > svg{
+  display: none !important;
 }
 
 /* timesheet admin vie detail long text */
