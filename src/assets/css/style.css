@@ -7180,6 +7180,13 @@ textarea.form-control {
 
 /* ................. custom css styling ................ */
 
+/* rechart shift pie legend style */
+.shiftLegendStyle .recharts-default-legend{
+ flex-wrap: wrap;
+ display: flex;
+ row-gap: 0px !important;
+}
+
 /* timesheet admin vie detail long text */
 .report-cards-info{
   border: 1px solid #ededed;
