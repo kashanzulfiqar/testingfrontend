@@ -175,7 +175,7 @@ const deptYAxisTick = ({ payload, x, y, width }) => {
             <div className="row">
                 <div className="col-sm-6 col-md-3">
                     <div className="report-cards-info" style={{minHeight: '83px'}}>
-                        <label>Total No. of Employees</label>
+                        <label>Total Employees</label>
                         {/* <h4>{singleUser?.casualLeaves} / {compLeaves?.casualLeaves}</h4> */}
                         <h4>{allData?.totalEmployees}</h4>
                     </div>
@@ -406,7 +406,7 @@ const deptYAxisTick = ({ payload, x, y, width }) => {
               <div className="col-md-6 text-center">
                 <div className="card" style={{borderRadius: '8px'}}>
                   <div style={{backgroundColor: '#F5F5F5', display: 'flex', padding: '25px', border: '1px solid #E5E5E5', borderRadius: '8px 8px 0px 0px'}}>
-                    <h3 className="card-title mb-0">Employees Progress</h3>
+                    <h3 className="card-title mb-0">Monthly Employee Report</h3>
                   </div>
                   <div className="card-body">
                     {
@@ -513,7 +513,7 @@ const deptYAxisTick = ({ payload, x, y, width }) => {
               <div className="col-md-6 text-center">
                 <div className="card" style={{borderRadius: '8px'}}>
                   <div style={{backgroundColor: '#F5F5F5', display: 'flex', padding: '25px', border: '1px solid #E5E5E5', borderRadius: '8px 8px 0px 0px'}}>
-                    <h3 className="card-title mb-0">Experience Wise Employees</h3>
+                    <h3 className="card-title mb-0">Year Wise Employees Experience</h3>
                   </div>
                   <div className="card-body">
                     {
