@@ -90,6 +90,7 @@ const Projects = () => {
   const [selectedLeader, setSelectedLeader] = useState(null);
   const [selectedTeamMembers, setSelectedTeamMembers] = useState([]);
   const [projectType, setProjectType] = useState("");
+  const [projectCost, setProjectCost] = useState(0);
 
   const [paymentSchedules, setPaymentSchedules] = useState([
     // Initial payment schedule
@@ -176,6 +177,8 @@ const Projects = () => {
     setFocalPersons([]);
     setSelectedLeader(null);
     setSelectedTeamMembers([]);
+    setProjectCost(0);
+    setProjectType("");
     setPaymentSchedules([
       {
         paymentTitle: "",
@@ -1033,6 +1036,53 @@ const Projects = () => {
     ));
   };
 
+  const handleCostChange = (value) => {
+    setProjectCost(value);
+    const paymentSchedules = form.getFieldValue('paymentSchedule');
+
+    const updatedPaymentSchedules = paymentSchedules?.map((schedule) => {
+      const { amountInFigure } = schedule;
+      const percentage = ((amountInFigure / value) * 100).toFixed(2);
+      return {
+        ...schedule,
+        amountInPercent: parseFloat(percentage),
+      };
+    });
+
+    form.setFieldsValue({
+      paymentSchedule: updatedPaymentSchedules,
+    });
+  }
+
+  const handleAmountInFigureChange = (value, index) => {
+    const newPaymentSchedules = form.getFieldValue('paymentSchedule') 
+    newPaymentSchedules[index].amountInFigure = value;
+
+    const percentage = ((value / projectCost) * 100).toFixed(2); 
+    newPaymentSchedules[index].amountInPercent = parseFloat(percentage);
+
+    setPaymentSchedules(newPaymentSchedules); 
+    
+    form.setFieldsValue({
+      paymentSchedule: newPaymentSchedules,
+    });
+  };
+
+  const handleAmountInPercentChange = (value, index) => {
+    const newPaymentSchedules = form.getFieldValue('paymentSchedule')
+    newPaymentSchedules[index].amountInPercent = value; 
+
+    const amount = Math.round((value * projectCost) / 100); 
+    newPaymentSchedules[index].amountInFigure = amount;
+
+    setPaymentSchedules(newPaymentSchedules); 
+    
+    form.setFieldsValue({
+      paymentSchedule: newPaymentSchedules,
+    });
+  };
+
+
   const paymentColumns = [
     {
       title: "Payment Title",
@@ -1079,6 +1129,7 @@ const Projects = () => {
             parser={(value) => {
               return value.replace(/\$\s?|(,*)/g, '');
             }}
+            onChange={(value) => handleAmountInFigureChange(value, index)}
           />
         </Form.Item>
       ),
@@ -1104,6 +1155,8 @@ const Projects = () => {
             placeholder="Enter percentage"
             max={100}
             min={0}
+            maxLength={5}
+            onChange={(value) => handleAmountInPercentChange(value, index)}
           />
         </Form.Item>
       ),
@@ -2581,6 +2634,7 @@ const filteredColumns = columns.filter(column => {
                             parser={(value) => {
                               return value.replace(/\$\s?|(,*)/g, '');
                             }}
+                            onChange={(value) => handleCostChange(value)}
                           />
                         </Form.Item>
                       </div>

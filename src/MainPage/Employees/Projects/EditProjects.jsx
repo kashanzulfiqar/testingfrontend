@@ -59,6 +59,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [loader, setLoader] = useState(false);
   const [projectType, setProjectType] = useState("");
+  const [projectCost, setProjectCost] = useState(0);
 
   const [paymentSchedules, setPaymentSchedules] = useState([
     // Initial payment schedule
@@ -99,6 +100,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
     setSelectedFiles(data?.docs);
     setUploadFiles(data?.docs);
     setProjectType(data?.projectType)
+    setProjectCost(data?.cost)
     // Count the number of payment schedules in the response
     const numPaymentSchedules = data?.paymentSchedule?.length;
 
@@ -484,6 +486,24 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
     }
   }
 
+  const handleCostChange = (value) => {
+    setProjectCost(value);
+    const paymentSchedules = form.getFieldValue('paymentSchedule');
+
+    const updatedPaymentSchedules = paymentSchedules?.map((schedule) => {
+      const { amountInFigure } = schedule;
+      const percentage = ((amountInFigure / value) * 100).toFixed(2);
+      return {
+        ...schedule,
+        amountInPercent: parseFloat(percentage),
+      };
+    });
+
+    form.setFieldsValue({
+      paymentSchedule: updatedPaymentSchedules,
+    });
+  }
+
   //   const onFileUpload = (file) =>{
   //     console.log("hello",file)
   //     apiUploadToS3(imagedata).then((res) => {
@@ -515,6 +535,34 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
       spin
     />
   );
+
+  const handleAmountInFigureChange = (value, index) => {
+    const newPaymentSchedules = form.getFieldValue('paymentSchedule') 
+    newPaymentSchedules[index].amountInFigure = value; 
+
+    const percentage = ((value / projectCost) * 100).toFixed(2); 
+    newPaymentSchedules[index].amountInPercent = parseFloat(percentage);
+
+    setPaymentSchedules(newPaymentSchedules); 
+    
+    form.setFieldsValue({
+      paymentSchedule: newPaymentSchedules, 
+    });
+  };
+
+  const handleAmountInPercentChange = (value, index) => {
+    const newPaymentSchedules = form.getFieldValue('paymentSchedule')
+    newPaymentSchedules[index].amountInPercent = value; 
+
+    const amount = Math.round((value * projectCost) / 100); 
+    newPaymentSchedules[index].amountInFigure = amount;
+
+    setPaymentSchedules(newPaymentSchedules); 
+    
+    form.setFieldsValue({
+      paymentSchedule: newPaymentSchedules, 
+    });
+  };
 
   const paymentColumns = [
     {
@@ -562,6 +610,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
             parser={(value) => {
               return value.replace(/\$\s?|(,*)/g, '');
             }}
+            onChange={(value) => handleAmountInFigureChange(value, index)}
           />
         </Form.Item>
       ),
@@ -587,6 +636,8 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
             placeholder="Enter percentage"
             max={100}
             min={0}
+            maxLength={5}
+            onChange={(value) => handleAmountInPercentChange(value, index)}
           />
         </Form.Item>
       ),
@@ -1154,6 +1205,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                         parser={(value) => {
                           return value.replace(/\$\s?|(,*)/g, '');
                         }}
+                        onChange={(value) => handleCostChange(value)}
                       />
                     </Form.Item>
                   </div>
