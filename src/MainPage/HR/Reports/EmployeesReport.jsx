@@ -57,14 +57,16 @@ const EmployeesReport = () => {
 
 
 // Gender Data
-let gender_total = allData?.totalMale + allData?.totalFemale;
-let value_female = Math.round((allData?.totalFemale/gender_total)*100);
+let gender_total = allData?.totalMale + allData?.totalFemale + allData?.totalOtherGender;
 let value_male = Math.round((allData?.totalMale/gender_total)*100);
+let value_female = Math.round((allData?.totalFemale/gender_total)*100);
+let value_others = Math.round((allData?.totalOtherGender/gender_total)*100);
 const genderData = [
-  { name: 'Female', value: value_female },
   { name: 'Male', value: value_male },
+  { name: 'Female', value: value_female },
+  { name: 'Others', value: value_others },
 ];
-const Gender_COLORS = ['#FFAB00', '#664DC9'];
+const Gender_COLORS = ['#44C4FA', '#3E80EB', '#FFAB00'];
 
 // Technical and Non Technical Staff Data
 let tech_total =  allData?.totalTechEmployees + allData?.totalNonTechEmployees;
@@ -105,7 +107,7 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
   return (
     // <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
     <text x={x} y={y} fill="white" textAnchor={'middle'} dominantBaseline="central">
-      {`${(percent * 100).toFixed(0)}%`}
+      {percent !== 0 && `${(percent * 100).toFixed(0)}%`}
     </text>
   );
 };
