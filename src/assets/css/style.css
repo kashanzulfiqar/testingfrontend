@@ -7180,11 +7180,19 @@ textarea.form-control {
 
 /* ................. custom css styling ................ */
 
+/*pieChart legend longtext style */
+.pieChartLegendLongText{
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  max-width: 85px;
+  overflow: hidden;
+}
 /* rechart shift pie legend style */
 .shiftLegendStyle .recharts-default-legend{
  flex-wrap: wrap;
  display: flex;
- row-gap: 15px !important;
+ row-gap: 8px !important;
  margin-top: 22px !important;
 }
 .shiftLegendStyle .recharts-legend-item > svg{

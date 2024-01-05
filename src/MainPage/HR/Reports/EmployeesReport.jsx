@@ -112,10 +112,29 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
 
 const customPieLegend = (value, entry) => (
   <div style={{display: 'flex'}}>
-    <span style={{height: '10px', width: '55px', backgroundColor: entry.color, marginRight: '5px', marginTop: '4.6px'}}></span>
+    <span style={{height: '10px', width: '35px', backgroundColor: entry.color, marginRight: '5px', marginTop: '4.6px'}}></span>
     <label style={{color: '#6C757D'}}>{value}</label>
   </div>
 )
+
+const customPieLegendShift = (value, entry) => (
+  <div style={{display: 'flex'}}>
+    <span style={{height: '10px', width: '35px', backgroundColor: entry.color, marginRight: '5px', marginTop: '4.6px'}}></span>
+    <label className='pieChartLegendLongText' style={{color: '#6C757D'}}>{value}</label>
+  </div>
+)
+
+const deptYAxisTick = ({ payload, x, y, width }) => {
+  const maxLength = 7;
+  const label = payload.value.length > maxLength ? `${payload.value.substring(0, maxLength)}...` : payload.value;
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <text x={0} y={0} dy={4} textAnchor="end" fill="#666" transform="rotate(0)" style={{fontSize: '12px', lineHeight: '0px'}}>
+        {label}
+      </text>
+    </g>
+  );
+};
 
     return ( 
     <>
@@ -262,17 +281,18 @@ const customPieLegend = (value, entry) => (
                           <XAxis type="number" />
                           <YAxis dataKey="department" type="category"
                             // scale="band"
-                            // tickLine={false}
-                            // textOverflow="ellipsis"
-                            width={100}
+                            width={110}
+                            // width={80}
+                            // tick={deptYAxisTick}
+                            interval={allData?.departWiseEmployees?.length > 13 ? 1 : 0}
                           />
                           <Tooltip
                             labelFormatter={(value) => <label>Department : {value}</label>}
                             formatter={(value) => <label>{value.toLocaleString()}</label>}
                           />
                           <Legend />
-                          <Bar dataKey="totalEmployees" name='Total Employees' fill="#fc6075" maxBarSize={20} />
-                          {/* <ReferenceLine x={0} stroke="#CCCCCC" label="" /> */}
+                          <Bar dataKey="totalEmployees" name='Total Employees' fill="#fc6075" maxBarSize={17} />
+                          <ReferenceLine x={0} stroke="#CCCCCC" label="" />
                         </BarChart>
                       </ResponsiveContainer> :
                       <label style={{height: '300px', display: 'grid', placeItems: 'center', color: 'grey'}}>No Record Found!</label>
@@ -449,7 +469,7 @@ const customPieLegend = (value, entry) => (
                     {
                       loader ? <Spin style={{height: '300px', display: 'grid', placeItems: 'center'}} /> :
                       shiftData?.length > 0 ?
-                      <ResponsiveContainer width='100%' height={400}>
+                      <ResponsiveContainer width='106%' height={400}>
                       <PieChart 
                         className='showLegend'
                       >
@@ -472,7 +492,7 @@ const customPieLegend = (value, entry) => (
                         <Legend
                           verticalAlign='top'
                           iconSize={0}
-                          formatter={customPieLegend}
+                          formatter={customPieLegendShift}
                         />
                         <Tooltip
                           formatter={
