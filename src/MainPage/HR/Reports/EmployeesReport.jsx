@@ -24,7 +24,11 @@ const EmployeesReport = () => {
     const [cardLoader, setCardLoader] = useState(false);
 
     useEffect(() => {
-      getEmployeeReport();
+      if(role === 'admin' || permissions?.reportManagement) {
+        getEmployeeReport();
+      }else{
+        nav(`${role === 'client' ? '/client/client-profile' : role === 'focalperson' ? `/client/focal-profile` : role === 'admin' ? `/main/dashboard` : `/employee/dashboard`}`)
+      }
     }, [])
 
     const getEmployeeReport = () => {
