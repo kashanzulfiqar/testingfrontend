@@ -7503,6 +7503,10 @@ textarea.form-control {
   /* background: #f5f5f5 !important; */
 }
 
+.profitLossTable thead > tr > th:nth-child(8) {
+  min-width: 80px !important;
+}
+
 /* invoice table style */
 .invoiceTable thead tr th:not(:nth-child(1), :nth-child(9)) {
   min-width: 130px !important;
