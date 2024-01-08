@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Helmet } from "react-helmet";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -38,6 +38,9 @@ import Modal from "@mui/material/Modal";
 import { EditOutlined } from "@mui/icons-material";
 import { LoadingOutlined } from "@ant-design/icons";
 import { itemRender } from "../../paginationfunction";
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import { CSVLink } from 'react-csv';
 
 const { Option } = Select;
 
@@ -45,6 +48,7 @@ const AttendanceReport = () => {
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
   console.log("permissions", permissions)
   const navigate = useNavigate();
+  const csvLinkEl = useRef();
 
   const [form] = Form.useForm();
   const [menu, setMenu] = useState(false);
@@ -79,6 +83,10 @@ const AttendanceReport = () => {
   const role = user_state?.user?.role;
 
   const [loader, setLoader] = useState(false);
+  const [csvData, setCSVData] = useState([]);
+  const [csvLoader, setCsvLoader] = useState(false);
+  const [pdfLoader, setPdfLoader] = useState(false);
+  const [printLoader, setPrintLoader] = useState(false);
 
   const [open, setOpen] = useState({
     isAddOpen: false,
@@ -111,6 +119,12 @@ const AttendanceReport = () => {
   useEffect(() => {
     setIsStatLoading(true);
   }, []);
+  
+  useEffect(() => {
+    if(csvData?.length > 0){
+      csvLinkEl.current.link.click();
+    }
+  }, [csvData]);
 
   useEffect(() => {
     if (role === "admin" || permissions?.reportManagement) {
@@ -313,6 +327,147 @@ const AttendanceReport = () => {
     
   ];
 
+  const downloadPDF = (data, type) => {
+    let name = filters.name || '';
+    let month = filters.month || moment().format("MMMM");
+    let year = filters.year || moment().format("YYYY");
+    type === 'csv' ? setCsvLoader(true) : type === 'pdf' ? setPdfLoader(true) : setPrintLoader(true)
+
+    apiServices(
+      "GET",
+      `report/attendance?employeeName=${name}&attendanceMonth=${month}&attendanceYear=${year}&page=${1}&limit=${99999}`,
+      null,
+      user_state
+    )
+      .then((res) => {
+        if (res.data.success === true) {
+          // console.log(res?.data?.Attendance);
+          downloadPDF_File(res?.data?.Attendance, month, year, type)
+          type === 'csv' ? setCsvLoader(false) : type === 'pdf' ? setPdfLoader(false) : setPrintLoader(false)
+        }
+      })
+      .catch((err) => {
+        type === 'csv' ? setCsvLoader(false) : type === 'pdf' ? setPdfLoader(false) : setPrintLoader(false)
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Error Downloading Attendance Reports"
+          }`
+        );
+      })
+  }
+
+  const csvHeaders = [
+    { label: "Sr#", key: "srNum", },
+    { label: "Employee Name", key: "employeeName"},
+    { label: "Total Presents", key: "totalPresents"},
+    { label: "Total Absents", key: "totalAbsents"},
+    { label: "Total Leaves", key: "totalLeaves"},
+    { label: "Late Arrivals", key: "totalLates"},
+    { label: "Total WFH", key: "totalWFH"}
+  ];
+
+  const downloadPDF_File = (data, month, year, type) => {
+
+    const columnsForPDF = [
+      { title: "Sr.", dataIndex: "number", },
+      { title: "Employee Name", dataIndex: "employeeName"},
+      { title: "Total Presents", dataIndex: "totalPresents"},
+      { title: "Total Absents", dataIndex: "totalAbsents"},
+      { title: "Total Leaves", dataIndex: "totalLeaves"},
+      { title: "Late Arrivals", dataIndex: "totalLates"},
+      { title: "Total WFH", dataIndex: "totalWFH"},
+    ];
+
+
+    const doc = new jsPDF();
+
+    const headerStyles = {
+      // fillColor: '#F6F6F6',
+      fillColor: 'white',
+      textColor: 'black',
+      fontStyle: 'bold',
+      fontSize: 10,
+      fontFamily: 'Calibri',
+    };
+
+    const dataForPDF = data.map((record, index) => [
+      `${index+1}.`,
+      record?.employeeName,
+      record?.totalPresents,
+      record?.totalAbsents,
+      record?.totalLeaves,
+      record?.totalLates,
+      record?.totalWFH,
+    ]);
+
+
+    doc.setFontSize(17);
+    doc.setTextColor(0, 0, 0);
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const textWidth = doc.getStringUnitWidth(`Attendance Report of ${month} ${year}`) * doc.internal.getFontSize() / doc.internal.scaleFactor;
+    const startX = (pageWidth - textWidth) / 2;
+    doc.text(`Attendance Report of ${month} ${year}`, startX, 25);
+
+    doc.autoTable({
+      startY: 40,
+      // margin: { top: 20 },
+      margin: { left: 10, right: 10 },
+      headStyles: headerStyles,
+      head: [columnsForPDF.map(rec => rec?.title)],
+      body: dataForPDF,
+      styles: {
+        lineColor: [0, 0, 0], // color
+        lineWidth: 0.01,      // width
+        fontFamily: 'Calibri',
+        textColor: [0, 0, 0],
+      },
+      alternateRowStyles: { fillColor: [255, 255, 255] },
+    });
+    
+    if(type === 'pdf'){
+      doc.save('attendance_report.pdf');
+      message.success("Report Exported in PDF Successfully!");
+      // ---- view pdf ----
+      // const pdfBlob = doc.output('blob');
+      // const blobUrl = URL.createObjectURL(pdfBlob);
+      // const newWindow = window.open();
+      // newWindow.location.href = blobUrl;
+     }
+    else if(type === 'print'){
+      const pdfBlob = doc.output('blob');
+      const printWindow = window.open(URL.createObjectURL(pdfBlob), '_blank');
+      printWindow.onload = () => {
+        printWindow.print();
+        printWindow.onafterprint = () => {
+          printWindow.close();
+        };
+      };
+    }else if(type === 'csv'){
+      const dataForCSV = data.map((record, index) => ({
+        ...record,
+        srNum: `${index+1}.`,
+      }));
+      setCSVData(dataForCSV);
+      message.success("Report Exported in CSV Successfully!");
+    }
+
+  };
+
+  const antIconDownload = (
+    <LoadingOutlined
+      style={{
+        fontSize: 17,
+        color: "#1f1f20",
+        marginTop: '3px'
+      }}
+      spin
+    />
+  );
+
 
   return (
     <>
@@ -327,8 +482,8 @@ const AttendanceReport = () => {
           <div className="content container-fluid">
             {/* Page Header */}
             <div className="page-header">
-              <div className="row">
-                <div className="col-sm-12">
+              <div className="row align-items-center">
+                <div className="col">
                   <h3 className="page-title">Reports</h3>
                   <ul className="breadcrumb">
                     <li className="breadcrumb-item">
@@ -344,6 +499,75 @@ const AttendanceReport = () => {
                     </li>
                     <li className="breadcrumb-item active">Attendance Reports</li>
                   </ul>
+                </div>
+                <div className="col-auto float-end ms-auto">
+                  {/* {
+                    attendancerecords?.length > 0 ?
+                    <a href="javascript:void(0)" className="btn add-btn" onClick={() => downloadPDF(attendancerecords)}><i className="fa fa-download" />Download</a>
+                    :
+                    <button href="javascript:void(0)" className="btn add-btn" disabled={true} style={{background: '#ff9b44', pointerEvents: 'auto', color: 'white', cursor: 'not-allowed'}}><i className="fa fa-download" />Download</button>
+                  } */}
+                  {
+                    attendancerecords?.length > 0 ?
+                    <div className="btn-group btn-group-sm">
+                      <CSVLink
+                        headers={csvHeaders}
+                        filename="attendance_report.csv"
+                        data={csvData}
+                        ref={csvLinkEl}
+                      />
+                      <button
+                        className="btn btn-white"
+                        onClick={() => {
+                          downloadPDF(attendancerecords, 'csv');
+                        }}
+                        style={{width: '46px', borderColor: '#cccccc', backgroundColor: '#fff'}}
+                        disabled={csvLoader}
+                      >
+                        {
+                          csvLoader ? <Spin size="small" indicator={antIconDownload} /> : 'CSV'
+                        }
+                      </button>
+                      <button
+                        className="btn btn-white"
+                        onClick={() => {
+                          downloadPDF(attendancerecords, 'pdf');
+                        }}
+                        style={{width: '46px', borderColor: '#cccccc', backgroundColor: '#fff'}}
+                        disabled={pdfLoader}
+                      >
+                        {/* <i className="fa fa-download fa-lg m-r-5" /> */}
+                        {
+                          pdfLoader ? <Spin size="small" indicator={antIconDownload} /> : 'PDF'
+                        }
+                        {/* <Spin size="small" indicator={antIconDownload} /> */}
+                      </button>
+                      <button
+                        className="btn btn-white"
+                        onClick={() => {
+                          downloadPDF(attendancerecords, 'print');
+                        }}
+                        style={{borderColor: '#cccccc', backgroundColor: '#fff'}}
+                        disabled={printLoader}
+                      >
+                        {
+                          printLoader ? <Spin size="small" style={{width: '50px'}} indicator={antIconDownload} />
+                          : <><i className="fa fa-print fa-lg" /> Print</>
+                        }
+                      </button>
+                    </div> :
+                    <div className="btn-group btn-group-sm">
+                      <button className="btn btn-white" style={{backgroundColor: 'transparent', color: '#bdbdbd', cursor: 'no-drop', width: '46px'}}>CSV</button>
+                      <button
+                        className="btn btn-white"
+                        style={{backgroundColor: 'transparent', color: '#bdbdbd', cursor: 'no-drop', width: '46px'}}
+                      >
+                        {/* <i className="fa fa-download fa-lg m-r-5" /> */}
+                        PDF
+                      </button>
+                      <button className="btn btn-white" style={{backgroundColor: 'transparent', color: '#bdbdbd', cursor: 'no-drop'}}><i className="fa fa-print fa-lg" /> Print</button>
+                    </div>
+                  }
                 </div>
               </div>
             </div>
