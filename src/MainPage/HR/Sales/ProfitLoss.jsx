@@ -298,10 +298,23 @@ const ProfitLoss = () => {
       {
         title: 'Year',
         dataIndex: 'year',
-      },    
+      },
       {
-        title: 'Total Expense',
-        dataIndex: 'totalExpense',
+        title: 'Salary Expense',
+        dataIndex: 'creditedSalaryExpense',
+        render: (text, record) => {
+          const salaryExpense = parseFloat(record?.creditedSalaryExpense) + parseFloat(record?.salaryTaxExpense);
+          return (
+            <span>
+              {salaryExpense?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {record?.companyId?.preferredCurrency}
+            </span>
+          );
+        },
+      },
+      
+      {
+        title: 'General Expense',
+        dataIndex: 'generalExpense',
         render: (text, record) => (
         <span>{text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {record?.companyId?.preferredCurrency}</span>
           ),
@@ -324,7 +337,6 @@ const ProfitLoss = () => {
       },
       {
         title: 'Actions',
-        width: 80,
         render: (text, record) => (
           <div className="dropdown dropdown-action text-end">
             <a href="javascript:void(0)" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
