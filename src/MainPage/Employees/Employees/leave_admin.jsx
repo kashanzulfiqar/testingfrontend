@@ -345,7 +345,7 @@ const LeaveAdmin = () => {
   // }
 
   const capitalizeLeaveType = (leaveType) => {
-    switch (leaveType.toLowerCase()) {
+    switch (leaveType?.toLowerCase()) {
       case 'sick':
         return 'Sick Leave';
       case 'casual':
