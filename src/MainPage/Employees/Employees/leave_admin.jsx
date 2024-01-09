@@ -70,7 +70,7 @@ const LeaveAdmin = () => {
   const [selectedfromTo, setSelectedfromTo] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
-  const [statdata, setStatdata] = useState();
+  const [statdata, setStatdata] = useState("");
 
   const closeModal = () => {
     setSelectedRecord(null);
@@ -894,6 +894,41 @@ const LeaveAdmin = () => {
                 </div>
 
                 <div className="modal-body">
+                  <div className="row" style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
+                    <div className="col-md-3">
+                      <div className="stats-info text-center">
+                        <label className="text-muted">Sick</label>
+                        <h4 className="fw-bold" style={{ fontSize: "14px", fontFamily: "Arial, sans-serif" }}>
+                          {parseFloat(selectedRecord?.user?.remainingSickLeaves).toFixed(1)}/{parseFloat(statdata?.totalCompanySickLeave).toFixed(1)}
+                        </h4>
+                      </div>
+                    </div>
+                    <div className="col-md-3">
+                      <div className="stats-info text-center">
+                        <label className="text-muted">Casual</label>
+                        <h4 className="fw-bold" style={{ fontSize: "14px", fontFamily: "Arial, sans-serif" }}>
+                          {parseFloat(selectedRecord?.user?.remainingCasualLeaves).toFixed(1)}/{parseFloat(statdata?.totalCompanyCasualLeave).toFixed(1)}
+                        </h4>
+                      </div>
+                    </div>
+                    <div className="col-md-3">
+                      <div className="stats-info text-center">
+                        <label className="text-muted">Annual</label>
+                        <h4 className="fw-bold" style={{ fontSize: "14px", fontFamily: "Arial, sans-serif" }}>
+                          {parseFloat(selectedRecord?.user?.remainingAnnualLeaves).toFixed(1)}/{parseFloat(statdata?.totalCompanyAnnualLeave).toFixed(1)}
+                        </h4>
+                      </div>
+                    </div>
+                    <div className="col-md-3">
+                      <div className="stats-info text-center">
+                        <label className="text-muted">WFH</label>
+                        <h4 className="fw-bold" style={{ fontSize: "14px", fontFamily: "Arial, sans-serif" }}>
+                          {parseFloat(selectedRecord?.user?.remainingWfhLeaves).toFixed(1)}/{parseFloat(statdata?.totalCompanyWfhLeave).toFixed(1)}
+                        </h4>
+                      </div>
+                    </div>
+                  </div>
+                  <br/>
                   <Form
                     name="control-hooks"
                     initialValues={{
