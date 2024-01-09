@@ -465,6 +465,8 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
                         // </label> 
                         specific_date_data?.date ?
                           <TimePicker
+                              disabledHours={() => [0]}
+                              disabledMinutes={() => [0]}
                               allowClear={false}
                               // disabled={allData.some(item => item?.submittedForApproval === true)}
                               // disabled={allData.some(item => item?.status === 'Approved')}
@@ -512,6 +514,8 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
                             name={`${index}${index2}`}
                           >
                             <TimePicker
+                              disabledHours={() => [0]}
+                              disabledMinutes={() => [0]}
                               // disabled={allData.some(item => item?.submittedForApproval === true)}
                               // disabled={allData.some(item => item?.status === 'Approved')}
                               disabled={isFuture1}
