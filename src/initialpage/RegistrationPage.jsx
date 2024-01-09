@@ -1188,27 +1188,43 @@ const Registrationpage = (props) => {
                       required: true,
                       message: "please enter password",
                     },
-                    {
-                      min: 8,
-                      message: "Password length should be more than 8",
-                    },
+                    // {
+                    //   min: 8,
+                    //   message: "Password length should be more than 8",
+                    // },
+                    ({ getFieldValue }) => ({
+                      validator(rule, value) {
+                        // const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+])[A-Za-z\d!@#$%^&*()_+]{8,}$/;
+                        const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+\\|/?.>,<=~`-])[A-Za-z\d!@#$%^&*()_+\\|/?.>,<=~`-]{8,}$/;
+                        if (value && !passwordRegex.test(value)) {
+                          return Promise.reject("password must have at least 8 characters with 1 uppercase, 1 lowercase, 1 digit, and 1 special character");
+                        }
+                        return Promise.resolve();
+                      },
+                    }),
                   ]}
-                  className="strengthErrorStyle"
+                  className="strengthErrorStyle custom-border"
                 >
-                  <Input
+                  {/* <Input
                     style={{ display: "none" }}
                     value={adminValues?.password}
-                  />
-                  <>
+                  /> */}
                     <div className="pass-group password-eye">
-                      <input
+                      {/* <input
                         type={eye ? "password" : "text"}
                         className={`form-control passwordStyle`}
                         onInput={(e) => {
                           onHandleAdminChange("password", e.target.value);
                         }}
                         maxLength={50}
-                      />
+                      /> */}
+                      <Input
+                          type={eye ? "password" : "text"}
+                          className={`form-control passwordStyle`}
+                          onChange={(e) => {
+                            onHandleAdminChange("password", e.target.value);
+                          }}
+                        />
                       <span
                         onClick={onEyeClick}
                         style={{ cursor: "pointer", top: "12px" }}
@@ -1224,10 +1240,6 @@ const Registrationpage = (props) => {
                           />
                         )}
                       </span>
-                      {/* <span onClick={onEyeClick} style={{cursor: 'pointer'}} className={`toggles-password fa toggle-password ${eye ? "fa-light fa-eye-slash" : "fa-light fa-eye"} `} /> */}
-                    </div>
-                    {/* {adminValues?.password && ( */}
-                      <>
                         <div className="strength-bar-back"></div>
                         <div
                           className="strength-bar-main"
@@ -1240,9 +1252,11 @@ const Registrationpage = (props) => {
                             backgroundImage: `linear-gradient(to right, #F3C652 0%, #F3C652 94%, transparent 50%)`,
                           }}
                         ></div>
-                      </>
+                      {/* <span onClick={onEyeClick} style={{cursor: 'pointer'}} className={`toggles-password fa toggle-password ${eye ? "fa-light fa-eye-slash" : "fa-light fa-eye"} `} /> */}
+                    </div>
+                    {/* {adminValues?.password && ( */}
+                      
                     {/* )} */}
-                  </>
                 </Form.Item>
               </div>
             </div>

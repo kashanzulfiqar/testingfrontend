@@ -7289,6 +7289,12 @@ textarea.form-control {
   border-radius: 8px !important;
   background: transparent !important;
 }
+.timePickerWithData.ant-picker-disabled{
+  border-color: #e4e4e4 !important;
+}
+.timePickerWithData.ant-picker-disabled input::placeholder{
+  color: #e0e0e0 !important;
+}
 .timePickerPending{
   border: 2px solid #ff9b4491  !important;
   box-shadow: -1px 0px 6px 2px #FF9B4454;

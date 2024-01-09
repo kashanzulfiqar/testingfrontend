@@ -310,22 +310,30 @@ let t_data = [
 
       };
 
-    const Dayscolumns = daysOfWeek.map((day, index) => (
-        {
+    const Dayscolumns = daysOfWeek.map((day, index) => {
+      const currentDate = new Date();
+      const cellDate = new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index);
+      const isToday = currentDate.toDateString() === cellDate.toDateString();
+      const isFuture = currentDate < cellDate;
+      const backgroundColor = isToday ? "green" : isFuture ? "red" : "white";
+
+      return {
           title: (
             <div
               onClick={() => {
+                if(!isFuture){
                   handleDateClick(
                   new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index)
                   );
                   setShowCalendar(false)
+                }
               }}
               style={{
                   display: "grid",
                   placeContent: 'center',
                   borderRadius: '6px',
                   padding: '9px 0px',
-                  cursor: 'pointer',
+                  cursor: isFuture ? 'no-drop' : 'pointer',
                   background:
                   selectedDate.toDateString() ===
                   new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index).toDateString()
@@ -333,8 +341,8 @@ let t_data = [
                       : "white",
               }}
             >
-              <label style={{cursor: 'pointer', textAlign: 'center', fontWeight: '700', lineHeight: '20px'}}>{day}</label>
-              <label style={{cursor: 'pointer', color: '#666', lineHeight: '20px'}}>
+              <label style={{cursor: isFuture ? 'no-drop' : 'pointer', color: isFuture ? '#cfcfcf' : '#262626', textAlign: 'center', fontWeight: '700', lineHeight: '20px'}}>{day}</label>
+              <label style={{cursor: isFuture ? 'no-drop' : 'pointer', color: isFuture ? '#cfcfcf' : '#666', lineHeight: '20px'}}>
                 {new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index).getDate()}{" "}
                 {new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index).toLocaleDateString("en-US", { month: "short" })}
               </label>
@@ -343,7 +351,7 @@ let t_data = [
           dataIndex: day,
           key: day,
         }
-      ));
+      });
 
       const onFormValuesChange = () => {
         const currentValues = form2.getFieldsValue();
@@ -444,6 +452,10 @@ let t_data = [
           });
         })
       }
+
+      const disabledDate = (current) => {
+        return current && current > new Date();
+      };
 
   return (
     <div>
@@ -835,7 +847,7 @@ let t_data = [
                               <TimePicker
                                   allowClear={false}
                                   className="form-control"
-                                  placeholder="HH:mm"
+                                  placeholder="hh:mm"
                                   format={"HH:mm"}
                                   getPopupContainer={() =>
                                     document.getElementById("area96")
@@ -862,6 +874,7 @@ let t_data = [
                               className="custom-border"
                           >
                               <DatePicker
+                                  disabledDate={disabledDate}
                                   allowClear={false}
                                   className="form-control"
                                   placeholder="YYYY-MM-DD"
