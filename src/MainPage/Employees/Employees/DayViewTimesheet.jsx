@@ -839,12 +839,23 @@ let t_data = [
                               rules={[
                               {
                                   required: true,
-                                  message: "please enter task duration",
+                                  // message: "please enter task duration",
+                                  validator: (_, value) => {
+                                    if(!value){
+                                        return Promise.reject("please enter task duration");
+                                    }
+                                    else if (moment(value).format('HH:mm') === '00:00') {
+                                        return Promise.reject("task duration cannot be zero");
+                                    }
+                                    return Promise.resolve();
+                                    },
                               },
                               ]}
                               className="custom-border"
                           >
                               <TimePicker
+                                  disabledHours={() => [0]}
+                                  disabledMinutes={() => [0]}
                                   allowClear={false}
                                   className="form-control"
                                   placeholder="hh:mm"
