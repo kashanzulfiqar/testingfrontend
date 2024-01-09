@@ -194,16 +194,32 @@ const ChangePassword = () => {
                           required: true,
                           message: "please enter new password",
                         },
-                        {
-                          min: 8,
-                          message: "password length should be more than 8",
-                        },
+                        // {
+                        //   min: 8,
+                        //   message: "password length should be more than 8",
+                        // },
+                        // ({ getFieldValue }) => ({
+                        //   validator(rule, value) {
+                        //     if (value && getFieldValue("oldPassword") === value) {
+                        //       return Promise.reject(
+                        //         "old password and new password can not be same"
+                        //         );
+                        //       }
+                        //       return Promise.resolve();
+                        //   },
+                        // }),
                         ({ getFieldValue }) => ({
                           validator(rule, value) {
+                            // const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+])[A-Za-z\d!@#$%^&*()_+]{8,}$/;
+                            const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+\\|/?.>,<=~`-])[A-Za-z\d!@#$%^&*()_+\\|/?.>,<=~`-]{8,}$/;
+
                             if (value && getFieldValue("oldPassword") === value) {
                               return Promise.reject(
                                 "old password and new password can not be same"
                                 );
+                              }
+                              if (value && !passwordRegex.test(value)) {
+                                return Promise.reject("new password must have at least 8 characters with 1 uppercase, 1 lowercase, 1 digit, and 1 special character");
                               }
                               return Promise.resolve();
                           },

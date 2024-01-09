@@ -425,8 +425,14 @@ function WeekViewTimeSheet({ tableStartDate, setTableStartDate, selectedDate, se
     formduration.resetFields();
     }
 
-const Dayscolumns = daysOfWeek.map((day, index) => (
-    {
+const Dayscolumns = daysOfWeek.map((day, index) => {
+      const currentDate1 = new Date();
+      const cellDate1 = new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index);
+      const isToday1 = currentDate1.toDateString() === cellDate1.toDateString();
+      const isFuture1 = currentDate1 < cellDate1;
+      const backgroundColor1 = isToday1 ? "green" : isFuture1 ? "red" : "white";
+
+      return {
         title: (
         <div
             style={{
@@ -435,8 +441,8 @@ const Dayscolumns = daysOfWeek.map((day, index) => (
                 padding: '9px 0px',
             }}
         >
-            <label style={{textAlign: 'center', fontWeight: '700', lineHeight: '20px'}}>{day}</label>
-            <label style={{color: '#666', lineHeight: '20px'}}>
+            <label style={{textAlign: 'center', fontWeight: '700', lineHeight: '20px', color: isFuture1 ? '#cfcfcf' : '#262626'}}>{day}</label>
+            <label style={{color: isFuture1 ? '#cfcfcf' : '#666', lineHeight: '20px'}}>
             {new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index).getDate()}{" "}
             {new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index).toLocaleDateString("en-US", { month: "short" })}
             </label>
@@ -457,11 +463,12 @@ const Dayscolumns = daysOfWeek.map((day, index) => (
                         // <label style={{fontWeight: '500', border: '2px solid #BCBCBC', borderRadius: '8px', padding: '6px 12px', fontSize: '17px'}}>
                         //     {specific_date_data?.hoursWorked} 
                         // </label> 
-                        specific_date_data ?
+                        specific_date_data?.date ?
                           <TimePicker
                               allowClear={false}
                               // disabled={allData.some(item => item?.submittedForApproval === true)}
                               // disabled={allData.some(item => item?.status === 'Approved')}
+                              disabled={isFuture1}
                               className={`form-control timePickerWithData ${specific_date_data?.status === "Pending" ? 'timePickerPending' : specific_date_data?.status === "Approved" ? 'timePickerApproved' : specific_date_data?.status === "Declined" ? 'timePickerDeclined' : null }`}
                               placeholder="00:00"
                               format={"HH:mm"}
@@ -469,7 +476,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => (
                               // value={moment(specific_date_data?.hoursWorked, 'HH:mm')}
                               value={specific_date_data?.hoursWorked ? moment(specific_date_data?.hoursWorked, 'HH:mm') : ''}
                               onClick={() => {
-                                if(!showCard?.isShown || (showCard?.isShown && (specific_date_data?._id !== showCard?.data?._id))){
+                                if(!isFuture1 && (!showCard?.isShown || (showCard?.isShown && (specific_date_data?._id !== showCard?.data?._id)))){
                                   setShowCard({ isShown: true, data: specific_date_data });
                                   setCardReason(specific_date_data?.notes);
                                   setUpdatedDuration(specific_date_data?.hoursWorked)
@@ -477,7 +484,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => (
                                   setOldDurationValue(specific_date_data?.hoursWorked);
                                   handleCancel();
                                   formduration.resetFields();
-                                  console.log(specific_date_data);
+                                  // console.log(specific_date_data);
                                   setSaveButton(true);
                                 }
                               }}
@@ -507,12 +514,13 @@ const Dayscolumns = daysOfWeek.map((day, index) => (
                             <TimePicker
                               // disabled={allData.some(item => item?.submittedForApproval === true)}
                               // disabled={allData.some(item => item?.status === 'Approved')}
+                              disabled={isFuture1}
                               allowClear={false}
                               className="form-control timePickerWithData"
                               placeholder="00:00"
                               format={"HH:mm"}
                               onClick={() => {
-                                if(!showCard?.isShown || (showCard?.isShown && (`${index}${index2}` !== showCard?.data?.indexId))){
+                                if(!isFuture1 && (!showCard?.isShown || (showCard?.isShown && (`${index}${index2}` !== showCard?.data?.indexId)))){
                                   let d = {
                                     projectId: {_id: record?.projectId?._id, projectName: record?.projectId?.projectName},
                                     taskId: {_id: record?.taskId?._id, title: record?.taskId?.title},
@@ -557,7 +565,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => (
             }
         }
     }
-    ));
+    });
 
 //     let t_data = [
 //     {
