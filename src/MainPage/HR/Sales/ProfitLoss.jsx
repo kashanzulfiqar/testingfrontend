@@ -300,7 +300,7 @@ const ProfitLoss = () => {
         dataIndex: 'year',
       },
       {
-        title: 'Salary Expense',
+        title: 'Payrolls',
         dataIndex: 'creditedSalaryExpense',
         render: (text, record) => {
           const salaryExpense = parseFloat(record?.creditedSalaryExpense) + parseFloat(record?.salaryTaxExpense);
@@ -313,7 +313,7 @@ const ProfitLoss = () => {
       },
       
       {
-        title: 'General Expense',
+        title: 'Expense',
         dataIndex: 'generalExpense',
         render: (text, record) => (
         <span>{text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {record?.companyId?.preferredCurrency}</span>
