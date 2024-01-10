@@ -46,6 +46,7 @@ const { Option } = Select;
 
 const AttendanceReport = () => {
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
+  const user_name = useSelector((state) => state?.user?.loginvalue?.user?.fullName);
   console.log("permissions", permissions)
   const navigate = useNavigate();
   const csvLinkEl = useRef();
@@ -408,9 +409,26 @@ const AttendanceReport = () => {
     doc.setFontSize(17);
     doc.setTextColor(0, 0, 0);
     const pageWidth = doc.internal.pageSize.getWidth();
-    const textWidth = doc.getStringUnitWidth(`Attendance Report of ${month} ${year}`) * doc.internal.getFontSize() / doc.internal.scaleFactor;
+    // const textWidth = doc.getStringUnitWidth(`Attendance Report of ${month} ${year}`) * doc.internal.getFontSize() / doc.internal.scaleFactor;
+    const textWidth = doc.getStringUnitWidth(`Attendance Report`) * doc.internal.getFontSize() / doc.internal.scaleFactor;
     const startX = (pageWidth - textWidth) / 2;
-    doc.text(`Attendance Report of ${month} ${year}`, startX, 25);
+    // doc.text(`Attendance Report of ${month} ${year}`, startX, 25);
+
+    (filters?.name || filters?.month) ? doc.text(`Attendance Report`, startX, 20) : doc.text(`Attendance Report`, startX, 25);
+
+    doc.setFontSize(11);
+    doc.setFont(undefined, 'bold');
+    filters?.name && doc.text('Employee Name: ', 10, 28);
+    const widthofEmployeeName = doc.getTextWidth('Employee Name: ');
+    doc.setFont(undefined, 'normal');
+    filters?.name && doc.text(`${filters?.name}`, 10 + widthofEmployeeName, 28);
+
+    doc.setFont(undefined, 'bold')
+    filters?.month && doc.text('Date: ', 10, 35);
+    const widthofDate = doc.getTextWidth('Date: ');
+    doc.setFont(undefined, 'normal');
+    filters?.month && doc.text(`${filters?.month}`, 10 + widthofDate, 35);
+
 
     doc.autoTable({
       startY: 40,
@@ -427,6 +445,14 @@ const AttendanceReport = () => {
       },
       alternateRowStyles: { fillColor: [255, 255, 255] },
     });
+
+    // Set the font size for the footer
+    doc.setFontSize(10);
+    var totalPages = doc.internal.getNumberOfPages();
+    for (var i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.text(`Print By: ${user_name}`, 10, doc.internal.pageSize.height - 7);
+    }
     
     if(type === 'pdf'){
       doc.save('attendance_report.pdf');
