@@ -309,17 +309,25 @@ const leaves = [
       const calculateTotalDays = () => {
         const startDate = form.getFieldValue('startDate');
         const endDate = form.getFieldValue('endDate');
-    
+
         if (startDate && endDate) {
-          const duration = moment.duration(endDate.diff(startDate));
-          const totalDays = duration.days();
-          // form.setFieldsValue({ totalDays: totalDays });
-          form.setFieldsValue({ totalDays: totalDays+1 });
-        }
-        else{
-          form.setFieldsValue({ totalDays: '' })
+          let currentDate = startDate?.clone();
+          let totalDays = 0;
+
+          while (currentDate.isSameOrBefore(endDate)) {
+            // Check if the current day is not Saturday or Sunday
+            if (currentDate.day() !== 0 && currentDate.day() !== 6) {
+              totalDays++;
+            }
+            currentDate.add(1, 'day');
+          }
+
+          form.setFieldsValue({ totalDays });
+        } else {
+          form.setFieldsValue({ totalDays: '' });
         }
       };
+
 
       const onFinish = (values, info) => {
         const replacer = (key, value) => {
