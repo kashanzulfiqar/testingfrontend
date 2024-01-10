@@ -160,8 +160,8 @@ const AttendanceReport = () => {
           setStatdata(statData);
         }
       })
-      .catch((error) => {
-        console.log("error", error);
+      .catch((err) => {
+        console.log("error", err);
         message.error(
           `${
             err?.response?.data?.msg
