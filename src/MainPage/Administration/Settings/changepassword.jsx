@@ -150,7 +150,7 @@ const ChangePassword = () => {
                         {
                           whitespace: true,
                           required: true,
-                          message: "please enter old password",
+                          message: "Please enter old password",
                         },
                         {
                           min: 8,
@@ -192,7 +192,7 @@ const ChangePassword = () => {
                         {
                           whitespace: true,
                           required: true,
-                          message: "please enter new password",
+                          message: "Please enter new password",
                         },
                         // {
                         //   min: 8,
@@ -215,11 +215,11 @@ const ChangePassword = () => {
 
                             if (value && getFieldValue("oldPassword") === value) {
                               return Promise.reject(
-                                "old password and new password can not be same"
+                                "Old password and new password can not be same"
                                 );
                               }
                               if (value && !passwordRegex.test(value)) {
-                                return Promise.reject("new password must have at least 8 characters with 1 uppercase, 1 lowercase, 1 digit, and 1 special character");
+                                return Promise.reject("New password must have at least 8 characters with 1 uppercase, 1 lowercase, 1 digit, and 1 special character");
                               }
                               return Promise.resolve();
                           },
@@ -265,7 +265,7 @@ const ChangePassword = () => {
                         {
                           whitespace: true,
                           required: true,
-                          message: "please enter confirm password",
+                          message: "Please enter confirm password",
                         },
                         ({ getFieldValue }) => ({
                           validator(rule, value) {
@@ -273,7 +273,7 @@ const ChangePassword = () => {
                               return Promise.resolve();
                             }
                             return Promise.reject(
-                              "new password and confirm password must be same"
+                              "Both passwords must be same"
                             );
                           },
                         }),

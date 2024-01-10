@@ -465,8 +465,6 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
                         // </label> 
                         specific_date_data?.date ?
                           <TimePicker
-                              disabledHours={() => [0]}
-                              disabledMinutes={() => [0]}
                               allowClear={false}
                               // disabled={allData.some(item => item?.submittedForApproval === true)}
                               // disabled={allData.some(item => item?.status === 'Approved')}
@@ -514,8 +512,6 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
                             name={`${index}${index2}`}
                           >
                             <TimePicker
-                              disabledHours={() => [0]}
-                              disabledMinutes={() => [0]}
                               // disabled={allData.some(item => item?.submittedForApproval === true)}
                               // disabled={allData.some(item => item?.status === 'Approved')}
                               disabled={isFuture1}
@@ -539,6 +535,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
                                     formduration.setFieldsValue({ [idd]: ''})
                                     console.log(record, moment(new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index)).format('YYYY-MM-DD'));
                                     setSaveButton(true);
+                                    handleCancel();
                                 }
                               }}
                               onChange={(value) => {
@@ -1008,10 +1005,14 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
                 <div style={{display: 'flex', gap: '10px'}}>
                   <button
                       onClick={() => {
-                        if(showCard?.data?._id){
-                        handleUpdate()
+                        if(updatedDuration !== '00:00'){
+                          if(showCard?.data?._id){
+                            handleUpdate()
+                          }else{
+                            handleCreate()
+                          }
                         }else{
-                        handleCreate()
+                          message.error('Task Duration Cannot be Zero!')
                         }
                       }}
                       disabled={loader || saveButton}

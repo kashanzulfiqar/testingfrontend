@@ -848,14 +848,14 @@ let t_data = [
                                         return Promise.reject("task duration cannot be zero");
                                     }
                                     return Promise.resolve();
-                                    },
+                                  },
                               },
                               ]}
                               className="custom-border"
                           >
                               <TimePicker
-                                  disabledHours={() => [0]}
-                                  disabledMinutes={() => [0]}
+                                  // disabledHours={() => [0]}
+                                  // disabledMinutes={() => [0]}
                                   allowClear={false}
                                   className="form-control"
                                   placeholder="hh:mm"
