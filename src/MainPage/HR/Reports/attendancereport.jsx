@@ -108,13 +108,13 @@ const AttendanceReport = () => {
 
   const [filters, setFilters] = useState({
     name: "",
-    month: "",
-    year: "",
+    dateFrom: "",
+    dateTo: "",
   });
   const [selectedFilters, setSelectedFilters] = useState({
     name: "",
-    month: "",
-    year: "",
+    dateFrom: "",
+    dateTo: "",
   });
 
   useEffect(() => {
@@ -144,7 +144,7 @@ const AttendanceReport = () => {
     };
     apiServices(
       "GET",
-      `report/attendance?employeeName=${filters.name}&attendanceMonth=${filters.month ? filters.month : moment().format("MMMM")}&attendanceYear=${filters.year ? filters.year : moment().format("YYYY")}&page=${params.page}&limit=${params.limit}`,
+      `report/attendance?employeeName=${filters.name}&dateFrom=${filters?.dateFrom}&dateTo=${filters?.dateTo}&page=${params.page}&limit=${params.limit}`,
       null,
       user_state
     )
@@ -197,32 +197,38 @@ const AttendanceReport = () => {
 
 
   const handleSearch = () => {
-    const { name, month, year } = selectedFilters;
+    const { name, dateFrom, dateTo } = selectedFilters;
 
-    if (name || (month && year)) {
+    if (name && (dateFrom && dateTo)) {
       setFilters(selectedFilters);
       setPagination({
         ...pagination,
         current: 1,
       });
-    } else {
-      message.warning("Both Month and Year required");
+    } else if (name && !dateFrom && !dateTo) {
+      setFilters(selectedFilters);
+      setPagination({
+        ...pagination,
+        current: 1,
+      });
+    }else {
+      message.warning("Both start and end date required");
     }
   };
 
   const handleReset = () => {
     setSelectedFilters({
       name: "",
-      month: "",
-      year: "",
+      dateFrom: "",
+      dateTo: "",
     });
 
-    setSelectedMonthYear("");
+    //setSelectedMonthYear("");
 
     setFilters({
       name: "",
-      month: "",
-      year: "",
+      dateFrom: "",
+      dateTo: "",
     });
 
     form.resetFields();
@@ -330,20 +336,20 @@ const AttendanceReport = () => {
 
   const downloadPDF = (data, type) => {
     let name = filters.name || '';
-    let month = filters.month || moment().format("MMMM");
-    let year = filters.year || moment().format("YYYY");
+    let dateFrom = filters.dateFrom
+    let dateTo = filters.dateTo
     type === 'csv' ? setCsvLoader(true) : type === 'pdf' ? setPdfLoader(true) : setPrintLoader(true)
 
     apiServices(
       "GET",
-      `report/attendance?employeeName=${name}&attendanceMonth=${month}&attendanceYear=${year}&page=${1}&limit=${99999}`,
+      `report/attendance?employeeName=${name}&dateFrom=${dateFrom}&dateTo=${dateTo}&page=${1}&limit=${99999}`,
       null,
       user_state
     )
       .then((res) => {
         if (res.data.success === true) {
           // console.log(res?.data?.Attendance);
-          downloadPDF_File(res?.data?.Attendance, month, year, type)
+          downloadPDF_File(res?.data?.Attendance, dateFrom, dateTo, type)
           type === 'csv' ? setCsvLoader(false) : type === 'pdf' ? setPdfLoader(false) : setPrintLoader(false)
         }
       })
@@ -371,7 +377,7 @@ const AttendanceReport = () => {
     { label: "Total WFH", key: "totalWFH"}
   ];
 
-  const downloadPDF_File = (data, month, year, type) => {
+  const downloadPDF_File = (data, dateFrom, dateTo, type) => {
 
     const columnsForPDF = [
       { title: "Sr.", dataIndex: "number", },
@@ -414,7 +420,7 @@ const AttendanceReport = () => {
     const startX = (pageWidth - textWidth) / 2;
     // doc.text(`Attendance Report of ${month} ${year}`, startX, 25);
 
-    (filters?.name || filters?.month) ? doc.text(`Attendance Report`, startX, 20) : doc.text(`Attendance Report`, startX, 25);
+    (filters?.name || (filters?.dateFrom && filters.dateTo)) ? doc.text(`Attendance Report`, startX, 20) : doc.text(`Attendance Report`, startX, 25);
 
     doc.setFontSize(11);
     doc.setFont(undefined, 'bold');
@@ -424,14 +430,20 @@ const AttendanceReport = () => {
     filters?.name && doc.text(`${filters?.name}`, 10 + widthofEmployeeName, 28);
 
     doc.setFont(undefined, 'bold')
-    filters?.month && doc.text('Date: ', 10, 35);
-    const widthofDate = doc.getTextWidth('Date: ');
+    filters?.dateFrom && doc.text('From: ', 10, 35);
+    const widthofFrom = doc.getTextWidth('From: ');
     doc.setFont(undefined, 'normal');
-    filters?.month && doc.text(`${filters?.month}`, 10 + widthofDate, 35);
+    filters?.dateFrom && doc.text(`${filters?.dateFrom}`, 10 + widthofFrom, 35);
+    
+    doc.setFont(undefined, 'bold')
+    filters?.dateTo && doc.text('To: ', 10, 42);
+    const widthofTo = doc.getTextWidth('To: ');
+    doc.setFont(undefined, 'normal');
+    filters?.dateTo && doc.text(`${filters?.dateTo}`, 10 + widthofTo, 42);
 
 
     doc.autoTable({
-      startY: 40,
+      startY: 47,
       // margin: { top: 20 },
       margin: { left: 10, right: 10 },
       headStyles: headerStyles,
@@ -648,23 +660,18 @@ const AttendanceReport = () => {
 
                 <div className="col-sm-6 col-md-3">
                   <div className="form-group">
-                    <Form.Item name="month" className="custom-border">
-                      <DatePicker.MonthPicker
+                    <Form.Item name="dateFrom" className="custom-border">
+                      <DatePicker
                         className="form-control"
                         style={{
                           width: "100%",
                         }}
-                        placeholder={
-                          selectedMonthYear
-                            ? "Select Month"
-                            : `${moment().format("MMMM")}`
-                        }
+                        placeholder="Select a start date"
                         size="large"
                         allowClear={false}
-                        format="MMMM"
                         onChange={(date, dateString) => {
-                          handleFilterChange(dateString, "month");
-                          setSelectedMonthYear(dateString);
+                          handleFilterChange(dateString, "dateFrom");
+                          //setSelectedMonthYear(dateString);
                         }}
                       />
                     </Form.Item>
@@ -673,22 +680,18 @@ const AttendanceReport = () => {
 
                 <div className="col-sm-6 col-md-3">
                   <div className="">
-                    <Form.Item name="year" className="custom-border">
-                      <DatePicker.YearPicker
+                    <Form.Item name="dateTo" className="custom-border">
+                      <DatePicker
                         className="form-control"
                         style={{
                           width: "100%",
                         }}
-                        placeholder={
-                          selectedMonthYear
-                            ? "Select Year"
-                            : `${moment().format("YYYY")}`
-                        }
+                        placeholder="Select an end date"
                         size="large"
                         allowClear={false}
                         onChange={(date, dateString) => {
-                          handleFilterChange(dateString, "year");
-                          setSelectedMonthYear(dateString);
+                          handleFilterChange(dateString, "dateTo");
+                          //setSelectedMonthYear(dateString);
                         }}
                       />
                     </Form.Item>
