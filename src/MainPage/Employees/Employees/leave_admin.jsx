@@ -795,11 +795,7 @@ const LeaveAdmin = () => {
                   <Table
                     className="table-striped"
                     locale={{
-                      emptyText: isLoading ? (
-                        <Spin size="large" tip="Loading..." />
-                      ) : (
-                        customEmptyText
-                      ),
+                      emptyText: isLoading ? null : customEmptyText
                     }}
                     loading={isLoading}
                     pagination={false}

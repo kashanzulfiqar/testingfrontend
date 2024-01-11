@@ -102,7 +102,8 @@ const AttendanceEmployee = () => {
   }, [filters, pagination.current, pagination.pageSize, checkIn, checkOut]);
 
   useEffect(() => {
-    setIsLoading(true);
+    setTableLoader(true);
+    //setIsLoading(true);
     // Fetch user's attendance data
     apiServices(
       "GET",
@@ -241,7 +242,8 @@ const AttendanceEmployee = () => {
         console.log("error", error);
       })
       .finally(() => {
-        setIsLoading(false);
+        setTableLoader(false);
+        //setIsLoading(false);
         setBdisbale(true);
         setdisableAttend(true);
       });
@@ -528,7 +530,7 @@ const AttendanceEmployee = () => {
         console.log("error", error);
       })
       .finally(() => {
-        setIsLoading(false);
+        //setIsLoading(false);
         setTableLoader(false);
         setstatDisable(false);
       });
@@ -1329,11 +1331,7 @@ const AttendanceEmployee = () => {
                     loading={tableLoader}
                     columns={columns}
                     locale={{
-                      emptyText: isLoading ? (
-                        <Spin size="large" tip="Loading..." />
-                      ) : (
-                        customEmptyText
-                      ),
+                      emptyText: tableLoader ? null : customEmptyText
                     }}
                     bordered
                     pagination={false}
