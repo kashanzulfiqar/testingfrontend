@@ -199,8 +199,10 @@ const AttendanceReport = () => {
   const handleSearch = () => {
     const { name, dateFrom, dateTo } = selectedFilters;
 
-    if (!name && !dateFrom && !dateTo) {
-      message.warning("No filters selected");
+    if ((!dateFrom && dateTo) || (dateFrom && !dateTo)) {
+      message.error("Both start and end dates are required");
+    } else if (!name && !dateFrom && !dateTo) {
+      message.error("No filters selected");
     } else {
       setFilters(selectedFilters);
       setPagination({
