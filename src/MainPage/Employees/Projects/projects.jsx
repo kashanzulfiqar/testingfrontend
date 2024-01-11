@@ -1919,11 +1919,7 @@ const filteredColumns = columns.filter(column => {
                 <div className="table-responsive"> 
                   <Table
                     locale={{
-                      emptyText: isLoading ? (
-                        <Spin size="large" tip="Loading..." />
-                      ) : (
-                        customEmptyText
-                      ),
+                      emptyText: isLoading ? null : customEmptyText
                     }}
                     className="table-striped custom-table datatable"
                     style = {{overflowX : 'auto', paddingBottom: '70px'}}

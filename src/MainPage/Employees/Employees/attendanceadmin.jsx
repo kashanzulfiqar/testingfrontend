@@ -770,11 +770,7 @@ const AttendanceAdmin = () => {
                     className="fixedTableHeader"
                     // locale={{ emptyText: customEmptyText }}
                     locale={{
-                      emptyText: isLoading ? (
-                        <Spin size="large" tip="Loading..." />
-                      ) : (
-                        customEmptyText
-                      ),
+                      emptyText: isLoading ? null : customEmptyText
                     }}
                     style={{ height: "353px", background: "white" }}
                     loading={isLoading}
