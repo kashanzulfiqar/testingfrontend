@@ -199,20 +199,14 @@ const AttendanceReport = () => {
   const handleSearch = () => {
     const { name, dateFrom, dateTo } = selectedFilters;
 
-    if (name && (dateFrom && dateTo)) {
+    if (!name && !dateFrom && !dateTo) {
+      message.warning("No filters selected");
+    } else {
       setFilters(selectedFilters);
       setPagination({
         ...pagination,
         current: 1,
       });
-    } else if (name && !dateFrom && !dateTo) {
-      setFilters(selectedFilters);
-      setPagination({
-        ...pagination,
-        current: 1,
-      });
-    }else {
-      message.warning("Both start and end date required");
     }
   };
 
@@ -668,7 +662,7 @@ const AttendanceReport = () => {
                         }}
                         placeholder="Select a start date"
                         size="large"
-                        allowClear={false}
+                        //allowClear={false}
                         onChange={(date, dateString) => {
                           handleFilterChange(dateString, "dateFrom");
                           //setSelectedMonthYear(dateString);
@@ -688,7 +682,7 @@ const AttendanceReport = () => {
                         }}
                         placeholder="Select an end date"
                         size="large"
-                        allowClear={false}
+                        //allowClear={false}
                         onChange={(date, dateString) => {
                           handleFilterChange(dateString, "dateTo");
                           //setSelectedMonthYear(dateString);
@@ -757,11 +751,7 @@ const AttendanceReport = () => {
                     className="table-striped"
                     // locale={{ emptyText: customEmptyText }}
                     locale={{
-                      emptyText: isLoading ? (
-                        <Spin size="large" tip="Loading..." />
-                      ) : (
-                        customEmptyText
-                      ),
+                      emptyText: isLoading ? null : customEmptyText
                     }}
                     style={{ height: "400px", background: "white" }}
                     loading={isLoading}
