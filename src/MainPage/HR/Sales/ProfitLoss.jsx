@@ -747,7 +747,7 @@ const ProfitLoss = () => {
                                   },
                                 ]}
                             >
-                                <DatePicker disabledDate={disabledDate} format="MMMM" allowClear={false} size='large' picker="month" placeholder='Select Month' className='form-control filterDate' style={{minHeight: '50px', display: 'flex'}} getPopupContainer={() => document.getElementById('area2')} />
+                                <DatePicker format="MMMM" allowClear={false} size='large' picker="month" placeholder='Select Month' className='form-control filterDate' style={{minHeight: '50px', display: 'flex'}} getPopupContainer={() => document.getElementById('area2')} />
                             </Form.Item>
                         </div>
                     </div>
@@ -768,7 +768,7 @@ const ProfitLoss = () => {
                                   },
                                 ]}
                             >
-                                <DatePicker disabledDate={disabledDate} allowClear={false} size='large' picker="year" placeholder='Select Year' className='form-control filterDate' style={{minHeight: '50px', display: 'flex'}} getPopupContainer={() => document.getElementById('area3')} />
+                                <DatePicker allowClear={false} size='large' picker="year" placeholder='Select Year' className='form-control filterDate' style={{minHeight: '50px', display: 'flex'}} getPopupContainer={() => document.getElementById('area3')} />
                             </Form.Item>
                         </div>
                     </div>
