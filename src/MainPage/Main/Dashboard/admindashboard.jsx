@@ -420,7 +420,7 @@ const antIcon = (
                   <div className="card-body">
                     <span className="dash-widget-icon"><i className="fa fa-diamond" /></span>
                     <div className="dash-widget-info">
-                      <h3>37</h3>
+                      <h3>{allData?.tasksCount}</h3>
                       <span>Tasks</span>
                     </div>
                   </div>
