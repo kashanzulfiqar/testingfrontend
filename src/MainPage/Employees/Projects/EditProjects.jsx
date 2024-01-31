@@ -58,6 +58,8 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
   const [uploadFiles, setUploadFiles] = useState([]);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [loader, setLoader] = useState(false);
+  const [projectType, setProjectType] = useState("");
+  const [projectCost, setProjectCost] = useState(0);
 
   const [paymentSchedules, setPaymentSchedules] = useState([
     // Initial payment schedule
@@ -97,6 +99,8 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
     fetchFocalPersons(data?.clientId);
     setSelectedFiles(data?.docs);
     setUploadFiles(data?.docs);
+    setProjectType(data?.projectType)
+    setProjectCost(data?.cost)
     // Count the number of payment schedules in the response
     const numPaymentSchedules = data?.paymentSchedule?.length;
 
@@ -270,7 +274,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
     const { paymentSchedule, cost } = values;
 
     // Calculate total amount from payment schedule
-    const totalAmountInFigure = paymentSchedule.reduce(
+    const totalAmountInFigure = paymentSchedule?.reduce(
       (total, schedule) => total + parseFloat(schedule.amountInFigure || 0),
       0
     );
@@ -304,6 +308,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
       startDate: moment(values.startDate).format("YYYY-MM-DD"),
       endDate: moment(values.endDate).format("YYYY-MM-DD"),
       projectDomain: values.projectDomain,
+      projectType: values.projectType,
       currency: values.currency,
       cost: values.cost,
       costType: values.costType,
@@ -312,7 +317,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
       assignedDevelopers: values.assignedDevelopers,
       status: values.status,
       docs: uploadFiles,
-      paymentSchedule: values?.paymentSchedule,
+      paymentSchedule: projectType === "Billed" ? values?.paymentSchedule : [],
       deleted: false,
       companyId: selectedData.companyId,
     };
@@ -474,6 +479,31 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
     ));
   };
 
+  const handlePaymentRow = (value) => {
+    setProjectType(value)
+    if (value==="Billed" && paymentSchedules?.length === 0) {
+        addPaymentSchedule();
+    }
+  }
+
+  const handleCostChange = (value) => {
+    setProjectCost(value);
+    const paymentSchedules = form.getFieldValue('paymentSchedule');
+
+    const updatedPaymentSchedules = paymentSchedules?.map((schedule) => {
+      const { amountInFigure } = schedule;
+      const percentage = ((amountInFigure / value) * 100).toFixed(2);
+      return {
+        ...schedule,
+        amountInPercent: parseFloat(percentage),
+      };
+    });
+
+    form.setFieldsValue({
+      paymentSchedule: updatedPaymentSchedules,
+    });
+  }
+
   //   const onFileUpload = (file) =>{
   //     console.log("hello",file)
   //     apiUploadToS3(imagedata).then((res) => {
@@ -505,6 +535,34 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
       spin
     />
   );
+
+  const handleAmountInFigureChange = (value, index) => {
+    const newPaymentSchedules = form.getFieldValue('paymentSchedule') 
+    newPaymentSchedules[index].amountInFigure = value; 
+
+    const percentage = ((value / projectCost) * 100).toFixed(2); 
+    newPaymentSchedules[index].amountInPercent = parseFloat(percentage);
+
+    setPaymentSchedules(newPaymentSchedules); 
+    
+    form.setFieldsValue({
+      paymentSchedule: newPaymentSchedules, 
+    });
+  };
+
+  const handleAmountInPercentChange = (value, index) => {
+    const newPaymentSchedules = form.getFieldValue('paymentSchedule')
+    newPaymentSchedules[index].amountInPercent = value; 
+
+    const amount = Math.round((value * projectCost) / 100); 
+    newPaymentSchedules[index].amountInFigure = amount;
+
+    setPaymentSchedules(newPaymentSchedules); 
+    
+    form.setFieldsValue({
+      paymentSchedule: newPaymentSchedules, 
+    });
+  };
 
   const paymentColumns = [
     {
@@ -552,6 +610,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
             parser={(value) => {
               return value.replace(/\$\s?|(,*)/g, '');
             }}
+            onChange={(value) => handleAmountInFigureChange(value, index)}
           />
         </Form.Item>
       ),
@@ -577,6 +636,8 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
             placeholder="Enter percentage"
             max={100}
             min={0}
+            maxLength={5}
+            onChange={(value) => handleAmountInPercentChange(value, index)}
           />
         </Form.Item>
       ),
@@ -1050,6 +1111,44 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                 </div>
                 <div className="col-sm-6">
                   <div className="form-group">
+                    <label>Project Type</label>
+                    <div style={{ position: "relative" }} id="area">
+                      <Form.Item
+                        name="projectType"
+                        className="custom-border"
+                        rules={[
+                          {
+                            required: true,
+                            message: "Choose a project type",
+                          },
+                        ]}
+                      >
+                        <Select
+                          // showSearch
+                          className="custom-select custom-normal"
+                          getPopupContainer={() =>
+                            document.getElementById("area")
+                          }
+                          placeholder="Select Project Type"
+                          onChange={(value) => handlePaymentRow(value)}
+                          //onChange={handlePaymentRow(value)}
+                          options={[
+                            {
+                                value: 'Billed',
+                                label: "Billed ",
+                            },
+                            {
+                                value: 'nonBilled',
+                                label: "Non-Billed",
+                            },
+                            ]}
+                        />
+                      </Form.Item>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-sm-6">
+                  <div className="form-group">
                     <label>Currency</label>
                     <div style={{ position: "relative" }} id="area">
                       <Form.Item
@@ -1083,7 +1182,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                   </div>
                 </div>
 
-                <div className="col-sm-3">
+                <div className="col-sm-6">
                   <div className="form-group">
                     <label>Cost</label>
 
@@ -1106,11 +1205,12 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                         parser={(value) => {
                           return value.replace(/\$\s?|(,*)/g, '');
                         }}
+                        onChange={(value) => handleCostChange(value)}
                       />
                     </Form.Item>
                   </div>
                 </div>
-                <div className="col-sm-3">
+                <div className="col-sm-6">
                   <div className="form-group">
                     <label>Cost Type</label>
                     <div style={{ position: "relative" }} id="area">
@@ -1380,7 +1480,8 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                 className="developer-divider"
                 style={{ opacity: "0", marginTop: "0px" }}
               />
-
+            {projectType === 'Billed' && (
+              <>
               <h4
                 style={{
                   display: "flex",
@@ -1391,7 +1492,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                 Payment Schedules
               </h4>
               <hr
-                className="developer-divider"
+                className="developer-dividerdddd"
                 style={{ opacity: "0", marginTop: "0px" }}
               />
               <div className="table-responsive">
@@ -1400,7 +1501,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                   columns={paymentColumns}
                   rowKey={(record, index) => index}
                   pagination={false}
-                  style={{ overflowX: "auto" }}
+                  style={{ overflowX: "auto", height: "320px", }}
                 />
               </div>
 
@@ -1413,6 +1514,8 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                 </Form.Item>
                 <hr />
               </div>
+              </>
+              )}
 
               <div className="submit-section">
                 <Form.Item>

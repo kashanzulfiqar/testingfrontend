@@ -20,7 +20,7 @@ import AddRole from './addFunctions/AddRole';
 
 
 
-const ProfileInfoModal = ({ open, handleClose, user_data, onFinishAdd, onFinishEdit, onFinish, loader }) => {
+const ProfileInfoModal = ({ open, handleClose, user_data, onFinishAdd, onFinishEdit, onFinish, loader, numFlag }) => {
 
   const [form] = Form.useForm();
   
@@ -61,7 +61,7 @@ const [addRoleOpen, setAddRoleOpen] = useState(false)
     if(user_data){
         let data = {
             ...user_data,
-            dateOfBirth: moment(user_data?.dateOfBirth, 'YYYY-MM-DD'),
+            dateOfBirth: user_data?.dateOfBirth === null ? "" : moment(user_data?.dateOfBirth, 'YYYY-MM-DD'),
             joiningDate: moment(user_data?.joiningDate, 'YYYY-MM-DD'),
         }
         form.setFieldsValue(data)
@@ -576,7 +576,7 @@ const getTaxSlab = () => {
                             },
                         ]}
                         validateStatus={phoneLengthError ? 'error' : ''}
-                        help={phoneLengthError?.emp ? 'please enter phone number' : phoneLengthError?.len ? "phone length must be at least 5 digits long" : ''}
+                        help={phoneLengthError?.emp ? 'please enter phone number' : phoneLengthError?.len ? "phone length must be at least 5 digits long" : numFlag ? <label style={{ color: 'red' }}>please enter a valid phone number</label> : ''}
                         >
                         <Input style={{ display: "none" }} value={emergValue?.phoneNo} />
                         <PhoneNoInput
@@ -732,6 +732,53 @@ const getTaxSlab = () => {
                               ]}
                             >
                                 <DatePicker className='form-control' getPopupContainer={() => document.getElementById('area')} />
+                            </Form.Item>
+                        </div>
+                    </div>
+                    </div>
+                    <div className="col-md-6">
+                    <div className="form-group">
+                        <label>
+                        Employee Type <span className="text-danger">*</span>
+                        </label>
+                        <div style={{ position: 'relative' }} id='area'>
+                            <Form.Item
+                            name='employeeType'
+                            className='custom-border'
+                            rules={[
+                                {
+                                  whitespace: true,
+                                  required: true,
+                                  message: "please select employee type",
+                                },
+                              ]}
+                            >
+                                <Select
+                                    className="custom-select custom-normal"
+                                    getPopupContainer={() => document.getElementById('area')}
+                                    style={{
+                                    width: '100%',
+                                    }}
+                                    placeholder='Select Employee Type'
+                                    options={[
+                                    {
+                                        value: 'Full-Time',
+                                        label: "Full Time",
+                                    },
+                                    {
+                                        value: 'Part-Time',
+                                        label: "Part Time",
+                                    },
+                                    {
+                                        value: 'Contract',
+                                        label: "Contract",
+                                    },
+                                    {
+                                        value: 'Intern',
+                                        label: "Intern",
+                                    },
+                                    ]}
+                                />
                             </Form.Item>
                         </div>
                     </div>

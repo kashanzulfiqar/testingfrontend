@@ -113,7 +113,7 @@ const Loginpage = (props) => {
             : err?.response?.data?.validation?.body?.message
             ? err?.response?.data?.validation?.body?.message
             : "Login"
-        } Error`
+        }!`
       );
   })
 

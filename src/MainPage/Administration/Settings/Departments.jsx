@@ -1,4 +1,4 @@
-import { Table, Button, Form, Input, message, Empty, Spin } from "antd";
+import { Table, Button, Form, Input, message, Empty, Spin, Select } from "antd";
 import React, { useEffect, useState } from "react";
 import { itemRender, onShowSizeChange } from "../../paginationfunction";
 import "antd/dist/antd.css";
@@ -357,7 +357,7 @@ const Departments = () => {
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">
-                {open?.data ? "Update" : "Add"} Department Name
+                {open?.data ? "Update" : "Add"} Department
               </h5>
               <button type="button" className="close" onClick={handleClose}>
                 <span aria-hidden="true">×</span>
@@ -378,6 +378,7 @@ const Departments = () => {
                 }}
                 initialValues={{
                   teamName: open?.data ? open?.data?.teamName : "",
+                  isTech: open?.data ? open?.data?.isTech : "",
                 }}
                 autoComplete="off"
               >
@@ -406,6 +407,43 @@ const Departments = () => {
                   >
                     <Input className="form-control" maxLength={50} autoFocus />
                   </Form.Item>
+                </div>
+                <div className="form-group">
+                    <label>
+                    Department Type <span className="text-danger">*</span>
+                    </label>
+                    <div style={{ position: 'relative' }} id='area'>
+                        <Form.Item
+                        name='isTech'
+                        className='custom-border'
+                        rules={[
+                            {
+                              // whitespace: true,
+                              required: true,
+                              message: "please select department type",
+                            },
+                          ]}
+                        >
+                            <Select
+                                className="custom-select custom-normal"
+                                getPopupContainer={() => document.getElementById('area')}
+                                style={{
+                                width: '100%',
+                                }}
+                                placeholder='Select Department Type'
+                                options={[
+                                {
+                                    value: true,
+                                    label: "Technical ",
+                                },
+                                {
+                                    value: false,
+                                    label: "Non-Technical",
+                                },
+                                ]}
+                            />
+                        </Form.Item>
+                    </div>
                 </div>
                 <div className="submit-section">
                   <Form.Item>

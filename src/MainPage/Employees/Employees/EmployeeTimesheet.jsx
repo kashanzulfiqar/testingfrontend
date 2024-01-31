@@ -174,6 +174,10 @@ const EmployeeTimesheet = () => {
     },
   });
 
+  const disabledDate = (current) => {
+    return current && current > new Date();
+  };
+
       return (
         <>
         <div className="page-wrapper">
@@ -250,6 +254,7 @@ const EmployeeTimesheet = () => {
                     {showCalendar && (
                         <DatePicker
                             className="hideDatePickerInput"
+                            disabledDate={disabledDate}
                             open={showCalendar} // Set the visibility based on your state variable showCalendar
                             // onOpenChange={(open) => setShowCalendar(open)} // Handle the open state change
                             defaultValue={moment(selectedDate, 'YYYY-MM-DD')}
@@ -288,8 +293,9 @@ const EmployeeTimesheet = () => {
                     </button>
                     <button
                         onClick={handleNextWeek}
+                        disabled={moment(selectedDate).format('YYYY-MM-DD') === moment(new Date()).format('YYYY-MM-DD')}
                         className='NextPrevButtons'
-                        style={{border: '2px solid #DEE2E6', borderRadius: '8px', background: '#fff', color: '#333333', minWidth: '42px', height: '42px', padding: '4px 0px 0px 3.6px'}}
+                        style={{ cursor: moment(selectedDate).format('YYYY-MM-DD') === moment(new Date()).format('YYYY-MM-DD') ? 'no-drop' : 'pointer', border: '2px solid #DEE2E6', borderRadius: '8px', background: moment(selectedDate).format('YYYY-MM-DD') === moment(new Date()).format('YYYY-MM-DD') ? '#ebebeb' : '#fff', color: moment(selectedDate).format('YYYY-MM-DD') === moment(new Date()).format('YYYY-MM-DD') ? '#bdbdbd' : '#333333', minWidth: '42px', height: '42px', padding: '4px 0px 0px 3.6px'}}
                     >
                         <i className="fa fa-angle-right" style={{fontSize: '26px', margin: '0px'}} />
                     </button>

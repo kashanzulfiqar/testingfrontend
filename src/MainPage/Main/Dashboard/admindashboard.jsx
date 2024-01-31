@@ -420,7 +420,7 @@ const antIcon = (
                   <div className="card-body">
                     <span className="dash-widget-icon"><i className="fa fa-diamond" /></span>
                     <div className="dash-widget-info">
-                      <h3>37</h3>
+                      <h3>{allData?.tasksCount}</h3>
                       <span>Tasks</span>
                     </div>
                   </div>
@@ -710,7 +710,7 @@ const antIcon = (
                               <label className="text-sm text-muted mt-1">Leave Date</label>
                             </div>
                             <div className="col-6 text-end">
-                              <span className={req?.status==="Approved" ? "badge bg-inverse-success" : req?.status==="Pending" ? "badge bg-inverse-warning" : req?.status==="Declined" ? "badge bg-inverse-danger" : ''}>
+                              <span className={req?.status==="Approved" ? "badge bg-inverse-success" : req?.status==="Pending" ? "badge bg-inverse-warning" : (req?.status==="Declined" || req?.status==="Cancelled") ? "badge bg-inverse-danger" : ''}>
                                 {req?.status}
                               </span>
                             </div>

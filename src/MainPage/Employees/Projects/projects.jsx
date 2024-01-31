@@ -89,6 +89,8 @@ const Projects = () => {
   const [selectedClient, setSelectedClient] = useState(null);
   const [selectedLeader, setSelectedLeader] = useState(null);
   const [selectedTeamMembers, setSelectedTeamMembers] = useState([]);
+  const [projectType, setProjectType] = useState("");
+  const [projectCost, setProjectCost] = useState(0);
 
   const [paymentSchedules, setPaymentSchedules] = useState([
     // Initial payment schedule
@@ -175,6 +177,8 @@ const Projects = () => {
     setFocalPersons([]);
     setSelectedLeader(null);
     setSelectedTeamMembers([]);
+    setProjectCost(0);
+    setProjectType("");
     setPaymentSchedules([
       {
         paymentTitle: "",
@@ -469,7 +473,7 @@ const Projects = () => {
     const { paymentSchedule, cost } = values;
 
     // Calculate total amount from payment schedule
-    const totalAmountInFigure = paymentSchedule.reduce(
+    const totalAmountInFigure = paymentSchedule?.reduce(
       (total, schedule) => total + parseFloat(schedule.amountInFigure || 0),
       0
     );
@@ -502,6 +506,7 @@ const Projects = () => {
       startDate: moment(values.startDate).format("YYYY-MM-DD"),
       endDate: moment(values.endDate).format("YYYY-MM-DD"),
       projectDomain: values.projectDomain,
+      projectType: values.projectType,
       currency: values.currency,
       cost: values.cost,
       costType: values.costType,
@@ -1031,6 +1036,53 @@ const Projects = () => {
     ));
   };
 
+  const handleCostChange = (value) => {
+    setProjectCost(value);
+    const paymentSchedules = form.getFieldValue('paymentSchedule');
+
+    const updatedPaymentSchedules = paymentSchedules?.map((schedule) => {
+      const { amountInFigure } = schedule;
+      const percentage = ((amountInFigure / value) * 100).toFixed(2);
+      return {
+        ...schedule,
+        amountInPercent: parseFloat(percentage),
+      };
+    });
+
+    form.setFieldsValue({
+      paymentSchedule: updatedPaymentSchedules,
+    });
+  }
+
+  const handleAmountInFigureChange = (value, index) => {
+    const newPaymentSchedules = form.getFieldValue('paymentSchedule') 
+    newPaymentSchedules[index].amountInFigure = value;
+
+    const percentage = ((value / projectCost) * 100).toFixed(2); 
+    newPaymentSchedules[index].amountInPercent = parseFloat(percentage);
+
+    setPaymentSchedules(newPaymentSchedules); 
+    
+    form.setFieldsValue({
+      paymentSchedule: newPaymentSchedules,
+    });
+  };
+
+  const handleAmountInPercentChange = (value, index) => {
+    const newPaymentSchedules = form.getFieldValue('paymentSchedule')
+    newPaymentSchedules[index].amountInPercent = value; 
+
+    const amount = Math.round((value * projectCost) / 100); 
+    newPaymentSchedules[index].amountInFigure = amount;
+
+    setPaymentSchedules(newPaymentSchedules); 
+    
+    form.setFieldsValue({
+      paymentSchedule: newPaymentSchedules,
+    });
+  };
+
+
   const paymentColumns = [
     {
       title: "Payment Title",
@@ -1077,6 +1129,7 @@ const Projects = () => {
             parser={(value) => {
               return value.replace(/\$\s?|(,*)/g, '');
             }}
+            onChange={(value) => handleAmountInFigureChange(value, index)}
           />
         </Form.Item>
       ),
@@ -1102,6 +1155,8 @@ const Projects = () => {
             placeholder="Enter percentage"
             max={100}
             min={0}
+            maxLength={5}
+            onChange={(value) => handleAmountInPercentChange(value, index)}
           />
         </Form.Item>
       ),
@@ -1864,11 +1919,7 @@ const filteredColumns = columns.filter(column => {
                 <div className="table-responsive"> 
                   <Table
                     locale={{
-                      emptyText: isLoading ? (
-                        <Spin size="large" tip="Loading..." />
-                      ) : (
-                        customEmptyText
-                      ),
+                      emptyText: isLoading ? null : customEmptyText
                     }}
                     className="table-striped custom-table datatable"
                     style = {{overflowX : 'auto', paddingBottom: '70px'}}
@@ -2486,6 +2537,43 @@ const filteredColumns = columns.filter(column => {
                     </div>
                     <div className="col-sm-6">
                       <div className="form-group">
+                        <label>Project Type</label>
+                        <div style={{ position: "relative" }} id="area">
+                          <Form.Item
+                            name="projectType"
+                            className="custom-border"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Choose a project type",
+                              },
+                            ]}
+                          >
+                            <Select
+                              // showSearch
+                              className="custom-select custom-normal"
+                              getPopupContainer={() =>
+                                document.getElementById("area")
+                              }
+                              placeholder="Select Project Type"
+                              onChange={(value) => setProjectType(value)}
+                              options={[
+                                {
+                                    value: 'Billed',
+                                    label: "Billed ",
+                                },
+                                {
+                                    value: 'nonBilled',
+                                    label: "Non-Billed",
+                                },
+                                ]}
+                            />
+                          </Form.Item>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="col-sm-6">
+                      <div className="form-group">
                         <label>Currency</label>
                         <div style={{ position: "relative" }} id="area">
                           <Form.Item
@@ -2519,7 +2607,7 @@ const filteredColumns = columns.filter(column => {
                       </div>
                     </div>
 
-                    <div className="col-sm-3">
+                    <div className="col-sm-6">
                       <div className="form-group">
                         <label>Cost</label>
 
@@ -2542,11 +2630,12 @@ const filteredColumns = columns.filter(column => {
                             parser={(value) => {
                               return value.replace(/\$\s?|(,*)/g, '');
                             }}
+                            onChange={(value) => handleCostChange(value)}
                           />
                         </Form.Item>
                       </div>
                     </div>
-                    <div className="col-sm-3">
+                    <div className="col-sm-6">
                       <div className="form-group">
                         <label>Cost Type</label>
                         <div style={{ position: "relative" }} id="area">
@@ -2849,7 +2938,8 @@ const filteredColumns = columns.filter(column => {
                     className="developer-divider"
                     style={{ opacity: "0", marginTop: "0px" }}
                   />
-
+                {projectType === 'Billed' && (
+                  <>
                   <h4
                     style={{
                       display: "flex",
@@ -2869,7 +2959,7 @@ const filteredColumns = columns.filter(column => {
                       columns={paymentColumns}
                       rowKey={(record, index) => index}
                       pagination={false}
-                      style={{ overflowX: "auto" }}
+                      style={{ overflowX: "auto", height: "320px", }}
                     />
                   </div>
 
@@ -2882,6 +2972,8 @@ const filteredColumns = columns.filter(column => {
                     </Form.Item>
                     <hr />
                   </div>
+                  </>
+                )}
 
                   <div className="submit-section">
                     <Form.Item>

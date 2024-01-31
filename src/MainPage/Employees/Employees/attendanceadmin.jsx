@@ -342,10 +342,11 @@ const AttendanceAdmin = () => {
     },
     ...Array.from({ length: daysInMonth }, (_, index) => {
       // Get the date for the current column based on the selected month and year
-      const currentDate = moment()
-        .year(filters.year)
-        .month(filters.month)
-        .date(index + 1);
+      const currentDate = filters.month 
+      ? 
+      moment().year(filters.year).month(filters.month).date(index + 1)
+      : 
+      moment().date(index + 1);
 
       // Determine if the current column represents a Saturday or Sunday
       const isSaturday = currentDate.isoWeekday() === 6;
@@ -605,16 +606,16 @@ const AttendanceAdmin = () => {
               </div>
             </div>
             {/* STATS */}
+            {isStatLoading ? 
+            <div className="row" style={{minHeight: '83px', display: 'grid', placeItems: 'center', background: '#ebebeb', borderRadius: '5px', marginBottom: '20px', marginInline: '0px'}}>
+              <Spin />
+            </div> :
             <div className="row">
               <div className="col-md-3">
                 <div className="stats-info">
                   <label>Today Present</label>
                   <h4>
-                    {isStatLoading ? (
-                      <Spin size="large" />
-                    ) : (
-                      <>{statdata?.todayPresent}</>
-                    )}
+                    {statdata?.todayPresent}
                   </h4>
                 </div>
               </div>
@@ -622,11 +623,7 @@ const AttendanceAdmin = () => {
                 <div className="stats-info">
                   <label>Today Late</label>
                   <h4>
-                    {isStatLoading ? (
-                      <Spin size="large" />
-                    ) : (
-                      <>{statdata?.todayLate}</>
-                    )}
+                    {statdata?.todayLate}
                   </h4>
                 </div>
               </div>
@@ -634,11 +631,7 @@ const AttendanceAdmin = () => {
                 <div className="stats-info">
                   <label>Today Absent</label>
                   <h4>
-                    {isStatLoading ? (
-                      <Spin size="large" />
-                    ) : (
-                      <>{statdata?.todayAbsent}</>
-                    )}
+                    {statdata?.todayAbsent}
                   </h4>
                 </div>
               </div>
@@ -647,15 +640,12 @@ const AttendanceAdmin = () => {
                   <label>Work From Home</label>
 
                   <h4>
-                    {isStatLoading ? (
-                      <Spin size="large" />
-                    ) : (
-                      <>{statdata?.wfhToday}</>
-                    )}
+                    {statdata?.wfhToday}
                   </h4>
                 </div>
               </div>
             </div>
+            }
             {/* Search Filter */}
 
             <Form form={form} onFinish={handleSearch}>
@@ -780,11 +770,7 @@ const AttendanceAdmin = () => {
                     className="fixedTableHeader"
                     // locale={{ emptyText: customEmptyText }}
                     locale={{
-                      emptyText: isLoading ? (
-                        <Spin size="large" tip="Loading..." />
-                      ) : (
-                        customEmptyText
-                      ),
+                      emptyText: isLoading ? null : customEmptyText
                     }}
                     style={{ height: "353px", background: "white" }}
                     loading={isLoading}

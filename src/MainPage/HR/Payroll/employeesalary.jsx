@@ -33,6 +33,7 @@ import moment from "moment";
 import {
   CloudDownloadOutlined,
   DownloadOutlined,
+  LoadingOutlined,
   MinusCircleFilled,
 } from "@ant-design/icons";
 import { Modal } from "@mui/material";
@@ -218,6 +219,16 @@ const EmployeeSalary = () => {
       total: 0,
     })
   };
+
+  const antIcon = (
+    <LoadingOutlined
+      style={{
+        fontSize: 24,
+        color: "#fff",
+      }}
+      spin
+    />
+  );
 
   // Function to handle closing the modal
   const handleCloseModal = () => {
@@ -1324,7 +1335,11 @@ const EmployeeSalary = () => {
                           disabled={loader===true}
                           onClick={handleGeneratePayroll}
                         >
-                          Submit
+                          {loader ? (
+                            <Spin size="small" indicator={antIcon} />
+                          ) : (
+                            "Submit"
+                          )}
                         </Button>
                       </Form.Item>
                     </div>

@@ -5,7 +5,7 @@ import { Avatar_01,Avatar_02,Avatar_03,Avatar_04,Avatar_05,Avatar_11, Avatar_12,
     Avatar_10, Avatar_08,Avatar_13,Avatar_16, user_icon } from "../../../Entryfile/imagepath"
 import Offcanvas from '../../../Entryfile/offcanvance';
 import { useDispatch, useSelector } from 'react-redux';
-import { Button, Empty, Form, Input, Pagination, Select, Spin, message } from 'antd';
+import { Button, DatePicker, Empty, Form, Input, Pagination, Select, Spin, message } from 'antd';
 import Modal from "@mui/material/Modal";
 import favicon from '../../../files/Icons/DaftarProIcon.svg';
 import { itemRender } from '../../paginationfunction';
@@ -31,6 +31,7 @@ const AllEmployees = () => {
   const [open, setOpen] = useState({ isAddOpen: false, isEditOpen: false, data: '' })
   const [tableLoader, setTableLoader] = useState(false)
   const [loader, setLoader] = useState(false)
+  const [numFlag, setNumFlag] = useState(false)
   const [pageSize, setPageSize] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
   const [paginationDetail, setPaginationDetail] = useState();
@@ -99,6 +100,7 @@ const AllEmployees = () => {
 
   const handleClose = () => {
     setOpen({ isAddOpen: false, isEditOpen: false, isDelOpen: false, data: '' });
+    setNumFlag(false);
   };
 
   const st1 = useSelector((state) => state);
@@ -170,10 +172,12 @@ const AllEmployees = () => {
             handleClose();
             message.success('Employee Added Successfully!')
             setLoader(false);
+            setNumFlag(false);
           }
         })
         .catch((err) => {
           setLoader(false);
+          //setNumFlag(false);
           message.error(
             `${
               err?.response?.data?.msg
@@ -183,6 +187,11 @@ const AllEmployees = () => {
                 : "Add User Info Error"
             }!`
           );
+          if (err?.response?.data?.msg === "Input Valid Number" && err?.response?.data?.success === false) {
+            setNumFlag(true);
+          } else {
+            setNumFlag(false); // Reset numFlag to false if the condition is not met
+          }
         });
     }
 
@@ -237,10 +246,12 @@ const AllEmployees = () => {
               handleClose()
               message.success('Employee Updated Successfully!')
               setLoader(false)
+              setNumFlag(false);
             }
           })
           .catch((err) => {
             setLoader(false)
+            //setNumFlag(false);
             // console.log(err);
             message.error(
               `${
@@ -251,13 +262,23 @@ const AllEmployees = () => {
                   : "Update Employee Info Error"
               }!`
             );
+            if (err?.response?.data?.msg === "Input Valid Number" && err?.response?.data?.success === false) {
+              setNumFlag(true);
+            } else {
+              setNumFlag(false); // Reset numFlag to false if the condition is not met
+            }
           });
     }
 
-    const onFinishDelete = (id, type) => {
+    const onFinishDelete = (id, type, value) => {
       if(type === 'disable'){
+        let d = {
+          _id: id,
+          employeeExitDate: moment(value?.employeeExitDate).format("YYYY-MM-DD")
+          // employeeExitDate: moment(value?.employeeExitDate).format("YYYY-MM-DDTHH:mm:ss.SSSZ")
+        }
         setLoader(true)
-      apiServices("DELETE", "user/delete-user", id, user_state)
+      apiServices("DELETE", "user/delete-user", d, user_state)
         .then((res) => {
           if (res?.data?.success === true) {
             // setUsers([...users.filter((user) => user._id !== id)]);
@@ -359,6 +380,10 @@ const AllEmployees = () => {
       spin
     />
   );
+
+  const disabledDate = (current) => {
+    return current && current > new Date();
+  };
 
       return (
         <>
@@ -558,6 +583,7 @@ const AllEmployees = () => {
           handleClose={handleClose}
           onFinishAdd={onFinishAdd}
           loader={loader}
+          numFlag={numFlag}
         />
       }
       {/* /Add Employee Modal */}
@@ -571,6 +597,7 @@ const AllEmployees = () => {
             user_data={open?.data}
             onFinishEdit={onFinishEdit}
             loader={loader}
+            numFlag={numFlag}
           />
         }
       {/* /Edit Employee Modal */}
@@ -586,57 +613,137 @@ const AllEmployees = () => {
         }}
       >
         <div className="modal-dialog modal-dialog-centered">
-          <div className="modal-content" style={{ height: "280px" }}>
-            <div
-              className="modal-body"
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-              }}
-            >
-              <div className="form-header">
-                <h3 style={{ marginBottom: "30px" }}> {open?.data?.userStatus === 'Active' ? 'Disable' : 'Enable'} Employee</h3>
-                <p>
-                  Are you sure you want to {open?.data?.userStatus === 'Active' ? 'Disable' : 'Enable'}{" "}
-                  <b>{open?.data?.fullName}</b>?
-                </p>
-              </div>
-              <div className="modal-btn delete-action">
-                <div className="row">
-                  <div className="col-6">
-                    <Button
-                      htmlType="submit"
-                      className="btn btn-primary continue-btn"
-                      // onClick={() => onFinishDelete(open?.data?._id)}
-                      onClick={() => {
-                        if(open?.data?.userStatus === 'Active'){
-                          onFinishDelete(open?.data?._id, 'disable')
-                        }else{
-                          onFinishDelete(open?.data?._id, 'enable')
-                        }
-                      }}
-                      disabled={loader}
-                      style={{width: '100%'}}
-                    >
-                      {
-                        loader ? <Spin size="small" indicator={antIcon} />
-                          : open?.data?.userStatus === 'Active' ? 'Disable' : 'Enable'
-                      }
-                    </Button>
+          <div className="modal-content" style={{ height: open?.data?.userStatus === 'Active' ? '406px' : '280px' }}>
+            {
+              open?.data?.userStatus === 'Active' ?
+              <div className="modal-body">
+                <Form
+                  // form={form}
+                  name="control-hooks"
+                  onFinish={(val) => onFinishDelete(open?.data?._id, 'disable', val)}
+                  onFinishFailed={({errorFields}) => {
+                    console.log(errorFields.map(field => field.errors.toString().includes('consecutive')));
+                    console.log(errorFields);
+                    const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
+                    if(consecutiveSpacesError){
+                      message.error("Please Remove Consecutive Spaces!")
+                    }else{
+                      message.error("Please Fill Required Fields!")
+                    }
+                  }}
+                  // initialValues={{
+                  //   designationName: open?.data
+                  //     ? open?.data?.designationName
+                  //     : "",
+                  // }}
+                >
+                  <div className="form-header" style={{ marginBottom: "50px", marginTop: '21px'}}>
+                    <h3 style={{ marginBottom: "20px"}}>Disable Employee</h3>
+                    <p style={{fontSize: '15px'}}>
+                      Are you sure you want to Disable {" "}
+                      <b>{open?.data?.fullName}</b>?
+                    </p>
                   </div>
-                  <div className="col-6">
-                    <Button
-                      onClick={handleClose}
-                      className="btn btn-primary submit-btn"
-                      style={{width: '100%'}}
+                  <div className="form-group">
+                    <label>
+                      Employee Exit Date <span className="text-danger">*</span>
+                    </label>
+                    <Form.Item
+                      name="employeeExitDate"
+                      rules={[
+                        {
+                          // whitespace: true,
+                          required: true,
+                          message: "please select date",
+                        },
+                      ]}
+                      className="custom-border"
                     >
-                      Cancel
-                    </Button>
+                      <DatePicker className='form-control' disabledDate={disabledDate} placeholder='YYYY-MM-DD' style={{minHeight: '45px'}} />
+                    </Form.Item>
+                  </div>
+                  <div className="submit-section">
+                    <Form.Item>
+                      <div className="row">
+                    <div className="col-6">
+                      <Button
+                        htmlType="submit"
+                        className="btn btn-primary continue-btn"
+                        // onClick={() => onFinishDelete(open?.data?._id)}
+                        disabled={loader}
+                        style={{width: '100%'}}
+                      >
+                        {
+                          loader ? <Spin size="small" indicator={antIcon} />
+                            : open?.data?.userStatus === 'Active' ? 'Disable' : 'Enable'
+                        }
+                      </Button>
+                    </div>
+                    <div className="col-6">
+                      <Button
+                        onClick={handleClose}
+                        className="btn btn-primary submit-btn"
+                        style={{width: '100%'}}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                    </Form.Item>
+                  </div>
+                </Form>
+              </div> :
+              <div
+                className="modal-body"
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                }}
+              >
+                <div className="form-header">
+                  <h3 style={{ marginBottom: "30px" }}> {open?.data?.userStatus === 'Active' ? 'Disable' : 'Enable'} Employee</h3>
+                  <p>
+                    Are you sure you want to {open?.data?.userStatus === 'Active' ? 'Disable' : 'Enable'}{" "}
+                    <b>{open?.data?.fullName}</b>?
+                  </p>
+                </div>
+                <div className="modal-btn delete-action">
+                  <div className="row">
+                    <div className="col-6">
+                      <Button
+                        htmlType="submit"
+                        className="btn btn-primary continue-btn"
+                        // onClick={() => onFinishDelete(open?.data?._id)}
+                        onClick={() => {
+                          if(open?.data?.userStatus === 'Active'){
+                            onFinishDelete(open?.data?._id, 'disable')
+                          }else{
+                            onFinishDelete(open?.data?._id, 'enable')
+                          }
+                        }}
+                        disabled={loader}
+                        style={{width: '100%'}}
+                      >
+                        {
+                          loader ? <Spin size="small" indicator={antIcon} />
+                            : open?.data?.userStatus === 'Active' ? 'Disable' : 'Enable'
+                        }
+                      </Button>
+                    </div>
+                    <div className="col-6">
+                      <Button
+                        onClick={handleClose}
+                        className="btn btn-primary submit-btn"
+                        style={{width: '100%'}}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            }
           </div>
         </div>
       </Modal>

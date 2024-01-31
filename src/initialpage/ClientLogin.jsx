@@ -183,7 +183,7 @@ const ClientLogin = (props) => {
           {/* /Account Logo */}
           {
             !emailNotVerified ?
-              <div className="account-box" style={{ width: '100%', maxWidth: '514px', height: '460px', paddingInline: '55px' }}>
+              <div className="account-box" style={{ width: '100%', maxWidth: '514px', height: '487px', paddingInline: '55px' }}>
                 <div className="account-wrapper">
                   <h3 className="account-title" style={{ padding: '17px 0px 40px 0px' }}>Client & Focal Person Login</h3>
                   {/* <p className="account-subtitle">Access to our dashboard</p> */}
@@ -271,6 +271,10 @@ const ClientLogin = (props) => {
 
                       </div>
                     </Form>
+                    <div className="account-footer">
+                    <div style={{borderBottom: '1px dashed #b7b7b7', margin: '10px 0px 15px'}}></div>
+                      <label style={{fontSize: '15px'}}>If you are an Employee or Admin. <Link to="/login">Login here</Link></label>
+                    </div>
                   </div>
                   {/* /Account Form */}
                 </div>

@@ -3290,9 +3290,14 @@ input[type=file].form-control {
   border-radius: 50px;
   padding: 10px 20px;
 }
+.continue-btn:focus {
+  background-color: #fff !important;
+  color: #ff9b44 !important;
+}
 .continue-btn:hover,
 .cancel-btn:hover {
   color: #fff !important;
+  background-color: #ff9b44 !important;
 }
 
 .table {
@@ -7175,6 +7180,41 @@ textarea.form-control {
 
 /* ................. custom css styling ................ */
 
+/*pieChart legend longtext style */
+.pieChartLegendLongText{
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  max-width: 85px;
+  overflow: hidden;
+}
+/* rechart shift pie legend style */
+.shiftLegendStyle .recharts-default-legend{
+ flex-wrap: wrap;
+ display: flex;
+ row-gap: 8px !important;
+ margin-top: 22px !important;
+}
+.shiftLegendStyle .recharts-legend-item > svg{
+  display: none !important;
+}
+
+/* timesheet admin vie detail long text */
+.report-cards-info{
+  border: 1px solid #ededed;
+  margin-bottom: 30px;
+  -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+  -moz-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+  background-color: #ffffff;
+  text-align: center;
+  border-radius: 4px;
+  padding: 15px;
+}
+.report-cards-info h4{
+  font-size: 24px;
+  margin-bottom: 0;
+}
 
 /* timesheet admin vie detail long text */
 .projectTitleLongDesc{
@@ -7248,6 +7288,12 @@ textarea.form-control {
   border: 2px solid rgb(188, 188, 188) !important;
   border-radius: 8px !important;
   background: transparent !important;
+}
+.timePickerWithData.ant-picker-disabled{
+  border-color: #e4e4e4 !important;
+}
+.timePickerWithData.ant-picker-disabled input::placeholder{
+  color: #e0e0e0 !important;
 }
 .timePickerPending{
   border: 2px solid #ff9b4491  !important;
@@ -7461,6 +7507,10 @@ textarea.form-control {
 }
 .profitLossTable tbody tr:nth-child(odd) > td:nth-child(2){
   /* background: #f5f5f5 !important; */
+}
+
+.profitLossTable thead > tr > th:nth-child(8) {
+  min-width: 80px !important;
 }
 
 /* invoice table style */
