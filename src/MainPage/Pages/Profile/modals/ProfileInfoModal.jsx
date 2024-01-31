@@ -61,7 +61,7 @@ const [addRoleOpen, setAddRoleOpen] = useState(false)
     if(user_data){
         let data = {
             ...user_data,
-            dateOfBirth: moment(user_data?.dateOfBirth, 'YYYY-MM-DD'),
+            dateOfBirth: user_data?.dateOfBirth === null ? "" : moment(user_data?.dateOfBirth, 'YYYY-MM-DD'),
             joiningDate: moment(user_data?.joiningDate, 'YYYY-MM-DD'),
         }
         form.setFieldsValue(data)
