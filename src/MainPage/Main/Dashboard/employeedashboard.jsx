@@ -301,7 +301,7 @@ const EmployeeDashboard = () => {
       const yearsSinceJoining = today.getFullYear() - joiningDate.getFullYear();
       return yearsSinceJoining > 0;
     }) ? (
-      workAnniversaryData.map((item) => {
+      workAnniversaryData?.map((item) => {
         const joiningDate = new Date(item.joiningDate);
         const today = new Date();
         const yearsSinceJoining = today.getFullYear() - joiningDate.getFullYear();
@@ -309,9 +309,12 @@ const EmployeeDashboard = () => {
         if (yearsSinceJoining > 0) {
           return (
             <div key={item._id} className="time-list">
-              <div className="dash-stats-list" style={{ display: "flex", flexDirection: 'column', alignItems: "flex-start" }}>
-                <h4><img src={item.imageUrl || user_icon} alt={item.fullName} className="avatar" />{item.fullName}</h4>
-                <p>{yearsSinceJoining} years at the company</p>
+              <div className="dash-stats-list" style={{display:"flex", flexWrap:'initial' ,flexDirection:'row', alignItems:"center"}}>
+                <img src={item.imageUrl || user_icon} alt={item.fullName} className="avatar" />
+                <div style={{marginLeft: '10px'}}>
+                  <h4>{item.fullName}</h4>
+                  <p>{yearsSinceJoining} years at the company</p>
+                </div>
               </div>
             </div>
           );
@@ -337,17 +340,19 @@ const EmployeeDashboard = () => {
                         userData?.todayBirthdays.length === 0 ? (
                           <p>No birthdays today</p>
                         ) : (
-                      birthdaysData.map((item) => {
+                      birthdaysData?.map((item) => {
                           const dateOfBirth = new Date(item.dateOfBirth);
                           const today = new Date();
                           const age = today.getFullYear() - dateOfBirth.getFullYear();
 
                           return (
                             <div key={item._id} className="time-list">
-                              <div className="dash-stats-list" style={{display:"flex", flexDirection:'column', alignItems:"flex-start"}}>
-                                
-                                <h4><img src={item.imageUrl || user_icon} alt={item.fullName} className="avatar" />{item.fullName}</h4>
-                                <p>{age} years old</p>
+                              <div className="dash-stats-list" style={{display:"flex", flexWrap:'initial' ,flexDirection:'row', alignItems:"center"}}>
+                                <img src={item.imageUrl || user_icon} alt={item.fullName} className="avatar" />
+                                <div style={{marginLeft: '10px'}}>
+                                  <h4>{item.fullName}</h4>
+                                  <p>{age} years old</p>
+                                </div>
                               </div>
                             </div>
                           );
