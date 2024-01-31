@@ -20,7 +20,7 @@ import AddRole from './addFunctions/AddRole';
 
 
 
-const ProfileInfoModal = ({ open, handleClose, user_data, onFinishAdd, onFinishEdit, onFinish, loader }) => {
+const ProfileInfoModal = ({ open, handleClose, user_data, onFinishAdd, onFinishEdit, onFinish, loader, numFlag }) => {
 
   const [form] = Form.useForm();
   
@@ -576,7 +576,7 @@ const getTaxSlab = () => {
                             },
                         ]}
                         validateStatus={phoneLengthError ? 'error' : ''}
-                        help={phoneLengthError?.emp ? 'please enter phone number' : phoneLengthError?.len ? "phone length must be at least 5 digits long" : ''}
+                        help={phoneLengthError?.emp ? 'please enter phone number' : phoneLengthError?.len ? "phone length must be at least 5 digits long" : numFlag ? <label style={{ color: 'red' }}>please enter a valid phone number</label> : ''}
                         >
                         <Input style={{ display: "none" }} value={emergValue?.phoneNo} />
                         <PhoneNoInput
