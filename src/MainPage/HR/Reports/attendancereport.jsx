@@ -510,7 +510,7 @@ const AttendanceReport = () => {
         {/* <Sidebar /> */}
         <div className="page-wrapper">
           <Helmet>
-            <title>Reports - DaftarPro</title>
+            <title>Attednance Reports - DaftarPro</title>
             <meta name="description" content="Login page" />
           </Helmet>
           <div className="content container-fluid">
@@ -531,7 +531,7 @@ const AttendanceReport = () => {
                         Dashboard
                       </Link>
                     </li>
-                    <li className="breadcrumb-item active">Attendance Reports</li>
+                    <li className="breadcrumb-item active">Attendance Report</li>
                   </ul>
                 </div>
                 <div className="col-auto float-end ms-auto">

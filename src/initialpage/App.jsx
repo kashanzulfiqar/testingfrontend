@@ -177,7 +177,7 @@ const App = () => {
           <Route path="/projects/projects-view/:_id" element={<ProjectView />} />
           <Route path="/profit-loss/view" element={<ViewPL />} />
 
-          <Route path="/reports/attendance-reports" element={<AttendanceReport />} />
+          <Route path="/attendance-report" element={<AttendanceReport />} />
 
           {/* <Link to={`/projects/projects-view/${record?._id}`} style={{color: '#333333'}}>
           <label style={{cursor: 'pointer'}} className="longText">{text}</label>
