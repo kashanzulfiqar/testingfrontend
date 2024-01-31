@@ -31,6 +31,7 @@ const AllEmployees = () => {
   const [open, setOpen] = useState({ isAddOpen: false, isEditOpen: false, data: '' })
   const [tableLoader, setTableLoader] = useState(false)
   const [loader, setLoader] = useState(false)
+  const [numFlag, setNumFlag] = useState(false)
   const [pageSize, setPageSize] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
   const [paginationDetail, setPaginationDetail] = useState();
@@ -99,6 +100,7 @@ const AllEmployees = () => {
 
   const handleClose = () => {
     setOpen({ isAddOpen: false, isEditOpen: false, isDelOpen: false, data: '' });
+    setNumFlag(false);
   };
 
   const st1 = useSelector((state) => state);
@@ -170,10 +172,12 @@ const AllEmployees = () => {
             handleClose();
             message.success('Employee Added Successfully!')
             setLoader(false);
+            setNumFlag(false);
           }
         })
         .catch((err) => {
           setLoader(false);
+          //setNumFlag(false);
           message.error(
             `${
               err?.response?.data?.msg
@@ -183,6 +187,11 @@ const AllEmployees = () => {
                 : "Add User Info Error"
             }!`
           );
+          if (err?.response?.data?.msg === "Input Valid Number" && err?.response?.data?.success === false) {
+            setNumFlag(true);
+          } else {
+            setNumFlag(false); // Reset numFlag to false if the condition is not met
+          }
         });
     }
 
@@ -237,10 +246,12 @@ const AllEmployees = () => {
               handleClose()
               message.success('Employee Updated Successfully!')
               setLoader(false)
+              setNumFlag(false);
             }
           })
           .catch((err) => {
             setLoader(false)
+            //setNumFlag(false);
             // console.log(err);
             message.error(
               `${
@@ -251,6 +262,11 @@ const AllEmployees = () => {
                   : "Update Employee Info Error"
               }!`
             );
+            if (err?.response?.data?.msg === "Input Valid Number" && err?.response?.data?.success === false) {
+              setNumFlag(true);
+            } else {
+              setNumFlag(false); // Reset numFlag to false if the condition is not met
+            }
           });
     }
 
@@ -567,6 +583,7 @@ const AllEmployees = () => {
           handleClose={handleClose}
           onFinishAdd={onFinishAdd}
           loader={loader}
+          numFlag={numFlag}
         />
       }
       {/* /Add Employee Modal */}
@@ -580,6 +597,7 @@ const AllEmployees = () => {
             user_data={open?.data}
             onFinishEdit={onFinishEdit}
             loader={loader}
+            numFlag={numFlag}
           />
         }
       {/* /Edit Employee Modal */}
