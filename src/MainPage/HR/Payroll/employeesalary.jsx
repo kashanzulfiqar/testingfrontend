@@ -1816,6 +1816,7 @@ const EmployeeSalary = () => {
                           <div style={{ position: "relative" }} id="area">
                             <Form.Item
                               name="modeOfPayment"
+                              className="custom-border"
                             >
                               <Select
                                 className="custom-select custom-normal"
