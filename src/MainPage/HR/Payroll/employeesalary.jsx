@@ -1810,9 +1810,26 @@ const EmployeeSalary = () => {
                       <div className="col-sm-6">
                         <div className="form-group">
                           <label>Mode of Payment</label>
-                          <Form.Item name="modeOfPayment">
+                          {/* <Form.Item name="modeOfPayment">
                             <Input className="form-control" />
-                          </Form.Item>
+                          </Form.Item> */}
+                          <div style={{ position: "relative" }} id="area">
+                            <Form.Item
+                              name="modeOfPayment"
+                            >
+                              <Select
+                                className="custom-select custom-normal"
+                                getPopupContainer={() =>
+                                  document.getElementById("area")
+                                }
+                                placeholder="Select Mode of Payment"
+                              >
+                                <Select.Option value="Bank Transfer">Bank Transfer</Select.Option>
+                                <Select.Option value="Cheque">Cheque</Select.Option>
+                                <Select.Option value="Cash">Cash</Select.Option>
+                              </Select>
+                            </Form.Item>
+                          </div>
                         </div>
                       </div>
                     </div>
