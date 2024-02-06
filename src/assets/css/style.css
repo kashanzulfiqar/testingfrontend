@@ -12511,3 +12511,12 @@ styles by Qazi
   z-index: 300 !important;
   background: #FFFFFF !important;
 }
+
+.badge.bg-custom {
+  background-color: red !important; /* Set background color to red */
+  /* margin-left: 4px !important;  */
+}
+
+.badge.custom-badgeclass{
+  margin-left: 4px !important; 
+}
