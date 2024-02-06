@@ -476,7 +476,9 @@ const Sidebar = (props) => {
                 <li className="menu-title">
                   <span>Main</span>
                 </li>
-                <li className="submenu">
+
+                {(user_state?.role === 'admin' || permissions?.companyManagement) &&
+                  <li className="submenu">
                   {
                     (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
                     <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-dashboard" /> <span> Dashboard</span> <span className="menu-arrow" /></a>
@@ -488,14 +490,23 @@ const Sidebar = (props) => {
                     <ul >
                       {
                         (user_state?.role === 'admin' || permissions?.companyManagement) &&
-                        <li><Link className={pathname.includes('main/dashboard') ? "active" : ""} to="/main/dashboard">Admin Dashboard</Link></li>
+                        <li><Link className={pathname.includes('main/dashboard') ? "active" : ""} to="/main/dashboard">Dashboard<span className="badge badge-pill bg-custom float-end">ADMIN</span></Link></li>
                       }
                       <li><Link className={pathname.includes('employee/dashboard') ? "active" : ""}
-                        to="/employee/dashboard">Employee Dashboard</Link></li>
+                        to="/employee/dashboard">Dashboard</Link></li>
                     </ul>
                     : ""
                   }
                 </li>
+                }
+
+                { (user_state?.role !== 'admin' && user_state?.role !== 'client' && user_state?.role !== 'focalperson') && (!permissions?.companyManagement) &&
+                    // { (user_state?.role === 'admin' || permissions?.addUser || permissions?.updateUser || permissions?.viewAllUsers || permissions?.updateStatusOfEmployee) &&
+                    <li className={pathname.includes('employee/dashboard') ? "active" : ""}>
+                      <Link to="/employee/dashboard"><i className="la la-dashboard" /> <span>Dashboard</span> </Link>
+                    </li>
+                }
+
                 <li className="submenu">
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
@@ -529,72 +540,133 @@ const Sidebar = (props) => {
                 <li className="menu-title">
                   <span>Employees</span>
                 </li>
-                  <li className="submenu" >
+
+                { (user_state?.role === 'admin' || permissions?.addUser || permissions?.viewAllUsers || permissions?.updateStatusOfEmployee) &&
+                    // { (user_state?.role === 'admin' || permissions?.addUser || permissions?.updateUser || permissions?.viewAllUsers || permissions?.updateStatusOfEmployee) &&
+                      <li className={pathname.includes('allemployees') ? "active" : pathname.includes('employees-list') ? "active" : ""}>
+                        <Link to="/employee/allemployees"><i className="la la-user" /> <span>All Employees</span> </Link>
+                      </li>
+                    }
+                    {/* ADMIN ATTENDANCE PANEL */}
+                  {(user_state?.role === 'admin' || permissions?.attendanceManagement) &&
+                    <li className="submenu" >
                   {
                     (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
-                    <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-user" /> <span> Employees</span> <span className="menu-arrow" /></a>
+                    <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="fas fa-calendar-check" /> <span> Attendance</span> <span className="menu-arrow" /></a>
                     :
-                    <a href="javascript:" className={(isSideMenu == "employee") ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "employee" ? "" : "employee")}><i className="la la-user" /> <span className={pending_counter > 0 ? 'noti-dot' : ''}> Employees</span> <span className="menu-arrow" /></a>
+                    <a href="javascript:" className={(isSideMenu == "Attendance") ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "Attendance" ? "" : "Attendance")}><i className="la la-calendar-check" /> <span> Attendance</span> <span className="menu-arrow" /></a>
                   }
                   {/* <a href="javascript:" className={isSideMenu == "employee" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "employee" ? "" : "employee")}><i className="la la-user" /> <span className="noti-dot"> Employees</span> <span className="menu-arrow" /></a> */}
-                    {isSideMenu == "employee" ?
+                    {isSideMenu == "Attendance" ?
 
                       <ul >
-                        { (user_state?.role === 'admin' || permissions?.addUser || permissions?.viewAllUsers || permissions?.updateStatusOfEmployee) &&
-                        // { (user_state?.role === 'admin' || permissions?.addUser || permissions?.updateUser || permissions?.viewAllUsers || permissions?.updateStatusOfEmployee) &&
-                          <li>
-                            <Link className={pathname.includes('allemployees') ? "active" : pathname.includes('employees-list') ? "active" : ""}
-                            to="/employee/allemployees">All Employees</Link>
-                          </li>
-                        }
-                        <li>
-                          <Link className={pathname.includes('employee/holidays') ? "active" : ""} to="/employee/holidays">Holidays</Link>
-                        </li>
-                        <li>
-                          {
-                            (user_state?.role === 'admin' || permissions?.viewAllRequest || permissions?.teamRequest) &&
-                            <Link className={pathname.includes('request-admin') ? "active" : ""} to="/employee/request-admin">Requests (Admin) {pending_counter > 0 && <span className="badge badge-pill bg-primary float-end">{pending_counter}</span>} </Link>
-                          }
-                          {/* <Link className={pathname.includes('request-admin') ? "active" : ""} to="/employee/request-admin">Requests (Admin)</Link> */}
-                        </li>
-                        <li>
-                        {
-                            (permissions?.viewSelfRequest) &&
-                            <Link className={pathname.includes('employee/requests') ? "active" : ""} to="/employee/requests">Requests (Employee)</Link>
-                        }
-                        </li>
+                        
                         {/* <li><Link className={pathname.includes('e-settings') ? "active" : ""} to="/app/employee/leave-settings">Leave Settings</Link></li> */}
+                        <Link className={pathname.includes('ce-employee') ? "active" : ""} to="/employee/attendance-employee">Attendance</Link>
                         {
                           (user_state?.role === 'admin' || permissions?.attendanceManagement) &&
                           <li>
-                            <li><Link className={pathname.includes('nce-admin') ? "active" : ""} to="/employee/attendance-admin">Attendance (Admin)</Link></li>
+                            <li><Link className={pathname.includes('nce-admin') ? "active" : ""} to="/employee/attendance-admin">Attendance<span className="badge badge-pill bg-custom float-end">ADMIN</span></Link></li>
                           </li>
                         }
-                        <Link className={pathname.includes('ce-employee') ? "active" : ""} to="/employee/attendance-employee">Attendance (Employee)</Link>
-                        {/* <li><Link className={pathname.includes('departments') ? "active" : ""} to="/app/employee/departments">Departments</Link></li> */}
-                        {/* <li><Link className={pathname.includes('designations') ? "active" : ""} to="/app/employee/designations">Designations</Link></li> */}
-                        {/* <li><Link className={pathname.includes('employee/timesheet') ? "active" : ""} to="/employee/timesheet">Timesheet</Link></li> */}
-                        <li className="submenu">
-                          <a href="javascript:void(0)" className={level2Menu === "Timesheet" ? "subdrop" : ""} onClick={() => toggleLvelTwo(level2Menu === "Timesheet" ? "" : "Timesheet")}><span> Timesheet</span> <span className="menu-arrow" /></a>
-                          {level2Menu === "Timesheet" ?
-                            <ul>
-                              <li><Link className={pathname.includes('employee-timesheet') ? "active" : ""} to="/employee-timesheet">Timesheet (Employee)</Link></li>
-                              
-                              { (user_state?.role === 'admin' || permissions?.timesheetManagement) &&
-                                <li><Link className={pathname.includes('admin-timesheet') ? "active" : ""} to="/admin-timesheet">Timesheet (Admin)</Link></li>
-                              }
-                              
-                            </ul>
-                            : ""
-                          }
-                        </li>
-                        {/* <li><Link className={pathname.includes('shift-scheduling') || pathname.includes('shift-list') ? "active" : ""}
-                          to="/app/employee/shift-scheduling">Shift &amp; Schedule</Link></li> */}
-                        {/* <li><Link className={pathname.includes('overtime') ? "active" : ""} to="/app/employee/overtime">Overtime</Link></li> */}
+
                       </ul>
                       : ""
                     }
                   </li>
+                  }
+
+                  {/* ADMIN REQUESTS */}
+                  { (user_state?.role === 'admin' || permissions?.viewAllRequest || permissions?.teamRequest) &&
+                    <li className="submenu" >
+                  {
+                    (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
+                    <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-clipboard" /> <span className={pending_counter > 0 ? 'noti-dot' : ''}> Requests</span> <span className="menu-arrow" /></a>
+                    :
+                    <a href="javascript:" className={(isSideMenu == "Requests") ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "Requests" ? "" : "Requests")}><i className="la la-clipboard" /> <span className={pending_counter > 0 ? 'noti-dot' : ''}> Requests</span> <span className="menu-arrow" /></a>
+                  }
+                  {/* <a href="javascript:" className={isSideMenu == "employee" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "employee" ? "" : "employee")}><i className="la la-user" /> <span className="noti-dot"> Employees</span> <span className="menu-arrow" /></a> */}
+                    {isSideMenu == "Requests" ?
+
+                      <ul >
+
+                        <li>
+                        {
+                            (permissions?.viewSelfRequest) &&
+                            <Link className={pathname.includes('employee/requests') ? "active" : ""} to="/employee/requests">Requests</Link>
+                        }
+                        </li>
+                        <li>
+                          {
+                            (user_state?.role === 'admin' || permissions?.viewAllRequest || permissions?.teamRequest) &&
+                            <Link className={pathname.includes('request-admin') ? "active" : ""} to="/employee/request-admin">Requests{pending_counter > 0 && <span className="badge badge-pill bg-primary float-end custom-badgeclass">{pending_counter}</span>}<span className="badge badge-pill bg-custom float-end">ADMIN</span> </Link>
+                          }
+                          {/* <Link className={pathname.includes('request-admin') ? "active" : ""} to="/employee/request-admin">Requests (Admin)</Link> */}
+                        </li>
+                        </ul>
+                      : ""
+                    }
+                  </li>
+                  }
+                  
+                  {/* TIMESHEET ADMIN */}
+                  { (user_state?.role === 'admin' || permissions?.timesheetManagement) &&
+                    <li className="submenu" >
+                  {
+                    (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
+                    <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-list-alt" /> <span> Timesheet</span> <span className="menu-arrow" /></a>
+                    :
+                    <a href="javascript:" className={(isSideMenu == "Timesheet") ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "Timesheet" ? "" : "Timesheet")}><i className="la la-list-alt" /> <span> Timesheet</span> <span className="menu-arrow" /></a>
+                  }
+                  {/* <a href="javascript:" className={isSideMenu == "employee" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "employee" ? "" : "employee")}><i className="la la-user" /> <span className="noti-dot"> Employees</span> <span className="menu-arrow" /></a> */}
+                    {isSideMenu == "Timesheet" ?
+
+                        <ul>
+                        
+                        <li><Link className={pathname.includes('employee-timesheet') ? "active" : ""} to="/employee-timesheet">Timesheet</Link></li>
+                        { (user_state?.role === 'admin' || permissions?.timesheetManagement) &&
+                          <li><Link className={pathname.includes('admin-timesheet') ? "active" : ""} to="/admin-timesheet">Timesheet<span className="badge badge-pill bg-custom float-end">ADMIN</span></Link></li>
+                        }
+                        
+                        </ul>
+                      : ""
+                    }
+                  </li>
+                  }
+
+                {/* emp attendance */}
+                  { (user_state?.role !== 'admin' && user_state?.role !== 'client' && user_state?.role !== 'focalperson') && (!permissions?.attendanceManagement) &&
+                    // { (user_state?.role === 'admin' || permissions?.addUser || permissions?.updateUser || permissions?.viewAllUsers || permissions?.updateStatusOfEmployee) &&
+                    <li className={pathname.includes('ce-employee') ? "active" : ""}>
+                      <Link  to="/employee/attendance-employee"><i className="la la-calendar-check" /> <span>Attendance</span> </Link>
+                    </li>
+                  }
+                  
+                {/* EMP REQ */}
+                  { (user_state?.role !== 'admin' && user_state?.role !== 'client' && user_state?.role !== 'focalperson') && (!permissions?.viewAllRequest && !permissions?.teamRequest && permissions?.viewSelfRequest) &&
+                    // { (user_state?.role === 'admin' || permissions?.addUser || permissions?.updateUser || permissions?.viewAllUsers || permissions?.updateStatusOfEmployee) &&
+                    <li className={pathname.includes('employee/requests') ? "active" : ""}>
+                      <Link  to="/employee/requests"><i className="la la-clipboard" /> <span>Requests</span> </Link>
+                    </li>
+                  }
+
+                {/* Timesheet EMP */}
+                  { (user_state?.role !== 'admin' && user_state?.role !== 'client' && user_state?.role !== 'focalperson') && (!permissions?.timesheetManagement) &&
+                    // { (user_state?.role === 'admin' || permissions?.addUser || permissions?.updateUser || permissions?.viewAllUsers || permissions?.updateStatusOfEmployee) &&
+                    <li className={pathname.includes('employee-timesheet') ? "active" : ""}>
+                      <Link  to="/employee-timesheet"><i className="la la-list-alt" /> <span>Timesheet</span> </Link>
+                    </li>
+                  }
+                  
+                  {/* HOLIDAYS */}
+                  { (user_state?.role !== 'client' && user_state?.role !== 'focalperson') &&
+                    // { (user_state?.role === 'admin' || permissions?.addUser || permissions?.updateUser || permissions?.viewAllUsers || permissions?.updateStatusOfEmployee) &&
+
+                    <li className={pathname.includes('employee/holidays') ? "active" : ""}>
+                      <Link to="/employee/holidays"><i className="la la-calendar" /> <span>Holidays</span> </Link>
+                    </li>
+                  }
+
                   {
                     (user_state?.role === 'admin' || user_state?.role === 'client' || user_state?.role === 'focalperson' || permissions?.clientManagement) &&
                     <li className={pathname.includes('client') ? "active" : ""}>
@@ -602,6 +674,8 @@ const Sidebar = (props) => {
                       <Link to={user_state?.role === 'client' ? '/client/client-profile' : user_state?.role === 'focalperson' ? '/client/focal-profile' : "/clients"}><i className="la la-users" /> <span>Client</span> </Link>
                     </li>
                   }
+
+                {/* PROJECTS */}
                 <li className="submenu">
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
