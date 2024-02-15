@@ -32,6 +32,9 @@ import "../assets/js/multiselect.min.js";
 import "../assets/plugins/bootstrap-tagsinput/bootstrap-tagsinput.css";
 import "../assets/css/bootstrap-datetimepicker.min.css";
 import '../assets/css/style.css';
+import i18n from '../i18n.js';
+import { I18nextProvider } from 'react-i18next';
+
 // window.Popper = require("popper.js").default;
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import { Provider } from 'react-redux';
@@ -97,11 +100,13 @@ const MainApp = () => (
       {/* <Router basename={config.publicPath}> */}
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
-          <Suspense fallback="...loading">
-            <Routes>
-              <Route path="/*" element={<App />} />
-            </Routes>
-          </Suspense>
+          <I18nextProvider i18n={i18n}>
+            <Suspense fallback="...loading">
+              <Routes>
+                <Route path="/*" element={<App />} />
+              </Routes>
+            </Suspense>
+          </I18nextProvider>
         </PersistGate>
       </Provider>
     </Router>

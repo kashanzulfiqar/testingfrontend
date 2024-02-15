@@ -44,8 +44,10 @@ import "jspdf-autotable";
 import DownloadOutlinedIcon from '@mui/icons-material/DownloadOutlined';
 import DownloadForOfflineRoundedIcon from '@mui/icons-material/DownloadForOfflineRounded';
 import CurrentPayrollPDF from "./CurrentPayrollPDF";
+import { useTranslation } from "react-i18next";
 
 const EmployeeSalary = () => {
+  const { t, i18n } = useTranslation();
   const user_state = useSelector((state) => state.user.loginvalue);
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
   const role = user_state?.user?.role
@@ -1460,6 +1462,22 @@ const EmployeeSalary = () => {
                   dataSource={data}
                   rowKey={(record) => record?._id}
                   pagination={false}
+                  components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                   // onChange={this.handleTableChange}
                 />
                 
@@ -1474,7 +1492,7 @@ const EmployeeSalary = () => {
                         defaultCurrent={1}
                         current={pagination.current}
                         showTotal={(total, range) =>
-                          `Showing ${range[0]} to ${range[1]} of ${total} entries`}
+                          t('paginationShow', { range1: range[0], range2: range[1], total: total })}
                         onChange={(page, pageSize) => {
                           setPagination({
                             ...pagination,
@@ -1487,7 +1505,9 @@ const EmployeeSalary = () => {
                         }}
                         showSizeChanger={true}
                         pageSizeOptions={['20', '30', '40', '50']}
-                        itemRender={itemRender}
+                        itemRender={(current, type, originalElement) =>
+                          itemRender(current, type, originalElement, t)
+                        }
                         disabled={isLoading}
                       />
                     </div>
@@ -1567,6 +1587,22 @@ const EmployeeSalary = () => {
                           pagination={false}
                           dataSource={downloadData}
                           rowKey={(record) => record.id}
+                          components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                           // onChange={this.handleTableChange}
                         />
                       </div>

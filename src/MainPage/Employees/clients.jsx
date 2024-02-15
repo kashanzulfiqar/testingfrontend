@@ -12,10 +12,11 @@ import Modal from "@mui/material/Modal";
 import { itemRender } from '../paginationfunction';
 import { apiServices } from '../../Services/apiServices';
 import { getAllISOCodes } from 'iso-country-currency';
+import { useTranslation } from 'react-i18next';
 
 
 const Clients = () => {
-  
+  const { t, i18n } = useTranslation()
   const [form1] = Form.useForm();
 
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
@@ -296,7 +297,7 @@ const getAllCountries = () => {
               defaultCurrent={1}
               current={currentPage}
               showTotal={(total, range) =>
-                `Showing ${range[0]} to ${range[1]} of ${total} entries`}
+                t('paginationShow', { range1: range[0], range2: range[1], total: total })}
               onChange={(page, size) => {
                 console.log(page, size);
                 setPageSize(size); setCurrentPage(page);
@@ -304,7 +305,9 @@ const getAllCountries = () => {
               }}
               showSizeChanger={true}
               pageSizeOptions={['20', '30', '40', '50']}
-              itemRender={itemRender}
+              itemRender={(current, type, originalElement) =>
+                itemRender(current, type, originalElement, t)
+              }
             />
           </div>
         }

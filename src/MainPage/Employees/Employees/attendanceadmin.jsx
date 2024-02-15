@@ -36,13 +36,14 @@ import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import Modal from "@mui/material/Modal";
 import { EditOutlined } from "@mui/icons-material";
 import { LoadingOutlined } from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
 
 const { Option } = Select;
 
 const AttendanceAdmin = () => {
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
   const navigate = useNavigate();
-
+  const { t, i18n } = useTranslation();
   const [form] = Form.useForm();
   const [menu, setMenu] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -124,7 +125,7 @@ const AttendanceAdmin = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Client Error"
+              : t('aAttend.errors.getEmployeesError')
           }`
         );
       });
@@ -234,7 +235,7 @@ const AttendanceAdmin = () => {
     if (name || (month && year)) {
       setFilters(selectedFilters);
     } else {
-      message.warning("Both Month and Year required");
+      message.warning(t('aAttend.errors.bothMonthAndYearRequired'));
     }
   };
 
@@ -312,7 +313,7 @@ const AttendanceAdmin = () => {
 
   const columns = [
     {
-      title: "Employee",
+      title: t('aAttend.employee'),
       dataIndex: "employeeName",
       key: "employeeName",
       // width: 170,
@@ -539,7 +540,7 @@ const AttendanceAdmin = () => {
           setDayRecord(updatedDayRecord);
           fetchAttendanceData();
           handleClose();
-          message.success("Attendance Updated Successfully");
+          message.success(t('aAttend.errors.attendanceUpdatedSuccessfully'));
           setLoader(false);
         }
       })
@@ -552,7 +553,7 @@ const AttendanceAdmin = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Update Attendance Error"
+              : t('aAttend.errors.updateAttendanceError')
           }!`
         );
       });
@@ -579,7 +580,7 @@ const AttendanceAdmin = () => {
         {/* <Sidebar /> */}
         <div className="page-wrapper">
           <Helmet>
-            <title>Attendance - DaftarPro</title>
+            <title>{t('aAttend.pageTitle')}</title>
             <meta name="description" content="Login page" />
           </Helmet>
           <div className="content container-fluid">
@@ -587,7 +588,7 @@ const AttendanceAdmin = () => {
             <div className="page-header">
               <div className="row">
                 <div className="col-sm-12">
-                  <h3 className="page-title">Attendance</h3>
+                  <h3 className="page-title">{t('attendance')}</h3>
                   <ul className="breadcrumb">
                     <li className="breadcrumb-item">
                       <Link
@@ -597,10 +598,10 @@ const AttendanceAdmin = () => {
                             : "/employee/dashboard"
                         }
                       >
-                        Dashboard
+                        {t('dashboard')}
                       </Link>
                     </li>
-                    <li className="breadcrumb-item active">Attendance</li>
+                    <li className="breadcrumb-item active">{t('attendance')}</li>
                   </ul>
                 </div>
               </div>
@@ -613,7 +614,7 @@ const AttendanceAdmin = () => {
             <div className="row">
               <div className="col-md-3">
                 <div className="stats-info">
-                  <label>Today Present</label>
+                  <label>{t('aAttend.todayPresent')}</label>
                   <h4>
                     {statdata?.todayPresent}
                   </h4>
@@ -621,7 +622,7 @@ const AttendanceAdmin = () => {
               </div>
               <div className="col-md-3">
                 <div className="stats-info">
-                  <label>Today Late</label>
+                  <label>{t('aAttend.todayLate')}</label>
                   <h4>
                     {statdata?.todayLate}
                   </h4>
@@ -629,7 +630,7 @@ const AttendanceAdmin = () => {
               </div>
               <div className="col-md-3">
                 <div className="stats-info">
-                  <label>Today Absent</label>
+                  <label>{t('aAttend.todayAbsent')}</label>
                   <h4>
                     {statdata?.todayAbsent}
                   </h4>
@@ -637,7 +638,7 @@ const AttendanceAdmin = () => {
               </div>
               <div className="col-md-3">
                 <div className="stats-info">
-                  <label>Work From Home</label>
+                  <label>{t('aAttend.workFromHome')}</label>
 
                   <h4>
                     {statdata?.wfhToday}
@@ -656,7 +657,7 @@ const AttendanceAdmin = () => {
                       <Input
                         className="form-control"
                         allowClear={false}
-                        placeholder="Employee Name"
+                        placeholder={t('employeeName')}
                         onChange={(e) =>
                           handleFilterChange(e.target.value, "name")
                         }
@@ -675,7 +676,7 @@ const AttendanceAdmin = () => {
                         }}
                         placeholder={
                           selectedMonthYear
-                            ? "Select Month"
+                            ? t('aAttend.selectMonth')
                             : `${moment().format("MMMM")}`
                         }
                         size="large"
@@ -700,7 +701,7 @@ const AttendanceAdmin = () => {
                         }}
                         placeholder={
                           selectedMonthYear
-                            ? "Select Year"
+                            ? t('aAttend.selectYear')
                             : `${moment().format("YYYY")}`
                         }
                         size="large"
@@ -733,7 +734,7 @@ const AttendanceAdmin = () => {
                         : true
                     }
                   >
-                    Search
+                    {t('search')}
                   </Button>
 
                   <Button
@@ -752,7 +753,7 @@ const AttendanceAdmin = () => {
                       borderColor: "#616161",
                     }}
                   >
-                    Reset
+                    {t('reset')}
                   </Button>
                 </div>
               </div>
@@ -782,6 +783,22 @@ const AttendanceAdmin = () => {
                         // y: 310,
                       }
                     }
+                    components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                   />
                 </div>
               </div>
@@ -810,7 +827,7 @@ const AttendanceAdmin = () => {
                       className="modal-title"
                       style={{ display: "flex", alignItems: "center" }}
                     >
-                      Attendance Details
+                      {t('aAttend.Modal.attendanceDetails')}
                     </h5>
 
                     <button
@@ -829,7 +846,7 @@ const AttendanceAdmin = () => {
                           <div className="card punch-status">
                             <div className="card-body">
                               <h5 className="card-title d-flex gap-1">
-                                Timesheet
+                              {t('timesheet')}
                                 <h5
                                   className="text-muted"
                                   style={{ fontSize: "20px" }}
@@ -842,7 +859,7 @@ const AttendanceAdmin = () => {
 
                               <div className="punch-det">
                                 <h6>
-                                  <label>{"Check in at"}</label>
+                                  <label>{t('checkInAt')}</label>
                                 </h6>
                                 <p>
                                   {dayRecord.checkInTime ? (
@@ -876,7 +893,7 @@ const AttendanceAdmin = () => {
 
                               <div className="punch-det">
                                 <h6>
-                                  <label>{"Checked out at"}</label>
+                                  <label>{t('checkedOutAt')}</label>
                                 </h6>
                                 <p>
                                   <label>
@@ -902,7 +919,7 @@ const AttendanceAdmin = () => {
                                 >
                                   <div className="text-center">
                                     <div className="stats-box">
-                                      <p>Overtime</p>
+                                      <p>{t('overtime')}</p>
 
                                       <h6>
                                         <label>
@@ -924,7 +941,7 @@ const AttendanceAdmin = () => {
                         <div className="col-md-6">
                           <div className="card recent-activity">
                             <div className="card-body">
-                              <h5 className="card-title">Today Activity</h5>
+                              <h5 className="card-title">{t('aAttend.Modal.todayActivity')}</h5>
                               <div
                                 className="stats-list"
                                 style={{ height: "365px" }}
@@ -932,7 +949,7 @@ const AttendanceAdmin = () => {
                                 <ul className="res-activity-list">
                                   <li>
                                     <h4 className="mb-0">
-                                      <label>Check In at</label>
+                                      <label>{t('aAttend.Modal.checkInAt')}</label>
                                     </h4>
                                     <h5 className="res-activity-time">
                                       <i className="fa fa-clock-o" />
@@ -952,7 +969,7 @@ const AttendanceAdmin = () => {
                                   <br />
                                   <div className="text-center">
                                     <div className="stats-box">
-                                      <h2>Status</h2>
+                                      <h2>{t('status')}</h2>
 
                                       <h4>
                                         <label
@@ -980,7 +997,7 @@ const AttendanceAdmin = () => {
 
                                   <li>
                                     <h4 className="mb-0">
-                                      <label>Check Out at</label>
+                                      <label>{t('aAttend.Modal.checkOutAt')}</label>
                                     </h4>
                                     <h5 className="res-activity-time">
                                       <i className="fa fa-clock-o" />
@@ -1017,7 +1034,7 @@ const AttendanceAdmin = () => {
                               //console.log(specific);
                             }}
                           >
-                            Edit Attendance
+                            {t('aAttend.Modal.editAttendance')}
                           </Button>
                         </Form.Item>
                       </div>
@@ -1044,7 +1061,7 @@ const AttendanceAdmin = () => {
               >
                 <div className="modal-content">
                   <div className="modal-header">
-                    <h5 className="modal-title">Update Attendance</h5>
+                    <h5 className="modal-title">{t('aAttend.Modal.updateAttendance')}</h5>
                     <button
                       type="button"
                       className="close"
@@ -1066,9 +1083,9 @@ const AttendanceAdmin = () => {
                               .includes("consecutive spaces")
                         );
                         if (consecutiveSpacesError) {
-                          message.error("Please Remove Consecutive Spaces!");
+                          message.error(t('allEmp.errors.removeConsecutiveSpaces'))
                         } else {
-                          message.error("Please Fill Required Fields!");
+                          message.error(t('allEmp.errors.fillRequiredFields'))
                         }
                       }}
                       initialValues={{
@@ -1084,7 +1101,7 @@ const AttendanceAdmin = () => {
                       autoComplete="off"
                     >
                       <div className="form-group">
-                        <label>Check In Time</label>
+                        <label>{t('aAttend.Modal.checkInTime')}</label>
                         <div style={{ position: "relative" }} id="area">
                           <Form.Item
                             name="checkInTime"
@@ -1100,12 +1117,13 @@ const AttendanceAdmin = () => {
                                     value
                                   ) {
                                     return Promise.reject(
-                                      `Check In Time cannot be set while the status is ${selectedStatus}.`
+                                      //`Check In Time cannot be set while the status is ${selectedStatus}.`
+                                      t('aAttend.errors.checkInNotAllowed', { selectedStatus: selectedStatus})
                                     );
                                   }
 
                                   if ((selectedStatus === "Present" || selectedStatus === "Late") && !value) {
-                                    return Promise.reject("Check In Time is required.");
+                                    return Promise.reject(t('aAttend.errors.checkInTimeRequired'));
                                   }
 
                                   if (
@@ -1114,12 +1132,16 @@ const AttendanceAdmin = () => {
                                     moment(value, "HH:mm").isSameOrBefore(moment(specific?.shiftMaxStart, "HH:mm"))
                                   ) {
                                     return Promise.reject(
-                                      `Check-in time must be later than shift max start time: ${moment(specific?.shiftMaxStart, "HH:mm").format("HH:mm")}`
+                                      //`Check-in time must be later than shift max start time: ${moment(specific?.shiftMaxStart, "HH:mm").format("HH:mm")}`
+                                      t('aAttend.errors.checkInTimeBeforeMaxStart', { shiftMaxStart: moment(specific?.shiftMaxStart, "HH:mm").format("HH:mm") })
                                     );
                                   }
 
                                   if (selectedStatus === "Present" && value && moment(value, "HH:mm").isAfter(moment(specific?.shiftMaxStart, "HH:mm"))){
-                                    return Promise.reject(`Check-in time must be earlier than shift max start time: ${moment(specific?.shiftMaxStart, "HH:mm").format("HH:mm")}`);
+                                    return Promise.reject(
+                                      //`Check-in time must be earlier than shift max start time: ${moment(specific?.shiftMaxStart, "HH:mm").format("HH:mm")}`
+                                      t('aAttend.errors.checkInTimeAfterMaxStart', { shiftMaxStart: moment(specific?.shiftMaxStart, "HH:mm").format("HH:mm") })
+                                      );
                                   }
                       
                                   // If status allows or if value is empty, no issue
@@ -1133,6 +1155,7 @@ const AttendanceAdmin = () => {
                               getPopupContainer={() =>
                                 document.getElementById("area")
                               }
+                              placeholder={t('aAttend.selectTime')}
                               format="HH:mm" // Format for 24-hour time
                               style={{ width: "100%" }}
                               //allowClear={false}
@@ -1143,7 +1166,7 @@ const AttendanceAdmin = () => {
                         </div>
                       </div>
                       <div className="form-group">
-                        <label>Check Out Time</label>
+                        <label>{t('aAttend.Modal.checkOutTime')}</label>
                         <div style={{ position: "relative" }} id="area">
                           <Form.Item
                             name="checkOutTime"
@@ -1159,7 +1182,7 @@ const AttendanceAdmin = () => {
                                     value
                                   ) {
                                     return Promise.reject(
-                                      `Check Out Time cannot be set while the status is ${selectedStatus}.`
+                                      t('aAttend.errors.checkOutNotAllowed', { selectedStatus: selectedStatus })
                                     );
                                   }
 
@@ -1169,12 +1192,12 @@ const AttendanceAdmin = () => {
                                   // If check-in time is empty and check-out time has a value, show an error
                                   if (!checkInTime && value) {
                                     return Promise.reject(
-                                      "Check In Time is required when Check Out Time is filled."
+                                      t('aAttend.errors.checkOutTimeRequired')
                                     );
                                   }
 
                                   if (value && value.isBefore(checkInTime, "minute")) {
-                                    return Promise.reject("Check Out Time cannot be before Check In Time.");
+                                    return Promise.reject(t('aAttend.errors.checkOutTimeBeforeCheckIn'));
                                   }
 
                                   // If both are empty, no issue
@@ -1189,6 +1212,7 @@ const AttendanceAdmin = () => {
                               getPopupContainer={() =>
                                 document.getElementById("area")
                               }
+                              placeholder={t('aAttend.selectTime')}
                               format="HH:mm" // Format for 24-hour time
                               style={{ width: "100%" }}
                               className="form-control"
@@ -1198,7 +1222,7 @@ const AttendanceAdmin = () => {
                         </div>
                       </div>
                       <div className="form-group form-focus">
-                          <label>Status</label>
+                          <label>{t('status')}</label>
                         <Form.Item
                           name="status"
                           className="custom-border"
@@ -1214,7 +1238,7 @@ const AttendanceAdmin = () => {
                                 // Check if either check-in or check-out time is present and the selected status is in the disallowed list
                                 if ((checkInTime || checkOutTime) && disallowedStatuses.includes(value)) {
                                   return Promise.reject(
-                                    `Status cannot be set to ${value} when Check In or Check Out time is present.`
+                                    t('aAttend.errors.statusWithTimePresent', { value: value })
                                   );
                                 }
                     
@@ -1226,7 +1250,7 @@ const AttendanceAdmin = () => {
                           validateTrigger="onSubmit"
                         >
                           <Select
-                            placeholder="Select Status"
+                            placeholder={t('aAttend.selectStatus')}
                             style={{ width: "100%" }}
                             defaultValue={selectedStatus}
                             onChange={(value) => setSelectedStatus(value)}
@@ -1256,7 +1280,7 @@ const AttendanceAdmin = () => {
                             {loader ? (
                               <Spin size="small" indicator={antIcon} />
                             ) : (
-                              "Submit"
+                              t('submit')
                             )}
                           </Button>
                         </Form.Item>

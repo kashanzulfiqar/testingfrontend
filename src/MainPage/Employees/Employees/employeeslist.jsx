@@ -16,9 +16,10 @@ import { apiServices } from '../../../Services/apiServices';
 import ProfileInfoModal from '../../Pages/Profile/modals/ProfileInfoModal';
 import { LoadingOutlined } from '@ant-design/icons';
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
+import { useTranslation } from 'react-i18next';
 
 const Employeeslist = () => {
-
+  const { t, i18n } = useTranslation();
   const moment = require('moment');
   const [form] = Form.useForm();
   const nav = useNavigate();
@@ -71,7 +72,7 @@ const Employeeslist = () => {
             ? err?.response?.data?.msg
             : err?.response?.data?.validation?.body?.message
             ? err?.response?.data?.validation?.body?.message
-            : "Get Department Info Error"
+            : t('allEmp.errors.getDepartmentInfoError')
         }!`
       );
     });
@@ -95,7 +96,7 @@ const Employeeslist = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get All Employees Error"
+              : t('allEmp.errors.getEmployeesError')
           }!`
         );
       });
@@ -120,7 +121,7 @@ const Employeeslist = () => {
             ? err?.response?.data?.msg
             : err?.response?.data?.validation?.body?.message
             ? err?.response?.data?.validation?.body?.message
-            : "Get Role Info Error"
+            : t('allEmp.errors.getRoleInfoError')
         }`
       );
     });
@@ -145,7 +146,7 @@ const Employeeslist = () => {
             ? err?.response?.data?.msg
             : err?.response?.data?.validation?.body?.message
             ? err?.response?.data?.validation?.body?.message
-            : "Get Designation Info Error"
+            : t('allEmp.errors.getDesignationInfoError')
         }`
       );
     });
@@ -194,7 +195,7 @@ const Employeeslist = () => {
             ...prev,
           ]))
           handleClose();
-          message.success('Employee Added Successfully!')
+          message.success(t('allEmp.errors.addEmployeeSuccess'))
           setLoader(false);
         }
       })
@@ -206,7 +207,7 @@ const Employeeslist = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Add User Info Error"
+              : t('allEmp.errors.addUserInfoError')
           }!`
         );
       });
@@ -261,7 +262,7 @@ const Employeeslist = () => {
               })
             );
             handleClose()
-            message.success('Employee Updated Successfully!')
+            message.success(t('allEmp.errors.updateEmployeeSuccess'))
             setLoader(false)
           }
         })
@@ -274,7 +275,7 @@ const Employeeslist = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Update Employee Info Error"
+                : t('allEmp.errors.updateEmployeeError')
             }!`
           );
         });
@@ -307,7 +308,7 @@ const Employeeslist = () => {
           const columns = [
             
             {
-              title: 'Name',
+              title: t('aDash.name'),
               dataIndex: 'fullName',
               render: (text, record) => (            
                   <h2 className="table-avatar">
@@ -317,26 +318,26 @@ const Employeeslist = () => {
                 ),
             },
             {
-              title: 'Employee ID',
+              title: t('allEmp.employeeID'),
               dataIndex: 'employeeId',
             },
             {
-              title: 'Email',
+              title: t('aDash.email'),
               dataIndex: 'email',
             },
             {
-              title: 'Join Date',
+              title: t('allEmp.joinDate'),
               dataIndex: 'joiningDate',
             },
             {
-              title: 'Role',
+              title: t('allEmp.role'),
               dataIndex: 'roleId',
               render: (text, record) => (            
                   <>{roleInfo[text]}</>
               ),
             },
             {
-              title: 'Reports To',
+              title: t('allEmp.reportsTo'),
               dataIndex: 'reportsTo',
               render: (text, record) => (            
                 <>{repInfo[text] || 'None'}</>
@@ -357,7 +358,7 @@ const Employeeslist = () => {
             //     ),
             // },
             {
-              title: 'Action',
+              title: t('allEmp.action'),
               render: (text, record) => (
                   <div className="dropdown dropdown-action text-end">
                     {
@@ -367,11 +368,11 @@ const Employeeslist = () => {
                     <div className="dropdown-menu dropdown-menu-right">
                     {
                       (role === 'admin' || permissions?.updateUser) &&
-                      <a className="dropdown-item" href="javascript:void(0)" onClick={() => setOpen({ isAddOpen: false, isEditOpen: true, data: record })}><i className="fa fa-pencil m-r-5" /> Edit</a>
+                      <a className="dropdown-item" href="javascript:void(0)" onClick={() => setOpen({ isAddOpen: false, isEditOpen: true, data: record })}><i className="fa fa-pencil m-r-5" /> {t('edit')}</a>
                     }
                     {
                       (role === 'admin' || permissions?.updateStatusOfEmployee) &&
-                      <a className="dropdown-item" href="javascript:void(0)" onClick={() => setOpen({ isAddOpen: false, isEditOpen: false, isDelOpen: true, data: record })}><i className={record?.userStatus === 'Active' ? 'fa fa-user-times m-r-5' : 'fa fa-check m-r-5'} /> {record?.userStatus === 'Active' ? 'Disable' : 'Enable'}</a>
+                      <a className="dropdown-item" href="javascript:void(0)" onClick={() => setOpen({ isAddOpen: false, isEditOpen: false, isDelOpen: true, data: record })}><i className={record?.userStatus === 'Active' ? 'fa fa-user-times m-r-5' : 'fa fa-check m-r-5'} /> {record?.userStatus === 'Active' ? t('disable') : t('enable')}</a>
                     }
                     </div>
                   </div>
@@ -393,7 +394,7 @@ const Employeeslist = () => {
                   // setUsers([...users.filter((user) => user._id !== id)]);
                   getEmployees(filterValues, currentPage, pageSize);
                   handleClose();
-                  message.success("Employee Disabled Successfully!");
+                  message.success(t('allEmp.errors.disableEmployeeSuccess'));
                   setLoader(false)
                 }
               })
@@ -405,7 +406,7 @@ const Employeeslist = () => {
                       ? err?.response?.data?.msg
                       : err?.response?.data?.validation?.body?.message
                       ? err?.response?.data?.validation?.body?.message
-                      : "Disable Employee Error"
+                      : t('allEmp.errors.disableEmployeeError')
                   }!`
                 );
               });
@@ -420,7 +421,7 @@ const Employeeslist = () => {
                   // setUsers([...users.filter((user) => user._id !== id)]);
                   getEmployees(filterValues, currentPage, pageSize);
                   handleClose();
-                  message.success("Employee Enabled Successfully!");
+                  message.success(t('allEmp.errors.enableEmployeeSuccess'));
                   setLoader(false)
                 }
               })
@@ -432,7 +433,7 @@ const Employeeslist = () => {
                       ? err?.response?.data?.msg
                       : err?.response?.data?.validation?.body?.message
                       ? err?.response?.data?.validation?.body?.message
-                      : "Enable Employee Error"
+                      : t('allEmp.errors.enableEmployeeError')
                   }!`
                 );
               });
@@ -511,7 +512,7 @@ const Employeeslist = () => {
         <div className={`main-wrapper ${menu ? 'slide-nav': ''}`}> 
            <div className="page-wrapper">
               <Helmet>
-                  <title>Employees List - DaftarPro</title>
+                  <title>{t('allEmp.listpageTitle')}</title>
                   <meta name="description" content="Login page"/>
                   <link rel="icon" type="image/x-icon" href={favicon} />				
               </Helmet>
@@ -521,16 +522,16 @@ const Employeeslist = () => {
              <div className="page-header">
                <div className="row align-items-center">
                  <div className="col">
-                   <h3 className="page-title">Employee</h3>
+                 <h3 className="page-title">{t('aAttend.employee')}</h3>
                    <ul className="breadcrumb">
-                     <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>Dashboard</Link></li>
-                     <li className="breadcrumb-item active">Employee</li>
+                     <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>{t('dashboard')}</Link></li>
+                     <li className="breadcrumb-item active">{t('aAttend.employee')}</li>
                    </ul>
                  </div>
                  <div className="col-auto float-end ms-auto">
                  {
                   (role === 'admin' || permissions?.addUser) &&
-                    <a href="javascript:void(0)" className="btn add-btn" onClick={() => setOpen({ isAddOpen: true, isEditOpen: false, data: '' })}><i className="fa fa-plus" /> Add Employee</a>
+                    <a href="javascript:void(0)" className="btn add-btn" onClick={() => setOpen({ isAddOpen: true, isEditOpen: false, data: '' })}><i className="fa fa-plus" /> {t('allEmp.addEmployee')}</a>
                  }
                    <div className="view-icons">
                      <Link to="/employee/allemployees" className="grid-view btn btn-link"><i className="fa fa-th" /></Link>
@@ -555,7 +556,7 @@ const Employeeslist = () => {
                     <Input
                       className="form-control"
                       style={{height:'50px'}}
-                      placeholder='Employee ID'
+                      placeholder={t('allEmp.employeeID')}
                     />
                     </Form.Item>
                   </div>
@@ -569,7 +570,7 @@ const Employeeslist = () => {
                   <Input
                       className="form-control"
                       style={{height:'50px'}}
-                      placeholder='Employee Name'
+                      placeholder={t('employeeName')}
                     />
                     </Form.Item>
                   </div>
@@ -585,7 +586,7 @@ const Employeeslist = () => {
                         style={{
                           width: '100%',
                         }}
-                        placeholder='Designation'
+                        placeholder={t('allEmp.designation')}
                         size='large'
                         getPopupContainer={() => document.getElementById('area1')}
                       >
@@ -609,7 +610,7 @@ const Employeeslist = () => {
                         style={{
                           width: '100%',
                         }}
-                        placeholder='Status'
+                        placeholder={t('status')}
                         size='large'
                         getPopupContainer={() => document.getElementById('area1')}
                         options={[
@@ -627,10 +628,10 @@ const Employeeslist = () => {
                   </div>
                 </div>
                 <div className="col-sm-6 col-md-2">  
-                  <button href="javascript:void(0)" type="submit" className="btn btn-success btn-block w-100" disabled={role === 'admin' ? false : permissions?.viewAllUsers ? false : true}> Search </button>
+                  <button href="javascript:void(0)" type="submit" className="btn btn-success btn-block w-100" disabled={role === 'admin' ? false : permissions?.viewAllUsers ? false : true}> {t('search')} </button>
                 </div>
                 <div className="col-sm-6 col-md-2">
-                  <button href="javascript:void(0)" type="reset" onClick={() => { form.resetFields(); getEmployees('', 1, pageSize); setFilterValues(null); setCurrentPage(1)}} className="btn btn-success btn-block w-100" style={{backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}} disabled={role === 'admin' ? false : permissions?.viewAllUsers ? false : true}> Reset </button>  
+                  <button href="javascript:void(0)" type="reset" onClick={() => { form.resetFields(); getEmployees('', 1, pageSize); setFilterValues(null); setCurrentPage(1)}} className="btn btn-success btn-block w-100" style={{backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}} disabled={role === 'admin' ? false : permissions?.viewAllUsers ? false : true}> {t('reset')} </button>  
                 </div>
               </div>
               </Form>
@@ -670,6 +671,22 @@ const Employeeslist = () => {
                     //     pageSizeOptions: ['20', '30', '40', '50'],
                     //     itemRender: itemRender,
                     // }}
+                    components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                   />
                   {
                     users?.length > 0 &&
@@ -681,14 +698,16 @@ const Employeeslist = () => {
                         defaultCurrent={1}
                         current={currentPage}
                         showTotal={(total, range) =>
-                          `Showing ${range[0]} to ${range[1]} of ${total} entries`}
+                          t('paginationShow', { range1: range[0], range2: range[1], total: total })}
                         onChange={(page, size) => {
                           setPageSize(size); setCurrentPage(page);
                           getEmployees(filterValues, page, size)
                         }}
                         showSizeChanger={true}
                         pageSizeOptions={['20', '30', '40', '50']}
-                        itemRender={itemRender}
+                        itemRender={(current, type, originalElement) =>
+                          itemRender(current, type, originalElement, t)
+                        }
                       />
                     </div>
                   }
@@ -745,9 +764,9 @@ const Employeeslist = () => {
                           console.log(errorFields);
                           const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
                           if(consecutiveSpacesError){
-                            message.error("Please Remove Consecutive Spaces!")
+                            message.error(t('allEmp.errors.removeConsecutiveSpaces'))
                           }else{
-                            message.error("Please Fill Required Fields!")
+                            message.error(t('allEmp.errors.fillRequiredFields'))
                           }
                         }}
                         // initialValues={{
@@ -757,15 +776,15 @@ const Employeeslist = () => {
                         // }}
                       >
                         <div className="form-header" style={{ marginBottom: "50px", marginTop: '21px'}}>
-                          <h3 style={{ marginBottom: "20px"}}>Disable Employee</h3>
+                          <h3 style={{ marginBottom: "20px"}}>{t('allEmp.disableEmployee')}</h3>
                           <p style={{fontSize: '15px'}}>
-                            Are you sure you want to Disable {" "}
-                            <b>{open?.data?.fullName}</b>?
+                          <span dangerouslySetInnerHTML={{ __html: t('allEmp.disableConfirmation', { fullName: open?.data?.fullName }) }} />
+                          {/* {t('allEmp.disableConfirmation', { fullName:open?.data?.fullName })} */}
                           </p>
                         </div>
                         <div className="form-group">
                           <label>
-                            Employee Exit Date <span className="text-danger">*</span>
+                          {t('allEmp.employeeExitDate')} <span className="text-danger">*</span>
                           </label>
                           <Form.Item
                             name="employeeExitDate"
@@ -773,7 +792,7 @@ const Employeeslist = () => {
                               {
                                 // whitespace: true,
                                 required: true,
-                                message: "please select date",
+                                message: t('allEmp.errors.pleaseSelectDate'),
                               },
                             ]}
                             className="custom-border"
@@ -794,7 +813,7 @@ const Employeeslist = () => {
                             >
                               {
                                 loader ? <Spin size="small" indicator={antIcon} />
-                                  : open?.data?.userStatus === 'Active' ? 'Disable' : 'Enable'
+                                  : open?.data?.userStatus === 'Active' ? t('disable') : t('enable')
                               }
                             </Button>
                           </div>
@@ -804,7 +823,7 @@ const Employeeslist = () => {
                               className="btn btn-primary submit-btn"
                               style={{width: '100%'}}
                             >
-                              Cancel
+                              {t('cancel')}
                             </Button>
                           </div>
                         </div>
@@ -821,10 +840,9 @@ const Employeeslist = () => {
                       }}
                     >
                       <div className="form-header">
-                        <h3 style={{ marginBottom: "30px" }}>{open?.data?.userStatus === 'Active' ? 'Disable' : 'Enable'} Employee</h3>
+                        <h3 style={{ marginBottom: "30px" }}>{open?.data?.userStatus === 'Active' ? t('disable') : t('enable')} {t('aAttend.employee')}</h3>
                         <p>
-                          Are you sure you want to {open?.data?.userStatus === 'Active' ? 'Disable' : 'Enable'}{" "}
-                          <b>{open?.data?.fullName}</b>?
+                        <span dangerouslySetInnerHTML={{ __html: t('allEmp.disableConfirmation', { fullName: open?.data?.fullName }) }} />
                         </p>
                       </div>
                       <div className="modal-btn delete-action">
@@ -846,7 +864,7 @@ const Employeeslist = () => {
                             >
                               {
                                 loader ? <Spin size="small" indicator={antIcon} />
-                                  : open?.data?.userStatus === 'Active' ? 'Disable' : 'Enable'
+                                  : open?.data?.userStatus === 'Active' ? t('disable') : t('enable')
                               }
                             </Button>
                           </div>
@@ -856,7 +874,7 @@ const Employeeslist = () => {
                               className="btn btn-primary submit-btn"
                               style={{width: '100%'}}
                             >
-                              Cancel
+                              {t('cancel')}
                             </Button>
                           </div>
                         </div>

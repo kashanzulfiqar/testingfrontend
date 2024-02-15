@@ -14,10 +14,11 @@ import 'antd/dist/antd.css';
 import "../antdstyle.css"
 import { apiServices } from '../../Services/apiServices';
 import { getAllISOCodes } from 'iso-country-currency';
+import { useTranslation } from 'react-i18next';
 
 
 const ClientsList = () => {
-
+  const { t, i18n } = useTranslation()
   const [form1] = Form.useForm();
   const nav = useNavigate();
 
@@ -322,6 +323,22 @@ const getAllCountries = () => {
                     dataSource={allClients}
                     rowKey={record => record.id}
                     onChange={console.log("change")}
+                    components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                   />
 
                   {
@@ -334,7 +351,7 @@ const getAllCountries = () => {
                         defaultCurrent={1}
                         current={currentPage}
                         showTotal={(total, range) =>
-                          `Showing ${range[0]} to ${range[1]} of ${total} entries`}
+                          t('paginationShow', { range1: range[0], range2: range[1], total: total })}
                         onChange={(page, size) => {
                           console.log(page, size);
                           setPageSize(size); setCurrentPage(page);
@@ -342,7 +359,9 @@ const getAllCountries = () => {
                         }}
                         showSizeChanger={true}
                         pageSizeOptions={['20', '30', '40', '50']}
-                        itemRender={itemRender}
+                        itemRender={(current, type, originalElement) =>
+                          itemRender(current, type, originalElement, t)
+                        }
                       />
                     </div>
                   }

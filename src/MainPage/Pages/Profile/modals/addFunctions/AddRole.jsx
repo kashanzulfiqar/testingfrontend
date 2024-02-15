@@ -33,7 +33,7 @@ function AddRole({ addRoleOpen, setAddRoleOpen, allRoles, setAllRoles, user_stat
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Permissions Template Info Error"
+              : t('allEmp.errors.getPermTemplateError')
           }`
         );
       });
@@ -72,7 +72,7 @@ function AddRole({ addRoleOpen, setAddRoleOpen, allRoles, setAllRoles, user_stat
                 ]);
                 setAddRoleOpen(false);
                 setPermissions([]);
-                message.success("Role and Permissions Added Successfully!");
+                message.success(t('allEmp.errors.rolePermAdded'));
                 setLoader(false)
               }
             })
@@ -85,7 +85,7 @@ function AddRole({ addRoleOpen, setAddRoleOpen, allRoles, setAllRoles, user_stat
                     ? err?.response?.data?.msg
                     : err?.response?.data?.validation?.body?.message
                     ? err?.response?.data?.validation?.body?.message
-                    : "Add Permissions Info Error"
+                    : t('allEmp.errors.addPermError')
                 }`
               );
             });
@@ -100,7 +100,7 @@ function AddRole({ addRoleOpen, setAddRoleOpen, allRoles, setAllRoles, user_stat
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Add Role Info Error"
+              : t('allEmp.errors.addRoleError')
           }`
         );
       });
@@ -137,7 +137,7 @@ function AddRole({ addRoleOpen, setAddRoleOpen, allRoles, setAllRoles, user_stat
             >
             <div className="modal-content">
                 <div className="modal-header">
-                <h5 className="modal-title">Add Role & Permissions</h5>
+                <h5 className="modal-title">{t('allEmp.Modal.addRolePermissions')}</h5>
                 <button type="button" className="close" onClick={() => {setAddRoleOpen(false); setPermissions([]);}}>
                     <span aria-hidden="true">×</span>
                 </button>
@@ -152,9 +152,9 @@ function AddRole({ addRoleOpen, setAddRoleOpen, allRoles, setAllRoles, user_stat
                         field.errors.toString().includes("consecutive spaces")
                     );
                     if (consecutiveSpacesError) {
-                        message.error("Please Remove Consecutive Spaces!");
+                      message.error(t('allEmp.errors.removeConsecutiveSpaces'))
                     } else {
-                        message.error("Please Fill Required Fields!");
+                      message.error(t('allEmp.errors.fillRequiredFields'))
                     }
                     }}
                 >
@@ -162,7 +162,7 @@ function AddRole({ addRoleOpen, setAddRoleOpen, allRoles, setAllRoles, user_stat
                     <div className="col-12">
                         <div className="form-group">
                         <label>
-                            Role Name <span className="text-danger">*</span>
+                        {t('allEmp.Modal.roleName')} <span className="text-danger">*</span>
                         </label>
                         <Form.Item
                             name="roleName"
@@ -172,10 +172,10 @@ function AddRole({ addRoleOpen, setAddRoleOpen, allRoles, setAllRoles, user_stat
                                 required: true,
                                 validator: (_, value) => {
                                 if (!value || value.trim() === "") {
-                                    return Promise.reject("please enter role name");
+                                    return Promise.reject(t('allEmp.errors.enterRoleName'));
                                 } else if (/\s{2,}/.test(value)) {
                                     return Promise.reject(
-                                    "please remove consecutive spaces"
+                                    t('allEmp.errors.removeConsecutiveSpaces2')
                                     );
                                 }
                                 return Promise.resolve();
@@ -222,7 +222,7 @@ function AddRole({ addRoleOpen, setAddRoleOpen, allRoles, setAllRoles, user_stat
                         >
                         {
                             loader ? <Spin size="small" indicator={antIcon} />
-                            : 'Submit'
+                            : t('submit')
                         }
                         </Button>
                     </Form.Item>

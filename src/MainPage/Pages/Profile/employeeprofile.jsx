@@ -19,10 +19,12 @@ import { LoadingOutlined } from '@ant-design/icons';
 import ImgCrop from 'antd-img-crop';
 import { apiUploadToS3 } from '../../../Services/uploadImage';
 import EmployeeProjectsScreen from './clientProfileScreens/EmployeeProjectsScreen';
+import { useTranslation } from 'react-i18next';
 
 
 
 const EmployeeProfile = () => {
+  const { t, i18n } = useTranslation();
   const moment = require('moment');
   const location = useLocation();
   const nav = useNavigate();
@@ -105,7 +107,7 @@ const [imageChange, setImageChange] = useState(1)
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Employee Info Error"
+              : t('empProfile.errors.getEmployeeInfoError')
           }!`
         );
       });
@@ -154,7 +156,7 @@ const [imageChange, setImageChange] = useState(1)
             ? err?.response?.data?.msg
             : err?.response?.data?.validation?.body?.message
             ? err?.response?.data?.validation?.body?.message
-            : "Get Department Info Error"
+            : t('allEmp.errors.getDepartmentInfoError')
         }!`
       );
     });
@@ -180,7 +182,7 @@ const [imageChange, setImageChange] = useState(1)
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Department Info Error"
+              : t('allEmp.errors.getDepartmentInfoError')
           }!`
         );
       });
@@ -204,7 +206,7 @@ const [imageChange, setImageChange] = useState(1)
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Designation Info Error"
+              : t('allEmp.errors.getDesignationInfoError')
           }!`
         );
       });
@@ -286,7 +288,7 @@ const handleClose = () => {
                 ...d,
               }))
               localStorage.setItem('allDataLocal', JSON.stringify({...new_values, password: user_data?.password}));
-              message.success('Profile Details Updated Successfully!')
+              message.success(t('empProfile.errors.profileDetailsUpdatedSuccessfully'))
               handleClose()
               setLoader(false)
             }
@@ -299,7 +301,7 @@ const handleClose = () => {
                   ? err?.response?.data?.msg
                   : err?.response?.data?.validation?.body?.message
                   ? err?.response?.data?.validation?.body?.message
-                  : "Update Profile Details Error"
+                  : t('empProfile.errors.updateProfileDetailsError')
               }!`
             );
           });
@@ -324,7 +326,7 @@ const handleClose = () => {
           ...values
         }))
         localStorage.setItem('allDataLocal', JSON.stringify({...d1, password: user_data?.password}));
-        message.success('Bank Details Updated Successfully!')
+        message.success(t('empProfile.errors.bankDetailsUpdatedSuccessfully'))
         handleClose()
         setLoader(false)
       }
@@ -337,7 +339,7 @@ const handleClose = () => {
             ? err?.response?.data?.msg
             : err?.response?.data?.validation?.body?.message
             ? err?.response?.data?.validation?.body?.message
-            : "Update Bank Details Error"
+            : t('empProfile.errors.updatebankDetailsError')
         }!`
       );
     });
@@ -361,7 +363,7 @@ const handleClose = () => {
           emergencyContacts: [values]
         }))
         localStorage.setItem('allDataLocal', JSON.stringify({...d1, password: user_data?.password}));
-        message.success('Emergency Contact Updated Successfully!')
+        message.success(t('empProfile.errors.emergencyContactUpdatedSuccessfully'))
         handleClose()
         setLoader(false)
       }
@@ -374,7 +376,7 @@ const handleClose = () => {
             ? err?.response?.data?.msg
             : err?.response?.data?.validation?.body?.message
             ? err?.response?.data?.validation?.body?.message
-            : "Update Emergency Contact Error"
+            : t('empProfile.errors.updateEmergencyContactError')
         }!`
       );
     });
@@ -398,7 +400,7 @@ const handleClose = () => {
           education: values?.education
         }))
         localStorage.setItem('allDataLocal', JSON.stringify({...d1, password: user_data?.password}));
-        message.success('Education Details Updated Successfully!')
+        message.success(t('empProfile.errors.educationDetailsUpdatedSuccessfully'))
         handleClose()
         setLoader(false)
       }
@@ -411,7 +413,7 @@ const handleClose = () => {
             ? err?.response?.data?.msg
             : err?.response?.data?.validation?.body?.message
             ? err?.response?.data?.validation?.body?.message
-            : "Update Education Details Error"
+            : t('empProfile.errors.updateEducationDetailsError')
         }!`
       );
     });
@@ -435,7 +437,7 @@ const handleClose = () => {
           experience: values?.experience
         }))
         localStorage.setItem('allDataLocal', JSON.stringify({...d1, password: user_data?.password}));
-        message.success('Experience Details Updated Successfully!')
+        message.success(t('empProfile.errors.experienceDetailsUpdatedSuccessfully'))
         handleClose()
         setLoader(false)
       }
@@ -448,7 +450,7 @@ const handleClose = () => {
             ? err?.response?.data?.msg
             : err?.response?.data?.validation?.body?.message
             ? err?.response?.data?.validation?.body?.message
-            : "Update Experience Details Error"
+            : t('empProfile.errors.updateExperienceDetailsError')
         }!`
       );
     });
@@ -480,7 +482,7 @@ const allowedFileTypes = ['image/png', 'image/jpeg', 'image/jpg'];
     const isFileTypeAllowed = allowedFileTypes.includes(file.type);
 
     if (!isFileTypeAllowed) {
-      message.error('You can only upload PNG, JPG, or JPEG files!');
+      message.error(t('allEmp.errors.fileTypeNotAllowed'));
       return false;
     }
 
@@ -488,7 +490,7 @@ const allowedFileTypes = ['image/png', 'image/jpeg', 'image/jpg'];
     const isSizeAllowed = file.size <= maxSizeInBytes;
 
     if (!isSizeAllowed) {
-      message.error('File size is too large. Maximum allowed size is 5MB.');
+      message.error(t('allEmp.errors.fileSizeTooLarge'));
       return false;
     }
 
@@ -528,7 +530,7 @@ const allowedFileTypes = ['image/png', 'image/jpeg', 'image/jpg'];
             localStorage.setItem('allDataLocal', JSON.stringify({...d1, password: user_data?.password}));
             // setImage(res?.data?.result)
             setImageLoader(false)
-            message.success('Profile picture updated successfully!')
+            message.success(t('empProfile.errors.profilePictureUpdatedSuccessfully'))
           }
         })
         .catch((err) => {
@@ -542,7 +544,7 @@ const allowedFileTypes = ['image/png', 'image/jpeg', 'image/jpg'];
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Update Profile picture Error"
+                : t('empProfile.errors.updateProfilePictureError')
             }!`
           );
         });
@@ -555,7 +557,7 @@ const allowedFileTypes = ['image/png', 'image/jpeg', 'image/jpg'];
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "upload image Error"
+                : t('allEmp.errors.uploadImageError')
             }!`
           );
       })
@@ -587,7 +589,7 @@ const allowedFileTypes = ['image/png', 'image/jpeg', 'image/jpg'];
         localStorage.setItem('allDataLocal', JSON.stringify({...d1, password: user_data?.password}));
         // setImage(res?.data?.result)
         setImageLoader(false)
-        message.success('Profile picture removed successfully!')
+        message.success(t('empProfile.errors.profilePictureRemovedSuccessfully'))
       }
     })
     .catch((err) => {
@@ -601,7 +603,7 @@ const allowedFileTypes = ['image/png', 'image/jpeg', 'image/jpg'];
             ? err?.response?.data?.msg
             : err?.response?.data?.validation?.body?.message
             ? err?.response?.data?.validation?.body?.message
-            : "Remove profile picture Error"
+            : t('empProfile.errors.removeProfilePictureError')
         }!`
       );
     });
@@ -622,7 +624,7 @@ const antIcon = (
     <>
       <div className="page-wrapper">
         <Helmet>
-          <title>Employee Profile - DaftarPro</title>
+          <title>{t('empProfile.pageTitle')}</title>
           <meta name="description" content="Reactify Blank Page" />
         </Helmet>
         {/* Page Content */}
@@ -631,10 +633,10 @@ const antIcon = (
           <div className="page-header">
             <div className="row">
               <div className="col-sm-12">
-                <h3 className="page-title">Profile</h3>
+                <h3 className="page-title">{t('empProfile.profile')}</h3>
                 <ul className="breadcrumb">
-                  <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>Dashboard</Link></li>
-                  <li className="breadcrumb-item active">Profile</li>
+                  <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>{t('dashboard')}</Link></li>
+                  <li className="breadcrumb-item active">{t('empProfile.profile')}</li>
                 </ul>
               </div>
             </div>
@@ -674,7 +676,7 @@ const antIcon = (
                                                   fileList={null}
                                                   maxCount={1}
                                               >
-                                                  <div className="btn-text" style={{width: '80px', padding: '4px'}}>edit</div>
+                                                  <div className="btn-text" style={{width: '80px', padding: '4px'}}>{t('edit1')}</div>
                                               </Upload>
                                           </ImgCrop>
                                           </div>
@@ -700,8 +702,8 @@ const antIcon = (
                               <h3 className="user-name m-t-0 mb-0">{allData?.fullName}</h3>
                               <div className="small doj text-muted" style={{fontSize: '12px', fontWeight: '500'}}>{deptInfo[allData?.teamId]}</div>
                               <small className="text-muted">{desigInfo[allData?.designationId]}</small>
-                              <div className="staff-id">Employee ID: {allData?.employeeId}</div>
-                              <div className="small doj text-muted">Date of Join: {formatDate(allData?.joiningDate || '')}</div>
+                              <div className="staff-id">{t('allEmp.employeeID')}: {allData?.employeeId}</div>
+                              <div className="small doj text-muted">{t('empProfile.dateOfJoin')}: {formatDate(allData?.joiningDate || '')}</div>
                               <div style={{color: 'transparent', height: '98px'}}>.</div>
                               {/* <div className="staff-msg"><Link onClick={() => localStorage.setItem("minheight", "true")} className="btn btn-custom" to="/conversation/chat">Send Message</Link></div> */}
                             </div>
@@ -709,31 +711,31 @@ const antIcon = (
                           <div className="col-md-7">
                             <ul className="personal-info">
                               <li>
-                                <div className="title">Phone:</div>
+                                <div className="title">{t('empProfile.phone')}:</div>
                                 <div className="text"><a href="javascript:void(0)" style={{cursor: 'default'}}>{allData?.phoneNo}</a></div>
                               </li>
                               <li>
-                                <div className="title">Email:</div>
+                                <div className="title">{t('aDash.email')}:</div>
                                 <div className="text"><a href="javascript:void(0)" style={{cursor: 'default'}}>{allData?.email}</a></div>
                               </li>
                               <li>
-                                <div className="title">Birthday:</div>
+                                <div className="title">{t('empProfile.birthday')}:</div>
                                 <div className="text">{formatDate(allData?.dateOfBirth || '')}</div>
                               </li>
                               <li>
-                                <div className="title">Address:</div>
+                                <div className="title">{t('empProfile.address')}:</div>
                                 <div className="text">{allData?.address}</div>
                               </li>
                               <li>
-                                <div className="title">Gender:</div>
+                                <div className="title">{t('empProfile.gender')}:</div>
                                 <div className="text">{allData?.gender}</div>
                               </li>
                               <li>
-                                <div className="title">Salary:</div>
+                                <div className="title">{t('empProfile.salary')}:</div>
                                 <div className="text">{allData?.salary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</div>
                               </li>
                               <li>
-                                <div className="title">Reports to:</div>
+                                <div className="title">{t('empProfile.reportsTo')}:</div>
                                 <div className="text">
                                 {repInfo[allData?.reportsTo] || 'None'}
                                   {/* <div className="avatar-box">
@@ -764,11 +766,11 @@ const antIcon = (
             <div className="row user-tabs">
               <div className="col-lg-12 col-md-12 col-sm-12 line-tabs">
                 <ul className="nav nav-tabs nav-tabs-bottom">
-                  <li className="nav-item"><a href="javascript:void(0)"  className={`nav-link ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => { setActiveTab('profile') }}>Profile</a></li>
+                  <li className="nav-item"><a href="javascript:void(0)"  className={`nav-link ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => { setActiveTab('profile') }}>{t('empProfile.profile')}</a></li>
                   {/* <li className="nav-item"><a href="#emp_projects" data-bs-toggle="tab" className="nav-link">Projects</a></li> */}
-                  <li className="nav-item"><a href="javascript:void(0)"  className={`nav-link ${activeTab === 'projects' ? 'active' : ''}`} onClick={() => { setActiveTab('projects') }}>Projects</a></li>
-                  <li className="nav-item"><a href="javascript:void(0)"  className={`nav-link ${activeTab === 'bank' ? 'active' : ''}`} onClick={() => { setActiveTab('bank') }}>Bank &amp; Statutory <small className="text-danger">(Admin Only)</small></a></li>
-                  <li className="nav-item"><a href="javascript:void(0)"  className={`nav-link ${activeTab === 'assets' ? 'active' : ''}`} onClick={() => { setActiveTab('assets') }}>Assets</a></li>
+                  <li className="nav-item"><a href="javascript:void(0)"  className={`nav-link ${activeTab === 'projects' ? 'active' : ''}`} onClick={() => { setActiveTab('projects') }}>{t('projects')}</a></li>
+                  <li className="nav-item"><a href="javascript:void(0)"  className={`nav-link ${activeTab === 'bank' ? 'active' : ''}`} onClick={() => { setActiveTab('bank') }}>{t('empProfile.bankAndStatutory')} <small className="text-danger">{t('empProfile.AdminOnly')}</small></a></li>
+                  <li className="nav-item"><a href="javascript:void(0)"  className={`nav-link ${activeTab === 'assets' ? 'active' : ''}`} onClick={() => { setActiveTab('assets') }}>{t('empProfile.assets')}</a></li>
                 </ul>
               </div>
             </div>
@@ -785,20 +787,20 @@ const antIcon = (
                             <div className="col-md-6 d-flex">
                               <div className="card profile-box flex-fill">
                                 <div className="card-body">
-                                  <h3 className="card-title">Bank Information
+                                  <h3 className="card-title">{t('empProfile.bankInformation')}
                                   {
                                     (role === 'admin' || permissions?.updateUser) &&
-                                    <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: false, isBankInfoOpen: true , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a>
+                                    <a href="javascript:void(0)" className="edit-icon" style={{ float: i18n.dir() === 'rtl' ? 'left' : 'right' }} onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: false, isBankInfoOpen: true , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a>
                                   }
                                   </h3>
                                   { allData?.bankName ?
                                   <ul className="personal-info">
                                         <li>
-                                          <div className="title">Bank Name</div>
+                                          <div className="title">{t('empProfile.bankName')}</div>
                                           <div className="text">{allData?.bankName}</div>
                                         </li>
                                         <li>
-                                          <div className="title">Bank Account No.</div>
+                                          <div className="title">{t('empProfile.bankAccountNo')}</div>
                                           <div className="text">{allData?.bankAccountNumber}</div>
                                         </li>
                                         {/* <li>
@@ -814,10 +816,10 @@ const antIcon = (
                             <div className="col-md-6 d-flex">
                               <div className="card profile-box flex-fill">
                                 <div className="card-body">
-                                  <h3 className="card-title">Emergency Contact
+                                  <h3 className="card-title">{t('empProfile.emergencyContact')}
                                   {
                                     (role === 'admin' || permissions?.updateUser) &&
-                                    <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: true, isprofileInfoOpen: false, data: allData?.emergencyContacts?.length > 0 ? allData.emergencyContacts[0] : {} })}><i className="fa fa-pencil" /></a>
+                                    <a href="javascript:void(0)" className="edit-icon" style={{ float: i18n.dir() === 'rtl' ? 'left' : 'right' }} onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: true, isprofileInfoOpen: false, data: allData?.emergencyContacts?.length > 0 ? allData.emergencyContacts[0] : {} })}><i className="fa fa-pencil" /></a>
                                   }
                                   </h3>
                                   {/* <h5 className="section-title">Primary</h5> */}
@@ -827,15 +829,15 @@ const antIcon = (
                                         allData?.emergencyContacts?.map((emerg) => (
                                           <>
                                             <li>
-                                              <div className="title">Name</div>
+                                              <div className="title">{t('empProfile.name')}</div>
                                               <div className="text">{emerg?.name}</div>
                                             </li>
                                             <li>
-                                              <div className="title">Relationship</div>
+                                              <div className="title">{t('empProfile.relationship')}</div>
                                               <div className="text">{emerg?.relationship}</div>
                                             </li>
                                             <li>
-                                              <div className="title">Phone No. </div>
+                                              <div className="title">{t('allEmp.Modal.phoneNumber')}. </div>
                                               <div className="text">{emerg?.phoneNo}</div>
                                             </li>
                                           </>
@@ -870,10 +872,10 @@ const antIcon = (
                             <div className="col-md-6 d-flex">
                               <div className="card profile-box flex-fill">
                                 <div className="card-body">
-                                  <h3 className="card-title">Education Informations
+                                  <h3 className="card-title">{t('empProfile.educationInformations')}
                                   {
                                     (role === 'admin' || permissions?.updateUser) &&
-                                    <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: true, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a>
+                                    <a href="javascript:void(0)" className="edit-icon" style={{ float: i18n.dir() === 'rtl' ? 'left' : 'right' }} onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: true, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a>
                                   }
                                   </h3>
                                   <div className="experience-box">
@@ -905,10 +907,10 @@ const antIcon = (
                             <div className="col-md-6 d-flex">
                               <div className="card profile-box flex-fill">
                                 <div className="card-body">
-                                  <h3 className="card-title">Experience
+                                  <h3 className="card-title">{t('empProfile.experience')}
                                   {
                                     (role === 'admin' || permissions?.updateUser) &&
-                                    <a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: true, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a>
+                                    <a href="javascript:void(0)" className="edit-icon" style={{ float: i18n.dir() === 'rtl' ? 'left' : 'right' }} onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: true, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a>
                                   }
                                   </h3>
                                   <div className="experience-box">
@@ -1651,7 +1653,7 @@ const antIcon = (
         <div className="modal-dialog modal-dialog-centered modal-dialog-md" role="document">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title"> Bank Information</h5>
+                <h5 className="modal-title"> {t('empProfile.bankInformation')}</h5>
                 <button type="button" className="close" onClick={handleClose}>
                   <span aria-hidden="true">×</span>
                 </button>
@@ -1662,9 +1664,9 @@ const antIcon = (
                 onFinishFailed={({errorFields}) => {
                   const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
                   if(consecutiveSpacesError){
-                    message.error("Please Remove Consecutive Spaces!")
+                    message.error(t('allEmp.errors.removeConsecutiveSpaces'))
                   }else{
-                    message.error("Please Fill Required Fields!")
+                    message.error(t('allEmp.errors.fillRequiredFields'))
                   }
                 }}
                 initialValues={{
@@ -1682,7 +1684,7 @@ const antIcon = (
                                 <div className="col-12">
                                   <div className="form-group">
                                     <label>
-                                      Bank Name <span className="text-danger">*</span>
+                                    {t('empProfile.bankName')} <span className="text-danger">*</span>
                                     </label>
                                     <Form.Item
                                       name='bankName'
@@ -1693,11 +1695,11 @@ const antIcon = (
                                           required: true,
                                           validator: (_, value) => {
                                             if (!value || value.trim() === '') {
-                                              return Promise.reject('please enter bank name');
+                                              return Promise.reject(t('empProfile.errors.pleaseEnterBankName'));
                                             } else if (/\s{2,}/.test(value)) {
-                                              return Promise.reject('please remove consecutive spaces');
+                                              return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                                             } else if (value.length < 3) {
-                                              return Promise.reject('name must be at least 3 characters long');
+                                              return Promise.reject(t('empProfile.errors.nameMinLength'));
                                             }
                                             return Promise.resolve();
                                           },
@@ -1711,7 +1713,7 @@ const antIcon = (
                                 <div className="col-12">
                                   <div className="form-group">
                                     <label>
-                                    Bank Account Number <span className="text-danger">*</span>
+                                    {t('empProfile.bankAccountNo')} <span className="text-danger">*</span>
                                     </label>
                                     <Form.Item
                                       name='bankAccountNumber'
@@ -1722,11 +1724,11 @@ const antIcon = (
                                           required: true,
                                           validator: (_, value) => {
                                             if (!value || value.trim() === '') {
-                                              return Promise.reject('please enter bank account number');
+                                              return Promise.reject(t('empProfile.errors.pleaseEnterBankAccountNumber'));
                                             } else if (/\s{2,}/.test(value)) {
-                                              return Promise.reject('please remove consecutive spaces');
+                                              return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                                             } else if (value.length < 3) {
-                                              return Promise.reject('length must be at least 3 characters long');
+                                              return Promise.reject(t('empProfile.errors.accountNumberMinLength'));
                                             }
                                             return Promise.resolve();
                                           },
@@ -1785,7 +1787,7 @@ const antIcon = (
                         <button type='submit' className="btn btn-primary submit-btn" disabled={loader}>
                         {
                           loader ? <Spin size="small" indicator={antIcon} />
-                            : 'Submit'
+                            : t('submit')
                         }
                         </button>
                       </div>
@@ -1816,7 +1818,7 @@ const antIcon = (
         <div className="modal-dialog modal-dialog-centered modal-dialog-md" role="document">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title"> Emergency Contact</h5>
+                <h5 className="modal-title"> {t('empProfile.emergencyContact')}</h5>
                 <button type="button" className="close" onClick={handleClose}>
                   <span aria-hidden="true">×</span>
                 </button>
@@ -1832,9 +1834,9 @@ const antIcon = (
                   }
                   const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
                   if(consecutiveSpacesError){
-                    message.error("Please Remove Consecutive Spaces!")
+                    message.error(t('allEmp.errors.removeConsecutiveSpaces'))
                   }else{
-                    message.error("Please Fill Required Fields!")
+                    message.error(t('allEmp.errors.fillRequiredFields'))
                   }
                 }}
                 initialValues={{
@@ -1852,7 +1854,7 @@ const antIcon = (
                                 <div className="col-md-6">
                                   <div className="form-group">
                                     <label>
-                                      Name <span className="text-danger">*</span>
+                                    {t('empProfile.name')} <span className="text-danger">*</span>
                                     </label>
                                     <Form.Item
                                       name='name'
@@ -1863,11 +1865,11 @@ const antIcon = (
                                           required: true,
                                           validator: (_, value) => {
                                             if (!value || value.trim() === '') {
-                                              return Promise.reject('please enter name');
+                                              return Promise.reject(t('empProfile.errors.pleaseEnterName'));
                                             } else if (/\s{2,}/.test(value)) {
-                                              return Promise.reject('please remove consecutive spaces');
+                                              return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                                             } else if (value.length < 3) {
-                                              return Promise.reject('name must be at least 3 characters long');
+                                              return Promise.reject(t('empProfile.errors.nameMinLength'));
                                             }
                                             return Promise.resolve();
                                           },
@@ -1881,7 +1883,7 @@ const antIcon = (
                                 <div className="col-md-6">
                                 <div className="form-group">
                                     <label>
-                                      Relationship <span className="text-danger">*</span>
+                                    {t('empProfile.relationship')} <span className="text-danger">*</span>
                                     </label>
                                     <Form.Item
                                       name='relationship'
@@ -1892,11 +1894,11 @@ const antIcon = (
                                           required: true,
                                           validator: (_, value) => {
                                             if (!value || value.trim() === '') {
-                                              return Promise.reject('please enter relationship');
+                                              return Promise.reject(t('empProfile.errors.pleaseEnterRelationship'));
                                             } else if (/\s{2,}/.test(value)) {
-                                              return Promise.reject('please remove consecutive spaces');
+                                              return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                                             } else if (value.length < 3) {
-                                              return Promise.reject('relationship length must be at least 3 characters long');
+                                              return Promise.reject(t('empProfile.errors.relationshipMinLength'));
                                             }
                                             return Promise.resolve();
                                           },
@@ -1910,7 +1912,7 @@ const antIcon = (
                                 <div className="col-12">
                                 <div className="form-group">
                                     <label>
-                                      Phone No <span className="text-danger">*</span>
+                                    {t('aDash.phoneNo')} <span className="text-danger">*</span>
                                     </label>
                                     <Form.Item
                                       name='phoneNo'
@@ -1919,11 +1921,11 @@ const antIcon = (
                                         {
                                           whitespace: true,
                                           required: true,
-                                          message: "please enter phone number",
+                                          message: t('allEmp.errors.phoneNumber'),
                                         },
                                         {
                                           min: 5,
-                                          message: "phone length must be at least 5 digits long",
+                                          message: t('allEmp.errors.phoneLength'),
                                         },
                                       ]}
                                       validateStatus={phoneLengthError ? 'error' : ''}
@@ -1948,7 +1950,7 @@ const antIcon = (
                         <button type='submit' className="btn btn-primary submit-btn" disabled={loader}>
                         {
                           loader ? <Spin size="small" indicator={antIcon} />
-                            : 'Submit'
+                            : t('submit')
                         }
                         </button>
                       </div>
@@ -1979,7 +1981,7 @@ const antIcon = (
         <div className="modal-dialog modal-dialog-centered modal-dialog-md" role="document">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title"> Education Informations</h5>
+                <h5 className="modal-title"> {t('empProfile.educationInformations')}</h5>
                 <button type="button" className="close" onClick={handleClose}>
                   <span aria-hidden="true">×</span>
                 </button>
@@ -1990,9 +1992,9 @@ const antIcon = (
                 onFinishFailed={({errorFields}) => {
                   const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
                   if(consecutiveSpacesError){
-                    message.error("Please Remove Consecutive Spaces!")
+                    message.error(t('allEmp.errors.removeConsecutiveSpaces'))
                   }else{
-                    message.error("Please Fill Required Fields!")
+                    message.error(t('allEmp.errors.fillRequiredFields'))
                   }
                 }}
                 initialValues={{
@@ -2007,7 +2009,7 @@ const antIcon = (
                           <div className="card">
                             <div className="card-body">
                               <h3 className="card-title">
-                                {fields?.length > 1 ? `${index+1}.` : ''} Education Information{' '}
+                                {fields?.length > 1 ? `${index+1}.` : ''} {t('empProfile.educationInformation')}{' '}
                                 {index > 0 && (
                                   <a href="javascript:void(0)" onClick={() => remove(field.name)} className="delete-icon">
                                     <i className="fa fa-trash-o" />
@@ -2018,7 +2020,7 @@ const antIcon = (
                                 <div className="col-md-6">
                                   <div className="form-group">
                                     <label>
-                                      Institution <span className="text-danger">*</span>
+                                    {t('empProfile.institution')} <span className="text-danger">*</span>
                                     </label>
                                     <Form.Item
                                       {...field}
@@ -2031,11 +2033,11 @@ const antIcon = (
                                           required: true,
                                           validator: (_, value) => {
                                             if (!value || value.trim() === '') {
-                                              return Promise.reject('please enter institute name');
+                                              return Promise.reject(t('empProfile.errors.pleaseEnterInstituteName'));
                                             } else if (/\s{2,}/.test(value)) {
-                                              return Promise.reject('please remove consecutive spaces');
+                                              return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                                             } else if (value.length < 3) {
-                                              return Promise.reject('institute name must be at least 3 characters long');
+                                              return Promise.reject(t('empProfile.errors.instituteNameMinLength'));
                                             }
                                             return Promise.resolve();
                                           },
@@ -2049,7 +2051,7 @@ const antIcon = (
                                 <div className="col-md-6">
                                 <div className="form-group">
                                     <label>
-                                      Degree <span className="text-danger">*</span>
+                                    {t('empProfile.degree')} <span className="text-danger">*</span>
                                     </label>
                                     <Form.Item
                                       {...field}
@@ -2062,11 +2064,11 @@ const antIcon = (
                                           required: true,
                                           validator: (_, value) => {
                                             if (!value || value.trim() === '') {
-                                              return Promise.reject('please enter degree name');
+                                              return Promise.reject(t('empProfile.errors.pleaseEnterDegreeName'));
                                             } else if (/\s{2,}/.test(value)) {
-                                              return Promise.reject('please remove consecutive spaces');
+                                              return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                                             } else if (value.length < 3) {
-                                              return Promise.reject('degree name must be at least 3 characters long');
+                                              return Promise.reject(t('empProfile.errors.degreeNameMinLength'));
                                             }
                                             return Promise.resolve();
                                           },
@@ -2080,14 +2082,14 @@ const antIcon = (
                                 <div className="col-12">
                                 <div className="form-group">
                                     <label>
-                                      Year <span className="time" style={{fontSize: '12px', color: '#9e9e9e'}}>(Start - End) </span><span className="text-danger">*</span>
+                                    {t('empProfile.year')} <span className="time" style={{fontSize: '12px', color: '#9e9e9e'}}>(Start - End) </span><span className="text-danger">*</span>
                                     </label>
                                     <Form.Item
                                       {...field}
                                       name={[field.name, 'year']}
                                       className='custom-border'
                                       fieldKey={[field.fieldKey, 'year']}
-                                      rules={[{ required: true, message: 'please enter year' }]}
+                                      rules={[{ required: true, message: t('empProfile.errors.pleaseEnterYear') }]}
                                     >
                                       <Input className='form-control' maxLength={50} placeholder='2023 - 2027'
                                         onKeyPress={(e) => {
@@ -2111,7 +2113,7 @@ const antIcon = (
                               </div>
                               {index === fields.length - 1 && (
                                 <div className="add-more">
-                                  <a href="javascript:void(0)" onClick={() => add()}><i className="fa fa-plus-circle" /> Add More</a>
+                                  <a href="javascript:void(0)" onClick={() => add()}><i className="fa fa-plus-circle" /> {t('addMore')}</a>
                                 </div>
                               )}
                             </div>
@@ -2122,7 +2124,7 @@ const antIcon = (
                         <button type='submit' className="btn btn-primary submit-btn" disabled={loader}>
                         {
                           loader ? <Spin size="small" indicator={antIcon} />
-                            : 'Submit'
+                            : t('submit')
                         }
                         </button>
                       </div>
@@ -2156,7 +2158,7 @@ const antIcon = (
         <div className="modal-dialog modal-dialog-centered modal-dialog-md" role="document">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title"> Experience Informations</h5>
+                <h5 className="modal-title"> {t('empProfile.experienceInformations')}</h5>
                 <button type="button" className="close" onClick={handleClose}>
                   <span aria-hidden="true">×</span>
                 </button>
@@ -2167,9 +2169,9 @@ const antIcon = (
                 onFinishFailed={({errorFields}) => {
                   const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
                   if(consecutiveSpacesError){
-                    message.error("Please Remove Consecutive Spaces!")
+                    message.error(t('allEmp.errors.removeConsecutiveSpaces'))
                   }else{
-                    message.error("Please Fill Required Fields!")
+                    message.error(t('allEmp.errors.fillRequiredFields'))
                   }
                 }}
                 initialValues={{
@@ -2184,7 +2186,7 @@ const antIcon = (
                           <div className="card">
                             <div className="card-body">
                               <h3 className="card-title">
-                                {fields?.length > 1 ? `${index+1}.` : ''} Experience Information{' '}
+                                {fields?.length > 1 ? `${index+1}.` : ''} {t('empProfile.experienceInformation')}{' '}
                                 {index > 0 && (
                                   <a href="javascript:void(0)" onClick={() => remove(field.name)} className="delete-icon">
                                     <i className="fa fa-trash-o" />
@@ -2195,7 +2197,7 @@ const antIcon = (
                                 <div className="col-md-6">
                                   <div className="form-group">
                                     <label>
-                                      Company <span className="text-danger">*</span>
+                                    {t('empProfile.company')} <span className="text-danger">*</span>
                                     </label>
                                     <Form.Item
                                       {...field}
@@ -2208,11 +2210,11 @@ const antIcon = (
                                           required: true,
                                           validator: (_, value) => {
                                             if (!value || value.trim() === '') {
-                                              return Promise.reject('please enter company name');
+                                              return Promise.reject(t('empProfile.errors.pleaseEnterCompanyName'));
                                             } else if (/\s{2,}/.test(value)) {
-                                              return Promise.reject('please remove consecutive spaces');
+                                              return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                                             } else if (value.length < 3) {
-                                              return Promise.reject('company name must be at least 3 characters long');
+                                              return Promise.reject(t('empProfile.errors.companyNameMinLength'));
                                             }
                                             return Promise.resolve();
                                           },
@@ -2226,7 +2228,7 @@ const antIcon = (
                                 <div className="col-md-6">
                                 <div className="form-group">
                                     <label>
-                                      Designation <span className="text-danger">*</span>
+                                    {t('allEmp.designation')} <span className="text-danger">*</span>
                                     </label>
                                     <Form.Item
                                       {...field}
@@ -2239,11 +2241,11 @@ const antIcon = (
                                           required: true,
                                           validator: (_, value) => {
                                             if (!value || value.trim() === '') {
-                                              return Promise.reject('please enter designation');
+                                              return Promise.reject(t('empProfile.errors.pleaseEnterDesignation'));
                                             } else if (/\s{2,}/.test(value)) {
-                                              return Promise.reject('please remove consecutive spaces');
+                                              return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                                             } else if (value.length < 3) {
-                                              return Promise.reject('designation must be at least 3 characters long');
+                                              return Promise.reject(t('empProfile.errors.designationMinLength'));
                                             }
                                             return Promise.resolve();
                                           },
@@ -2257,14 +2259,14 @@ const antIcon = (
                                 <div className="col-12">
                                 <div className="form-group">
                                     <label>
-                                      Duration <span className="time" style={{fontSize: '12px', color: '#9e9e9e'}}>(Start - End) </span><span className="text-danger">*</span>
+                                    {t('empProfile.duration')} <span className="time" style={{fontSize: '12px', color: '#9e9e9e'}}>(Start - End) </span><span className="text-danger">*</span>
                                     </label>
                                     <Form.Item
                                       {...field}
                                       name={[field.name, 'duration']}
                                       className='custom-border'
                                       fieldKey={[field.fieldKey, 'duration']}
-                                      rules={[{ required: true, message: 'please enter duration' }]}
+                                      rules={[{ required: true, message: t('empProfile.errors.pleaseEnterDuration') }]}
                                     >
                                       <Input className='form-control' maxLength={50} placeholder='2023 - 2027'
                                         onKeyPress={(e) => {
@@ -2288,7 +2290,7 @@ const antIcon = (
                               </div>
                               {index === fields.length - 1 && (
                                 <div className="add-more">
-                                  <a href="javascript:void(0)" onClick={() => add()}><i className="fa fa-plus-circle" /> Add More</a>
+                                  <a href="javascript:void(0)" onClick={() => add()}><i className="fa fa-plus-circle" /> {t('addMore')}</a>
                                 </div>
                               )}
                             </div>
@@ -2299,7 +2301,7 @@ const antIcon = (
                         <button type='submit' className="btn btn-primary submit-btn" disabled={loader}>
                         {
                           loader ? <Spin size="small" indicator={antIcon} />
-                            : 'Submit'
+                            : t('submit')
                         }
                         </button>
                       </div>

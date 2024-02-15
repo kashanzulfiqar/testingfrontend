@@ -41,10 +41,12 @@ import { itemRender } from "../../paginationfunction";
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { CSVLink } from 'react-csv';
+import { useTranslation } from "react-i18next";
 
 const { Option } = Select;
 
 const AttendanceReport = () => {
+  const { t, i18n } = useTranslation();
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
   const user_name = useSelector((state) => state?.user?.loginvalue?.user?.fullName);
   console.log("permissions", permissions)
@@ -761,6 +763,22 @@ const AttendanceReport = () => {
                     dataSource={attendancerecords}
                     bordered
                     pagination={false}
+                    components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                   />
                 </div>
 
@@ -773,12 +791,13 @@ const AttendanceReport = () => {
                         pageSize={pagination.pageSize}
                         total={pagination.total}
                         showTotal={(total, range) =>
-                          `Showing ${range[0]} to ${range[1]} of ${total} entries`
-                        }
+                          t('paginationShow', { range1: range[0], range2: range[1], total: total })}
                         pageSizeOptions={["20", "30", "40", "50"]}
                         showSizeChanger={true}
                         onChange={(page, pageSize) => setPagination({...pagination, current: page, pageSize: pageSize,})}
-                        itemRender={itemRender}
+                        itemRender={(current, type, originalElement) =>
+                          itemRender(current, type, originalElement, t)
+                        }
                         disabled={isLoading}
                       />
                     </div>
