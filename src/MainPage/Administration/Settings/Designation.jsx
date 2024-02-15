@@ -9,10 +9,11 @@ import { useSelector } from "react-redux";
 // import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { LoadingOutlined } from '@ant-design/icons';
+import { useTranslation } from "react-i18next";
 
 const Designation = () => {
   const user_state = useSelector((state) => state.user.loginvalue);
-
+  const { t, i18n } = useTranslation();
   const [form] = Form.useForm();
 
   const [open, setOpen] = useState({
@@ -320,18 +321,35 @@ const Designation = () => {
                   // pageSize: 1,
                   // hideOnSinglePage: true,
                   showTotal: (total, range) =>
-                    `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+                    t('paginationShow', { range1: range[0], range2: range[1], total: total }),
                   showSizeChanger: true,
                   onShowSizeChange: (current, size) => { setPageSize(size); setCurrentPage(1) },
                   pageSizeOptions: ['20', '30', '40', '50'],
                   onChange: (page, size) => setCurrentPage(page),
-                  itemRender: itemRender,
+                  itemRender: (current, type, originalElement) =>
+                  itemRender(current, type, originalElement, t),
                 }}
                 style={{ overflowX: "auto" }}
                 columns={columns}
                 bordered
                 dataSource={data}
                 rowKey={(record) => record.id}
+                components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                 // onChange={this.handleTableChange}
               />
             </div>

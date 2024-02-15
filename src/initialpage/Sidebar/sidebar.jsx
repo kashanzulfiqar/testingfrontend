@@ -8,9 +8,11 @@ import { Link } from 'react-router-dom';
 import { Scrollbars } from 'react-custom-scrollbars';
 import Header from './header';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
 const Sidebar = (props) => {
 
+  const { t, i18n } = useTranslation(); 
   const location = useLocation();
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
   const pending_counter = useSelector((state) => state?.counter?.counter?.payload);
@@ -83,6 +85,14 @@ const Sidebar = (props) => {
 
   let pathname = location.pathname
   // let pathname = props.location.pathname
+
+  const direction = i18n.dir() === 'rtl' ? '-15px' : '0';
+
+// Inline style object
+  const scrollbarStyle = {
+    marginLeft: direction,
+    // Add more styles as needed
+  };
   return (
 
     <React.Fragment>
@@ -92,6 +102,7 @@ const Sidebar = (props) => {
         className="sidebar"
         onMouseEnter={mouseHandle}
         onMouseLeave={() => mouseHandle('leave')}
+        // style={{ right: i18n.dir() === 'rtl' ? '0' : '' }}
         >
         <Scrollbars>
           <div className="sidebar-inner slimscroll">
@@ -164,7 +175,7 @@ const Sidebar = (props) => {
                     }
                   </li>
                   <li className={pathname.includes('clients') ? "active" : ""}>
-                    <Link to="/app/employees/clients"><i className="la la-users" /> <span>Clients</span> </Link>
+                    <Link to="/app/employees/clients"><i className="la la-users" /> <span>{t('aDash.client')}</span> </Link>
                   </li>
                   <li className="submenu">
                     <a href="javascript:" className={isSideMenu == "projects" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "projects" ? "" : "projects")}><i className="la la-rocket" /> <span> Projects</span> <span className="menu-arrow" /></a>
@@ -474,26 +485,26 @@ const Sidebar = (props) => {
               </nav>
               <ul className="sidebar-vertical" id='veritical-sidebar'>
                 <li className="menu-title">
-                  <span>Main</span>
+                  <span>{t('main')}</span>
                 </li>
 
                 {(user_state?.role === 'admin' || permissions?.companyManagement) &&
                   <li className="submenu">
                   {
                     (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
-                    <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-dashboard" /> <span> Dashboard</span> <span className="menu-arrow" /></a>
+                    <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-dashboard" /> <span> {t('dashboard')}</span> <span className="menu-arrow" /></a>
                     :
-                    <a href="javascript:" className={isSideMenu == "dashboard" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "dashboard" ? "" : "dashboard")}><i className="la la-dashboard" /> <span> Dashboard</span> <span className="menu-arrow" /></a>
+                    <a href="javascript:" className={isSideMenu == "dashboard" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "dashboard" ? "" : "dashboard")}><i className="la la-dashboard" /> <span> {t('dashboard')}</span> <span className="menu-arrow" /></a>
                   }
                   {/* <a href="javascript:" className={isSideMenu == "dashboard" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "dashboard" ? "" : "dashboard")}><i className="la la-dashboard" /> <span> Dashboard</span> <span className="menu-arrow" /></a> */}
                   {isSideMenu == "dashboard" ?
                     <ul >
                       {
                         (user_state?.role === 'admin' || permissions?.companyManagement) &&
-                        <li><Link className={pathname.includes('main/dashboard') ? "active" : ""} to="/main/dashboard">Dashboard<span className="badge badge-pill bg-custom float-end">ADMIN</span></Link></li>
+                        <li><Link className={pathname.includes('main/dashboard') ? "active" : ""} to="/main/dashboard">{t('dashboard')}<span className="badge badge-pill bg-custom float-end">ADMIN</span></Link></li>
                       }
                       <li><Link className={pathname.includes('employee/dashboard') ? "active" : ""}
-                        to="/employee/dashboard">Dashboard</Link></li>
+                        to="/employee/dashboard">{t('dashboard')}</Link></li>
                     </ul>
                     : ""
                   }
@@ -503,16 +514,16 @@ const Sidebar = (props) => {
                 { (user_state?.role !== 'admin' && user_state?.role !== 'client' && user_state?.role !== 'focalperson') && (!permissions?.companyManagement) &&
                     // { (user_state?.role === 'admin' || permissions?.addUser || permissions?.updateUser || permissions?.viewAllUsers || permissions?.updateStatusOfEmployee) &&
                     <li className={pathname.includes('employee/dashboard') ? "active" : ""}>
-                      <Link to="/employee/dashboard"><i className="la la-dashboard" /> <span>Dashboard</span> </Link>
+                      <Link to="/employee/dashboard"><i className="la la-dashboard" /> <span>{t('dashboard')}</span> </Link>
                     </li>
                 }
 
-                <li className="submenu">
+                {/* <li className="submenu">
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
-                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-cube" /> <span> Apps</span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-cube" /> <span> {t('sideBar.apps')}</span> <span className="menu-arrow" /></a>
                   :
-                  <a href="javascript:" className={isSideMenu == "apps" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "apps" ? "" : "apps")} ><i className="la la-cube" /> <span> Apps</span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" className={isSideMenu == "apps" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "apps" ? "" : "apps")} ><i className="la la-cube" /> <span> {t('sideBar.apps')}</span> <span className="menu-arrow" /></a>
                 }
                   {isSideMenu == "apps" ?
                     <ul>
@@ -536,15 +547,15 @@ const Sidebar = (props) => {
                     </ul>
                     : ""
                   }
-                </li>
+                </li> */}
                 <li className="menu-title">
-                  <span>Employees</span>
+                  <span>{t('aDash.employees')}</span>
                 </li>
 
                 { (user_state?.role === 'admin' || permissions?.addUser || permissions?.viewAllUsers || permissions?.updateStatusOfEmployee) &&
                     // { (user_state?.role === 'admin' || permissions?.addUser || permissions?.updateUser || permissions?.viewAllUsers || permissions?.updateStatusOfEmployee) &&
                       <li className={pathname.includes('allemployees') ? "active" : pathname.includes('employees-list') ? "active" : ""}>
-                        <Link to="/employee/allemployees"><i className="la la-user" /> <span>All Employees</span> </Link>
+                        <Link to="/employee/allemployees"><i className="la la-user" /> <span>{t('allEmployees')}</span> </Link>
                       </li>
                     }
                     {/* ADMIN ATTENDANCE PANEL */}
@@ -552,9 +563,9 @@ const Sidebar = (props) => {
                     <li className="submenu" >
                   {
                     (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
-                    <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="fas fa-calendar-check" /> <span> Attendance</span> <span className="menu-arrow" /></a>
+                    <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="fas fa-calendar-check" /> <span> {t('attendance')}</span> <span className="menu-arrow" /></a>
                     :
-                    <a href="javascript:" className={(isSideMenu == "Attendance") ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "Attendance" ? "" : "Attendance")}><i className="la la-calendar-check" /> <span> Attendance</span> <span className="menu-arrow" /></a>
+                    <a href="javascript:" className={(isSideMenu == "Attendance") ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "Attendance" ? "" : "Attendance")}><i className="la la-calendar-check" /> <span> {t('attendance')}</span> <span className="menu-arrow" /></a>
                   }
                   {/* <a href="javascript:" className={isSideMenu == "employee" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "employee" ? "" : "employee")}><i className="la la-user" /> <span className="noti-dot"> Employees</span> <span className="menu-arrow" /></a> */}
                     {isSideMenu == "Attendance" ?
@@ -562,11 +573,11 @@ const Sidebar = (props) => {
                       <ul >
                         
                         {/* <li><Link className={pathname.includes('e-settings') ? "active" : ""} to="/app/employee/leave-settings">Leave Settings</Link></li> */}
-                        <Link className={pathname.includes('ce-employee') ? "active" : ""} to="/employee/attendance-employee">Attendance</Link>
+                        <Link className={pathname.includes('ce-employee') ? "active" : ""} to="/employee/attendance-employee">{t('attendance')}</Link>
                         {
                           (user_state?.role === 'admin' || permissions?.attendanceManagement) &&
                           <li>
-                            <li><Link className={pathname.includes('nce-admin') ? "active" : ""} to="/employee/attendance-admin">Attendance<span className="badge badge-pill bg-custom float-end">ADMIN</span></Link></li>
+                            <li><Link className={pathname.includes('nce-admin') ? "active" : ""} to="/employee/attendance-admin">{t('attendance')}<span className="badge badge-pill bg-custom float-end">ADMIN</span></Link></li>
                           </li>
                         }
 
@@ -581,9 +592,9 @@ const Sidebar = (props) => {
                     <li className="submenu" >
                   {
                     (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
-                    <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-clipboard" /> <span className={pending_counter > 0 ? 'noti-dot' : ''}> Requests</span> <span className="menu-arrow" /></a>
+                    <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-clipboard" /> <span className={pending_counter > 0 ? 'noti-dot' : ''}> {t('requests.requests')}</span> <span className="menu-arrow" /></a>
                     :
-                    <a href="javascript:" className={(isSideMenu == "Requests") ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "Requests" ? "" : "Requests")}><i className="la la-clipboard" /> <span className={pending_counter > 0 ? 'noti-dot' : ''}> Requests</span> <span className="menu-arrow" /></a>
+                    <a href="javascript:" className={(isSideMenu == "Requests") ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "Requests" ? "" : "Requests")}><i className="la la-clipboard" /> <span className={pending_counter > 0 ? 'noti-dot' : ''}> {t('requests.requests')}</span> <span className="menu-arrow" /></a>
                   }
                   {/* <a href="javascript:" className={isSideMenu == "employee" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "employee" ? "" : "employee")}><i className="la la-user" /> <span className="noti-dot"> Employees</span> <span className="menu-arrow" /></a> */}
                     {isSideMenu == "Requests" ?
@@ -593,13 +604,13 @@ const Sidebar = (props) => {
                         <li>
                         {
                             (permissions?.viewSelfRequest) &&
-                            <Link className={pathname.includes('employee/requests') ? "active" : ""} to="/employee/requests">Requests</Link>
+                            <Link className={pathname.includes('employee/requests') ? "active" : ""} to="/employee/requests">{t('requests.requests')}</Link>
                         }
                         </li>
                         <li>
                           {
                             (user_state?.role === 'admin' || permissions?.viewAllRequest || permissions?.teamRequest) &&
-                            <Link className={pathname.includes('request-admin') ? "active" : ""} to="/employee/request-admin">Requests{pending_counter > 0 && <span className="badge badge-pill bg-primary float-end custom-badgeclass">{pending_counter}</span>}<span className="badge badge-pill bg-custom float-end">ADMIN</span> </Link>
+                            <Link className={pathname.includes('request-admin') ? "active" : ""} to="/employee/request-admin">{t('requests.requests')}{pending_counter > 0 && <span className="badge badge-pill bg-primary float-end custom-badgeclass">{pending_counter}</span>}<span className="badge badge-pill bg-custom float-end">ADMIN</span> </Link>
                           }
                           {/* <Link className={pathname.includes('request-admin') ? "active" : ""} to="/employee/request-admin">Requests (Admin)</Link> */}
                         </li>
@@ -614,18 +625,18 @@ const Sidebar = (props) => {
                     <li className="submenu" >
                   {
                     (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
-                    <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-list-alt" /> <span> Timesheet</span> <span className="menu-arrow" /></a>
+                    <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-list-alt" /> <span> {t('sideBar.timesheet')}</span> <span className="menu-arrow" /></a>
                     :
-                    <a href="javascript:" className={(isSideMenu == "Timesheet") ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "Timesheet" ? "" : "Timesheet")}><i className="la la-list-alt" /> <span> Timesheet</span> <span className="menu-arrow" /></a>
+                    <a href="javascript:" className={(isSideMenu == "Timesheet") ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "Timesheet" ? "" : "Timesheet")}><i className="la la-list-alt" /> <span> {t('sideBar.timesheet')}</span> <span className="menu-arrow" /></a>
                   }
                   {/* <a href="javascript:" className={isSideMenu == "employee" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "employee" ? "" : "employee")}><i className="la la-user" /> <span className="noti-dot"> Employees</span> <span className="menu-arrow" /></a> */}
                     {isSideMenu == "Timesheet" ?
 
                         <ul>
                         
-                        <li><Link className={pathname.includes('employee-timesheet') ? "active" : ""} to="/employee-timesheet">Timesheet</Link></li>
+                        <li><Link className={pathname.includes('employee-timesheet') ? "active" : ""} to="/employee-timesheet">{t('sideBar.timesheet')}</Link></li>
                         { (user_state?.role === 'admin' || permissions?.timesheetManagement) &&
-                          <li><Link className={pathname.includes('admin-timesheet') ? "active" : ""} to="/admin-timesheet">Timesheet<span className="badge badge-pill bg-custom float-end">ADMIN</span></Link></li>
+                          <li><Link className={pathname.includes('admin-timesheet') ? "active" : ""} to="/admin-timesheet">{t('sideBar.timesheet')}<span className="badge badge-pill bg-custom float-end">ADMIN</span></Link></li>
                         }
                         
                         </ul>
@@ -638,7 +649,7 @@ const Sidebar = (props) => {
                   { (user_state?.role !== 'admin' && user_state?.role !== 'client' && user_state?.role !== 'focalperson') && (!permissions?.attendanceManagement) &&
                     // { (user_state?.role === 'admin' || permissions?.addUser || permissions?.updateUser || permissions?.viewAllUsers || permissions?.updateStatusOfEmployee) &&
                     <li className={pathname.includes('ce-employee') ? "active" : ""}>
-                      <Link  to="/employee/attendance-employee"><i className="la la-calendar-check" /> <span>Attendance</span> </Link>
+                      <Link  to="/employee/attendance-employee"><i className="la la-calendar-check" /> <span>{t('attendance')}</span> </Link>
                     </li>
                   }
                   
@@ -646,7 +657,7 @@ const Sidebar = (props) => {
                   { (user_state?.role !== 'admin' && user_state?.role !== 'client' && user_state?.role !== 'focalperson') && (!permissions?.viewAllRequest && !permissions?.teamRequest && permissions?.viewSelfRequest) &&
                     // { (user_state?.role === 'admin' || permissions?.addUser || permissions?.updateUser || permissions?.viewAllUsers || permissions?.updateStatusOfEmployee) &&
                     <li className={pathname.includes('employee/requests') ? "active" : ""}>
-                      <Link  to="/employee/requests"><i className="la la-clipboard" /> <span>Requests</span> </Link>
+                      <Link  to="/employee/requests"><i className="la la-clipboard" /> <span>{t('requests.requests')}</span> </Link>
                     </li>
                   }
 
@@ -654,7 +665,7 @@ const Sidebar = (props) => {
                   { (user_state?.role !== 'admin' && user_state?.role !== 'client' && user_state?.role !== 'focalperson') && (!permissions?.timesheetManagement) &&
                     // { (user_state?.role === 'admin' || permissions?.addUser || permissions?.updateUser || permissions?.viewAllUsers || permissions?.updateStatusOfEmployee) &&
                     <li className={pathname.includes('employee-timesheet') ? "active" : ""}>
-                      <Link  to="/employee-timesheet"><i className="la la-list-alt" /> <span>Timesheet</span> </Link>
+                      <Link  to="/employee-timesheet"><i className="la la-list-alt" /> <span>{t('sideBar.timesheet')}</span> </Link>
                     </li>
                   }
                   
@@ -663,7 +674,7 @@ const Sidebar = (props) => {
                     // { (user_state?.role === 'admin' || permissions?.addUser || permissions?.updateUser || permissions?.viewAllUsers || permissions?.updateStatusOfEmployee) &&
 
                     <li className={pathname.includes('employee/holidays') ? "active" : ""}>
-                      <Link to="/employee/holidays"><i className="la la-calendar" /> <span>Holidays</span> </Link>
+                      <Link to="/employee/holidays"><i className="la la-calendar" /> <span>{t('sideBar.holidays')}</span> </Link>
                     </li>
                   }
 
@@ -671,7 +682,7 @@ const Sidebar = (props) => {
                     (user_state?.role === 'admin' || user_state?.role === 'client' || user_state?.role === 'focalperson' || permissions?.clientManagement) &&
                     <li className={pathname.includes('client') ? "active" : ""}>
                       {/* <Link to="/clients"><i className="la la-users" /> <span>Client</span> </Link> */}
-                      <Link to={user_state?.role === 'client' ? '/client/client-profile' : user_state?.role === 'focalperson' ? '/client/focal-profile' : "/clients"}><i className="la la-users" /> <span>Client</span> </Link>
+                      <Link to={user_state?.role === 'client' ? '/client/client-profile' : user_state?.role === 'focalperson' ? '/client/focal-profile' : "/clients"}><i className="la la-users" /> <span>{t('aDash.client')}</span> </Link>
                     </li>
                   }
 
@@ -679,9 +690,9 @@ const Sidebar = (props) => {
                 <li className="submenu">
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
-                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-rocket" /> <span> Projects</span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-rocket" /> <span> {t('aDash.projects')}</span> <span className="menu-arrow" /></a>
                   :
-                  <a href="javascript:" className={isSideMenu == "projects" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "projects" ? "" : "projects")}><i className="la la-rocket" /> <span> Projects</span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" className={isSideMenu == "projects" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "projects" ? "" : "projects")}><i className="la la-rocket" /> <span> {t('aDash.projects')}</span> <span className="menu-arrow" /></a>
                 }
                   {isSideMenu == "projects" ?
                     <ul>
@@ -690,7 +701,7 @@ const Sidebar = (props) => {
                         (user_state?.role !== 'client' || user_state?.role !== 'focalperson') &&
                           <li><Link className={pathname.includes('project_dashboard') ? "active" : pathname.includes('projects-list') ?
                             "active" : pathname.includes('cts-view') ? "active" : ""}
-                            to="/projects/project_dashboard">Projects</Link></li>
+                            to="/projects/project_dashboard">{t('aDash.projects')}</Link></li>
                       }
                       {/* <li><Link onClick={() => localStorage.setItem("minheight", "true")} to="/tasks/tasks">Tasks</Link></li> */}
                       {/* <li><Link onClick={() => localStorage.setItem("minheight", "true")} to="/projects/tasks">Tasks</Link></li> */}
@@ -706,18 +717,18 @@ const Sidebar = (props) => {
                 <li className={pathname.includes('leads') ? "active" : ""}>
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
-                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-user-secret" /> <span>Leads</span> </a>
+                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-user-secret" /> <span>{t('sideBar.leads')}</span> </a>
                   :
-                  <Link to="/app/employees/leads"><i className="la la-user-secret" /> <span>Leads</span> </Link>
+                  <Link to="/app/employees/leads"><i className="la la-user-secret" /> <span>{t('sideBar.leads')}</span> </Link>
                 }
                   {/* <Link to="/app/employees/leads"><i className="la la-user-secret" /> <span>Leads</span> </Link> */}
                 </li>
                 <li className={pathname.includes('tickets') ? "active" : pathname.includes('ticket-view') ? "active" : ""}>
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
-                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-ticket" /> <span>Tickets</span> </a>
+                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-ticket" /> <span>{t('sideBar.tickets')}</span> </a>
                   :
-                  <Link to="/app/employees/tickets"><i className="la la-ticket" /> <span>Tickets</span> </Link>
+                  <Link to="/app/employees/tickets"><i className="la la-ticket" /> <span>{t('sideBar.tickets')}</span> </Link>
                 }
                 </li>
                 <li className="menu-title">
@@ -726,10 +737,10 @@ const Sidebar = (props) => {
                 <li className="submenu">
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
-                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-files-o" /> <span> Finance</span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-files-o" /> <span> {t('sideBar.finance')}</span> <span className="menu-arrow" /></a>
                   :
                   (user_state?.role === 'admin' || permissions?.managePayrolls || permissions?.expenseManagement) ?
-                  <a href="javascript:" className={isSideMenu == "sales" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "sales" ? "" : "sales")}><i className="la la-files-o" /> <span> Finance </span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" className={isSideMenu == "sales" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "sales" ? "" : "sales")}><i className="la la-files-o" /> <span> {t('sideBar.finance')} </span> <span className="menu-arrow" /></a>
                   : null
                 }
                   {isSideMenu == "sales" ?
@@ -758,9 +769,9 @@ const Sidebar = (props) => {
                 <li className="submenu">
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
-                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-files-o" /> <span> Accounting</span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-files-o" /> <span> {t('sideBar.accounting')}</span> <span className="menu-arrow" /></a>
                   :
-                  <a href="javascript:" className={isSideMenu == "accounting" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "accounting" ? "" : "accounting")}><i className="la la-files-o" /> <span> Accounting </span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" className={isSideMenu == "accounting" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "accounting" ? "" : "accounting")}><i className="la la-files-o" /> <span> {t('sideBar.accounting')} </span> <span className="menu-arrow" /></a>
                 }
                   {isSideMenu == "accounting" ?
                     <ul>
@@ -775,9 +786,9 @@ const Sidebar = (props) => {
                 <li className="submenu">
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
-                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-money" /> <span> Payroll</span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-money" /> <span> {t('sideBar.payroll')}</span> <span className="menu-arrow" /></a>
                   :
-                  <a href="javascript:" className={isSideMenu == "payroll" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "payroll" ? "" : "payroll")}><i className="la la-money" /> <span> Payroll </span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" className={isSideMenu == "payroll" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "payroll" ? "" : "payroll")}><i className="la la-money" /> <span> {t('sideBar.payroll')} </span> <span className="menu-arrow" /></a>
                 }
                   {isSideMenu == "payroll" ?
                     <ul>
@@ -800,17 +811,17 @@ const Sidebar = (props) => {
                 <li className={pathname.includes('policies') ? "active" : ""}>
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
-                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-file-pdf-o" /> <span>Policies</span> </a>
+                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-file-pdf-o" /> <span>{t('sideBar.policies')}</span> </a>
                   :
-                  <Link to="/app/hr/policies"><i className="la la-file-pdf-o" /> <span>Policies</span> </Link>
+                  <Link to="/app/hr/policies"><i className="la la-file-pdf-o" /> <span>{t('sideBar.policies')}</span> </Link>
                 }
                 </li>
                 <li className="submenu">
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
-                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-pie-chart" /> <span> Reports</span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-pie-chart" /> <span> {t('sideBar.reports')}</span> <span className="menu-arrow" /></a>
                   :
-                  (user_state?.role === 'admin' || permissions?.reportManagement) && <a href="javascript:" className={isSideMenu == "reports" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "reports" ? "" : "reports")}><i className="la la-pie-chart" /> <span> Reports </span> <span className="menu-arrow" /></a>
+                  (user_state?.role === 'admin' || permissions?.reportManagement) && <a href="javascript:" className={isSideMenu == "reports" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "reports" ? "" : "reports")}><i className="la la-pie-chart" /> <span> {t('sideBar.reports')} </span> <span className="menu-arrow" /></a>
                 }
                   {isSideMenu == "reports" ?
                     <ul>
@@ -830,14 +841,14 @@ const Sidebar = (props) => {
                   }
                 </li>
                 <li className="menu-title">
-                  <span>Performance</span>
+                  <span>{t('sideBar.performance')}</span>
                 </li>
                 <li className="submenu">
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
-                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-graduation-cap" /> <span> Performance</span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-graduation-cap" /> <span> {t('sideBar.performance')}</span> <span className="menu-arrow" /></a>
                   :
-                  <a href="javascript:" className={isSideMenu == "performance" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "performance" ? "" : "performance")}><i className="la la-graduation-cap" /> <span> Performance </span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" className={isSideMenu == "performance" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "performance" ? "" : "performance")}><i className="la la-graduation-cap" /> <span> {t('sideBar.performance')} </span> <span className="menu-arrow" /></a>
                 }
                   {isSideMenu == "performance" ?
                     <ul>
@@ -851,9 +862,9 @@ const Sidebar = (props) => {
                 <li className="submenu">
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
-                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-crosshairs" /> <span> Goals</span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-crosshairs" /> <span> {t('sideBar.goals')}</span> <span className="menu-arrow" /></a>
                   :
-                  <a href="javascript:" className={isSideMenu == "goals" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "goals" ? "" : "goals")}><i className="la la-crosshairs" /> <span> Goals </span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" className={isSideMenu == "goals" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "goals" ? "" : "goals")}><i className="la la-crosshairs" /> <span> {t('sideBar.goals')} </span> <span className="menu-arrow" /></a>
                 }
                   {isSideMenu == "goals" ?
                     <ul>
@@ -866,9 +877,9 @@ const Sidebar = (props) => {
                 <li className="submenu">
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
-                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-edit" /> <span> Training</span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-edit" /> <span> {t('sideBar.training')}</span> <span className="menu-arrow" /></a>
                   :
-                  <a href="javascript:" className={isSideMenu == "training" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "training" ? "" : "training")}><i className="la la-edit" /> <span> Training </span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" className={isSideMenu == "training" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "training" ? "" : "training")}><i className="la la-edit" /> <span> {t('sideBar.training')} </span> <span className="menu-arrow" /></a>
                 }
                   {isSideMenu == "training" ?
                     <ul>
@@ -882,44 +893,44 @@ const Sidebar = (props) => {
                 <li className={pathname.includes('promotion') ? "active" : ""}>
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
-                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-bullhorn" /> <span>Promotion</span> </a>
+                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-bullhorn" /> <span>{t('sideBar.promotion')}</span> </a>
                   :
-                  <Link to="/app/performance/promotion"><i className="la la-bullhorn" /> <span>Promotion</span> </Link>
+                  <Link to="/app/performance/promotion"><i className="la la-bullhorn" /> <span>{t('sideBar.promotion')}</span> </Link>
                 }
                 </li>
                 <li className={pathname.includes('resignation') ? "active" : ""}>
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
-                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-external-link-square" /> <span>Resignation</span> </a>
+                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-external-link-square" /> <span>{t('sideBar.resignation')}</span> </a>
                   :
-                  <Link to="/app/performance/resignation"><i className="la la-external-link-square" /> <span>Resignation</span> </Link>
+                  <Link to="/app/performance/resignation"><i className="la la-external-link-square" /> <span>{t('sideBar.resignation')}</span> </Link>
                 }
                 </li>
                 <li className={pathname.includes('termination') ? "active" : ""}>
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
-                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-times-circle" /> <span>Termination</span> </a>
+                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-times-circle" /> <span>{t('sideBar.termination')}</span> </a>
                   :
-                  <Link to="/app/performance/termination"><i className="la la-times-circle" /> <span>Termination</span> </Link>
+                  <Link to="/app/performance/termination"><i className="la la-times-circle" /> <span>{t('sideBar.termination')}</span> </Link>
                 }
                 </li>
                 <li className="menu-title">
-                  <span>Administration</span>
+                  <span>{t('sideBar.administration')}</span>
                 </li>
                 <li className={pathname.includes('assets') ? "active" : ""}>
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
-                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-object-ungroup" /> <span>Assets</span> </a>
+                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-object-ungroup" /> <span>{t('sideBar.assets')}</span> </a>
                   :
-                  <Link to="/app/administrator/assets"><i className="la la-object-ungroup" /> <span>Assets</span> </Link>
+                  <Link to="/app/administrator/assets"><i className="la la-object-ungroup" /> <span>{t('sideBar.assets')}</span> </Link>
                 }
                 </li>
                 <li className="submenu">
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
-                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-briefcase" /> <span> Jobs</span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-briefcase" /> <span> {t('sideBar.jobs')}</span> <span className="menu-arrow" /></a>
                   :
-                  <a href="javascript:" className={isSideMenu == "jobs" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "jobs" ? "" : "jobs")}><i className="la la-briefcase" /> <span> Jobs </span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" className={isSideMenu == "jobs" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "jobs" ? "" : "jobs")}><i className="la la-briefcase" /> <span> Jo{t('sideBar.jobs')} </span> <span className="menu-arrow" /></a>
                 }
                   {isSideMenu == "jobs" ?
                     <ul>
@@ -946,30 +957,30 @@ const Sidebar = (props) => {
                 <li className={pathname.includes('knowledgebase') ? "active" : ""}>
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
-                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-question" /> <span>Knowledgebase</span> </a>
+                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-question" /> <span>{t('sideBar.knowledgebase')}</span> </a>
                   :
-                  <Link to="/app/administrator/knowledgebase"><i className="la la-question" /> <span>Knowledgebase</span> </Link>
+                  <Link to="/app/administrator/knowledgebase"><i className="la la-question" /> <span>{t('sideBar.knowledgebase')}</span> </Link>
                 }
                 </li>
                 <li className={pathname.includes('activities') ? "active" : ""}>
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
-                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-bell" /> <span>Activities</span> </a>
+                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-bell" /> <span>{t('sideBar.activities')}</span> </a>
                   :
-                  <Link to="/app/administrator/activities"><i className="la la-bell" /> <span>Activities</span> </Link>
+                  <Link to="/app/administrator/activities"><i className="la la-bell" /> <span>{t('sideBar.activities')}</span> </Link>
                 }
                 </li>
                 <li className={pathname.includes('administrator/users') ? "active" : ""}>
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
-                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-user-plus" /> <span>Users</span> </a>
+                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-user-plus" /> <span>{t('sideBar.users')}</span> </a>
                   :
-                  <Link to="/app/administrator/users"><i className="la la-user-plus" /> <span>Users</span> </Link>
+                  <Link to="/app/administrator/users"><i className="la la-user-plus" /> <span>{t('sideBar.users')}</span> </Link>
                 }
                 </li>
                 {(user_state?.role === 'admin' || permissions?.companyManagement) &&
                   <li className={pathname.includes('/settings') ? "active" : ""}>
-                    <Link to="/settings"><i className="la la-cog" /> <span>Settings</span></Link>
+                    <Link to="/settings"><i className="la la-cog" /> <span>{t('sideBar.settings')}</span></Link>
                   </li>
                 }
                 

@@ -12,10 +12,11 @@ import Modal from "@mui/material/Modal";
 import { LoadingOutlined } from '@ant-design/icons';
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { apiServices } from '../../../Services/apiServices';
+import { useTranslation } from 'react-i18next';
 
 
 const Payments = () => {
-
+  const { t, i18n } = useTranslation();
   const nav = useNavigate();
 
   const moment = require('moment');
@@ -516,6 +517,22 @@ const Payments = () => {
                   // bordered
                   dataSource={allInvoices}
                   rowKey={record => record._id}
+                  components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                   // onChange={this.handleTableChange}
                 />
 
@@ -529,7 +546,7 @@ const Payments = () => {
                         defaultCurrent={1}
                         current={currentPage}
                         showTotal={(total, range) =>
-                          `Showing ${range[0]} to ${range[1]} of ${total} entries`}
+                          t('paginationShow', { range1: range[0], range2: range[1], total: total })}
                         onChange={(page, size) => {
                           console.log(page, size);
                           setPageSize(size); setCurrentPage(page);
@@ -537,7 +554,9 @@ const Payments = () => {
                         }}
                         showSizeChanger={true}
                         pageSizeOptions={['20', '30', '40', '50']}
-                        itemRender={itemRender}
+                        itemRender={(current, type, originalElement) =>
+                          itemRender(current, type, originalElement, t)
+                        }
                       />
                     </div>
                   }

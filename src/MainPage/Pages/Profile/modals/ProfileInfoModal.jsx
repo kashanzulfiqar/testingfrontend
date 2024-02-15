@@ -17,11 +17,12 @@ import AddDesignation from './addFunctions/AddDesignation';
 import AddShift from './addFunctions/AddShift';
 import AddTaxSlab from './addFunctions/AddTaxSlab';
 import AddRole from './addFunctions/AddRole';
+import { useTranslation } from 'react-i18next';
 
 
 
 const ProfileInfoModal = ({ open, handleClose, user_data, onFinishAdd, onFinishEdit, onFinish, loader, numFlag }) => {
-
+  const { t, i18n } = useTranslation();
   const [form] = Form.useForm();
   
   const moment = require('moment');
@@ -112,7 +113,7 @@ const [addRoleOpen, setAddRoleOpen] = useState(false)
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Role Info Error"
+              : t('allEmp.errors.getDepartmentInfoError')
           }`
         );
       });
@@ -132,7 +133,7 @@ const [addRoleOpen, setAddRoleOpen] = useState(false)
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Role Info Error"
+              : t('allEmp.errors.getRoleInfoError')
           }`
         );
       });
@@ -156,7 +157,7 @@ const [addRoleOpen, setAddRoleOpen] = useState(false)
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Permissions Info Error"
+              : t('allEmp.errors.getpermissionsInfoError')
           }`
         );
       });
@@ -176,7 +177,7 @@ const [addRoleOpen, setAddRoleOpen] = useState(false)
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Department Info Error"
+              : t('allEmp.errors.getDepartmentInfoError')
           }!`
         );
       });
@@ -196,7 +197,7 @@ const [addRoleOpen, setAddRoleOpen] = useState(false)
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Designation Info Error"
+              : t('allEmp.errors.getDesignationInfoError')
           }!`
         );
       });
@@ -216,7 +217,7 @@ const [addRoleOpen, setAddRoleOpen] = useState(false)
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Shift Info Error"
+              : t('allEmp.errors.getShiftInfoError')
           }!`
         );
       });
@@ -236,7 +237,7 @@ const getTaxSlab = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Get Tax Slabs Info Error"
+                : t('allEmp.errors.getTaxSlabsInfoError')
             }!`
             );
         });
@@ -256,7 +257,7 @@ const getTaxSlab = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Get Leave Info Error"
+                : t('allEmp.errors.getLeaveInfoError')
             }!`
           );
         });
@@ -272,7 +273,7 @@ const getTaxSlab = () => {
     const isFileTypeAllowed = allowedFileTypes.includes(file.type);
 
     if (!isFileTypeAllowed) {
-      message.error('You can only upload PNG, JPG, or JPEG files!');
+      message.error(t('allEmp.errors.fileTypeNotAllowed'));
       return false;
     }
 
@@ -280,7 +281,7 @@ const getTaxSlab = () => {
     const isSizeAllowed = file.size <= maxSizeInBytes;
 
     if (!isSizeAllowed) {
-      message.error('File size is too large. Maximum allowed size is 5MB.');
+      message.error(t('allEmp.errors.fileSizeTooLarge'));
       return false;
     }
 
@@ -309,7 +310,7 @@ const getTaxSlab = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "upload image Error"
+                : t('allEmp.errors.uploadImageError')
             }!`
           );
       })
@@ -349,7 +350,7 @@ const getTaxSlab = () => {
             <div className="modal-dialog modal-dialog-centered modal-lg" role="document">
             <div className="modal-content">
                 <div className="modal-header">
-                <h5 className="modal-title"> Profile Information</h5>
+                <h5 className="modal-title"> {t('allEmp.Modal.profileInformation')}</h5>
                 <button type="button" className="close" onClick={() => { handleClose(); setPhoneLengthError(false); setEmergValue(null); form.resetFields(); }}>
                     <span aria-hidden="true">×</span>
                 </button>
@@ -366,7 +367,7 @@ const getTaxSlab = () => {
                     //   onFinish(values)
                     open?.isAddOpen ? onFinishAdd(values) : open?.isEditOpen ? onFinishEdit(values) : open?.isprofileInfoOpen ?  onFinish(values) : null
                     } else {
-                      message.error("Total number of all leaves must not be more than 365");
+                      message.error(t('allEmp.errors.totalLeavesExceeded'));
                     }
                   }}
                 onFinishFailed={({errorFields}) => {
@@ -377,9 +378,9 @@ const getTaxSlab = () => {
                     }
                     const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
                     if(consecutiveSpacesError){
-                    message.error("Please Remove Consecutive Spaces!")
+                      message.error(t('allEmp.errors.removeConsecutiveSpaces'))
                     }else{
-                    message.error("Please Fill Required Fields!")
+                      message.error(t('allEmp.errors.fillRequiredFields'))
                     }
                 }}
                 initialValues={{
@@ -439,7 +440,7 @@ const getTaxSlab = () => {
                         <div className="col-md-6">
                         <div className="form-group">
                         <label>
-                            Full Name <span className="text-danger">*</span>
+                        {t('allEmp.Modal.fullName')} <span className="text-danger">*</span>
                         </label>
                         <Form.Item
                             name='fullName'
@@ -450,11 +451,11 @@ const getTaxSlab = () => {
                                 required: true,
                                 validator: (_, value) => {
                                 if (!value || value.trim() === '') {
-                                    return Promise.reject('please enter full name');
+                                    return Promise.reject(t('allEmp.errors.enterFullName'));
                                 } else if (/\s{2,}/.test(value)) {
-                                    return Promise.reject('please remove consecutive spaces');
+                                    return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                                 } else if (value.length < 3) {
-                                    return Promise.reject('name must be at least 3 characters long');
+                                    return Promise.reject(t('allEmp.errors.nameMinLength'));
                                 }
                                 return Promise.resolve();
                                 },
@@ -468,7 +469,7 @@ const getTaxSlab = () => {
                         <div className="col-md-6">
                         <div className="form-group">
                             <label>
-                            Employee ID <span className="text-danger">*</span>
+                            {t('allEmp.Modal.employeeID')} <span className="text-danger">*</span>
                             </label>
                             <Form.Item
                             name='employeeId'
@@ -479,11 +480,11 @@ const getTaxSlab = () => {
                                     required: true,
                                     validator: (_, value) => {
                                     if (!value || value.trim() === '') {
-                                        return Promise.reject('please enter employee id');
+                                        return Promise.reject(t('allEmp.errors.enterEmployeeId'));
                                     } else if (/\s{2,}/.test(value)) {
-                                        return Promise.reject('please remove consecutive spaces');
+                                        return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                                     } else if (value.length < 3) {
-                                        return Promise.reject('id must be at least 3 characters long');
+                                        return Promise.reject(t('allEmp.errors.idMinLength'));
                                     }
                                     return Promise.resolve();
                                     },
@@ -497,7 +498,7 @@ const getTaxSlab = () => {
                         <div className="col-md-6">
                         <div className="form-group">
                             <label>
-                            Email <span className="text-danger">*</span>
+                            {t('allEmp.Modal.email')} <span className="text-danger">*</span>
                             </label>
                             <Form.Item
                             name='email'
@@ -508,11 +509,11 @@ const getTaxSlab = () => {
                                 required: true,
                                 validator: (_, value) => {
                                     if (!value || value?.trim() === '') {
-                                    return Promise.reject('please enter email');
+                                    return Promise.reject(t('allEmp.errors.enterEmail'));
                                     } else if (/\s{2,}/.test(value)) {
-                                    return Promise.reject('please remove consecutive spaces');
+                                    return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                                     } else if (!isValidEmail(value)) {
-                                    return Promise.reject('please enter a valid email');
+                                    return Promise.reject(t('allEmp.errors.enterValidEmail'));
                                     }
                                     return Promise.resolve();
                                 },
@@ -526,7 +527,7 @@ const getTaxSlab = () => {
                         <div className="col-md-6">
                         <div className="form-group">
                             <label>
-                            Password <span className="text-danger">*</span>
+                            {t('allEmp.Modal.password')} <span className="text-danger">*</span>
                             </label>
                             <Form.Item
                             name='password'
@@ -535,11 +536,11 @@ const getTaxSlab = () => {
                                 {
                                 whitespace: true,
                                 required: true,
-                                message: "please enter password",
+                                message: t('allEmp.errors.password'),
                                 },
                                 {
                                 min: 8,
-                                message: "password length should be more than 8",
+                                message: t('allEmp.errors.passwordLength'),
                                 },
                             ]}
                             >
@@ -559,7 +560,7 @@ const getTaxSlab = () => {
                     <div className="col-md-6">
                     <div className="form-group">
                         <label>
-                        Phone No <span className="text-danger">*</span>
+                        {t('allEmp.Modal.phoneNumber')} <span className="text-danger">*</span>
                         </label>
                         <Form.Item
                         name='phoneNo'
@@ -568,15 +569,15 @@ const getTaxSlab = () => {
                             {
                             whitespace: true,
                             required: true,
-                            message: "please enter phone number",
+                            message: t('allEmp.errors.phoneNumber'),
                             },
                             {
                             min: 5,
-                            message: "phone length must be at least 5 digits long",
+                            message: t('allEmp.errors.phoneLength'),
                             },
                         ]}
                         validateStatus={phoneLengthError ? 'error' : ''}
-                        help={phoneLengthError?.emp ? 'please enter phone number' : phoneLengthError?.len ? "phone length must be at least 5 digits long" : numFlag ? <label style={{ color: 'red' }}>please enter a valid phone number</label> : ''}
+                        help={phoneLengthError?.emp ? 'please enter phone number' : phoneLengthError?.len ? "phone length must be at least 5 digits long" : numFlag ? <label style={{ color: 'red' }}>{t('allEmp.errors.validPhoneNumber')}</label> : ''}
                         >
                         <Input style={{ display: "none" }} value={emergValue?.phoneNo} />
                         <PhoneNoInput
@@ -591,7 +592,7 @@ const getTaxSlab = () => {
                     <div className="col-md-6">
                     <div className="form-group">
                         <label>
-                        Date of Birth <span className="text-danger">*</span>
+                        {t('allEmp.Modal.dateOfBirth')} <span className="text-danger">*</span>
                         </label>
                         <div style={{ position: 'relative' }} id='area'>
                             <Form.Item
@@ -600,7 +601,7 @@ const getTaxSlab = () => {
                             rules={[
                                 {
                                   required: true,
-                                  message: "please enter date of birth",
+                                  message: t('allEmp.errors.dateOfBirth'),
                                 },
                               ]}
                             >
@@ -612,7 +613,7 @@ const getTaxSlab = () => {
                     <div className="col-md-6">
                     <div className="form-group">
                         <label>
-                        National Identity Number <span className="text-danger">*</span>
+                        {t('allEmp.Modal.nationalIdentityNumber')} <span className="text-danger">*</span>
                         </label>
                         <Form.Item
                         name='nationalIdentityNumber'
@@ -621,11 +622,11 @@ const getTaxSlab = () => {
                             {
                                 whitespace: true,
                                 required: true,
-                                message: 'please enter national identity number'
+                                message: t('allEmp.errors.nationalIdentityNumber'),
                             },
                             {
                                 min: 3,
-                                message: 'number must be at least 3 digits long'
+                                message: t('allEmp.errors.phoneDigits'),
                             }
                         ]}
                         >
@@ -646,7 +647,7 @@ const getTaxSlab = () => {
                     <div className="col-md-6">
                     <div className="form-group">
                         <label>
-                        Gender <span className="text-danger">*</span>
+                        {t('allEmp.Modal.gender')} <span className="text-danger">*</span>
                         </label>
                         <div style={{ position: 'relative' }} id='area'>
                             <Form.Item
@@ -656,7 +657,7 @@ const getTaxSlab = () => {
                                 {
                                   whitespace: true,
                                   required: true,
-                                  message: "please select gender",
+                                  message: t('allEmp.errors.gender'),
                                 },
                               ]}
                             >
@@ -689,7 +690,7 @@ const getTaxSlab = () => {
                     <div className="col-md-6">
                     <div className="form-group">
                     <label>
-                        Address <span className="text-danger">*</span>
+                    {t('allEmp.Modal.address')} <span className="text-danger">*</span>
                     </label>
                     <Form.Item
                         name='address'
@@ -700,11 +701,11 @@ const getTaxSlab = () => {
                             required: true,
                             validator: (_, value) => {
                             if (!value || value.trim() === '') {
-                                return Promise.reject('please enter address');
+                                return Promise.reject(t('allEmp.errors.enterAddress'));
                             } else if (/\s{2,}/.test(value)) {
-                                return Promise.reject('please remove consecutive spaces');
+                                return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                             } else if (value.length < 3) {
-                                return Promise.reject('address must be at least 3 characters long');
+                                return Promise.reject(t('allEmp.errors.addressMinLength'));
                             }
                             return Promise.resolve();
                             },
@@ -718,7 +719,7 @@ const getTaxSlab = () => {
                     <div className="col-md-6">
                     <div className="form-group">
                         <label>
-                        Joining Date <span className="text-danger">*</span>
+                        {t('allEmp.Modal.joiningDate')} <span className="text-danger">*</span>
                         </label>
                         <div style={{ position: 'relative' }} id='area'>
                             <Form.Item
@@ -727,7 +728,7 @@ const getTaxSlab = () => {
                             rules={[
                                 {
                                   required: true,
-                                  message: "please enter joining date",
+                                  message: t('allEmp.errors.joiningDate'),
                                 },
                               ]}
                             >
@@ -739,7 +740,7 @@ const getTaxSlab = () => {
                     <div className="col-md-6">
                     <div className="form-group">
                         <label>
-                        Employee Type <span className="text-danger">*</span>
+                        {t('allEmp.Modal.employeeType')} <span className="text-danger">*</span>
                         </label>
                         <div style={{ position: 'relative' }} id='area'>
                             <Form.Item
@@ -749,7 +750,7 @@ const getTaxSlab = () => {
                                 {
                                   whitespace: true,
                                   required: true,
-                                  message: "please select employee type",
+                                  message: t('allEmp.errors.employeeType'),
                                 },
                               ]}
                             >
@@ -786,7 +787,7 @@ const getTaxSlab = () => {
                     <div className="col-md-6">
                         <div className="form-group">
                             <label>
-                            Reports To
+                            {t('allEmp.Modal.reportsTo')}
                             </label>
                             <div style={{ position: 'relative' }} id='area'>
                                 <Form.Item
@@ -814,7 +815,7 @@ const getTaxSlab = () => {
                     <div className="col-md-6">
                         <div className="form-group">
                             <label>
-                            Role <span className="text-danger">*</span>
+                            {t('allEmp.Modal.role')} <span className="text-danger">*</span>
                             </label>
                             <div style={{ position: 'relative' }} id='area'>
                                 <Form.Item
@@ -824,7 +825,7 @@ const getTaxSlab = () => {
                                     {
                                       whitespace: true,
                                       required: true,
-                                      message: "please select role",
+                                      message: t('allEmp.errors.role'),
                                     },
                                   ]}
                                 >
@@ -847,7 +848,7 @@ const getTaxSlab = () => {
                                                     style={{width: '100%', height: '40px', background: '#efefef', borderColor: '#efefef', display: 'flex', justifyContent: 'center', alignItems: 'center'}}
                                                     onClick={() => setAddRoleOpen(true)}
                                                   >
-                                                    Add Role
+                                                    {t('allEmp.Modal.addRole')}
                                                   </Button>
                                                 </>
                                             }
@@ -872,7 +873,7 @@ const getTaxSlab = () => {
                     <div className="col-md-6">
                     <div className="form-group">
                         <label>
-                        Level <span className="text-danger">*</span>
+                        {t('allEmp.Modal.level')} <span className="text-danger">*</span>
                         </label>
                         <Form.Item
                         name='level'
@@ -883,11 +884,11 @@ const getTaxSlab = () => {
                             required: true,
                             validator: (_, value) => {
                                 if (!value || value.trim() === '') {
-                                return Promise.reject('please enter level');
+                                return Promise.reject(t('allEmp.errors.enterLevel'));
                                 } else if (/\s{2,}/.test(value)) {
-                                return Promise.reject('please remove consecutive spaces');
+                                return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                                 } else if (value.length < 3) {
-                                return Promise.reject('level must be at least 3 characters long');
+                                return Promise.reject(t('allEmp.errors.levelMinLength'));
                                 }
                                 return Promise.resolve();
                             },
@@ -901,7 +902,7 @@ const getTaxSlab = () => {
                     <div className="col-md-6">
                     <div className="form-group">
                       <label>
-                        Salary <span className="text-danger">*</span>
+                      {t('allEmp.Modal.salary')} <span className="text-danger">*</span>
                       </label>
                       <Form.Item
                         name='salary'
@@ -910,12 +911,12 @@ const getTaxSlab = () => {
                           {
                             whitespace: true,
                             required: true,
-                            message: 'please enter salary'
+                            message: t('allEmp.errors.salary'),
                             // validator: (_, value) => {
                             //   if (!value || value.trim() === '') {
                             //     return Promise.reject('please enter salary');
                             //   } else if (/\s{2,}/.test(value)) {
-                            //     return Promise.reject('please remove consecutive spaces');
+                            //     return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                             //   } else if (value.length < 3) {
                             //     return Promise.reject('length must be at least 3 characters long');
                             //   }
@@ -946,7 +947,7 @@ const getTaxSlab = () => {
                     <div className="col-md-6">
                     <div className="form-group">
                         <label>
-                        Department <span className="text-danger">*</span>
+                        {t('allEmp.Modal.department')} <span className="text-danger">*</span>
                         </label>
                         <div style={{ position: 'relative' }} id='area'>
                             <Form.Item
@@ -956,7 +957,7 @@ const getTaxSlab = () => {
                                 {
                                   whitespace: true,
                                   required: true,
-                                  message: "please select department",
+                                  message: t('allEmp.errors.department'),
                                 },
                               ]}
                             >
@@ -979,7 +980,7 @@ const getTaxSlab = () => {
                                                 style={{width: '100%', height: '40px', background: '#efefef', borderColor: '#efefef', display: 'flex', justifyContent: 'center', alignItems: 'center'}}
                                                 onClick={() => setAddDeptOpen(true)}
                                               >
-                                                Add Department
+                                                {t('allEmp.Modal.addDepartment')}
                                               </Button>
                                             </>
                                         }
@@ -1003,7 +1004,7 @@ const getTaxSlab = () => {
                     <div className="col-md-6">
                     <div className="form-group">
                         <label>
-                        Designation <span className="text-danger">*</span>
+                        {t('allEmp.Modal.designation')} <span className="text-danger">*</span>
                         </label>
                         <div style={{ position: 'relative' }} id='area'>
                             <Form.Item
@@ -1013,7 +1014,7 @@ const getTaxSlab = () => {
                                 {
                                   whitespace: true,
                                   required: true,
-                                  message: "please select designation",
+                                  message: t('allEmp.errors.designation'),
                                 },
                               ]}
                             >
@@ -1036,7 +1037,7 @@ const getTaxSlab = () => {
                                                 style={{width: '100%', height: '40px', background: '#efefef', borderColor: '#efefef', display: 'flex', justifyContent: 'center', alignItems: 'center'}}
                                                 onClick={() => setAddDesigOpen(true)}
                                               >
-                                                Add Designation
+                                                {t('allEmp.Modal.addDesignation')}
                                               </Button>
                                             </>
                                         }
@@ -1060,7 +1061,7 @@ const getTaxSlab = () => {
                     <div className="col-md-6">
                     <div className="form-group">
                         <label>
-                        Shift <span className="text-danger">*</span>
+                        {t('allEmp.Modal.shift')} <span className="text-danger">*</span>
                         </label>
                         <div style={{ position: 'relative' }} id='area'>
                             <Form.Item
@@ -1070,7 +1071,7 @@ const getTaxSlab = () => {
                                 {
                                   whitespace: true,
                                   required: true,
-                                  message: "please select shift",
+                                  message: t('allEmp.errors.shift'),
                                 },
                               ]}
                             >
@@ -1093,7 +1094,7 @@ const getTaxSlab = () => {
                                                 style={{width: '100%', height: '40px', background: '#efefef', borderColor: '#efefef', display: 'flex', justifyContent: 'center', alignItems: 'center'}}
                                                 onClick={() => setAddShiftOpen(true)}
                                               >
-                                                Add Shift
+                                                {t('allEmp.Modal.addShift')}
                                               </Button>
                                             </>
                                         }
@@ -1117,7 +1118,7 @@ const getTaxSlab = () => {
                     <div className="col-md-6">
                     <div className="form-group">
                         <label>
-                        Tax Slab <span className="text-danger">*</span>
+                        {t('allEmp.Modal.taxSlab')} <span className="text-danger">*</span>
                         </label>
                         <div style={{ position: 'relative' }} id='area'>
                             <Form.Item
@@ -1127,7 +1128,7 @@ const getTaxSlab = () => {
                                 {
                                   whitespace: true,
                                   required: true,
-                                  message: "please select tax slab",
+                                  message: t('allEmp.errors.taxSlab'),
                                 },
                               ]}
                             >
@@ -1150,7 +1151,7 @@ const getTaxSlab = () => {
                                                 style={{width: '100%', height: '40px', background: '#efefef', borderColor: '#efefef', display: 'flex', justifyContent: 'center', alignItems: 'center'}}
                                                 onClick={() => setAddTaxOpen(true)}
                                               >
-                                                Add Tax Slab
+                                                {t('allEmp.Modal.addTaxSlab')}
                                               </Button>
                                             </>
                                         }
@@ -1174,14 +1175,14 @@ const getTaxSlab = () => {
                     <div className="col-md-6">
                     <div className="form-group">
                         <label>
-                        Sick Leaves <span className="text-danger">*</span>
+                        {t('allEmp.Modal.sickLeaves')} <span className="text-danger">*</span>
                         </label>
                         <Form.Item
                         name="sickLeaves"
                         rules={[
                             {
                             required: true,
-                            message: "please enter sick leaves",
+                            message: t('allEmp.errors.sickLeaves'),
                             },
                         ]}
                         className="custom-border"
@@ -1199,14 +1200,14 @@ const getTaxSlab = () => {
                     <div className="col-md-6">
                     <div className="form-group">
                         <label>
-                        Casual Leaves <span className="text-danger">*</span>
+                        {t('allEmp.Modal.casualLeaves')} <span className="text-danger">*</span>
                         </label>
                         <Form.Item
                         name="casualLeaves"
                         rules={[
                             {
                             required: true,
-                            message: "please enter casual leaves",
+                            message: t('allEmp.errors.casualLeaves'),
                             },
                         ]}
                         className="custom-border"
@@ -1224,14 +1225,14 @@ const getTaxSlab = () => {
                     <div className="col-md-6">
                     <div className="form-group">
                         <label>
-                        Work From Home Leaves <span className="text-danger">*</span>
+                        {t('allEmp.Modal.workFromHomeLeaves')} <span className="text-danger">*</span>
                         </label>
                         <Form.Item
                         name="workFromHomeLeaves"
                         rules={[
                             {
                             required: true,
-                            message: "please enter work from home leaves",
+                            message: t('allEmp.errors.workFromHomeLeaves'),
                             },
                         ]}
                         className="custom-border"
@@ -1249,14 +1250,14 @@ const getTaxSlab = () => {
                     <div className="col-md-6">
                     <div className="form-group">
                         <label>
-                        Bereavement Leaves <span className="text-danger">*</span>
+                        {t('allEmp.Modal.bereavementLeaves')} <span className="text-danger">*</span>
                         </label>
                         <Form.Item
                         name="bereavementLeaves"
                         rules={[
                             {
                             required: true,
-                            message: "please enter bereavement leaves",
+                            message: t('allEmp.errors.bereavementLeaves'),
                             },
                         ]}
                         className="custom-border"
@@ -1274,14 +1275,14 @@ const getTaxSlab = () => {
                     <div className="col-md-6">
                     <div className="form-group">
                         <label>
-                        Unpaid Leaves <span className="text-danger">*</span>
+                        {t('allEmp.Modal.unpaidLeaves')} <span className="text-danger">*</span>
                         </label>
                         <Form.Item
                         name="unpaidLeaves"
                         rules={[
                             {
                             required: true,
-                            message: "please enter unpaid leaves",
+                            message: t('allEmp.errors.unpaidLeaves'),
                             },
                         ]}
                         className="custom-border"
@@ -1299,14 +1300,14 @@ const getTaxSlab = () => {
                     <div className="col-md-6">
                     <div className="form-group">
                         <label>
-                        Paternity Leaves <span className="text-danger">*</span>
+                        {t('allEmp.Modal.paternityLeaves')} <span className="text-danger">*</span>
                         </label>
                         <Form.Item
                         name="paternityLeaves"
                         rules={[
                             {
                             required: true,
-                            message: "please enter paternity leaves",
+                            message: t('allEmp.errors.paternityLeaves'),
                             },
                         ]}
                         className="custom-border"
@@ -1324,14 +1325,14 @@ const getTaxSlab = () => {
                     <div className="col-md-6">
                     <div className="form-group">
                         <label>
-                        Maternity Leaves <span className="text-danger">*</span>
+                        {t('allEmp.Modal.maternityLeaves')} <span className="text-danger">*</span>
                         </label>
                         <Form.Item
                         name="maternityLeaves"
                         rules={[
                             {
                             required: true,
-                            message: "please enter maternity leaves",
+                            message: t('allEmp.errors.maternityLeaves'),
                             },
                         ]}
                         className="custom-border"
@@ -1349,14 +1350,14 @@ const getTaxSlab = () => {
                     <div className="col-md-6">
                     <div className="form-group">
                         <label>
-                        Marriage Leaves <span className="text-danger">*</span>
+                        {t('allEmp.Modal.marriageLeaves')} <span className="text-danger">*</span>
                         </label>
                         <Form.Item
                         name="marriageLeaves"
                         rules={[
                             {
                             required: true,
-                            message: "please enter marriage leaves",
+                            message: t('allEmp.errors.marriageLeaves'),
                             },
                         ]}
                         className="custom-border"
@@ -1374,14 +1375,14 @@ const getTaxSlab = () => {
                     <div className="col-md-6">
                     <div className="form-group">
                         <label>
-                        Half Day Leaves <span className="text-danger">*</span>
+                        {t('allEmp.Modal.halfDayLeaves')} <span className="text-danger">*</span>
                         </label>
                         <Form.Item
                         name="halfDayLeaves"
                         rules={[
                             {
                             required: true,
-                            message: "please enter half day leaves",
+                            message: t('allEmp.errors.halfDayLeaves'),
                             },
                         ]}
                         className="custom-border"
@@ -1399,14 +1400,14 @@ const getTaxSlab = () => {
                     <div className="col-md-6">
                         <div className="form-group">
                             <label>
-                            Annual Leaves <span className="text-danger">*</span>
+                            {t('allEmp.Modal.annualLeaves')} <span className="text-danger">*</span>
                             </label>
                             <Form.Item
                             name="annualLeaves"
                             rules={[
                                 {
                                 required: true,
-                                message: "please enter annual leaves",
+                                message: t('allEmp.errors.annualLeaves'),
                                 },
                             ]}
                             className="custom-border"
@@ -1445,7 +1446,7 @@ const getTaxSlab = () => {
                     <button type='submit' className="btn btn-primary submit-btn" disabled={loader}>
                     {
                         loader ? <Spin size="small" indicator={antIcon} />
-                        : 'Submit'
+                        : t('submit')
                     }
                     </button>
                 </div>

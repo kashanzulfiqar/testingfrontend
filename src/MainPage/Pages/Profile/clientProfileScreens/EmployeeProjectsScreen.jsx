@@ -22,9 +22,11 @@ import { itemRender } from "../../../paginationfunction";
 import EditProjects from "../../../Employees/Projects/EditProjects";
 import Modal from "@mui/material/Modal";
 import { getAllISOCodes } from 'iso-country-currency';
+import { useTranslation } from "react-i18next";
 
 
 const EmployeeProjectsScreen = ({ employeeId }) => {
+  const { t, i18n } = useTranslation();
   const user_state = useSelector((state) => state.user.loginvalue);
   const role = user_state?.user?.role;
   const user_id = user_state?.user?._id;
@@ -74,7 +76,7 @@ const EmployeeProjectsScreen = ({ employeeId }) => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Employee Info Error"
+              : t('empProfile.errors.getEmployeeInfoError')
           }!`
         );
       });
@@ -108,7 +110,7 @@ const EmployeeProjectsScreen = ({ employeeId }) => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Employee Projects Error"
+              : t('projectScreen.errors.getEmployeeProjectsError')
           }!`
         );
       });
@@ -124,7 +126,7 @@ const EmployeeProjectsScreen = ({ employeeId }) => {
     apiServices("DELETE", `project-management/`, id, user_state)
       .then((res) => {
         if (res.data.success === true) {
-          message.success(`Project Deleted Successfully!`);
+          message.success(t('projectScreen.errors.projectDeletedSuccessfully'));
           setLoader(false);
           getAllProjects(currentPage, pageSize);
           closeModal();
@@ -139,7 +141,7 @@ const EmployeeProjectsScreen = ({ employeeId }) => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Error Deleting Project"
+              : t('projectScreen.errors.errorDeletingProject')
           }`
         );
       });
@@ -239,7 +241,7 @@ const EmployeeProjectsScreen = ({ employeeId }) => {
             ? err?.response?.data?.msg
             : err?.response?.data?.validation?.body?.message
             ? err?.response?.data?.validation?.body?.message
-            : "Get Domain Info Error"
+            : t('projectScreen.errors.getDomainInfoError')
         }!`
       );
     });
@@ -316,7 +318,7 @@ const EmployeeProjectsScreen = ({ employeeId }) => {
                             });
                           }}
                         >
-                          <i className="fa fa-pencil m-r-5" /> Edit
+                          <i className="fa fa-pencil m-r-5" /> {t('edit')}
                         </a>
                         <a
                           className="dropdown-item"
@@ -329,7 +331,7 @@ const EmployeeProjectsScreen = ({ employeeId }) => {
                             });
                           }}
                         >
-                          <i className="fa fa-trash-o m-r-5" /> Delete
+                          <i className="fa fa-trash-o m-r-5" /> {t('delete')}
                         </a>
                       </div>
                     </div>
@@ -356,13 +358,13 @@ const EmployeeProjectsScreen = ({ employeeId }) => {
                   </div>
                   <div style={{ margin: "auto 0px 0px" }}>
                     <div className="pro-deadline m-b-15">
-                      <div className="sub-title">Deadline:</div>
+                      <div className="sub-title">{t('projectScreen.deadline')}:</div>
                       <div className="text-muted">
                         {formattedDate(project?.endDate)}
                       </div>
                     </div>
                     <div className="pro-deadline m-b-15">
-                          <div className="sub-title">Status:</div>
+                          <div className="sub-title">{t('projectScreen.status')}:</div>
                           <div style={{
                             color: 
                               project?.status === 'Scheduled' ? 'red' :
@@ -370,11 +372,22 @@ const EmployeeProjectsScreen = ({ employeeId }) => {
                               (project?.status === 'Paused' || project?.status === 'Archived') ? 'grey' :
                               project?.status === 'Completed' ? 'green' : 'inherit'
                           }}>
-                            {project?.status}
+                            {project?.status === 'Scheduled' 
+                            ? t('projectScreen.Modal.scheduled')
+                            : project?.status === 'On-Going' 
+                            ? t('projectScreen.Modal.onGoing')
+                            : project?.status === 'Paused' 
+                            ? t('projectScreen.Modal.paused')
+                            : project?.status === 'Completed' 
+                            ? t('projectScreen.Modal.completed')
+                            : project?.status === 'Archived' 
+                            ? t('projectScreen.Modal.archived') 
+                            : project?.status
+                            }
                           </div>
                         </div>
                     <div className="project-members m-b-15">
-                      <div>Project Leader:</div>
+                      <div>{t('projectScreen.projectLeader')}:</div>
                       <ul className="team-members">
                         <li>
                           <Tooltip title={empInfo[project.projectLead]?.fullName}>
@@ -393,7 +406,7 @@ const EmployeeProjectsScreen = ({ employeeId }) => {
                       </ul>
                     </div>
                     <div className="project-members m-b-15">
-                      <div>Team:</div>
+                      <div>{t('projectScreen.team')}:</div>
                       <ul
                         className="team-members"
                         style={{ marginLeft: "10px" }}
@@ -571,7 +584,7 @@ const EmployeeProjectsScreen = ({ employeeId }) => {
               defaultCurrent={1}
               current={currentPage}
               showTotal={(total, range) =>
-                `Showing ${range[0]} to ${range[1]} of ${total} entries`
+                t('paginationShow', { range1: range[0], range2: range[1], total: total })
               }
               onChange={(page, size) => {
                 console.log(page, size);
@@ -581,7 +594,9 @@ const EmployeeProjectsScreen = ({ employeeId }) => {
               }}
               showSizeChanger={true}
               pageSizeOptions={["20", "30", "40", "50"]}
-              itemRender={itemRender}
+              itemRender={(current, type, originalElement) =>
+                itemRender(current, type, originalElement, t)
+              }
             />
           </div>
         )}
@@ -953,10 +968,9 @@ const EmployeeProjectsScreen = ({ employeeId }) => {
                 }}
               >
                 <div className="form-header">
-                  <h3 style={{ marginBottom: "30px" }}>Delete Project</h3>
+                  <h3 style={{ marginBottom: "30px" }}>{t('projectScreen.deleteProject')}</h3>
                   <p>
-                    Are you sure you want to Delete{" "}
-                    <b>{open?.data?.projectName}</b>?
+                    <span dangerouslySetInnerHTML={{ __html: t('projectScreen.confirmDeleteProject', { project: open?.data?.projectName }) }} />
                   </p>
                 </div>
 
@@ -972,7 +986,7 @@ const EmployeeProjectsScreen = ({ employeeId }) => {
                       >
                         {
                         loader ? <Spin size="small" indicator={antIcon} />
-                          : 'Delete'
+                          : t('delete')
                         }
                       </Button>
                     </div>
@@ -983,7 +997,7 @@ const EmployeeProjectsScreen = ({ employeeId }) => {
                         className="btn btn-primary submit-btn"
                         style={{ width: "100%" }}
                       >
-                        Cancel
+                        {t('cancel')}
                       </Button>
                     </div>
                   </div>

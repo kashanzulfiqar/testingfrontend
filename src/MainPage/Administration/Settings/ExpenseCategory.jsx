@@ -9,10 +9,11 @@ import { useSelector } from 'react-redux';
 import { apiServices } from '../../../Services/apiServices';
 import { Modal } from '@mui/material';
 import { LoadingOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 
 
 const ExpenseCategory = () => {
-
+  const { t, i18n } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const user_state = useSelector((state) => state.user.loginvalue);
   //const permissions = useSelector((state) => state?.permissionsSlice?.data);
@@ -394,6 +395,22 @@ const ExpenseCategory = () => {
                 bordered
                 dataSource={category}
                 rowKey={(record) => record.id}
+                components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                 // onChange={this.handleTableChange}
               />
               
@@ -407,12 +424,14 @@ const ExpenseCategory = () => {
                         pageSize={pagination.pageSize}
                         total={pagination.total}
                         showTotal={(total, range) =>
-                          `Showing ${range[0]} to ${range[1]} of ${total} entries`
-                        }
+                          t('paginationShow', { range1: range[0], range2: range[1], total: total })}
+
                         pageSizeOptions={["20", "30", "40", "50"]}
                         showSizeChanger
                         onChange={(page, pageSize) => setPagination({...pagination, current: page, pageSize: pageSize,})}
-                        itemRender={itemRender}
+                        itemRender={(current, type, originalElement) =>
+                          itemRender(current, type, originalElement, t)
+                        }
                         disabled={isLoading}
                       />
                     </div>

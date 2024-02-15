@@ -3,9 +3,10 @@ import React, { useState } from "react";
 import Modal from "@mui/material/Modal";
 import { LoadingOutlined } from "@ant-design/icons";
 import { apiServices } from "../../../../../Services/apiServices";
+import { useTranslation } from "react-i18next";
 
 function AddDepartment({ addDeptOpen, setAddDeptOpen, allTeams, setAllTeams, user_state }) {
-
+  const { t, i18n } = useTranslation();
   const [loader, setLoader] = useState(false);
 
   const onFinish = (values) => {
@@ -22,7 +23,7 @@ function AddDepartment({ addDeptOpen, setAddDeptOpen, allTeams, setAllTeams, use
                 }
             ])
             setAddDeptOpen(false)
-            message.success("Department Added Successfully!");
+            message.success(t('allEmp.errors.deptAdded'));
             setLoader(false);
           }
         })
@@ -35,7 +36,7 @@ function AddDepartment({ addDeptOpen, setAddDeptOpen, allTeams, setAllTeams, use
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Add Department Info Error"
+                : t('allEmp.errors.addDeptError')
             }!`
           );
         });
@@ -68,7 +69,7 @@ function AddDepartment({ addDeptOpen, setAddDeptOpen, allTeams, setAllTeams, use
             <div className="modal-content">
                 <div className="modal-header">
                 <h5 className="modal-title">
-                    Add Department
+                  {t('allEmp.Modal.addDepartment')}
                 </h5>
                 <button type="button" className="close" onClick={() => setAddDeptOpen(false)}>
                     <span aria-hidden="true">×</span>
@@ -82,16 +83,16 @@ function AddDepartment({ addDeptOpen, setAddDeptOpen, allTeams, setAllTeams, use
                     onFinishFailed={({errorFields}) => {
                     const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
                     if(consecutiveSpacesError){
-                        message.error("Please Remove Consecutive Spaces!")
+                      message.error(t('allEmp.errors.removeConsecutiveSpaces'))
                     }else{
-                        message.error("Please Fill Required Fields!")
+                      message.error(t('allEmp.errors.fillRequiredFields'))
                     }
                     }}
                     autoComplete="off"
                 >
                     <div className="form-group">
                     <label>
-                        Department Name <span className="text-danger">*</span>
+                    {t('allEmp.Modal.departmentName')} <span className="text-danger">*</span>
                     </label>
                     <Form.Item
                         name="teamName"
@@ -101,10 +102,10 @@ function AddDepartment({ addDeptOpen, setAddDeptOpen, allTeams, setAllTeams, use
                             required: true,
                             validator: (_, value) => {
                             if(!value || value.trim() === ''){
-                                return Promise.reject("please enter departemnt name");
+                                return Promise.reject(t('allEmp.errors.enterDepartmentName'));
                             }
                             else if (/\s{2,}/.test(value)) {
-                                return Promise.reject("please remove consecutive spaces");
+                                return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                             }
                             return Promise.resolve();
                             },
@@ -125,7 +126,7 @@ function AddDepartment({ addDeptOpen, setAddDeptOpen, allTeams, setAllTeams, use
                         {loader ? (
                             <Spin size="small" indicator={antIcon} />
                         ) : (
-                            "Submit"
+                          t('submit')
                         )}
                         </Button>
                     </Form.Item>

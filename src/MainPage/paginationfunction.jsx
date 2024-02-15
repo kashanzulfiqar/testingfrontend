@@ -1,11 +1,12 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
-export function itemRender(current, type, originalElement) {
+export function itemRender(current, type, originalElement, t) {
   if (type === "prev") {
-    return <a>Previous</a>;
+    return <a>{t('pageprev')}</a>;
   }
   if (type === "next") {
-    return <a>Next</a>;
+    return <a>{t('pagenext')}</a>;
   }
   return originalElement;
 }

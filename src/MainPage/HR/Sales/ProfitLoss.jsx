@@ -37,10 +37,11 @@ import {
   Legend,
   ComposedChart,
 } from "recharts";
+import { useTranslation } from "react-i18next";
 
 const ProfitLoss = () => {
   const nav = useNavigate();
-
+  const { t, i18n } = useTranslation();
   const moment = require("moment");
   const [form] = Form.useForm();
   const [formadd] = Form.useForm();
@@ -900,6 +901,22 @@ const ProfitLoss = () => {
                   dataSource={allProfitLoss}
                   rowKey={(record) => record._id}
                   // onChange={this.handleTableChange}
+                  components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                 />
 
                 {allProfitLoss?.length > 0 && (
@@ -911,8 +928,8 @@ const ProfitLoss = () => {
                       defaultCurrent={1}
                       current={currentPage}
                       showTotal={(total, range) =>
-                        `Showing ${range[0]} to ${range[1]} of ${total} entries`
-                      }
+                        t('paginationShow', { range1: range[0], range2: range[1], total: total })}
+
                       onChange={(page, size) => {
                         setPageSize(size);
                         setCurrentPage(page);
@@ -920,7 +937,9 @@ const ProfitLoss = () => {
                       }}
                       showSizeChanger={true}
                       pageSizeOptions={["20", "30", "40", "50"]}
-                      itemRender={itemRender}
+                      itemRender={(current, type, originalElement) =>
+                        itemRender(current, type, originalElement, t)
+                      }
                     />
                   </div>
                 )}

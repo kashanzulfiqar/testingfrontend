@@ -11,9 +11,10 @@ import { LoadingOutlined } from '@ant-design/icons';
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import Modal from "@mui/material/Modal";
 import { apiServices } from '../../../Services/apiServices';
+import { useTranslation } from 'react-i18next';
 
 const Tasks = () => {
-
+  const { t, i18n } = useTranslation();
   const [form] = Form.useForm();
   const [form2] = Form.useForm();
   const nav = useNavigate();
@@ -497,6 +498,22 @@ const onFinishEdit = (values) => {
                   // bordered
                   dataSource={allTasks}
                   rowKey={record => record.id}
+                  components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                   // onChange={this.handleTableChange}
                 />
                 {
@@ -509,14 +526,16 @@ const onFinishEdit = (values) => {
                         defaultCurrent={1}
                         current={currentPage}
                         showTotal={(total, range) =>
-                          `Showing ${range[0]} to ${range[1]} of ${total} entries`}
+                          t('paginationShow', { range1: range[0], range2: range[1], total: total })}
                         onChange={(page, size) => {
                           setPageSize(size); setCurrentPage(page);
                           getAllTasks(filterValues, page, size)
                         }}
                         showSizeChanger={true}
                         pageSizeOptions={['20', '30', '40', '50']}
-                        itemRender={itemRender}
+                        itemRender={(current, type, originalElement) =>
+                          itemRender(current, type, originalElement, t)
+                        }
                       />
                     </div>
                   }

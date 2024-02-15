@@ -13,8 +13,10 @@ import { ItemRender } from "antd/lib/upload/interface";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { Table, Form, Input, DatePicker, Select, Button, Spin } from "antd";
 import { itemRender } from "../../paginationfunction";
+import { useTranslation } from "react-i18next";
 
 const AttendanceEmployee = () => {
+  const { t, i18n } = useTranslation();
   const [form] = Form.useForm();
   const [isLoading, setIsLoading] = useState(false);
   const [tableLoader, setTableLoader] = useState(false);
@@ -33,7 +35,7 @@ const AttendanceEmployee = () => {
   let userID = AuthObj?.userId;
 
   const [menu, setMenu] = useState(false);
-  const [statusText, setStatusText] = useState("Not yet checked in");
+  const [statusText, setStatusText] = useState(t('notCheckedIn'));
   const [isCheckedOut, setIsCheckedOut] = useState(false);
   const [isCheckedIn, setIsCheckedIn] = useState(false);
   const [firstload, setFirstLoad] = useState(false);
@@ -92,6 +94,11 @@ const AttendanceEmployee = () => {
 
   const firstDate = moment(nowdate).format("YYYY-MM-DD");
   //const firstDate = "2023-08-10"
+  
+  useEffect(() => {
+    // Update direction when language changes
+    document.documentElement.dir = i18n.dir();
+  }, [i18n.language]);
   
   useEffect(() => {
     if (!disableAttend) {
@@ -216,7 +223,7 @@ const AttendanceEmployee = () => {
             ) {
               setIsCheckedIn(false);
               setIsCheckedOut(false);
-              setStatusText("Not yet checked in");
+              setStatusText(t('notCheckedIn'));
             } else {
               setIsCheckedIn(true);
               setIsCheckedOut(false);
@@ -268,10 +275,10 @@ const AttendanceEmployee = () => {
                                         "HH:mm"
                                       ).format("h:mm A")}`);
       } else {
-        setStatusText("Loading..");
+        setStatusText(t('loading'));
       }
     } else {
-      setStatusText("Not yet checked in");
+      setStatusText(t('notCheckedIn'));
     }
   }, [isCheckedIn, isCheckedOut, checkIn, checkOut]);
 
@@ -328,7 +335,7 @@ const AttendanceEmployee = () => {
   };
 
   const formatTodayTime = (milliseconds) => {
-    if (!milliseconds) return "None";
+    if (!milliseconds) return t('none');
 
     const totalSeconds = Math.floor(milliseconds / 1000);
     const hours = Math.floor(totalSeconds / 3600);
@@ -355,7 +362,7 @@ const AttendanceEmployee = () => {
         .then((res) => {
           if (res.data.success === true) {
             startTimer();
-            message.success("Check-In successful");
+            message.success(t('checkInSuccess'));
             setFirstLoad(false);
             setCheckIn({
               ...checkIn,
@@ -390,7 +397,7 @@ const AttendanceEmployee = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Error Marking Attendance"
+                : t('attendanceError')
             }`
           );
         })
@@ -421,7 +428,7 @@ const AttendanceEmployee = () => {
         .then((res) => {
           if (res.data.success === true) {
             stopTimer();
-            message.success("Attendance Marked");
+            message.success(t('attendanceMarked'));
             setFirstLoad(false);
             setCheckout({
               ...checkOut,
@@ -439,7 +446,7 @@ const AttendanceEmployee = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Error Marking Attendance"
+                : t('attendanceError')
             }`
           );
         })
@@ -471,7 +478,7 @@ const AttendanceEmployee = () => {
   const currentDate = moment(nowdate).format("DD MMM YYYY");
 
   const formatHoursMinutes = (timeString) => {
-    if (!timeString) return "None";
+    if (!timeString) return t('none');
     if (isNaN(timeString)) return "0h 0m";
 
     const totalMinutes = parseFloat(timeString);
@@ -603,7 +610,7 @@ const AttendanceEmployee = () => {
               margin: "7px 0px 4px 0px",
             }}
           >
-            No Data
+            {t('noData')}
           </div>
           {/* <div
             style={{ color: "#464665", fontWeight: "300", fontSize: "13px" }}
@@ -624,26 +631,26 @@ const AttendanceEmployee = () => {
         (page - 1) * size + index + 1,
     },
     {
-      title: "Date",
+      title: t('date'),
       dataIndex: "attendanceDate",
       key: "attendanceDate",
     },
     {
-      title: "Check In",
+      title: t('checkIn'),
       dataIndex: "checkInTime",
       key: "checkInTime",
       render: (checkInTime) =>
         checkInTime ? moment(checkInTime, "HH:mm").format("h:mm A") : "--",
     },
     {
-      title: "Check Out",
+      title: t('checkOut'),
       dataIndex: "checkOutTime",
       key: "checkOutTime",
       render: (checkOutTime) =>
         checkOutTime ? moment(checkOutTime, "HH:mm").format("h:mm A") : "--",
     },
     {
-      title: "Status",
+      title: t('status'),
       dataIndex: "status",
       key: "status",
       render: (status) => (
@@ -666,13 +673,13 @@ const AttendanceEmployee = () => {
       ),
     },
     {
-      title: "Duration",
+      title: t('duration'),
       dataIndex: "hoursWorked",
       key: "hoursWorked",
       render: (hoursWorked) => formatHoursMinutes(hoursWorked),
     },
     {
-      title: "Overtime",
+      title: t('overtime'),
       dataIndex: "overTime",
       key: "overTime",
       render: (overTime) => (overTime ? formatHoursMinutes(overTime) : "None"),
@@ -706,7 +713,7 @@ const AttendanceEmployee = () => {
       <div className={`main-wrapper ${menu ? "slide-nav" : ""}`}>
         <div className="page-wrapper">
           <Helmet>
-            <title>Attendance - DaftarPro</title>
+            <title>{t('aAttend.pageTitle')}</title>
             <meta name="description" content="Login page" />
           </Helmet>
           <div className="content container-fluid">
@@ -714,7 +721,7 @@ const AttendanceEmployee = () => {
             <div className="page-header">
               <div className="row">
                 <div className="col-sm-12">
-                  <h3 className="page-title">Attendance</h3>
+                  <h3 className="page-title">{t('attendance')}</h3>
                   <ul className="breadcrumb">
                     <li className="breadcrumb-item">
                       <Link
@@ -724,10 +731,10 @@ const AttendanceEmployee = () => {
                             : "/employee/dashboard"
                         }
                       >
-                        Dashboard
+                        {t('dashboard')}
                       </Link>
                     </li>
-                    <li className="breadcrumb-item active">Attendance</li>
+                    <li className="breadcrumb-item active">{t('attendance')}</li>
                   </ul>
                 </div>
               </div>
@@ -738,7 +745,7 @@ const AttendanceEmployee = () => {
                 <div className="card punch-status">
                   <div className="card-body">
                     <h5 className="card-title d-flex gap-1">
-                      Timesheet
+                    {t('timesheet')}
                       <h5 className="text-muted" style={{ fontSize: "20px" }}>
                         {currentDate}
                       </h5>
@@ -747,7 +754,7 @@ const AttendanceEmployee = () => {
                     <div className="punch-det">
                       <h6>
                         <label>
-                          {isCheckedOut ? "Checked out at" : "Check in at"}
+                          {isCheckedOut ? t('checkedOutAt') : t('checkInAt')}
                         </label>
                       </h6>
                       <p>
@@ -807,11 +814,11 @@ const AttendanceEmployee = () => {
                         {isDisabled ? (
                           <Spin size="medium" />
                         ) : isCheckedOut || checkIn.status === "Absent" || checkIn.status === "Holiday" ? (
-                          "Marked"
+                          t('marked')
                         ) : isCheckedIn ? (
-                          "Check Out"
+                          t('checkIn')
                         ) : (
-                          "Check In"
+                          t('checkOut')
                         )}
                       </button>
                     </div>
@@ -826,7 +833,7 @@ const AttendanceEmployee = () => {
                       >
                         <div className="col-md-6 col-6 text-center">
                           <div className="stats-box">
-                            <p>Status</p>
+                            <p>{t('status')}</p>
 
                             <h6>
                               <label
@@ -859,7 +866,7 @@ const AttendanceEmployee = () => {
 
                         <div className="col-md-6 col-6 text-center">
                           <div className="stats-box">
-                            <p>Overtime</p>
+                            <p>{t('overtime')}</p>
 
                             <h6>
                               <label>
@@ -878,11 +885,11 @@ const AttendanceEmployee = () => {
               <div className="col-md-4">
                 <div className="card att-statistics">
                   <div className="card-body">
-                    <h5 className="card-title">Statistics</h5>
+                    <h5 className="card-title">{t('statistics')}</h5>
                     <div className="stats-list" style={{ height: "347px" }}>
                       <div className="stats-info">
                         <p>
-                          Today{" "}
+                        {t('today')}{" "}
                           <strong>
                             {isCheckedOut
                               ? formatHoursMinutes(checkOut.hoursWorked)
@@ -906,7 +913,7 @@ const AttendanceEmployee = () => {
                       </div>
                       <div className="stats-info">
                         <p>
-                          <label>This Week</label>
+                          <label>{t('thisWeek')}</label>
                           <strong>
                             {isCheckedOut
                               ? ( !statDisable ? 
@@ -937,7 +944,7 @@ const AttendanceEmployee = () => {
                       </div>
                       <div className="stats-info">
                         <p>
-                          <label>This Month</label>
+                          <label>{t('thisMonth')}</label>
                           <strong>
                           {isCheckedOut
                               ? ( !statDisable ? 
@@ -970,7 +977,7 @@ const AttendanceEmployee = () => {
 
                       <div className="stats-info">
                         <p>
-                          Remaining{" "}
+                        {t('remaining')}{" "}
                           <strong>
                           {isCheckedOut
                               ? ( !statDisable ? 
@@ -1023,7 +1030,7 @@ const AttendanceEmployee = () => {
                       </div>
                       <div className="stats-info">
                         <p>
-                          Overtime{" "}
+                        {t('overtime')}{" "}
                           <strong>
                             {isCheckedOut
                             ? formatHoursMinutes(checkOut.overTime)
@@ -1149,7 +1156,7 @@ const AttendanceEmployee = () => {
                 </div> */}
                 <div className="card recent-activity">
                   <div className="card-body">
-                    <h5 className="card-title">Last 6 Days</h5>
+                    <h5 className="card-title">{t('last6Days')}</h5>
                     <div className="stats-list" style={{ height: "347px" }}>
                       <ul
                         className="res-activity-list"
@@ -1205,7 +1212,7 @@ const AttendanceEmployee = () => {
                               )}
 
                               <a>
-                                <span>Status:</span>{" "}
+                                <span>{t('status')}:</span>{" "}
                                 <label
                                   style={{
                                     color:
@@ -1303,7 +1310,7 @@ const AttendanceEmployee = () => {
                     onClick={handleSearch}
                     className="btn-success btn-block w-100"
                   >
-                    Search
+                    {t('search')}
                   </Button>
                   <Button
                     htmlType="submit"
@@ -1315,7 +1322,7 @@ const AttendanceEmployee = () => {
                       borderColor: "#616161",
                     }}
                   >
-                    Reset
+                    {t('reset')}
                   </Button>
                 </div>
               </div>
@@ -1335,6 +1342,22 @@ const AttendanceEmployee = () => {
                     }}
                     bordered
                     pagination={false}
+                    components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                   />
                 </div>
                 {
@@ -1346,7 +1369,8 @@ const AttendanceEmployee = () => {
                         pageSize={pagination.pageSize}
                         total={pagination.total}
                         showTotal={(total, range) =>
-                          `Showing ${range[0]} to ${range[1]} of ${total} entries`
+                          t('paginationShow', { range1: range[0], range2: range[1], total: total })
+                          // `Showing ${range[0]} to ${range[1]} of ${total} entries`
                         }
                         pageSizeOptions={["20", "30", "40", "50"]}
                         showSizeChanger
@@ -1354,7 +1378,9 @@ const AttendanceEmployee = () => {
                           setdisableAttend(false) 
                           setPagination({...pagination, current: page, pageSize: pageSize,})
                         }}
-                        itemRender={itemRender}
+                        itemRender={(current, type, originalElement) =>
+                          itemRender(current, type, originalElement, t)
+                        }
                         disabled={tableLoader}
                       />
                     </div>
