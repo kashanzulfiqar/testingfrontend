@@ -816,9 +816,9 @@ const AttendanceEmployee = () => {
                         ) : isCheckedOut || checkIn.status === "Absent" || checkIn.status === "Holiday" ? (
                           t('marked')
                         ) : isCheckedIn ? (
-                          t('checkIn')
-                        ) : (
                           t('checkOut')
+                        ) : (
+                          t('checkIn')
                         )}
                       </button>
                     </div>
