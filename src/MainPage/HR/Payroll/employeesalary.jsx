@@ -58,6 +58,7 @@ const EmployeeSalary = () => {
   const [selectedMonthYear, setSelectedMonthYear] = useState("");
   const [genModal, setGenModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [editLoader, setEditLoader] = useState(false);
   const [messageflag, setMessageflag] = useState(false);
   const [selectedRows, setSelectedRows] = useState([]);
   const [processedPayrolls, setProcessedPayrolls] = useState([]);
@@ -135,6 +136,7 @@ const EmployeeSalary = () => {
 
   const closeMOP = () => {
     setMOPModal(false);
+    setLoader(false);
     setSelectedRecord(null);
   }
 
@@ -144,6 +146,7 @@ const EmployeeSalary = () => {
   };
 
   const closeEditModal = () => {
+    setEditLoader(false);
     setEditModal(false);
     setSelectedRecord(null);
   };
@@ -235,6 +238,7 @@ const EmployeeSalary = () => {
   // Function to handle closing the modal
   const handleCloseModal = () => {
     setGenModal(false);
+    setLoader(false);
     PayFilterReset();
   };
 
@@ -288,6 +292,7 @@ const EmployeeSalary = () => {
         });
     } else {
       message.warning("Both Month and Year required");
+      setLoader(false);
     }
   };
 
@@ -1014,7 +1019,7 @@ const EmployeeSalary = () => {
   // };
 
   const updatePayroll = (values) => {
-
+    setEditLoader(true);
     const updateData = {
       _id: selectedRecord?._id,
       companyId: selectedRecord?.companyId,
@@ -1046,6 +1051,7 @@ const EmployeeSalary = () => {
       .catch((error) => {
         message.error(`Error updating Payroll Details`);
         console.error(`Error updating Payroll Details`, error);
+        setEditLoader(false);
       });
   };
 
@@ -1334,7 +1340,7 @@ const EmployeeSalary = () => {
                         <Button
                           htmlType="submit"
                           className="btn btn-primary submit-btn"
-                          disabled={loader===true}
+                          disabled={loader}
                           onClick={handleGeneratePayroll}
                         >
                           {loader ? (
@@ -1915,6 +1921,7 @@ const EmployeeSalary = () => {
                           type="primary" 
                           htmlType="submit"
                           className="btn btn-primary submit-btn"
+                          disabled={editLoader}
                         >
                           Submit
                         </Button>
@@ -2040,7 +2047,7 @@ const EmployeeSalary = () => {
                                 type="primary" 
                                 htmlType="submit"
                                 className="btn btn-primary submit-btn"
-                                disabled={loader===true}
+                                disabled={loader}
                               >
                                 Submit
                               </Button>
