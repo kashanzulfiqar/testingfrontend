@@ -36,11 +36,12 @@ import {
 import moment from "moment";
 import { apiServices } from "../../../Services/apiServices";
 import { LoadingOutlined } from '@ant-design/icons';
+import { useTranslation } from "react-i18next";
 
 const { Panel } = Collapse;
 
 const ViewDetailTimesheet = () => {
-
+    const { t, i18n } = useTranslation();
     const [form] = Form.useForm();
 
     const user_state = useSelector((state) => state.user.loginvalue);
@@ -170,7 +171,7 @@ const ViewDetailTimesheet = () => {
       apiServices("PUT", 'timesheet', data, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
-            message.success('Timesheet Declined Successfully!');
+            message.success(t('Timesheetadmin.timesheetDeclinedSuccessfully'));
             setLoader(false);
             handleClose();
             setAllData({
@@ -197,7 +198,7 @@ const ViewDetailTimesheet = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Timesheet Declined Error"
+              : t('Timesheetadmin.timesheetDeclinedError')
           }!`
         );
       });
@@ -217,7 +218,7 @@ const ViewDetailTimesheet = () => {
       apiServices("PUT", 'timesheet', data, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
-            message.success('Timesheet Approved Successfully!');
+            message.success(t('Timesheetadmin.timesheetApprovedSuccessfully'));
             setLoader(false);
             setAllData({
               ...allData,
@@ -243,7 +244,7 @@ const ViewDetailTimesheet = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Timesheet Approved Error"
+              : t('Timesheetadmin.timesheetApprovedError')
           }!`
         );
       });
@@ -255,7 +256,7 @@ const ViewDetailTimesheet = () => {
 
     const columns = [
         { 
-          title: 'Work Days',
+          title: t('Timesheetadmin.workdays'),
           dataIndex: 'date',
           key: 'date',
           render: (text, record) => (            
@@ -266,7 +267,7 @@ const ViewDetailTimesheet = () => {
           ),
         },
         {
-          title: 'Project',
+          title: t('Timesheetadmin.project'),
           dataIndex: 'projectId',
           key: 'projectId',
           render: (text, record) => {
@@ -290,7 +291,7 @@ const ViewDetailTimesheet = () => {
           // ),
         },
         {
-          title: 'Task',
+          title: t('Timesheetadmin.task'),
           dataIndex: 'taskId',
           key: 'taskId',
           render: (text, record) => {
@@ -349,7 +350,7 @@ const ViewDetailTimesheet = () => {
           // ),
         },
         {
-          title: 'Hours',
+          title: t('Timesheetadmin.hours'),
           dataIndex: 'hoursWorked',
           key: 'hoursWorked',
           render: (text, record) => {
@@ -464,7 +465,7 @@ const ViewDetailTimesheet = () => {
                   margin: "0px 0px 4px 0px",
                 }}
               >
-                No Record For This Week Timesheet!
+                {t('Timesheetadmin.noRecordForThisWeekTimesheet')}
               </div>
             </div>
           }
@@ -487,7 +488,7 @@ const ViewDetailTimesheet = () => {
     <>
       <div className="page-wrapper">
         <Helmet>
-          <title>Timesheet - DaftarPro</title>
+          <title>{t('Timesheetemployee.timesheetTitle')}</title>
           <meta name="description" content="Login page" />
         </Helmet>
         {/* Page Content */}
@@ -496,12 +497,12 @@ const ViewDetailTimesheet = () => {
             <div className="page-header">
                 <div className="row align-items-center">
                 <div className="col">
-                    <h3 className="page-title">Timesheet</h3>
+                    <h3 className="page-title">{t('Timesheetemployee.timesheet')}</h3>
                     <ul className="breadcrumb">
                     <li className="breadcrumb-item">
-                        <Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>Dashboard</Link>
+                        <Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>{t('Timesheetemployee.dashboard')}</Link>
                     </li>
-                    <li className="breadcrumb-item active">Timesheet Admin</li>
+                    <li className="breadcrumb-item active">{t('Timesheetadmin.timesheetadmin')}</li>
                     </ul>
                 </div>
                 </div>
@@ -518,7 +519,7 @@ const ViewDetailTimesheet = () => {
             <br/>
                 
             <div style={{color: '#6C757D', fontSize: '18px', fontWeight: '500', margin: '20px 0px'}}>
-                Week 1
+            {t('Timesheetadmin.week')} 1
             </div>
 
                     {/* <Table dataSource={data} columns={columns} pagination={false} /> */}
@@ -645,6 +646,22 @@ const ViewDetailTimesheet = () => {
                         columns={columns}                 
                         // bordered
                         dataSource={allData1?.sort((a, b) => a.date.localeCompare(b.date))}
+                        components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                       />
                  </div>
                </div>
@@ -654,7 +671,7 @@ const ViewDetailTimesheet = () => {
                   allData[0]?.data &&
                   <>
                     <div style={{color: '#6C757D', fontSize: '18px', fontWeight: '500', margin: '35px 25px 30px 0px', display: 'flex', justifyContent: 'flex-end'}}>
-                      Total: <label style={{color: '#333333', marginLeft: '5px'}}>{allData[0]?.weekTotal}</label>
+                    {t('aDash.total')}: <label style={{color: '#333333', marginLeft: '5px'}}>{allData[0]?.weekTotal}</label>
                     </div>
                     {
                       allData[0]?.data[0]?.status === "Approved" ?
@@ -664,7 +681,7 @@ const ViewDetailTimesheet = () => {
                           disabled={true}
                           style={{border: '1px solid #55ce63b0', borderRadius: '8px', background: '#55ce63b0', color: '#fff', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px', cursor: 'no-drop'}}
                         >
-                          <span style={{fontSize: '16px', fontWeight: '500'}}>APPROVED</span>
+                          <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetadmin.approved')}</span>
                         </button>
                       </div> :
                       allData[0]?.data[0]?.status === "Declined" ?
@@ -674,7 +691,7 @@ const ViewDetailTimesheet = () => {
                             className='NextPrevButtons22'
                             style={{border: '1px solid #dd000073', borderRadius: '8px', background: '#dd000073', color: '#fff', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px', cursor: 'no-drop'}}
                         >
-                          <span style={{fontSize: '16px', fontWeight: '500', color: '#fff'}}>DECLINED</span>
+                          <span style={{fontSize: '16px', fontWeight: '500', color: '#fff'}}>{t('Timesheetadmin.declined')}</span>
                         </button>
                       </div> :
                       <div style={{display: 'flex', gap: '15px', justifyContent: 'flex-end', marginRight: '25px'}}>
@@ -684,7 +701,7 @@ const ViewDetailTimesheet = () => {
                             className={login_user_id !== allData?._id && `NextPrevButtons`}
                             style={{border: `${login_user_id === allData?._id ? '1px solid #ff8181' : '1px solid #DD0000'}`, borderRadius: '8px', background: '#fff', color: `${login_user_id === allData?._id ? '#ff8181' : '#DD0000'}`, minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
                         >
-                          <span style={{fontSize: '16px', fontWeight: '500'}}>DECLINE</span>
+                          <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetadmin.decline')}</span>
                         </Button>
                         <Button
                           onClick={() => {
@@ -696,7 +713,7 @@ const ViewDetailTimesheet = () => {
                         >
                           {
                             loader ? <Spin size="small" indicator={antIcon} />
-                            : <span style={{fontSize: '16px', fontWeight: '500'}}>APPROVE</span>
+                            : <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetadmin.approve')}</span>
                           }
                         </Button>
                       </div>
@@ -709,7 +726,7 @@ const ViewDetailTimesheet = () => {
             </Accordion>
 
             <div style={{color: '#6C757D', fontSize: '18px', fontWeight: '500', margin: '20px 0px'}}>
-                Week 2
+            {t('Timesheetadmin.week')} 2
             </div>
             <Accordion expanded={expanded === 'week'}>
               <AccordionSummary
@@ -732,6 +749,22 @@ const ViewDetailTimesheet = () => {
                             columns={columns}                 
                             // bordered
                             dataSource={allData2?.sort((a, b) => a.date.localeCompare(b.date))}
+                            components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                           />
                     </div>
                   </div>
@@ -741,7 +774,7 @@ const ViewDetailTimesheet = () => {
                   allData[1]?.data &&
                   <>
                     <div style={{color: '#6C757D', fontSize: '18px', fontWeight: '500', margin: '35px 25px 30px 0px', display: 'flex', justifyContent: 'flex-end'}}>
-                      Total: <label style={{color: '#333333', marginLeft: '5px'}}>{allData[1]?.weekTotal}</label>
+                    {t('aDash.total')}: <label style={{color: '#333333', marginLeft: '5px'}}>{allData[1]?.weekTotal}</label>
                     </div>
 
                     {
@@ -752,7 +785,7 @@ const ViewDetailTimesheet = () => {
                           disabled={true}
                           style={{border: '1px solid #55ce63b0', borderRadius: '8px', background: '#55ce63b0', color: '#fff', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px', cursor: 'no-drop'}}
                         >
-                          <span style={{fontSize: '16px', fontWeight: '500'}}>APPROVED</span>
+                          <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetadmin.approved')}</span>
                         </button>
                       </div> :
                       allData[1]?.data[0]?.status === "Declined" ?
@@ -762,7 +795,7 @@ const ViewDetailTimesheet = () => {
                             className='NextPrevButtons22'
                             style={{border: '1px solid #dd000073', borderRadius: '8px', background: '#dd000073', color: '#fff', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px', cursor: 'no-drop'}}
                         >
-                          <span style={{fontSize: '16px', fontWeight: '500', color: '#fff'}}>DECLINED</span>
+                          <span style={{fontSize: '16px', fontWeight: '500', color: '#fff'}}>{t('Timesheetadmin.declined')}</span>
                         </button>
                       </div> :
                       <div style={{display: 'flex', gap: '15px', justifyContent: 'flex-end', marginRight: '25px'}}>
@@ -772,7 +805,7 @@ const ViewDetailTimesheet = () => {
                             className={login_user_id !== allData?._id && `NextPrevButtons`}
                             style={{border: `${login_user_id === allData?._id ? '1px solid #ff8181' : '1px solid #DD0000'}`, borderRadius: '8px', background: '#fff', color: `${login_user_id === allData?._id ? '#ff8181' : '#DD0000'}`, minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
                         >
-                          <span style={{fontSize: '16px', fontWeight: '500'}}>DECLINE</span>
+                          <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetadmin.decline')}</span>
                         </Button>
                         <Button
                           onClick={() => {
@@ -784,7 +817,7 @@ const ViewDetailTimesheet = () => {
                         >
                           {
                             loader ? <Spin size="small" indicator={antIcon} />
-                            : <span style={{fontSize: '16px', fontWeight: '500'}}>APPROVE</span>
+                            : <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetadmin.approve')}</span>
                           }
                         </Button>
                       </div>
@@ -797,7 +830,7 @@ const ViewDetailTimesheet = () => {
             </Accordion>
 
             <div style={{color: '#6C757D', fontSize: '18px', fontWeight: '500', margin: '20px 0px'}}>
-                Week 3
+            {t('Timesheetadmin.week')} 3
             </div>
             <Accordion expanded={expanded === 'week'}>
               <AccordionSummary
@@ -822,6 +855,22 @@ const ViewDetailTimesheet = () => {
                             columns={columns}                 
                             // bordered
                             dataSource={allData3?.sort((a, b) => a.date.localeCompare(b.date))}
+                            components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                           />
                     </div>
                   </div>
@@ -831,7 +880,7 @@ const ViewDetailTimesheet = () => {
                   allData[2]?.data &&
                   <>
                     <div style={{color: '#6C757D', fontSize: '18px', fontWeight: '500', margin: '35px 25px 30px 0px', display: 'flex', justifyContent: 'flex-end'}}>
-                      Total: <label style={{color: '#333333', marginLeft: '5px'}}>{allData[2]?.weekTotal}</label>
+                    {t('aDash.total')}: <label style={{color: '#333333', marginLeft: '5px'}}>{allData[2]?.weekTotal}</label>
                     </div>
 
                     {
@@ -842,7 +891,7 @@ const ViewDetailTimesheet = () => {
                           disabled={true}
                           style={{border: '1px solid #55ce63b0', borderRadius: '8px', background: '#55ce63b0', color: '#fff', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px', cursor: 'no-drop'}}
                         >
-                          <span style={{fontSize: '16px', fontWeight: '500'}}>APPROVED</span>
+                          <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetadmin.approved')}</span>
                         </button>
                       </div> :
                       allData[2]?.data[0]?.status === "Declined" ?
@@ -852,7 +901,7 @@ const ViewDetailTimesheet = () => {
                             className='NextPrevButtons22'
                             style={{border: '1px solid #dd000073', borderRadius: '8px', background: '#dd000073', color: '#fff', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px', cursor: 'no-drop'}}
                         >
-                          <span style={{fontSize: '16px', fontWeight: '500', color: '#fff'}}>DECLINED</span>
+                          <span style={{fontSize: '16px', fontWeight: '500', color: '#fff'}}>{t('Timesheetadmin.declined')}</span>
                         </button>
                       </div> :
                       <div style={{display: 'flex', gap: '15px', justifyContent: 'flex-end', marginRight: '25px'}}>
@@ -862,7 +911,7 @@ const ViewDetailTimesheet = () => {
                             className={login_user_id !== allData?._id && `NextPrevButtons`}
                             style={{border: `${login_user_id === allData?._id ? '1px solid #ff8181' : '1px solid #DD0000'}`, borderRadius: '8px', background: '#fff', color: `${login_user_id === allData?._id ? '#ff8181' : '#DD0000'}`, minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
                         >
-                          <span style={{fontSize: '16px', fontWeight: '500'}}>DECLINE</span>
+                          <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetadmin.decline')}</span>
                         </Button>
                         <Button
                           onClick={() => {
@@ -874,7 +923,7 @@ const ViewDetailTimesheet = () => {
                         >
                           {
                             loader ? <Spin size="small" indicator={antIcon} />
-                            : <span style={{fontSize: '16px', fontWeight: '500'}}>APPROVE</span>
+                            : <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetadmin.approve')}</span>
                           }
                         </Button>
                       </div>
@@ -886,7 +935,7 @@ const ViewDetailTimesheet = () => {
             </Accordion>
 
             <div style={{color: '#6C757D', fontSize: '18px', fontWeight: '500', margin: '20px 0px'}}>
-                Week 4
+            {t('Timesheetadmin.week')} 4
             </div>
             <Accordion expanded={expanded === 'week'}>
               <AccordionSummary
@@ -911,6 +960,22 @@ const ViewDetailTimesheet = () => {
                             columns={columns}                 
                             // bordered
                             dataSource={allData4?.sort((a, b) => a.date.localeCompare(b.date))}
+                            components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                           />
                     </div>
                   </div>
@@ -920,7 +985,7 @@ const ViewDetailTimesheet = () => {
                   allData[3]?.data &&
                   <>
                     <div style={{color: '#6C757D', fontSize: '18px', fontWeight: '500', margin: '35px 25px 30px 0px', display: 'flex', justifyContent: 'flex-end'}}>
-                      Total: <label style={{color: '#333333', marginLeft: '5px'}}>{allData[3]?.weekTotal}</label>
+                    {t('aDash.total')}: <label style={{color: '#333333', marginLeft: '5px'}}>{allData[3]?.weekTotal}</label>
                     </div>
 
                     {
@@ -931,7 +996,7 @@ const ViewDetailTimesheet = () => {
                           disabled={true}
                           style={{border: '1px solid #55ce63b0', borderRadius: '8px', background: '#55ce63b0', color: '#fff', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px', cursor: 'no-drop'}}
                         >
-                          <span style={{fontSize: '16px', fontWeight: '500'}}>APPROVED</span>
+                          <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetadmin.approved')}</span>
                         </button>
                       </div> :
                       allData[3]?.data[0]?.status === "Declined" ?
@@ -941,7 +1006,7 @@ const ViewDetailTimesheet = () => {
                             className='NextPrevButtons22'
                             style={{border: '1px solid #dd000073', borderRadius: '8px', background: '#dd000073', color: '#fff', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px', cursor: 'no-drop'}}
                         >
-                          <span style={{fontSize: '16px', fontWeight: '500', color: '#fff'}}>DECLINED</span>
+                          <span style={{fontSize: '16px', fontWeight: '500', color: '#fff'}}>{t('Timesheetadmin.declined')}</span>
                         </button>
                       </div> :
                       <div style={{display: 'flex', gap: '15px', justifyContent: 'flex-end', marginRight: '25px'}}>
@@ -951,7 +1016,7 @@ const ViewDetailTimesheet = () => {
                             className={login_user_id !== allData?._id && `NextPrevButtons`}
                             style={{border: `${login_user_id === allData?._id ? '1px solid #ff8181' : '1px solid #DD0000'}`, borderRadius: '8px', background: '#fff', color: `${login_user_id === allData?._id ? '#ff8181' : '#DD0000'}`, minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
                         >
-                          <span style={{fontSize: '16px', fontWeight: '500'}}>DECLINE</span>
+                          <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetadmin.decline')}</span>
                         </Button>
                         <Button
                           onClick={() => {
@@ -963,7 +1028,7 @@ const ViewDetailTimesheet = () => {
                         >
                           {
                             loader ? <Spin size="small" indicator={antIcon} />
-                            : <span style={{fontSize: '16px', fontWeight: '500'}}>APPROVE</span>
+                            : <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetadmin.approve')}</span>
                           }
                         </Button>
                       </div>
@@ -975,7 +1040,7 @@ const ViewDetailTimesheet = () => {
             </Accordion>
 
             <div style={{color: '#6C757D', fontSize: '18px', fontWeight: '500', margin: '20px 0px'}}>
-                Week 5
+            {t('Timesheetadmin.week')} 5
             </div>
             <Accordion expanded={expanded === 'week'}>
               <AccordionSummary
@@ -1000,6 +1065,22 @@ const ViewDetailTimesheet = () => {
                             columns={columns}                 
                             // bordered
                             dataSource={allData5?.sort((a, b) => a.date.localeCompare(b.date))}
+                            components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                           />
                     </div>
                   </div>
@@ -1009,7 +1090,7 @@ const ViewDetailTimesheet = () => {
                   allData[4]?.data &&
                   <>
                     <div style={{color: '#6C757D', fontSize: '18px', fontWeight: '500', margin: '35px 25px 30px 0px', display: 'flex', justifyContent: 'flex-end'}}>
-                      Total: <label style={{color: '#333333', marginLeft: '5px'}}>{allData[4]?.weekTotal}</label>
+                    {t('aDash.total')}: <label style={{color: '#333333', marginLeft: '5px'}}>{allData[4]?.weekTotal}</label>
                     </div>
 
                     {
@@ -1020,7 +1101,7 @@ const ViewDetailTimesheet = () => {
                           disabled={true}
                           style={{border: '1px solid #55ce63b0', borderRadius: '8px', background: '#55ce63b0', color: '#fff', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px', cursor: 'no-drop'}}
                         >
-                          <span style={{fontSize: '16px', fontWeight: '500'}}>APPROVED</span>
+                          <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetadmin.approved')}</span>
                         </button>
                       </div> :
                       allData[4]?.data[0]?.status === "Declined" ?
@@ -1030,7 +1111,7 @@ const ViewDetailTimesheet = () => {
                             className='NextPrevButtons22'
                             style={{border: '1px solid #dd000073', borderRadius: '8px', background: '#dd000073', color: '#fff', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px', cursor: 'no-drop'}}
                         >
-                          <span style={{fontSize: '16px', fontWeight: '500', color: '#fff'}}>DECLINED</span>
+                          <span style={{fontSize: '16px', fontWeight: '500', color: '#fff'}}>{t('Timesheetadmin.declined')}</span>
                         </button>
                       </div> :
                       <div style={{display: 'flex', gap: '15px', justifyContent: 'flex-end', marginRight: '25px'}}>
@@ -1040,7 +1121,7 @@ const ViewDetailTimesheet = () => {
                             className={login_user_id !== allData?._id && `NextPrevButtons`}
                             style={{border: `${login_user_id === allData?._id ? '1px solid #ff8181' : '1px solid #DD0000'}`, borderRadius: '8px', background: '#fff', color: `${login_user_id === allData?._id ? '#ff8181' : '#DD0000'}`, minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
                         >
-                          <span style={{fontSize: '16px', fontWeight: '500'}}>DECLINE</span>
+                          <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetadmin.decline')}</span>
                         </Button>
                         <Button
                           onClick={() => {
@@ -1052,7 +1133,7 @@ const ViewDetailTimesheet = () => {
                         >
                           {
                             loader ? <Spin size="small" indicator={antIcon} />
-                            : <span style={{fontSize: '16px', fontWeight: '500'}}>APPROVE</span>
+                            : <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetadmin.approve')}</span>
                           }
                         </Button>
                       </div>
@@ -1084,7 +1165,7 @@ const ViewDetailTimesheet = () => {
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">
-                Reason for Rejection
+              {t('Timesheetadmin.reasonforrejection')}
               </h5>
               <button type="button" className="close" onClick={handleClose}>
                 <span aria-hidden="true">×</span>
@@ -1100,10 +1181,10 @@ const ViewDetailTimesheet = () => {
                   console.log(errorFields);
                   const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
                   if(consecutiveSpacesError){
-                    message.error("Please Remove Consecutive Spaces!")
-                  }else{
-                    message.error("Please Fill Required Fields!")
-                  }
+                    message.error(t('allEmp.errors.removeConsecutiveSpaces'))
+                 }else{
+                    message.error(t('allEmp.errors.fillRequiredFields'))
+                  } 
                 }}
                 initialValues={{
                   designationName: open?.data
@@ -1113,7 +1194,7 @@ const ViewDetailTimesheet = () => {
               >
                 <div className="form-group">
                 <label style={{display: 'flex', justifyContent: 'space-between'}}>
-                    <div>Reason <span className="text-danger">*</span></div>
+                    <div>{t('Timesheetadmin.reason')} <span className="text-danger">*</span></div>
                     <small style={{marginTop: '5px', fontSize: '10px', color: 'rgba(0, 0, 0, 0.5)'}}>{reasonLength} / 150</small>
                   </label>
                   <Form.Item
@@ -1124,13 +1205,13 @@ const ViewDetailTimesheet = () => {
                         required: true,
                         validator: (_, value) => {
                           if(!value || value.trim() === ''){
-                            return Promise.reject("please enter reason");
+                            return Promise.reject(t('Timesheetadmin.pleaseEnterReason'));
                           }
                           else if (/\s{2,}/.test(value)) {
-                            return Promise.reject("please remove consecutive spaces");
+                            return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                           }
                           else if (value.length < 5) {
-                            return Promise.reject("reason length must be at least 5 characters long");
+                            return Promise.reject(t('Timesheetadmin.reasonLengthAtLeast'));
                           }
                           return Promise.resolve();
                         },
@@ -1150,7 +1231,7 @@ const ViewDetailTimesheet = () => {
                     >
                       {
                         loader ? <Spin size="small" indicator={antIcon} />
-                          : 'Submit'
+                          : t('submit')
                       }
                     </Button>
                   </Form.Item>
@@ -1179,7 +1260,7 @@ const ViewDetailTimesheet = () => {
                 <div className="modal-content">
                   <div className="modal-header">
                     <h5 className="modal-title">
-                      Details
+                    {t('aRequests.viewModal.details')}
                       {/* {moment(open?.data?.date).format('dddd')} <span style={{marginInline: '6px'}}>|</span> {moment(open?.data?.date).format('DD-MMM-YYYY')} */}
                     </h5>
                     <button type="button" className="close" onClick={handleClose}>
@@ -1202,7 +1283,7 @@ const ViewDetailTimesheet = () => {
 
                       <div className="form-group">
                         <label>
-                          Date
+                        {t('Timesheetemployee.date')}
                         </label>
                           <Form.Item
                           name='date'
@@ -1214,7 +1295,7 @@ const ViewDetailTimesheet = () => {
                       </div>
                       <div className="form-group">
                         <label>
-                          Project
+                        {t('Timesheetemployee.project')}
                         </label>
                           <Form.Item
                           name='projectName'
@@ -1232,7 +1313,7 @@ const ViewDetailTimesheet = () => {
                       </div>
                       <div className="form-group">
                         <label>
-                          Task Name
+                        {t('Timesheetadmin.taskName')}
                         </label>
                           <Form.Item
                           name='title'
@@ -1250,7 +1331,7 @@ const ViewDetailTimesheet = () => {
                       </div>
                       <div className="form-group">
                         <label>
-                          Hours
+                        {t('Timesheetadmin.hours')}
                         </label>
                           <Form.Item
                           name='hoursWorked'
@@ -1261,7 +1342,7 @@ const ViewDetailTimesheet = () => {
                       </div>
                       <div className="form-group">
                         <label style={{display: 'flex', justifyContent: 'space-between'}}>
-                          <div>Notes</div>
+                          <div>{t('Timesheetemployee.notes')}</div>
                         </label>
                         <Form.Item
                           name="notes"

@@ -116,20 +116,20 @@ const [imageChange, setImageChange] = useState(1)
   }, [location])
   
   
-  useEffect(() => {
-    if(activeTab === 'profile'){
-      getReportsTo()
-      getDepartment();
-      getDesignation();
-    }
-    // if(role === 'admin' || permissions?.viewAllUsers) {
-    //   getReportsTo()
-    //   getDepartment();
-    //   getDesignation();
-    // }else{
-    //   nav('/restricted', { state: { unAuthorize: true}})
-    // }
-  }, [])
+  // useEffect(() => {
+  //   if(activeTab === 'profile'){
+  //     getReportsTo()
+  //     getDepartment();
+  //     getDesignation();
+  //   }
+  //   // if(role === 'admin' || permissions?.viewAllUsers) {
+  //   //   getReportsTo()
+  //   //   getDepartment();
+  //   //   getDesignation();
+  //   // }else{
+  //   //   nav('/restricted', { state: { unAuthorize: true}})
+  //   // }
+  // }, [])
 
   useEffect(() => {
     // window.scrollTo(0, 0);
@@ -137,80 +137,80 @@ const [imageChange, setImageChange] = useState(1)
     sessionStorage.setItem(`emp_active_tab`, `${activeTab}`)
   }, [activeTab])
 
-  const getReportsTo = () => {
-    apiServices("GET", "user/view-team-lead", null, user_state)
-    .then((res) => {
-      if (res?.data?.success === true) {
-        res?.data?.User?.map((rep)=> {
-          setRepInfo((prevRep) => ({
-            ...prevRep,
-            [rep?._id]: rep?.fullName,
-          }));
-        })
-      }
-    })
-    .catch((err) => {
-      message.error(
-        `${
-          err?.response?.data?.msg
-            ? err?.response?.data?.msg
-            : err?.response?.data?.validation?.body?.message
-            ? err?.response?.data?.validation?.body?.message
-            : t('allEmp.errors.getDepartmentInfoError')
-        }!`
-      );
-    });
-  }
+  // const getReportsTo = () => {
+  //   apiServices("GET", "user/view-team-lead", null, user_state)
+  //   .then((res) => {
+  //     if (res?.data?.success === true) {
+  //       res?.data?.User?.map((rep)=> {
+  //         setRepInfo((prevRep) => ({
+  //           ...prevRep,
+  //           [rep?._id]: rep?.fullName,
+  //         }));
+  //       })
+  //     }
+  //   })
+  //   .catch((err) => {
+  //     message.error(
+  //       `${
+  //         err?.response?.data?.msg
+  //           ? err?.response?.data?.msg
+  //           : err?.response?.data?.validation?.body?.message
+  //           ? err?.response?.data?.validation?.body?.message
+  //           : t('allEmp.errors.getDepartmentInfoError')
+  //       }!`
+  //     );
+  //   });
+  // }
 
-  const getDepartment = () => {
-  apiServices("GET", "team/view-team", null, user_state)
-      .then((res) => {
-        if (res?.data?.success === true) {
-          console.log(res?.data?.Team);
-          res?.data?.Team?.map((dept)=> {
-            setDeptInfo((prevDept) => ({
-              ...prevDept,
-              [dept?._id]: dept?.teamName,
-            }));
-          })
-        }
-      })
-      .catch((err) => {
-        message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
-              ? err?.response?.data?.validation?.body?.message
-              : t('allEmp.errors.getDepartmentInfoError')
-          }!`
-        );
-      });
-    }
-  const getDesignation = () => {
-  apiServices("GET", "designation", null, user_state)
-      .then((res) => {
-        if (res?.data?.success === true) {
-          res?.data?.Designation?.map((desig)=> {
-            setDesigInfo((prevDesig) => ({
-              ...prevDesig,
-              [desig?._id]: desig?.designationName,
-            }));
-          })
-        }
-      })
-      .catch((err) => {
-        message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
-              ? err?.response?.data?.validation?.body?.message
-              : t('allEmp.errors.getDesignationInfoError')
-          }!`
-        );
-      });
-    }
+  // const getDepartment = () => {
+  // apiServices("GET", "team/view-team", null, user_state)
+  //     .then((res) => {
+  //       if (res?.data?.success === true) {
+  //         console.log(res?.data?.Team);
+  //         res?.data?.Team?.map((dept)=> {
+  //           setDeptInfo((prevDept) => ({
+  //             ...prevDept,
+  //             [dept?._id]: dept?.teamName,
+  //           }));
+  //         })
+  //       }
+  //     })
+  //     .catch((err) => {
+  //       message.error(
+  //         `${
+  //           err?.response?.data?.msg
+  //             ? err?.response?.data?.msg
+  //             : err?.response?.data?.validation?.body?.message
+  //             ? err?.response?.data?.validation?.body?.message
+  //             : t('allEmp.errors.getDepartmentInfoError')
+  //         }!`
+  //       );
+  //     });
+  //   }
+  // const getDesignation = () => {
+  // apiServices("GET", "designation", null, user_state)
+  //     .then((res) => {
+  //       if (res?.data?.success === true) {
+  //         res?.data?.Designation?.map((desig)=> {
+  //           setDesigInfo((prevDesig) => ({
+  //             ...prevDesig,
+  //             [desig?._id]: desig?.designationName,
+  //           }));
+  //         })
+  //       }
+  //     })
+  //     .catch((err) => {
+  //       message.error(
+  //         `${
+  //           err?.response?.data?.msg
+  //             ? err?.response?.data?.msg
+  //             : err?.response?.data?.validation?.body?.message
+  //             ? err?.response?.data?.validation?.body?.message
+  //             : t('allEmp.errors.getDesignationInfoError')
+  //         }!`
+  //       );
+  //     });
+  //   }
   
 
 const handleClose = () => {
@@ -700,8 +700,8 @@ const antIcon = (
                           <div className="col-md-5">
                             <div className="profile-info-left">
                               <h3 className="user-name m-t-0 mb-0">{allData?.fullName}</h3>
-                              <div className="small doj text-muted" style={{fontSize: '12px', fontWeight: '500'}}>{deptInfo[allData?.teamId]}</div>
-                              <small className="text-muted">{desigInfo[allData?.designationId]}</small>
+                              <div className="small doj text-muted" style={{fontSize: '12px', fontWeight: '500'}}>{allData?.team || "None"}</div>
+                              <small className="text-muted">{allData?.designationName || "None"}</small>
                               <div className="staff-id">{t('allEmp.employeeID')}: {allData?.employeeId}</div>
                               <div className="small doj text-muted">{t('empProfile.dateOfJoin')}: {formatDate(allData?.joiningDate || '')}</div>
                               <div style={{color: 'transparent', height: '98px'}}>.</div>
@@ -737,7 +737,7 @@ const antIcon = (
                               <li>
                                 <div className="title">{t('empProfile.reportsTo')}:</div>
                                 <div className="text">
-                                {repInfo[allData?.reportsTo] || 'None'}
+                                {allData?.teamLead || 'None'}
                                   {/* <div className="avatar-box">
                                     <div className="avatar avatar-xs">
                                       <img src={Avatar_16} alt="" />

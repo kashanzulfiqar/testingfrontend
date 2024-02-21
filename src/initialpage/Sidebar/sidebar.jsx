@@ -707,9 +707,9 @@ const Sidebar = (props) => {
                       {/* <li><Link onClick={() => localStorage.setItem("minheight", "true")} to="/projects/tasks">Tasks</Link></li> */}
                       { 
                         (user_state?.role === 'admin' || permissions?.projectManagement) &&
-                        <li><Link onClick={() => localStorage.setItem("minheight", "true")} className={pathname.includes('/projects/tasks') ? "active" : ""} to="/projects/tasks">Tasks</Link></li>
+                        <li><Link onClick={() => localStorage.setItem("minheight", "true")} className={pathname.includes('/projects/tasks') ? "active" : ""} to="/projects/tasks">{t('Tasks.tasks')}</Link></li>
                       }
-                      <li><Link className={pathname.includes('task-board') ? "active" : ""} to="/app/projects/task-board">Task Board</Link></li>
+                      <li><Link className={pathname.includes('task-board') ? "active" : ""} to="/app/projects/task-board">{t('sideBar.taskBoard')}</Link></li>
                     </ul>
                     : ""
                   }
@@ -748,18 +748,18 @@ const Sidebar = (props) => {
                       {
                         (user_state?.role === 'admin' || permissions?.managePayrolls) &&
                         <>
-                          <li><Link className={pathname.includes('estimates') ? "active" : ""} to="/app/sales/estimates">Estimates</Link></li>
-                          <li><Link className={pathname.includes('invoices') ? "active" : ""} to="/invoices">Invoices</Link></li>
-                          <li><Link className={pathname.includes('payments') ? "active" : ""} to="/payments">Payments</Link></li>
-                          <li><Link className={pathname.includes('profit-loss') ? "active" : ""} to="/profit-loss">Profit & Loss</Link></li>
-                          <li><Link className={pathname.includes('provident-fund') ? "active" : ""} to="/app/sales/provident-fund">Provident Fund</Link></li>
-                          <li><Link className={pathname.includes('taxes') ? "active" : ""} to="/app/sales/taxes">Taxes</Link></li>
+                          <li><Link className={pathname.includes('estimates') ? "active" : ""} to="/app/sales/estimates">{t('sideBar.estimates')}</Link></li>
+                          <li><Link className={pathname.includes('invoices') ? "active" : ""} to="/invoices">{t('sideBar.invoices')}</Link></li>
+                          <li><Link className={pathname.includes('payments') ? "active" : ""} to="/payments">{t('sideBar.payments')}</Link></li>
+                          <li><Link className={pathname.includes('profit-loss') ? "active" : ""} to="/profit-loss">{t('sideBar.profitAndLoss')}</Link></li>
+                          <li><Link className={pathname.includes('provident-fund') ? "active" : ""} to="/app/sales/provident-fund">{t('sideBar.providentFund')}</Link></li>
+                          <li><Link className={pathname.includes('taxes') ? "active" : ""} to="/app/sales/taxes">{t('sideBar.taxes')}</Link></li>
                         </>
                       }
                       {
                         (user_state?.role === 'admin' || permissions?.expenseManagement) &&
                         <>
-                          <li><Link className={pathname.includes('expenses') ? "active" : ""} to="/expenses">Expenses</Link></li>
+                          <li><Link className={pathname.includes('expenses') ? "active" : ""} to="/expenses">{t('sideBar.expenses')}</Link></li>
                         </>
                       }
                     </ul>
@@ -794,15 +794,15 @@ const Sidebar = (props) => {
                     <ul>
                       {
                         (user_state?.role === 'admin' || permissions?.managePayrolls) &&
-                      <li><Link className={pathname.includes('current-payroll') ? "active" : ""} to="/payroll/current-payroll"> Current Payroll </Link></li>
+                      <li><Link className={pathname.includes('current-payroll') ? "active" : ""} to="/payroll/current-payroll"> {t('sideBar.currentPayroll')} </Link></li>
                       }
                       {
                         permissions?.viewSelfPayrolls &&
-                        <li><Link className={pathname.includes('payslip') ? "active" : ""} to="/payroll/payslip"> Payslip </Link></li>
+                        <li><Link className={pathname.includes('payslip') ? "active" : ""} to="/payroll/payslip"> {t('sideBar.payslip')} </Link></li>
                       }
                       {
                         (user_state?.role === 'admin' || permissions?.managePayrolls) &&
-                        <li><Link className={pathname.includes('payroll-histroy') ? "active" : ""} to="/payroll/payroll-histroy"> Payroll History </Link></li>
+                        <li><Link className={pathname.includes('payroll-histroy') ? "active" : ""} to="/payroll/payroll-histroy"> {t('sideBar.payrollHistory')} </Link></li>
                       }
                     </ul>
                     : ""
@@ -831,9 +831,9 @@ const Sidebar = (props) => {
                       <li><Link className={pathname.includes('project-') ? "active" : ""} to="/app/reports/project-reports"> Project Report </Link></li>
                       <li><Link className={pathname.includes('task-') ? "active" : ""} to="/app/reports/task-reports"> Task Report </Link></li>
                       <li><Link className={pathname.includes('user-') ? "active" : ""} to="/app/reports/user-reports"> User Report </Link></li> */}
-                      <li><Link className={pathname.includes('employee-report') ? "active" : ""} to="/employee-report"> Employee Report </Link></li>
+                      <li><Link className={pathname.includes('employee-report') ? "active" : ""} to="/employee-report"> {t('sideBar.employeeReport')} </Link></li>
                       {/* <li><Link className={pathname.includes('payslip-') ? "active" : ""} to="/app/reports/payslip-reports"> Payslip Report </Link></li> */}
-                      <li><Link className={pathname.includes('attendance-report') ? "active" : ""} to="/attendance-report"> Attendance Report </Link></li>
+                      <li><Link className={pathname.includes('attendance-report') ? "active" : ""} to="/attendance-report"> {t('sideBar.attendanceReport')} </Link></li>
                       {/* <li><Link className={pathname.includes('leave-') ? "active" : ""} to="/app/reports/leave-reports"> Leave Report </Link></li>
                       <li><Link className={pathname.includes('daily-') ? "active" : ""} to="/app/reports/daily-reports"> Daily Report </Link></li> */}
                     </ul>

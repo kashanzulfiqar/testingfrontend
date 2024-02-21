@@ -7,9 +7,10 @@ import { apiUploadToS3 } from '../../../../Services/uploadImage';
 import { user_icon } from '../../../../Entryfile/imagepath';
 import PhoneNoInput from '../../../../Components/PhoneNoInput';
 import { apiServices } from '../../../../Services/apiServices';
+import { useTranslation } from 'react-i18next';
 
 const AddFocalModal = ({ open, setOpen, user_state, allFocalPerson, setAllFocalPerson, clientId, setPaginationDetail, paginationDetail }) => {
-
+  const { t, i18n } = useTranslation()
     const [form] = Form.useForm();
     const company_id = user_state?.user?.companyId
 
@@ -54,7 +55,7 @@ const onFinishAdd = (values) => {
                 ...paginationDetail,
                 total: paginationDetail?.total + 1
             })
-            message.success('Focal Person Added Successfully!')
+            message.success(t('client.focalPersonAddedSuccessfully'))
             handleClose();
             setLoader(false);
           }
@@ -67,7 +68,7 @@ const onFinishAdd = (values) => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Add Focal Person Info Error"
+                : t('client.addFocalPersonInfoError')
             }!`
           );
         });
@@ -111,7 +112,7 @@ const onFinishEdit = (values) => {
                 })
               );
               handleClose()
-              message.success('Focal Person Updated Successfully!')
+              message.success(t('client.focalPersonUpdatedSuccessfully'))
               setLoader(false)
             }
           })
@@ -124,7 +125,7 @@ const onFinishEdit = (values) => {
                   ? err?.response?.data?.msg
                   : err?.response?.data?.validation?.body?.message
                   ? err?.response?.data?.validation?.body?.message
-                  : "Update Focal Person Info Error"
+                  : t('client.updateFocalPersonInfoError')
               }!`
             );
           });
@@ -152,7 +153,7 @@ const onImageUpload = (imagedata) => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "upload image Error"
+                : t('allEmp.errors.uploadImageError')
             }!`
           );
       })
@@ -189,14 +190,14 @@ const onImageUpload = (imagedata) => {
 
     const isFileTypeAllowed = allowedFileTypes.includes(file.type);
     if (!isFileTypeAllowed) {
-      message.error('You can only upload PNG, JPG, or JPEG files!');
+      message.error(t('allEmp.errors.fileTypeNotAllowed'));
       return false;
     }
 
     const maxSizeInBytes = 5 * 1024 * 1024; // 5MB
     const isSizeAllowed = file.size <= maxSizeInBytes;
     if (!isSizeAllowed) {
-      message.error('File size is too large. Maximum allowed size is 5MB.');
+      message.error(t('allEmp.errors.fileSizeTooLarge'));
       return false;
     }
 
@@ -232,7 +233,7 @@ const antIcon = (
             <div className="modal-dialog modal-dialog-centered modal-lg" role="document">
             <div className="modal-content">
                 <div className="modal-header">
-                <h5 className="modal-title">{open?.data ? 'Edit' : 'Add'} Focal Person</h5>
+                <h5 className="modal-title">{open?.data ? t('edit') : t('requests.addModal.add')} {t('projectScreen.Modal.focalPerson')}</h5>
                 <button type="button" className="close" onClick={handleClose}>
                     <span aria-hidden="true">×</span>
                 </button>
@@ -251,10 +252,10 @@ const antIcon = (
                     }
                     const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
                     if(consecutiveSpacesError){
-                    message.error("Please Remove Consecutive Spaces!")
-                    }else{
-                    message.error("Please Fill Required Fields!")
-                    }
+                      message.error(t('allEmp.errors.removeConsecutiveSpaces'))
+                   }else{
+                      message.error(t('allEmp.errors.fillRequiredFields'))
+                    } 
                 }}
                 autoComplete='off'
                 >
@@ -302,7 +303,7 @@ const antIcon = (
                     <div className="col-md-6">
                     <div className="form-group">
                     <label>
-                        Full Name <span className="text-danger">*</span>
+                    {t('client.fullName')} <span className="text-danger">*</span>
                     </label>
                     <Form.Item
                         name='focalPersonName'
@@ -312,12 +313,12 @@ const antIcon = (
                             whitespace: true,
                             required: true,
                             validator: (_, value) => {
-                            if (!value || value.trim() === '') {
-                                return Promise.reject('please enter full name');
+                              if (!value || value.trim() === '') {
+                                return Promise.reject(t('client.pleaseEnterFullName'));
                             } else if (/\s{2,}/.test(value)) {
-                                return Promise.reject('please remove consecutive spaces');
+                                return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                             } else if (value.length < 3) {
-                                return Promise.reject('name must be at least 3 characters long');
+                                return Promise.reject(t('client.fullNameLength'));
                             }
                             return Promise.resolve();
                             },
@@ -331,7 +332,7 @@ const antIcon = (
                     <div className="col-md-6">
                     <div className="form-group">
                         <label>
-                        Email <span className="text-danger">*</span>
+                        {t('client.email')} <span className="text-danger">*</span>
                         </label>
                         <Form.Item
                         name='focalPersonEmail'
@@ -341,12 +342,12 @@ const antIcon = (
                             whitespace: true,
                             required: true,
                             validator: (_, value) => {
-                                if (!value || value?.trim() === '') {
-                                return Promise.reject('please enter email');
+                              if (!value || value?.trim() === '') {
+                                return Promise.reject(t('client.pleaseEnterEmail'));
                                 } else if (/\s{2,}/.test(value)) {
-                                return Promise.reject('please remove consecutive spaces');
+                                return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                                 } else if (!isValidEmail(value)) {
-                                return Promise.reject('please enter a valid email');
+                                return Promise.reject(t('client.pleaseEnterValidEmail'));
                                 }
                                 return Promise.resolve();
                             },
@@ -360,7 +361,7 @@ const antIcon = (
                     <div className="col-md-6">
                     <div className="form-group">
                         <label>
-                        Password <span className="text-danger">*</span>
+                        {t('client.password')} <span className="text-danger">*</span>
                         </label>
                         <Form.Item
                         name='password'
@@ -369,11 +370,11 @@ const antIcon = (
                             {
                             whitespace: true,
                             required: true,
-                            message: "please enter password",
+                            message: t('client.pleaseEnterPassword'),
                             },
                             {
                             min: 8,
-                            message: "password length should be more than 8",
+                            message: t('client.passwordLength'),
                             },
                         ]}
                         >
@@ -389,7 +390,7 @@ const antIcon = (
                     <div className="col-md-6">
                     <div className="form-group">
                         <label>
-                        Phone No <span className="text-danger">*</span>
+                        {t('client.phoneNo')} <span className="text-danger">*</span>
                         </label>
                         <Form.Item
                         name='focalPersonPhoneNo'
@@ -398,11 +399,11 @@ const antIcon = (
                             {
                             whitespace: true,
                             required: true,
-                            message: "please enter phone number",
+                            message: t('client.pleaseEnterPhoneNumber'),
                             },
                             {
                             min: 5,
-                            message: "phone length must be at least 5 digits long",
+                            message: t('client.phoneLength'),
                             },
                         ]}
                         validateStatus={phoneLengthError ? 'error' : ''}
@@ -423,7 +424,7 @@ const antIcon = (
                     <div className="col-md-6">
                         <div className="form-group">
                         <label>
-                            Designation <span className="text-danger">*</span>
+                        {t('allEmp.designation')} <span className="text-danger">*</span>
                         </label>
                         <Form.Item
                             name='designation'
@@ -436,9 +437,9 @@ const antIcon = (
                                 if (!value || value.trim() === '') {
                                     return Promise.reject('please enter designation');
                                 } else if (/\s{2,}/.test(value)) {
-                                    return Promise.reject('please remove consecutive spaces');
+                                    return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                                 } else if (value.length < 3) {
-                                    return Promise.reject('name must be at least 3 characters long');
+                                  return Promise.reject(t('client.fullNameLength'));
                                 }
                                 return Promise.resolve();
                                 },
@@ -454,7 +455,7 @@ const antIcon = (
                     <button type='submit' className="btn btn-primary submit-btn" disabled={loader}>
                     {
                         loader ? <Spin size="small" indicator={antIcon} />
-                        : 'Submit'
+                        : t('submit')
                     }
                     </button>
                 </div>

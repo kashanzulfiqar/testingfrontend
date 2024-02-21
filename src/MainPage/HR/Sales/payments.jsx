@@ -202,7 +202,7 @@ const Payments = () => {
   
     const columns = [         
       {
-        title: 'Invoice Number',
+        title: t('finance.payments.invoiceNumber'),
         dataIndex: 'invoiceNo',
         render: (text, record) => (
           // <Link to="/app/sales/invoices-view" style={{color: '#333333'}}>#{text}</Link>
@@ -210,7 +210,7 @@ const Payments = () => {
           ),
       },     
       {
-        title: 'Client',
+        title: t('finance.Invoices.client'),
         dataIndex: 'client',
         render: (text, record) => (
           <label>{text?.clientName}</label>
@@ -218,14 +218,14 @@ const Payments = () => {
       },
 
       {
-        title: 'Payment Type',
+        title: t('finance.payments.paymentType'),
         dataIndex: 'paymentType',
         render: (text, record) => (
           <label style={{marginLeft: `${text ? "" : '44px'}`}}>{text || '-'}</label>
           ),
       },
       {
-        title: 'Paid Date',
+        title: t('finance.payments.paidDate'),
         dataIndex: 'paymentDate',
         render: (text, record) => {
           return(
@@ -233,7 +233,7 @@ const Payments = () => {
           )},
       },    
       {
-        title: 'Received Amount',
+        title: t('finance.payments.recievedAmount'),
         dataIndex: 'paidAmountInPreferredCurrency',
         // title: 'Paid Amount',
         // dataIndex: 'paidAmount',
@@ -243,16 +243,16 @@ const Payments = () => {
           ),
       },
       {
-        title: 'Status',
+        title: t('finance.Invoices.status'),
         dataIndex: 'status',
         render: (text, record) => (
         <label className={text==="Paid" ? "badge bg-inverse-success" : text==="Partially Paid" ? "badge bg-inverse-info" : text==="Pending" ? "badge bg-inverse-warning" : text==="Cancelled" ? "badge bg-inverse-danger" : ''}>
-          {text || '-'}
+          {text==="Paid" ? t('aDash.paid') : text==="Partially Paid" ? t('aDash.partiallyPaid') : text==="Pending" ? t('aDash.pending') : text==="Cancelled" ? t('aDash.cancelled') : '-'}
         </label>
           ),
       },
       {
-        title: 'Actions',
+        title: t('holiday.actions'),
         render: (text, record) => (
           <div className="dropdown dropdown-action text-end">
             <a href="javascript:void(0)" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
@@ -266,7 +266,7 @@ const Payments = () => {
                 });
                 }}
                 className="dropdown-item"
-              ><i className="fa fa-pencil m-r-5" /> Edit</a>
+              ><i className="fa fa-pencil m-r-5" /> {t('edit')}</a>
               {/* <a className="dropdown-item" href="javascript:void(0)" onClick={() => { setOpen({ isEditOpen: false, isDelOpen: true, data: record }) }}><i className="fa fa-trash-o m-r-5" /> Delete</a> */}
             </div>
           </div>
@@ -303,7 +303,7 @@ const Payments = () => {
               {/* {
                 (role === 'admin' || permissions?.viewAllUsers) ? 'No Employee Record found!' : 'You are Restricted to View Employees'
               } */}
-              No Payments Record Found!
+              {t('finance.payments.noPaymentRecordFound')}
             </div>
           </div>
         }
@@ -335,7 +335,7 @@ const Payments = () => {
         <>
         <div className="page-wrapper">
             <Helmet>
-                <title>Payments - DaftarPro</title>
+                <title>{t('finance.payments.payments')} - {t('header.daftarPro')}</title>
                 <meta name="description" content="Login page"/>					
             </Helmet>
       {/* Page Content */}
@@ -344,10 +344,10 @@ const Payments = () => {
         <div className="page-header">
           <div className="row">
             <div className="col-sm-12">
-              <h3 className="page-title">Payments</h3>
+              <h3 className="page-title">{t('finance.payments.payments')}</h3>
               <ul className="breadcrumb">
-                <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>Dashboard</Link></li>
-                <li className="breadcrumb-item active">Payments</li>
+                <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>{t('dashboard')}</Link></li>
+                <li className="breadcrumb-item active">{t('finance.payments.payments')}</li>
               </ul>
             </div>
           </div>
@@ -369,14 +369,14 @@ const Payments = () => {
                     {
                       validator: (_, value) => {
                         if (/\s{2,}/.test(value)) {
-                          return Promise.reject("please remove consecutive spaces");
+                          return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                         }
                         return Promise.resolve();
                       },
                     },
                   ]}
                 >
-                  <Input className='form-control' style={{height:'50px'}} placeholder='Client Name' />
+                  <Input className='form-control' style={{height:'50px'}} placeholder={t('finance.payments.clientName')} />
                 </Form.Item>
             </div>
           </div>
@@ -389,14 +389,14 @@ const Payments = () => {
                     {
                       validator: (_, value) => {
                         if (/\s{2,}/.test(value)) {
-                          return Promise.reject("please remove consecutive spaces");
+                          return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                         }
                         return Promise.resolve();
                       },
                     },
                   ]}
                 >
-                  <Input className='form-control' style={{height:'50px'}} placeholder='Invoice No' />
+                  <Input className='form-control' style={{height:'50px'}} placeholder={t('finance.payments.invoiceNumber')} />
                 </Form.Item>
             </div>
           </div>
@@ -420,7 +420,7 @@ const Payments = () => {
               <DatePicker 
                 allowClear={false}
                 size='large'
-                placeholder='Month & Year'
+                placeholder={t('finance.payments.month&year')}
                 className='form-control filterDate'
                 style={{minHeight: '50px', display: 'flex'}} 
                 getPopupContainer={() => document.getElementById('area')}
@@ -440,25 +440,25 @@ const Payments = () => {
                   style={{
                     width: '100%',
                   }}
-                  placeholder='Select Status'
+                  placeholder={t('finance.payments.selectStatus')}
                   size='large'
                   getPopupContainer={() => document.getElementById('area1')}
                   options={[
                     {
                       value: 'Paid',
-                      label: "Paid",
+                      label: t('aDash.paid'),
                     },
                     {
                       value: 'Partially Paid',
-                      label: "Partially Paid",
+                      label: t('aDash.partiallyPaid'),
                     },
                     {
                       value: 'Pending',
-                      label: "Pending",
+                      label: t('aDash.pending'),
                     },
                     {
                       value: 'Cancelled',
-                      label: "Cancelled",
+                      label: t('aDash.cancelled'),
                     },
                   ]}
                 >
@@ -481,7 +481,7 @@ const Payments = () => {
               // disabled={role === 'admin' ? false : permissions?.viewAllUsers ? false : true}
               style={{minWidth: '100%', marginBottom: '24px'}}
             > 
-              Search 
+              {t('search')} 
             </button>
           </div>
           <div className="col-sm-6 col-md-2">  
@@ -496,7 +496,7 @@ const Payments = () => {
               className="btn btn-success btn-block w-50 resetButton" style={{minWidth: '100%', marginBottom: '24px', backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}} 
               // disabled={role === 'admin' ? false : permissions?.viewAllUsers ? false : true}
             >
-              Reset 
+              {t('reset')} 
             </button>  
           </div>
         </div>
@@ -581,7 +581,7 @@ const Payments = () => {
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">
-                Update Invoice Payment
+              {t('finance.payments.updateInvoicePayment')}
               </h5>
               <button type="button" className="close" onClick={handleClose}>
                 <span aria-hidden="true">×</span>
@@ -595,10 +595,10 @@ const Payments = () => {
                 onFinishFailed={({errorFields}) => {
                   const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
                   if(consecutiveSpacesError){
-                    message.error("Please Remove Consecutive Spaces!")
-                  }else{
-                    message.error("Please Fill Required Fields!")
-                  }
+                    message.error(t('allEmp.errors.removeConsecutiveSpaces'))
+                 }else{
+                    message.error(t('allEmp.errors.fillRequiredFields'))
+                  } 
                 }}
                 initialValues={{
                   // title: open?.data ? open?.data?.title : "",
@@ -618,14 +618,14 @@ const Payments = () => {
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>
-                        Payment Type <span className="text-danger">*</span>
+                      {t('finance.payments.paymentType')} <span className="text-danger">*</span>
                       </label>
                       <Form.Item
                         name="paymentType"
                         rules={[
                           {
                             required: true,
-                            message: "please select type",
+                            message: t('finance.payments.pleaseSelectType'),
                           },
                         ]}
                         className="custom-border"
@@ -634,15 +634,15 @@ const Payments = () => {
                           options={[
                             {
                               value: 'Cash',
-                              label: "Cash",
+                              label: t('cash'),
                             },
                             {
                               value: 'Cheque',
-                              label: "Cheque",
+                              label: t('cheque'),
                             },
                             {
                               value: 'Bank Transfer',
-                              label: "Bank Transfer",
+                              label: t('bankTransfer'),
                             },
                           ]}
                         />
@@ -652,7 +652,7 @@ const Payments = () => {
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>
-                        Paid Amount <span className="text-danger">*</span>
+                      {t('finance.payments.paidAmount')} <span className="text-danger">*</span>
                       </label>
                       <Form.Item
                         name="paidAmountInPreferredCurrency"
@@ -661,7 +661,7 @@ const Payments = () => {
                           {
                             // whitespace: true,
                             required: true,
-                            message: 'please enter amount'
+                            message: t('finance.payments.pleaseEnterAmount')
                           },
                           // ({ getFieldValue }) => ({
                           //   validator: (_, value) => {
@@ -705,33 +705,33 @@ const Payments = () => {
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>
-                        Paid Date <span className="text-danger">*</span>
+                      {t('finance.payments.paidDate')} <span className="text-danger">*</span>
                       </label>
                       <Form.Item
                         name="paymentDate"
                         rules={[
                           {
                             required: true,
-                            message: "please select date",
+                            message: t('finance.payments.pleaseSelectDate'),
                           },
                         ]}
                         className="custom-border"
                       >
-                        <DatePicker className="form-control" />
+                        <DatePicker className="form-control" placeholder={t('requests.addModal.selectDate')} />
                       </Form.Item>
                     </div>
                   </div>
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>
-                        Status <span className="text-danger">*</span>
+                      {t('finance.Invoices.status')} <span className="text-danger">*</span>
                       </label>
                       <Form.Item
                         name="status"
                         rules={[
                           {
                             required: true,
-                            message: "please select status",
+                            message: t('finance.payments.pleaseSelectStatus'),
                           },
                         ]}
                         className="custom-border"
@@ -740,19 +740,19 @@ const Payments = () => {
                           options={[
                             {
                               value: 'Paid',
-                              label: "Paid",
+                              label: t('aDash.paid'),
                             },
                             {
                               value: 'Partially Paid',
-                              label: "Partially Paid",
+                              label: t('aDash.partiallyPaid'),
                             },
                             {
                               value: 'Pending',
-                              label: "Pending",
+                              label: t('aDash.pending'),
                             },
                             {
                               value: 'Cancelled',
-                              label: "Cancelled",
+                              label: t('aDash.cancelled'),
                             },
                           ]}
                         />
@@ -769,7 +769,7 @@ const Payments = () => {
                         {loader ? (
                           <Spin size="small" indicator={antIcon} />
                         ) : (
-                          "Submit"
+                          t('submit')
                         )}
                       </Button>
                     </Form.Item>

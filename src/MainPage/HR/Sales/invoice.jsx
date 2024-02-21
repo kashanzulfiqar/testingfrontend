@@ -67,7 +67,7 @@ const Invoices = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get All Invoices Error"
+              : t('aDash.errors.getAllInvoicesError')
           }!`
         );
       });
@@ -96,7 +96,7 @@ const Invoices = () => {
         if (res?.data?.success === true) {
           getAllInvoices(filterValues,currentPage, pageSize);
           handleClose();
-          message.success("Invoice Deleted Successfully!");
+          message.success(t('finance.Invoices.invoiceDeletedSuccess'));
           setDeleteLoader(false);
         }
       })
@@ -109,7 +109,7 @@ const Invoices = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Delete Invoice Error"
+              : t('finance.Invoices.deleteInvoiceError')
           }`
         );
       });
@@ -152,7 +152,7 @@ const handleClose = () => {
         render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
       },      
       {
-        title: 'Invoice Number',
+        title: t('finance.Invoices.invoicenumber'),
         dataIndex: 'invoiceNo',
         fixed: 'left',
         render: (text, record) => (
@@ -160,7 +160,7 @@ const handleClose = () => {
           ),
       },     
       {
-        title: 'Client',
+        title: t('aDash.client'),
         dataIndex: 'clientId',
         render: (text, record) => (
           // <label>{record?.clientId?.clientName}</label>
@@ -169,52 +169,52 @@ const handleClose = () => {
       },
 
       {
-        title: 'Invoice Date',
+        title: t('finance.Invoices.invoicedate'),
         dataIndex: 'invoiceDate',
         render: (text, record) => (
           <label>{formatDate(text || '')}</label>
           ),
       },
       {
-        title: 'Due Date',
+        title: t('finance.Invoices.duedate'),
         dataIndex: 'dueDate',
         render: (text, record) => (
           <label>{formatDate(text || '')}</label>
           ),
       },    
       {
-        title: 'Amount',
+        title: t('finance.Invoices.amount'),
         dataIndex: 'totalAmount',
         render: (text, record) => (
           <span>{text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {record?.currency}</span>
           ),
       },
       {
-        title: 'Converted Amount',
+        title: t('finance.Invoices.convertedamount'),
         dataIndex: 'convertedAmount',
         render: (text, record) => (
           <span>{text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {record?.company?.preferredCurrency}</span>
           ),
       },
       {
-        title: 'Status',
+        title: t('finance.Invoices.status'),
         dataIndex: 'status',
         render: (text, record) => (
         <label className={text==="Paid" ? "badge bg-inverse-success" : text==="Partially Paid" ? "badge bg-inverse-info" : text==="Pending" ? "badge bg-inverse-warning" : text==="Cancelled" ? "badge bg-inverse-danger" : ''}>
-          {text || '-'}
+          {text==="Paid" ? t('aDash.paid') : text==="Partially Paid" ? t('aDash.partiallyPaid') : text==="Pending" ? t('aDash.pending') : text==="Cancelled" ? t('aDash.cancelled') : '-'}
         </label>
           ),
       },
       {
-        title: 'Action',
+        title: t('allEmp.action'),
         render: (text, record) => (
             <div className="dropdown dropdown-action text-end">
                 <a href="javascript:void(0)" style={{minWidth: '60px'}} className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
                         <div className="dropdown-menu dropdown-menu-right">
-                          <Link className="dropdown-item" to="/invoices/edit-invoice" state={{edit_invoice_data: record}}><i className="fa fa-pencil m-r-5" /> Edit</Link>
-                          <Link className="dropdown-item" to="/invoices/view-invoice" state={{invoice_data: record}}><i className="fa fa-eye m-r-5" /> View</Link>
-                          <a className="dropdown-item" href="javascript:void(0)" onClick={() => { invoicePDF(record); }}><i className="fa fa-file-pdf-o m-r-5" /> Download</a>
-                          <a className="dropdown-item" href="javascript:void(0)" onClick={() => { setOpen({ isDelOpen: true, data: record }) }}><i className="fa fa-trash-o m-r-5" /> Delete</a>
+                          <Link className="dropdown-item" to="/invoices/edit-invoice" state={{edit_invoice_data: record}}><i className="fa fa-pencil m-r-5" /> {t('edit')}</Link>
+                          <Link className="dropdown-item" to="/invoices/view-invoice" state={{invoice_data: record}}><i className="fa fa-eye m-r-5" /> {t('view')}</Link>
+                          <a className="dropdown-item" href="javascript:void(0)" onClick={() => { invoicePDF(record); }}><i className="fa fa-file-pdf-o m-r-5" /> {t('finance.Invoices.download')}</a>
+                          <a className="dropdown-item" href="javascript:void(0)" onClick={() => { setOpen({ isDelOpen: true, data: record }) }}><i className="fa fa-trash-o m-r-5" /> {t('delete')}</a>
                         </div>
             </div>
           ),
@@ -250,7 +250,7 @@ const handleClose = () => {
               {/* {
                 (role === 'admin' || permissions?.viewAllUsers) ? 'No Employee Record found!' : 'You are Restricted to View Employees'
               } */}
-              No Invoices Record Found!
+              {t('finance.Invoices.noInvoicesFound')}
             </div>
           </div>
         }
@@ -281,7 +281,7 @@ const handleClose = () => {
         <>
         <div className="page-wrapper"> 
         <Helmet>
-            <title>Invoices - DaftarPro</title>
+            <title>{t('finance.Invoices.invoices')} - {t('header.daftarPro')}</title>
             <meta name="description" content="Login page"/>					
         </Helmet>
       {/* Page Content */}
@@ -290,14 +290,14 @@ const handleClose = () => {
         <div className="page-header">
           <div className="row align-items-center">
             <div className="col">
-              <h3 className="page-title">Invoices</h3>
+              <h3 className="page-title">{t('finance.Invoices.invoices')}</h3>
               <ul className="breadcrumb">
-                <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>Dashboard</Link></li>
-                <li className="breadcrumb-item active">Invoices</li>
+                <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>{t('dashboard')}</Link></li>
+                <li className="breadcrumb-item active">{t('finance.Invoices.invoices')}</li>
               </ul>
             </div>
             <div className="col-auto float-end ms-auto">
-              <Link to="/invoices/create-invoice" className="btn add-btn"><i className="fa fa-plus" /> Create Invoice</Link>
+              <Link to="/invoices/create-invoice" className="btn add-btn"><i className="fa fa-plus" /> {t('finance.Invoices.createinvoice')}</Link>
             </div>
           </div>
         </div>
@@ -357,7 +357,7 @@ const handleClose = () => {
                     },
                   ]}
                 >
-                  <Input className='form-control' style={{height:'50px'}} placeholder='Client Name' />
+                  <Input className='form-control' style={{height:'50px'}} placeholder={t('finance.Invoices.clientName')} />
                 </Form.Item>
             </div>
           </div>
@@ -382,7 +382,7 @@ const handleClose = () => {
                   <DatePicker 
                     allowClear={false}
                     size='large'
-                    placeholder='From'
+                    placeholder={t('finance.Invoices.from')}
                     className='form-control filterDate'
                     style={{minHeight: '50px', display: 'flex'}} 
                     getPopupContainer={() => document.getElementById('area')}
@@ -415,7 +415,7 @@ const handleClose = () => {
               <DatePicker 
                 allowClear={false}
                 size='large'
-                placeholder='To'
+                placeholder={t('finance.Invoices.to')}
                 className='form-control filterDate'
                 style={{minHeight: '50px', display: 'flex'}} 
                 getPopupContainer={() => document.getElementById('area')}
@@ -434,25 +434,25 @@ const handleClose = () => {
                   style={{
                     width: '100%',
                   }}
-                  placeholder='Select Status'
+                  placeholder={t('finance.payments.selectStatus')}
                   size='large'
                   getPopupContainer={() => document.getElementById('area1')}
                   options={[
                     {
                       value: 'Paid',
-                      label: "Paid",
+                      label: t('aDash.paid'),
                     },
                     {
                       value: 'Partially Paid',
-                      label: "Partially Paid",
+                      label: t('aDash.partiallyPaid'),
                     },
                     {
                       value: 'Pending',
-                      label: "Pending",
+                      label: t('aDash.pending'),
                     },
                     {
                       value: 'Cancelled',
-                      label: "Cancelled",
+                      label: t('aDash.cancelled'),
                     },
                   ]}
                 >
@@ -475,7 +475,7 @@ const handleClose = () => {
               // disabled={role === 'admin' ? false : permissions?.viewAllUsers ? false : true}
               style={{minWidth: '100%', marginBottom: '24px'}}
             > 
-              Search 
+              {t('search')} 
             </button>
           </div>
           <div className="col-sm-6 col-md-2">  
@@ -491,7 +491,7 @@ const handleClose = () => {
               className="btn btn-success btn-block w-50 resetButton" style={{minWidth: '100%', marginBottom: '24px', backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}} 
               // disabled={role === 'admin' ? false : permissions?.viewAllUsers ? false : true}
             >
-              Reset 
+              {t('reset')} 
             </button>  
           </div>
         </div>
@@ -587,9 +587,9 @@ const handleClose = () => {
               }}
             >
               <div className="form-header">
-                <h3 style={{ marginBottom: "30px" }}>Delete Invoice</h3>
+                <h3 style={{ marginBottom: "30px" }}>{t('finance.Invoices.deleteInvoice')}</h3>
                 <p>
-                  Are you sure you want to delete <b>{open?.data?.invoiceNo}</b>?
+                <span dangerouslySetInnerHTML={{ __html: t('projectScreen.confirmDeleteProject', { project: open?.data?.invoiceNo }) }} />
                 </p>
               </div>
               <div className="modal-btn delete-action">
@@ -605,7 +605,7 @@ const handleClose = () => {
                       {deleteLoader ? (
                         <Spin size="small" indicator={antIcon} />
                       ) : (
-                        "Delete"
+                        t('delete')
                       )}
                     </Button>
                   </div>
@@ -615,7 +615,7 @@ const handleClose = () => {
                       className="btn btn-primary submit-btn"
                       style={{ width: "100%" }}
                     >
-                      Cancel
+                      {t('cancel')}
                     </Button>
                   </div>
                 </div>

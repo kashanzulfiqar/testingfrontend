@@ -8,11 +8,12 @@ import { apiServices } from '../../../Services/apiServices';
 import { getAllISOCodes } from 'iso-country-currency';
 import moment from 'moment';
 import { LoadingOutlined } from "@ant-design/icons";
+import { useTranslation } from 'react-i18next';
 
 
 const EditInvoice = () => {
   const [form] = Form.useForm();
-
+  const { t, i18n } = useTranslation();
   const location = useLocation();
   const edit_invoice_data = location?.state?.edit_invoice_data;
   const nav = useNavigate();
@@ -81,7 +82,7 @@ const EditInvoice = () => {
             ? err?.response?.data?.msg
             : err?.response?.data?.validation?.body?.message
             ? err?.response?.data?.validation?.body?.message
-            : "Get All Banks Error"
+            : t('finance.Invoices.getAllBanksError')
         }`
       );
     });
@@ -102,7 +103,7 @@ const EditInvoice = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Client Error"
+              : t('Timesheetadmin.getClientError')
           }`
         );
       });
@@ -142,7 +143,7 @@ const EditInvoice = () => {
             ? err?.response?.data?.msg
             : err?.response?.data?.validation?.body?.message
             ? err?.response?.data?.validation?.body?.message
-            : "Get Tax Slabs Error"
+            : t('allEmp.errors.getTaxSlabsInfoError')
         }!`
       );
     });
@@ -163,7 +164,7 @@ const EditInvoice = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Single Client Error"
+              : t('Timesheetadmin.getClientError')
           }!`
         );
       });
@@ -186,7 +187,7 @@ const EditInvoice = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get All Projects Error"
+              : t('aDash.errors.getProjectError')
           }!`
         );
       });
@@ -302,7 +303,7 @@ const EditInvoice = () => {
       .then((res) => {
         if (res?.data?.success === true) {
           nav('/invoices')
-          message.success("Invoice Updated Successfully!");
+          message.success(t('finance.Invoices.invoiceUpdatedSuccessfully'));
           setSendLoader(false)
         }
       })
@@ -315,7 +316,7 @@ const EditInvoice = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Update Invoice Error"
+              : t('finance.Invoices.updateInvoiceError')
           }`
         );
       });
@@ -332,7 +333,7 @@ const EditInvoice = () => {
       .then((res) => {
         if (res?.data?.success === true) {
           nav('/invoices')
-          message.success("Invoice Updated Successfully!");
+          message.success(t('finance.Invoices.invoiceUpdatedSuccessfully'));
           setSaveLoader(false)
         }
       })
@@ -345,7 +346,7 @@ const EditInvoice = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Update Invoice Error"
+              : t('finance.Invoices.updateInvoiceError')
           }`
         );
       });
@@ -367,7 +368,7 @@ const EditInvoice = () => {
         
       <div className="page-wrapper">
         <Helmet>
-            <title>Update Invoice - DaftarPro</title>
+            <title>{t('holiday.update')} {t('finance.Invoices.invoice')} - {t('header.daftarPro')}</title>
             <meta name="description" content="Login page"/>					
         </Helmet>
       {/* Page Content */}
@@ -376,10 +377,10 @@ const EditInvoice = () => {
         <div className="page-header">
           <div className="row">
             <div className="col-sm-12">
-              <h3 className="page-title">Update Invoice</h3>
+              <h3 className="page-title">{t('holiday.update')} {t('finance.Invoices.invoice')}</h3>
               <ul className="breadcrumb">
-                <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>Dashboard</Link></li>
-                <li className="breadcrumb-item active">Update Invoice</li>
+                <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>{t('dashboard')}</Link></li>
+                <li className="breadcrumb-item active">{t('holiday.update')} {t('finance.Invoices.invoice')}</li>
               </ul>
             </div>
           </div>
@@ -393,10 +394,10 @@ const EditInvoice = () => {
               onFinishFailed={({errorFields}) => {
                 const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
                 if(consecutiveSpacesError){
-                  message.error("Please Remove Consecutive Spaces!")
-                }else{
-                  message.error("Please Fill Required Fields!")
-                }
+                  message.error(t('allEmp.errors.removeConsecutiveSpaces'))
+               }else{
+                  message.error(t('allEmp.errors.fillRequiredFields'))
+                } 
               }}
               initialValues={{
                 // itemsTable: allData?.education?.length > 0 ? allData?.education : [{}],
@@ -421,7 +422,7 @@ const EditInvoice = () => {
                               return Promise.reject("please enter invoice no");
                             }
                             else if (/\s{2,}/.test(value)) {
-                              return Promise.reject("please remove consecutive spaces");
+                              return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                             }
                             return Promise.resolve();
                           },
@@ -434,7 +435,7 @@ const EditInvoice = () => {
                 </div> */}
                 <div className="col-sm-6 col-md-3">
                   <div className="form-group">
-                    <label>Client <span className="text-danger">*</span></label>
+                    <label>{t('projectScreen.Modal.client')} <span className="text-danger">*</span></label>
                     <div style={{ position: "relative" }} id="area">
                       <Form.Item
                         name="clientId"
@@ -442,7 +443,7 @@ const EditInvoice = () => {
                         rules={[
                           {
                             required: true,
-                            message: "please select client",
+                            message: t('finance.Invoices.pleaseselectclient'),
                           },
                         ]}
                       >
@@ -464,7 +465,7 @@ const EditInvoice = () => {
                           getPopupContainer={() =>
                             document.getElementById("area")
                           }
-                          placeholder="Select client"
+                          placeholder={t('finance.Invoices.selectClient')}
                           onChange={(value) => {
                             getAllProjects(value);
                             getClientInfo(value);
@@ -486,7 +487,7 @@ const EditInvoice = () => {
                 </div>
                 <div className="col-sm-6 col-md-3">
                   <div className="form-group">
-                    <label>Project <span className="text-danger">*</span></label>
+                    <label>{t('finance.Invoices.project')} <span className="text-danger">*</span></label>
                     <div style={{ position: "relative" }} id="area">
                       <Form.Item
                         name="projectId"
@@ -494,7 +495,7 @@ const EditInvoice = () => {
                         rules={[
                           {
                             required: true,
-                            message: "please select project",
+                            message: t('finance.Invoices.pleaseselectproject'),
                           },
                         ]}
                       >
@@ -519,7 +520,7 @@ const EditInvoice = () => {
                           getPopupContainer={() =>
                             document.getElementById("area")
                           }
-                          placeholder="Select project"
+                          placeholder={t('Tasks.selectproject')}
                         >
                           {allProjects?.map((project) => (
                             <Select.Option
@@ -536,7 +537,7 @@ const EditInvoice = () => {
                 </div>
                 <div className="col-sm-6 col-md-3">
                   <div className="form-group">
-                  <label>Currency <span className="text-danger">*</span></label>
+                  <label>{t('finance.Invoices.currency')} <span className="text-danger">*</span></label>
                     <div style={{ position: "relative" }} id="area">
                       <Form.Item
                         name="currency"
@@ -544,7 +545,7 @@ const EditInvoice = () => {
                         rules={[
                           {
                             required: true,
-                            message: "Choose a currency",
+                            message: t('finance.Invoices.Chooseacurrency'),
                           },
                         ]}
                       >
@@ -555,7 +556,7 @@ const EditInvoice = () => {
                           getPopupContainer={() =>
                             document.getElementById("area")
                           }
-                          placeholder="Select currency"
+                          placeholder={t('projectScreen.Modal.selectCurrency')}
                           onChange={(value) => setCurrencyIs(value)}
                         >
                           {
@@ -572,7 +573,7 @@ const EditInvoice = () => {
                 </div>
                 <div className="col-sm-6 col-md-3">
                   <div className="form-group">
-                    <label>Tax <span className="text-danger">*</span></label>
+                    <label>{t('finance.Invoices.tax')} <span className="text-danger">*</span></label>
                     <div style={{ position: "relative" }} id="area">
                       <Form.Item
                         name="invoiceTaxSlabId"
@@ -581,7 +582,7 @@ const EditInvoice = () => {
                         rules={[
                           {
                             required: true,
-                            message: "please select tax",
+                            message: t('finance.Invoices.pleaseselecttax'),
                           },
                         ]}
                       >
@@ -603,7 +604,7 @@ const EditInvoice = () => {
                           getPopupContainer={() =>
                             document.getElementById("area")
                           }
-                          placeholder="Select tax"
+                          placeholder={t('finance.Invoices.selectTax')}
                           onChange={(value) => {
                             const totalTaxPercent = allTaxSlabs
                             .filter(item => value.includes(item._id))
@@ -627,7 +628,7 @@ const EditInvoice = () => {
                 </div>
                 <div className="col-sm-6 col-md-3">
                   <div className="form-group">
-                    <label>Email</label>
+                    <label>{t('finance.Invoices.email')}</label>
                       {/* <Form.Item
                         name="email"
                         className="custom-border"
@@ -638,7 +639,7 @@ const EditInvoice = () => {
                 </div>
                 <div className="col-sm-6 col-md-3">
                   <div className="form-group">
-                    <label>Billing Email</label>
+                    <label>{t('finance.Invoices.billingemail')}</label>
                       {/* <Form.Item
                         name="billingEmail"
                         className="custom-border"
@@ -649,7 +650,7 @@ const EditInvoice = () => {
                 </div>
                 <div className="col-sm-6 col-md-3">
                   <div className="form-group">
-                    <label>Bank <span className="text-danger">*</span></label>
+                    <label>{t('finance.Invoices.bank')} <span className="text-danger">*</span></label>
                     <div style={{ position: "relative" }} id="area">
                       <Form.Item
                         name="bankDetailId"
@@ -657,7 +658,7 @@ const EditInvoice = () => {
                         rules={[
                           {
                             required: true,
-                            message: "please select bank",
+                            message: t('finance.Invoices.pleaseselectbank'),
                           },
                         ]}
                       >
@@ -679,7 +680,7 @@ const EditInvoice = () => {
                           getPopupContainer={() =>
                             document.getElementById("area")
                           }
-                          placeholder="Select bank"
+                          placeholder={t('finance.Invoices.selectBank')}
                         >
                           {allBanks?.map((bank) => (
                             <Select.Option
@@ -703,7 +704,7 @@ const EditInvoice = () => {
                   </div> */}
                     <div className="form-group">
                       <label>
-                        Invoice Date <span className="text-danger">*</span>
+                      {t('finance.Invoices.invoicedate')} <span className="text-danger">*</span>
                       </label>
                       <div style={{ position: 'relative' }} id='area'>
                           <Form.Item
@@ -712,11 +713,11 @@ const EditInvoice = () => {
                           rules={[
                               {
                                 required: true,
-                                message: "please enter invoice date",
+                                message: t('finance.Invoices.pleaseenterinvoicedate'),
                               },
                             ]}
                           >
-                            <DatePicker className='form-control' getPopupContainer={() => document.getElementById('area')} />
+                            <DatePicker placeholder={t('requests.addModal.selectDate')} className='form-control' getPopupContainer={() => document.getElementById('area')} />
                           </Form.Item>
                       </div>
                     </div>
@@ -730,7 +731,7 @@ const EditInvoice = () => {
                   </div> */}
                   <div className="form-group">
                     <label>
-                      Due Date <span className="text-danger">*</span>
+                    {t('finance.Invoices.duedate')} <span className="text-danger">*</span>
                     </label>
                     <div style={{ position: 'relative' }} id='area'>
                         <Form.Item
@@ -739,11 +740,11 @@ const EditInvoice = () => {
                         rules={[
                             {
                               required: true,
-                              message: "please enter due date",
+                              message: t('finance.Invoices.pleaseenterduedate'),
                             },
                           ]}
                         >
-                            <DatePicker className='form-control' getPopupContainer={() => document.getElementById('area')} />
+                            <DatePicker placeholder={t('requests.addModal.selectDate')} className='form-control' getPopupContainer={() => document.getElementById('area')} />
                         </Form.Item>
                     </div>
                   </div>
@@ -756,11 +757,11 @@ const EditInvoice = () => {
                       <thead>
                         <tr>
                           <th style={{width: '20px'}}>#</th>
-                          <th className="col-sm-2" style={{minWidth: '245px'}}>Item</th>
-                          <th className="col-md-6" style={{minWidth: '295px'}}>Description</th>
-                          <th style={{minWidth: '162px'}}>Unit Cost</th>
-                          <th style={{minWidth: '162px'}}>Quantity</th>
-                          <th>Amount</th>
+                          <th className="col-sm-2" style={{minWidth: '245px'}}>{t('finance.Invoices.item')}</th>
+                          <th className="col-md-6" style={{minWidth: '295px'}}>{t('finance.Invoices.description')}</th>
+                          <th style={{minWidth: '162px'}}>{t('finance.Invoices.unitcost')}</th>
+                          <th style={{minWidth: '162px'}}>{t('finance.Invoices.quantity')}</th>
+                          <th>{t('finance.Invoices.amount')}</th>
                           <th> </th>
                         </tr>
                       </thead>
@@ -786,11 +787,11 @@ const EditInvoice = () => {
                                           required: true,
                                           validator: (_, value) => {
                                             if (!value || value.trim() === '') {
-                                              return Promise.reject('please enter item');
+                                              return Promise.reject(t('finance.Invoices.pleaseenteritem'));
                                             } else if (/\s{2,}/.test(value)) {
-                                              return Promise.reject('please remove consecutive spaces');
+                                              return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                                             } else if (value.length < 2) {
-                                              return Promise.reject('length must be 2 characters long');
+                                              return Promise.reject(t('finance.Invoices.lengthMustBeTwoCharactersLong'));
                                             }
                                             return Promise.resolve();
                                           },
@@ -814,11 +815,11 @@ const EditInvoice = () => {
                                           required: true,
                                           validator: (_, value) => {
                                             if (!value || value.trim() === '') {
-                                              return Promise.reject('please enter description');
+                                              return Promise.reject(t('finance.Invoices.pleaseenterdescription'));
                                             } else if (/\s{2,}/.test(value)) {
-                                              return Promise.reject('please remove consecutive spaces');
+                                              return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                                             } else if (value.length < 3) {
-                                              return Promise.reject('length must be 3 characters long');
+                                              return Promise.reject(t('finance.Invoices.lengthMustBeThreeCharactersLong'));
                                             }
                                             return Promise.resolve();
                                           },
@@ -840,7 +841,7 @@ const EditInvoice = () => {
                                       {
                                         // whitespace: true,
                                         required: true,
-                                        message: 'please enter unit cost'
+                                        message: t('finance.Invoices.pleaseenterunitcost')
                                       },
                                     ]}
                                   >
@@ -880,7 +881,7 @@ const EditInvoice = () => {
                                     rules={[
                                       {
                                         required: true,
-                                        message: 'please enter quantity'
+                                        message: t('finance.Invoices.pleaseenterquantity')
                                       },
                                     ]}
                                   >
@@ -977,13 +978,13 @@ const EditInvoice = () => {
                     <table className="table table-hover table-white">
                       <tbody>
                         <tr>
-                          <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>Total</td>
+                          <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>{t('finance.Invoices.total')}</td>
                           <td style={{textAlign: 'right', paddingRight: '30px', width: '230px'}}>
                             {subTotal?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {currencyIs}
                           </td>
                         </tr>
                         <tr>
-                          <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>Tax %</td>
+                          <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>{t('finance.Invoices.tax')} %</td>
                           <td style={{textAlign: 'right', paddingRight: '30px', width: '230px'}}>
                           <Form.Item
                             name='invoiceTax'
@@ -996,7 +997,7 @@ const EditInvoice = () => {
                         </tr>
                         <tr>
                           <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>
-                            Discount %
+                          {t('finance.Invoices.discount')} %
                           </td>
                           <td style={{textAlign: 'right', paddingRight: '30px', width: '230px'}}>
                           <Form.Item
@@ -1007,7 +1008,7 @@ const EditInvoice = () => {
                               {
                                 validator: (_, value) => {
                                   if (value > 100) {
-                                    return Promise.reject('Value must be between 0-100');
+                                    return Promise.reject(t('finance.Invoices.valueMustBeBetweenZeroAndHundred'));
                                   }
                                   return Promise.resolve();
                                 },
@@ -1040,7 +1041,7 @@ const EditInvoice = () => {
                         </tr>
                         <tr>
                           <td colSpan={5} style={{textAlign: 'right', fontWeight: 'bold', fontSize: '15px', fontWeight: '700'}}>
-                            Grand Total
+                          {t('finance.Invoices.grandtotal')}
                           </td>
                           <td style={{textAlign: 'right', paddingRight: '30px', fontWeight: 'bold', fontSize: '16px', width: '230px'}}>
                           <Form.Item name="totalAmount" style={{marginBottom: '0px'}}>
@@ -1059,7 +1060,7 @@ const EditInvoice = () => {
                       </div> */}
                       <div className="form-group">
                         <label>
-                          Other Information <span className="text-danger">{'* '}</span>
+                        {t('finance.Invoices.otherinformation')} <span className="text-danger">{'* '}</span>
                           <span className="time" style={{fontSize: '12px', color: '#9e9e9e'}}>( {wordCount?.length} / 150 ) </span>
                         </label>
                         <Form.Item
@@ -1071,10 +1072,10 @@ const EditInvoice = () => {
                               required: true,
                               validator: (_, value) => {
                                 if(!value || value.trim() === ''){
-                                  return Promise.reject("please enter other information");
+                                  return Promise.reject(t('finance.Invoices.pleaseenterotherinformation'));
                                 }
                                 else if (/\s{2,}/.test(value)) {
-                                  return Promise.reject("please remove consecutive spaces");
+                                  return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                                 }
                                 return Promise.resolve();
                               },
@@ -1090,16 +1091,16 @@ const EditInvoice = () => {
               </div>
               <div className="submit-section" style={{display: 'flex', justifyContent: 'center', gap: '10px'}}>
                 <button className="btn btn-primary submit-btn" onClick={() => setSaveType('send') } disabled={sendLoader}>
-                    {
-                        sendLoader ? <Spin size="small" indicator={antIcon} />
-                        : 'Save & Send'
-                    }
+                  {
+                    sendLoader ? <Spin size="small" indicator={antIcon} />
+                      : t('finance.Invoices.saveAndSend')
+                  }
                 </button>
                 <button className="btn btn-primary submit-btn" onClick={() => setSaveType('save') } disabled={saveLoader}>
-                    {
-                        saveLoader ? <Spin size="small" indicator={antIcon} />
-                        : 'Save'
-                    }
+                  {
+                    saveLoader ? <Spin size="small" indicator={antIcon} />
+                      : t('holiday.save')
+                  }
                 </button>
               </div>
             </Form>

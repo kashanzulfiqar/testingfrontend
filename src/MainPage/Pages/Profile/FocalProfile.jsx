@@ -10,9 +10,10 @@ import InvoicesScreen from './clientProfileScreens/InvoicesScreen';
 import ProjectsScreen from './clientProfileScreens/ProjectsScreen';
 import { Spin, message } from 'antd';
 import { apiServices } from '../../../Services/apiServices';
+import { useTranslation } from 'react-i18next';
 
 const FocalProfile = () => {
-
+  const { t, i18n } = useTranslation();
   const location = useLocation();
   const focal_data = location?.state?.focal_data;
   const nav = useNavigate();
@@ -62,7 +63,7 @@ const FocalProfile = () => {
       <>
        <div className="page-wrapper">
             <Helmet>
-              <title>Focal Person Profile - DaftarPro</title>
+              <title>{t('client.focalPersonProfile')} - {t('header.daftarPro')}</title>
               <meta name="description" content="Reactify Blank Page" />
             </Helmet>
            {/* Page Content */}
@@ -71,10 +72,10 @@ const FocalProfile = () => {
              <div className="page-header">
                <div className="row">
                  <div className="col-sm-12">
-                   <h3 className="page-title">Profile</h3>
+                   <h3 className="page-title">{t('empProfile.profile')}</h3>
                    <ul className="breadcrumb">
-                     <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>Dashboard</Link></li>
-                     <li className="breadcrumb-item active">Profile</li>
+                     <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>{t('dashboard')}</Link></li>
+                     <li className="breadcrumb-item active">{t('empProfile.profile')}</li>
                    </ul>
                  </div>
                </div>
@@ -108,15 +109,15 @@ const FocalProfile = () => {
                             <div className="col-md-7">
                               <ul className="personal-info">
                                 <li>
-                                  <span className="title">Phone:</span>
+                                  <span className="title">{t('empProfile.phone')}:</span>
                                   <span className="text"><a href="javascript:void(0)" style={{cursor: 'default'}}>{focalData?.focalPersonPhoneNo}</a></span>
                                 </li>
                                 <li>
-                                  <span className="title">Email:</span>
+                                  <span className="title">{t('aDash.email')}:</span>
                                   <span className="text"><a href="javascript:void(0)" style={{cursor: 'default'}}>{focalData?.focalPersonEmail}</a></span>
                                 </li>
                                 <li>
-                                  <span className="title">Designation:</span>
+                                  <span className="title">{t('allEmp.designation')}:</span>
                                   <span className="text">{focalData?.designation}</span>
                                 </li>
                               </ul>
@@ -133,10 +134,10 @@ const FocalProfile = () => {
                <div className="row user-tabs">
                  <div className="col-lg-12 col-md-12 col-sm-12 line-tabs">
                    <ul className="nav nav-tabs nav-tabs-bottom">
-                     <li className="nav-item col-sm-3"><a className={`nav-link ${activeTab === 'projects' ? 'active' : ''}`} onClick={() => { setActiveTab('projects') }}>Projects</a></li>
+                     <li className="nav-item col-sm-3"><a className={`nav-link ${activeTab === 'projects' ? 'active' : ''}`} onClick={() => { setActiveTab('projects') }}>{t('projects')}</a></li>
                      {/* <li className="nav-item col-sm-3"><a className="nav-link active" data-bs-toggle="tab" href="#myprojects">Projects</a></li> */}
                      {/* <li className="nav-item col-sm-3"><a className="nav-link" data-bs-toggle="tab" href="#tasks">Tasks</a></li> */}
-                     <li className="nav-item col-sm-3"><a className={`nav-link ${activeTab === 'invoices' ? 'active' : ''}`} onClick={() => { setActiveTab('invoices') }}>Invoices</a></li>
+                     <li className="nav-item col-sm-3"><a className={`nav-link ${activeTab === 'invoices' ? 'active' : ''}`} onClick={() => { setActiveTab('invoices') }}>{t('aDash.invoices')}</a></li>
                      {/* <li className="nav-item col-sm-3"><a className="nav-link" data-bs-toggle="tab" href="#invoices">Invoices</a></li> */}
                    </ul>
                  </div>

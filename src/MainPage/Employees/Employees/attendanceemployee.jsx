@@ -1160,7 +1160,7 @@ const AttendanceEmployee = () => {
                     <div className="stats-list" style={{ height: "347px" }}>
                       <ul
                         className="res-activity-list"
-                        style={{ marginRight: "10px" }}
+                        style={{ marginRight: (i18n.dir() === 'rtl') ? "unset" : "10px", marginLeft: (i18n.dir() === 'rtl') ? "10px" : "unset" }}
                       >
                         {fetchattend6?.slice(0, 6).map((attendance, index) => (
                           <li key={index}>
@@ -1253,6 +1253,7 @@ const AttendanceEmployee = () => {
                         onChange={(date, dateString) =>
                           handleFilterChange(dateString, "date")
                         }
+                        placeholder={t('requests.addModal.selectDate')}
                         allowClear={false}
                       />
                     </Form.Item>
@@ -1266,7 +1267,7 @@ const AttendanceEmployee = () => {
                         style={{
                           width: "100%",
                         }}
-                        placeholder="Select Month"
+                        placeholder={t('aAttend.selectMonth')}
                         allowClear={false}
                         format="MMMM"
                         size="large"
@@ -1285,7 +1286,7 @@ const AttendanceEmployee = () => {
                         style={{
                           width: "100%",
                         }}
-                        placeholder="Select Year"
+                        placeholder={t('aAttend.selectYear')}
                         allowClear={false}
                         size="large"
                         onChange={(date, dateString) =>

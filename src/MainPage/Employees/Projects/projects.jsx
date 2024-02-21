@@ -1304,6 +1304,25 @@ const Projects = () => {
     setAllCurrencies(sorted_data)
   };
 
+  const statusOrder = ['On-Going', 'Paused', 'Completed', 'Scheduled', 'Archived'];
+
+// Sort the 'tableData' array based on the status order
+const sortedTableData = tableData?.slice().sort((a, b) => {
+  // Get the index of 'a' and 'b' status in the 'statusOrder' array
+  const statusIndexA = statusOrder.indexOf(a.status);
+  const statusIndexB = statusOrder.indexOf(b.status);
+
+  // Compare the status indexes
+  if (statusIndexA === statusIndexB) {
+    // If the status indexes are equal, sort based on other criteria (if needed)
+    // For example, sort alphabetically by project name
+    return a.projectName.localeCompare(b.projectName);
+  } else {
+    // Sort based on the index in the 'statusOrder' array
+    return statusIndexA - statusIndexB;
+  }
+});
+
 
 const filteredColumns = columns.filter(column => {
   if (column.dataIndex === 'clientName' && (role === '' && !permissions?.projectManagement)) {
@@ -1648,7 +1667,7 @@ const filteredColumns = columns.filter(column => {
                 </div>
               ) : tableData?.length > 0 ? (
                 // Render grid items when data is available
-                tableData?.map((project, index) => (
+                sortedTableData?.map((project, index) => (
                   <div
                     className="col-lg-4 col-sm-6 col-md-4 col-xl-3"
                     key={index}
@@ -1744,7 +1763,7 @@ const filteredColumns = columns.filter(column => {
                           </div>
                         </div>
                         <div className="project-members m-b-15">
-                          <div>{t('projectScreen.projectLeader')} :</div>
+                          <div>{t('projectScreen.projectLeader')}:</div>
                           <ul className="team-members">
                             <li>
                             <Tooltip
@@ -1766,7 +1785,7 @@ const filteredColumns = columns.filter(column => {
                           </ul>
                         </div>
                         <div className="project-members m-b-15">
-                          <div>{t('projectScreen.team')} :</div>
+                          <div>{t('projectScreen.team')}:</div>
                           <ul className="team-members"
                           style={{ marginLeft: "10px" }}>
                             {project?.assignedDevelopers
@@ -1944,7 +1963,7 @@ const filteredColumns = columns.filter(column => {
                     //style={{ height: "400px", background: "white" }}
                     columns={filteredColumns}
                     // bordered
-                    dataSource={tableData}
+                    dataSource={sortedTableData}
                     //rowKey={(record) => record?._id}
                     pagination={false}
                     // pagination={{
@@ -2844,8 +2863,8 @@ const filteredColumns = columns.filter(column => {
                 }}
               >
                 <div className="form-header">
-                  <h3 style={{ marginBottom: "30px" }}>Delete Project</h3>
-                  <p>Are you sure you want to Delete ?</p>
+                  <h3 style={{ marginBottom: "30px" }}>{t('viewProject.deleteProject')}</h3>
+                  <p>{t('viewProject.confirmDeleteMessage')}</p>
                 </div>
                 <div className="modal-btn delete-action">
                   <div className="row">
@@ -2860,7 +2879,7 @@ const filteredColumns = columns.filter(column => {
                           {loader ? (
                           <Spin size="small" indicator={antIcon} />
                         ) : (
-                          "Delete"
+                          t('delete')
                         )}
                       </Button>
                     </div>
@@ -2870,7 +2889,7 @@ const filteredColumns = columns.filter(column => {
                         className="btn btn-primary submit-btn"
                         style={{ width: "100%" }}
                       >
-                        Cancel
+                        {t('cancel')}
                       </Button>
                     </div>
                   </div>

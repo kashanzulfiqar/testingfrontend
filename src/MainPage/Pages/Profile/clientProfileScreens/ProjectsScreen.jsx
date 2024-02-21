@@ -21,11 +21,12 @@ import EmptyTable from "../../../../files/Icons/EmptyTable.svg";
 import { itemRender } from "../../../paginationfunction";
 import EditProjects from "../../../Employees/Projects/EditProjects";
 import Modal from "@mui/material/Modal";
+import { useTranslation } from "react-i18next";
 
 
 const ProjectsScreen = ({ isID, isRole }) => {
   const user_state = useSelector((state) => state.user.loginvalue);
-
+  const { t, i18n } = useTranslation();
   const [allProjects, setAllProjects] = useState();
   const [tableLoader, setTableLoader] = useState(true);
   const [empLoader, setEmpLoader] = useState(true);
@@ -81,7 +82,7 @@ const ProjectsScreen = ({ isID, isRole }) => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Employee Info Error"
+              : t('empProfile.errors.getEmployeeInfoError')
           }!`
         );
       });
@@ -113,7 +114,7 @@ const ProjectsScreen = ({ isID, isRole }) => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get All Projects Error"
+              : t('aDash.errors.getProjectError')
           }!`
         );
       });
@@ -129,7 +130,7 @@ const ProjectsScreen = ({ isID, isRole }) => {
     apiServices("DELETE", `project-management/`, id, user_state)
       .then((res) => {
         if (res.data.success === true) {
-          message.success(`Project Deleted Successfully!`);
+          message.success(t('projectScreen.errors.projectDeletedSuccessfully'));
           setLoader(false);
           getAllProjects(currentPage, pageSize);
           closeModal();
@@ -144,7 +145,7 @@ const ProjectsScreen = ({ isID, isRole }) => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Error Deleting Project"
+              : t('projectScreen.errors.errorDeletingProject')
           }`
         );
       });
@@ -314,13 +315,13 @@ const ProjectsScreen = ({ isID, isRole }) => {
                   </div>
                   <div style={{ margin: "auto 0px 0px" }}>
                     <div className="pro-deadline m-b-15">
-                      <div className="sub-title">Deadline:</div>
+                      <div className="sub-title">{t('projectScreen.deadline')}:</div>
                       <div className="text-muted">
                         {formattedDate(project?.endDate)}
                       </div>
                     </div>
                     <div className="pro-deadline m-b-15">
-                          <div className="sub-title">Status:</div>
+                          <div className="sub-title">{t('projectScreen.status')}:</div>
                           <div style={{
                             color: 
                               project?.status === 'Scheduled' ? 'red' :
@@ -328,11 +329,22 @@ const ProjectsScreen = ({ isID, isRole }) => {
                               (project?.status === 'Paused' || project?.status === 'Archived') ? 'grey' :
                               project?.status === 'Completed' ? 'green' : 'inherit'
                           }}>
-                            {project?.status}
+                            {project?.status === 'Scheduled' 
+                            ? t('projectScreen.Modal.scheduled')
+                            : project?.status === 'On-Going' 
+                            ? t('projectScreen.Modal.onGoing')
+                            : project?.status === 'Paused' 
+                            ? t('projectScreen.Modal.paused')
+                            : project?.status === 'Completed' 
+                            ? t('projectScreen.Modal.completed')
+                            : project?.status === 'Archived' 
+                            ? t('projectScreen.Modal.archived') 
+                            : project?.status
+                            }
                           </div>
                         </div>
                     <div className="project-members m-b-15">
-                      <div>Project Leader:</div>
+                      <div>{t('projectScreen.projectLeader')}:</div>
                       <ul className="team-members">
                         <li>
                           <Tooltip title={empInfo[project.projectLead]?.fullName}>
@@ -351,7 +363,7 @@ const ProjectsScreen = ({ isID, isRole }) => {
                       </ul>
                     </div>
                     <div className="project-members m-b-15">
-                      <div>Team:</div>
+                      <div>{t('projectScreen.team')}:</div>
                       <ul
                         className="team-members"
                         style={{ marginLeft: "10px" }}
@@ -529,7 +541,7 @@ const ProjectsScreen = ({ isID, isRole }) => {
               defaultCurrent={1}
               current={currentPage}
               showTotal={(total, range) =>
-                `Showing ${range[0]} to ${range[1]} of ${total} entries`
+                t('paginationShow', { range1: range[0], range2: range[1], total: total })
               }
               onChange={(page, size) => {
                 console.log(page, size);
@@ -539,7 +551,9 @@ const ProjectsScreen = ({ isID, isRole }) => {
               }}
               showSizeChanger={true}
               pageSizeOptions={["20", "30", "40", "50"]}
-              itemRender={itemRender}
+              itemRender={(current, type, originalElement) =>
+                itemRender(current, type, originalElement, t)
+              }
             />
           </div>
         )}

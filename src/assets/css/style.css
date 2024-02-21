@@ -5484,6 +5484,9 @@ table.table-new.dataTable > thead .sorting_desc_disabled:focus:before {
   margin: 0;
   padding: 0 0 0 30px;
 }
+[dir="rtl"] .recent-activity .res-activity-list {
+  padding: 0 30px 0 0;
+}
 .recent-activity .res-activity-list:after {
   content: "";
   border: 1px solid #e5e5e5;
@@ -5491,6 +5494,10 @@ table.table-new.dataTable > thead .sorting_desc_disabled:focus:before {
   top: 0;
   bottom: 0;
   left: 4px;
+}
+[dir="rtl"] .recent-activity .res-activity-list:after {
+  right: 4px;
+  left: unset;
 }
 .recent-activity .res-activity-list li {
   margin: 0 0 15px;
@@ -5508,6 +5515,11 @@ table.table-new.dataTable > thead .sorting_desc_disabled:focus:before {
   position: absolute;
   top: 0;
   left: -45px;
+}
+
+[dir="rtl"] .recent-activity .res-activity-list li:before {
+  margin: 0 15px 0 0;
+  right: -45px;
 }
 .recent-activity p {
   font-size: 13px;
@@ -8454,6 +8466,9 @@ padding: 10px 20px !important;
 .add-btn i {
   margin-right: 5px;
 }
+[dir="rtl"] .add-btn i {
+  margin-left: 5px;
+}
 .add-btn:hover {
   color: #ffffff;
  background-color: #ffa557;
@@ -8531,6 +8546,11 @@ padding: 10px 20px !important;
   font-size: 24px;
   margin-bottom: 0;
 }
+
+[dir="rtl"] .stats-info h4 {
+  margin-left: 5px;
+}
+
 .stats-info h4 span {
   color: #727272;
   font-size: 12px;
@@ -8630,6 +8650,7 @@ padding: 10px 20px !important;
   position: absolute;
   top: 10px;
   left: 5px;
+  right: unset;
 }
 
 .board-view-header {
@@ -12702,4 +12723,36 @@ styles by Qazi
 
 .anticon svg {
   margin-bottom: 5px;
+}
+
+[dir="rtl"] .ant-select-single.ant-select-show-arrow .ant-select-selection-item, 
+[dir="rtl"] .ant-select-single.ant-select-show-arrow .ant-select-selection-placeholder {
+padding-left: 18px !important;
+padding-right: unset;
+}
+
+[dir="rtl"] .ant-select-arrow {
+  left: 11px !important;
+  right: unset;
+}
+[dir="rtl"] .react-tel-input .selected-flag .arrow {
+  right: 20px;
+  left: unset;
+}
+[dir="rtl"] .react-tel-input .selected-flag {
+  padding: 0 8px 0 0;
+}
+/* [dir="rtl"] .react-tel-input .form-control  {
+  padding-right: 48px;
+  padding-left: unset;
+  margin-right: 0;
+  margin-left: unset;
+} */
+
+[dir="rtl"] .recharts-surface {
+  margin-left: 4px;
+}
+
+[dir="rtl"] .ant-input-number-input {
+  text-align: right;
 }

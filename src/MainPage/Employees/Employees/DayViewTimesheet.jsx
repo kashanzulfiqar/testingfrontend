@@ -8,9 +8,10 @@ import { apiServices } from '../../../Services/apiServices';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { itemRender } from '../../paginationfunction';
+import { useTranslation } from 'react-i18next';
 
 function DayViewTimesheet({ tableStartDate, setTableStartDate, selectedDate, setSelectedDate, open, setOpen, form2, allProjects, getAllProjects, setShowCalendar }) {
-
+  const { t, i18n } = useTranslation();
     const moment = require('moment');
 
     const [form] = Form.useForm();
@@ -106,7 +107,7 @@ let t_data = [
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "View Timesheet Error!"
+              : t('Timesheetemployee.viewTimesheetError')
           }!`
         );
       });
@@ -134,7 +135,7 @@ let t_data = [
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get All Tasks Error"
+              : t('Timesheetemployee.getAllTasksError')
           }!`
         );
       });
@@ -179,7 +180,7 @@ let t_data = [
           if (res?.data?.success === true) {
               getData(currentPage, pageSize);
               handleClose();
-              message.success('Timesheet Added Successfully!');
+              message.success(t('Timesheetemployee.timesheetAddedSuccessfully'));
               setLoader(false);
             }
           })
@@ -191,7 +192,7 @@ let t_data = [
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Add Timesheet Error"
+              : t('Timesheetemployee.addTimesheetError')
           }!`
         );
       });
@@ -230,7 +231,7 @@ let t_data = [
                 })
               );
               handleClose();
-              message.success('Timesheet Updated Successfully!');
+              message.success(t('Timesheetemployee.timesheetUpdatedSuccessfully'));
               setLoader(false);
             }
           })
@@ -242,7 +243,7 @@ let t_data = [
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Update Timesheet Error"
+                : t('Timesheetemployee.UpdateTimesheetError')
             }!`
           );
         });
@@ -267,7 +268,7 @@ let t_data = [
             }
           }
           handleClose('delete');
-          message.success("Timesheet Deleted Successfully!");
+          message.success(t('Timesheetemployee.timesheeDeletedSuccessfully'));
           setLoader(false)
         }
       })
@@ -279,7 +280,7 @@ let t_data = [
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Delete Timesheet Error"
+              : t('Timesheetemployee.deleteTimesheetError')
           }!`
         );
       });
@@ -434,7 +435,7 @@ let t_data = [
             if (res?.data?.success === true) {
               if(index === allData?.length - 1){
                 getData(currentPage, pageSize);
-                message.success('Timesheet Submitted Successfully!');
+                message.success(t('Timesheetemployee.timesheetSubmittedSuccessfully'));
                 setLoader2(false);
               }
             }})
@@ -446,7 +447,7 @@ let t_data = [
                   ? err?.response?.data?.msg
                   : err?.response?.data?.validation?.body?.message
                   ? err?.response?.data?.validation?.body?.message
-                  : "Submit Timesheet Error"
+                  : t('Timesheetemployee.submitTimesheetError')
               }!`
             );
           });
@@ -465,11 +466,27 @@ let t_data = [
                     pagination= {false}
                     // style = {{overflowX : 'auto'}}
                     columns={Dayscolumns}             
-                    showHeader    
+                    showHeader
+                    components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }    
                 />
             </div>
             <div style={{color: '#6C757D', fontSize: '18px', fontWeight: '500', margin: '30px 0px'}}>
-                Actual Time
+            {t('Timesheetemployee.actualtime')}
             </div>
 
             {/* Lists */}
@@ -524,14 +541,14 @@ let t_data = [
                                             setDescLength(record?.notes?.length)
                                         }}
                                     >
-                                        <i className="fa fa-pencil m-r-5" /> Edit
+                                        <i className="fa fa-pencil m-r-5" /> {t('edit')}
                                     </a>
                                     <a className="dropdown-item" href="javascript:void(0)"
                                         onClick={() => {
                                             setOpen({ isAddOpen: false, isEditOpen: false, isDelOpen: true, data: record });
                                         }}
                                     >
-                                        <i className="fa fa-trash-o m-r-5" /> Delete
+                                        <i className="fa fa-trash-o m-r-5" /> {t('delete')}
                                     </a>
                                 </div>
                               </div>
@@ -539,11 +556,11 @@ let t_data = [
                         </div>
                         {
                           record?.status === 'Approved' ?
-                          <label style={{fontSize: '16px', fontWeight: '400', color: '#00b112', marginLeft: 'auto', marginTop: 'auto',marginBottom: 'auto', paddingRight: '15px'}}>Approved</label>
+                          <label style={{fontSize: '16px', fontWeight: '400', color: '#00b112', marginLeft: 'auto', marginTop: 'auto',marginBottom: 'auto', paddingRight: '15px'}}>{t('Timesheetemployee.approved')}</label>
                           : record?.status === 'Declined' ?
-                          <label style={{fontSize: '16px', fontWeight: '400', color: '#DD0000', marginLeft: 'auto', marginTop: 'auto',marginBottom: 'auto', paddingRight: '15px'}}>Declined</label>
+                          <label style={{fontSize: '16px', fontWeight: '400', color: '#DD0000', marginLeft: 'auto', marginTop: 'auto',marginBottom: 'auto', paddingRight: '15px'}}>{t('Timesheetemployee.declined')}</label>
                           : record?.submittedForApproval &&
-                          <label style={{fontSize: '16px', fontWeight: '400', color: '#00b112', marginLeft: 'auto', marginTop: 'auto',marginBottom: 'auto', paddingRight: '15px'}}>Submitted For Approval</label>
+                          <label style={{fontSize: '16px', fontWeight: '400', color: '#00b112', marginLeft: 'auto', marginTop: 'auto',marginBottom: 'auto', paddingRight: '15px'}}>{t('Timesheetemployee.submittedforApproval')}</label>
                         }
                     </div>
                   </>
@@ -552,13 +569,13 @@ let t_data = [
                 :
                 <div style={{background: '#fff',color: '#6C757D', border: '1px solid #DEE2E6', borderRadius: '7px', display: 'flex', placeContent: 'center', placeItems: 'center', fontSize: '17px', height: '200px'}}>
                     <label>
-                        Empty Timesheet. <label style={{color: '#FF9B44', textDecoration: 'underline', cursor: 'pointer', fontWeight: '700'}} onClick={() => { setOpen({ isAddOpen: true, data: '' }); form2.setFieldsValue({date: moment(selectedDate, 'YYYY-MM-DD')}); setShowCalendar(false) }}>Add Entry</label>
+                    {t('Timesheetemployee.emptytimesheet')} <label style={{color: '#FF9B44', textDecoration: 'underline', cursor: 'pointer', fontWeight: '700'}} onClick={() => { setOpen({ isAddOpen: true, data: '' }); form2.setFieldsValue({date: moment(selectedDate, 'YYYY-MM-DD')}); setShowCalendar(false) }}>{t('Timesheetemployee.addentry')}</label>
                     </label>
                 </div>
             }
 
         <h3 style={{display: 'flex', justifyContent: 'flex-end', gap: '15px', margin: '30px 25px 30px 0px'}}>
-          <label style={{color: '#6C757D'}}>Total:</label>
+          <label style={{color: '#6C757D'}}>{t('Timesheetemployee.total')}:</label>
           <label>{tableLoader ? '--:--' : totalTime()}</label>
         </h3>
 
@@ -574,7 +591,7 @@ let t_data = [
                 >
                   {
                     loader2 ? <Spin size="small" indicator={antIcon3} />
-                    : <span style={{fontSize: '16px', fontWeight: '500'}}>Submit for Approval</span>
+                    : <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetemployee.submitForApproval')}</span>
                   }
                   {/* <span style={{fontSize: '16px', fontWeight: '500'}}>Submit for Approval</span> */}
                 </button>
@@ -595,7 +612,7 @@ let t_data = [
                     >
                       {
                         loader2 ? <Spin size="small" indicator={antIcon4} />
-                        : <span style={{fontSize: '16px', fontWeight: '500'}}>Submit Updates</span>
+                        : <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetemployee.submitUpdates')}</span>
                       }
                     </button>
                   </div>
@@ -604,7 +621,7 @@ let t_data = [
                     disabled
                     style={{border: '2px solid #00B112', borderRadius: '8px', background: '#fff', color: '#00B112', minWidth: '90px', height: '42px', paddingTop: '3px', margin: '30px 0px 15px 0px', paddingInline: '18px'}}
                 >
-                  <span style={{fontSize: '16px', fontWeight: '500'}}>Approved</span>
+                  <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetemployee.approved')}</span>
                 </button>
               </div> :
               allData.some(item => item?.status === 'Declined') ?
@@ -620,7 +637,7 @@ let t_data = [
                     >
                       {
                         loader2 ? <Spin size="small" indicator={antIcon4} />
-                        : <span style={{fontSize: '16px', fontWeight: '500'}}>Submit Updates</span>
+                        : <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetemployee.submitUpdates')}</span>
                       }
                     </button>
                   </div>
@@ -629,7 +646,7 @@ let t_data = [
                     disabled
                     style={{border: '2px solid #DD0000', borderRadius: '8px', background: '#fff', color: '#DD0000', minWidth: '90px', height: '42px', paddingTop: '3px', margin: '30px 0px 15px 0px', paddingInline: '18px'}}
                 >
-                  <span style={{fontSize: '16px', fontWeight: '500'}}>Declined</span>
+                  <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetemployee.declined')}</span>
                 </button>
               </div> :
               (allData.some(item => item?.submittedForApproval === true)) &&
@@ -645,7 +662,7 @@ let t_data = [
                     >
                       {
                         loader2 ? <Spin size="small" indicator={antIcon4} />
-                        : <span style={{fontSize: '16px', fontWeight: '500'}}>Submit Updates</span>
+                        : <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetemployee.submitUpdates')}</span>
                       }
                     </button>
                   </div>
@@ -654,7 +671,7 @@ let t_data = [
                     disabled
                     style={{border: '2px solid #00B112', borderRadius: '8px', background: '#fff', color: '#00B112', minWidth: '90px', height: '42px', paddingTop: '3px', margin: '30px 0px 15px 0px', paddingInline: '18px'}}
                 >
-                  <span style={{fontSize: '16px', fontWeight: '500'}}>Submitted for Approval</span>
+                  <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetemployee.submittedForApproval')}</span>
                 </button>
               </div>
             }
@@ -669,14 +686,16 @@ let t_data = [
               defaultCurrent={1}
               current={currentPage}
               showTotal={(total, range) =>
-                `Showing ${range[0]} to ${range[1]} of ${total} entries`}
+                t('paginationShow', { range1: range[0], range2: range[1], total: total })}
               onChange={(page, size) => {
                 setPageSize(size); setCurrentPage(page);
                 getData(page, size)
               }}
               showSizeChanger={true}
               pageSizeOptions={['20', '30', '40', '50']}
-              itemRender={itemRender}
+              itemRender={(current, type, originalElement) =>
+                itemRender(current, type, originalElement, t)
+              }
             />
           </div>
         }
@@ -700,7 +719,7 @@ let t_data = [
             <div className="modal-dialog modal-dialog-centered" role="document">
             <div className="modal-content">
                 <div className="modal-header">
-                <h5 className="modal-title">{open?.data ? 'Edit' : 'Add'} Entry</h5>
+                <h5 className="modal-title">{open?.data ? t('holiday.edit') : t('holiday.add')} {t('Timesheetemployee.entry')}</h5>
                 <button type="button" className="close" onClick={handleClose}>
                     <span aria-hidden="true">×</span>
                 </button>
@@ -720,10 +739,10 @@ let t_data = [
                     }
                     const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
                     if(consecutiveSpacesError){
-                    message.error("Please Remove Consecutive Spaces!")
-                    }else{
-                    message.error("Please Fill Required Fields!")
-                    }
+                      message.error(t('allEmp.errors.removeConsecutiveSpaces'))
+                   }else{
+                      message.error(t('allEmp.errors.fillRequiredFields'))
+                    } 
                 }}
                 autoComplete='off'
                 >
@@ -731,7 +750,7 @@ let t_data = [
                     <div className="col-12">
                         <div className="form-group">
                         <label>
-                            Project <span className="text-danger">*</span>
+                        {t('Timesheetemployee.project')} <span className="text-danger">*</span>
                         </label>
                         <div style={{ position: "relative" }} id="area">
                         <Form.Item
@@ -741,7 +760,7 @@ let t_data = [
                             {
                                 whitespace: true,
                                 required: true,
-                                message: 'please select project',
+                                message: t('Timesheetemployee.pleaseselectproject'),
                             },
                             ]}
                         >
@@ -766,7 +785,7 @@ let t_data = [
                                     getPopupContainer={() =>
                                         document.getElementById("area")
                                     }
-                                    placeholder="Select Project"
+                                    placeholder={t('Timesheetemployee.selectproject')}
                                     >
                                     {
                                         allProjects.map((project, index) => (
@@ -783,7 +802,7 @@ let t_data = [
                     <div className="col-12">
                         <div className="form-group">
                         <label>
-                            Task <span className="text-danger">*</span>
+                        {t('Timesheetemployee.task')} <span className="text-danger">*</span>
                         </label>
                         <div style={{ position: "relative" }} id="area">
                         <Form.Item
@@ -793,7 +812,7 @@ let t_data = [
                             {
                                 whitespace: true,
                                 required: true,
-                                message: 'please select task',
+                                message: t('Timesheetemployee.pleaseselecttask'),
                             },
                             ]}
                         >
@@ -814,7 +833,7 @@ let t_data = [
                                     getPopupContainer={() =>
                                         document.getElementById("area")
                                     }
-                                    placeholder="Select Task"
+                                    placeholder={t('Timesheetemployee.selecttask')}
                                     >
                                     {
                                         allTasks.map((task, index) => (
@@ -831,7 +850,7 @@ let t_data = [
                     <div className="col-12">
                         <div className="form-group">
                         <label>
-                            Enter Duration <span className="text-danger">*</span>
+                        {t('Timesheetemployee.enterduration')} <span className="text-danger">*</span>
                         </label>
                         <div style={{ position: "relative" }} id="area96">
                           <Form.Item
@@ -842,10 +861,10 @@ let t_data = [
                                   // message: "please enter task duration",
                                   validator: (_, value) => {
                                     if(!value){
-                                        return Promise.reject("please enter task duration");
+                                        return Promise.reject(t('Timesheetemployee.pleaseentertaskduration'));
                                     }
                                     else if (moment(value).format('HH:mm') === '00:00') {
-                                        return Promise.reject("task duration cannot be zero");
+                                        return Promise.reject(t('Timesheetemployee.taskDurationCannotBeZero'));
                                     }
                                     return Promise.resolve();
                                   },
@@ -871,7 +890,7 @@ let t_data = [
                     <div className="col-12">
                         <div className="form-group">
                         <label>
-                            Date <span className="text-danger">*</span>
+                        {t('Timesheetemployee.date')} <span className="text-danger">*</span>
                         </label>
                         <div style={{ position: "relative" }} id="area97">
                           <Form.Item
@@ -879,7 +898,7 @@ let t_data = [
                               rules={[
                               {
                                   required: true,
-                                  message: "please select date",
+                                  message: t('Timesheetemployee.pleaseselectdate'),
                               },
                               ]}
                               className="custom-border"
@@ -901,7 +920,7 @@ let t_data = [
                     <div className="col-12">
                         <div className="form-group">
                         <label style={{display: 'flex', justifyContent: 'space-between'}}>
-                            <div>Notes</div>
+                            <div>{t('Timesheetemployee.notes')}</div>
                             <small style={{marginTop: '5px', fontSize: '10px', color: 'rgba(0, 0, 0, 0.5)'}}>{descLength} / 150</small>
                         </label>
                         <Form.Item
@@ -916,10 +935,10 @@ let t_data = [
                                     return Promise.resolve();
                                 }
                                 else if (/\s{2,}/.test(value)) {
-                                    return Promise.reject("please remove consecutive spaces");
+                                  return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                                 }
                                 else if (value.length <= 4) {
-                                    return Promise.reject("notes length must be at least 5 characters long");
+                                    return Promise.reject(t('Timesheetemployee.notesLengthMustBeAtleastFive'));
                                 }
                                 return Promise.resolve();
                                 },
@@ -936,7 +955,7 @@ let t_data = [
                     <button type='submit' className="btn btn-primary submit-btn" disabled={loader || open?.data ? buttonDisable : false}>
                     {
                         loader ? <Spin size="small" indicator={antIcon} />
-                        : 'Submit'
+                        : t('submit')
                     }
                     </button>
                 </div>
@@ -969,9 +988,9 @@ let t_data = [
                 }}
               >
                 <div className="form-header">
-                  <h3 style={{ marginBottom: "30px" }}>Delete Timesheet</h3>
+                  <h3 style={{ marginBottom: "30px" }}>{t('Timesheetemployee.deleteTimesheet')}</h3>
                   <p>
-                    Are you sure you want to delete the timesheet?{" "}
+                  {t('Timesheetemployee.confirmDeleteTimesheet')}{" "}
                     {/* <b>{open?.data?.title}?</b> */}
                   </p>
                 </div>
@@ -987,7 +1006,7 @@ let t_data = [
                       >
                         {
                           loader ? <Spin size="small" indicator={antIcon} />
-                            : 'Delete'
+                            : t('delete')
                         }
                       </Button>
                     </div>
@@ -997,7 +1016,7 @@ let t_data = [
                         className="btn btn-primary submit-btn"
                         style={{width: '100%'}}
                       >
-                        Cancel
+                        {t('cancel')}
                       </Button>
                     </div>
                   </div>
