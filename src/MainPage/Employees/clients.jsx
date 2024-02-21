@@ -64,7 +64,7 @@ const Clients = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get All Clients Error"
+              : t('aDash.errors.getAllClientsError')
           }!`
         );
       });
@@ -139,7 +139,7 @@ const Clients = () => {
             {/* {
               (role === 'admin' || permissions?.viewAllUsers) ? 'No Employee Record found!' : 'You are Restricted to View Employees'
             } */}
-            No Client Record Found!
+            {t('client.noClientRecordFound')}
           </div>
         </div>
       }
@@ -167,7 +167,7 @@ const getAllCountries = () => {
     <>
       <div className="page-wrapper">
         <Helmet>
-          <title>Clients - DaftarPro</title>
+          <title>{t('aDash.clients')} - {t('header.daftarPro')}</title>
           <meta name="description" content="Login page" />
         </Helmet>
         {/* Page Content */}
@@ -176,14 +176,14 @@ const getAllCountries = () => {
           <div className="page-header">
             <div className="row align-items-center">
               <div className="col">
-                <h3 className="page-title">Clients</h3>
+                <h3 className="page-title">{t('aDash.clients')}</h3>
                 <ul className="breadcrumb">
-                  <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>Dashboard</Link></li>
-                  <li className="breadcrumb-item active">Clients</li>
+                  <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>{t('Timesheetemployee.dashboard')}</Link></li>
+                  <li className="breadcrumb-item active">{t('aDash.clients')}</li>
                 </ul>
               </div>
               <div className="col-auto float-end ms-auto">
-                <a href="javascript:void(0)" className="btn add-btn" onClick={() => { setOpen({ isAddOpen: true, data: '' }); getAllCountries() }}><i className="fa fa-plus" /> Add Client</a>
+                <a href="javascript:void(0)" className="btn add-btn" onClick={() => { setOpen({ isAddOpen: true, data: '' }); getAllCountries() }}><i className="fa fa-plus" /> {t('client.addClient')}</a>
                 <div className="view-icons">
                   <Link to="/clients" className="grid-view btn btn-link active"><i className="fa fa-th" /></Link>
                   <Link to="/clients-list" className="list-view btn btn-link"><i className="fa fa-bars" /></Link>
@@ -235,13 +235,13 @@ const getAllCountries = () => {
                   <Input
                     className="form-control"
                     style={{height:'50px'}}
-                    placeholder='Client Name'
+                    placeholder={t('projectScreen.clientName')}
                   />
                   </Form.Item>
                 </div>
               </div>
               <div className="col-sm-3 col-md-3">  
-                <button href="javascript:void(0)" type="submit" className="btn btn-success btn-block w-100" style={{marginBottom: '24px'}}> Search</button>  
+                <button href="javascript:void(0)" type="submit" className="btn btn-success btn-block w-100" style={{marginBottom: '24px'}}> {t('search')}</button>  
               </div>
               <div className="col-sm-3 col-md-3">  
                 <button 
@@ -251,7 +251,7 @@ const getAllCountries = () => {
                   onClick={() => { form1.resetFields(); getAllClients('', 1, pageSize); setFilterValues(null); setCurrentPage(1)}}
                   // disabled={role === 'admin' ? false : permissions?.viewAllUsers ? false : true}
                 >
-                  Reset
+                  {t('reset')}
                 </button>  
               </div>
             </div>
@@ -271,8 +271,8 @@ const getAllCountries = () => {
                       <div className="dropdown profile-action">
                         <a href="javascript:void(0)" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
                         <div className="dropdown-menu dropdown-menu-right">
-                          <a className="dropdown-item" href="javascript:void(0)" onClick={() => { setOpen({ isAddOpen: true, data: client }); getAllCountries() }}><i className="fa fa-pencil m-r-5" /> Edit</a>
-                          <a className="dropdown-item" href="javascript:void(0)" onClick={() => { setOpen({ isDelOpen: true, data: client }) }}><i className="fa fa-trash-o m-r-5" /> Delete</a>
+                          <a className="dropdown-item" href="javascript:void(0)" onClick={() => { setOpen({ isAddOpen: true, data: client }); getAllCountries() }}><i className="fa fa-pencil m-r-5" /> {t('edit')}</a>
+                          <a className="dropdown-item" href="javascript:void(0)" onClick={() => { setOpen({ isDelOpen: true, data: client }) }}><i className="fa fa-trash-o m-r-5" /> {t('delete')}</a>
                         </div>
                       </div>
                       <h4 className="user-name m-t-10 m-b-15 text-ellipsis"><Link to="/client/client-profile" state={{client_data: client}} onClick={() => sessionStorage.setItem(`clients_tab`, 'projects')} >{client?.clientName}</Link></h4>
@@ -280,7 +280,7 @@ const getAllCountries = () => {
                       <div className="small text-muted">CEO</div> */}
                       {/* <Link onClick={() => localStorage.setItem("minheight", "true")} to="/conversation/chat" className="btn btn-white btn-sm m-t-10 me-1">Message</Link> */}
                       {/* <Link to="/app/profile/client-profile" className="btn btn-white btn-sm m-t-10" style={{margin: 'auto auto 0 auto'}}>View Profile</Link> */}
-                      <Link to="/client/client-profile" state={{client_data: client}} onClick={() => sessionStorage.setItem(`clients_tab`, 'projects')} className="btn btn-white btn-sm" style={{margin: 'auto auto 0 auto'}}>View Profile</Link>
+                      <Link to="/client/client-profile" state={{client_data: client}} onClick={() => sessionStorage.setItem(`clients_tab`, 'projects')} className="btn btn-white btn-sm" style={{margin: 'auto auto 0 auto'}}>{t('client.viewProfile')}</Link>
                     </div>
                   </div>
                 </>
@@ -354,10 +354,9 @@ const getAllCountries = () => {
               }}
             >
               <div className="form-header">
-                <h3 style={{ marginBottom: "30px" }}>Delete Client</h3>
+                <h3 style={{ marginBottom: "30px" }}>{t('client.deleteClient')}</h3>
                 <p>
-                  Are you sure you want to delete{" "}
-                  <b>{open?.data?.clientName}</b>?
+                  <span dangerouslySetInnerHTML={{ __html: t('projectScreen.confirmDeleteProject', { project: open?.data?.clientName }) }} />
                 </p>
               </div>
               <div className="modal-btn delete-action">
@@ -372,7 +371,7 @@ const getAllCountries = () => {
                     >
                       {
                         loader ? <Spin size="small" indicator={antIcon} />
-                          : 'Delete'
+                          : t('delete')
                       }
                     </Button>
                   </div>
@@ -382,7 +381,7 @@ const getAllCountries = () => {
                       className="btn btn-primary submit-btn"
                       style={{width: '100%'}}
                     >
-                      Cancel
+                      {t('cancel')}
                     </Button>
                   </div>
                 </div>

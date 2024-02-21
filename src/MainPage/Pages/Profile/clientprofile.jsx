@@ -11,9 +11,10 @@ import InvoicesScreen from './clientProfileScreens/InvoicesScreen';
 import ProjectsScreen from './clientProfileScreens/ProjectsScreen';
 import { apiServices } from '../../../Services/apiServices';
 import { Spin, message } from 'antd';
+import { useTranslation } from 'react-i18next';
 
 const ClientProfile = () => {
-
+  const { t, i18n } = useTranslation()
   const location = useLocation();
   const client_data = location?.state?.client_data;
   const nav = useNavigate();
@@ -73,7 +74,7 @@ const ClientProfile = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Single Client Error"
+              : t('Timesheetadmin.getClientError')
           }!`
         );
       });
@@ -84,7 +85,7 @@ const ClientProfile = () => {
       <>
        <div className="page-wrapper">
             <Helmet>
-              <title>Client Profile - DaftarPro</title>
+              <title>{t('client.clientProfile')} - {t('header.daftarPro')}</title>
               <meta name="description" content="Reactify Blank Page" />
             </Helmet>
            {/* Page Content */}
@@ -93,10 +94,10 @@ const ClientProfile = () => {
              <div className="page-header">
                <div className="row">
                  <div className="col-sm-12">
-                   <h3 className="page-title">Profile</h3>
+                   <h3 className="page-title">{t('empProfile.profile')}</h3>
                    <ul className="breadcrumb">
-                     <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>Dashboard</Link></li>
-                     <li className="breadcrumb-item active">Profile</li>
+                     <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>{t('dashboard')}</Link></li>
+                     <li className="breadcrumb-item active">{t('empProfile.profile')}</li>
                    </ul>
                  </div>
                </div>
@@ -130,23 +131,23 @@ const ClientProfile = () => {
                             <div className="col-md-7">
                               <ul className="personal-info">
                                 <li>
-                                  <span className="title">Phone:</span>
+                                  <span className="title">{t('empProfile.phone')}:</span>
                                   <span className="text"><a href="javascript:void(0)" style={{cursor: 'default'}}>{clientData?.clientPhoneNo}</a></span>
                                 </li>
                                 <li>
-                                  <span className="title">Email:</span>
+                                  <span className="title">{t('aDash.email')}:</span>
                                   <span className="text"><a href="javascript:void(0)" style={{cursor: 'default'}}>{clientData?.clientEmail}</a></span>
                                 </li>
                                 <li>
-                                  <span className="title">Country:</span>
+                                  <span className="title">{t('client.country')}:</span>
                                   <span className="text">{clientData?.country}</span>
                                 </li>
                                 <li>
-                                  <label className="title">Invoice Email:</label>
+                                  <label className="title">{t('client.invoiceEmail')}:</label>
                                   <span className="text">{clientData?.invoiceEmail}</span>
                                 </li>
                                 <li>
-                                  <label className="title">Head Office Address:</label>
+                                  <label className="title">{t('client.headOfficeAddress')}:</label>
                                   <label className="text">{clientData?.headOfficeAddress}</label>
                                 </li>
                               </ul>
@@ -163,12 +164,12 @@ const ClientProfile = () => {
                <div className="row user-tabs">
                  <div className="col-lg-12 col-md-12 col-sm-12 line-tabs">
                    <ul className="nav nav-tabs nav-tabs-bottom">
-                     <li className="nav-item col-sm-3"><a className={`nav-link ${activeTab === 'projects' ? 'active' : ''}`} onClick={() => { setActiveTab('projects') }}>Projects</a></li>
+                     <li className="nav-item col-sm-3"><a className={`nav-link ${activeTab === 'projects' ? 'active' : ''}`} onClick={() => { setActiveTab('projects') }}>{t('projects')}</a></li>
                      {/* <li className="nav-item col-sm-3"><a className="nav-link active" data-bs-toggle="tab" href="#myprojects">Projects</a></li> */}
                      {/* <li className="nav-item col-sm-3"><a className="nav-link" data-bs-toggle="tab" href="#tasks">Tasks</a></li> */}
-                     <li className="nav-item col-sm-3"><a className={`nav-link ${activeTab === 'invoices' ? 'active' : ''}`} onClick={() => { setActiveTab('invoices') }}>Invoices</a></li>
+                     <li className="nav-item col-sm-3"><a className={`nav-link ${activeTab === 'invoices' ? 'active' : ''}`} onClick={() => { setActiveTab('invoices') }}>{t('aDash.invoices')}</a></li>
                      {/* <li className="nav-item col-sm-3"><a className="nav-link" data-bs-toggle="tab" href="#invoices">Invoices</a></li> */}
-                     <li className="nav-item col-sm-3"><a className={`nav-link ${activeTab === 'focal' ? 'active' : ''}`} onClick={() => { setActiveTab('focal') }}>Focal Persons</a></li>
+                     <li className="nav-item col-sm-3"><a className={`nav-link ${activeTab === 'focal' ? 'active' : ''}`} onClick={() => { setActiveTab('focal') }}>{t('client.focalPersons')}</a></li>
                      {/* <li className="nav-item col-sm-3"><a className="nav-link" data-bs-toggle="tab" href="#focal_person">Focal Person</a></li> */}
                    </ul>
                  </div>

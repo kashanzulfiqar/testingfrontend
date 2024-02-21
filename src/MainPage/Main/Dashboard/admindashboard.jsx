@@ -712,7 +712,7 @@ const antIcon = (
                             </div>
                             <div className={`col-6 ${i18n.dir() === 'rtl' ? 'text-start' : 'text-end'}`}>
                               <span className={req?.status==="Approved" ? "badge bg-inverse-success" : req?.status==="Pending" ? "badge bg-inverse-warning" : (req?.status==="Declined" || req?.status==="Cancelled") ? "badge bg-inverse-danger" : ''}>
-                                {req?.status}
+                                {req?.status==="Approved" ? t('aRequests.Approved') : req?.status==="Declined" ? t('aRequests.Declined') : '-'}
                               </span>
                             </div>
                           </div>
@@ -764,7 +764,7 @@ const antIcon = (
                                   <td>{invoice?.totalAmount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoice?.currency}</td>
                                   <td>
                                     <label className={invoice?.status==="Paid" ? "badge bg-inverse-success" : invoice?.status==="Partially Paid" ? "badge bg-inverse-info" : invoice?.status==="Pending" ? "badge bg-inverse-warning" : invoice?.status==="Cancelled" ? "badge bg-inverse-danger" : ''}>
-                                      {invoice?.status}
+                                      {invoice?.status==="Paid" ? t('aDash.paid') : invoice?.status==="Partially Paid" ? t('aDash.partiallyPaid') : invoice?.status==="Pending" ? t('aDash.pending') : invoice?.status==="Cancelled" ? t('aDash.cancelled') : '-'}
                                     </label>
                                   </td>
                                 </tr>
@@ -813,7 +813,7 @@ const antIcon = (
                               <td>
                                 <h2><a href="#">{payment?.client?.clientName}</a></h2>
                               </td>
-                              <td>{payment?.paymentType}</td>
+                              <td>{payment?.paymentType==="Cash" ? t('cash') : payment?.paymentType==="Cheque" ? t('cheque') : payment?.paymentType==="Bank Transfer" ? t('bankTransfer') : '-'}</td>
                               <td>{formatDate(payment?.paymentDate || '')}</td>
                               <td>{payment?.paidAmountInPreferredCurrency?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {payment?.company?.preferredCurrency}</td>
                             </tr>
@@ -944,7 +944,18 @@ const antIcon = (
                             </td> */}
                             <td>
                               <label className={project?.status==="Completed" ? "badge bg-inverse-success" : project?.status==="Paused" ? "badge bg-inverse-warning" : project?.status==="Archived" ? "badge bg-inverse-danger" : "badge bg-inverse-info"}>
-                                {project?.status}
+                                {project?.status === "Scheduled"
+                                  ? ` ${t('projectScreen.Modal.scheduled')}`
+                                  : project?.status === "On-Going"
+                                  ? ` ${t('projectScreen.Modal.onGoing')}`
+                                  : project?.status === "Paused"
+                                  ? ` ${t('projectScreen.Modal.paused')}`
+                                  : project?.status === "Archived"
+                                  ? ` ${t('projectScreen.Modal.archived')}`
+                                  : project?.status === "Completed"
+                                  ? ` ${t('projectScreen.Modal.completed')}`
+                                  : ""
+                                }
                               </label>
                             </td>
                             {/* <td className="text-end">

@@ -8,9 +8,10 @@ import 'antd/dist/antd.css';
 import "../../antdstyle.css"
 import { useSelector } from 'react-redux';
 import { apiServices } from '../../../Services/apiServices';
+import { useTranslation } from 'react-i18next';
 
 const EmployeesReport = () => {
-
+  const { t, i18n } = useTranslation();
     const moment = require('moment');
     const [form] = Form.useForm();
     const nav = useNavigate();
@@ -53,7 +54,7 @@ const EmployeesReport = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Employee Report Error"
+              : t('reports.employeeReport.getEmployeeReportError')
           }!`
         );
       });
@@ -66,9 +67,9 @@ let value_male = Math.round((allData?.totalMale/gender_total)*100);
 let value_female = Math.round((allData?.totalFemale/gender_total)*100);
 let value_others = Math.round((allData?.totalOtherGender/gender_total)*100);
 const genderData = [
-  { name: 'Male', value: value_male },
-  { name: 'Female', value: value_female },
-  { name: 'Others', value: value_others },
+  { name: t('reports.employeeReport.male'), value: value_male },
+  { name: t('reports.employeeReport.female'), value: value_female },
+  { name: t('reports.employeeReport.others'), value: value_others },
 ];
 const Gender_COLORS = ['#44C4FA', '#3E80EB', '#FFAB00'];
 
@@ -77,8 +78,8 @@ let tech_total =  allData?.totalTechEmployees + allData?.totalNonTechEmployees;
 let value_technical = Math.round((allData?.totalTechEmployees/tech_total)*100);
 let value_non_technical = Math.round((allData?.totalNonTechEmployees/tech_total)*100);
 const techData = [
-  { name: 'Technical', value: value_technical },
-  { name: 'Non Technical', value: value_non_technical },
+  { name: t('reports.employeeReport.technical'), value: value_technical },
+  { name: t('reports.employeeReport.nonTechnical'), value: value_non_technical },
 ];
 const Tech_COLORS = ['#3E80EB', '#38CB89'];
 
@@ -87,8 +88,8 @@ let bill_total =  allData?.billedResources + allData?.nonBilledResources;
 let value_billed = Math.round((allData?.billedResources/bill_total)*100);
 let value_non_billed = Math.round((allData?.nonBilledResources/bill_total)*100);
 const billedData = [
-  { name: 'Billed', value: value_billed },
-  { name: 'Un Billed', value: value_non_billed },
+  { name: t('reports.employeeReport.billed'), value: value_billed },
+  { name: t('reports.employeeReport.unBilled'), value: value_non_billed },
 ];
 const Billed_COLORS = ['#FFAB00', '#44C4FA'];
 
@@ -147,7 +148,7 @@ const deptYAxisTick = ({ payload, x, y, width }) => {
     {/* Page Wrapper */}
     <div className="page-wrapper">
         <Helmet>
-            <title>Employee Reports - DaftarPro</title>
+            <title>{t('reports.employeeReport.employeeReport')} - {t('header.daftarPro')}</title>
             <meta name="description" content="Login page"/>					
         </Helmet>
         {/* Page Content */}
@@ -156,10 +157,10 @@ const deptYAxisTick = ({ payload, x, y, width }) => {
         <div className="page-header">
             <div className="row">
             <div className="col">
-                <h3 className="page-title">Reports</h3>
+                <h3 className="page-title">{t('reports.employeeReport.reports')}</h3>
                 <ul className="breadcrumb">
-                <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>Dashboard</Link></li>
-                <li className="breadcrumb-item active">Employee Report</li>
+                <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>{t('dashboard')}</Link></li>
+                <li className="breadcrumb-item active">{t('reports.employeeReport.employeeReport')}</li>
                 </ul>
             </div>
             </div>
@@ -181,26 +182,26 @@ const deptYAxisTick = ({ payload, x, y, width }) => {
             <div className="row">
                 <div className="col-sm-6 col-md-3">
                     <div className="report-cards-info" style={{minHeight: '83px'}}>
-                        <label>Total Employees</label>
+                        <label>{t('reports.employeeReport.totalEmployees')}</label>
                         {/* <h4>{singleUser?.casualLeaves} / {compLeaves?.casualLeaves}</h4> */}
                         <h4>{allData?.totalEmployees}</h4>
                     </div>
                 </div>
                 <div className="col-sm-6 col-md-3">
                     <div className="report-cards-info" style={{minHeight: '83px'}}>
-                        <label>Total Intern</label>
+                        <label>{t('reports.employeeReport.totalIntern')}</label>
                         <h4>{allData?.totalIntern}</h4>
                     </div>
                 </div>
                 <div className="col-sm-6 col-md-3">
                     <div className="report-cards-info" style={{minHeight: '83px'}}>
-                        <label>Total Contractor</label>
+                        <label>{t('reports.employeeReport.totalContractor')}</label>
                         <h4>{allData?.totalContractor}</h4>
                     </div>
                 </div>
                 <div className="col-sm-6 col-md-3">
                     <div className="report-cards-info" style={{minHeight: '83px'}}>
-                        <label>Avg Salary</label>
+                        <label>{t('reports.employeeReport.avgSalary')}</label>
                         <h4>{allData?.averageSalary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</h4>
                     </div>
                 </div>
@@ -215,7 +216,7 @@ const deptYAxisTick = ({ payload, x, y, width }) => {
               <div className="col-md-6 text-center">
                 <div className="card" style={{borderRadius: '8px'}}>
                   <div style={{backgroundColor: '#F5F5F5', display: 'flex', padding: '25px', border: '1px solid #E5E5E5', borderRadius: '8px 8px 0px 0px'}}>
-                    <h3 className="card-title mb-0">Gender Wise Employees</h3>
+                    <h3 className="card-title mb-0">{t('reports.employeeReport.genderWiseEmployees')}</h3>
                   </div>
                   <div className="card-body">
                     {
@@ -256,7 +257,7 @@ const deptYAxisTick = ({ payload, x, y, width }) => {
                         />
                       </PieChart>
                     </ResponsiveContainer> :
-                      <label style={{height: '300px', display: 'grid', placeItems: 'center', color: 'grey'}}>No Record Found!</label>
+                      <label style={{height: '300px', display: 'grid', placeItems: 'center', color: 'grey'}}>{t('finance.Profit&loss.noRecordFound')}</label>
                     }
 
                   </div>
@@ -265,7 +266,7 @@ const deptYAxisTick = ({ payload, x, y, width }) => {
               <div className="col-md-6 text-center">
                 <div className="card" style={{borderRadius: '8px'}}>
                   <div style={{backgroundColor: '#F5F5F5', display: 'flex', padding: '25px', border: '1px solid #E5E5E5', borderRadius: '8px 8px 0px 0px'}}>
-                    <h3 className="card-title mb-0">Department Wise Employees</h3>
+                    <h3 className="card-title mb-0">{t('reports.employeeReport.departmentWiseEmployees')}</h3>
                   </div>
                   <div className="card-body">
                     {
@@ -293,15 +294,15 @@ const deptYAxisTick = ({ payload, x, y, width }) => {
                             interval={allData?.departWiseEmployees?.length > 13 ? 1 : 0}
                           />
                           <Tooltip
-                            labelFormatter={(value) => <label>Department : {value}</label>}
+                            labelFormatter={(value) => <label>{t('allEmp.Modal.department')} : {value}</label>}
                             formatter={(value) => <label>{value.toLocaleString()}</label>}
                           />
                           <Legend />
-                          <Bar dataKey="totalEmployees" name='Total Employees' fill="#fc6075" maxBarSize={17} />
+                          <Bar dataKey="totalEmployees" name={t('reports.employeeReport.totalEmployees')} fill="#fc6075" maxBarSize={17} />
                           <ReferenceLine x={0} stroke="#CCCCCC" label="" />
                         </BarChart>
                       </ResponsiveContainer> :
-                      <label style={{height: '300px', display: 'grid', placeItems: 'center', color: 'grey'}}>No Record Found!</label>
+                      <label style={{height: '300px', display: 'grid', placeItems: 'center', color: 'grey'}}>{t('finance.Profit&loss.noRecordFound')}</label>
                     }
 
                   </div>
@@ -310,7 +311,7 @@ const deptYAxisTick = ({ payload, x, y, width }) => {
               <div className="col-md-6 text-center">
                 <div className="card" style={{borderRadius: '8px'}}>
                   <div style={{backgroundColor: '#F5F5F5', display: 'flex', padding: '25px', border: '1px solid #E5E5E5', borderRadius: '8px 8px 0px 0px'}}>
-                    <h3 className="card-title mb-0">Technical and Non Technical Staff</h3>
+                    <h3 className="card-title mb-0">{t('reports.employeeReport.technicalAndNonTechnicalStaff')}</h3>
                   </div>
                   <div className="card-body">
                     {
@@ -352,7 +353,7 @@ const deptYAxisTick = ({ payload, x, y, width }) => {
                         />
                       </PieChart>
                     </ResponsiveContainer> :
-                      <label style={{height: '300px', display: 'grid', placeItems: 'center', color: 'grey'}}>No Record Found!</label>
+                      <label style={{height: '300px', display: 'grid', placeItems: 'center', color: 'grey'}}>{t('finance.Profit&loss.noRecordFound')}</label>
                     }
 
                   </div>
@@ -361,7 +362,7 @@ const deptYAxisTick = ({ payload, x, y, width }) => {
               <div className="col-md-6 text-center">
                 <div className="card" style={{borderRadius: '8px'}}>
                   <div style={{backgroundColor: '#F5F5F5', display: 'flex', padding: '25px', border: '1px solid #E5E5E5', borderRadius: '8px 8px 0px 0px'}}>
-                    <h3 className="card-title mb-0">Billed and Unbilled Employees</h3>
+                    <h3 className="card-title mb-0">{t('reports.employeeReport.billedAndUnbilledEmployees')}</h3>
                   </div>
                   <div className="card-body">
                     {
@@ -403,7 +404,7 @@ const deptYAxisTick = ({ payload, x, y, width }) => {
                         />
                       </PieChart>
                     </ResponsiveContainer> :
-                      <label style={{height: '300px', display: 'grid', placeItems: 'center', color: 'grey'}}>No Record Found!</label>
+                      <label style={{height: '300px', display: 'grid', placeItems: 'center', color: 'grey'}}>{t('finance.Profit&loss.noRecordFound')}</label>
                     }
 
                   </div>
@@ -412,7 +413,7 @@ const deptYAxisTick = ({ payload, x, y, width }) => {
               <div className="col-md-6 text-center">
                 <div className="card" style={{borderRadius: '8px'}}>
                   <div style={{backgroundColor: '#F5F5F5', display: 'flex', padding: '25px', border: '1px solid #E5E5E5', borderRadius: '8px 8px 0px 0px'}}>
-                    <h3 className="card-title mb-0">Monthly Employee Report</h3>
+                    <h3 className="card-title mb-0">{t('reports.employeeReport.monthlyEmployeeReport')}</h3>
                   </div>
                   <div className="card-body">
                     {
@@ -453,14 +454,14 @@ const deptYAxisTick = ({ payload, x, y, width }) => {
                                 }
                             }}
                             /> */}
-                          <Bar dataKey="totalEmployee" name='Total Employees' fill="#ff9b44" maxBarSize={20} />
+                          <Bar dataKey="totalEmployee" name={t('reports.employeeReport.totalEmployees')} fill="#ff9b44" maxBarSize={20} />
                           {/* <Line type="monotone" dataKey="employeesJoined" name='Employees Joined' stroke="#ff9b44" fill="#00c5fb" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 7 }} /> */}
-                          <Line type="linear" dataKey="employeeJoined" name='Employees Joined' stroke="#3E80EB" fill="#00c5fb" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 7 }} />
+                          <Line type="linear" dataKey="employeeJoined" name={t('reports.employeeReport.employeesJoined')} stroke="#3E80EB" fill="#00c5fb" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 7 }} />
                           {/* <Line type="monotone" dataKey="employeesLeft" name='Employees Left' stroke="#fc6075" fill="#0253cc" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 7 }} /> */}
-                          <Line type="linear" dataKey="employeeExited" name='Employees Left' stroke="#FC6075" fill="#FC6075" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 7 }} />
+                          <Line type="linear" dataKey="employeeExited" name={t('reports.employeeReport.employeesLeft')} stroke="#FC6075" fill="#FC6075" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 7 }} />
                         </ComposedChart>
                       </ResponsiveContainer> :
-                      <label style={{height: '300px', display: 'grid', placeItems: 'center', color: 'grey'}}>No Record Found!</label>
+                      <label style={{height: '300px', display: 'grid', placeItems: 'center', color: 'grey'}}>{t('finance.Profit&loss.noRecordFound')}</label>
                     }
 
                   </div>
@@ -469,7 +470,7 @@ const deptYAxisTick = ({ payload, x, y, width }) => {
               <div className="col-md-6 text-center">
                 <div className="card" style={{borderRadius: '8px'}}>
                   <div style={{backgroundColor: '#F5F5F5', display: 'flex', padding: '25px', border: '1px solid #E5E5E5', borderRadius: '8px 8px 0px 0px'}}>
-                    <h3 className="card-title mb-0">Shift Wise Employees</h3>
+                    <h3 className="card-title mb-0">{t('reports.employeeReport.shiftWiseEmployees')}</h3>
                   </div>
                   <div className="card-body shiftLegendStyle" style={{display: 'flex', justifyContent: 'center'}}>
                     {
@@ -510,7 +511,7 @@ const deptYAxisTick = ({ payload, x, y, width }) => {
                         />
                       </PieChart>
                     </ResponsiveContainer> :
-                      <label style={{height: '300px', display: 'grid', placeItems: 'center', color: 'grey'}}>No Record Found!</label>
+                      <label style={{height: '300px', display: 'grid', placeItems: 'center', color: 'grey'}}>{t('finance.Profit&loss.noRecordFound')}</label>
                     }
 
                   </div>
@@ -519,7 +520,7 @@ const deptYAxisTick = ({ payload, x, y, width }) => {
               <div className="col-md-6 text-center">
                 <div className="card" style={{borderRadius: '8px'}}>
                   <div style={{backgroundColor: '#F5F5F5', display: 'flex', padding: '25px', border: '1px solid #E5E5E5', borderRadius: '8px 8px 0px 0px'}}>
-                    <h3 className="card-title mb-0">Year Wise Employees Experience</h3>
+                    <h3 className="card-title mb-0">{t('reports.employeeReport.yearWiseEmployeesExperience')}</h3>
                   </div>
                   <div className="card-body">
                     {
@@ -547,14 +548,14 @@ const deptYAxisTick = ({ payload, x, y, width }) => {
                             }
                           }} />
                           <Tooltip
-                            labelFormatter={(value) => `Years : ${value}`}
+                            labelFormatter={(value) => `${t('reports.employeeReport.years')} : ${value}`}
                             formatter={(value) => <label>{value.toLocaleString()}</label>}
                           />
                           <Legend />
-                          <Bar dataKey="totalEmployees" name='Total Employees' fill="#ff9b44" maxBarSize={20} />
+                          <Bar dataKey="totalEmployees" name={t('reports.employeeReport.totalEmployees')} fill="#ff9b44" maxBarSize={20} />
                         </BarChart>
                       </ResponsiveContainer> :
-                      <label style={{height: '300px', display: 'grid', placeItems: 'center', color: 'grey'}}>No Record Found!</label>
+                      <label style={{height: '300px', display: 'grid', placeItems: 'center', color: 'grey'}}>{t('finance.Profit&loss.noRecordFound')}</label>
                     }
 
                   </div>
@@ -563,7 +564,7 @@ const deptYAxisTick = ({ payload, x, y, width }) => {
               <div className="col-md-6 text-center">
                 <div className="card" style={{borderRadius: '8px'}}>
                   <div style={{backgroundColor: '#F5F5F5', display: 'flex', padding: '25px', border: '1px solid #E5E5E5', borderRadius: '8px 8px 0px 0px'}}>
-                    <h3 className="card-title mb-0">Age Wise Employees</h3>
+                    <h3 className="card-title mb-0">{t('reports.employeeReport.ageWiseEmployees')}</h3>
                   </div>
                   <div className="card-body">
                     {
@@ -591,14 +592,14 @@ const deptYAxisTick = ({ payload, x, y, width }) => {
                             }
                           }} />
                           <Tooltip
-                            labelFormatter={(value) => `Age : ${value}`}
+                            labelFormatter={(value) => `${t('reports.employeeReport.age')} : ${value}`}
                             formatter={(value) => <label>{value.toLocaleString()}</label>}
                           />
                           <Legend />
-                          <Bar dataKey="totalEmployees" name='Total Employees' fill="#ff9b44" maxBarSize={20} />
+                          <Bar dataKey="totalEmployees" name={t('reports.employeeReport.totalEmployees')} fill="#ff9b44" maxBarSize={20} />
                         </BarChart>
                       </ResponsiveContainer> :
-                      <label style={{height: '300px', display: 'grid', placeItems: 'center', color: 'grey'}}>No Record Found!</label>
+                      <label style={{height: '300px', display: 'grid', placeItems: 'center', color: 'grey'}}>{t('finance.Profit&loss.noRecordFound')}</label>
                     }
 
                   </div>

@@ -7,10 +7,11 @@ import { Form, Select, Table, Empty, message, TimePicker, Button, Input, Spin, P
 import { apiServices } from '../../../Services/apiServices';
 import PencilIcon from "../../../files/Icons/pencilIcon.png";
 import { itemRender } from '../../paginationfunction';
+import { useTranslation } from 'react-i18next';
 
 
 function WeekViewTimeSheet({ tableStartDate, setTableStartDate, selectedDate, setSelectedDate, open, setOpen, allProjects, getAllProjects, currentWeekDates, setShowCalendar }) {
-    
+  const { t, i18n } = useTranslation();
     const moment = require('moment');
 
     const [form] = Form.useForm();
@@ -82,7 +83,7 @@ function WeekViewTimeSheet({ tableStartDate, setTableStartDate, selectedDate, se
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "View Timesheet Error!"
+              : t('Timesheetemployee.viewTimesheetError')
           }!`
         );
       });
@@ -109,7 +110,7 @@ function WeekViewTimeSheet({ tableStartDate, setTableStartDate, selectedDate, se
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get All Tasks Error"
+              : t('Timesheetemployee.getAllTasksError')
           }!`
         );
       });
@@ -171,7 +172,7 @@ function WeekViewTimeSheet({ tableStartDate, setTableStartDate, selectedDate, se
     }
 
     if (foundMatch) {
-      message.error('Data Already Exist for this Project & Task!');
+      message.error(t('Timesheetemployee.dateAlreadyExistsError'));
     } else {
       setAllData([d, ...allData]);
       handleClose();
@@ -280,7 +281,7 @@ function WeekViewTimeSheet({ tableStartDate, setTableStartDate, selectedDate, se
         if (res?.data?.success === true) {
             getData(currentPage, pageSize);
             setShowCard({isShown: false, data: ''});
-            message.success('Timesheet Updated Successfully!');
+            message.success('Timesheetemployee.timesheetUpdatedSuccessfully');
             setLoader(false);
           }
         })
@@ -292,7 +293,7 @@ function WeekViewTimeSheet({ tableStartDate, setTableStartDate, selectedDate, se
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Update Timesheet Error"
+              : t('Timesheetemployee.UpdateTimesheetError')
           }!`
         );
       });
@@ -313,7 +314,7 @@ function WeekViewTimeSheet({ tableStartDate, setTableStartDate, selectedDate, se
           if (res?.data?.success === true) {
               getData(currentPage, pageSize);
               setShowCard({isShown: false, data: ''});
-              message.success('Timesheet Created Successfully!');
+              message.success(t('Timesheetemployee.timesheetAddedSuccessfully'));
               setLoader(false);
               formduration.resetFields();
             }
@@ -326,7 +327,7 @@ function WeekViewTimeSheet({ tableStartDate, setTableStartDate, selectedDate, se
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Create Timesheet Error"
+              : t('Timesheetemployee.addTimesheetError')
           }!`
         );
       });
@@ -353,7 +354,7 @@ function WeekViewTimeSheet({ tableStartDate, setTableStartDate, selectedDate, se
             }
           }
           handleClose('delete');
-          message.success("Timesheet Deleted Successfully!");
+          message.success(t('Timesheetemployee.timesheeDeletedSuccessfully'));
           setLoader(false)
         }
       })
@@ -365,7 +366,7 @@ function WeekViewTimeSheet({ tableStartDate, setTableStartDate, selectedDate, se
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Delete Timesheet Error"
+              : t('Timesheetemployee.deleteTimesheetError')
           }!`
         );
       });
@@ -390,7 +391,7 @@ function WeekViewTimeSheet({ tableStartDate, setTableStartDate, selectedDate, se
         if (res?.data?.success === true) {
           if(index === allData?.length - 1){
             getData(currentPage, pageSize);
-            message.success('Timesheet Submitted Successfully!');
+            message.success(t('Timesheetemployee.timesheetSubmittedSuccessfully'));
             setLoader(false);
           }
         }})
@@ -402,7 +403,7 @@ function WeekViewTimeSheet({ tableStartDate, setTableStartDate, selectedDate, se
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Submit Timesheet Error"
+              : t('Timesheetemployee.submitTimesheetError')
           }!`
         );
       });
@@ -723,7 +724,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
       
       const columns = [
         {
-          title: "Title",
+          title: t('Timesheetemployee.title'),
           dataIndex: "Title",
           key: "Title",
           render: (text, record) => (
@@ -736,7 +737,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
         },
         ...Dayscolumns,
         {
-          title: "Total",
+          title: t('Timesheetemployee.total'),
           dataIndex: "Total",
           key: "Total",
           render: (text, record) => {
@@ -788,6 +789,22 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
                 style={{ maxHeight: '409px' }}
                 columns={columns}
                 dataSource={rows}
+                components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
               />
             </div>
             {
@@ -801,7 +818,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
                 >
                   {
                     loader ? <Spin size="small" indicator={antIcon3} />
-                    : <span style={{fontSize: '16px', fontWeight: '500'}}>Submit for Approval</span>
+                    : <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetemployee.submitForApproval')}</span>
                   }
                   {/* <span style={{fontSize: '16px', fontWeight: '500'}}>Submit for Approval</span> */}
                 </button>
@@ -821,7 +838,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
                     >
                       {
                         loader ? <Spin size="small" indicator={antIcon4} />
-                        : <span style={{fontSize: '16px', fontWeight: '500'}}>Submit Updates</span>
+                        : <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetemployee.submitUpdates')}</span>
                       }
                     </button>
                   </div>
@@ -832,7 +849,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
                       disabled
                       style={{border: '2px solid #00B112', borderRadius: '8px', background: '#fff', color: '#00B112', minWidth: '90px', height: '42px', paddingTop: '3px', margin: '30px 0px 15px 0px', paddingInline: '18px'}}
                   >
-                    <span style={{fontSize: '16px', fontWeight: '500'}}>Approved</span>
+                    <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetemployee.approved')}</span>
                   </button>
                 }
                 {
@@ -841,7 +858,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
                     disabled
                     style={{border: '2px solid #00B112', borderRadius: '8px', background: '#fff', color: '#00B112', minWidth: '90px', height: '42px', paddingTop: '3px', margin: '30px 0px 15px 0px', paddingInline: '18px'}}
                   >
-                    <span style={{fontSize: '16px', fontWeight: '500'}}>Submitted for Approval</span>
+                    <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetemployee.submittedForApproval')}</span>
                   </button>
                 }
               </div> :
@@ -858,7 +875,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
                     >
                       {
                         loader ? <Spin size="small" indicator={antIcon4} />
-                        : <span style={{fontSize: '16px', fontWeight: '500'}}>Submit Updates</span>
+                        : <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetemployee.submitUpdates')}</span>
                       }
                     </button>
                   </div>
@@ -869,7 +886,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
                       disabled
                       style={{border: '2px solid #DD0000', borderRadius: '8px', background: '#fff', color: '#DD0000', minWidth: '90px', height: '42px', paddingTop: '3px', margin: '30px 0px 15px 0px', paddingInline: '18px'}}
                   >
-                    <span style={{fontSize: '16px', fontWeight: '500'}}>Declined</span>
+                    <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetemployee.declined')}</span>
                   </button>
                 }
                 {
@@ -878,7 +895,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
                     disabled
                     style={{border: '2px solid #00B112', borderRadius: '8px', background: '#fff', color: '#00B112', minWidth: '90px', height: '42px', paddingTop: '3px', margin: '30px 0px 15px 0px', paddingInline: '18px'}}
                   >
-                    <span style={{fontSize: '16px', fontWeight: '500'}}>Submitted for Approval</span>
+                    <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetemployee.submittedForApproval')}</span>
                   </button>
                 }
               </div> :
@@ -895,7 +912,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
                     >
                       {
                         loader ? <Spin size="small" indicator={antIcon4} />
-                        : <span style={{fontSize: '16px', fontWeight: '500'}}>Submit Updates</span>
+                        : <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetemployee.submitUpdates')}</span>
                       }
                     </button>
                   </div>
@@ -904,7 +921,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
                     disabled
                     style={{border: '2px solid #00B112', borderRadius: '8px', background: '#fff', color: '#00B112', minWidth: '90px', height: '42px', paddingTop: '3px', margin: '30px 0px 15px 0px', paddingInline: '18px'}}
                 >
-                  <span style={{fontSize: '16px', fontWeight: '500'}}>Submitted for Approval</span>
+                  <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetemployee.submittedForApproval')}</span>
                 </button>
               </div>
             }
@@ -993,7 +1010,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
                                       setDelOpen({ isDelOpen: true, data: showCard?.data });
                                     }}
                                 >
-                                    <i className="fa fa-trash-o m-r-5" /> Delete
+                                    <i className="fa fa-trash-o m-r-5" /> {t('Delete')}
                                 </a>
                             </div>
                           </>
@@ -1012,7 +1029,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
                             handleCreate()
                           }
                         }else{
-                          message.error('Task Duration Cannot be Zero!')
+                          message.error(t('Timesheetemployee.taskDurationZeroError'))
                         }
                       }}
                       disabled={loader || saveButton}
@@ -1021,7 +1038,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
                   >
                     {
                         loader ? <Spin size="small" indicator={antIcon2} />
-                        : <span style={{fontSize: '16px', fontWeight: '500'}}>Save</span>
+                        : <span style={{fontSize: '16px', fontWeight: '500'}}>{t('save')}</span>
                     }
                   </button>
                   <button
@@ -1063,7 +1080,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
             <div className="modal-dialog modal-dialog-centered" role="document">
             <div className="modal-content">
                 <div className="modal-header">
-                <h5 className="modal-title">{open?.data ? 'Edit' : 'Add'} Row</h5>
+                <h5 className="modal-title">{open?.data ? t('holiday.edit') : t('holiday.add')} {t('Timesheetemployee.row')}</h5>
                 <button type="button" className="close" onClick={handleClose}>
                     <span aria-hidden="true">×</span>
                 </button>
@@ -1082,10 +1099,10 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
                     }
                     const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
                     if(consecutiveSpacesError){
-                    message.error("Please Remove Consecutive Spaces!")
-                    }else{
-                    message.error("Please Fill Required Fields!")
-                    }
+                      message.error(t('allEmp.errors.removeConsecutiveSpaces'))
+                   }else{
+                      message.error(t('allEmp.errors.fillRequiredFields'))
+                    } 
                 }}
                 autoComplete='off'
                 >
@@ -1103,7 +1120,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
                             {
                                 whitespace: true,
                                 required: true,
-                                message: 'please select project',
+                                message: t('Timesheetemployee.pleaseselectproject'),
                             },
                             ]}
                         >
@@ -1128,7 +1145,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
                                     getPopupContainer={() =>
                                         document.getElementById("area")
                                     }
-                                    placeholder="Select Project"
+                                    placeholder={t('Timesheetemployee.selectproject')}
                                     >
                                     {
                                         allProjects.map((project, index) => (
@@ -1155,7 +1172,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
                             {
                                 whitespace: true,
                                 required: true,
-                                message: 'please select task',
+                                message: t('Timesheetemployee.pleaseselecttask'),
                             },
                             ]}
                         >
@@ -1176,7 +1193,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
                                     getPopupContainer={() =>
                                         document.getElementById("area")
                                     }
-                                    placeholder="Select Task"
+                                    placeholder={t('Timesheetemployee.selecttask')}
                                     >
                                     {
                                         allTasks.map((task, index) => (
@@ -1228,9 +1245,9 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
                 }}
               >
                 <div className="form-header">
-                  <h3 style={{ marginBottom: "30px" }}>Delete Timesheet</h3>
+                  <h3 style={{ marginBottom: "30px" }}>{t('Timesheetemployee.deleteTimesheet')}</h3>
                   <p>
-                    Are you sure you want to delete the timesheet?{" "}
+                  {t('Timesheetemployee.confirmDeleteTimesheet')}{" "}
                     {/* <b>{open?.data?.title}?</b> */}
                   </p>
                 </div>
@@ -1246,7 +1263,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
                       >
                         {
                           loader ? <Spin size="small" indicator={antIcon} />
-                            : 'Delete'
+                            : t('delete')
                         }
                       </Button>
                     </div>
@@ -1256,7 +1273,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
                         className="btn btn-primary submit-btn"
                         style={{width: '100%'}}
                       >
-                        Cancel
+                       {t('cancel')}
                       </Button>
                     </div>
                   </div>

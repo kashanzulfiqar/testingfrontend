@@ -11,9 +11,10 @@ import EmptyTable from "../../../../files/Icons/EmptyTable.svg";
 import { useSelector } from 'react-redux';
 import { apiServices } from '../../../../Services/apiServices';
 import invoicePDF from '../../../HR/Sales/invoicePDF';
+import { useTranslation } from 'react-i18next';
 
 const InvoicesScreen = ({ clientId }) => {
-
+  const { t, i18n } = useTranslation();
   const user_state = useSelector((state) => state?.user?.loginvalue);
 
   const [allInvoices, setAllInvoices] = useState([]);
@@ -50,7 +51,7 @@ const InvoicesScreen = ({ clientId }) => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Client Invoices Error"
+              : t('Clientinvoices.getClientInvoicesError')
           }!`
         );
       });
@@ -64,7 +65,7 @@ const InvoicesScreen = ({ clientId }) => {
         render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
       },      
       {
-        title: 'Invoice Number',
+        title: t('Clientinvoices.invoicenumber'),
         dataIndex: 'invoiceNo',
         render: (text, record) => (
           <Link
@@ -89,28 +90,28 @@ const InvoicesScreen = ({ clientId }) => {
       //   dataIndex: 'client',
       // },
       {
-        title: 'Invoice Date',
+        title: t('Clientinvoices.invoicedate'),
         dataIndex: 'invoiceDate',
         render: (text, record) => (
           <label>{formatDate(text || '')}</label>
           ),
       },
       {
-        title: 'Due Date',
+        title: t('Clientinvoices.duedate'),
         dataIndex: 'dueDate',
         render: (text, record) => (
           <label>{formatDate(text || '')}</label>
           ),
       },    
       {
-        title: 'Amount',
+        title: t('Clientinvoices.amount'),
         dataIndex: 'totalAmount',
         render: (text, record) => (
           <span>{text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {record?.currency}</span>
           ),
       },
       {
-        title: 'Status',
+        title: t('Clientinvoices.status'),
         dataIndex: 'status',
         render: (text, record) => (
         <label className={text==="Paid" ? "badge bg-inverse-success" : text==="Partially Paid" ? "badge bg-inverse-info" : text==="Pending" ? "badge bg-inverse-warning" : text==="Cancelled" ? "badge bg-inverse-danger" : ''}>
@@ -119,7 +120,7 @@ const InvoicesScreen = ({ clientId }) => {
           ),
       },
       {
-        title: 'Action',
+        title: t('Clientinvoices.action'),
         render: (text, record) => (
             <div className="dropdown dropdown-action text-end">
                 <a href="#" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
@@ -139,7 +140,7 @@ const InvoicesScreen = ({ clientId }) => {
                             }
                           }}
                         >
-                          <i className="fa fa-eye m-r-5" /> View
+                          <i className="fa fa-eye m-r-5" /> {t('Clientinvoices.view')}
                         </Link>
                           <a
                             className="dropdown-item"
@@ -156,7 +157,7 @@ const InvoicesScreen = ({ clientId }) => {
                               }); 
                             }}
                           >
-                            <i className="fa fa-file-pdf-o m-r-5" /> Download
+                            <i className="fa fa-file-pdf-o m-r-5" /> {t('Clientinvoices.download')}
                           </a>
                           {/* <Link className="dropdown-item" to="/app/sales/invoices-edit"><i className="fa fa-pencil m-r-5" /> Edit</Link>
                           <Link className="dropdown-item" to="/app/sales/invoices-view"><i className="fa fa-eye m-r-5" /> View</Link>
@@ -219,7 +220,7 @@ const InvoicesScreen = ({ clientId }) => {
               {/* {
                 (role === 'admin' || permissions?.viewAllUsers) ? 'No Employee Record found!' : 'You are Restricted to View Employees'
               } */}
-              No Invoices Record Found!
+              {t('Clientinvoices.noInvoicesFound')}
             </div>
           </div>
         }
@@ -236,7 +237,7 @@ const InvoicesScreen = ({ clientId }) => {
             <div className="page-header">
               <div className="row align-items-center">
                 <div className="col">
-                  <h3 className="page-title">Invoices</h3>
+                  <h3 className="page-title">{t('Clientinvoices.invoices')}</h3>
                   {/* <ul className="breadcrumb">
                     <li className="breadcrumb-item"><Link to="/app/main/dashboard">Dashboard</Link></li>
                     <li className="breadcrumb-item active">Invoices</li>
@@ -276,7 +277,7 @@ const InvoicesScreen = ({ clientId }) => {
                         defaultCurrent={1}
                         current={currentPage}
                         showTotal={(total, range) =>
-                          `Showing ${range[0]} to ${range[1]} of ${total} entries`}
+                          t('paginationShow', { range1: range[0], range2: range[1], total: total })}
                         onChange={(page, size) => {
                           console.log(page, size);
                           setPageSize(size); setCurrentPage(page);
@@ -284,7 +285,9 @@ const InvoicesScreen = ({ clientId }) => {
                         }}
                         showSizeChanger={true}
                         pageSizeOptions={['20', '30', '40', '50']}
-                        itemRender={itemRender}
+                        itemRender={(current, type, originalElement) =>
+                          itemRender(current, type, originalElement, t)
+                        }
                       />
                     </div>
                   }

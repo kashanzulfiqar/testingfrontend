@@ -23,11 +23,12 @@ import { useDispatch, useSelector } from "react-redux";
 import moment from "moment";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { user_icon } from "../../../Entryfile/imagepath";
+import { useTranslation } from "react-i18next";
 
 const { Option } = Select;
 
 const ViewPL = () => {
-
+  const { t, i18n } = useTranslation();
   const location = useLocation();
   const nav = useNavigate();
 
@@ -142,7 +143,7 @@ const ViewPL = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get All Expanses Error"
+              : t('finance.Profit&loss.getAllExpensesError')
           }!`
         );
       });
@@ -166,7 +167,7 @@ const ViewPL = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get All Invoices Error"
+              : t('finance.Profit&loss.getAllInvoicesError')
           }!`
         );
       });
@@ -198,7 +199,7 @@ const ViewPL = () => {
               margin: "7px 0px 4px 0px",
             }}
           >
-            No Record Found!
+            {t('aRequests.errors.noRecordFound')}
           </div>
           {/* <div
                   style={{ color: "#464665", fontWeight: "300", fontSize: "13px" }}
@@ -222,14 +223,14 @@ const ViewPL = () => {
         render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
       },
     {
-      title: "Category",
+      title: t('finance.Profit&loss.category'),
       dataIndex: "expenseCategoryName",
       render: (text, record) => (
         <label>{record?.category ? record?.category?.expenseCategoryName : "None"}</label>
       ),
     },
     {
-      title: "Amount",
+      title: t('Clientinvoices.amount'),
       dataIndex: "convertedAmount",
       render: (text, record) => (
         record?.convertedAmount ? 
@@ -248,18 +249,18 @@ const ViewPL = () => {
         render: (text, record, index) => (currentPage2 - 1) * pageSize2 + index + 1,
       },
     {
-      title: "Invoice Number",
+      title: t('finance.Invoices.invoicenumber'),
       dataIndex: "invoiceNo",
     },
     {
-      title: "Client",
+      title: t('finance.Invoices.client'),
       dataIndex: "clientName",
       render: (text, record) => (
         <label>{record?.client ? record?.client?.clientName : "None"}</label>
       ),
     },
     {
-      title: "Amount",
+      title: t('Clientinvoices.amount'),
       dataIndex: "paidAmountInPreferredCurrency",
       render: (text, record) => (
         record?.paidAmountInPreferredCurrency ? 
@@ -270,7 +271,7 @@ const ViewPL = () => {
       
     },
     {
-        title: 'Status',
+        title: t('status'),
         dataIndex: 'status',
         render: (text, record) => (
         <label className={text==="Paid" ? "badge bg-inverse-success" : text==="Partially Paid" ? "badge bg-inverse-info" : text==="Pending" ? "badge bg-inverse-warning" : text==="Cancelled" ? "badge bg-inverse-danger" : ''}>
@@ -287,7 +288,7 @@ const ViewPL = () => {
         {/* <Sidebar />         */}
         <div className="page-wrapper">
           <Helmet>
-            <title>Expenses - DaftarPro Admin</title>
+            <title>{t('finance.Profit&loss.profitAndloss')} - {t('header.daftarPro')}</title>
             <meta name="description" content="Login page" />
           </Helmet>
           {/* Page Content */}
@@ -296,7 +297,7 @@ const ViewPL = () => {
             <div className="page-header">
               <div className="row align-items-center">
                 <div className="col">
-                  <h3 className="page-title">{`Expenses - ${record?.month ? monthName : ""} ${record?.year ? record?.year : ""}`}</h3>
+                  <h3 className="page-title">{t('finance.Profit&loss.expensesYear', {year:`${record?.month ? monthName : ""} ${record?.year ? record?.year : ""}`})}</h3>
                   <ul className="breadcrumb">
                     <li className="breadcrumb-item">
                       <Link
@@ -306,10 +307,10 @@ const ViewPL = () => {
                             : "/employee/dashboard"
                         }
                       >
-                        Dashboard
+                        {t('dashboard')}
                       </Link>
                     </li>
-                    <li className="breadcrumb-item active">Expenses</li>
+                    <li className="breadcrumb-item active">{t('finance.Profit&loss.expenses')}</li>
                   </ul>
                 </div>
               </div>
@@ -335,7 +336,7 @@ const ViewPL = () => {
               <div className="row" style={{marginBottom:"20px"}}>
                 <div className="col-md-3">
                     <div className="stats-info">
-                    <label>Payrolls</label>
+                    <label>{t('finance.Profit&loss.payrolls')}</label>
                     <div style={{ display: "flex", flexDirection:"row", alignItems: "baseline", justifyContent:"center"}}>
                         <h4 style={{ marginRight: "5px" }}>{record?.creditedSalaryExpense}</h4>
                         <h8>{record?.companyId?.preferredCurrency}</h8>
@@ -344,7 +345,7 @@ const ViewPL = () => {
                 </div>
                 <div className="col-md-3">
                   <div className="stats-info">
-                    <label>Tax</label>
+                    <label>{t('finance.Invoices.tax')}</label>
                     <div style={{ display: "flex", flexDirection:"row", alignItems: "baseline", justifyContent:"center"}}>
                         <h4 style={{ marginRight: "5px" }}>{record?.salaryTaxExpense}</h4>
                         <h8>{record?.companyId?.preferredCurrency}</h8>
@@ -353,7 +354,7 @@ const ViewPL = () => {
                 </div>
                 <div className="col-md-3">
                   <div className="stats-info">
-                    <label>Invoices</label>
+                    <label>{t('finance.Invoices.invoices')}</label>
                     <div style={{ display: "flex", flexDirection:"row", alignItems: "baseline", justifyContent:"center"}}>
                     <h4 style={{ marginRight: "5px" }}>{record?.totalRevenue}</h4>
                         <h8>{record?.companyId?.preferredCurrency}</h8>
@@ -362,7 +363,7 @@ const ViewPL = () => {
                 </div>
                 <div className="col-md-3">
                   <div className="stats-info">
-                    <label>Expense</label>
+                    <label>{t('finance.Profit&loss.expense')}</label>
                     <div style={{ display: "flex", flexDirection:"row", alignItems: "baseline", justifyContent:"center"}}>
                         
                         <h4 style={{ marginRight: "5px" }}>{record?.generalExpense}</h4>
@@ -376,7 +377,7 @@ const ViewPL = () => {
             <div className="row">
             <div className="col-md-5">
             <div className="table-heading">
-              <div className="table-heading-text" style={{marginBottom:"15px"}}>Expense</div>
+              <div className="table-heading-text" style={{marginBottom:"15px"}}>{t('finance.Profit&loss.expense')}</div>
             </div>
             <div className="table-responsive PLTable">
               <Table
@@ -395,12 +396,28 @@ const ViewPL = () => {
                 columns={columns1} // Use columns1 for the first table
                 dataSource={allExpenses} // Define your data source for the first table
                 rowKey={(record) => record?._id}
+                components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
               />
             </div>
           </div>
           <div className="col-md-7">
           <div className="table-heading">
-              <div className="table-heading-text" style={{marginBottom:"15px"}}>Invoices</div>
+              <div className="table-heading-text" style={{marginBottom:"15px"}}>{t('finance.Invoices.invoices')}</div>
             </div>
             <div className="table-responsive PLTable2">
               <Table
@@ -419,6 +436,22 @@ const ViewPL = () => {
                 columns={columns2} // Use columns2 for the second table
                 dataSource={allInvoices} // Define your data source for the second table
                 rowKey={(record) => record?._id}
+                components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
               />
             </div>
           </div>

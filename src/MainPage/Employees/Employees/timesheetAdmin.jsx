@@ -25,8 +25,10 @@ import Offcanvas from "../../../Entryfile/offcanvance";
 import moment from "moment";
 import { useSelector } from "react-redux";
 import { apiServices } from "../../../Services/apiServices";
+import { useTranslation } from "react-i18next";
 
 const AdminTimeSheet = () => {
+  const { t, i18n } = useTranslation();
   const user_state = useSelector((state) => state.user.loginvalue);
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
   const role = user_state?.user?.role
@@ -120,7 +122,7 @@ const AdminTimeSheet = () => {
       });
     }
     else {
-      message.warning("No Filters selected");
+      message.warning(t('Timesheetadmin.noFiltersSelected'));
     }
   };
 
@@ -180,7 +182,7 @@ const AdminTimeSheet = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Client Error"
+              : t('Timesheetadmin.getClientError')
           }`
         );
       });
@@ -276,7 +278,7 @@ const AdminTimeSheet = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Error Fetching Timesheets"
+              : t('Timesheetadmin.errorFetchingTimesheets')
           }`
         );
       })
@@ -597,7 +599,7 @@ const FinalData = updateDataWithMissingWeeks(newData, weekData);
 
 const generateWeekColumns = (weekData, finalData) => {
   const weekColumns = weekData?.weeksData?.map((week, index) => ({
-    title: `Week ${index + 1}`,
+    title: `${t('Timesheetadmin.week')} ${index + 1}`,
     dataIndex: `week_${index + 1}`,
     render: (_, record) => {
       const userWeekData = finalData?.find(
@@ -617,7 +619,7 @@ const generateWeekColumns = (weekData, finalData) => {
 
   const columns = [
     {
-      title: "Employee",
+      title: t('Timesheetadmin.employee'),
       dataIndex: "fullName",
       render: (text, record) => (
         <h2 className="table-avatar">
@@ -628,11 +630,11 @@ const generateWeekColumns = (weekData, finalData) => {
     },
     ...generateWeekColumns(weekData, FinalData),
     {
-      title: "Total",
+      title: t('aDash.total'),
       dataIndex: "monthlyTotal",
     },
     {
-      title: "Action",
+      title: t('holiday.actions'),
       render: (text, record) => (
         <div
           style={{
@@ -649,7 +651,7 @@ const generateWeekColumns = (weekData, finalData) => {
           className="view-detail-style"
           onClick={() => nav('/admin-timesheet/details', { state: record})}
         >
-          View Details
+          {t('Timesheetadmin.viewDetails')}
           {/* <Link 
             // to="/admin-timesheet/details" 
             className="dropdown-item" 
@@ -676,7 +678,7 @@ const generateWeekColumns = (weekData, finalData) => {
     <>
       <div className="page-wrapper">
         <Helmet>
-          <title>Timesheet - DaftarPro</title>
+          <title>{t('Timesheetemployee.timesheetTitle')}</title>
           <meta name="description" content="Login page" />
         </Helmet>
         {/* Page Content */}
@@ -685,12 +687,12 @@ const generateWeekColumns = (weekData, finalData) => {
           <div className="page-header">
             <div className="row align-items-center">
               <div className="col">
-                <h3 className="page-title">Timesheet</h3>
+                <h3 className="page-title">{t('Timesheetemployee.timesheet')}</h3>
                 <ul className="breadcrumb">
                   <li className="breadcrumb-item">
-                    <Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>Dashboard</Link>
+                    <Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>{t('Timesheetemployee.dashboard')}</Link>
                   </li>
-                  <li className="breadcrumb-item active">Timesheet Admin</li>
+                  <li className="breadcrumb-item active">{t('Timesheetadmin.timesheetadmin')}</li>
                 </ul>
               </div>
             </div>
@@ -709,7 +711,7 @@ const generateWeekColumns = (weekData, finalData) => {
               <DatePicker.MonthPicker
                 style={{ width: "100%" }}
                 className="form-control"
-                placeholder="Select Month"
+                placeholder={t('aAttend.selectMonth')}
                 size="large"
                 allowClear={false}
                 format="YYYY-MM"
@@ -726,7 +728,7 @@ const generateWeekColumns = (weekData, finalData) => {
               <Input
                 className="form-control"
                 allowClear={false}
-                placeholder="Employee Name"
+                placeholder={t('employeeName')}
                 onChange={(e) => handleFilterChange(e.target.value, "name")}
               />
             </Form.Item>
@@ -742,7 +744,7 @@ const generateWeekColumns = (weekData, finalData) => {
               className="btn-success btn-block w-100"
               style={{ borderRadius: "5px", display: "flex", justifyContent: "center", alignItems: "center" }}
             >
-              SEARCH
+              {t('search')}
             </Button>
           </div>
         </div>
@@ -761,7 +763,7 @@ const generateWeekColumns = (weekData, finalData) => {
                 alignItems: "center"
               }}
             >
-              RESET
+              {t('reset')}
             </Button>
           </div>
         </div>
@@ -793,6 +795,22 @@ const generateWeekColumns = (weekData, finalData) => {
                   rowKey={(record) => record?._id}
                   pagination={false}
                   // onChange={this.handleTableChange}
+                  components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                 />
                 
               </div>

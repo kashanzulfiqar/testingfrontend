@@ -8,9 +8,10 @@ import { user_icon } from '../../../Entryfile/imagepath';
 import { apiUploadToS3 } from '../../../Services/uploadImage';
 import { apiServices } from '../../../Services/apiServices';
 import { getAllISOCodes } from 'iso-country-currency';
+import { useTranslation } from 'react-i18next';
 
 const ExpenseModal = ({ form, open, handleClose, user_state, allExpenses, setAllExpenses, setPaginationDetail, paginationDetail, allEmployees }) => {
-    
+    const { t, i18n } = useTranslation();
 const moment = require('moment');
 
 const company_id = user_state?.user?.companyId
@@ -54,7 +55,7 @@ apiServices("GET", `expenses-category?page=1&limit=99999`, null, user_state)
             ? err?.response?.data?.msg
             : err?.response?.data?.validation?.body?.message
             ? err?.response?.data?.validation?.body?.message
-            : "Get All Employees Error"
+            : t('allEmp.errors.getEmployeesError')
         }!`
     );
     });
@@ -82,7 +83,7 @@ const onFinishAdd = (values) => {
         //     ...paginationDetail,
         //     totalDocs: paginationDetail?.totalDocs + 1
         // })
-        message.success('Expense Added Successfully!')
+        message.success(t('finance.expenses.expenseAddedSuccessfully'))
         handleClose('update');
         setLoader(false);
         }
@@ -95,7 +96,7 @@ const onFinishAdd = (values) => {
             ? err?.response?.data?.msg
             : err?.response?.data?.validation?.body?.message
             ? err?.response?.data?.validation?.body?.message
-            : "Add Expense Info Error"
+            : t('finance.expenses.addExpenseInfoError')
         }!`
         );
     });
@@ -112,7 +113,7 @@ const onFinishEdit = (values) => {
     apiServices("PUT", "expenses", formatted_data, user_state)
     .then((res) => {
         if (res?.data?.success === true) {
-        message.success('Expense Updated Successfully!')
+        message.success(t('finance.expenses.expenseUpdatedSuccessfully'))
         handleClose('update');
         setLoader(false);
         }
@@ -125,7 +126,7 @@ const onFinishEdit = (values) => {
             ? err?.response?.data?.msg
             : err?.response?.data?.validation?.body?.message
             ? err?.response?.data?.validation?.body?.message
-            : "Update Expense Info Error"
+            : t('finance.expenses.updateExpenseInfoError')
         }!`
         );
     });
@@ -142,12 +143,12 @@ const onFileUpload = async (files) => {
 
       const fileExtension = file?.name?.split(".")?.pop()?.toLowerCase();
       if (!acceptableFormats?.includes(fileExtension)) {
-        message.error(`File format not supported: ${file?.name}`);
+        message.error(t('projectScreen.errors.fileFormatNotSupported', { file: file?.name }));
         continue;
       }
   
       if (file.size > 10485760) {
-        message.error(`File size exceeds 10MB: ${file?.name}`);
+        message.error(t('projectScreen.errors.fileSizeExceedsLimit', { file: file?.name }));
         continue;
       }
   
@@ -159,7 +160,7 @@ const onFileUpload = async (files) => {
           return res?.data?.result;
         })
         .catch((err) => {
-          message.error(`File upload error: ${file.name}`);
+            t('projectScreen.errors.fileUploadError', { file: file?.name })
         });
       uploadPromises?.push(uploadPromise);
     }
@@ -253,7 +254,7 @@ const antIcon = (
             <div className="modal-dialog modal-dialog-centered modal-lg" role="document">
             <div className="modal-content">
                 <div className="modal-header">
-                <h5 className="modal-title">{open?.data ? 'Edit' : 'Add'} Expense</h5>
+                <h5 className="modal-title">{open?.data ? t('edit') : t('holiday.add')} {t('finance.Profit&loss.expense')}</h5>
                 <button type="button" className="close" onClick={handleClose}>
                     <span aria-hidden="true">×</span>
                 </button>
@@ -272,10 +273,10 @@ const antIcon = (
                     }
                     const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
                     if(consecutiveSpacesError){
-                    message.error("Please Remove Consecutive Spaces!")
-                    }else{
-                    message.error("Please Fill Required Fields!")
-                    }
+                        message.error(t('allEmp.errors.removeConsecutiveSpaces'))
+                     }else{
+                        message.error(t('allEmp.errors.fillRequiredFields'))
+                      } 
                 }}
                 autoComplete='off'
                 >
@@ -324,7 +325,7 @@ const antIcon = (
                     <div className="col-md-6">
                         <div className="form-group">
                         <label>
-                            Category <span className="text-danger">*</span>
+                        {t('finance.expenses.category')} <span className="text-danger">*</span>
                         </label>
                         <div style={{ position: "relative" }} id="area">
                         <Form.Item
@@ -334,7 +335,7 @@ const antIcon = (
                             {
                                 whitespace: true,
                                 required: true,
-                                message: 'please select category',
+                                message: t('finance.expenses.pleaseSelectCategory'),
                             },
                             ]}
                         >
@@ -355,7 +356,7 @@ const antIcon = (
                                     getPopupContainer={() =>
                                         document.getElementById("area")
                                     }
-                                    placeholder="Select Category"
+                                    placeholder={t('finance.expenses.selectCategory')}
                                     >
                                     {
                                         expenseCategory.map((cat, index) => (
@@ -372,7 +373,7 @@ const antIcon = (
                     <div className="col-md-6">
                         <div className="form-group">
                         <label>
-                            Item Name <span className="text-danger">*</span>
+                        {t('finance.expenses.itemName')} <span className="text-danger">*</span>
                         </label>
                         <Form.Item
                             name='itemName'
@@ -383,25 +384,25 @@ const antIcon = (
                                 required: true,
                                 validator: (_, value) => {
                                 if (!value || value.trim() === '') {
-                                    return Promise.reject('please enter item name');
+                                    return Promise.reject(t('finance.expenses.pleaseEnterItemName'));
                                 } else if (/\s{2,}/.test(value)) {
-                                    return Promise.reject('please remove consecutive spaces');
+                                    return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                                 } else if (value.length < 3) {
-                                    return Promise.reject('name must be at least 3 characters long');
+                                    return Promise.reject(t('allEmp.errors.nameMinLength'));
                                 }
                                 return Promise.resolve();
                                 },
                             },
                             ]}
                         >
-                            <Input className='form-control' maxLength={50} />
+                            <Input className='form-control' placeholder={t('finance.expenses.enterItemName')} maxLength={50} />
                         </Form.Item>
                         </div>
                     </div>
                     <div className="col-md-6">
                         <div className="form-group">
                         <label>
-                            Purchase From <span className="text-danger">*</span>
+                        {t('finance.expenses.purchaseFrom')} <span className="text-danger">*</span>
                         </label>
                         <Form.Item
                             name='purchaseFrom'
@@ -412,24 +413,25 @@ const antIcon = (
                                 required: true,
                                 validator: (_, value) => {
                                 if (!value || value.trim() === '') {
-                                    return Promise.reject('please enter purchase from');
+                                    return Promise.reject(t('finance.expenses.pleaseEnterPurchaseFrom'));
                                 } else if (/\s{2,}/.test(value)) {
-                                    return Promise.reject('please remove consecutive spaces');
+                                    return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                                 } else if (value.length < 3) {
-                                    return Promise.reject('length must be at least 3 characters long');
+                                    return Promise.reject(t('finance.expenses.minLength'));
                                 }
                                 return Promise.resolve();
                                 },
                             },
                             ]}
                         >
-                            <Input className='form-control' maxLength={50} />
+                            <Input className='form-control' placeholder={t('finance.expenses.enterPurchaseFrom')}
+                            maxLength={50} />
                         </Form.Item>
                         </div>
                     </div>
                     <div className="col-md-6">
                         <div className="form-group">
-                            <label> Purchase Date <span className="text-danger">*</span></label>
+                            <label> {t('finance.expenses.purchaseDate')} <span className="text-danger">*</span></label>
                             <div style={{ position: 'relative' }} id='area'>
                                 <Form.Item
                                 name='purchaseDate'
@@ -437,11 +439,11 @@ const antIcon = (
                                 rules={[
                                     {
                                     required: true,
-                                    message: "please enter purchase date",
+                                    message: t('finance.expenses.pleaseEnterPurchaseDate'),
                                     },
                                 ]}
                                 >
-                                    <DatePicker className='form-control' style={{minHeight: '45px'}} getPopupContainer={() => document.getElementById('area')} />
+                                    <DatePicker className='form-control' placeholder={t('requests.addModal.selectDate')} style={{minHeight: '45px'}} getPopupContainer={() => document.getElementById('area')} />
                                 </Form.Item>
                             </div>
                         </div>
@@ -449,7 +451,7 @@ const antIcon = (
                     <div className="col-md-6">
                         <div className="form-group">
                         <label>
-                            Purchased By <span className="text-danger">*</span>
+                        {t('finance.expenses.purchasedBy')} <span className="text-danger">*</span>
                         </label>
                         <div style={{ position: "relative" }} id="area">
                         <Form.Item
@@ -459,7 +461,7 @@ const antIcon = (
                             {
                                 whitespace: true,
                                 required: true,
-                                message: 'please select purchased by',
+                                message: t('finance.expenses.pleaseSelectPurchasedBy'),
                             },
                             ]}
                         >
@@ -480,7 +482,7 @@ const antIcon = (
                                     getPopupContainer={() =>
                                         document.getElementById("area")
                                     }
-                                    placeholder="Select Purchase By"
+                                    placeholder={t('finance.expenses.selectPurchasedBy')}
                                     >
                                     {
                                         allEmployees.map((emp, index) => (
@@ -497,7 +499,7 @@ const antIcon = (
                     <div className="col-sm-6">
                         <div className="form-group">
                             <label>
-                                Currency <span className="text-danger">*</span>
+                            {t('finance.expenses.currency')} <span className="text-danger">*</span>
                             </label>
                             <div style={{ position: "relative" }} id="area">
                             <Form.Item
@@ -506,7 +508,7 @@ const antIcon = (
                                 rules={[
                                 {
                                     required: true,
-                                    message: "please select currency",
+                                    message: t('finance.expenses.pleaseSelectCurrency'),
                                 },
                                 ]}
                             >
@@ -516,7 +518,7 @@ const antIcon = (
                                 getPopupContainer={() =>
                                     document.getElementById("area")
                                 }
-                                placeholder="Select Currency"
+                                placeholder={t('projectScreen.Modal.selectCurrency')}
                                 >
                                 {
                                     allCurrencies.map((currency, index) => (
@@ -532,18 +534,19 @@ const antIcon = (
                     </div>
                     <div className="col-sm-6">
                         <div className="form-group">
-                        <label> Amount <span className="text-danger">*</span> </label>
+                        <label> {t('Clientinvoices.amount')} <span className="text-danger">*</span> </label>
                         <Form.Item
                             name="amount"
                             rules={[
                             {
                                 required: true,
-                                message: "please enter amount",
+                                message: t('finance.expenses.pleaseEnterAmount'),
                             },
                             ]}
                             className="custom-border"
                         >
                             <InputNumber
+                            placeholder={t('finance.expenses.enterAmount')}
                                 className='form-control hideHandlerIcon'
                                 onKeyPress={(e) => {
                                 if (
@@ -579,7 +582,7 @@ const antIcon = (
                     <div className="col-md-6">
                         <div className="form-group">
                         <label>
-                            Paid By <span className="text-danger">*</span>
+                        {t('finance.expenses.paidBy')} <span className="text-danger">*</span>
                         </label>
                         <div style={{ position: "relative" }} id="area">
                         <Form.Item
@@ -589,7 +592,7 @@ const antIcon = (
                             {
                                 whitespace: true,
                                 required: true,
-                                message: 'please select paid by',
+                                message: t('finance.expenses.pleaseSelectPaidBy'),
                             },
                             ]}
                         >
@@ -598,7 +601,7 @@ const antIcon = (
                                 getPopupContainer={() =>
                                     document.getElementById("area")
                                 }
-                                placeholder="Select Purchase By"
+                                placeholder={t('finance.expenses.selectPaidBy')}
                                 options={[
                                     {
                                       value: 'Cash',
@@ -658,7 +661,7 @@ const antIcon = (
                     </div> */}
                     <div className="col-md-6">
                         <div className="form-group">
-                            <label>Upload Files</label>
+                            <label>{t('finance.expenses.uploadFiles')}</label>
                             {/* <Form.Item
                                 name='image'
                                 className='custom-border'
@@ -712,7 +715,7 @@ const antIcon = (
                                             style={{ borderRadius: "10px", border: '1px solid #d1d1d1', boxShadow: '2px 2px 12px -5px #6d6d6d' }}
                                             />
                                             <div className="overlay1">
-                                                <span className="view-text1">View</span>
+                                                <span className="view-text1">{t('view')}</span>
                                             </div>
                                         </div>
                                             {/* <div className="download-icon hidden" style={{background: 'none', borderRadius: '0px', padding: '0px'}}>
@@ -744,7 +747,7 @@ const antIcon = (
                                                 /> {format.toUpperCase()}
                                             </span>
                                             <div className="overlay1">
-                                                <span className="view-text1">View</span>
+                                                <span className="view-text1">{t('view')}</span>
                                             </div>
                                         </div>
                                             {/* <div className="download-icon hidden" style={{background: 'none', borderRadius: '0px', padding: '0px'}}>
@@ -772,7 +775,7 @@ const antIcon = (
                     <button type='submit' className="btn btn-primary submit-btn" disabled={loader}>
                     {
                         loader ? <Spin size="small" indicator={antIcon} />
-                        : 'Submit'
+                        : t('submit')
                     }
                     </button>
                 </div>
