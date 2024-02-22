@@ -4,9 +4,11 @@ import Modal from "@mui/material/Modal";
 import { LoadingOutlined } from "@ant-design/icons";
 import { apiServices } from "../../../../../Services/apiServices";
 import PermissionsTable from "../../../../../Components/PermissionsTable";
+import { useTranslation } from "react-i18next";
 
 function AddRole({ addRoleOpen, setAddRoleOpen, allRoles, setAllRoles, user_state }) {
 
+  const { t, i18n } = useTranslation();
   const [loader, setLoader] = useState(false);
   const [templateLoader, setTemplateLoader] = useState(true);
   const [permissions, setPermissions] = useState([]);

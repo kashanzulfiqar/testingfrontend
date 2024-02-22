@@ -3,9 +3,11 @@ import React, { useState } from "react";
 import Modal from "@mui/material/Modal";
 import { LoadingOutlined } from "@ant-design/icons";
 import { apiServices } from "../../../../../Services/apiServices";
+import { useTranslation } from "react-i18next";
 
 function AddDesignation({ addDesigOpen, setAddDesigOpen, allDesignations, setAllDesignations, user_state }) {
 
+  const { t, i18n } = useTranslation();
     const [loader, setLoader] = useState(false);
 
     const onFinish = (values) => {
