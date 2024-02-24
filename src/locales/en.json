@@ -148,6 +148,23 @@
     "budgetExpenses": "Budget Expenses",
     "budgetRevenues": "Budget Revenues"
   },
+  "password": {
+    "changePassword": "Change Password",
+    "oldPassword": "Old Password",
+    "newPassword": "New Password",
+    "confirmNewPassword": "Confirm New Password",
+    "updatePassword": "Update Password",
+    "oldNewPasswordMatch": "Old password and new password can not be same",
+    "newPasswordCriteria": "New password must have at least 8 characters with 1 uppercase, 1 lowercase, 1 digit, and 1 special character",
+    "passwordsNotMatch": "Both passwords must be same",
+    "enterOldPassword": "Please enter old password",
+    "passwordLength": "Password length should be more than 8",
+    "enterNewPassword": "Please enter new password",
+    "confirmPassword": "Please confirm your password",
+    "passwordUpdated": "Password updated Successfully!",
+    "updatePasswordError": "Update Password Error!",
+    "requiredFields": "Please Enter Required Fields!"
+  },
   "aDash": {
     "pageTitle": "Dashboard - DaftarPro",
     "welcome": "Welcome {{name}}!",
