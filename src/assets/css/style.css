@@ -12773,3 +12773,7 @@ padding-right: unset;
   padding-left: 21px;
   padding-right: unset;
 }
+
+.dropdown-menu1 {
+  transform: translate3d(0px, 50px, 0px) !important;
+}

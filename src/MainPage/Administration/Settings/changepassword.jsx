@@ -10,10 +10,11 @@ import { apiServices } from '../../../Services/apiServices';
 import { LoadingOutlined, EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 import { Form, Input, message, Spin } from 'antd';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
 
 const ChangePassword = () => {
-
+  const { t, i18n } = useTranslation();
   const user_state = useSelector((state) => state.user.loginvalue);
   const nav = useNavigate();
 
@@ -75,7 +76,7 @@ const ChangePassword = () => {
           localStorage.removeItem("firstTimeLogin");
           // nav(`${user_state?.user?.role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}`);
           nav(`${user_state?.user?.role === 'admin' ? '/main/dashboard' : user_state?.user?.role === 'client' ? '/client/client-profile' : user_state?.user?.role === 'focalperson' ? '/client/focal-profile' : '/employee/dashboard'}`);
-          message.success("Password updated Successfully!");
+          message.success(t('password.passwordUpdated'));
         }
       })
       .catch((err) => {
@@ -87,7 +88,7 @@ const ChangePassword = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Update Password Error!"
+              : t('password.updatePasswordError')
           }!`
         );
       });
@@ -107,7 +108,7 @@ const ChangePassword = () => {
     <>
       <div className="page-wrapper">
         <Helmet>
-          <title>Change Password - DaftarPro</title>
+          <title>{t('password.changePassword')} - {t('header.daftarPro')}</title>
           <meta name="description" content="Login page" />
         </Helmet>
         <div className="account-content">
@@ -127,7 +128,7 @@ const ChangePassword = () => {
                   className="account-title"
                   style={{ padding: "10px 0px 25px 0px" }}
                 >
-                  Change Password
+                  {t('password.changePassword')}
                 </h3>
                 {/* <p className="account-subtitle">Enter your email to get a password reset link</p> */}
                 {/* Account Form */}
@@ -137,12 +138,12 @@ const ChangePassword = () => {
                   name="control-hooks"
                   onFinish={onFinish}
                   onFinishFailed={() =>
-                    message.error("Please Enter Required Fields!")
+                    message.error(t('password.requiredFields'))
                   }
                 >
                   <div className="form-group" style={{ marginBottom: "-12px" }}>
                     <label className="col-form-label">
-                      Old Password <span className="text-danger">*</span>
+                    {t('password.oldPassword')} <span className="text-danger">*</span>
                     </label>
                     <Form.Item
                       name="oldPassword"
@@ -150,11 +151,11 @@ const ChangePassword = () => {
                         {
                           whitespace: true,
                           required: true,
-                          message: "Please enter old password",
+                          message: t('password.enterOldPassword'),
                         },
                         {
                           min: 8,
-                          message: "Password length should be more than 8",
+                          message: t('password.passwordLength'),
                         },
                       ]}
                       className="custom-border"
@@ -184,7 +185,7 @@ const ChangePassword = () => {
                   </div>
                   <div className="form-group">
                     <label className="col-form-label">
-                      New Password <span className="text-danger">*</span>
+                    {t('password.newPassword')} <span className="text-danger">*</span>
                     </label>
                     <Form.Item
                       name="newPassword"
@@ -192,7 +193,7 @@ const ChangePassword = () => {
                         {
                           whitespace: true,
                           required: true,
-                          message: "Please enter new password",
+                          message: t('password.enterNewPassword'),
                         },
                         // {
                         //   min: 8,
@@ -215,11 +216,11 @@ const ChangePassword = () => {
 
                             if (value && getFieldValue("oldPassword") === value) {
                               return Promise.reject(
-                                "Old password and new password can not be same"
+                                t('password.oldNewPasswordMatch')
                                 );
                               }
                               if (value && !passwordRegex.test(value)) {
-                                return Promise.reject("New password must have at least 8 characters with 1 uppercase, 1 lowercase, 1 digit, and 1 special character");
+                                return Promise.reject(t('password.newPasswordCriteria'));
                               }
                               return Promise.resolve();
                           },
@@ -255,7 +256,7 @@ const ChangePassword = () => {
                   </div>
                   <div className="form-group">
                     <label className="col-form-label">
-                      Confirm New Password{" "}
+                    {t('password.confirmNewPassword')}{" "}
                       <span className="text-danger">*</span>
                     </label>
                     <Form.Item
@@ -265,7 +266,7 @@ const ChangePassword = () => {
                         {
                           whitespace: true,
                           required: true,
-                          message: "Please enter confirm password",
+                          message: t('password.confirmPassword'),
                         },
                         ({ getFieldValue }) => ({
                           validator(rule, value) {
@@ -273,7 +274,7 @@ const ChangePassword = () => {
                               return Promise.resolve();
                             }
                             return Promise.reject(
-                              "Both passwords must be same"
+                              t('password.passwordsNotMatch')
                             );
                           },
                         }),
@@ -328,7 +329,7 @@ const ChangePassword = () => {
                       {loader ? (
                         <Spin size="small" indicator={antIcon} />
                       ) : (
-                        "Update Password"
+                        t('password.updatePassword')
                       )}
                     </button>
                   </div>

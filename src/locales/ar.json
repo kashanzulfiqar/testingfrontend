@@ -147,6 +147,23 @@
     "budgetExpenses": "نفقات الميزانية",
     "budgetRevenues": "إيرادات الميزانية"
   },
+  "password": {
+    "changePassword": "تغيير كلمة المرور",
+    "oldPassword": "كلمة المرور القديمة",
+    "newPassword": "كلمة المرور الجديدة",
+    "confirmNewPassword": "تأكيد كلمة المرور الجديدة",
+    "updatePassword": "تحديث كلمة المرور",
+    "oldNewPasswordMatch": "كلمة المرور القديمة وكلمة المرور الجديدة يجب ألا تكونا نفسها",
+    "newPasswordCriteria": "يجب أن تحتوي كلمة المرور الجديدة على ما لا يقل عن 8 أحرف مع حرف كبير وحرف صغير ورقم وحرف خاص",
+    "passwordsNotMatch": "يجب أن تتطابق كلمة المرور وتأكيد كلمة المرور",
+    "enterOldPassword": "الرجاء إدخال كلمة المرور القديمة",
+    "passwordLength": "يجب أن تكون كلمة المرور أطول من 8 أحرف",
+    "enterNewPassword": "الرجاء إدخال كلمة المرور الجديدة",
+    "confirmPassword": "الرجاء تأكيد كلمة المرور",
+    "passwordUpdated": "تم تحديث كلمة المرور بنجاح!",
+    "updatePasswordError": "خطأ في تحديث كلمة المرور!",
+    "requiredFields": "الرجاء إدخال الحقول المطلوبة!"
+  },
   "aDash": {
     "pageTitle": "لوحة القيادة - دفتر برو",
     "welcome": "مرحبًا {{name}}!",

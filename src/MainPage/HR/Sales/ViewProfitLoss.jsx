@@ -234,7 +234,7 @@ const ViewPL = () => {
       dataIndex: "convertedAmount",
       render: (text, record) => (
         record?.convertedAmount ? 
-        `${record?.convertedAmount} ${PCurrency}`
+        `${record?.convertedAmount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${PCurrency}`
         :
         `0.00 ${PCurrency}`
       ),
@@ -264,7 +264,7 @@ const ViewPL = () => {
       dataIndex: "paidAmountInPreferredCurrency",
       render: (text, record) => (
         record?.paidAmountInPreferredCurrency ? 
-        `${record?.paidAmountInPreferredCurrency} ${PCurrency}`
+        `${record?.paidAmountInPreferredCurrency.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${PCurrency}`
         :
         `0.00 ${PCurrency}`
       ),
@@ -338,7 +338,7 @@ const ViewPL = () => {
                     <div className="stats-info">
                     <label>{t('finance.Profit&loss.payrolls')}</label>
                     <div style={{ display: "flex", flexDirection:"row", alignItems: "baseline", justifyContent:"center"}}>
-                        <h4 style={{ marginRight: "5px" }}>{record?.creditedSalaryExpense}</h4>
+                        <h4 style={{ marginRight: "5px" }}>{record?.creditedSalaryExpense.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</h4>
                         <h8>{record?.companyId?.preferredCurrency}</h8>
                     </div>
                     </div>
@@ -347,7 +347,7 @@ const ViewPL = () => {
                   <div className="stats-info">
                     <label>{t('finance.Invoices.tax')}</label>
                     <div style={{ display: "flex", flexDirection:"row", alignItems: "baseline", justifyContent:"center"}}>
-                        <h4 style={{ marginRight: "5px" }}>{record?.salaryTaxExpense}</h4>
+                        <h4 style={{ marginRight: "5px" }}>{record?.salaryTaxExpense.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</h4>
                         <h8>{record?.companyId?.preferredCurrency}</h8>
                     </div>
                   </div>
@@ -356,7 +356,7 @@ const ViewPL = () => {
                   <div className="stats-info">
                     <label>{t('finance.Invoices.invoices')}</label>
                     <div style={{ display: "flex", flexDirection:"row", alignItems: "baseline", justifyContent:"center"}}>
-                    <h4 style={{ marginRight: "5px" }}>{record?.totalRevenue}</h4>
+                    <h4 style={{ marginRight: "5px" }}>{record?.totalRevenue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</h4>
                         <h8>{record?.companyId?.preferredCurrency}</h8>
                     </div>
                   </div>
@@ -366,7 +366,7 @@ const ViewPL = () => {
                     <label>{t('finance.Profit&loss.expense')}</label>
                     <div style={{ display: "flex", flexDirection:"row", alignItems: "baseline", justifyContent:"center"}}>
                         
-                        <h4 style={{ marginRight: "5px" }}>{record?.generalExpense}</h4>
+                        <h4 style={{ marginRight: "5px" }}>{record?.generalExpense.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</h4>
                         <h8>{record?.companyId?.preferredCurrency}</h8>
                     </div>
                   </div>

@@ -190,7 +190,7 @@ const Header = (props) => {
               <GlobalOutlined style={{ marginRight: '5px' }} /> {/* Language icon */}
               {i18n.language === 'en' ? 'English' : 'العربية'} {/* Current language */}
             </button>
-            <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+            <ul className="dropdown-menu dropdown-menu1 dropdown-menu-end" aria-labelledby="languageDropdown">
               <li><button className="dropdown-item" onClick={() => changeLanguage('en')} disabled={i18n.language === 'en'}>English</button></li>
               <li><button className="dropdown-item" onClick={() => changeLanguage('ar')} disabled={i18n.language === 'ar'}>العربية</button></li>
             </ul>
@@ -235,6 +235,16 @@ const Header = (props) => {
         <Link to={user_state?.user?.role === 'client' ? '/client/client-profile' : user_state?.user?.role === 'focalperson' ? '/client/focal-profile' : "/profile"} onClick={() => (user_state?.user?.role === 'client' || user_state?.user?.role === 'focalperson') ? '' : sessionStorage.setItem(`employee_tab`, 'profile')} className="dropdown-item">My Profile</Link>
           <Link className="dropdown-item" to="/change-password">Change Password</Link>
           {/* <Link className="dropdown-item" to="/login">Logout</Link> */}
+          <a
+      className="dropdown-item"
+      onClick={() => {
+        const newLanguage = i18n.language === 'en' ? 'ar' : 'en';
+        changeLanguage(newLanguage);
+      }}
+    >
+      <GlobalOutlined style={{ marginRight: '5px' }} /> {/* Language icon */}
+      {i18n.language === 'en' ? 'English' : 'العربية'} {/* Current language */}
+    </a>
           <a className="dropdown-item" onClick={() => {
               localStorage.clear();
               sessionStorage.clear();

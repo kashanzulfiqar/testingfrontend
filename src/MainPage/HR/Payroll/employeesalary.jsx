@@ -528,7 +528,7 @@ const EmployeeSalary = () => {
       dataIndex: "salary",
       render: (text, record) => (
         <span>
-          {record?.user?.salary ? `${record?.user?.salary} PKR` : "-"}
+          {record?.user?.salary ? `${record?.user?.salary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} PKR` : "-"}
         </span>
       ),
     },
@@ -539,6 +539,11 @@ const EmployeeSalary = () => {
     {
       title: t('payroll.currentPayroll.deduction'),
       dataIndex: "deduction",
+      render: (text, record) => (
+        <span>
+          {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+        </span>
+      ),
     },
     {
       title: t('payroll.currentPayroll.deductionReason'),
@@ -552,10 +557,20 @@ const EmployeeSalary = () => {
     {
       title: t('payroll.currentPayroll.totalDeduction'),
       dataIndex: "totalDeduction",
+      render: (text, record) => (
+        <span>
+          {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+        </span>
+      ),
     },
     {
       title: t('payroll.currentPayroll.bonus'),
       dataIndex: "bonus",
+      render: (text, record) => (
+        <span>
+          {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+        </span>
+      ),
     },
     {
       title: t('payroll.currentPayroll.bonusReason'),
@@ -569,19 +584,29 @@ const EmployeeSalary = () => {
     {
       title: t('payroll.currentPayroll.totalAddition'),
       dataIndex: "totalAddition",
+      render: (text, record) => (
+        <span>
+          {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+        </span>
+      ),
     },
     {
       title: t('payroll.currentPayroll.creditSalary'),
       dataIndex: "creditSalary",
       render: (text, record) => (
         <span>
-          {record?.creditSalary ? `${record?.creditSalary} PKR` : "-"}
+          {record?.creditSalary ? `${record?.creditSalary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} PKR` : "-"}
         </span>
       ),
     },
     {
       title: t('payroll.currentPayroll.extraPayment'),
       dataIndex: "extraPayment",
+      render: (text, record) => (
+        <span>
+          {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+        </span>
+      ),
     },
     {
       title: t('payroll.currentPayroll.extraPaymentReason'),
@@ -595,6 +620,11 @@ const EmployeeSalary = () => {
     {
       title: t('payroll.currentPayroll.absentFine'),
       dataIndex: "absentFine",
+      render: (text, record) => (
+        <span>
+          {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+        </span>
+      ),
     },
     {
       title: t('payroll.currentPayroll.modeOfPayment'),
@@ -687,7 +717,7 @@ const EmployeeSalary = () => {
       dataIndex: "salary",
       render: (text, record) => (
         <span>
-          {record?.user?.salary ? `${record?.user?.salary} PKR` : "-"}
+          {record?.user?.salary ? `${record?.user?.salary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} PKR` : "-"}
         </span>
       ),
     },
@@ -698,6 +728,11 @@ const EmployeeSalary = () => {
     {
       title: t('payroll.currentPayroll.deduction'),
       dataIndex: "deduction",
+      render: (text, record) => (
+        <span>
+          {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+        </span>
+      ),
     },
     {
       title: t('payroll.currentPayroll.deductionReason'),
@@ -711,10 +746,20 @@ const EmployeeSalary = () => {
     {
       title: t('payroll.currentPayroll.totalDeduction'),
       dataIndex: "totalDeduction",
+      render: (text, record) => (
+        <span>
+          {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+        </span>
+      ),
     },
     {
       title: t('payroll.currentPayroll.bonus'),
       dataIndex: "bonus",
+      render: (text, record) => (
+        <span>
+          {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+        </span>
+      ),
     },
     {
       title: t('payroll.currentPayroll.bonusReason'),
@@ -728,19 +773,29 @@ const EmployeeSalary = () => {
     {
       title: t('payroll.currentPayroll.totalAddition'),
       dataIndex: "totalAddition",
+      render: (text, record) => (
+        <span>
+          {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+        </span>
+      ),
     },
     {
       title: t('payroll.currentPayroll.creditSalary'),
       dataIndex: "creditSalary",
       render: (text, record) => (
         <span>
-          {record?.creditSalary ? `${record?.creditSalary} PKR` : "-"}
+          {record?.creditSalary ? `${record?.creditSalary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} PKR` : "-"}
         </span>
       ),
     },
     {
       title: t('payroll.currentPayroll.extraPayment'),
       dataIndex: "extraPayment",
+      render: (text, record) => (
+        <span>
+          {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+        </span>
+      ),
     },
     {
       title: t('payroll.currentPayroll.extraPaymentReason'),
@@ -754,6 +809,11 @@ const EmployeeSalary = () => {
     {
       title: t('payroll.currentPayroll.absentFine'),
       dataIndex: "absentFine",
+      render: (text, record) => (
+        <span>
+          {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+        </span>
+      ),
     },
     {
       title: t('payroll.currentPayroll.modeOfPayment'),
