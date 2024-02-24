@@ -9,10 +9,11 @@ import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { apiServices } from "../../../Services/apiServices";
 import { useSelector } from "react-redux";
 import { LoadingOutlined } from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
 
 const InvoiceCounter = () => {
   const user_state = useSelector((state) => state.user.loginvalue);
-
+  const { t, i18n } = useTranslation();
   const [form] = Form.useForm();
 
   const [open, setOpen] = useState({
@@ -49,7 +50,7 @@ const InvoiceCounter = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Invoice Count Error"
+              : t('settings.InvoiceCounter.getInvoiceCounterError')
           }!`
         );
       });
@@ -69,7 +70,7 @@ const InvoiceCounter = () => {
           // console.log(data);
           setData([...data.filter((counter) => counter._id !== id)]);
           handleClose();
-          message.success("Invoice Counter Deleted Successfully!");
+          message.success(t('settings.InvoiceCounter.deleteInvoiceCounterSuccess'));
           setLoader(false);
         }
       })
@@ -82,7 +83,7 @@ const InvoiceCounter = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Delete Invoice Counter Error"
+              : t('settings.InvoiceCounter.deleteInvoiceCounterError')
           }!`
         );
       });
@@ -116,7 +117,7 @@ const InvoiceCounter = () => {
               })
             );
             handleClose();
-            message.success("Invoice Count Updated Successfully!");
+            message.success(t('settings.InvoiceCounter.updateInvoiceCounterSuccess'));
             setLoader(false);
           }
         })
@@ -129,7 +130,7 @@ const InvoiceCounter = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Update Invoice Count Error"
+                :t('settings.InvoiceCounter.updateInvoiceCounterError')
             }!`
           );
         });
@@ -147,7 +148,7 @@ const InvoiceCounter = () => {
               },
             ]);
             handleClose();
-            message.success("Invoice Count Added Successfully!");
+            message.success(t('settings.InvoiceCounter.addInvoiceCounterSuccess'));
             setLoader(false);
           }
         })
@@ -160,7 +161,7 @@ const InvoiceCounter = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Add Invoice Counter Info Error"
+                : t('settings.InvoiceCounter.addInvoiceCounterError')
             }!`
           );
         });
@@ -175,12 +176,12 @@ const InvoiceCounter = () => {
       render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
     },
     {
-      title: "Invoice Count",
+      title: t('settings.InvoiceCounter.invoiceCount'),
       dataIndex: "invoiceCount",
       // sorter: (a, b) => a.counterName.length - b.counterName.length,
     },
     {
-      title: "Actions",
+      title: t('holiday.actions'),
       render: (text, record) => (
         <div className="dropdown dropdown-action text-end">
           <a
@@ -203,7 +204,7 @@ const InvoiceCounter = () => {
                 });
               }}
             >
-              <i className="fa fa-pencil m-r-5" /> Edit
+              <i className="fa fa-pencil m-r-5" /> {t('edit')}
             </a>
             <a
               className="dropdown-item"
@@ -216,7 +217,7 @@ const InvoiceCounter = () => {
                 });
               }}
             >
-              <i className="fa fa-trash-o m-r-5" /> Delete
+              <i className="fa fa-trash-o m-r-5" /> {t('delete')}
             </a>
           </div>
         </div>
@@ -250,12 +251,12 @@ const InvoiceCounter = () => {
               margin: "7px 0px 4px 0px",
             }}
           >
-            No Invoice Counter added yet
+            {t('settings.InvoiceCounter.noInvoiceCounter')}
           </div>
           <div
             style={{ color: "#464665", fontWeight: "300", fontSize: "13px" }}
           >
-            Click 'Add Invoice Counter' Button To Create <br /> A New Invoice Counter{" "}
+            {t('settings.InvoiceCounter.clickToAddInvoiceCounter')} <br /> {t('settings.InvoiceCounter.newInvoiceCounter')}{" "}
           </div>
         </div>
       }
@@ -281,7 +282,7 @@ const InvoiceCounter = () => {
         <div className="page-header">
           <div className="row align-items-center pt-3 pb-3">
             <div className="col">
-              <h3 className="page-title">Invoice Counter</h3>
+              <h3 className="page-title">{t('settings.invoiceCounter')}</h3>
             </div>
             <div className="col-auto float-end ms-auto">
               <a
@@ -296,7 +297,7 @@ const InvoiceCounter = () => {
                 }}
                 // data-bs-target="#add_leavetype"
               >
-                <i className="fa fa-plus" /> Add Invoice Counter
+                <i className="fa fa-plus" /> {t('holiday.add')} {t('settings.invoiceCounter')}
               </a>
             </div>
           </div>
@@ -320,6 +321,22 @@ const InvoiceCounter = () => {
                 dataSource={data}
                 rowKey={(record) => record.id}
                 // onChange={this.handleTableChange}
+                components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
               />
             </div>
           </div>
@@ -342,7 +359,7 @@ const InvoiceCounter = () => {
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">
-                {open?.data ? "Update" : "Add"} Invoice Count
+                {open?.data ? t('holiday.update') : t('holiday.add')} {t('settings.InvoiceCounter.invoiceCount')}
               </h5>
               <button type="button" className="close" onClick={handleClose}>
                 <span aria-hidden="true">×</span>
@@ -356,10 +373,10 @@ const InvoiceCounter = () => {
                 onFinishFailed={({errorFields}) => {
                   const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
                   if(consecutiveSpacesError){
-                    message.error("Please Remove Consecutive Spaces!")
-                  }else{
-                    message.error("Please Fill Required Fields!")
-                  }
+                    message.error(t('allEmp.errors.removeConsecutiveSpaces'))
+                 }else{
+                    message.error(t('allEmp.errors.fillRequiredFields'))
+                  } 
                 }}
                 initialValues={{
                   invoiceCount: open?.data ? open?.data?.invoiceCount : "",
@@ -368,7 +385,7 @@ const InvoiceCounter = () => {
               >
                 <div className="form-group">
                   <label>
-                    Invoice Count <span className="text-danger">*</span>
+                  {t('settings.InvoiceCounter.invoiceCount')} <span className="text-danger">*</span>
                   </label>
                   <Form.Item
                     name="invoiceCount"
@@ -378,13 +395,13 @@ const InvoiceCounter = () => {
                         required: true,
                         validator: (_, value) => {
                           if(value.trim() === ''){
-                            return Promise.reject("please enter an invoice count");
+                            return Promise.reject(t('settings.InvoiceCounter.pleaseEnterAnInvoiceCount'));
                           }
                           else if (/\s{2,}/.test(value)) {
-                            return Promise.reject("please remove consecutive spaces");
+                            return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                           }
                           else if (isNaN(value)) {
-                            return Promise.reject("Please enter a valid number");
+                            return Promise.reject(t('settings.InvoiceCounter.enterValidNumber'));
                           }
                           return Promise.resolve();
                         },
@@ -405,7 +422,7 @@ const InvoiceCounter = () => {
                       {loader ? (
                         <Spin size="small" indicator={antIcon} />
                       ) : (
-                        "Submit"
+                        t('submit')
                       )}
                     </Button>
                   </Form.Item>
@@ -438,10 +455,9 @@ const InvoiceCounter = () => {
               }}
             >
               <div className="form-header">
-                <h3 style={{ marginBottom: "30px" }}>Delete Invoice Count</h3>
+                <h3 style={{ marginBottom: "30px" }}>{t('delete')} {t('settings.InvoiceCounter.invoiceCount')}</h3>
                 <p>
-                  Are you sure you want to delete Count:{" "}
-                  <b>{open?.data?.invoiceCount}</b>?
+                  <span dangerouslySetInnerHTML={{ __html: t('projectScreen.confirmDeleteProject', { project: open?.data?.invoiceCount }) }} />
                 </p>
               </div>
               <div className="modal-btn delete-action">
@@ -457,7 +473,7 @@ const InvoiceCounter = () => {
                       {loader ? (
                         <Spin size="small" indicator={antIcon} />
                       ) : (
-                        "Delete"
+                        t('delete')
                       )}
                     </Button>
                   </div>
@@ -467,7 +483,7 @@ const InvoiceCounter = () => {
                       className="btn btn-primary submit-btn"
                       style={{ width: "100%" }}
                     >
-                      Cancel
+                      {t('cancel')}
                     </Button>
                   </div>
                 </div>

@@ -92,7 +92,7 @@ const ExpenseCategory = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Error getting expense category"
+              : t('settings.ExpenseCategories.getExpenseCategoryError')
           }`
         );
       }).then(()=>{
@@ -117,7 +117,7 @@ const ExpenseCategory = () => {
             viewCategory()
           }
           handleClose();
-          message.success("Expense Category Deleted Successfully!");
+          message.success(t('settings.ExpenseCategories.deleteExpenseCategorySuccess'));
           //viewCategory();
           setLoader(false);
         }
@@ -131,7 +131,7 @@ const ExpenseCategory = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Delete Expense Category Error"
+              : t('settings.ExpenseCategories.deleteExpenseCategoryError')
           }!`
         );
       });
@@ -167,7 +167,7 @@ const ExpenseCategory = () => {
             // );
             viewCategory();
             handleClose();
-            message.success("Expense Category Updated Successfully");
+            message.success(t('settings.ExpenseCategories.updateExpenseCategorySuccess'));
             setLoader(false);
           }
         })
@@ -180,7 +180,7 @@ const ExpenseCategory = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Update Tax Slab Info Error"
+                : t('settings.ExpenseCategories.updateExpenseCategoryError')
             }!`
           );
         });
@@ -199,7 +199,7 @@ const ExpenseCategory = () => {
             // ]);
             viewCategory();
             handleClose();
-            message.success("Expense Category Added Successfully");
+            message.success(t('settings.ExpenseCategories.addExpenseCategorySuccess'));
             setLoader(false);
           }
         })
@@ -212,7 +212,7 @@ const ExpenseCategory = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Add Expense Category Error"
+                : t('settings.ExpenseCategories.addExpenseCategoryError')
             }!`
           );
         });
@@ -246,12 +246,12 @@ const ExpenseCategory = () => {
               margin: "7px 0px 4px 0px",
             }}
           >
-            No expense category added yet
+            {t('settings.ExpenseCategories.noExpenseCategory')}
           </div>
           <div
             style={{ color: "#464665", fontWeight: "300", fontSize: "13px" }}
           >
-            Click 'Add Category' Button To Create <br /> A New Expense Category{" "}
+            {t('settings.ExpenseCategories.clickToAddCategory')} <br /> {t('settings.ExpenseCategories.newExpenseCategory')}{" "}
           </div>
         </div>
       }
@@ -283,11 +283,11 @@ const ExpenseCategory = () => {
         (pagination.current - 1) * pagination.pageSize + index + 1,
     },
     {
-      title: "Category Name",
+      title: t('settings.ExpenseCategories.categoryName'),
       dataIndex: "expenseCategoryName",
     },
     {
-      title: "Actions",
+      title: t('holiday.actions'),
       render: (record, row) => (
         <div className="dropdown dropdown-action text-end">
           <a
@@ -310,7 +310,7 @@ const ExpenseCategory = () => {
                 });
               }}
             >
-              <i className="fa fa-pencil m-r-5" /> Edit
+              <i className="fa fa-pencil m-r-5" /> {t('edit')}
             </a>
             <a
               className="dropdown-item"
@@ -323,7 +323,7 @@ const ExpenseCategory = () => {
                 });
               }}
             >
-              <i className="fa fa-trash-o m-r-5" /> Delete
+              <i className="fa fa-trash-o m-r-5" /> {t('delete')}
             </a>
           </div>
         </div>
@@ -339,7 +339,7 @@ const ExpenseCategory = () => {
         <div className="page-header">
           <div className="row align-items-center pt-3 pb-3">
             <div className="col">
-              <h3 className="page-title">Expense Categories</h3>
+              <h3 className="page-title">{t('settings.expenseCategories')}</h3>
             </div>
             <div className="col-auto float-end ms-auto">
               <a
@@ -354,7 +354,7 @@ const ExpenseCategory = () => {
                 }}
                 data-bs-target="#add_leavetype"
               >
-                <i className="fa fa-plus" /> Add Category
+                <i className="fa fa-plus" /> {t('settings.ExpenseCategories.addCategory')}
               </a>
             </div>
           </div>
@@ -455,7 +455,7 @@ const ExpenseCategory = () => {
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">
-                {open?.data ? "Update" : "Add"} Category
+                {open?.data ? t('holiday.update') : t('holiday.add')} {t('finance.Profit&loss.category')}
               </h5>
               <button type="button" className="close" onClick={handleClose}>
                 <span aria-hidden="true">×</span>
@@ -469,10 +469,10 @@ const ExpenseCategory = () => {
                 onFinishFailed={({errorFields}) => {
                   const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
                   if(consecutiveSpacesError){
-                    message.error("Please Remove Consecutive Spaces!")
-                  }else{
-                    message.error("Please Fill Required Fields!")
-                  }
+                    message.error(t('allEmp.errors.removeConsecutiveSpaces'))
+                 }else{
+                    message.error(t('allEmp.errors.fillRequiredFields'))
+                  } 
                 }}
                 initialValues={{
                   expenseCategoryName: open?.data ? open?.data?.expenseCategoryName : "",
@@ -481,7 +481,7 @@ const ExpenseCategory = () => {
               >
                 <div className="form-group">
                   <label>
-                    Category Name <span className="text-danger">*</span>
+                  {t('settings.ExpenseCategories.categoryName')} <span className="text-danger">*</span>
                   </label>
                   <Form.Item
                     name="expenseCategoryName"
@@ -491,10 +491,10 @@ const ExpenseCategory = () => {
                         required: true,
                         validator: (_, value) => {
                           if(value.trim() === ''){
-                            return Promise.reject("please enter category name");
+                            return Promise.reject(t('settings.ExpenseCategories.pleaseEnterCategoryName'));
                           }
                           else if (/\s{2,}/.test(value)) {
-                            return Promise.reject("please remove consecutive spaces");
+                            return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                           }
                           return Promise.resolve();
                         },
@@ -515,7 +515,7 @@ const ExpenseCategory = () => {
                       {loader ? (
                         <Spin size="small" indicator={antIcon} />
                       ) : (
-                        "Submit"
+                        t('submit')
                       )}
                     </Button>
                   </Form.Item>
@@ -550,9 +550,9 @@ const ExpenseCategory = () => {
               }}
             >
               <div className="form-header">
-                <h3 style={{ marginBottom: "30px" }}>Delete Category</h3>
+                <h3 style={{ marginBottom: "30px" }}>{t('delete')} {t('finance.Profit&loss.category')}</h3>
                 <p>
-                  Are you sure you want to delete <b>{open?.data?.expenseCategoryName}</b>?
+                <span dangerouslySetInnerHTML={{ __html: t('projectScreen.confirmDeleteProject', { project: open?.data?.expenseCategoryName }) }} />
                 </p>
               </div>
               <div className="modal-btn delete-action">
@@ -568,7 +568,7 @@ const ExpenseCategory = () => {
                       {loader ? (
                         <Spin size="small" indicator={antIcon} />
                       ) : (
-                        "Delete"
+                        t('delete')
                       )}
                     </Button>
                   </div>
@@ -578,7 +578,7 @@ const ExpenseCategory = () => {
                       className="btn btn-primary submit-btn"
                       style={{ width: "100%" }}
                     >
-                      Cancel
+                      {t('delete')}
                     </Button>
                   </div>
                 </div>

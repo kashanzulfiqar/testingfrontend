@@ -602,10 +602,11 @@ const ProfitLoss = () => {
             <div className="row">
               <div className="col-md-12 text-center">
                 <div className="card">
-                  <div className="card-body">
+                  <div className="card-body" dir="ltr">
                     <div
                       style={{
                         display: "flex",
+                        flexDirection: `${i18n.dir()==="rtl" ? "row-reverse" : "row"}`,
                         justifyContent: "space-between",
                         padding: "0px 20px",
                       }}
@@ -718,13 +719,14 @@ const ProfitLoss = () => {
                                   return (
                                     <>
                                       {value >= 0
-                                        ? "Profit    :    "
-                                        : "Loss    :    "}{" "}
+                                        ? `${t('finance.Profit&loss.profit')}    :    `
+                                        : `${t('finance.Profit&loss.Loss')}     :    `}{" "}
                                       {amountFormatter(value)}
                                     </>
                                   );
                                 }
                               }}
+                              contentStyle={{ direction: i18n.dir() }}
                             />
                             <Legend
                               formatter={(value) => {
@@ -739,14 +741,14 @@ const ProfitLoss = () => {
                             />
                             <Bar
                               dataKey="totalExpense"
-                              name="Total Expense"
+                              name={t('finance.Profit&loss.totalExpense')}
                               fill="#fc6075"
                               barSize={20}
                               minPointSize={1}
                             />
                             <Bar
                               dataKey="totalRevenue"
-                              name="Total Revenue"
+                              name={t('finance.Profit&loss.totalRevenue')}
                               fill="#ff9b44"
                               barSize={20}
                               minPointSize={1}
@@ -754,7 +756,7 @@ const ProfitLoss = () => {
                             <Line
                               type="monotone"
                               dataKey="profitLoss"
-                              name={(val) => (val >= 0 ? "Profit" : "Loss")}
+                              name={(val) => (val >= 0 ? t('finance.Profit&loss.profit') : t('finance.Profit&loss.Loss'))}
                               stroke="#ff7300"
                               fill="#ff7300"
                               strokeWidth={2}

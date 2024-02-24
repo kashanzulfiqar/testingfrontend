@@ -218,7 +218,7 @@ const deptYAxisTick = ({ payload, x, y, width }) => {
                   <div style={{backgroundColor: '#F5F5F5', display: 'flex', padding: '25px', border: '1px solid #E5E5E5', borderRadius: '8px 8px 0px 0px'}}>
                     <h3 className="card-title mb-0">{t('reports.employeeReport.genderWiseEmployees')}</h3>
                   </div>
-                  <div className="card-body">
+                  <div className="card-body" dir="ltr">
                     {
                       loader ? <Spin style={{height: '300px', display: 'grid', placeItems: 'center'}} /> :
                       // genderData?.length > 0 ?
@@ -268,7 +268,7 @@ const deptYAxisTick = ({ payload, x, y, width }) => {
                   <div style={{backgroundColor: '#F5F5F5', display: 'flex', padding: '25px', border: '1px solid #E5E5E5', borderRadius: '8px 8px 0px 0px'}}>
                     <h3 className="card-title mb-0">{t('reports.employeeReport.departmentWiseEmployees')}</h3>
                   </div>
-                  <div className="card-body">
+                  <div className="card-body" dir="ltr">
                     {
                       loader ? <Spin style={{height: '300px', display: 'grid', placeItems: 'center'}} /> :
                       allData?.departWiseEmployees?.length > 0 ?
@@ -313,7 +313,7 @@ const deptYAxisTick = ({ payload, x, y, width }) => {
                   <div style={{backgroundColor: '#F5F5F5', display: 'flex', padding: '25px', border: '1px solid #E5E5E5', borderRadius: '8px 8px 0px 0px'}}>
                     <h3 className="card-title mb-0">{t('reports.employeeReport.technicalAndNonTechnicalStaff')}</h3>
                   </div>
-                  <div className="card-body">
+                  <div className="card-body" dir="ltr">
                     {
                       loader ? <Spin style={{height: '300px', display: 'grid', placeItems: 'center'}} /> :
                       // techData?.length > 0 ?
@@ -364,7 +364,7 @@ const deptYAxisTick = ({ payload, x, y, width }) => {
                   <div style={{backgroundColor: '#F5F5F5', display: 'flex', padding: '25px', border: '1px solid #E5E5E5', borderRadius: '8px 8px 0px 0px'}}>
                     <h3 className="card-title mb-0">{t('reports.employeeReport.billedAndUnbilledEmployees')}</h3>
                   </div>
-                  <div className="card-body">
+                  <div className="card-body" dir="ltr">
                     {
                       loader ? <Spin style={{height: '300px', display: 'grid', placeItems: 'center'}} /> :
                       // billedData?.length > 0 ?
@@ -415,7 +415,7 @@ const deptYAxisTick = ({ payload, x, y, width }) => {
                   <div style={{backgroundColor: '#F5F5F5', display: 'flex', padding: '25px', border: '1px solid #E5E5E5', borderRadius: '8px 8px 0px 0px'}}>
                     <h3 className="card-title mb-0">{t('reports.employeeReport.monthlyEmployeeReport')}</h3>
                   </div>
-                  <div className="card-body">
+                  <div className="card-body" dir="ltr">
                     {
                       loader ? <Spin style={{height: '300px', display: 'grid', placeItems: 'center'}} /> :
                       allData?.annualEmployeeReview?.length > 0 ?
@@ -472,7 +472,7 @@ const deptYAxisTick = ({ payload, x, y, width }) => {
                   <div style={{backgroundColor: '#F5F5F5', display: 'flex', padding: '25px', border: '1px solid #E5E5E5', borderRadius: '8px 8px 0px 0px'}}>
                     <h3 className="card-title mb-0">{t('reports.employeeReport.shiftWiseEmployees')}</h3>
                   </div>
-                  <div className="card-body shiftLegendStyle" style={{display: 'flex', justifyContent: 'center'}}>
+                  <div className="card-body shiftLegendStyle" style={{display: 'flex', justifyContent: 'center'}} dir="ltr">
                     {
                       loader ? <Spin style={{height: '300px', display: 'grid', placeItems: 'center'}} /> :
                       shiftData?.length > 0 ?
@@ -522,7 +522,7 @@ const deptYAxisTick = ({ payload, x, y, width }) => {
                   <div style={{backgroundColor: '#F5F5F5', display: 'flex', padding: '25px', border: '1px solid #E5E5E5', borderRadius: '8px 8px 0px 0px'}}>
                     <h3 className="card-title mb-0">{t('reports.employeeReport.yearWiseEmployeesExperience')}</h3>
                   </div>
-                  <div className="card-body">
+                  <div className="card-body" dir="ltr">
                     {
                       loader ? <Spin style={{height: '300px', display: 'grid', placeItems: 'center'}} /> :
                       allData?.experienceWiseEmployees?.length > 0 ?
@@ -566,7 +566,7 @@ const deptYAxisTick = ({ payload, x, y, width }) => {
                   <div style={{backgroundColor: '#F5F5F5', display: 'flex', padding: '25px', border: '1px solid #E5E5E5', borderRadius: '8px 8px 0px 0px'}}>
                     <h3 className="card-title mb-0">{t('reports.employeeReport.ageWiseEmployees')}</h3>
                   </div>
-                  <div className="card-body">
+                  <div className="card-body" dir="ltr">
                     {
                       loader ? <Spin style={{height: '300px', display: 'grid', placeItems: 'center'}} /> :
                       allData?.ageWiseEmployees?.length > 0 ?

@@ -50,7 +50,7 @@ const Departments = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Department Info Error"
+              : t('allEmp.errors.getDepartmentInfoError')
           }!`
         );
       });
@@ -70,7 +70,7 @@ const Departments = () => {
           // console.log(data);
           setData([...data.filter((departemnt) => departemnt._id !== id)]);
           handleClose();
-          message.success("Department Deleted Successfully!");
+          message.success(t('settings.departmentDeleted'));
           setLoader(false);
         }
       })
@@ -83,7 +83,7 @@ const Departments = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Delete Department Error"
+              : t('settings.deleteDepartmentError')
           }!`
         );
       });
@@ -117,7 +117,7 @@ const Departments = () => {
               })
             );
             handleClose();
-            message.success("Department Updated Successfully!");
+            message.success(t('settings.departmentUpdated'));
             setLoader(false);
           }
         })
@@ -130,7 +130,7 @@ const Departments = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Update Department Info Error"
+                : t('settings.updateDepartmentError')
             }!`
           );
         });
@@ -148,7 +148,7 @@ const Departments = () => {
               },
             ]);
             handleClose();
-            message.success("Department Added Successfully!");
+            message.success(t('allEmp.errors.deptAdded'));
             setLoader(false);
           }
         })
@@ -161,7 +161,7 @@ const Departments = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Add Department Info Error"
+                : t('allEmp.errors.addDeptError')
             }!`
           );
         });
@@ -176,12 +176,12 @@ const Departments = () => {
       render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
     },
     {
-      title: "Department Name",
+      title: t('allEmp.Modal.departmentName'),
       dataIndex: "teamName",
       // sorter: (a, b) => a.departmentName.length - b.departmentName.length,
     },
     {
-      title: "Actions",
+      title: t('holiday.actions'),
       render: (text, record) => (
         <div className="dropdown dropdown-action text-end">
           <a
@@ -204,7 +204,7 @@ const Departments = () => {
                 });
               }}
             >
-              <i className="fa fa-pencil m-r-5" /> Edit
+              <i className="fa fa-pencil m-r-5" /> {t('edit')}
             </a>
             <a
               className="dropdown-item"
@@ -217,7 +217,7 @@ const Departments = () => {
                 });
               }}
             >
-              <i className="fa fa-trash-o m-r-5" /> Delete
+              <i className="fa fa-trash-o m-r-5" /> {t('delete')}
             </a>
           </div>
         </div>
@@ -251,12 +251,12 @@ const Departments = () => {
               margin: "7px 0px 4px 0px",
             }}
           >
-            No department added yet
+            {t('settings.noDepartmentAdded')}
           </div>
           <div
             style={{ color: "#464665", fontWeight: "300", fontSize: "13px" }}
           >
-            Click 'Add Department' Button To Create <br /> A New Department{" "}
+            {t('settings.clickToAddDepartment')} <br /> {t('settings.newDepartment')}{" "}
           </div>
         </div>
       }
@@ -282,7 +282,7 @@ const Departments = () => {
         <div className="page-header">
           <div className="row align-items-center pt-3 pb-3">
             <div className="col">
-              <h3 className="page-title">Departments</h3>
+              <h3 className="page-title">{t('settings.departments')}</h3>
             </div>
             <div className="col-auto float-end ms-auto">
               <a
@@ -297,7 +297,7 @@ const Departments = () => {
                 }}
                 // data-bs-target="#add_leavetype"
               >
-                <i className="fa fa-plus" /> Add Department
+                <i className="fa fa-plus" /> {t('allEmp.Modal.addDepartment')}
               </a>
             </div>
           </div>
@@ -375,7 +375,7 @@ const Departments = () => {
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">
-                {open?.data ? "Update" : "Add"} Department
+                {open?.data ? t('holiday.update') : t('holiday.add')} {t('allEmp.Modal.department')}
               </h5>
               <button type="button" className="close" onClick={handleClose}>
                 <span aria-hidden="true">×</span>
@@ -389,10 +389,10 @@ const Departments = () => {
                 onFinishFailed={({errorFields}) => {
                   const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
                   if(consecutiveSpacesError){
-                    message.error("Please Remove Consecutive Spaces!")
-                  }else{
-                    message.error("Please Fill Required Fields!")
-                  }
+                    message.error(t('allEmp.errors.removeConsecutiveSpaces'))
+                 }else{
+                    message.error(t('allEmp.errors.fillRequiredFields'))
+                  } 
                 }}
                 initialValues={{
                   teamName: open?.data ? open?.data?.teamName : "",
@@ -402,7 +402,7 @@ const Departments = () => {
               >
                 <div className="form-group">
                   <label>
-                    Department Name <span className="text-danger">*</span>
+                  {t('allEmp.Modal.departmentName')} <span className="text-danger">*</span>
                   </label>
                   <Form.Item
                     name="teamName"
@@ -411,13 +411,13 @@ const Departments = () => {
                         whitespace: true,
                         required: true,
                         validator: (_, value) => {
-                          if(value.trim() === ''){
-                            return Promise.reject("please enter departemnt name");
-                          }
-                          else if (/\s{2,}/.test(value)) {
-                            return Promise.reject("please remove consecutive spaces");
-                          }
-                          return Promise.resolve();
+                          if(!value || value.trim() === ''){
+                            return Promise.reject(t('allEmp.errors.enterDepartmentName'));
+                        }
+                        else if (/\s{2,}/.test(value)) {
+                            return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
+                        }
+                        return Promise.resolve();
                         },
                       },
                     ]}
@@ -428,7 +428,7 @@ const Departments = () => {
                 </div>
                 <div className="form-group">
                     <label>
-                    Department Type <span className="text-danger">*</span>
+                    {t('settings.departmentType')} <span className="text-danger">*</span>
                     </label>
                     <div style={{ position: 'relative' }} id='area'>
                         <Form.Item
@@ -438,7 +438,7 @@ const Departments = () => {
                             {
                               // whitespace: true,
                               required: true,
-                              message: "please select department type",
+                              message: t('settings.PselectDepartmentType'),
                             },
                           ]}
                         >
@@ -448,15 +448,15 @@ const Departments = () => {
                                 style={{
                                 width: '100%',
                                 }}
-                                placeholder='Select Department Type'
+                                placeholder={t('settings.selectDepartmentType')}
                                 options={[
                                 {
                                     value: true,
-                                    label: "Technical ",
+                                    label: t('reports.employeeReport.technical'),
                                 },
                                 {
                                     value: false,
-                                    label: "Non-Technical",
+                                    label: t('reports.employeeReport.nonTechnical'),
                                 },
                                 ]}
                             />
@@ -473,7 +473,7 @@ const Departments = () => {
                       {loader ? (
                         <Spin size="small" indicator={antIcon} />
                       ) : (
-                        "Submit"
+                        t('submit')
                       )}
                     </Button>
                   </Form.Item>
@@ -506,10 +506,9 @@ const Departments = () => {
               }}
             >
               <div className="form-header">
-                <h3 style={{ marginBottom: "30px" }}>Delete Department</h3>
+                <h3 style={{ marginBottom: "30px" }}>{t('delete')} {t('allEmp.Modal.department')}</h3>
                 <p>
-                  Are you sure you want to delete{" "}
-                  <b>{open?.data?.teamName}</b>?
+                  <span dangerouslySetInnerHTML={{ __html: t('projectScreen.confirmDeleteProject', { project: open?.data?.teamName }) }} />
                 </p>
               </div>
               <div className="modal-btn delete-action">
@@ -525,7 +524,7 @@ const Departments = () => {
                       {loader ? (
                         <Spin size="small" indicator={antIcon} />
                       ) : (
-                        "Delete"
+                        t('delete')
                       )}
                     </Button>
                   </div>
@@ -535,7 +534,7 @@ const Departments = () => {
                       className="btn btn-primary submit-btn"
                       style={{ width: "100%" }}
                     >
-                      Cancel
+                      {t('cancel')}
                     </Button>
                   </div>
                 </div>

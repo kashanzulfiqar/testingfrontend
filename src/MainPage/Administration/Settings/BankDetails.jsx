@@ -16,8 +16,10 @@ import { LoadingOutlined } from "@ant-design/icons";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { Modal } from "@mui/material";
 import { itemRender } from "../../paginationfunction";
+import { useTranslation } from "react-i18next";
 
 const BankDetails = () => {
+  const { t, i18n } = useTranslation();
   const user_state = useSelector((state) => state.user.loginvalue);
   let company_id = user_state?.user?.companyId;
 
@@ -62,7 +64,7 @@ const BankDetails = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Bank Detail Error"
+              : t('settings.BankDetails.getBankDetailError')
           }!`
         );
       });
@@ -100,7 +102,7 @@ const BankDetails = () => {
           // console.log(data);
           setData([...data.filter((Bank) => Bank._id !== id)]);
           handleClose();
-          message.success("Bankd Deleted Successfully!");
+          message.success(t('settings.BankDetails.bankDeletedSuccessfully'));
           setLoader(false);
         }
       })
@@ -113,7 +115,7 @@ const BankDetails = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Error deleting bank details"
+              : t('settings.BankDetails.errorDeletingBankDetails')
           }!`
         );
       });
@@ -146,7 +148,7 @@ const BankDetails = () => {
               })
             );
             handleClose();
-            message.success("Bank Details Updated Successfully!");
+            message.success(t('settings.BankDetails.bankDetailsUpdatedSuccessfully'));
             setLoader(false);
           }
         })
@@ -159,7 +161,7 @@ const BankDetails = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Updating Bank Details Error"
+                : t('settings.BankDetails.updatingBankDetailsError')
             }!`
           );
         });
@@ -177,7 +179,7 @@ const BankDetails = () => {
               },
             ]);
             handleClose();
-            message.success("Bank Details Added Successfully!");
+            message.success(t('settings.BankDetails.bankDetailsAddedSuccessfully'));
             setLoader(false);
           }
         })
@@ -190,7 +192,7 @@ const BankDetails = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Add Bank Details Error"
+                : t('settings.BankDetails.addBankDetailsError')
             }!`
           );
         });
@@ -272,22 +274,22 @@ const BankDetails = () => {
       render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
     },
     {
-      title: "Bank Name",
+      title: t('settings.BankDetails.bankName'),
       dataIndex: "bankName",
       // sorter: (a, b) => a.TagName.length - b.TagName.length,
     },
     {
-      title: "Country",
+      title: t('settings.BankDetails.country'),
       dataIndex: "country",
       // sorter: (a, b) => a.TagName.length - b.TagName.length,
     },
     {
-      title: "City",
+      title: t('settings.BankDetails.city'),
       dataIndex: "city",
       // sorter: (a, b) => a.TagName.length - b.TagName.length,
     },
     {
-      title: "Address",
+      title: t('settings.BankDetails.address'),
       dataIndex: "address",
       render: (text, record) => (
         <label className="longText">
@@ -302,12 +304,12 @@ const BankDetails = () => {
       // sorter: (a, b) => a.TagName.length - b.TagName.length,
     },
     {
-      title: "SWIFT Code",
+      title: t('settings.BankDetails.swiftCode'),
       dataIndex: "swiftCode",
       // sorter: (a, b) => a.TagName.length - b.TagName.length,
     },
     {
-      title: "Actions",
+      title: t('holiday.actions'),
       render: (text, record) => (
         <div className="dropdown dropdown-action text-end">
           <a
@@ -330,7 +332,7 @@ const BankDetails = () => {
                 });
               }}
             >
-              <i className="fa fa-pencil m-r-5" /> Edit
+              <i className="fa fa-pencil m-r-5" /> {t('edit')}
             </a>
             <a
               className="dropdown-item"
@@ -343,7 +345,7 @@ const BankDetails = () => {
                 });
               }}
             >
-              <i className="fa fa-trash-o m-r-5" /> Delete
+              <i className="fa fa-trash-o m-r-5" /> {t('delete')}
             </a>
           </div>
         </div>
@@ -377,12 +379,12 @@ const BankDetails = () => {
               margin: "7px 0px 4px 0px",
             }}
           >
-            No Bank added yet
+            {t('settings.BankDetails.noBankAddedYet')}
           </div>
           <div
             style={{ color: "#464665", fontWeight: "300", fontSize: "13px" }}
           >
-            Click 'Add Bank Details' Button To Add <br /> A New Invoice Bank{" "}
+            {t('settings.BankDetails.clickToAddBankDetails')} <br /> {t('settings.BankDetails.newInvoiceBank')}{" "}
           </div>
         </div>
       }
@@ -407,7 +409,7 @@ const BankDetails = () => {
         <div className="page-header">
           <div className="row align-items-center pt-3 pb-3">
             <div className="col">
-              <h3 className="page-title">Bank Details</h3>
+              <h3 className="page-title">{t('settings.bankDetails')}</h3>
             </div>
             <div className="col-auto float-end ms-auto">
               <a
@@ -422,7 +424,7 @@ const BankDetails = () => {
                 }}
                 // data-bs-target="#add_leavetype"
               >
-                <i className="fa fa-plus" /> Add Bank Details
+                <i className="fa fa-plus" /> {t('requests.addModal.add')} {t('settings.bankDetails')}
               </a>
             </div>
           </div>
@@ -443,6 +445,22 @@ const BankDetails = () => {
                 dataSource={data}
                 rowKey={(record) => record.id}
                 // onChange={this.handleTableChange}
+                components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
               />
             </div>
             {/* {
@@ -491,7 +509,7 @@ const BankDetails = () => {
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">
-                {open?.data ? "Update" : "Add"} Bank Details
+                {open?.data ? t('holiday.update') : t('holiday.add')} {t('requests.addModal.add')} {t('settings.bankDetails')}
               </h5>
               <button type="button" className="close" onClick={handleClose}>
                 <span aria-hidden="true">×</span>
@@ -506,11 +524,11 @@ const BankDetails = () => {
                   const consecutiveSpacesError = errorFields.find((field) =>
                     field.errors.toString().includes("consecutive spaces")
                   );
-                  if (consecutiveSpacesError) {
-                    message.error("Please Remove Consecutive Spaces!");
-                  } else {
-                    message.error("Please Fill Required Fields!");
-                  }
+                  if(consecutiveSpacesError){
+                    message.error(t('allEmp.errors.removeConsecutiveSpaces'))
+                 }else{
+                    message.error(t('allEmp.errors.fillRequiredFields'))
+                  } 
                 }}
                 initialValues={{
                   bankName: open?.data ? open?.data?.bankName : "",
@@ -526,14 +544,14 @@ const BankDetails = () => {
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label className="col-form-label">
-                        Bank Name <span className="text-danger">*</span>
+                      {t('settings.BankDetails.bankName')}  <span className="text-danger">*</span>
                       </label>
                       <Form.Item
                         name="bankName"
                         rules={[
                           {
                             required: true,
-                            message: "Please enter the Bank name",
+                            message: t('settings.BankDetails.pleaseEnterTheBankName'),
                           },
                         ]}
                         validateTrigger="onSubmit"
@@ -546,7 +564,7 @@ const BankDetails = () => {
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label className="col-form-label">
-                        Country <span className="text-danger">*</span>
+                      {t('settings.BankDetails.country')} <span className="text-danger">*</span>
                       </label>
                       <Form.Item
                         name="country"
@@ -556,17 +574,17 @@ const BankDetails = () => {
                             required: true,
                             validator: (_, value) => {
                               if(value.trim() === ''){
-                                return Promise.reject("please enter country name");
+                                return Promise.reject(t('settings.companySettings.pleaseEnterCountryName'));
                               }
                               else if (/\s{2,}/.test(value)) {
-                                return Promise.reject("please remove consecutive spaces");
+                                return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                               }
                               return Promise.resolve();
                             },
                           },
                           {
                             min: 3,
-                            message: "country length must be at least 3 characters long",
+                            message: t('settings.minLength2', { name: t('settings.companySettings.country') }),
                           },
                         ]}
                         validateTrigger="onSubmit"
@@ -579,7 +597,7 @@ const BankDetails = () => {
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label className="col-form-label">
-                        City <span className="text-danger">*</span>
+                      {t('settings.companySettings.city')} <span className="text-danger">*</span>
                       </label>
                       <Form.Item
                         name="city"
@@ -589,17 +607,17 @@ const BankDetails = () => {
                             required: true,
                             validator: (_, value) => {
                               if(value.trim() === ''){
-                                return Promise.reject("please enter city name");
+                                return Promise.reject(t('settings.companySettings.pleaseEnterCityName'));
                               }
                               else if (/\s{2,}/.test(value)) {
-                                return Promise.reject("please remove consecutive spaces");
+                                return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                               }
                               return Promise.resolve();
                             },
                           },
                           {
                             min: 3,
-                            message: "state length must be at least 3 characters long",
+                            message: t('settings.minLength2', { name: t('settings.companySettings.city') }),
                           },
                         ]}
                         validateTrigger="onSubmit"
@@ -612,7 +630,7 @@ const BankDetails = () => {
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label className="col-form-label">
-                        Address <span className="text-danger">*</span>
+                      {t('settings.companySettings.address')} <span className="text-danger">*</span>
                       </label>
                       <Form.Item
                         name="address"
@@ -622,17 +640,17 @@ const BankDetails = () => {
                             required: true,
                             validator: (_, value) => {
                               if(value.trim() === ''){
-                                return Promise.reject("please enter the address");
+                                return Promise.reject(t('settings.companySettings.pleaseEnterAddress'));
                               }
                               else if (/\s{2,}/.test(value)) {
-                                return Promise.reject("please remove consecutive spaces");
+                                return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                               }
                               return Promise.resolve();
                             },
                           },
                           {
                             min: 5,
-                            message: "address length must be at least 5 characters long",
+                            message: t('settings.minLength3', { name: t('settings.companySettings.address') }),
                           },
                         ]}
                         validateTrigger="onSubmit"
@@ -652,17 +670,17 @@ const BankDetails = () => {
                         rules={[
                           {
                             required: true,
-                            message: "Please enter the IBAN number",
+                            message: t('settings.BankDetails.pleaseEnterTheIBANnumber'),
                           },
                           {
                             min: 24,
-                            message: "IBAN must be atleast 24 characters long",
+                            message: t('settings.BankDetails.ibanLengthError'),
                           },
                           {
                             validator: (_, value) => {
                               if (/\s/.test(value)) {
                                 return Promise.reject(
-                                  "IBAN should not contain spaces"
+                                  t('settings.BankDetails.ibanNoSpacesError')
                                 );
                               }
                               return Promise.resolve();
@@ -679,28 +697,28 @@ const BankDetails = () => {
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label className="col-form-label">
-                        SWIFT Code <span className="text-danger">*</span>
+                        {t('settings.BankDetails.swiftCode')} <span className="text-danger">*</span>
                       </label>
                       <Form.Item
                         name="swiftCode"
                         rules={[
                           {
                             required: true,
-                            message: "Please enter the bank SWIFT Code",
+                            message: t('settings.BankDetails.pleaseEnterTheBankSWIFTCode'),
                           },
                           {
                             min: 8,
-                            message: "SWIFT code must be between 8-11 alphanumeric characters",
+                            message: t('settings.BankDetails.swiftCodeLengthError'),
                           },
                           {
                             validator: (_, value) => {
                               if (/\s/.test(value)) {
                                 return Promise.reject(
-                                  "SWFIT code should not contain spaces"
+                                  t('settings.BankDetails.swiftCodeNoSpacesError')
                                 );
                               }
                               if (/[^A-Za-z0-9]/.test(value)) {
-                                return Promise.reject("SWIFT code should not contain special characters");
+                                return Promise.reject(t('settings.BankDetails.swiftCodeNoSpecialCharsError'));
                               }
                               return Promise.resolve();
                             },
@@ -724,7 +742,7 @@ const BankDetails = () => {
                       {loader ? (
                         <Spin size="small" indicator={antIcon} />
                       ) : (
-                        "Save Changes"
+                        t('settings.saveChanges')
                       )}
                     </Button>
                   </Form.Item>
@@ -757,9 +775,9 @@ const BankDetails = () => {
               }}
             >
               <div className="form-header">
-                <h3 style={{ marginBottom: "30px" }}>Delete Bank</h3>
+                <h3 style={{ marginBottom: "30px" }}>{t('settings.BankDetails.deleteBank')}</h3>
                 <p>
-                  Are you sure you want to delete <b>{open?.data?.bankName}</b>?
+                  <span dangerouslySetInnerHTML={{ __html: t('projectScreen.confirmDeleteProject', { project: open?.data?.bankName }) }} />
                 </p>
               </div>
               <div className="modal-btn delete-action">
@@ -775,7 +793,7 @@ const BankDetails = () => {
                       {loader ? (
                         <Spin size="small" indicator={antIcon} />
                       ) : (
-                        "Delete"
+                        t('delete')
                       )}
                     </Button>
                   </div>
@@ -785,7 +803,7 @@ const BankDetails = () => {
                       className="btn btn-primary submit-btn"
                       style={{ width: "100%" }}
                     >
-                      Cancel
+                      {t('cancel')}
                     </Button>
                   </div>
                 </div>

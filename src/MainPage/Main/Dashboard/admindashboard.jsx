@@ -444,7 +444,7 @@ const antIcon = (
               <div className="col-md-12">
                 <div className="row">
                   <div className="col-md-6 text-center">
-                    <div className="card">
+                    <div className="card" dir="ltr">
                       <div className="card-body">
                         <h3 className="card-title">{t('aDash.totalRevenue')}</h3>
                         {/* <button onClick={() => {}}>SVG</button> */}
@@ -480,21 +480,22 @@ const antIcon = (
                                 }
                               }} />
                               <Tooltip
-                                labelFormatter={(value) => `Year : ${value}`}
+                                labelFormatter={(value) => `${t('empProfile.year')} : ${value}`}
                                 formatter={(value) => <label>{value.toLocaleString()}</label>}
+                                contentStyle={{ direction: i18n.dir() }}
                               />
                               <Legend />
-                              <Bar dataKey="totalRevenue" name='Total Revenue' fill="#ff9b44" maxBarSize={20} />
+                              <Bar dataKey="totalRevenue" name={t('finance.Profit&loss.totalRevenue')} fill="#ff9b44" maxBarSize={20} />
                             </BarChart>
                           </ResponsiveContainer> :
-                          <label style={{height: '300px', display: 'grid', placeItems: 'center', color: 'grey'}}>No Record Found!</label>
+                          <label style={{height: '300px', display: 'grid', placeItems: 'center', color: 'grey'}}>{t('aRequests.errors.noRecordFound')}</label>
                         }
 
                       </div>
                     </div>
                   </div>
                   <div className="col-md-6 text-center">
-                    <div className="card">
+                    <div className="card" dir="ltr">
                       <div className="card-body">
                         <h3 className="card-title">{t('aDash.salesOverview')} {year ? ` - ${year}` : ''}</h3>
                         {
@@ -520,14 +521,15 @@ const antIcon = (
                               }} />
                               <Tooltip
                                 formatter={(value) => <label>{value === 0 ? 'N/A' : value?.toLocaleString()}</label>}
+                                contentStyle={{ direction: i18n.dir() }}
                               />
                               <Legend />
-                              <Line type="monotone" dataKey="totalRevenue" name='Total Revenue' stroke="#ff9b44" fill="#00c5fb" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 7 }} />
+                              <Line type="monotone" dataKey="totalRevenue" name={t('finance.Profit&loss.totalRevenue')} stroke="#ff9b44" fill="#00c5fb" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 7 }} />
                               {/* <Line type="monotone" dataKey="Total Sales" stroke="#ff9b44" fill="#00c5fb" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 7 }} /> */}
                               {/* <Line type="monotone" dataKey="Total Revenue" stroke="#fc6075" fill="#0253cc" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 7 }} /> */}
                             </LineChart>
                           </ResponsiveContainer> :
-                          <label style={{height: '300px', display: 'grid', placeItems: 'center', color: 'grey'}}>No Record Found!</label>
+                          <label style={{height: '300px', display: 'grid', placeItems: 'center', color: 'grey'}}>{t('aRequests.errors.noRecordFound')}</label>
                         }
 
                       </div>
@@ -717,7 +719,7 @@ const antIcon = (
                             </div>
                           </div>
                         </div>
-                      )) : <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '290px'}}>No Record Found!</label>
+                      )) : <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '290px'}}>{t('aRequests.errors.noRecordFound')}</label>
                     }
                     {
                       (allRequests?.length > 0 && perm?.request) && 
@@ -772,7 +774,7 @@ const antIcon = (
                             }
                           </tbody>
                         </table>  :
-                          <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '241px'}}>No Record Found!</label>
+                          <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '241px'}}>{t('aRequests.errors.noRecordFound')}</label>
                       }
                     </div>
                   </div>
@@ -821,7 +823,7 @@ const antIcon = (
                         }
                         </tbody>
                       </table> :
-                        <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '241px'}}>No Record Found!</label>
+                        <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '241px'}}>{t('aRequests.errors.noRecordFound')}</label>
                       }
                     </div>
                   </div>
@@ -894,7 +896,7 @@ const antIcon = (
                         }
                         </tbody>
                       </table> :
-                        <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '402px'}}>No Record Found!</label>
+                        <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '402px'}}>{t('aRequests.errors.noRecordFound')}</label>
                       }
                     </div>
                   </div>
@@ -998,7 +1000,7 @@ const antIcon = (
                         }
                         </tbody>
                       </table> :
-                       <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '402px'}}>No Record Found!</label>
+                       <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '402px'}}>{t('aRequests.errors.noRecordFound')}</label>
                      }
                     </div>
                   </div>
