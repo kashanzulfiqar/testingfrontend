@@ -71,7 +71,7 @@ const InvoiceTaxes = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Error getting invoice taxes"
+              : t('settings.tax.errorGettingInvoiceTaxes')
           }`
         );
       }).then(()=>{
@@ -88,7 +88,7 @@ const InvoiceTaxes = () => {
           // console.log(data);
           setTaxes([...taxes.filter((tax) => tax._id !== id)]);
           handleClose();
-          message.success("Tax Slab Deleted Successfully!");
+          message.success(t('settings.tax.taxSlabDeletedSuccessfully'));
           setLoader(false);
         }
       })
@@ -101,7 +101,7 @@ const InvoiceTaxes = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Delete Tax Slab Error"
+              : t('settings.tax.deleteTaxSlabError')
           }!`
         );
       });
@@ -136,7 +136,7 @@ const InvoiceTaxes = () => {
               })
             );
             handleClose();
-            message.success("Tax Slab Updated Successfully");
+            message.success(t('settings.tax.taxSlabUpdatedSuccessfully'));
             setLoader(false);
           }
         })
@@ -149,7 +149,7 @@ const InvoiceTaxes = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Update Tax Slab Info Error"
+                : t('settings.tax.updateTaxSlabInfoError')
             }!`
           );
         });
@@ -168,7 +168,7 @@ const InvoiceTaxes = () => {
               },
             ]);
             handleClose();
-            message.success("Tax Slab Added Successfully");
+            message.success(t('allEmp.errors.taxSlabAdded'));
             setLoader(false);
           }
         })
@@ -181,7 +181,7 @@ const InvoiceTaxes = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Add Tax Slab Info Error"
+                : t('allEmp.errors.addTaxSlabError')
             }!`
           );
         });
@@ -211,12 +211,12 @@ const InvoiceTaxes = () => {
                 : taxslab
             )
           );
-          message.success(`Tax status updated to ${newStatus}`);
+          message.success(t('settings.tax.taxStatusUpdated', {newStatus: newStatus==="Active" ? t('active') : newStatus==="In-Active" ? t('inActive') : newStatus}));
         }
       })
       .catch((error) => {
         console.log("error", error);
-        message.error('Failed to update tax status');
+        message.error(t('settings.tax.failedToUpdateTaxStatus'));
       });
   };
 
@@ -246,12 +246,12 @@ const InvoiceTaxes = () => {
               margin: "7px 0px 4px 0px",
             }}
           >
-            No tax slab added yet
+            {t('settings.tax.noTaxSlabAddedYet')}
           </div>
           <div
             style={{ color: "#464665", fontWeight: "300", fontSize: "13px" }}
           >
-            Click 'Add New Tax Slab' Button To Create <br /> A New Invoice Tax Slab{" "}
+            {t('settings.tax.clickToAddNewTaxSlab')} <br /> {t('settings.tax.newInvoiceTaxSlab')}{" "}
           </div>
         </div>
       }
@@ -275,16 +275,16 @@ const InvoiceTaxes = () => {
       render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
     },
     {
-      title: "Slab Name",
+      title: t('allEmp.Modal.slabName'),
       dataIndex: "title",
     },
     {
-      title: "Tax Percentage (%)",
+      title: t('settings.tax.percent'),
       dataIndex: "taxPercent",
       
     },
     {
-      title: "Status",
+      title: t('status'),
       dataIndex: "status",
       render: (text, record) => (
         <div>
@@ -304,7 +304,7 @@ const InvoiceTaxes = () => {
                   : 'fa-dot-circle-o text-danger'
               }`}
             />{' '}
-            {text}
+            {text==="Active" ? t('active') : t('inActive')}
           </a>
           {/* <div className={`dropdown-menu dropdown-menu-right`}>
             
@@ -334,7 +334,7 @@ const InvoiceTaxes = () => {
             }
           }}
         >
-          <i className="fa fa-dot-circle-o text-success" /> Active
+          <i className="fa fa-dot-circle-o text-success" /> {t('active')}
         </a>
         <a
           className={`dropdown-item ${text === 'In-Active' ? 'disabled text-muted' : ''}`}
@@ -346,7 +346,7 @@ const InvoiceTaxes = () => {
             }
           }}
         >
-          <i className="fa fa-dot-circle-o text-danger" /> In-Active
+          <i className="fa fa-dot-circle-o text-danger" /> {t('inActive')}
         </a>
       </div>
         </div>
@@ -354,7 +354,7 @@ const InvoiceTaxes = () => {
       
     },
     {
-      title: "Actions",
+      title: t('holiday.actions'),
       render: (record, row) => (
         <div className="dropdown dropdown-action text-end">
           <a
@@ -377,7 +377,7 @@ const InvoiceTaxes = () => {
                 });
               }}
             >
-              <i className="fa fa-pencil m-r-5" /> Edit
+              <i className="fa fa-pencil m-r-5" /> {t('edit')}
             </a>
             <a
               className="dropdown-item"
@@ -390,7 +390,7 @@ const InvoiceTaxes = () => {
                 });
               }}
             >
-              <i className="fa fa-trash-o m-r-5" /> Delete
+              <i className="fa fa-trash-o m-r-5" /> {t('delete')}
             </a>
           </div>
         </div>
@@ -406,7 +406,7 @@ const InvoiceTaxes = () => {
         <div className="page-header">
           <div className="row align-items-center pt-3 pb-3">
             <div className="col">
-              <h3 className="page-title">Invoice Tax Slabs</h3>
+              <h3 className="page-title">{t('settings.invoiceTaxSlabs')}</h3>
             </div>
             <div className="col-auto float-end ms-auto">
               <a
@@ -421,7 +421,7 @@ const InvoiceTaxes = () => {
                 }}
                 data-bs-target="#add_leavetype"
               >
-                <i className="fa fa-plus" /> Add New Tax Slab
+                <i className="fa fa-plus" /> {t('settings.tax.addNewTaxSlab')}
               </a>
             </div>
           </div>
@@ -523,7 +523,7 @@ const InvoiceTaxes = () => {
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">
-                {open?.data ? "Update" : "Add"} Tax Slab
+                {open?.data ? t('holiday.update') : t('holiday.add')} {t('allEmp.Modal.taxSlab')}
               </h5>
               <button type="button" className="close" onClick={handleClose}>
                 <span aria-hidden="true">×</span>
@@ -538,10 +538,10 @@ const InvoiceTaxes = () => {
                 onFinishFailed={({errorFields}) => {
                   const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
                   if(consecutiveSpacesError){
-                    message.error("Please Remove Consecutive Spaces!")
-                  }else{
-                    message.error("Please Fill Required Fields!")
-                  }
+                    message.error(t('allEmp.errors.removeConsecutiveSpaces'))
+                 }else{
+                    message.error(t('allEmp.errors.fillRequiredFields'))
+                  } 
                 }}
                 initialValues={{
                   title: open?.data ? open?.data?.title : "",
@@ -555,7 +555,7 @@ const InvoiceTaxes = () => {
                   <div className="col-12">
                     <div className="form-group">
                       <label>
-                        Slab Name <span className="text-danger">*</span>
+                      {t('allEmp.Modal.slabName')} <span className="text-danger">*</span>
                       </label>
                       <Form.Item
                         name="title"
@@ -564,12 +564,12 @@ const InvoiceTaxes = () => {
                             whitespace: true,
                             required: true,
                             validator: (_, value) => {
-                              if(value.trim() === ''){
-                                return Promise.reject("please enter slab name");
-                              }
-                              else if (/\s{2,}/.test(value)) {
-                                return Promise.reject("please remove consecutive spaces");
-                              }
+                              if(!value || value.trim() === ''){
+                                return Promise.reject(t('allEmp.errors.enterSlabName'));
+                            }
+                            else if (/\s{2,}/.test(value)) {
+                                return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
+                            }
                               return Promise.resolve();
                             },
                           },
@@ -583,7 +583,7 @@ const InvoiceTaxes = () => {
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>
-                        Tax (%) <span className="text-danger">*</span>
+                      {t('allEmp.Modal.taxPercentage')} <span className="text-danger">*</span>
                       </label>
                       <Form.Item
                         name="taxPercent"
@@ -591,12 +591,12 @@ const InvoiceTaxes = () => {
                           {
                             required: true,
                             validator: (_, value) => {
-                              if(value.trim() === ''){
-                                return Promise.reject("please enter tax percentage");
-                              }
-                              else if (value > 100) {
-                                return Promise.reject("tax percentage must not be more than 100");
-                              }
+                              if(!value || value.trim() === ''){
+                                return Promise.reject(t('allEmp.errors.enterTaxPercentage'));
+                            }
+                            else if (value > 100) {
+                                return Promise.reject(t('allEmp.errors.taxPercentageNotMoreThan100'));
+                            }
                               return Promise.resolve();
                             },
                           },
@@ -626,14 +626,14 @@ const InvoiceTaxes = () => {
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>
-                        Status <span className="text-danger">*</span>
+                      {t('status')} <span className="text-danger">*</span>
                       </label>
                       <Form.Item
                         name="status"
                         rules={[
                           {
                             required: true,
-                            message: "please select a status",
+                            message: t('settings.tax.selectStatus'),
                           },
                         ]}
                         className="custom-border"
@@ -646,10 +646,10 @@ const InvoiceTaxes = () => {
                               placeholder="Select a Status"
                             >
                               <Select.Option value="Active">
-                                Active
+                              {t('active')}
                               </Select.Option>
                               <Select.Option value="In-Active">
-                                In-Active
+                              {t('inActive')}
                               </Select.Option>
                             </Select>
                       </Form.Item>
@@ -665,7 +665,7 @@ const InvoiceTaxes = () => {
                             {loader ? (
                             <Spin size="small" indicator={antIcon} />
                             ) : (
-                            "Submit"
+                              t('submit')
                             )}
                         </Button>
                     </Form.Item>
@@ -684,10 +684,10 @@ const InvoiceTaxes = () => {
                 onFinishFailed={({errorFields}) => {
                   const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
                   if(consecutiveSpacesError){
-                    message.error("Please Remove Consecutive Spaces!")
-                  }else{
-                    message.error("Please Fill Required Fields!")
-                  }
+                    message.error(t('allEmp.errors.removeConsecutiveSpaces'))
+                 }else{
+                    message.error(t('allEmp.errors.fillRequiredFields'))
+                  } 
                 }}
                 initialValues={{
                   title: "",
@@ -698,7 +698,7 @@ const InvoiceTaxes = () => {
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>
-                          Slab Name <span className="text-danger">*</span>
+                      {t('allEmp.Modal.slabName')} <span className="text-danger">*</span>
                       </label>
                       <Form.Item
                         name="title"
@@ -707,12 +707,12 @@ const InvoiceTaxes = () => {
                             whitespace: true,
                             required: true,
                             validator: (_, value) => {
-                              if(value.trim() === ''){
-                                return Promise.reject("please enter slab name");
-                              }
-                              else if (/\s{2,}/.test(value)) {
-                                return Promise.reject("please remove consecutive spaces");
-                              }
+                              if(!value || value.trim() === ''){
+                                return Promise.reject(t('allEmp.errors.enterSlabName'));
+                            }
+                            else if (/\s{2,}/.test(value)) {
+                                return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
+                            }
                               return Promise.resolve();
                             },
                           },
@@ -726,7 +726,7 @@ const InvoiceTaxes = () => {
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>
-                        Tax (%) <span className="text-danger">*</span>
+                      {t('allEmp.Modal.taxPercentage')} <span className="text-danger">*</span>
                       </label>
                       <Form.Item
                         name="taxPercent"
@@ -734,12 +734,12 @@ const InvoiceTaxes = () => {
                           {
                             required: true,
                             validator: (_, value) => {
-                              if(value.trim() === ''){
-                                return Promise.reject("please enter tax percentage");
-                              }
-                              else if (value > 100) {
-                                return Promise.reject("tax percentage must not be more than 100");
-                              }
+                              if(!value || value.trim() === ''){
+                                return Promise.reject(t('allEmp.errors.enterTaxPercentage'));
+                            }
+                            else if (value > 100) {
+                                return Promise.reject(t('allEmp.errors.taxPercentageNotMoreThan100'));
+                            }
                               return Promise.resolve();
                             },
                           },
@@ -777,7 +777,7 @@ const InvoiceTaxes = () => {
                             {loader ? (
                             <Spin size="small" indicator={antIcon} />
                             ) : (
-                            "Submit"
+                              t('submit')
                             )}
                         </Button>
                     </Form.Item>
@@ -814,9 +814,9 @@ const InvoiceTaxes = () => {
               }}
             >
               <div className="form-header">
-                <h3 style={{ marginBottom: "30px" }}>Delete Tax Slab</h3>
+                <h3 style={{ marginBottom: "30px" }}>{t('delete')} {t('allEmp.Modal.taxSlab')}</h3>
                 <p>
-                  Are you sure you want to delete <b>{open?.data?.title}</b>?
+                <span dangerouslySetInnerHTML={{ __html: t('projectScreen.confirmDeleteProject', { project: open?.data?.title }) }} />
                 </p>
               </div>
               <div className="modal-btn delete-action">
@@ -832,7 +832,7 @@ const InvoiceTaxes = () => {
                       {loader ? (
                         <Spin size="small" indicator={antIcon} />
                       ) : (
-                        "Delete"
+                        t('delete')
                       )}
                     </Button>
                   </div>
@@ -842,7 +842,7 @@ const InvoiceTaxes = () => {
                       className="btn btn-primary submit-btn"
                       style={{ width: "100%" }}
                     >
-                      Cancel
+                      {t('cancel')}
                     </Button>
                   </div>
                 </div>

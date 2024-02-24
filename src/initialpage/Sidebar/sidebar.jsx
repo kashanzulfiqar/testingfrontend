@@ -775,10 +775,10 @@ const Sidebar = (props) => {
                 }
                   {isSideMenu == "accounting" ?
                     <ul>
-                      <li><Link className={pathname.includes('categories') || pathname.includes('sub-category') ? "active" : ""} to="/app/accounts/categories">Categories</Link></li>
-                      <li><Link className={pathname.includes('budgets') ? "active" : ""} to="/app/accounts/budgets">Budgets</Link></li>
-                      <li><Link className={pathname.includes('budget-expenses') ? "active" : ""} to="/app/accounts/budget-expenses">Budget Expenses</Link></li>
-                      <li><Link className={pathname.includes('budget-revenues') ? "active" : ""} to="/app/accounts/budget-revenues">Budget Revenues</Link></li>
+                      <li><Link className={pathname.includes('categories') || pathname.includes('sub-category') ? "active" : ""} to="/app/accounts/categories">{t('sideBar.categories')}</Link></li>
+                      <li><Link className={pathname.includes('budgets') ? "active" : ""} to="/app/accounts/budgets">{t('sideBar.budgets')}</Link></li>
+                      <li><Link className={pathname.includes('budget-expenses') ? "active" : ""} to="/app/accounts/budget-expenses">{t('sideBar.budgetExpenses')}</Link></li>
+                      <li><Link className={pathname.includes('budget-revenues') ? "active" : ""} to="/app/accounts/budget-revenues">{t('sideBar.budgetRevenues')}</Link></li>
                     </ul>
                     : ""
                   }
@@ -852,9 +852,9 @@ const Sidebar = (props) => {
                 }
                   {isSideMenu == "performance" ?
                     <ul>
-                      <li><Link className={pathname.includes('-indicator') ? "active" : ""} to="/app/performances/performance-indicator"> Performance Indicator </Link></li>
-                      <li><Link className={pathname.includes('-review') ? "active" : ""} to="/app/performances/performance-review"> Performance Review </Link></li>
-                      <li><Link className={pathname.includes('-appraisal') ? "active" : ""} to="/app/performances/performance-appraisal"> Performance Appraisal </Link></li>
+                      <li><Link className={pathname.includes('-indicator') ? "active" : ""} to="/app/performances/performance-indicator"> {t('sideBar.performanceIndicator')} </Link></li>
+                      <li><Link className={pathname.includes('-review') ? "active" : ""} to="/app/performances/performance-review"> {t('sideBar.performanceReview')} </Link></li>
+                      <li><Link className={pathname.includes('-appraisal') ? "active" : ""} to="/app/performances/performance-appraisal"> {t('sideBar.performanceAppraisal')} </Link></li>
                     </ul>
                     : ""
                   }
@@ -868,8 +868,8 @@ const Sidebar = (props) => {
                 }
                   {isSideMenu == "goals" ?
                     <ul>
-                      <li><Link className={pathname.includes('-tracking') ? "active" : ""} to="/app/goals/goal-tracking"> Goal List </Link></li>
-                      <li><Link className={pathname.includes('l-type') ? "active" : ""} to="/app/goals/goal-type"> Goal Type </Link></li>
+                      <li><Link className={pathname.includes('-tracking') ? "active" : ""} to="/app/goals/goal-tracking"> {t('sideBar.goalList')} </Link></li>
+                      <li><Link className={pathname.includes('l-type') ? "active" : ""} to="/app/goals/goal-type"> {t('sideBar.goalType')} </Link></li>
                     </ul>
                     : ""
                   }
@@ -883,9 +883,9 @@ const Sidebar = (props) => {
                 }
                   {isSideMenu == "training" ?
                     <ul>
-                      <li><Link className={pathname.includes('training-list') ? "active" : ""} to="/app/training/training-list"> Training List </Link></li>
-                      <li><Link className={pathname.includes('trainer') ? "active" : ""} to="/app/training/trainer"> Trainers</Link></li>
-                      <li><Link className={pathname.includes('training-type') ? "active" : ""} to="/app/training/training-type"> Training Type </Link></li>
+                      <li><Link className={pathname.includes('training-list') ? "active" : ""} to="/app/training/training-list"> {t('sideBar.trainingList')} </Link></li>
+                      <li><Link className={pathname.includes('trainer') ? "active" : ""} to="/app/training/trainer"> {t('sideBar.trainers')}</Link></li>
+                      <li><Link className={pathname.includes('training-type') ? "active" : ""} to="/app/training/training-type"> {t('sideBar.trainingType')} </Link></li>
                     </ul>
                     : ""
                   }
@@ -930,7 +930,7 @@ const Sidebar = (props) => {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
                   <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-briefcase" /> <span> {t('sideBar.jobs')}</span> <span className="menu-arrow" /></a>
                   :
-                  <a href="javascript:" className={isSideMenu == "jobs" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "jobs" ? "" : "jobs")}><i className="la la-briefcase" /> <span> Jo{t('sideBar.jobs')} </span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" className={isSideMenu == "jobs" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "jobs" ? "" : "jobs")}><i className="la la-briefcase" /> <span> {t('sideBar.jobs')} </span> <span className="menu-arrow" /></a>
                 }
                   {isSideMenu == "jobs" ?
                     <ul>
@@ -938,17 +938,17 @@ const Sidebar = (props) => {
                         || pathname.includes('applied-jobs') || pathname.includes('interviewing') || pathname.includes('offered-jobs') ||
                         pathname.includes('visited-jobs') || pathname.includes('archived-jobs')
                         || pathname.includes('job-aptitude') || pathname.includes('questions') ? "active" : ""}
-                        to="/app/administrator/user-dashboard"> User Dasboard </Link></li>
-                      <li><Link className={pathname.includes('jobs-dashboard') ? "active" : ""} to="/app/administrator/jobs-dashboard"> Jobs Dasboard </Link></li>
-                      <li><Link className={pathname === ('/app/administrator/jobs') ? "active" : ""} to="/app/administrator/jobs"> Manage Jobs </Link></li>
-                      <li><Link className={pathname.includes('manage-resumes') ? "active" : ""} to="/app/administrator/manage-resumes"> Manage Resumes </Link></li>
-                      <li><Link className={pathname.includes('shortlist-candidates') ? "active" : ""} to="/app/administrator/shortlist-candidates"> Shortlist Candidates </Link></li>
-                      <li><Link className={pathname === ('/app/administrator/interview-questions') ? "active" : ""} to="/app/administrator/interview-questions"> Interview Questions </Link></li>
-                      <li><Link className={pathname.includes('offer_approvals') ? "active" : ""} to="/app/administrator/offer_approvals"> Offer Approvals </Link></li>
-                      <li><Link className={pathname.includes('experiance-level') ? "active" : ""} to="/app/administrator/experiance-level"> Experience Level </Link></li>
-                      <li><Link className={pathname === ('/app/administrator/candidates') ? "active" : ""} to="/app/administrator/candidates"> Candidates List </Link></li>
-                      <li><Link className={pathname.includes('schedule-timing') ? "active" : ""} to="/app/administrator/schedule-timing"> Schedule timing </Link></li>
-                      <li><Link className={pathname.includes('apptitude-result') ? "active" : ""} to="/app/administrator/apptitude-result"> Aptitude Results </Link></li>
+                        to="/app/administrator/user-dashboard"> {t('sideBar.userDashboard')} </Link></li>
+                      <li><Link className={pathname.includes('jobs-dashboard') ? "active" : ""} to="/app/administrator/jobs-dashboard"> {t('sideBar.jobsDashboard')} </Link></li>
+                      <li><Link className={pathname === ('/app/administrator/jobs') ? "active" : ""} to="/app/administrator/jobs"> {t('sideBar.manageJobs')} </Link></li>
+                      <li><Link className={pathname.includes('manage-resumes') ? "active" : ""} to="/app/administrator/manage-resumes"> {t('sideBar.manageResumes')} </Link></li>
+                      <li><Link className={pathname.includes('shortlist-candidates') ? "active" : ""} to="/app/administrator/shortlist-candidates"> {t('sideBar.shortlistCandidates')} </Link></li>
+                      <li><Link className={pathname === ('/app/administrator/interview-questions') ? "active" : ""} to="/app/administrator/interview-questions"> {t('sideBar.interviewQuestions')} </Link></li>
+                      <li><Link className={pathname.includes('offer_approvals') ? "active" : ""} to="/app/administrator/offer_approvals"> {t('sideBar.offerApprovals')} </Link></li>
+                      <li><Link className={pathname.includes('experiance-level') ? "active" : ""} to="/app/administrator/experiance-level"> {t('sideBar.experienceLevel')} </Link></li>
+                      <li><Link className={pathname === ('/app/administrator/candidates') ? "active" : ""} to="/app/administrator/candidates"> {t('sideBar.candidatesList')} </Link></li>
+                      <li><Link className={pathname.includes('schedule-timing') ? "active" : ""} to="/app/administrator/schedule-timing"> {t('sideBar.scheduleTiming')} </Link></li>
+                      <li><Link className={pathname.includes('apptitude-result') ? "active" : ""} to="/app/administrator/apptitude-result"> {t('sideBar.aptitudeResults')} </Link></li>
 
                     </ul>
                     : ""

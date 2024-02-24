@@ -2136,6 +2136,7 @@ input[type=file].form-control {
 
 [dir="rtl"] .header .top-nav-search form .btn {
   left: 0 !important;
+  right: unset;
 }
 @media (max-width: 991px) {
   .header .top-nav-search.active form {
@@ -2157,6 +2158,11 @@ input[type=file].form-control {
     top: 0;
     right: 0;
     padding: 7px 15px;
+  }
+
+  [dir="rtl"] .header .top-nav-search form .btn {
+    left: 0;
+    right: unset;
   }
 }
 .header .user-menu {
@@ -2418,6 +2424,11 @@ input[type=file].form-control {
   right: 37px;
   border-radius: 30px;
   /* display: none; */
+}
+[dir="rtl"] .sidebar .sidebar-menu ul li.submenu .noti-dot:before,
+[dir="rtl"] .two-col-bar .sidebar-menu ul li.submenu .noti-dot:before {
+  left: 50px;
+  right: unset;
 }
 .sidebar .sidebar-menu ul li.submenu .submenu a span,
 .two-col-bar .sidebar-menu ul li.submenu .submenu a span {
@@ -12755,4 +12766,10 @@ padding-right: unset;
 
 [dir="rtl"] .ant-input-number-input {
   text-align: right;
+}
+
+[dir="rtl"] .ant-select-single.ant-select-sm:not(.ant-select-customize-input).ant-select-show-arrow .ant-select-selection-item, 
+[dir="rtl"] .ant-select-single.ant-select-sm:not(.ant-select-customize-input).ant-select-show-arrow .ant-select-selection-placeholder {
+  padding-left: 21px;
+  padding-right: unset;
 }

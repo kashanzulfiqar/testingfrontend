@@ -20,9 +20,11 @@ import InvoiceTags from "./InvoiceTags";
 import InvoiceCounter from "./InvoiceCounter";
 import BankDetails from "./BankDetails";
 import ExpenseCategory from "./ExpenseCategory";
+import { useTranslation } from "react-i18next";
 
 const Settings = ({test}) => {
 
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
 
   const user_state = useSelector((state) => state.user.loginvalue);
@@ -67,7 +69,33 @@ useEffect(() => {
     <div>
       <div className="page-wrapper">
         <Helmet>
-          <title>{showComponent} - DaftarPro</title>
+          <title>{
+          showComponent==="Company Settings" 
+          ? t('settings.companySettings.companySettings') 
+          : showComponent==="Leave Settings" 
+          ? t('settings.leaveSettings')
+          : showComponent==="Roles" 
+          ? t('settings.roles')
+          : showComponent==="Departments" 
+          ? t('settings.departments')
+          : showComponent==="Designations" 
+          ? t('settings.designations')
+          : showComponent==="Shifts" 
+          ? t('settings.shifts')
+          : showComponent==="Tax Slabs" 
+          ? t('settings.taxSlabs')
+          : showComponent==="Bank Details" 
+          ? t('settings.bankDetails')
+          : showComponent==="Invoice Tax Slabs" 
+          ? t('settings.invoiceTaxSlabs')
+          : showComponent==="Invoice Tags" 
+          ? t('settings.invoiceTags')
+          : showComponent==="Invoice Counter" 
+          ? t('settings.invoiceCounter')
+          : showComponent==="Expense Categories" 
+          ? t('settings.expenseCategories')
+          : showComponent
+          } - {t('header.daftarPro')}</title>
           <meta name="description" content="Login page" />
           <link rel="icon" type="image/x-icon" href={favicon} />
         </Helmet>
@@ -76,14 +104,41 @@ useEffect(() => {
           <div className="page-header">
             <div className="row">
               <div className="col-12">
-                <h4 className="page-title">Settings</h4>
+                <h4 className="page-title">{t('sideBar.settings')}</h4>
                 <ul className="breadcrumb">
                   <li className="breadcrumb-item">
                     <Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>
-                      Dashboard
+                    {t('dashboard')}
                     </Link>
                   </li>
-                  <li className="breadcrumb-item active">{showComponent}</li>
+                  <li className="breadcrumb-item active">{
+                      showComponent==="Company Settings" 
+                      ? t('settings.companySettings.companySettings') 
+                      : showComponent==="Leave Settings" 
+                      ? t('settings.leaveSettings')
+                      : showComponent==="Roles" 
+                      ? t('settings.roles')
+                      : showComponent==="Departments" 
+                      ? t('settings.departments')
+                      : showComponent==="Designations" 
+                      ? t('settings.designations')
+                      : showComponent==="Shifts" 
+                      ? t('settings.shifts')
+                      : showComponent==="Tax Slabs" 
+                      ? t('settings.taxSlabs')
+                      : showComponent==="Bank Details" 
+                      ? t('settings.bankDetails')
+                      : showComponent==="Invoice Tax Slabs" 
+                      ? t('settings.invoiceTaxSlabs')
+                      : showComponent==="Invoice Tags" 
+                      ? t('settings.invoiceTags')
+                      : showComponent==="Invoice Counter" 
+                      ? t('settings.invoiceCounter')
+                      : showComponent==="Expense Categories" 
+                      ? t('settings.expenseCategories')
+                      : showComponent
+                      }
+                    </li>
                 </ul>
               </div>
               <div className="col-9 m-b-0 text-right"></div>
@@ -99,73 +154,73 @@ useEffect(() => {
                     <li className={showComponent === 'Company Settings' ? 'active' : ''}>
                       <a href="javascript:void(0)" onClick={() => {setShowComponent('Company Settings') }}>
                         <i className="fa fa-fw fa-info-circle" style={{marginRight: '8px'}}></i>
-                        Company Settings
+                        {t('settings.companySettings.companySettings')}
                       </a>
                    </li>
                    <li className={showComponent === 'Leave Settings' ? 'active' : ''}>
                       <a href="javascript:void(0)" onClick={() => {setShowComponent('Leave Settings') }}>
                         <i className="fa fa-fw fa-warning" style={{marginRight: '8px'}}></i>
-                        Leave Settings
+                        {t('settings.leaveSettings')}
                       </a>
                    </li>
                    <li className={showComponent === 'Roles' ? 'active' : ''}>
                       <a href="javascript:void(0)" onClick={() => {setShowComponent('Roles') }}>
                         <i className="fa fa-fw fa-list-alt" style={{marginRight: '8px'}}></i>
-                        Roles
+                        {t('settings.roles')}
                       </a>
                    </li>
                    <li className={showComponent === 'Departments' ? 'active' : ''}>
                       <a href="javascript:void(0)" onClick={() => {setShowComponent('Departments') }}>
                         <i className="fa fa-fw fa-sitemap" style={{marginRight: '8px'}}></i>
-                        Departments
+                        {t('settings.departments')}
                       </a>
                    </li>
                    <li className={showComponent === 'Designations' ? 'active' : ''}>
                       <a href="javascript:void(0)" onClick={() => {setShowComponent('Designations') }}>
                         <i className="fa fa-fw fa-users" style={{marginRight: '8px'}}></i>
-                        Designations
+                        {t('settings.designations')}
                       </a>
                    </li>
                    <li className={showComponent === 'Shifts' ? 'active' : ''}>
                       <a href="javascript:void(0)" onClick={() => {setShowComponent('Shifts') }}>
                         <i className="fa fa-fw fa-clock-o" style={{marginRight: '8px'}}></i>
-                        Shifts
+                        {t('settings.shifts')}
                       </a>
                    </li>
                    <li className={showComponent === 'Tax Slabs' ? 'active' : ''}>
                       <a href="javascript:void(0)" onClick={() => {setShowComponent('Tax Slabs') }}>
                         <i className="fa fa-fw fa-money" style={{marginRight: '8px'}}></i>
-                        Tax Slabs
+                        {t('settings.taxSlabs')}
                       </a>
                    </li>
                    <li className={showComponent === 'Bank Details' ? 'active' : ''}>
                       <a href="javascript:void(0)" onClick={() => {setShowComponent('Bank Details') }}>
                         <i className="fa fa-fw fa-bank" style={{marginRight: '8px'}}></i>
-                        Bank Details
+                        {t('settings.bankDetails')}
                       </a>
                    </li>
                    <li className={showComponent === 'Invoice Tax Slabs' ? 'active' : ''}>
                       <a href="javascript:void(0)" onClick={() => {setShowComponent('Invoice Tax Slabs') }}>
                         <i className="fa fa-fw fa-money" style={{marginRight: '8px'}}></i>
-                        Invoice Tax Slabs
+                        {t('settings.invoiceTaxSlabs')}
                       </a>
                    </li>
                    <li className={showComponent === 'Invoice Tags' ? 'active' : ''}>
                       <a href="javascript:void(0)" onClick={() => {setShowComponent('Invoice Tags') }}>
                         <i className="fa fa-fw fa-tags" style={{marginRight: '8px'}}></i>
-                        Invoice Tags
+                        {t('settings.invoiceTags')}
                       </a>
                    </li>
                    <li className={showComponent === 'Invoice Counter' ? 'active' : ''}>
                       <a href="javascript:void(0)" onClick={() => {setShowComponent('Invoice Counter') }}>
                         <i className="fa fa-fw fa-money" style={{marginRight: '8px'}}></i>
-                        Invoice Counter
+                        {t('settings.invoiceCounter')}
                       </a>
                    </li>
                    <li className={showComponent === 'Expense Categories' ? 'active' : ''}>
                       <a href="javascript:void(0)" onClick={() => {setShowComponent('Expense Categories') }}>
                         <i className="fa fa-fw fa-sitemap" style={{marginRight: '8px'}}></i>
-                        Expense Categories
+                        {t('settings.expenseCategories')}
                       </a>
                    </li>
                    {/* <li className="">

@@ -3,6 +3,7 @@ import { Button, Form, InputNumber, Spin, message } from "antd";
 import { useSelector } from "react-redux";
 import { apiServices } from "../../../Services/apiServices";
 import { LoadingOutlined } from '@ant-design/icons';
+import { useTranslation } from "react-i18next";
 
 const Leaves = () => {
 
@@ -11,7 +12,7 @@ const Leaves = () => {
 
 
   const [form] = Form.useForm();
-
+  const { t, i18n } = useTranslation();
   const [data, setData] = useState();
   const [firstLeaves, setFirstLeaves] = useState();
   const [firstFlag, setFirstFlag] = useState(true);
@@ -41,7 +42,7 @@ const Leaves = () => {
             ? err?.response?.data?.msg
             : err?.response?.data?.validation?.body?.message
             ? err?.response?.data?.validation?.body?.message
-            : "Get Company Info Error"
+            : t('settings.companySettings.companyInfoError')
         }!`
       );
     });
@@ -92,7 +93,7 @@ const Leaves = () => {
       if (res?.data?.success === true) {
         // setData(res?.data?.leavePolicies || {})
         setLeavesId(res?.data?.leavesPolicy?._id)
-        message.success('Leaves Added Successfully!')
+        message.success(t('settings.LeaveSettings.leavesAddedSuccess'))
         setLoader(false)
       }
     })
@@ -105,7 +106,7 @@ const Leaves = () => {
             ? err?.response?.data?.msg
             : err?.response?.data?.validation?.body?.message
             ? err?.response?.data?.validation?.body?.message
-            : "Adding Company Info Error"
+            : t('settings.LeaveSettings.addingCompanyInfoError')
         }!`
       );
     });
@@ -123,7 +124,7 @@ const Leaves = () => {
     .then((res) => {
       // console.log(res?.data);
       if (res?.data?.success === true) {
-        message.success('Leaves Updated Successfully!')
+        message.success(t('settings.LeaveSettings.leavesUpdatedSuccess'))
         setLoader(false)
       }
     })
@@ -136,7 +137,7 @@ const Leaves = () => {
             ? err?.response?.data?.msg
             : err?.response?.data?.validation?.body?.message
             ? err?.response?.data?.validation?.body?.message
-            : "Updating Company Info Error"
+            : t('settings.LeaveSettings.updatingCompanyInfoError')
         }!`
       );
     });
@@ -163,7 +164,7 @@ const Leaves = () => {
         <div className="page-header">
           <div className="row pt-3 pb-3">
             <div className="col-sm-12">
-              <h3 className="page-title">Leave Settings</h3>
+              <h3 className="page-title">{t('settings.leaveSettings')}</h3>
             </div>
           </div>
         </div>
@@ -203,24 +204,24 @@ const Leaves = () => {
               onFinish(values)
               // Your submit logic here
             } else {
-              message.error("Total number of all leaves must not be more than 365");
+              message.error(t('allEmp.errors.totalLeavesExceeded'));
               console.log(total);
             }
           }}
-          onFinishFailed={() => message.error("Please Enter Required Fields!")}
+          onFinishFailed={() => message.error(t('allEmp.errors.fillRequiredFields'))}
         >
           <div className="row">
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                  Sick Leaves <span className="text-danger">*</span>
+                {t('allEmp.Modal.sickLeaves')} <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="sickLeaves"
                   rules={[
                     {
                       required: true,
-                      message: "please enter sick leaves",
+                      message: t('allEmp.errors.sickLeaves'),
                     },
                     // {
                     //   validator: (_, value) => {
@@ -247,14 +248,14 @@ const Leaves = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                Casual Leaves <span className="text-danger">*</span>
+                {t('allEmp.Modal.casualLeaves')} <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="casualLeaves"
                   rules={[
                     {
                       required: true,
-                      message: "please enter casual leaves",
+                      message: t('allEmp.errors.casualLeaves'),
                     },
                   ]}
                   className="custom-border"
@@ -272,14 +273,14 @@ const Leaves = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                  Work From Home Leaves <span className="text-danger">*</span>
+                {t('allEmp.Modal.workFromHomeLeaves')} <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="workFromHomeLeaves"
                   rules={[
                     {
                       required: true,
-                      message: "please enter work from home leaves",
+                      message: t('allEmp.errors.workFromHomeLeaves'),
                     },
                   ]}
                   className="custom-border"
@@ -297,16 +298,16 @@ const Leaves = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                Bereavement Leaves <span className="text-danger">*</span>
-                </label>
-                <Form.Item
-                  name="bereavementLeaves"
-                  rules={[
-                    {
-                      required: true,
-                      message: "please enter bereavement leaves",
-                    },
-                  ]}
+                {t('allEmp.Modal.bereavementLeaves')} <span className="text-danger">*</span>
+                        </label>
+                        <Form.Item
+                        name="bereavementLeaves"
+                        rules={[
+                            {
+                            required: true,
+                            message: t('allEmp.errors.bereavementLeaves'),
+                            },
+                        ]}
                   className="custom-border"
                 >
                   <InputNumber className="form-control" min={0}
@@ -322,16 +323,16 @@ const Leaves = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                Unpaid Leaves <span className="text-danger">*</span>
-                </label>
-                <Form.Item
-                  name="unpaidLeaves"
-                  rules={[
-                    {
-                      required: true,
-                      message: "please enter unpaid leaves",
-                    },
-                  ]}
+                {t('allEmp.Modal.unpaidLeaves')} <span className="text-danger">*</span>
+                        </label>
+                        <Form.Item
+                        name="unpaidLeaves"
+                        rules={[
+                            {
+                            required: true,
+                            message: t('allEmp.errors.unpaidLeaves'),
+                            },
+                        ]}
                   className="custom-border"
                 >
                   <InputNumber className="form-control" min={0} 
@@ -347,16 +348,16 @@ const Leaves = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                Paternity Leaves <span className="text-danger">*</span>
-                </label>
-                <Form.Item
-                  name="paternityLeaves"
-                  rules={[
-                    {
-                      required: true,
-                      message: "please enter paternity leaves",
-                    },
-                  ]}
+                {t('allEmp.Modal.paternityLeaves')} <span className="text-danger">*</span>
+                        </label>
+                        <Form.Item
+                        name="paternityLeaves"
+                        rules={[
+                            {
+                            required: true,
+                            message: t('allEmp.errors.paternityLeaves'),
+                            },
+                        ]}
                   className="custom-border"
                 >
                   <InputNumber className="form-control" min={0} 
@@ -372,16 +373,16 @@ const Leaves = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                Maternity Leaves <span className="text-danger">*</span>
-                </label>
-                <Form.Item
-                  name="maternityLeaves"
-                  rules={[
-                    {
-                      required: true,
-                      message: "please enter maternity leaves",
-                    },
-                  ]}
+                {t('allEmp.Modal.maternityLeaves')} <span className="text-danger">*</span>
+                        </label>
+                        <Form.Item
+                        name="maternityLeaves"
+                        rules={[
+                            {
+                            required: true,
+                            message: t('allEmp.errors.maternityLeaves'),
+                            },
+                        ]}
                   className="custom-border"
                 >
                   <InputNumber className="form-control" min={0}
@@ -397,16 +398,16 @@ const Leaves = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                  Marriage Leaves <span className="text-danger">*</span>
-                </label>
-                <Form.Item
-                  name="marriageLeaves"
-                  rules={[
-                    {
-                      required: true,
-                      message: "please enter marriage leaves",
-                    },
-                  ]}
+                {t('allEmp.Modal.marriageLeaves')} <span className="text-danger">*</span>
+                        </label>
+                        <Form.Item
+                        name="marriageLeaves"
+                        rules={[
+                            {
+                            required: true,
+                            message: t('allEmp.errors.marriageLeaves'),
+                            },
+                        ]}
                   className="custom-border"
                 >
                   <InputNumber className="form-control" min={0}
@@ -422,16 +423,16 @@ const Leaves = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                Half Day Leaves <span className="text-danger">*</span>
-                </label>
-                <Form.Item
-                  name="halfDayLeaves"
-                  rules={[
-                    {
-                      required: true,
-                      message: "please enter half day leaves",
-                    },
-                  ]}
+                {t('allEmp.Modal.halfDayLeaves')} <span className="text-danger">*</span>
+                        </label>
+                        <Form.Item
+                        name="halfDayLeaves"
+                        rules={[
+                            {
+                            required: true,
+                            message: t('allEmp.errors.halfDayLeaves'),
+                            },
+                        ]}
                   className="custom-border"
                 >
                   <InputNumber className="form-control" min={0}
@@ -447,16 +448,16 @@ const Leaves = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                Annual Leaves <span className="text-danger">*</span>
-                </label>
-                <Form.Item
-                  name="annualLeaves"
-                  rules={[
-                    {
-                      required: true,
-                      message: "please enter annual leaves",
-                    },
-                  ]}
+                {t('allEmp.Modal.annualLeaves')} <span className="text-danger">*</span>
+                            </label>
+                            <Form.Item
+                            name="annualLeaves"
+                            rules={[
+                                {
+                                required: true,
+                                message: t('allEmp.errors.annualLeaves'),
+                                },
+                            ]}
                   className="custom-border"
                 >
                   <InputNumber className="form-control" min={0}
@@ -475,7 +476,7 @@ const Leaves = () => {
               <Button htmlType="submit" className="btn btn-primary submit-btn" disabled={loader}>
                 {
                   loader ? <Spin size="small" indicator={antIcon} />
-                    : 'Save Changes'
+                    : t('settings.saveChanges')
                 }
               </Button>
             </Form.Item>

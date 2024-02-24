@@ -62,7 +62,7 @@ const Shifts = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Shift Info Error"
+              : t('allEmp.errors.getShiftInfoError')
           }!`
         );
       });
@@ -81,7 +81,7 @@ const Shifts = () => {
           // console.log(data);
           setData([...data.filter((shift) => shift._id !== id)]);
           handleClose();
-          message.success("Shift Deleted Successfully!");
+          message.success(t('settings.shift.shiftDeletedSuccessfully'));
           setLoader(false);
         }
       })
@@ -94,8 +94,8 @@ const Shifts = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Delete Shift"
-          } Error`
+              : t('settings.shift.deleteShiftError')
+          }`
         );
       });
   };
@@ -135,7 +135,7 @@ const Shifts = () => {
               })
             );
             handleClose();
-            message.success("Shift Updated Successfully");
+            message.success(t('settings.shift.shiftUpdatedSuccessfully'));
             setLoader(false);
           }
         })
@@ -148,8 +148,8 @@ const Shifts = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Update Shift Info"
-            } Error`
+                : t('settings.shift.updateShiftInfoError')
+            }`
           );
         });
     } else {
@@ -173,7 +173,7 @@ const Shifts = () => {
               },
             ]);
             handleClose();
-            message.success("Shift Added Successfully");
+            message.success(t('allEmp.errors.shiftAdded'));
             setLoader(false);
           }
         })
@@ -186,8 +186,8 @@ const Shifts = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Add Shift Info"
-            } Error`
+                : t('allEmp.errors.addShiftError')
+            }!`
           );
         });
     }
@@ -314,12 +314,12 @@ const Shifts = () => {
               margin: "7px 0px 4px 0px",
             }}
           >
-            No Shift added yet
+            {t('settings.shift.noShiftAddedYet')}
           </div>
           <div
             style={{ color: "#464665", fontWeight: "300", fontSize: "13px" }}
           >
-            Click 'Add Shifts' Button To Create <br /> A New Shift{" "}
+            {t('settings.shift.clickToAddShifts')} <br /> {t('settings.shift.newShift')}{" "}
           </div>
         </div>
       }
@@ -345,7 +345,7 @@ const Shifts = () => {
         <div className="page-header">
           <div className="row align-items-center pt-3 pb-3">
             <div className="col">
-              <h3 className="page-title">Shifts</h3>
+              <h3 className="page-title">{t('settings.shifts')}</h3>
             </div>
             <div className="col-auto float-end ms-auto">
               <a
@@ -360,7 +360,7 @@ const Shifts = () => {
                 }}
                 // data-bs-target="#add_leavetype"
               >
-                <i className="fa fa-plus" /> Add Shifts
+                <i className="fa fa-plus" /> {t('allEmp.Modal.addShift')}
               </a>
             </div>
           </div>
@@ -439,7 +439,7 @@ const Shifts = () => {
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">
-                {open?.data ? "Update" : "Add"} Shift
+                {open?.data ? t('holiday.update') : t('holiday.add')} {t('allEmp.Modal.shift')}
               </h5>
               <button type="button" className="close" onClick={handleClose}>
                 <span aria-hidden="true">×</span>
@@ -453,10 +453,10 @@ const Shifts = () => {
                 onFinishFailed={({errorFields}) => {
                   const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
                   if(consecutiveSpacesError){
-                    message.error("Please Remove Consecutive Spaces!")
-                  }else{
-                    message.error("Please Fill Required Fields!")
-                  }
+                    message.error(t('allEmp.errors.removeConsecutiveSpaces'))
+                 }else{
+                    message.error(t('allEmp.errors.fillRequiredFields'))
+                  } 
                 }}
                 initialValues={{
                   title: open?.data ? open?.data?.title : "",
@@ -476,7 +476,7 @@ const Shifts = () => {
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>
-                        Shift Name <span className="text-danger">*</span>
+                      {t('allEmp.Modal.shiftName')} <span className="text-danger">*</span>
                       </label>
                       <Form.Item
                         name="title"
@@ -485,13 +485,13 @@ const Shifts = () => {
                             whitespace: true,
                             required: true,
                             validator: (_, value) => {
-                              if(value.trim() === ''){
-                                return Promise.reject("please enter shift name");
-                              }
-                              else if (/\s{2,}/.test(value)) {
-                                return Promise.reject("please remove consecutive spaces");
-                              }
-                              return Promise.resolve();
+                              if(!value || value.trim() === ''){
+                                return Promise.reject(t('allEmp.errors.enterShiftName'));
+                            }
+                            else if (/\s{2,}/.test(value)) {
+                                return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
+                            }
+                            return Promise.resolve();
                             },
                           },
                         ]}
@@ -504,14 +504,14 @@ const Shifts = () => {
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>
-                        Start Time <span className="text-danger">*</span>
+                      {t('allEmp.Modal.startTime')} <span className="text-danger">*</span>
                       </label>
                       <Form.Item
                         name="startTime"
                         rules={[
                           {
                             required: true,
-                            message: "please enter start time",
+                            message: t('allEmp.errors.enterStartTime'),
                           },
                         ]}
                         className="custom-border"
@@ -527,25 +527,25 @@ const Shifts = () => {
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>
-                        Max Start Time <span className="text-danger">*</span>
+                      {t('allEmp.Modal.maxStartTime')} <span className="text-danger">*</span>
                       </label>
                       <Form.Item
                         name="maxStartTime"
                         rules={[
                           {
                             required: true,
-                            message: "please enter max start time",
+                            message: t('allEmp.errors.enterMaxStartTime'),
                           },
                           ({ getFieldValue }) => ({
                             validator: (_, value) => {
                               const startTime = getFieldValue('startTime');
                               if (!startTime) {
                                 return Promise.resolve();
-                              }
-                              if (startTime && value && value.isBefore(startTime)) {
-                                return Promise.reject("Max start time must be equal to or greater than start time");
-                              }
-                              return Promise.resolve();
+                            }
+                            if (startTime && value && value.isBefore(startTime)) {
+                                return Promise.reject(t('allEmp.errors.maxStartTimeGreaterEqualStartTime'));
+                            }
+                            return Promise.resolve();
                             },
                           }),
                         ]}
@@ -562,30 +562,30 @@ const Shifts = () => {
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>
-                        End Time <span className="text-danger">*</span>
+                      {t('allEmp.Modal.endTime')} <span className="text-danger">*</span>
                       </label>
                       <Form.Item
                         name="endTime"
                         rules={[
                           {
-                            required: true,
-                            message: "please enter end time",
+                              required: true,
+                              message: t('allEmp.errors.enterEndTime'),
                           },
                           ({ getFieldValue }) => ({
-                            validator: (_, value) => {
+                              validator: (_, value) => {
                               const maxStartTime = getFieldValue('maxStartTime');
                               if (!maxStartTime) {
-                                return Promise.resolve();
+                                  return Promise.resolve();
                               }
                               if (value && value.isSameOrBefore(maxStartTime)) {
-                                if (value.isSame(maxStartTime, 'minute')) {
-                                  return Promise.reject("End time and max start time cannot be the same");
-                                } else {
-                                  return Promise.reject("End time must be greater than max start time");
-                                }
+                                  if (value.isSame(maxStartTime, 'minute')) {
+                                  return Promise.reject(t('allEmp.errors.endTimeMaxStartTimeCannotBeSame'));
+                                  } else {
+                                  return Promise.reject(t('allEmp.errors.endTimeGreaterThanMaxStartTime'));
+                                  }
                               }
                               return Promise.resolve();
-                            },
+                              },
                           }),
                         ]}
                         className="custom-border"
@@ -638,7 +638,7 @@ const Shifts = () => {
                         {loader ? (
                           <Spin size="small" indicator={antIcon} />
                         ) : (
-                          "Submit"
+                          t('submit')
                         )}
                       </Button>
                     </Form.Item>
@@ -672,9 +672,9 @@ const Shifts = () => {
               }}
             >
               <div className="form-header">
-                <h3 style={{ marginBottom: "30px" }}>Delete Shift</h3>
+                <h3 style={{ marginBottom: "30px" }}>{t('delete')} {t('allEmp.Modal.shift')}</h3>
                 <p>
-                  Are you sure you want to delete <b>{open?.data?.title}</b>?
+                <span dangerouslySetInnerHTML={{ __html: t('projectScreen.confirmDeleteProject', { project: open?.data?.title }) }} />
                 </p>
               </div>
               <div className="modal-btn delete-action">
@@ -690,7 +690,7 @@ const Shifts = () => {
                       {loader ? (
                         <Spin size="small" indicator={antIcon} />
                       ) : (
-                        "Delete"
+                        t('delete')
                       )}
                     </Button>
                   </div>
@@ -700,7 +700,7 @@ const Shifts = () => {
                       className="btn btn-primary submit-btn"
                       style={{ width: "100%" }}
                     >
-                      Cancel
+                      {t('cancel')}
                     </Button>
                   </div>
                 </div>
