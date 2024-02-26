@@ -358,7 +358,8 @@ const ProfitLoss = () => {
       title: t('finance.Profit&loss.month'),
       dataIndex: "month",
       render: (text, record) => {
-        return <label>{moment(text).format("MMMM")}</label>;
+        const year = record?.year;
+        return <label>{moment(`${year}-${text}-01`, "YYYY-MM-DD").format("MMMM")}</label>;
       },
     },
     {
@@ -677,7 +678,7 @@ const ProfitLoss = () => {
                             <XAxis
                               dataKey="month"
                               tickFormatter={(value) =>
-                                moment(value).format("MMM")
+                                moment(`${graphData?.year}-${value}-01`, "YYYY-MM-DD").format("MMM")
                               }
                             />
                             <YAxis
