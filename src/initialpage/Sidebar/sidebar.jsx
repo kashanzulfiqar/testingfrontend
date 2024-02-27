@@ -575,10 +575,8 @@ const Sidebar = (props) => {
                         {/* <li><Link className={pathname.includes('e-settings') ? "active" : ""} to="/app/employee/leave-settings">Leave Settings</Link></li> */}
                         <Link className={pathname.includes('ce-employee') ? "active" : ""} to="/employee/attendance-employee">{t('attendance')}</Link>
                         {
-                          (user_state?.role === 'admin' || permissions?.attendanceManagement) &&
-                          <li>
+                          
                             <li><Link className={pathname.includes('nce-admin') ? "active" : ""} to="/employee/attendance-admin">{t('attendance')}<span className="badge badge-pill bg-custom float-end">ADMIN</span></Link></li>
-                          </li>
                         }
 
                       </ul>
@@ -602,16 +600,13 @@ const Sidebar = (props) => {
                       <ul >
 
                         <li>
-                        {
-                            (permissions?.viewSelfRequest) &&
                             <Link className={pathname.includes('employee/requests') ? "active" : ""} to="/employee/requests">{t('requests.requests')}</Link>
-                        }
+                        
                         </li>
                         <li>
-                          {
-                            (user_state?.role === 'admin' || permissions?.viewAllRequest || permissions?.teamRequest) &&
+                          
                             <Link className={pathname.includes('request-admin') ? "active" : ""} to="/employee/request-admin">{t('requests.requests')}{pending_counter > 0 && <span className="badge badge-pill bg-primary float-end custom-badgeclass">{pending_counter}</span>}<span className="badge badge-pill bg-custom float-end">ADMIN</span> </Link>
-                          }
+                          
                           {/* <Link className={pathname.includes('request-admin') ? "active" : ""} to="/employee/request-admin">Requests (Admin)</Link> */}
                         </li>
                         </ul>
@@ -635,9 +630,8 @@ const Sidebar = (props) => {
                         <ul>
                         
                         <li><Link className={pathname.includes('employee-timesheet') ? "active" : ""} to="/employee-timesheet">{t('sideBar.timesheet')}</Link></li>
-                        { (user_state?.role === 'admin' || permissions?.timesheetManagement) &&
+
                           <li><Link className={pathname.includes('admin-timesheet') ? "active" : ""} to="/admin-timesheet">{t('sideBar.timesheet')}<span className="badge badge-pill bg-custom float-end">ADMIN</span></Link></li>
-                        }
                         
                         </ul>
                       : ""
