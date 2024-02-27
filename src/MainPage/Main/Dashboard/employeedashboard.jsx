@@ -30,7 +30,7 @@ const EmployeeDashboard = () => {
   const todayDate = moment(nowdate).format("dddd, DD MMM YYYY")
 
   const formatHoursMinutes = (timeString) => {
-    if (!timeString) return t('none');
+    if (!timeString || timeString==="NaN") return t('none');
   
     const totalMinutes = parseFloat(timeString);
     const hours = Math.floor(totalMinutes / 60);
