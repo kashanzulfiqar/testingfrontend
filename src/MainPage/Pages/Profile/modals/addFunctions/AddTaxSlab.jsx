@@ -3,9 +3,10 @@ import React, { useState } from "react";
 import Modal from "@mui/material/Modal";
 import { LoadingOutlined } from "@ant-design/icons";
 import { apiServices } from "../../../../../Services/apiServices";
+import { useTranslation } from "react-i18next";
 
 function AddTaxSlab({ addTaxOpen, setAddTaxOpen, allTaxSlabs, setAllTaxSlabs, user_state }) {
-
+    const { t, i18n } = useTranslation();
     const [loader, setLoader] = useState(false);
 
     const onFinish = (values) => {
@@ -22,7 +23,7 @@ function AddTaxSlab({ addTaxOpen, setAddTaxOpen, allTaxSlabs, setAllTaxSlabs, us
                   }
               ])
               setAddTaxOpen(false)
-              message.success("Tax Slab Added Successfully!");
+              message.success(t('allEmp.errors.taxSlabAdded'));
               setLoader(false);
             }
           })
@@ -35,7 +36,7 @@ function AddTaxSlab({ addTaxOpen, setAddTaxOpen, allTaxSlabs, setAllTaxSlabs, us
                   ? err?.response?.data?.msg
                   : err?.response?.data?.validation?.body?.message
                   ? err?.response?.data?.validation?.body?.message
-                  : "Add Tax Slab Info Error"
+                  : t('allEmp.errors.addTaxSlabError')
               }!`
             );
           });
@@ -66,7 +67,7 @@ function AddTaxSlab({ addTaxOpen, setAddTaxOpen, allTaxSlabs, setAllTaxSlabs, us
             <div className="modal-content">
                 <div className="modal-header">
                 <h5 className="modal-title">
-                    Add Tax Slab
+                {t('allEmp.Modal.addTaxSlab')}
                 </h5>
                 <button type="button" className="close" onClick={() => setAddTaxOpen(false)}>
                     <span aria-hidden="true">×</span>
@@ -80,9 +81,9 @@ function AddTaxSlab({ addTaxOpen, setAddTaxOpen, allTaxSlabs, setAllTaxSlabs, us
                     onFinishFailed={({errorFields}) => {
                     const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
                     if(consecutiveSpacesError){
-                        message.error("Please Remove Consecutive Spaces!")
+                      message.error(t('allEmp.errors.removeConsecutiveSpaces'))
                     }else{
-                        message.error("Please Fill Required Fields!")
+                      message.error(t('allEmp.errors.fillRequiredFields'))
                     }
                     }}
                 >
@@ -90,7 +91,7 @@ function AddTaxSlab({ addTaxOpen, setAddTaxOpen, allTaxSlabs, setAllTaxSlabs, us
                     <div className="col-12">
                         <div className="form-group">
                         <label>
-                            Slab Name <span className="text-danger">*</span>
+                        {t('allEmp.Modal.slabName')} <span className="text-danger">*</span>
                         </label>
                         <Form.Item
                             name="title"
@@ -100,10 +101,10 @@ function AddTaxSlab({ addTaxOpen, setAddTaxOpen, allTaxSlabs, setAllTaxSlabs, us
                                 required: true,
                                 validator: (_, value) => {
                                 if(!value || value.trim() === ''){
-                                    return Promise.reject("please enter slab name");
+                                    return Promise.reject(t('allEmp.errors.enterSlabName'));
                                 }
                                 else if (/\s{2,}/.test(value)) {
-                                    return Promise.reject("please remove consecutive spaces");
+                                    return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                                 }
                                 return Promise.resolve();
                                 },
@@ -118,7 +119,7 @@ function AddTaxSlab({ addTaxOpen, setAddTaxOpen, allTaxSlabs, setAllTaxSlabs, us
                     <div className="col-sm-6">
                         <div className="form-group">
                         <label>
-                            Yearly Pay Lower Limit{" "}
+                        {t('allEmp.Modal.yearlyPayLowerLimit')}{" "}
                             <span className="text-danger">*</span>
                         </label>
                         <Form.Item
@@ -126,7 +127,7 @@ function AddTaxSlab({ addTaxOpen, setAddTaxOpen, allTaxSlabs, setAllTaxSlabs, us
                             rules={[
                             {
                                 required: true,
-                                message: "please enter lower limit",
+                                message: t('allEmp.errors.enterLowerLimit'),
                             },
                             ]}
                             className="custom-border"
@@ -154,7 +155,7 @@ function AddTaxSlab({ addTaxOpen, setAddTaxOpen, allTaxSlabs, setAllTaxSlabs, us
                     <div className="col-sm-6">
                         <div className="form-group">
                         <label>
-                            Yearly Pay Upper Limit{" "}
+                        {t('allEmp.Modal.yearlyPayUpperLimit')}{" "}
                             <span className="text-danger">*</span>
                         </label>
                         <Form.Item
@@ -162,7 +163,7 @@ function AddTaxSlab({ addTaxOpen, setAddTaxOpen, allTaxSlabs, setAllTaxSlabs, us
                             rules={[
                             {
                                 required: true,
-                                message: "please enter upper limit",
+                                message: t('allEmp.errors.enterUpperLimit'),
                             },
                             ({ getFieldValue }) => ({
                                 validator: (_, value) => {
@@ -174,7 +175,7 @@ function AddTaxSlab({ addTaxOpen, setAddTaxOpen, allTaxSlabs, setAllTaxSlabs, us
                                 }
                                 if (parseFloat(value) < parseFloat(lowerLimit)) {
                                     return Promise.reject(
-                                    "Yearly Pay Upper Limit must be greater than or equal to Yearly Pay Lower Limit"
+                                        t('allEmp.errors.upperLimitGreaterLowerLimit')
                                     );
                                 }
                                 return Promise.resolve();
@@ -206,7 +207,7 @@ function AddTaxSlab({ addTaxOpen, setAddTaxOpen, allTaxSlabs, setAllTaxSlabs, us
                     <div className="col-sm-6">
                         <div className="form-group">
                         <label>
-                            Tax (%) <span className="text-danger">*</span>
+                        {t('allEmp.Modal.taxPercentage')} <span className="text-danger">*</span>
                         </label>
                         <Form.Item
                             name="monthlyTaxInPercent"
@@ -215,10 +216,10 @@ function AddTaxSlab({ addTaxOpen, setAddTaxOpen, allTaxSlabs, setAllTaxSlabs, us
                                 required: true,
                                 validator: (_, value) => {
                                 if(!value || value.trim() === ''){
-                                    return Promise.reject("please enter tax percentage");
+                                    return Promise.reject(t('allEmp.errors.enterTaxPercentage'));
                                 }
                                 else if (value > 100) {
-                                    return Promise.reject("tax percentage must not be more than 100");
+                                    return Promise.reject(t('allEmp.errors.taxPercentageNotMoreThan100'));
                                 }
                                 return Promise.resolve();
                                 },
@@ -249,14 +250,14 @@ function AddTaxSlab({ addTaxOpen, setAddTaxOpen, allTaxSlabs, setAllTaxSlabs, us
                     <div className="col-sm-6">
                         <div className="form-group">
                         <label>
-                            Fix Tax (Amount) <span className="text-danger">*</span>
+                        {t('allEmp.Modal.fixTaxAmount')} <span className="text-danger">*</span>
                         </label>
                         <Form.Item
                             name="fixedYearlyTax"
                             rules={[
                             {
                                 required: true,
-                                message: "please enter fix tax",
+                                message: t('allEmp.errors.enterFixTax'),
                             },
                             ]}
                             className="custom-border"
@@ -291,7 +292,7 @@ function AddTaxSlab({ addTaxOpen, setAddTaxOpen, allTaxSlabs, setAllTaxSlabs, us
                             {loader ? (
                             <Spin size="small" indicator={antIcon} />
                             ) : (
-                            "Submit"
+                                t('submit')
                             )}
                         </Button>
                         </Form.Item>

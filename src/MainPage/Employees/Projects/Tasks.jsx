@@ -11,9 +11,10 @@ import { LoadingOutlined } from '@ant-design/icons';
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import Modal from "@mui/material/Modal";
 import { apiServices } from '../../../Services/apiServices';
+import { useTranslation } from 'react-i18next';
 
 const Tasks = () => {
-
+  const { t, i18n } = useTranslation();
   const [form] = Form.useForm();
   const [form2] = Form.useForm();
   const nav = useNavigate();
@@ -65,7 +66,7 @@ const Tasks = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get All Tasks Error"
+              : t('Timesheetemployee.getAllTasksError')
           }!`
         );
       });
@@ -88,7 +89,7 @@ const Tasks = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get All Projects Error"
+              : t('projectScreen.errors.getEmployeeProjectsError')
           }!`
         );
       });
@@ -114,7 +115,7 @@ const Tasks = () => {
         if (res?.data?.success === true) {
           getAllTasks(filterValues,currentPage, pageSize);
           handleClose('delete');
-          message.success("Task Deleted Successfully!");
+          message.success(t('Tasks.deleteTaskSuccess'));
           setLoader(false);
         }
       })
@@ -126,7 +127,7 @@ const Tasks = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Delete Task Error"
+              : t('Tasks.deleteTaskError')
           }`
         );
       });
@@ -185,7 +186,7 @@ const onFinishAdd = (values) => {
       .then((res) => {
           if (res?.data?.success === true) {
               handleClose('update')
-              message.success('Task Added Successfully!')
+              message.success(t('Tasks.addTaskSuccess'))
               setLoader(false)
             }
           })
@@ -197,7 +198,7 @@ const onFinishAdd = (values) => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Add Task Error!"
+              : t('Tasks.addTaskError')
           }!`
         );
       });
@@ -214,7 +215,7 @@ const onFinishEdit = (values) => {
       .then((res) => {
           if (res?.data?.success === true) {
               handleClose('update')
-              message.success('Task Updated Successfully!')
+              message.success(t('Tasks.updateTaskSuccess'))
               setLoader(false)
             }
           })
@@ -226,7 +227,7 @@ const onFinishEdit = (values) => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Update Task Error!"
+              : t('Tasks.updateTaskError')
           }!`
         );
       });
@@ -235,7 +236,7 @@ const onFinishEdit = (values) => {
   
     const columns = [
       {
-        title: 'Title',
+        title: t('Tasks.title'),
         dataIndex: 'title',
         fixed: 'left',
         render: (text, record) => (            
@@ -243,7 +244,7 @@ const onFinishEdit = (values) => {
         ),
       }, 
       {
-        title: 'Project Name',
+        title: t('Tasks.projectName'),
         dataIndex: 'projectId',
         render: (text, record) => (
             <Link to={`/projects/projects-view/${record?.projectId?._id}`} style={{color: '#333333'}}>
@@ -253,7 +254,7 @@ const onFinishEdit = (values) => {
         ),
       },        
       {
-        title: 'Tags',
+        title: t('Tasks.tags'),
         dataIndex: 'tags',
         render: (text, record) => (
             text?.map((tag) => (
@@ -262,7 +263,7 @@ const onFinishEdit = (values) => {
             ),
       },     
       {
-        title: 'Description',
+        title: t('Tasks.description'),
         dataIndex: 'description',
         render: (text, record) => (
           <label className='taskLongDesc'>{text}</label>
@@ -285,13 +286,13 @@ const onFinishEdit = (values) => {
     //       ),
     //   },
       {
-        title: 'Action',
+        title: t('allEmp.action'),
         render: (text, record) => (
             <div className="dropdown dropdown-action text-end">
                   <a href="#" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
                       <div className="dropdown-menu dropdown-menu-right">
-                        <a className="dropdown-item" href='javascript:void(0)' onClick={() => { setOpen({ isAddOpen: true, data: record }); form2.setFieldsValue({ ...record, projectId: record?.projectId?._id }) }}><i className="fa fa-pencil m-r-5" /> Edit</a>
-                        <a className="dropdown-item" href='javascript:void(0)' onClick={() => { setOpen({ isDelOpen: true, data: record }); }}><i className="fa fa-trash-o m-r-5" /> Delete</a>
+                        <a className="dropdown-item" href='javascript:void(0)' onClick={() => { setOpen({ isAddOpen: true, data: record }); form2.setFieldsValue({ ...record, projectId: record?.projectId?._id }) }}><i className="fa fa-pencil m-r-5" /> {t('edit')}</a>
+                        <a className="dropdown-item" href='javascript:void(0)' onClick={() => { setOpen({ isDelOpen: true, data: record }); }}><i className="fa fa-trash-o m-r-5" /> {t('delete')}</a>
                       </div>
             </div>
           ),
@@ -349,7 +350,7 @@ const onFinishEdit = (values) => {
         <>
         <div className="page-wrapper">
             <Helmet>
-                <title>Tasks - DaftarPro</title>
+                <title>{t('Tasks.tasks')} - {t('header.daftarPro')}</title>
                 <meta name="description" content="Login page"/>					
             </Helmet>
         {/* Page Content */}
@@ -358,14 +359,14 @@ const onFinishEdit = (values) => {
           <div className="page-header">
             <div className="row align-items-center">
               <div className="col">
-                <h3 className="page-title">Tasks</h3>
+                <h3 className="page-title">{t('Tasks.tasks')}</h3>
                 <ul className="breadcrumb">
-                  <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>Dashboard</Link></li>
-                  <li className="breadcrumb-item active">Tasks</li>
+                  <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>{t('dashboard')}</Link></li>
+                  <li className="breadcrumb-item active">{t('Tasks.tasks')}</li>
                 </ul>
               </div>
               <div className="col-auto float-end ms-auto">
-                <a href="javascript:void(0)" className="btn add-btn" onClick={() => { setOpen({ isAddOpen: true, data: '' }); }}><i className="fa fa-plus" /> Add Task</a>
+                <a href="javascript:void(0)" className="btn add-btn" onClick={() => { setOpen({ isAddOpen: true, data: '' }); }}><i className="fa fa-plus" /> {t('Tasks.addtask')}</a>
               </div>
             </div>
           </div>
@@ -386,14 +387,14 @@ const onFinishEdit = (values) => {
                       {
                         validator: (_, value) => {
                           if (/\s{2,}/.test(value)) {
-                            return Promise.reject("please remove consecutive spaces");
+                            return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                           }
                           return Promise.resolve();
                         },
                       },
                     ]}
                   >
-                    <Input className='form-control' style={{height:'50px'}} placeholder='Title' />
+                    <Input className='form-control' style={{height:'50px'}} placeholder={t('Tasks.title')} />
                   </Form.Item>
               </div>
             </div>
@@ -420,7 +421,7 @@ const onFinishEdit = (values) => {
                     style={{
                       width: '100%',
                     }}
-                    placeholder='Select Project'
+                    placeholder={t('Tasks.selectproject')}
                     size='large'
                     getPopupContainer={() => document.getElementById('area11')}
                   >
@@ -444,14 +445,14 @@ const onFinishEdit = (values) => {
                       {
                         validator: (_, value) => {
                           if (/\s{2,}/.test(value)) {
-                            return Promise.reject("please remove consecutive spaces");
+                            return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                           }
                           return Promise.resolve();
                         },
                       },
                     ]}
                   >
-                    <Input className='form-control' style={{height:'50px'}} placeholder='Tag' />
+                    <Input className='form-control' style={{height:'50px'}} placeholder={t('Tasks.tag')} />
                   </Form.Item>
               </div>
             </div>
@@ -463,7 +464,7 @@ const onFinishEdit = (values) => {
                 // disabled={role === 'admin' ? false : permissions?.viewAllUsers ? false : true}
                 style={{marginBottom: '24px', paddingInline: '10px'}}
               > 
-                Search 
+                {t('search')} 
               </button>
               <button
                 href="javascript:void(0)" type="reset"
@@ -476,7 +477,7 @@ const onFinishEdit = (values) => {
                 className="btn btn-success btn-block w-50 resetButton" style={{marginBottom: '24px', backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}} 
                 // disabled={role === 'admin' ? false : permissions?.viewAllUsers ? false : true}
               >
-                Reset 
+                {t('reset')} 
               </button>  
             </div>
           </div>
@@ -497,6 +498,22 @@ const onFinishEdit = (values) => {
                   // bordered
                   dataSource={allTasks}
                   rowKey={record => record.id}
+                  components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                   // onChange={this.handleTableChange}
                 />
                 {
@@ -509,14 +526,16 @@ const onFinishEdit = (values) => {
                         defaultCurrent={1}
                         current={currentPage}
                         showTotal={(total, range) =>
-                          `Showing ${range[0]} to ${range[1]} of ${total} entries`}
+                          t('paginationShow', { range1: range[0], range2: range[1], total: total })}
                         onChange={(page, size) => {
                           setPageSize(size); setCurrentPage(page);
                           getAllTasks(filterValues, page, size)
                         }}
                         showSizeChanger={true}
                         pageSizeOptions={['20', '30', '40', '50']}
-                        itemRender={itemRender}
+                        itemRender={(current, type, originalElement) =>
+                          itemRender(current, type, originalElement, t)
+                        }
                       />
                     </div>
                   }
@@ -544,7 +563,7 @@ const onFinishEdit = (values) => {
             <div className="modal-dialog modal-dialog-centered" role="document">
             <div className="modal-content">
                 <div className="modal-header">
-                <h5 className="modal-title">{open?.data ? 'Edit' : 'Add'} Task</h5>
+                <h5 className="modal-title">{open?.data ? t('edit') : t('holiday.add')} {t('Timesheetemployee.task')}</h5>
                 <button type="button" className="close" onClick={handleClose}>
                     <span aria-hidden="true">×</span>
                 </button>
@@ -563,10 +582,10 @@ const onFinishEdit = (values) => {
                     }
                     const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
                     if(consecutiveSpacesError){
-                    message.error("Please Remove Consecutive Spaces!")
-                    }else{
-                    message.error("Please Fill Required Fields!")
-                    }
+                      message.error(t('allEmp.errors.removeConsecutiveSpaces'))
+                   }else{
+                      message.error(t('allEmp.errors.fillRequiredFields'))
+                    } 
                 }}
                 autoComplete='off'
                 >
@@ -574,7 +593,7 @@ const onFinishEdit = (values) => {
                     <div className="col-12">
                         <div className="form-group">
                         <label>
-                            Title <span className="text-danger">*</span>
+                        {t('Tasks.title')} <span className="text-danger">*</span>
                         </label>
                         <Form.Item
                             name='title'
@@ -585,11 +604,11 @@ const onFinishEdit = (values) => {
                                 required: true,
                                 validator: (_, value) => {
                                 if (!value || value.trim() === '') {
-                                    return Promise.reject('please enter title');
+                                    return Promise.reject(t('Tasks.pleaseentertitle'));
                                 } else if (/\s{2,}/.test(value)) {
-                                    return Promise.reject('please remove consecutive spaces');
+                                  return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                                 } else if (value.length < 3) {
-                                    return Promise.reject('title must be at least 3 characters long');
+                                    return Promise.reject(t('Tasks.titleLength'));
                                 }
                                 return Promise.resolve();
                                 },
@@ -603,7 +622,7 @@ const onFinishEdit = (values) => {
                     <div className="col-12">
                         <div className="form-group">
                         <label>
-                            Project <span className="text-danger">*</span>
+                        {t('Tasks.project')} <span className="text-danger">*</span>
                         </label>
                         <div style={{ position: "relative" }} id="area">
                         <Form.Item
@@ -613,7 +632,7 @@ const onFinishEdit = (values) => {
                             {
                                 whitespace: true,
                                 required: true,
-                                message: 'please select project',
+                                message: t('Tasks.pleaseselectproject'),
                             },
                             ]}
                         >
@@ -634,7 +653,7 @@ const onFinishEdit = (values) => {
                                     getPopupContainer={() =>
                                         document.getElementById("area")
                                     }
-                                    placeholder="Select Project"
+                                    placeholder={t('Tasks.selectproject')}
                                     >
                                     {
                                         allProjects.map((project, index) => (
@@ -651,12 +670,12 @@ const onFinishEdit = (values) => {
                     <div className="col-12">
                         <div className="form-group">
                         <label>
-                            Tags <span className="text-danger">*</span>
+                        {t('Tasks.tags')} <span className="text-danger">*</span>
                             <Tooltip className="custom-tooltip" placement="rightBottom" title={(
-                                <label>To create a Tag, Press enter after typing</label>
+                                <label>{t('Tasks.taginstruction')}</label>
                             )}>
                                 <span style={{border: '1px solid grey', color: 'grey', fontSize: '12px', borderRadius: '50%', padding: '1.5px 4px 1px', margin: '5px', cursor: 'pointer'}}>
-                                    ?
+                                {t('Tasks.Qmark')}
                                 </span>
                             </Tooltip>
                         </label>
@@ -668,7 +687,7 @@ const onFinishEdit = (values) => {
                             {
                                 // whitespace: true,
                                 required: true,
-                                message: 'please enter tags',
+                                message: t('Tasks.pleasenetertags'),
                             },
                             ]}
                         >
@@ -687,7 +706,7 @@ const onFinishEdit = (values) => {
                     <div className="col-12">
                         <div className="form-group">
                         <label style={{display: 'flex', justifyContent: 'space-between'}}>
-                            <div>Description <span className="text-danger">*</span></div>
+                            <div>{t('Tasks.description')} <span className="text-danger">*</span></div>
                             <small style={{marginTop: '5px', fontSize: '10px', color: 'rgba(0, 0, 0, 0.5)'}}>{descLength} / 150</small>
                         </label>
                         <Form.Item
@@ -698,13 +717,13 @@ const onFinishEdit = (values) => {
                                 required: true,
                                 validator: (_, value) => {
                                 if(!value || value.trim() === ''){
-                                    return Promise.reject("please enter description");
+                                    return Promise.reject(t('Tasks.pleaseenterdescription'));
                                 }
                                 else if (/\s{2,}/.test(value)) {
-                                    return Promise.reject("please remove consecutive spaces");
+                                    return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                                 }
                                 else if (value.length <= 4) {
-                                    return Promise.reject("description length must be at least 5 characters long");
+                                    return Promise.reject(t('Tasks.descriptionLength'));
                                 }
                                 return Promise.resolve();
                                 },
@@ -721,7 +740,7 @@ const onFinishEdit = (values) => {
                     <button type='submit' className="btn btn-primary submit-btn" disabled={loader}>
                     {
                         loader ? <Spin size="small" indicator={antIcon} />
-                        : 'Submit'
+                        : t('submit')
                     }
                     </button>
                 </div>
@@ -754,10 +773,9 @@ const onFinishEdit = (values) => {
                 }}
               >
                 <div className="form-header">
-                  <h3 style={{ marginBottom: "30px" }}>Delete Task</h3>
+                  <h3 style={{ marginBottom: "30px" }}>{t('Tasks.delete_task')}</h3>
                   <p>
-                    Are you sure you want to delete{" "}
-                    <b>{open?.data?.title}</b>?
+                    <span dangerouslySetInnerHTML={{ __html: t('projectScreen.confirmDeleteProject', { project: open?.data?.title }) }} />
                   </p>
                 </div>
                 <div className="modal-btn delete-action">
@@ -772,7 +790,7 @@ const onFinishEdit = (values) => {
                       >
                         {
                           loader ? <Spin size="small" indicator={antIcon} />
-                            : 'Delete'
+                            : t('delete')
                         }
                       </Button>
                     </div>
@@ -782,7 +800,7 @@ const onFinishEdit = (values) => {
                         className="btn btn-primary submit-btn"
                         style={{width: '100%'}}
                       >
-                        Cancel
+                        {t('cancel')}
                       </Button>
                     </div>
                   </div>

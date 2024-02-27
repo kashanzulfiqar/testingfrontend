@@ -16,10 +16,11 @@ import { useSelector } from 'react-redux';
 import { apiServices } from '../../../Services/apiServices';
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { LoadingOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 
 
 const LeaveEmployee = () => {
-
+  const { t, i18n } = useTranslation();
   const [form] = Form.useForm();
   const nav = useNavigate();
   const user_state = useSelector((state) => state.user.loginvalue);
@@ -80,7 +81,7 @@ const LeaveEmployee = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get User Info Error"
+              : t('requests.errors.getUserInfoError')
           }!`
         );
       });
@@ -100,7 +101,7 @@ const LeaveEmployee = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Company Leaves Info Error"
+              : t('requests.errors.getCompanyLeavesInfoError')
           }!`
         );
       });
@@ -126,7 +127,7 @@ const LeaveEmployee = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Get Self Requests Error"
+                : t('requests.errors.getSelfRequestsError')
             }!`
           );
         });
@@ -141,7 +142,7 @@ const LeaveEmployee = () => {
         
       const columns = [
         {
-          title: 'Leave Type',
+          title: t('requests.leaveType'),
           dataIndex: 'leaveType',
           render: (text, record) => {
             return(            
@@ -155,7 +156,7 @@ const LeaveEmployee = () => {
             )},
         },
         {
-          title: 'From',
+          title: t('requests.from'),
           dataIndex: 'startDate',
           render: (text,record) => {
             const date = new Date(text);
@@ -172,7 +173,7 @@ const LeaveEmployee = () => {
           }
         },
         {
-          title: 'To',
+          title: t('requests.to'),
           dataIndex: 'endDate',
           render: (text,record) => {
             const date = new Date(text);
@@ -190,12 +191,12 @@ const LeaveEmployee = () => {
         },
 
         {
-          title: 'No Of Days',
+          title: t('requests.noOfDays'),
           dataIndex: 'totalDays', 
         },
       
         {
-          title: 'Reason',
+          title: t('requests.reason'),
           dataIndex: 'description',
           render: (text,record) => (
             <label className='longText'>
@@ -204,7 +205,7 @@ const LeaveEmployee = () => {
           )
         },
         {
-          title: 'Status',
+          title: t('status'),
           dataIndex: 'status',
           render: (text, record) => (
             <div className="action-label text-center">
@@ -217,7 +218,7 @@ const LeaveEmployee = () => {
             ),
         },
         {
-          title: 'Approved By',
+          title: t('requests.approvedBy'),
           dataIndex: 'approvedBy',
           render: (text, record) => (            
               <h2 className="table-avatar">
@@ -230,7 +231,7 @@ const LeaveEmployee = () => {
             ),
         },
         {
-          title: 'Action',
+          title: t('allEmp.action'),
           render: (text, record) => (
               <div className="dropdown dropdown-action text-end">
                 <a href="javascript:void(0)" className="action-icon dropdown-toggle" data-bs-toggle={role === 'admin' ? 'dropdown' : permissions?.manageSelfRequest ? 'dropdown' : ''} aria-expanded="false" disabled={role === 'admin' ? false : permissions?.manageSelfRequest ? false : true}><i className="material-icons">more_vert</i></a>
@@ -254,14 +255,14 @@ const LeaveEmployee = () => {
                         setLeaveType(true)
                       }}
                     >
-                      <i className="fa fa-pencil m-r-5" /> Edit</a>
+                      <i className="fa fa-pencil m-r-5" /> {t('edit')}</a>
                     <a className="dropdown-item" href="javascript:void(0)" onClick={() => {
                       setOpen({
                         isAddOpen: false,
                         isDelOpen: true,
                         data: record,
                       })
-                    }}><i className="fa fa-trash-o m-r-5" /> Delete</a>
+                    }}><i className="fa fa-trash-o m-r-5" /> {t('delete')}</a>
                   </div> :
                   <div className="dropdown-menu dropdown-menu-right">
                     <a
@@ -282,7 +283,7 @@ const LeaveEmployee = () => {
                         setLeaveType(true)
                       }}
                     >
-                      <i className="fa fa-eye m-r-5" /> View</a>
+                      <i className="fa fa-eye m-r-5" /> {t('View')}</a>
                   </div>
                 }
               </div>
@@ -296,15 +297,15 @@ const LeaveEmployee = () => {
 
 
 const leaves = [
-  compLeaves?.casualLeaves > 0  && {value: 'casual', label: 'Casual Leave'},
-  compLeaves?.sickLeaves > 0  && {value: 'sick', label: 'Sick Leave'},
-  compLeaves?.bereavementLeaves > 0  && {value: 'bereavement', label: 'Bereavement Leave'},
-  compLeaves?.marriageLeaves > 0  && {value: 'marriage', label: 'Marriage Leave'},
-  compLeaves?.maternityLeaves > 0  && {value: 'maternity', label: 'Maternity Leave'},
-  compLeaves?.paternityLeaves > 0  && {value: 'paternity', label: 'Paternity Leave'},
-  compLeaves?.annualLeaves > 0  && {value: 'annual', label: 'Annual Leave'},
-  compLeaves?.halfDayLeaves > 0  && {value: 'half', label: 'Half Leave'},
-  compLeaves?.unpaidLeaves > 0  && {value: 'Unpaid', label: 'Unpaid Leave'},
+  compLeaves?.casualLeaves > 0  && {value: 'casual', label: t('aRequests.casual')},
+  compLeaves?.sickLeaves > 0  && {value: 'sick', label: t('aRequests.sick')},
+  compLeaves?.bereavementLeaves > 0  && {value: 'bereavement', label: t('aRequests.bereavement')},
+  compLeaves?.marriageLeaves > 0  && {value: 'marriage', label: t('aRequests.marriage')},
+  compLeaves?.maternityLeaves > 0  && {value: 'maternity', label: t('aRequests.maternity')},
+  compLeaves?.paternityLeaves > 0  && {value: 'paternity', label: t('aRequests.paternity')},
+  compLeaves?.annualLeaves > 0  && {value: 'annual', label: t('aRequests.annual')},
+  compLeaves?.halfDayLeaves > 0  && {value: 'half', label: t('aRequests.half')},
+  compLeaves?.unpaidLeaves > 0  && {value: 'Unpaid', label: t('aRequests.unpaid')},
 ]
       const calculateTotalDays = () => {
         const startDate = form.getFieldValue('startDate');
@@ -362,7 +363,7 @@ const leaves = [
             ]);
             setPaginationDetail(prev => prev+1)
             handleClose();
-            message.success("Request Added Successfully!");
+            message.success(t('requests.errors.requestAddedSuccessfully'));
             setLoader(false);
           }
         })
@@ -375,7 +376,7 @@ const leaves = [
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Add Request Error"
+                : t('requests.errors.addRequestError')
             }!`
           );
         });
@@ -405,7 +406,7 @@ const leaves = [
                     })
                   );
                   handleClose();
-                  message.success("Request Updated Successfully!");
+                  message.success(t('requests.errors.requestUpdatedSuccessfully'));
                   setLoader(false)
                 }
               })
@@ -418,7 +419,7 @@ const leaves = [
                       ? err?.response?.data?.msg
                       : err?.response?.data?.validation?.body?.message
                       ? err?.response?.data?.validation?.body?.message
-                      : "Update Request Error"
+                      : t('requests.errors.updateRequestError')
                   }!`
                 );
               });
@@ -449,7 +450,7 @@ const leaves = [
                 })
               );
               handleClose();
-              message.success("Request Deleted Successfully!");
+              message.success(t('requests.errors.requestDeletedSuccessfully'));
               setLoader(false)
             }
           })
@@ -462,7 +463,7 @@ const leaves = [
                   ? err?.response?.data?.msg
                   : err?.response?.data?.validation?.body?.message
                   ? err?.response?.data?.validation?.body?.message
-                  : "Delete Request Error"
+                  : t('requests.errors.deleteRequestError')
               }!`
             );
           });
@@ -494,7 +495,7 @@ const leaves = [
                   margin: "7px 0px 4px 0px",
                 }}
               >
-                No Record Found!
+                {t('aRequests.errors.noRecordFound')}
               </div>
               {/* <div
                 style={{ color: "#464665", fontWeight: "300", fontSize: "13px" }}
@@ -531,7 +532,7 @@ const leaves = [
         <>
         <div className="page-wrapper">
         <Helmet>
-            <title>Requests - DaftarPro</title>
+            <title>{t('requests.pageTitle')}</title>
             <meta name="description" content="Login page"/>					
         </Helmet>
       {/* Page Content */}
@@ -540,10 +541,10 @@ const leaves = [
         <div className="page-header">
           <div className="row align-items-center">
             <div className="col">
-              <h3 className="page-title">Requests</h3>
+              <h3 className="page-title">{t('requests.requests')}</h3>
               <ul className="breadcrumb">
-                <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>Dashboard</Link></li>
-                <li className="breadcrumb-item active">Requests</li>
+                <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>{t('dashboard')}</Link></li>
+                <li className="breadcrumb-item active">{t('requests.requests')}</li>
               </ul>
             </div>
             <div className="col-auto float-end ms-auto">
@@ -555,7 +556,7 @@ const leaves = [
                       isDelOpen: false,
                       data: "",
                     });
-                  }}><i className="fa fa-plus" /> Add Request</a>
+                  }}><i className="fa fa-plus" /> {t('requests.addRequest')}</a>
             }
             </div>
           </div>
@@ -565,25 +566,25 @@ const leaves = [
         <div className="row">
           <div className="col-md-3">
             <div className="stats-info">
-              <label>Casual Leave</label>
+              <label>{t('requests.casualLeave')}</label>
               <h4>{singleUser?.casualLeaves} / {compLeaves?.casualLeaves}</h4>
             </div>
           </div>
           <div className="col-md-3">
             <div className="stats-info">
-              <label>Sick Leave</label>
+              <label>{t('requests.sickLeave')}</label>
               <h4>{singleUser?.sickLeaves} / {compLeaves?.sickLeaves}</h4>
             </div>
           </div>
           <div className="col-md-3">
             <div className="stats-info">
-              <label>Work From Home</label>
+              <label>{t('requests.workFromHome')}</label>
               <h4>{singleUser?.workFromHomeLeaves} / {compLeaves?.workFromHomeLeaves}</h4>
             </div>
           </div>
           <div className="col-md-3">
             <div className="stats-info" style={{minHeight: '83px'}}>
-              <label>Remaining Leave</label>
+              <label>{t('requests.remainingLeave')}</label>
               <h4>{singleUser?.remainingLeaves}</h4>
             </div>
           </div>
@@ -609,6 +610,22 @@ const leaves = [
                   rowKey={record => record.id}
                   // onChange={console.log("change")}
                   pagination={false}
+                  components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                 />
             </div>
             {
@@ -621,7 +638,7 @@ const leaves = [
                         defaultCurrent={1}
                         current={currentPage}
                         showTotal={(total, range) =>
-                          `Showing ${range[0]} to ${range[1]} of ${total} entries`}
+                          t('paginationShow', { range1: range[0], range2: range[1], total: total })}
                         onChange={(page, size) => {
                           console.log(page, size);
                           setPageSize(size); setCurrentPage(page);
@@ -629,7 +646,9 @@ const leaves = [
                         }}
                         showSizeChanger={true}
                         pageSizeOptions={['20', '30', '40', '50']}
-                        itemRender={itemRender}
+                        itemRender={(current, type, originalElement) =>
+                          itemRender(current, type, originalElement, t)
+                        }
                       />
                     </div>
                   }
@@ -654,7 +673,7 @@ const leaves = [
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">
-                { open?.data === '' ? "Add" : open?.data?.status === 'Pending' ? "Update" : 'View'} Request
+                { open?.data === '' ? t('requests.addModal.add') : open?.data?.status === 'Pending' ? t('requests.addModal.update') : t('requests.addModal.view')} {t('requests.addModal.request')}
               </h5>
               <button type="button" className="close" onClick={handleClose}>
                 <span aria-hidden="true">×</span>
@@ -668,9 +687,9 @@ const leaves = [
                 onFinishFailed={({errorFields}) => {
                   const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
                   if(consecutiveSpacesError){
-                    message.error("Please Remove Consecutive Spaces!")
+                    message.error(t('allEmp.errors.removeConsecutiveSpaces'))
                   }else{
-                    message.error("Please Fill Required Fields!")
+                    message.error(t('allEmp.errors.fillRequiredFields'))
                   }
                 }}
                 // initialValues={{
@@ -685,7 +704,7 @@ const leaves = [
               >
                 <div className="form-group">
                     <label>
-                    Request Type <span className="text-danger">*</span>
+                    {t('requests.addModal.requestType')} <span className="text-danger">*</span>
                     </label>
                     <div style={{ position: 'relative' }} id='area'>
                         <Form.Item
@@ -695,7 +714,7 @@ const leaves = [
                             {
                               whitespace: true,
                               required: true,
-                              message: "please select type",
+                              message: t('requests.errors.pleaseSelectType'),
                             },
                           ]}
                         >
@@ -706,15 +725,15 @@ const leaves = [
                                 style={{
                                 width: '100%',
                                 }}
-                                placeholder='Select type'
+                                placeholder={t('requests.addModal.selectType')}
                                 options={[
                                 {
                                     value: 'wfh',
-                                    label: "Work From Home",
+                                    label: t('requests.wfh'),
                                 },
                                 {
                                     value: 'leave',
-                                    label: "Leave Request",
+                                    label: t('requests.leave'),
                                 },
                                 ]}
                                 onChange={(value) => {
@@ -733,7 +752,7 @@ const leaves = [
                 { leavetype && (
                   <div className="form-group">
                       <label>
-                      Leave Type <span className="text-danger">*</span>
+                      {t('requests.addModal.leaveType')} <span className="text-danger">*</span>
                       </label>
                       <div style={{ position: 'relative' }} id='area'>
                           <Form.Item
@@ -743,7 +762,7 @@ const leaves = [
                               {
                                 whitespace: true,
                                 required: true,
-                                message: "please select type",
+                                message: t('requests.errors.pleaseSelectType'),
                               },
                             ]}
                           >
@@ -754,7 +773,7 @@ const leaves = [
                                   style={{
                                   width: '100%',
                                   }}
-                                  placeholder='Select type'
+                                  placeholder={t('requests.addModal.selectType')}
                               >
                                 {leaves?.map((item, index) => {
                                   if(item?.value){
@@ -770,7 +789,7 @@ const leaves = [
                 }
                 <div className="form-group">
                   <label>
-                  From <span className="text-danger">*</span>
+                  {t('requests.from')} <span className="text-danger">*</span>
                   </label>
                   <div style={{ position: 'relative' }} id='area'>
                       <Form.Item
@@ -779,17 +798,17 @@ const leaves = [
                       rules={[
                           {
                             required: true,
-                            message: "please enter start date",
+                            message: t('requests.errors.pleaseEnterStartDate'),
                           },
                         ]}
                       >
-                          <DatePicker style={{backgroundColor: (open?.data?.status === 'Approved' || open?.data?.status === 'Declined' || open?.data?.status === 'Cancelled') ? '#e9ecef' : ''}} disabled={open?.data?.status === 'Approved' || open?.data?.status === 'Declined' || open?.data?.status === 'Cancelled'} className={(open?.data?.status === 'Approved' || open?.data?.status === 'Declined' || open?.data?.status === 'Cancelled') ? 'dateDisable form-control' : 'form-control'} onChange={e => {calculateTotalDays(e); handleFromDateChange(e); setGood(10); if(e === null || e){ form.setFieldsValue({ endDate: null }); calculateTotalDays(e); }}} getPopupContainer={() => document.getElementById('area')} />
+                          <DatePicker style={{backgroundColor: (open?.data?.status === 'Approved' || open?.data?.status === 'Declined' || open?.data?.status === 'Cancelled') ? '#e9ecef' : ''}} placeholder={t('requests.addModal.selectDate')} disabled={open?.data?.status === 'Approved' || open?.data?.status === 'Declined' || open?.data?.status === 'Cancelled'} className={(open?.data?.status === 'Approved' || open?.data?.status === 'Declined' || open?.data?.status === 'Cancelled') ? 'dateDisable form-control' : 'form-control'} onChange={e => {calculateTotalDays(e); handleFromDateChange(e); setGood(10); if(e === null || e){ form.setFieldsValue({ endDate: null }); calculateTotalDays(e); }}} getPopupContainer={() => document.getElementById('area')} />
                       </Form.Item>
                   </div>
                 </div>
                 <div className="form-group">
                   <label>
-                  To <span className="text-danger">*</span>
+                  {t('requests.to')} <span className="text-danger">*</span>
                   </label>
                   <div style={{ position: 'relative' }} id='area'>
                       <Form.Item
@@ -798,17 +817,17 @@ const leaves = [
                       rules={[
                           {
                             required: true,
-                            message: "please enter end date",
+                            message: t('requests.errors.pleaseEnterEndDate'),
                           },
                         ]}
                       >
-                          <DatePicker style={{backgroundColor: (open?.data?.status === 'Approved' || open?.data?.status === 'Declined' || open?.data?.status === 'Cancelled') ? '#e9ecef' : ''}} disabled={open?.data?.status === 'Approved' || open?.data?.status === 'Declined' || open?.data?.status === 'Cancelled'} className={(open?.data?.status === 'Approved' || open?.data?.status === 'Declined' || open?.data?.status === 'Cancelled') ? 'dateDisable form-control' : 'form-control'} onChange={calculateTotalDays} disabledDate={disabledDate} getPopupContainer={() => document.getElementById('area')} />
+                          <DatePicker style={{backgroundColor: (open?.data?.status === 'Approved' || open?.data?.status === 'Declined' || open?.data?.status === 'Cancelled') ? '#e9ecef' : ''}} placeholder={t('requests.addModal.selectDate')} disabled={open?.data?.status === 'Approved' || open?.data?.status === 'Declined' || open?.data?.status === 'Cancelled'} className={(open?.data?.status === 'Approved' || open?.data?.status === 'Declined' || open?.data?.status === 'Cancelled') ? 'dateDisable form-control' : 'form-control'} onChange={calculateTotalDays} disabledDate={disabledDate} getPopupContainer={() => document.getElementById('area')} />
                       </Form.Item>
                   </div>
                 </div>
                 <div className="form-group">
                   <label>
-                  Number of Days <span className="text-danger">*</span>
+                  {t('requests.addModal.numberOfDays')} <span className="text-danger">*</span>
                   </label>
                     <Form.Item
                     name='totalDays'
@@ -819,7 +838,7 @@ const leaves = [
                 </div>
                 <div className="form-group">
                   <label style={{display: 'flex', justifyContent: 'space-between'}}>
-                    <div>Reason <span className="text-danger">*</span></div>
+                    <div>{t('requests.reason')} <span className="text-danger">*</span></div>
                   { !(open?.data?.status === 'Approved' || open?.data?.status === 'Declined' || open?.data?.status === 'Cancelled') && <small style={{marginTop: '5px', fontSize: '10px', color: 'rgba(0, 0, 0, 0.5)'}}>{reasonLength} / 150</small>}
                   </label>
                   <Form.Item
@@ -830,13 +849,13 @@ const leaves = [
                         required: true,
                         validator: (_, value) => {
                           if(!value || value.trim() === ''){
-                            return Promise.reject("please enter reason");
+                            return Promise.reject(t('requests.errors.pleaseEnterReason'));
                           }
                           else if (/\s{2,}/.test(value)) {
-                            return Promise.reject("please remove consecutive spaces");
+                            return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                           }
                           else if (value.length < 5) {
-                            return Promise.reject("reason length must be at least 5 characters long");
+                            return Promise.reject(t('requests.errors.reasonLengthMin'));
                           }
                           return Promise.resolve();
                         },
@@ -860,7 +879,7 @@ const leaves = [
                       {loader ? (
                         <Spin size="small" indicator={antIcon} />
                       ) : (
-                        "Submit"
+                        t('submit')
                       )}
                     </Button>
                   </Form.Item>

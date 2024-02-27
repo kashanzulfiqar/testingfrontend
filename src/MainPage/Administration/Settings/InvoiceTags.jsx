@@ -9,8 +9,10 @@ import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { apiServices } from "../../../Services/apiServices";
 import { useSelector } from "react-redux";
 import { LoadingOutlined } from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
 
 const InvoiceTags = () => {
+  const { t, i18n } = useTranslation();
   const user_state = useSelector((state) => state.user.loginvalue);
 
   const [form] = Form.useForm();
@@ -49,7 +51,7 @@ const InvoiceTags = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Invoice Tag Error"
+              : t('settings.InvoiceTags.getInvoiceTagError')
           }!`
         );
       });
@@ -69,7 +71,7 @@ const InvoiceTags = () => {
           // console.log(data);
           setData([...data.filter((Tag) => Tag._id !== id)]);
           handleClose();
-          message.success("Tag Deleted Successfully!");
+          message.success(t('settings.InvoiceTags.tagDeletedSuccessfully'));
           setLoader(false);
         }
       })
@@ -82,7 +84,7 @@ const InvoiceTags = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Delete Tag Error"
+              : t('settings.InvoiceTags.deleteTagError')
           }!`
         );
       });
@@ -116,7 +118,7 @@ const InvoiceTags = () => {
               })
             );
             handleClose();
-            message.success("Invoice Tag Updated Successfully!");
+            message.success(t('settings.InvoiceTags.invoiceTagUpdatedSuccessfully'));
             setLoader(false);
           }
         })
@@ -129,7 +131,7 @@ const InvoiceTags = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Update Invoice Tag Info Error"
+                : t('settings.InvoiceTags.updateInvoiceTagError')
             }!`
           );
         });
@@ -147,7 +149,7 @@ const InvoiceTags = () => {
               },
             ]);
             handleClose();
-            message.success("Invoice Tag Added Successfully!");
+            message.success(t('settings.InvoiceTags.invoiceTagAddedSuccessfully'));
             setLoader(false);
           }
         })
@@ -160,7 +162,7 @@ const InvoiceTags = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Add Invoice Tag Info Error"
+                : t('settings.InvoiceTags.addInvoiceTagError')
             }!`
           );
         });
@@ -175,12 +177,12 @@ const InvoiceTags = () => {
       render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
     },
     {
-      title: "Tag Name",
+      title: t('settings.InvoiceTags.tagName'),
       dataIndex: "invoiceTag",
       // sorter: (a, b) => a.TagName.length - b.TagName.length,
     },
     {
-      title: "Actions",
+      title: t('holiday.actions'),
       render: (text, record) => (
         <div className="dropdown dropdown-action text-end">
           <a
@@ -203,7 +205,7 @@ const InvoiceTags = () => {
                 });
               }}
             >
-              <i className="fa fa-pencil m-r-5" /> Edit
+              <i className="fa fa-pencil m-r-5" /> {t('edit')}
             </a>
             <a
               className="dropdown-item"
@@ -216,7 +218,7 @@ const InvoiceTags = () => {
                 });
               }}
             >
-              <i className="fa fa-trash-o m-r-5" /> Delete
+              <i className="fa fa-trash-o m-r-5" /> {t('delete')}
             </a>
           </div>
         </div>
@@ -250,12 +252,12 @@ const InvoiceTags = () => {
               margin: "7px 0px 4px 0px",
             }}
           >
-            No Invoice Tag added yet
+            {t('settings.InvoiceTags.noInvoiceTagAdded')}
           </div>
           <div
             style={{ color: "#464665", fontWeight: "300", fontSize: "13px" }}
           >
-            Click 'Add Invoice Tag' Button To Create <br /> A New Invoice Tag{" "}
+            {t('settings.InvoiceTags.clickAddInvoiceTagButton')} <br /> {t('settings.InvoiceTags.newInvoiceTag')}{" "}
           </div>
         </div>
       }
@@ -281,7 +283,7 @@ const InvoiceTags = () => {
         <div className="page-header">
           <div className="row align-items-center pt-3 pb-3">
             <div className="col">
-              <h3 className="page-title">Invoice Tags</h3>
+              <h3 className="page-title">{t('settings.invoiceTags')}</h3>
             </div>
             <div className="col-auto float-end ms-auto">
               <a
@@ -296,7 +298,7 @@ const InvoiceTags = () => {
                 }}
                 // data-bs-target="#add_leavetype"
               >
-                <i className="fa fa-plus" /> Add Invoice Tag
+                <i className="fa fa-plus" /> {t('settings.InvoiceTags.addInvoiceTag')}
               </a>
             </div>
           </div>
@@ -320,6 +322,22 @@ const InvoiceTags = () => {
                 dataSource={data}
                 rowKey={(record) => record.id}
                 // onChange={this.handleTableChange}
+                components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
               />
             </div>
           </div>
@@ -342,7 +360,7 @@ const InvoiceTags = () => {
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">
-                {open?.data ? "Update" : "Add"} Invoice Tag
+                {open?.data ? t('holiday.update') : t('holiday.add')} {t('settings.InvoiceTags.invoiceTag')}
               </h5>
               <button type="button" className="close" onClick={handleClose}>
                 <span aria-hidden="true">×</span>
@@ -356,10 +374,10 @@ const InvoiceTags = () => {
                 onFinishFailed={({errorFields}) => {
                   const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
                   if(consecutiveSpacesError){
-                    message.error("Please Remove Consecutive Spaces!")
-                  }else{
-                    message.error("Please Fill Required Fields!")
-                  }
+                    message.error(t('allEmp.errors.removeConsecutiveSpaces'))
+                 }else{
+                    message.error(t('allEmp.errors.fillRequiredFields'))
+                  } 
                 }}
                 initialValues={{
                   invoiceTag: open?.data ? open?.data?.invoiceTag : "",
@@ -368,7 +386,7 @@ const InvoiceTags = () => {
               >
                 <div className="form-group">
                   <label>
-                    Invoice Tag Name <span className="text-danger">*</span>
+                  {t('settings.InvoiceTags.invoiceTagName')} <span className="text-danger">*</span>
                   </label>
                   <Form.Item
                     name="invoiceTag"
@@ -378,10 +396,10 @@ const InvoiceTags = () => {
                         required: true,
                         validator: (_, value) => {
                           if(value.trim() === ''){
-                            return Promise.reject("please enter Tag name");
+                            return Promise.reject(t('settings.InvoiceTags.pleaseEnterTagName'));
                           }
                           else if (/\s{2,}/.test(value)) {
-                            return Promise.reject("please remove consecutive spaces");
+                            return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                           }
                           return Promise.resolve();
                         },
@@ -402,7 +420,7 @@ const InvoiceTags = () => {
                       {loader ? (
                         <Spin size="small" indicator={antIcon} />
                       ) : (
-                        "Submit"
+                        t('submit')
                       )}
                     </Button>
                   </Form.Item>
@@ -435,10 +453,9 @@ const InvoiceTags = () => {
               }}
             >
               <div className="form-header">
-                <h3 style={{ marginBottom: "30px" }}>Delete Invoice Tag</h3>
+                <h3 style={{ marginBottom: "30px" }}>{t('delete')} {t('settings.InvoiceTags.invoiceTag')}</h3>
                 <p>
-                  Are you sure you want to delete{" "}
-                  <b>{open?.data?.invoiceTag}</b>?
+                  <span dangerouslySetInnerHTML={{ __html: t('projectScreen.confirmDeleteProject', { project: open?.data?.invoiceTag }) }} />
                 </p>
               </div>
               <div className="modal-btn delete-action">
@@ -454,7 +471,7 @@ const InvoiceTags = () => {
                       {loader ? (
                         <Spin size="small" indicator={antIcon} />
                       ) : (
-                        "Delete"
+                        t('delete')
                       )}
                     </Button>
                   </div>
@@ -464,7 +481,7 @@ const InvoiceTags = () => {
                       className="btn btn-primary submit-btn"
                       style={{ width: "100%" }}
                     >
-                      Cancel
+                      {t('cancel')}
                     </Button>
                   </div>
                 </div>

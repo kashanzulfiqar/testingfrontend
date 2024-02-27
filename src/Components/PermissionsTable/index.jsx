@@ -8,9 +8,10 @@ import Box from '@mui/material/Box';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { Table, Tooltip } from 'antd';
+import { useTranslation } from 'react-i18next';
 
 const PermissionsTable = ({ permissions, setPermissions, disabled }) => {
-
+  const { t, i18n } = useTranslation();
   const [loader, setLoader] = useState(false);
   const [expandedIndex, setExpandedIndex] = useState(null);
 
@@ -120,12 +121,12 @@ const PermissionsTable = ({ permissions, setPermissions, disabled }) => {
         )},
     },
     {
-      title: 'Module Permission',
+      title: t('permissionTable.modulePermission'),
       dataIndex: 'title',
       style: { minWidth: '350px', maxWidth: '350px', width: '350px' }
     },
     {
-      title: 'Create',
+      title: t('permissionTable.create'),
       dataIndex: 'employeeId',
       render: (text, record) => {
         const sub = record?.subPermissions?.find(permission => permission.title === "Add Employee");
@@ -143,7 +144,7 @@ const PermissionsTable = ({ permissions, setPermissions, disabled }) => {
         )},
     },
     {
-      title: 'View',
+      title: t('permissionTable.view'),
       dataIndex: 'email',
       render: (text, record) => {
         const sub = record?.subPermissions?.find(permission => permission.title === "View Employees" || permission.title === "View Self Requests");
@@ -161,7 +162,7 @@ const PermissionsTable = ({ permissions, setPermissions, disabled }) => {
         )},
     },
     {
-      title: 'Update',
+      title: t('permissionTable.update'),
       dataIndex: 'joiningDate',
       render: (text, record) => {
         const sub = record?.subPermissions?.find(permission => permission.title === "Edit Employee");
@@ -179,7 +180,7 @@ const PermissionsTable = ({ permissions, setPermissions, disabled }) => {
         )},
     },
     {
-      title: 'Delete',
+      title: t('permissionTable.delete'),
       dataIndex: 'roleId',
       render: (text, record) => {
         const sub = record?.subPermissions?.find(permission => permission.title === "Enable/Disable Employee");
@@ -198,7 +199,7 @@ const PermissionsTable = ({ permissions, setPermissions, disabled }) => {
     },
     {
         // title: 'Reports To Employee',
-        title: 'Is Reported To',
+        title: t('permissionTable.isReportedTo'),
         dataIndex: 'roleId',
         render: (text, record) => {
           const sub = record?.subPermissions?.find(permission => permission.title === "Reports to Employee");
@@ -216,7 +217,7 @@ const PermissionsTable = ({ permissions, setPermissions, disabled }) => {
           )},
       },
     {
-      title: 'Manage Self Request',
+      title: t('permissionTable.manageSelfRequest'),
       dataIndex: 'roleId',
       render: (text, record) => {
         const sub = record?.subPermissions?.find(permission => permission.title === "Manage Self Request");
@@ -234,7 +235,7 @@ const PermissionsTable = ({ permissions, setPermissions, disabled }) => {
         )},
     },
     {
-      title: 'Manage Company',
+      title: t('permissionTable.manageCompany'),
       dataIndex: 'roleId',
       render: (text, record) => {
         const sub = record?.subPermissions?.find(permission => permission.title === "Manage Company");
@@ -252,7 +253,7 @@ const PermissionsTable = ({ permissions, setPermissions, disabled }) => {
         )},
     },
     {
-      title: 'View Employees Requests',
+      title: t('permissionTable.viewEmployeesRequests'),
       dataIndex: 'roleId',
       render: (text, record) => {
         const sub = record?.subPermissions?.find(permission => permission.title === "View Employees Requests");
@@ -270,7 +271,7 @@ const PermissionsTable = ({ permissions, setPermissions, disabled }) => {
         )},
     },
     {
-      title: 'Manage Request Approvals',
+      title: t('permissionTable.manageRequestApprovals'),
       dataIndex: 'roleId',
       render: (text, record) => {
         const sub = record?.subPermissions?.find(permission => permission.title === "Manage Request Approvals");
@@ -288,7 +289,7 @@ const PermissionsTable = ({ permissions, setPermissions, disabled }) => {
         )},
     },
     {
-      title: 'Manage Team Request',
+      title: t('permissionTable.manageTeamRequest'),
       dataIndex: 'roleId',
       render: (text, record) => {
         const sub = record?.subPermissions?.find(permission => permission.title === "Manage Request From Team");
@@ -306,7 +307,7 @@ const PermissionsTable = ({ permissions, setPermissions, disabled }) => {
         )},
     },
     {
-      title: 'View Employees Attendance',
+      title: t('permissionTable.viewEmployeesAttendance'),
       dataIndex: 'roleId',
       render: (text, record) => {
         const sub = record?.subPermissions?.find(permission => permission.title === "View Employees Attendance");
@@ -324,7 +325,7 @@ const PermissionsTable = ({ permissions, setPermissions, disabled }) => {
         )},
     },
     {
-      title: 'View Self Payrolls',
+      title: t('permissionTable.viewSelfPayrolls'),
       dataIndex: 'viewSelfPayrolls',
       render: (text, record) => {
         const sub = record?.subPermissions?.find(permission => permission.title === "View Self Payrolls");
@@ -342,7 +343,7 @@ const PermissionsTable = ({ permissions, setPermissions, disabled }) => {
         )},
     },
     {
-      title: 'Manage Payrolls',
+      title: t('permissionTable.managePayrolls'),
       dataIndex: 'managePayrolls',
       render: (text, record) => {
         const sub = record?.subPermissions?.find(permission => permission.title === "Manage Payrolls");
@@ -360,7 +361,7 @@ const PermissionsTable = ({ permissions, setPermissions, disabled }) => {
         )},
     },
     {
-      title: 'Manage Clients',
+      title: t('permissionTable.manageClients'),
       dataIndex: 'clientManagement',
       render: (text, record) => {
         const sub = record?.subPermissions?.find(permission => permission.title === "Manage Clients");
@@ -378,7 +379,7 @@ const PermissionsTable = ({ permissions, setPermissions, disabled }) => {
         )},
     },
     {
-      title: 'Manage Projects',
+      title: t('permissionTable.manageProjects'),
       dataIndex: 'projectManagement',
       render: (text, record) => {
         const sub = record?.subPermissions?.find(permission => permission.title === "Manage Projects");
@@ -396,7 +397,7 @@ const PermissionsTable = ({ permissions, setPermissions, disabled }) => {
         )},
     },
     {
-      title: 'Manage Expenses',
+      title: t('permissionTable.manageExpenses'),
       dataIndex: 'expenseManagement',
       render: (text, record) => {
         const sub = record?.subPermissions?.find(permission => permission.title === "Manage Expenses");
@@ -414,7 +415,7 @@ const PermissionsTable = ({ permissions, setPermissions, disabled }) => {
         )},
     },
     {
-      title: 'Manage Leads',
+      title: t('permissionTable.manageLeads'),
       dataIndex: 'leadsManagement',
       render: (text, record) => {
         const sub = record?.subPermissions?.find(permission => permission.title === "Manage Leads");
@@ -432,7 +433,7 @@ const PermissionsTable = ({ permissions, setPermissions, disabled }) => {
         )},
     },
     {
-      title: 'Manage Timesheet',
+      title: t('permissionTable.manageTimesheet'),
       dataIndex: 'timesheetManagement',
       render: (text, record) => {
         const sub = record?.subPermissions?.find(permission => permission.title === "Manage Timesheet");
@@ -450,7 +451,7 @@ const PermissionsTable = ({ permissions, setPermissions, disabled }) => {
         )},
     },
     {
-      title: 'View Reports',
+      title: t('permissionTable.viewReports'),
       dataIndex: 'reportManagement',
       render: (text, record) => {
         const sub = record?.subPermissions?.find(permission => permission.title === "Report Management");
@@ -487,6 +488,22 @@ const PermissionsTable = ({ permissions, setPermissions, disabled }) => {
                     columns={columns}
                     dataSource={permissions}
                     pagination={false}
+                    components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                 />
       )
 }

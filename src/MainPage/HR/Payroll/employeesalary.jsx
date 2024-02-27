@@ -44,8 +44,10 @@ import "jspdf-autotable";
 import DownloadOutlinedIcon from '@mui/icons-material/DownloadOutlined';
 import DownloadForOfflineRoundedIcon from '@mui/icons-material/DownloadForOfflineRounded';
 import CurrentPayrollPDF from "./CurrentPayrollPDF";
+import { useTranslation } from "react-i18next";
 
 const EmployeeSalary = () => {
+  const { t, i18n } = useTranslation();
   const user_state = useSelector((state) => state.user.loginvalue);
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
   const role = user_state?.user?.role
@@ -56,6 +58,7 @@ const EmployeeSalary = () => {
   const [selectedMonthYear, setSelectedMonthYear] = useState("");
   const [genModal, setGenModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [editLoader, setEditLoader] = useState(false);
   const [messageflag, setMessageflag] = useState(false);
   const [selectedRows, setSelectedRows] = useState([]);
   const [processedPayrolls, setProcessedPayrolls] = useState([]);
@@ -133,6 +136,7 @@ const EmployeeSalary = () => {
 
   const closeMOP = () => {
     setMOPModal(false);
+    setLoader(false);
     setSelectedRecord(null);
   }
 
@@ -142,6 +146,7 @@ const EmployeeSalary = () => {
   };
 
   const closeEditModal = () => {
+    setEditLoader(false);
     setEditModal(false);
     setSelectedRecord(null);
   };
@@ -190,7 +195,7 @@ const EmployeeSalary = () => {
       });
     }
     else {
-      message.warning("Both Month and Year required");
+      message.warning(t('payroll.currentPayroll.bothMonthAndYearRequired'));
     }
   };
 
@@ -233,6 +238,7 @@ const EmployeeSalary = () => {
   // Function to handle closing the modal
   const handleCloseModal = () => {
     setGenModal(false);
+    setLoader(false);
     PayFilterReset();
   };
 
@@ -263,7 +269,7 @@ const EmployeeSalary = () => {
             //setFilters(selectedPayFilters);
             //GetGenPayrolls();
             message.success(
-              `Successfully Generated Payrolls of ${selectedPayFilters.month} ${selectedPayFilters.year}`
+              t('payroll.currentPayroll.successfullyGeneratedPayrollsOfYear', {year: `${selectedPayFilters.month} ${selectedPayFilters.year}`})
             );
             setLoader(false);
             GetGenPayrolls();
@@ -277,7 +283,7 @@ const EmployeeSalary = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Generate Payroll Error"
+                : t('payroll.currentPayroll.generatePayrollError')
             }`
           );
           setIsLoading(false);
@@ -285,7 +291,8 @@ const EmployeeSalary = () => {
           PayFilterReset();
         });
     } else {
-      message.warning("Both Month and Year required");
+      message.warning(t('payroll.currentPayroll.bothMonthAndYearRequired'));
+      setLoader(false);
     }
   };
 
@@ -330,7 +337,7 @@ const EmployeeSalary = () => {
       .then((res) => {
         if (res.data.success === true) {
           if (!processingMultipleRecords) {
-            message.success(`Payroll processed successfully`);
+            message.success(t('payroll.currentPayroll.payrollProcessedSuccessfully'));
             closeProcessConfirm()
             handleReset();
           }
@@ -340,7 +347,7 @@ const EmployeeSalary = () => {
       })
       .catch((error) => {
         console.error(`Error processing Payroll ID ${record}:`, error);
-        message.error(`Error processing Payroll`);
+        message.error(t('payroll.currentPayroll.errorProcessingPayroll'));
         closeProcessConfirm();
       });
   };
@@ -375,7 +382,7 @@ const EmployeeSalary = () => {
         selectedRecords.map((record) => updateProcessedStatus(record))
       )
         .then(() => {
-          message.success(`Selected Payrolls Processed successfully`);
+          message.success(t('payroll.currentPayroll.selectedPayrollsProcessedSuccessfully'));
           closeProcessConfirm();
           handleReset();
         })
@@ -400,7 +407,7 @@ const EmployeeSalary = () => {
       // Update processed status for all selected rows (you can loop through selectedRows)
     }
       else if (selectedRows.length === 0){
-        message.warning("Please Select Payrolls")
+        message.warning(t('payroll.currentPayroll.pleaseSelectPayrolls'))
     }
      else {
       processingMultipleRecords = false; // Reset the flag to false
@@ -449,7 +456,7 @@ const EmployeeSalary = () => {
               margin: "7px 0px 4px 0px",
             }}
           >
-            No Data
+            {t('finance.Profit&loss.noRecordFound')}
           </div>
           {/* <div
             style={{ color: "#464665", fontWeight: "300", fontSize: "13px" }}
@@ -492,7 +499,7 @@ const EmployeeSalary = () => {
       ),
     },
     {
-      title: "Employee Name",
+      title: t('payroll.currentPayroll.employeeName'),
       dataIndex: "user.fullName",
       fixed: "left",
       render: (text, record) => (
@@ -504,37 +511,42 @@ const EmployeeSalary = () => {
       ),
     },
     {
-      title: "Employee ID",
+      title: t('payroll.currentPayroll.employeeID'),
       dataIndex: "user.employeeId",
       render: (text, record) => <>{record?.user?.employeeId}</>,
     },
     {
-      title: "Pay Month",
+      title: t('payroll.currentPayroll.payMonth'),
       dataIndex: "payMonth",
     },
     {
-      title: "Pay Year",
+      title: t('payroll.currentPayroll.payYear'),
       dataIndex: "payYear",
     },
     {
-      title: "Salary",
+      title: t('payroll.currentPayroll.salary'),
       dataIndex: "salary",
       render: (text, record) => (
         <span>
-          {record?.user?.salary ? `${record?.user?.salary} PKR` : "-"}
+          {record?.user?.salary ? `${record?.user?.salary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} PKR` : "-"}
         </span>
       ),
     },
     {
-      title: "Tax",
+      title: t('payroll.currentPayroll.tax'),
       dataIndex: "tax",
     },
     {
-      title: "Deduction",
+      title: t('payroll.currentPayroll.deduction'),
       dataIndex: "deduction",
+      render: (text, record) => (
+        <span>
+          {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+        </span>
+      ),
     },
     {
-      title: "Deduction Reason",
+      title: t('payroll.currentPayroll.deductionReason'),
       dataIndex: "deductionReason",
       render: (text, record) => (
         <label className="longText">
@@ -543,15 +555,25 @@ const EmployeeSalary = () => {
       ),
     },
     {
-      title: "Total Deduction",
+      title: t('payroll.currentPayroll.totalDeduction'),
       dataIndex: "totalDeduction",
+      render: (text, record) => (
+        <span>
+          {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+        </span>
+      ),
     },
     {
-      title: "Bonus",
+      title: t('payroll.currentPayroll.bonus'),
       dataIndex: "bonus",
+      render: (text, record) => (
+        <span>
+          {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+        </span>
+      ),
     },
     {
-      title: "Bonus Reason",
+      title: t('payroll.currentPayroll.bonusReason'),
       dataIndex: "bonusReason",
       render: (text, record) => (
         <label className="longText">
@@ -560,24 +582,34 @@ const EmployeeSalary = () => {
       ),
     },
     {
-      title: "Total Addition",
+      title: t('payroll.currentPayroll.totalAddition'),
       dataIndex: "totalAddition",
-    },
-    {
-      title: "Credit Salary",
-      dataIndex: "creditSalary",
       render: (text, record) => (
         <span>
-          {record?.creditSalary ? `${record?.creditSalary} PKR` : "-"}
+          {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
         </span>
       ),
     },
     {
-      title: "Extra Payment",
-      dataIndex: "extraPayment",
+      title: t('payroll.currentPayroll.creditSalary'),
+      dataIndex: "creditSalary",
+      render: (text, record) => (
+        <span>
+          {record?.creditSalary ? `${record?.creditSalary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} PKR` : "-"}
+        </span>
+      ),
     },
     {
-      title: "Extra Payment Reason",
+      title: t('payroll.currentPayroll.extraPayment'),
+      dataIndex: "extraPayment",
+      render: (text, record) => (
+        <span>
+          {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+        </span>
+      ),
+    },
+    {
+      title: t('payroll.currentPayroll.extraPaymentReason'),
       dataIndex: "extraPaymentReason",
       render: (text, record) => (
         <label className="longText">
@@ -586,52 +618,60 @@ const EmployeeSalary = () => {
       ),
     },
     {
-      title: "Absent Fine",
+      title: t('payroll.currentPayroll.absentFine'),
       dataIndex: "absentFine",
-    },
-    {
-      title: "Mode of Payment",
-      dataIndex: "modeOfPayment",
       render: (text, record) => (
-        <label>{record?.modeOfPayment ? record?.modeOfPayment : "-"}</label>
+        <span>
+          {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+        </span>
       ),
     },
     {
-      title: "Transaction ID",
+      title: t('payroll.currentPayroll.modeOfPayment'),
+      dataIndex: "modeOfPayment",
+      render: (text, record) => (
+        <label>{record?.modeOfPayment==="Cash" ? t('cash') : record?.modeOfPayment==="Cheque" ? t('cheque') : record?.modeOfPayment==="Bank Transfer" ? t('bankTransfer') : '-'}</label>
+          ),
+    },
+    {
+      title: t('payroll.currentPayroll.transactionID'),
       dataIndex: "transactionId",
       render: (text, record) => (
         <label>{record?.transactionId ? record?.transactionId : "-"}</label>
       ),
     },
     {
-      title: "Bank",
+      title: t('finance.Invoices.bank'),
       dataIndex: "user.bankName",
       render: (text, record) => (
         <label>{record?.user?.bankName ? record?.user?.bankName : "-"}</label>
       ),
     },
     {
-      title: "Created At",
+      title: t('payroll.currentPayroll.createdAt'),
       dataIndex: "createdAt",
       render: (text) => moment(text).format("D MMM YYYY"),
     },
     {
-      title: "Status",
+      title: t('status'),
       dataIndex: "status",
+      render: (text) => (
+        <label>{text==="Unpaid" ? t('payroll.currentPayroll.unpaid') : "-"}</label>
+      ),
     },
     {
-      title: "Payslip",
+      title: t('payroll.currentPayroll.payslip'),
       render: (text, record) => (
         <button
           className="btn btn-sm btn-primary"
           onClick={() => OpenProcesConfirm(record)}
         >
-          Process Payroll
+          {t('payroll.currentPayroll.processPayroll')}
         </button>
       ),
     },
     {
-      title: "Action",
+      title: t('allEmp.action'),
       render: (text, record) => (
             <a
               className="dropdown-item"
@@ -640,7 +680,7 @@ const EmployeeSalary = () => {
                 OpenEditModal(record);
               }}
             >
-              <i className="fa fa-pencil m-r-5" /> Edit
+              <i className="fa fa-pencil m-r-5" /> {t('edit')}
             </a>
       ),
     },
@@ -648,7 +688,7 @@ const EmployeeSalary = () => {
 
   const columns2 = [
     {
-      title: "Employee Name",
+      title: t('payroll.currentPayroll.employeeName'),
       dataIndex: "user.fullName",
       fixed: "left",
       render: (text, record) => (
@@ -660,37 +700,42 @@ const EmployeeSalary = () => {
       ),
     },
     {
-      title: "Employee ID",
+      title: t('payroll.currentPayroll.employeeID'),
       dataIndex: "user.employeeId",
       render: (text, record) => <>{record?.user?.employeeId}</>,
     },
     {
-      title: "Pay Month",
+      title: t('payroll.currentPayroll.payMonth'),
       dataIndex: "payMonth",
     },
     {
-      title: "Pay Year",
+      title: t('payroll.currentPayroll.payYear'),
       dataIndex: "payYear",
     },
     {
-      title: "Salary",
+      title: t('payroll.currentPayroll.salary'),
       dataIndex: "salary",
       render: (text, record) => (
         <span>
-          {record?.user?.salary ? `${record?.user?.salary} PKR` : "-"}
+          {record?.user?.salary ? `${record?.user?.salary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} PKR` : "-"}
         </span>
       ),
     },
     {
-      title: "Tax",
+      title: t('payroll.currentPayroll.tax'),
       dataIndex: "tax",
     },
     {
-      title: "Deduction",
+      title: t('payroll.currentPayroll.deduction'),
       dataIndex: "deduction",
+      render: (text, record) => (
+        <span>
+          {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+        </span>
+      ),
     },
     {
-      title: "Deduction Reason",
+      title: t('payroll.currentPayroll.deductionReason'),
       dataIndex: "deductionReason",
       render: (text, record) => (
         <label className="longText">
@@ -699,15 +744,25 @@ const EmployeeSalary = () => {
       ),
     },
     {
-      title: "Total Deduction",
+      title: t('payroll.currentPayroll.totalDeduction'),
       dataIndex: "totalDeduction",
+      render: (text, record) => (
+        <span>
+          {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+        </span>
+      ),
     },
     {
-      title: "Bonus",
+      title: t('payroll.currentPayroll.bonus'),
       dataIndex: "bonus",
+      render: (text, record) => (
+        <span>
+          {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+        </span>
+      ),
     },
     {
-      title: "Bonus Reason",
+      title: t('payroll.currentPayroll.bonusReason'),
       dataIndex: "bonusReason",
       render: (text, record) => (
         <label className="longText">
@@ -716,24 +771,34 @@ const EmployeeSalary = () => {
       ),
     },
     {
-      title: "Total Addition",
+      title: t('payroll.currentPayroll.totalAddition'),
       dataIndex: "totalAddition",
-    },
-    {
-      title: "Credit Salary",
-      dataIndex: "creditSalary",
       render: (text, record) => (
         <span>
-          {record?.creditSalary ? `${record?.creditSalary} PKR` : "-"}
+          {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
         </span>
       ),
     },
     {
-      title: "Extra Payment",
-      dataIndex: "extraPayment",
+      title: t('payroll.currentPayroll.creditSalary'),
+      dataIndex: "creditSalary",
+      render: (text, record) => (
+        <span>
+          {record?.creditSalary ? `${record?.creditSalary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} PKR` : "-"}
+        </span>
+      ),
     },
     {
-      title: "Extra Payment Reason",
+      title: t('payroll.currentPayroll.extraPayment'),
+      dataIndex: "extraPayment",
+      render: (text, record) => (
+        <span>
+          {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+        </span>
+      ),
+    },
+    {
+      title: t('payroll.currentPayroll.extraPaymentReason'),
       dataIndex: "extraPaymentReason",
       render: (text, record) => (
         <label className="longText">
@@ -742,41 +807,49 @@ const EmployeeSalary = () => {
       ),
     },
     {
-      title: "Absent Fine",
+      title: t('payroll.currentPayroll.absentFine'),
       dataIndex: "absentFine",
-    },
-    {
-      title: "Mode of Payment",
-      dataIndex: "modeOfPayment",
       render: (text, record) => (
-        <label>{record?.modeOfPayment ? record?.modeOfPayment : "-"}</label>
+        <span>
+          {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+        </span>
       ),
     },
     {
-      title: "Transaction ID",
+      title: t('payroll.currentPayroll.modeOfPayment'),
+      dataIndex: "modeOfPayment",
+      render: (text, record) => (
+        <label>{record?.modeOfPayment==="Cash" ? t('cash') : record?.modeOfPayment==="Cheque" ? t('cheque') : record?.modeOfPayment==="Bank Transfer" ? t('bankTransfer') : '-'}</label>
+          ),
+    },
+    {
+      title: t('payroll.currentPayroll.transactionID'),
       dataIndex: "transactionId",
       render: (text, record) => (
         <label>{record?.transactionId ? record?.transactionId : "-"}</label>
       ),
     },
     {
-      title: "Bank",
+      title: t('finance.Invoices.bank'),
       dataIndex: "user.bankName",
       render: (text, record) => (
         <label>{record?.user?.bankName ? record?.user?.bankName : "-"}</label>
       ),
     },
     {
-      title: "Created At",
+      title: t('payroll.currentPayroll.createdAt'),
       dataIndex: "createdAt",
       render: (text) => moment(text).format("D MMM YYYY"),
     },
     {
-      title: "Status",
+      title: t('status'),
       dataIndex: "status",
+      render: (text) => (
+        <label>{text==="Unpaid" ? t('payroll.currentPayroll.unpaid') : "-"}</label>
+      ),
     },
     {
-      title: "Action",
+      title: t('allEmp.action'),
       render: (text, record) => (
         <span
           style={{ color: "red", cursor: "pointer" }}
@@ -819,7 +892,7 @@ const EmployeeSalary = () => {
       closeDmodal();
       setDownloadTable(true);
     } else {
-      message.warning("Both Month and Year required");
+      message.warning(t('payroll.currentPayroll.bothMonthAndYearRequired'));
       setIsLoading(false);
     }
   };
@@ -1012,7 +1085,7 @@ const EmployeeSalary = () => {
   // };
 
   const updatePayroll = (values) => {
-
+    setEditLoader(true);
     const updateData = {
       _id: selectedRecord?._id,
       companyId: selectedRecord?.companyId,
@@ -1042,15 +1115,16 @@ const EmployeeSalary = () => {
         }
       })
       .catch((error) => {
-        message.error(`Error updating Payroll Details`);
+        message.error(t('payroll.currentPayroll.errorUpdatingPayrollDetails'));
         console.error(`Error updating Payroll Details`, error);
+        setEditLoader(false);
       });
   };
 
   const updateModeOfPayment = (values) => {
     const { modeOfPayment } = values;
     if (!modeOfPayment) {
-      message.warning('Select a Mode of Payment');
+      message.warning(t('payroll.currentPayroll.selectModeOfPayment'));
     } 
     else {
       setLoader(true);
@@ -1077,7 +1151,7 @@ const EmployeeSalary = () => {
         .then((res) => {
           if (res.data.success === true) {
             const updated = res?.data?.payroll
-            message.success(`Mode of Payment Added `);
+            message.success(t('payroll.currentPayroll.modeOfPaymentAdded'));
             handleReset();
             closeMOP();
             setLoader(false);
@@ -1085,7 +1159,7 @@ const EmployeeSalary = () => {
           }
         })
         .catch((error) => {
-          message.error(`Error Adding Mode of Payment`);
+          message.error(t('payroll.currentPayroll.errorAddingModeOfPayment'));
           closeMOP();
           setLoader(false);
           console.error(`Error Adding Mode of Payment`, error);
@@ -1097,7 +1171,7 @@ const EmployeeSalary = () => {
     <>
       <div className="page-wrapper">
         <Helmet>
-          <title>Current Payroll - DaftarPro</title>
+          <title>{t('payroll.currentPayroll.currentPayroll')} - {t('header.daftarPro')}</title>
           <meta name="description" content="Login page" />
         </Helmet>
         {/* Page Content */}
@@ -1106,19 +1180,19 @@ const EmployeeSalary = () => {
           <div className="page-header">
             <div className="row align-items-center">
               <div className="col">
-                <h3 className="page-title">Current Payroll</h3>
+                <h3 className="page-title">{t('payroll.currentPayroll.currentPayroll')}</h3>
                 <ul className="breadcrumb">
                   <li className="breadcrumb-item">
-                    <Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>Dashboard</Link>
+                    <Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>{t('payroll.currentPayroll.dashBoard')}</Link>
                   </li>
-                  <li className="breadcrumb-item active">Current Payroll</li>
+                  <li className="breadcrumb-item active">{t('payroll.currentPayroll.currentPayroll')}</li>
                 </ul>
               </div>
               <div className="col-auto float-end ms-auto d-flex gap-2">
                 <Button className="btn add-btn"
                   style={{ display: 'flex',justifyContent: 'center',alignItems: 'center',}}
                   onClick={handleOpenModal}>
-                  <i className="fa fa-plus" /> Generate Payroll
+                  <i className="fa fa-plus" /> {t('payroll.currentPayroll.GeneratePayroll')}
                 </Button>
 
                 <Button
@@ -1127,7 +1201,7 @@ const EmployeeSalary = () => {
                   style={{ display: 'flex',justifyContent: 'center', alignItems: 'center', backgroundColor: '#ff9b44', color: '#ffffff' }}
                   disabled={isDisabled}
                 >
-                  <i className="fa fa-plus" />Process Payroll
+                  <i className="fa fa-plus" />{t('payroll.currentPayroll.processPayroll')}
                 </Button>
 
                 <Button
@@ -1157,7 +1231,7 @@ const EmployeeSalary = () => {
                     <Input
                       className="form-control"
                       allowClear={false}
-                      placeholder="Employee ID"
+                      placeholder={t('payroll.currentPayroll.employeeID')}
                       onChange={(e) =>
                         handleFilterChange(e.target.value, "id")
                       }
@@ -1172,7 +1246,7 @@ const EmployeeSalary = () => {
                     <Input
                       className="form-control"
                       allowClear={false}
-                      placeholder="Employee Name"
+                      placeholder={t('payroll.currentPayroll.employeeName')}
                       onChange={(e) =>
                         handleFilterChange(e.target.value, "name")
                       }
@@ -1189,7 +1263,7 @@ const EmployeeSalary = () => {
                         width: "100%",
                       }}
                       className="form-control"
-                      placeholder={"Select Month"}
+                      placeholder={t('payroll.currentPayroll.selectMonth')}
                       size="large"
                       allowClear={false}
                       format="MMMM"
@@ -1208,7 +1282,7 @@ const EmployeeSalary = () => {
                         width: "100%",
                       }}
                       className="form-control"
-                      placeholder={"Select Year"}
+                      placeholder={t('aAttend.selectYear')}
                       size="large"
                       allowClear={false}
                       onChange={(date, dateString) => {
@@ -1230,7 +1304,7 @@ const EmployeeSalary = () => {
                   className="btn-success btn-block w-100"
                   style={{ borderRadius: "5px" }}
                 >
-                  Search
+                  {t('search')}
                 </Button>
                 </div>
                 </div>
@@ -1244,7 +1318,7 @@ const EmployeeSalary = () => {
                   className="btn-secondary btn-block w-100"
                   style={{ backgroundColor: "#616161", borderColor: "#616161", borderRadius: "5px" }}
                 >
-                  Reset
+                  {t('reset')}
                 </Button>
                 </div>
               </div>
@@ -1266,7 +1340,7 @@ const EmployeeSalary = () => {
             <div className="modal-dialog modal-dialog-centered" role="document">
               <div className="modal-content">
                 <div className="modal-header">
-                  <h5 className="modal-title">Generate Payroll</h5>
+                  <h5 className="modal-title">{t('payroll.currentPayroll.GeneratePayroll')}</h5>
                   <button
                     type="button"
                     className="close"
@@ -1285,14 +1359,14 @@ const EmployeeSalary = () => {
                       <div className="col-md-6">
                         <div className="form-group">
                           <label>
-                            Payroll Month <span className="text-danger">*</span>
+                          {t('payroll.currentPayroll.payrollMonth')} <span className="text-danger">*</span>
                           </label>
                           <div className='filterDateMonth' style={{ position: 'relative' }} id='area'>
                           <Form.Item name="Month" className="custom-border">
                             <DatePicker.MonthPicker
                               style={{minHeight: '50px', display: 'flex'}}
                               className='form-control filterDate'
-                              placeholder={"Select Month"}
+                              placeholder={t('payroll.currentPayroll.selectMonth')}
                               size="large"
                               allowClear={false}
                               format="MMMM"
@@ -1308,14 +1382,14 @@ const EmployeeSalary = () => {
                       <div className="col-md-6">
                         <div className="form-group">
                           <label>
-                            Payroll Year <span className="text-danger">*</span>
+                          {t('payroll.currentPayroll.payrollYear')} <span className="text-danger">*</span>
                           </label>
                           <div className='filterDateMonth' style={{ position: 'relative' }} id='area'>
                           <Form.Item name="Year" className="custom-border">
                             <DatePicker.YearPicker
                               style={{minHeight: '50px', display: 'flex'}}
                               className='form-control filterDate'
-                              placeholder={"Select Year"}
+                              placeholder={t('aAttend.selectYear')}
                               size="large"
                               allowClear={false}
                               onChange={(date, dateString) => {
@@ -1332,13 +1406,13 @@ const EmployeeSalary = () => {
                         <Button
                           htmlType="submit"
                           className="btn btn-primary submit-btn"
-                          disabled={loader===true}
+                          disabled={loader}
                           onClick={handleGeneratePayroll}
                         >
                           {loader ? (
                             <Spin size="small" indicator={antIcon} />
                           ) : (
-                            "Submit"
+                            t('submit')
                           )}
                         </Button>
                       </Form.Item>
@@ -1364,7 +1438,7 @@ const EmployeeSalary = () => {
             <div className="modal-dialog modal-dialog-centered" role="document">
               <div className="modal-content">
                 <div className="modal-header">
-                  <h5 className="modal-title">Download</h5>
+                  <h5 className="modal-title">{t('payroll.currentPayroll.downLoad')}</h5>
                   <button type="button" className="close" onClick={closeDmodal}>
                     <span aria-hidden="true">×</span>
                   </button>
@@ -1379,14 +1453,14 @@ const EmployeeSalary = () => {
                       <div className="col-md-6">
                         <div className="form-group">
                           <label>
-                            Payroll Month <span className="text-danger">*</span>
+                          {t('payroll.currentPayroll.payrollMonth')} <span className="text-danger">*</span>
                           </label>
                           <div className='filterDateMonth' style={{ position: 'relative' }} id='area'>
                           <Form.Item name="Month" className="custom-border">
                             <DatePicker.MonthPicker
                               style={{minHeight: '50px', display: 'flex'}}
                               className='form-control filterDate'
-                              placeholder={"Select Month"}
+                              placeholder={t('payroll.currentPayroll.selectMonth')}
                               size="large"
                               allowClear={false}
                               format="MMMM"
@@ -1402,14 +1476,14 @@ const EmployeeSalary = () => {
                       <div className="col-md-6">
                         <div className="form-group">
                           <label>
-                            Payroll Year <span className="text-danger">*</span>
+                          {t('payroll.currentPayroll.payrollYear')} <span className="text-danger">*</span>
                           </label>
                           <div className='filterDateMonth' style={{ position: 'relative' }} id='area'>
                           <Form.Item name="Year" className="custom-border">
                             <DatePicker.YearPicker
                               style={{minHeight: '50px', display: 'flex'}}
                               className='form-control filterDate'
-                              placeholder={"Select Year"}
+                              placeholder={t('aAttend.selectYear')}
                               size="large"
                               allowClear={false}
                               onChange={(date, dateString) => {
@@ -1430,7 +1504,7 @@ const EmployeeSalary = () => {
                           onClick={handleDownloadTable}
                           //disabled={loader}
                         >
-                          Submit
+                          {t('submit')}
                         </Button>
                       </Form.Item>
                     </div>
@@ -1460,6 +1534,22 @@ const EmployeeSalary = () => {
                   dataSource={data}
                   rowKey={(record) => record?._id}
                   pagination={false}
+                  components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                   // onChange={this.handleTableChange}
                 />
                 
@@ -1474,7 +1564,7 @@ const EmployeeSalary = () => {
                         defaultCurrent={1}
                         current={pagination.current}
                         showTotal={(total, range) =>
-                          `Showing ${range[0]} to ${range[1]} of ${total} entries`}
+                          t('paginationShow', { range1: range[0], range2: range[1], total: total })}
                         onChange={(page, pageSize) => {
                           setPagination({
                             ...pagination,
@@ -1487,7 +1577,9 @@ const EmployeeSalary = () => {
                         }}
                         showSizeChanger={true}
                         pageSizeOptions={['20', '30', '40', '50']}
-                        itemRender={itemRender}
+                        itemRender={(current, type, originalElement) =>
+                          itemRender(current, type, originalElement, t)
+                        }
                         disabled={isLoading}
                       />
                     </div>
@@ -1516,7 +1608,7 @@ const EmployeeSalary = () => {
                 
                   <h5 className="modal-title"
                   style={{marginInline:'auto'}}>
-                    PayRolls
+                    {t('finance.Profit&loss.payrolls')}
                   </h5>
                   <button
                   href="javascript:void(0)" 
@@ -1528,7 +1620,7 @@ const EmployeeSalary = () => {
                     // console.log(downloadData);
                   }}>
                   <DownloadOutlinedIcon />
-                    Export</button>
+                  {t('payroll.currentPayroll.export')}</button>
 
                   {/* <Button
                     type="default"
@@ -1567,6 +1659,22 @@ const EmployeeSalary = () => {
                           pagination={false}
                           dataSource={downloadData}
                           rowKey={(record) => record.id}
+                          components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                           // onChange={this.handleTableChange}
                         />
                       </div>
@@ -1593,7 +1701,7 @@ const EmployeeSalary = () => {
             <div className="modal-dialog modal-dialog-centered" role="document">
               <div className="modal-content">
                 <div className="modal-header">
-                  <h5 className="modal-title">Edit Details</h5>
+                  <h5 className="modal-title">{t('projectScreen.Modal.editDetails')}</h5>
 
                   <button
                     type="button"
@@ -1642,7 +1750,7 @@ const EmployeeSalary = () => {
                     <div className="row">
                       <div className="col-sm-6">
                         <div className="form-group">
-                          <label>Employee ID</label>
+                          <label>{t('payroll.currentPayroll.employeeID')}</label>
                           <Form.Item
                             name="employeeId"
                             className="custom-border"
@@ -1653,7 +1761,7 @@ const EmployeeSalary = () => {
                       </div>
                       <div className="col-sm-6">
                         <div className="form-group">
-                          <label>Employee Name</label>
+                          <label>{t('payroll.currentPayroll.employeeName')}</label>
                           <Form.Item
                             name="fullName"
                             className="custom-border"
@@ -1666,7 +1774,7 @@ const EmployeeSalary = () => {
                     <div className="row">
                       <div className="col-sm-6">
                         <div className="form-group">
-                          <label>Pay Month</label>
+                          <label>{t('payroll.currentPayroll.payMonth')}</label>
                           <Form.Item name="payMonth">
                             <DatePicker.MonthPicker
                               style={{ width: "100%", backgroundColor:'#e9ecef' }}
@@ -1680,7 +1788,7 @@ const EmployeeSalary = () => {
                       </div>
                       <div className="col-sm-6">
                         <div className="form-group">
-                          <label>Pay Year</label>
+                          <label>{t('payroll.currentPayroll.payYear')}</label>
                           <Form.Item name="payYear">
                             <DatePicker.YearPicker
                               style={{ width: "100%", backgroundColor:'#e9ecef' }}
@@ -1696,7 +1804,7 @@ const EmployeeSalary = () => {
                     <div className="row">
                       <div className="col-sm-6">
                         <div className="form-group">
-                          <label>Tax</label>
+                          <label>{t('payroll.currentPayroll.tax')}</label>
                           <Form.Item name="tax">
                             <Input className="form-control" readOnly/>
                           </Form.Item>
@@ -1705,7 +1813,7 @@ const EmployeeSalary = () => {
 
                       <div className="col-sm-6">
                         <div className="form-group">
-                          <label>Salary</label>
+                          <label>{t('payroll.currentPayroll.salary')}</label>
                           <Form.Item name="salary">
                             <Input className="form-control" readOnly/>
                           </Form.Item>
@@ -1716,7 +1824,7 @@ const EmployeeSalary = () => {
                     <div className="row">
                     <div className="col-sm-6">
                         <div className="form-group">
-                          <label>Deduction</label>
+                          <label>{t('payroll.currentPayroll.deduction')}</label>
                           <Form.Item name="deduction">
                             <Input className="form-control" />
                           </Form.Item>
@@ -1724,7 +1832,7 @@ const EmployeeSalary = () => {
                       </div>
                       <div className="col-sm-6">
                         <div className="form-group">
-                          <label>Total Deduction</label>
+                          <label>{t('payroll.currentPayroll.totalDeduction')}</label>
                           <Form.Item name="totalDeduction">
                             <Input className="form-control" readOnly/>
                           </Form.Item>
@@ -1734,7 +1842,7 @@ const EmployeeSalary = () => {
 
                     <div className="row">
                       <div className="form-group">
-                        <label>Deduction Reason</label>
+                        <label>{t('payroll.currentPayroll.deductionReason')}</label>
                         <Form.Item name="deductionReason">
                           <Input.TextArea className="form-control" rows={3} />
                         </Form.Item>
@@ -1744,7 +1852,7 @@ const EmployeeSalary = () => {
                     <div className="row">
                     <div className="col-sm-6">
                         <div className="form-group">
-                          <label>Credit Salary</label>
+                          <label>{t('payroll.currentPayroll.creditSalary')}</label>
                           <Form.Item name="creditSalary">
                             <Input className="form-control" readOnly/>
                           </Form.Item>
@@ -1752,7 +1860,7 @@ const EmployeeSalary = () => {
                       </div>
                       <div className="col-sm-6">
                         <div className="form-group">
-                          <label>Bonus</label>
+                          <label>{t('payroll.currentPayroll.bonus')}</label>
                           <Form.Item name="bonus">
                             <Input className="form-control" />
                           </Form.Item>
@@ -1762,7 +1870,7 @@ const EmployeeSalary = () => {
                     
                     <div className="row">
                       <div className="form-group">
-                        <label>Bonus Reason</label>
+                        <label>{t('payroll.currentPayroll.bonusReason')}</label>
                         <Form.Item name="bonusReason">
                           <Input.TextArea className="form-control" rows={3} />
                         </Form.Item>
@@ -1772,7 +1880,7 @@ const EmployeeSalary = () => {
                     <div className="row">
                       <div className="col-sm-6">
                         <div className="form-group">
-                          <label>Extra Payment</label>
+                          <label>{t('payroll.currentPayroll.extraPayment')}</label>
                           <Form.Item name="extraPayment">
                             <Input className="form-control" />
                           </Form.Item>
@@ -1781,7 +1889,7 @@ const EmployeeSalary = () => {
 
                       <div className="col-sm-6">
                         <div className="form-group">
-                          <label>Total Addition</label>
+                          <label>{t('payroll.currentPayroll.totalAddition')}</label>
                           <Form.Item name="totalAddition">
                             <Input className="form-control" readOnly/>
                           </Form.Item>
@@ -1791,7 +1899,7 @@ const EmployeeSalary = () => {
 
                     <div className="row">
                       <div className="form-group">
-                        <label>Extra Payment Reason</label>
+                        <label>{t('payroll.currentPayroll.extraPaymentReason')}</label>
                         <Form.Item name="extraPaymentReason">
                           <Input.TextArea className="form-control" rows={3} />
                         </Form.Item>
@@ -1801,7 +1909,7 @@ const EmployeeSalary = () => {
                     <div className="row">
                       <div className="col-sm-6">
                         <div className="form-group">
-                          <label>Absent Fine</label>
+                          <label>{t('payroll.currentPayroll.absentFine')}</label>
                           <Form.Item name="absentFine">
                             <Input className="form-control" readOnly/>
                           </Form.Item>
@@ -1809,7 +1917,7 @@ const EmployeeSalary = () => {
                       </div>
                       <div className="col-sm-6">
                         <div className="form-group">
-                          <label>Mode of Payment</label>
+                          <label>{t('payroll.currentPayroll.modeOfPayment')}</label>
                           {/* <Form.Item name="modeOfPayment">
                             <Input className="form-control" />
                           </Form.Item> */}
@@ -1825,9 +1933,9 @@ const EmployeeSalary = () => {
                                 }
                                 placeholder="Select Mode of Payment"
                               >
-                                <Select.Option value="Bank Transfer">Bank Transfer</Select.Option>
-                                <Select.Option value="Cheque">Cheque</Select.Option>
-                                <Select.Option value="Cash">Cash</Select.Option>
+                                <Select.Option value="Bank Transfer">{t('bankTransfer')}</Select.Option>
+                                <Select.Option value="Cheque">{t('cheque')}</Select.Option>
+                                <Select.Option value="Cash">{t('cash')}</Select.Option>
                               </Select>
                             </Form.Item>
                           </div>
@@ -1838,7 +1946,7 @@ const EmployeeSalary = () => {
                     <div className="row">
                     <div className="col-sm-6">
                         <div className="form-group">
-                          <label>Bank Name</label>
+                          <label>{t('payroll.currentPayroll.bankName')}</label>
                           <Form.Item name="bankName">
                             <Input className="form-control" readOnly/>
                           </Form.Item>
@@ -1846,7 +1954,7 @@ const EmployeeSalary = () => {
                       </div>
                       <div className="col-sm-6">
                         <div className="form-group">
-                          <label>Bank Account Number</label>
+                          <label>{t('payroll.currentPayroll.bankAccountNumber')}</label>
                           <Form.Item name="bankAccountNumber">
                             <Input className="form-control" readOnly/>
                           </Form.Item>
@@ -1857,7 +1965,7 @@ const EmployeeSalary = () => {
                     <div className="row">
                     <div className="col-sm-6">
                         <div className="form-group">
-                          <label>Transaction ID</label>
+                          <label>{t('payroll.currentPayroll.transactionID')}</label>
                           <Form.Item name="transactionId">
                             <Input className="form-control" />
                           </Form.Item>
@@ -1865,7 +1973,7 @@ const EmployeeSalary = () => {
                       </div>
                       <div className="col-sm-6">
                         <div className="form-group">
-                          <label>Created At</label>
+                          <label>{t('payroll.currentPayroll.createdAt')}</label>
                           <Form.Item name="createdAt">
                             <Input className="form-control" readOnly/>
                           </Form.Item>
@@ -1879,8 +1987,9 @@ const EmployeeSalary = () => {
                           type="primary" 
                           htmlType="submit"
                           className="btn btn-primary submit-btn"
+                          disabled={editLoader}
                         >
-                          Submit
+                          {t('submit')}
                         </Button>
                       </Form.Item>
                     </div>
@@ -2004,7 +2113,7 @@ const EmployeeSalary = () => {
                                 type="primary" 
                                 htmlType="submit"
                                 className="btn btn-primary submit-btn"
-                                disabled={loader===true}
+                                disabled={loader}
                               >
                                 Submit
                               </Button>

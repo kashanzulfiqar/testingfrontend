@@ -11,9 +11,10 @@ import { apiServices } from '../../../Services/apiServices.js';
 import { useSelector } from 'react-redux';
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { Avatar, Table, Card, Spin, Empty } from 'antd';
+import { useTranslation } from 'react-i18next';
 
 const EmployeeDashboard = () => {
-
+  const { t, i18n } = useTranslation();
   const [menu, setMenu] = useState(false)
   const user_state = useSelector((state) => state.user.loginvalue);
   const [userData, setUserData] = useState(null);
@@ -29,7 +30,7 @@ const EmployeeDashboard = () => {
   const todayDate = moment(nowdate).format("dddd, DD MMM YYYY")
 
   const formatHoursMinutes = (timeString) => {
-    if (!timeString) return "None";
+    if (!timeString || timeString==="NaN") return t('none');
   
     const totalMinutes = parseFloat(timeString);
     const hours = Math.floor(totalMinutes / 60);
@@ -41,6 +42,11 @@ const EmployeeDashboard = () => {
   useEffect(()=>{
     fetchdata();
   },[])
+
+  useEffect(() => {
+    // Update direction when language changes
+    document.documentElement.dir = i18n.dir();
+  }, [i18n.language]);
 
   const fetchdata = async () => {
     setIsLoading(true)
@@ -85,7 +91,7 @@ const EmployeeDashboard = () => {
               margin: "7px 0px 4px 0px",
             }}
           >
-            No Employees
+            {t('noEmployees')}
           </div>
           {/* <div
             style={{ color: "#464665", fontWeight: "300", fontSize: "13px" }}
@@ -106,7 +112,7 @@ const EmployeeDashboard = () => {
       render: (index) => <span>{index}</span>,
     },
     {
-      title: 'Employee Name',
+      title: t('employeeName'),
       dataIndex: 'userId',
       key: 'employee',
       width: '60%',
@@ -118,7 +124,7 @@ const EmployeeDashboard = () => {
       ),
     },
     {
-      title: 'Status',
+      title: t('status'),
       dataIndex: 'status',
       key: 'status',
       width: '35%',
@@ -152,7 +158,7 @@ const EmployeeDashboard = () => {
         <Sidebar /> */}
         <div className="page-wrapper">
           <Helmet>
-            <title>Employee Dashboard - DaftarPro</title>
+            <title>{t('aDash.pageTitle')}</title>
             <meta name="description" content="Dashboard" />
           </Helmet>
           {/* Page Content */}
@@ -169,7 +175,8 @@ const EmployeeDashboard = () => {
                         <img alt="" src={userData?.user?.imageUrl || user_icon} />
                       </div>
                       <div className="welcome-det">
-                        <h3>{userData? `Welcome, ${userData?.user?.fullName }`:" "} </h3>
+                        {/* <h3>{userData? `Welcome, ${userData?.user?.fullName }`:" "} </h3> */}
+                        <h3>{userData ? t('welcome', { name: userData?.user?.fullName }) : " "} </h3>
                         <p><label>{todayDate}</label></p>
                       </div>
                     </>
@@ -180,7 +187,9 @@ const EmployeeDashboard = () => {
             <div className="row">
             <div className="col-lg-8 col-md-8">
               <section className="dash-section">
-                <label className="dash-sec-title">Employees on Work From Home</label>
+              <label className="dash-sec-title">
+                {t('onWorkFromHome')}
+              </label>
                 <div style={{ maxWidth: '100%', overflowX: 'auto',boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}>
                 <Table
                   columns={columnsWfh}
@@ -197,12 +206,30 @@ const EmployeeDashboard = () => {
                       customEmptyText
                     ),
                   }}
+                  components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                 />
                 </div>
               </section>
 
               <section className="dash-section">
-                <label className="dash-sec-title">Employees On Leave</label>
+              <label className="dash-sec-title">
+                {t('onLeave')}
+              </label>
                 <div style={{ maxWidth: '100%', overflowX: 'auto',boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}>
                 <Table
                   columns={columnsWfh}
@@ -217,6 +244,22 @@ const EmployeeDashboard = () => {
                       customEmptyText
                     ),
                   }}
+                  components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                 />
                 </div>
               </section>
@@ -225,23 +268,23 @@ const EmployeeDashboard = () => {
               <div className="col-lg-4 col-md-4">
                 <div className="dash-sidebar">
                 <section>
-                    <h5 className="dash-title">Projects</h5>
+                    <h5 className="dash-title">{t('totalProjects')}</h5>
                     <div className="card">
                       <div className="card-body">
                         <div className="time-list">
                           <div className="dash-stats-list">
                             <h4>71</h4>
-                            <p>Total Tasks</p>
+                            <p>{t('totalTasks')}</p>
                           </div>
                           <div className="dash-stats-list">
                             <h4>14</h4>
-                            <p>Pending Tasks</p>
+                            <p>{t('totalTasks')}</p>
                           </div>
                         </div>
                         <div className="request-btn">
                           <div className="dash-stats-list">
                             <h4>{userData?.userProjects}</h4>
-                            <p>Total Projects</p>
+                            <p>{t('pendingTasks')}</p>
                           </div>
                         </div>
                       </div>
@@ -249,24 +292,24 @@ const EmployeeDashboard = () => {
                   </section>
                   
                   <section>
-                    <h5 className="dash-title"><label>Your Leaves</label></h5>
+                    <h5 className="dash-title"><label>{t('yourLeaves')}</label></h5>
                     <div className="card">
                     <div className="card-body">
                       <div className="time-list">
                         <div className="dash-stats-list">
                           <h4>{userData?.leave?.leavesTaken || 0}</h4> {/* Display taken leave */}
-                          <p>Leaves Taken</p>
+                          <p>{t('leavesTaken')}</p>
                         </div>
                         <div className="dash-stats-list">
                           <h4>{userData?.leave?.remainingLeaves || 0}</h4> {/* Display remaining leave */}
-                          <p>Remaining</p>
+                          <p>{t('remaining')}</p>
                         </div>
                       </div>
                       </div>
                     </div>
                   </section>
                   <section>
-                    <h5 className="dash-title"><label>Hours Worked</label></h5>
+                    <h5 className="dash-title"><label>{t('hoursWorked')}</label></h5>
                     <div className="card">
                       <div className="card-body">
                         <div className="time-list">
@@ -276,11 +319,11 @@ const EmployeeDashboard = () => {
                           <>
                           <div className="dash-stats-list">
                             <h4>{formatHoursMinutes(userData?.hoursWorked?.today)}</h4> {/* Display hours worked today */}
-                            <p>Today</p>
+                            <p>{t('today')}</p>
                           </div>
                           <div className="dash-stats-list">
                             <h4>{formatHoursMinutes(userData?.hoursWorked?.lastFiveDays)}</h4> {/* Display hours worked in last 5 days */}
-                            <p>Last 5 Days</p>
+                            <p>{t('last5Days')}</p>
                           </div>
                           </>
                         )}
@@ -289,7 +332,7 @@ const EmployeeDashboard = () => {
                     </div>
                   </section>
                   <section>
-                    <h5 className="dash-title"><label>Work Anniversaries</label></h5>
+                    <h5 className="dash-title"><label>{t('workAnniversaries')}</label></h5>
                     <div className="card">
                       <div className="card-body" style={{display:"flex", flexDirection:'column', alignItems:"flex-start"}}>
                       {isLoading ? (
@@ -323,7 +366,7 @@ const EmployeeDashboard = () => {
         }
       })
     ) : (
-      <p>No work anniversaries today</p>
+      <p>{t('noWorkAnniversariesToday')}</p>
     )
   )}
                       </div>
@@ -331,14 +374,14 @@ const EmployeeDashboard = () => {
                   </section>
 
                   <section>
-                    <h5 className="dash-title">Birthdays</h5>
+                    <h5 className="dash-title">{t('birthdays')}</h5>
                     <div className="card">
                       <div className="card-body">
                       {isLoading ? (
                         <Spin style={{height: '38px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center'}} />
                       ) : (
                         userData?.todayBirthdays.length === 0 ? (
-                          <p>No birthdays today</p>
+                          <p>{t('noBirthdaysToday')}</p>
                         ) : (
                       birthdaysData?.map((item) => {
                           const dateOfBirth = new Date(item.dateOfBirth);
@@ -363,7 +406,7 @@ const EmployeeDashboard = () => {
                   </section>
 
                   <section>
-                    <h5 className="dash-title"><label>UPCOMING HOLIDAY</label></h5>
+                    <h5 className="dash-title"><label>{t('upcomingHoliday')}</label></h5>
                     <div className="card">
                       <div className="card-body">
                       {isLoading ? (

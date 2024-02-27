@@ -3,9 +3,11 @@ import React, { useState } from "react";
 import Modal from "@mui/material/Modal";
 import { LoadingOutlined } from "@ant-design/icons";
 import { apiServices } from "../../../../../Services/apiServices";
+import { useTranslation } from "react-i18next";
 
 function AddDesignation({ addDesigOpen, setAddDesigOpen, allDesignations, setAllDesignations, user_state }) {
 
+  const { t, i18n } = useTranslation();
     const [loader, setLoader] = useState(false);
 
     const onFinish = (values) => {
@@ -22,7 +24,7 @@ function AddDesignation({ addDesigOpen, setAddDesigOpen, allDesignations, setAll
                     }
                 ])
                 setAddDesigOpen(false)
-                message.success("Designation Added Successfully!");
+                message.success(t('allEmp.errors.desigAdded'));
                 setLoader(false);
               }
             })
@@ -35,7 +37,7 @@ function AddDesignation({ addDesigOpen, setAddDesigOpen, allDesignations, setAll
                     ? err?.response?.data?.msg
                     : err?.response?.data?.validation?.body?.message
                     ? err?.response?.data?.validation?.body?.message
-                    : "Add Designation Info Error"
+                    : t('allEmp.errors.addDesigError')
                 }!`
               );
             });
@@ -68,7 +70,7 @@ function AddDesignation({ addDesigOpen, setAddDesigOpen, allDesignations, setAll
             <div className="modal-content">
                 <div className="modal-header">
                 <h5 className="modal-title">
-                    Add Designation
+                {t('allEmp.Modal.addDesignation')}
                 </h5>
                 <button type="button" className="close" onClick={() => setAddDesigOpen(false)}>
                     <span aria-hidden="true">×</span>
@@ -84,15 +86,15 @@ function AddDesignation({ addDesigOpen, setAddDesigOpen, allDesignations, setAll
                     console.log(errorFields);
                     const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
                     if(consecutiveSpacesError){
-                        message.error("Please Remove Consecutive Spaces!")
+                      message.error(t('allEmp.errors.removeConsecutiveSpaces'))
                     }else{
-                        message.error("Please Fill Required Fields!")
+                      message.error(t('allEmp.errors.fillRequiredFields'))
                     }
                     }}
                 >
                     <div className="form-group">
                     <label>
-                        Designation Name <span className="text-danger">*</span>
+                    {t('allEmp.Modal.designationName')} <span className="text-danger">*</span>
                     </label>
                     <Form.Item
                         name="designationName"
@@ -102,10 +104,10 @@ function AddDesignation({ addDesigOpen, setAddDesigOpen, allDesignations, setAll
                             required: true,
                             validator: (_, value) => {
                             if(!value || value.trim() === ''){
-                                return Promise.reject("please enter designation name");
+                                return Promise.reject(t('allEmp.errors.enterDesignationName'));
                             }
                             else if (/\s{2,}/.test(value)) {
-                                return Promise.reject("please remove consecutive spaces");
+                                return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                             }
                             return Promise.resolve();
                             },
@@ -125,7 +127,7 @@ function AddDesignation({ addDesigOpen, setAddDesigOpen, allDesignations, setAll
                         >
                         {
                             loader ? <Spin size="small" indicator={antIcon} />
-                            : 'Submit'
+                            : t('submit')
                         }
                         </Button>
                     </Form.Item>

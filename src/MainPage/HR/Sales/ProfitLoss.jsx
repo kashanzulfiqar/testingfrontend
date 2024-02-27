@@ -37,10 +37,11 @@ import {
   Legend,
   ComposedChart,
 } from "recharts";
+import { useTranslation } from "react-i18next";
 
 const ProfitLoss = () => {
   const nav = useNavigate();
-
+  const { t, i18n } = useTranslation();
   const moment = require("moment");
   const [form] = Form.useForm();
   const [formadd] = Form.useForm();
@@ -136,7 +137,7 @@ const ProfitLoss = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get All Profit & Loss Error"
+              : t('finance.Profit&loss.getAllProfitLossError')
           }!`
         );
       });
@@ -195,7 +196,7 @@ const ProfitLoss = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Profit & Loss Graph Data Error"
+              : t('finance.Profit&loss.getProfitLossGraphDataError')
           }!`
         );
       });
@@ -237,7 +238,7 @@ const ProfitLoss = () => {
           let sel_year = graphData?.year;
           getAllGraphData(sel_year);
           handleClose();
-          message.success("Record Generated Successfully!");
+          message.success(t('finance.Profit&loss.recordGeneratedSuccessfully'));
           setLoader(false);
         }
       })
@@ -250,7 +251,7 @@ const ProfitLoss = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Generate Profit & Loss Error"
+              : t('finance.Profit&loss.generateProfitLossError')
           }`
         );
       });
@@ -354,18 +355,19 @@ const ProfitLoss = () => {
       render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
     },
     {
-      title: "Month",
+      title: t('finance.Profit&loss.month'),
       dataIndex: "month",
       render: (text, record) => {
-        return <label>{moment(text).format("MMMM")}</label>;
+        const year = record?.year;
+        return <label>{moment(`${year}-${text}-01`, "YYYY-MM-DD").format("MMMM")}</label>;
       },
     },
     {
-      title: "Year",
+      title: t('finance.Profit&loss.year'),
       dataIndex: "year",
     },
     {
-      title: "Payrolls",
+      title: t('finance.Profit&loss.payrolls'),
       dataIndex: "creditedSalaryExpense",
       render: (text, record) => {
         const salaryExpense =
@@ -381,7 +383,7 @@ const ProfitLoss = () => {
     },
 
     {
-      title: "Expense",
+      title: t('finance.Profit&loss.expense'),
       dataIndex: "generalExpense",
       render: (text, record) => (
         <span>
@@ -391,7 +393,7 @@ const ProfitLoss = () => {
       ),
     },
     {
-      title: "Total Revenue",
+      title: t('finance.Profit&loss.totalRevenue'),
       dataIndex: "totalRevenue",
       render: (text, record) => (
         <span>
@@ -401,7 +403,7 @@ const ProfitLoss = () => {
       ),
     },
     {
-      title: "Profit/Loss",
+      title: t('finance.Profit&loss.profitLoss'),
       dataIndex: "profitLoss",
       render: (text, record) => (
         <label
@@ -416,7 +418,7 @@ const ProfitLoss = () => {
       ),
     },
     {
-      title: "Actions",
+      title: t('holiday.actions'),
       render: (text, record) => (
         <div className="dropdown dropdown-action text-end">
           <a
@@ -434,7 +436,7 @@ const ProfitLoss = () => {
               onClick={() => sessionStorage.setItem(`profit_loss`, "record")}
               state={{ record: record }}
             >
-              <i className="fa fa-eye m-r-5" /> View
+              <i className="fa fa-eye m-r-5" /> {t('view')}
             </Link>
             {/* <a className="dropdown-item" href="javascript:void(0)"
               onClick={() => {
@@ -447,7 +449,7 @@ const ProfitLoss = () => {
                 setOpen({ isEditOpen: false, isDelOpen: true, data: record });
               }}
             >
-              <i className="fa fa-trash-o m-r-5" /> Delete
+              <i className="fa fa-trash-o m-r-5" /> {t('delete')}
             </a>
           </div>
         </div>
@@ -484,7 +486,7 @@ const ProfitLoss = () => {
             {/* {
                 (role === 'admin' || permissions?.viewAllUsers) ? 'No Employee Record found!' : 'You are Restricted to View Employees'
               } */}
-            No Record Found!
+            {t('finance.Profit&loss.noRecordFound')}
           </div>
         </div>
       }
@@ -545,7 +547,7 @@ const ProfitLoss = () => {
     <>
       <div className="page-wrapper">
         <Helmet>
-          <title>Profit & Loss - DaftarPro</title>
+          <title>{t('finance.Profit&loss.profitAndloss')} - {t('header.daftarPro')}</title>
           <meta name="description" content="Login page" />
         </Helmet>
         {/* Page Content */}
@@ -554,7 +556,7 @@ const ProfitLoss = () => {
           <div className="page-header">
             <div className="row">
               <div className="col">
-                <h3 className="page-title">Profit & Loss</h3>
+                <h3 className="page-title">{t('finance.Profit&loss.profitAndloss')}</h3>
                 <ul className="breadcrumb">
                   <li className="breadcrumb-item">
                     <Link
@@ -564,10 +566,10 @@ const ProfitLoss = () => {
                           : "/employee/dashboard"
                       }
                     >
-                      Dashboard
+                      {t('dashboard')}
                     </Link>
                   </li>
-                  <li className="breadcrumb-item active">Profit & Loss</li>
+                  <li className="breadcrumb-item active">{t('finance.Profit&loss.profitAndloss')}</li>
                 </ul>
               </div>
               <div className="col-auto float-end ms-auto">
@@ -578,7 +580,7 @@ const ProfitLoss = () => {
                     setOpen({ isAddOpen: true, data: "" });
                   }}
                 >
-                  <i className="fa fa-plus" /> Generate Profit & Loss
+                  <i className="fa fa-plus" /> {t('finance.Profit&loss.generateProfit&Loss')}
                 </a>
               </div>
             </div>
@@ -601,17 +603,18 @@ const ProfitLoss = () => {
             <div className="row">
               <div className="col-md-12 text-center">
                 <div className="card">
-                  <div className="card-body">
+                  <div className="card-body" dir="ltr">
                     <div
                       style={{
                         display: "flex",
+                        flexDirection: `${i18n.dir()==="rtl" ? "row-reverse" : "row"}`,
                         justifyContent: "space-between",
                         padding: "0px 20px",
                       }}
                     >
                       <span style={{ color: "transparent" }}>.</span>
                       <h3 className="card-title">
-                        Overview - {graphData?.year}
+                        {t('finance.Profit&loss.overview', {year: graphData?.year})}
                       </h3>
                       <Form form={formyear}>
                         <div style={{ position: "relative" }} id="area4">
@@ -675,7 +678,7 @@ const ProfitLoss = () => {
                             <XAxis
                               dataKey="month"
                               tickFormatter={(value) =>
-                                moment(value).format("MMM")
+                                moment(`${graphData?.year}-${value}-01`, "YYYY-MM-DD").format("MMM")
                               }
                             />
                             <YAxis
@@ -717,35 +720,36 @@ const ProfitLoss = () => {
                                   return (
                                     <>
                                       {value >= 0
-                                        ? "Profit    :    "
-                                        : "Loss    :    "}{" "}
+                                        ? `${t('finance.Profit&loss.profit')}    :    `
+                                        : `${t('finance.Profit&loss.Loss')}     :    `}{" "}
                                       {amountFormatter(value)}
                                     </>
                                   );
                                 }
                               }}
+                              contentStyle={{ direction: i18n.dir() }}
                             />
                             <Legend
                               formatter={(value) => {
                                 if (value === "Total Expense") {
-                                  return <label>Total Expense</label>;
+                                  return <label>{t('finance.Profit&loss.totalExpense')}</label>;
                                 } else if (value === "Total Revenue") {
-                                  return <label>Total Revenue</label>;
+                                  return <label>{t('finance.Profit&loss.totalRevenue')}</label>;
                                 } else {
-                                  return "Profit/Loss";
+                                  return t('finance.Profit&loss.profitLoss');
                                 }
                               }}
                             />
                             <Bar
                               dataKey="totalExpense"
-                              name="Total Expense"
+                              name={t('finance.Profit&loss.totalExpense')}
                               fill="#fc6075"
                               barSize={20}
                               minPointSize={1}
                             />
                             <Bar
                               dataKey="totalRevenue"
-                              name="Total Revenue"
+                              name={t('finance.Profit&loss.totalRevenue')}
                               fill="#ff9b44"
                               barSize={20}
                               minPointSize={1}
@@ -753,7 +757,7 @@ const ProfitLoss = () => {
                             <Line
                               type="monotone"
                               dataKey="profitLoss"
-                              name={(val) => (val >= 0 ? "Profit" : "Loss")}
+                              name={(val) => (val >= 0 ? t('finance.Profit&loss.profit') : t('finance.Profit&loss.Loss'))}
                               stroke="#ff7300"
                               fill="#ff7300"
                               strokeWidth={2}
@@ -813,7 +817,7 @@ const ProfitLoss = () => {
                       allowClear={false}
                       size="large"
                       picker="month"
-                      placeholder="Select Month"
+                      placeholder={t('finance.Profit&loss.selectMonth')}
                       className="form-control filterDate"
                       style={{ minHeight: "50px", display: "flex" }}
                       getPopupContainer={() => document.getElementById("area")}
@@ -838,7 +842,7 @@ const ProfitLoss = () => {
                       allowClear={false}
                       size="large"
                       picker="year"
-                      placeholder="Select Year"
+                      placeholder={t('finance.Profit&loss.selectYear')}
                       className="form-control filterDate"
                       style={{ minHeight: "50px", display: "flex" }}
                       getPopupContainer={() => document.getElementById("area1")}
@@ -860,7 +864,7 @@ const ProfitLoss = () => {
                   className="btn btn-success btn-block w-50"
                 >
                   {" "}
-                  Search{" "}
+                  {t('search')}{" "}
                 </button>
                 <button
                   href="javascript:void(0)"
@@ -878,7 +882,7 @@ const ProfitLoss = () => {
                     borderColor: "#aeaeae",
                   }}
                 >
-                  Reset
+                  {t('reset')}
                 </button>
               </div>
             </div>
@@ -900,6 +904,22 @@ const ProfitLoss = () => {
                   dataSource={allProfitLoss}
                   rowKey={(record) => record._id}
                   // onChange={this.handleTableChange}
+                  components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                 />
 
                 {allProfitLoss?.length > 0 && (
@@ -911,8 +931,8 @@ const ProfitLoss = () => {
                       defaultCurrent={1}
                       current={currentPage}
                       showTotal={(total, range) =>
-                        `Showing ${range[0]} to ${range[1]} of ${total} entries`
-                      }
+                        t('paginationShow', { range1: range[0], range2: range[1], total: total })}
+
                       onChange={(page, size) => {
                         setPageSize(size);
                         setCurrentPage(page);
@@ -920,7 +940,9 @@ const ProfitLoss = () => {
                       }}
                       showSizeChanger={true}
                       pageSizeOptions={["20", "30", "40", "50"]}
-                      itemRender={itemRender}
+                      itemRender={(current, type, originalElement) =>
+                        itemRender(current, type, originalElement, t)
+                      }
                     />
                   </div>
                 )}
@@ -944,7 +966,7 @@ const ProfitLoss = () => {
         <div className="modal-dialog modal-dialog-centered" role="document">
           <div className="modal-content">
             <div className="modal-header">
-              <h5 className="modal-title">Generate Profit & Loss</h5>
+              <h5 className="modal-title">{t('finance.Profit&loss.generateProfit&Loss')}</h5>
               <button type="button" className="close" onClick={handleClose}>
                 <span aria-hidden="true">×</span>
               </button>
@@ -958,18 +980,18 @@ const ProfitLoss = () => {
                   const consecutiveSpacesError = errorFields.find((field) =>
                     field.errors.toString().includes("consecutive spaces")
                   );
-                  if (consecutiveSpacesError) {
-                    message.error("Please Remove Consecutive Spaces!");
-                  } else {
-                    message.error("Please Fill Required Fields!");
-                  }
+                  if(consecutiveSpacesError){
+                    message.error(t('allEmp.errors.removeConsecutiveSpaces'))
+                 }else{
+                    message.error(t('allEmp.errors.fillRequiredFields'))
+                  } 
                 }}
               >
                 <div className="row">
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>
-                        Month <span className="text-danger">*</span>
+                      {t('finance.Profit&loss.month')} <span className="text-danger">*</span>
                       </label>
                       <div
                         className="filterDateMonth disableAlign"
@@ -982,7 +1004,7 @@ const ProfitLoss = () => {
                           rules={[
                             {
                               required: true,
-                              message: "Please select month",
+                              message: t('finance.Profit&loss.pleaseSelectMonth'),
                             },
                             {
                               validator: (_, value) => {
@@ -991,7 +1013,7 @@ const ProfitLoss = () => {
                                 const currentMonth = moment().month();
                         
                                 if (selectedYear && selectedYear.year() >= currentYear && value && value.month() > currentMonth) {
-                                  return Promise.reject("Cannot select future month");
+                                  return Promise.reject(t('finance.Profit&loss.cannotSelectFutureMonth'));
                                 }
                         
                                 return Promise.resolve();
@@ -1004,7 +1026,7 @@ const ProfitLoss = () => {
                             format="MMMM"
                             //allowClear={false}
                             size="large"
-                            placeholder="Select Month"
+                            placeholder={t('finance.Profit&loss.selectMonth')}
                             className="form-control filterDate"
                             style={{ minHeight: "50px", display: "flex" }}
                             getPopupContainer={() =>
@@ -1018,7 +1040,7 @@ const ProfitLoss = () => {
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>
-                        Year <span className="text-danger">*</span>
+                      {t('finance.Profit&loss.year')} <span className="text-danger">*</span>
                       </label>
                       <div
                         className="disableAlign"
@@ -1031,7 +1053,7 @@ const ProfitLoss = () => {
                           rules={[
                             {
                               required: true,
-                              message: "please select year",
+                              message: t('finance.Profit&loss.pleaseSelectYear'),
                             },
                           ]}
                         >
@@ -1039,7 +1061,7 @@ const ProfitLoss = () => {
                             disabledDate={disabledYear}
                             //allowClear={false}
                             size="large"
-                            placeholder="Select Year"
+                            placeholder={t('finance.Profit&loss.selectYear')}
                             className="form-control filterDate"
                             style={{ minHeight: "50px", display: "flex" }}
                             getPopupContainer={() =>
@@ -1060,7 +1082,7 @@ const ProfitLoss = () => {
                         {loader ? (
                           <Spin size="small" indicator={antIcon} />
                         ) : (
-                          "Submit"
+                          t('submit')
                         )}
                       </Button>
                     </Form.Item>
@@ -1095,15 +1117,10 @@ const ProfitLoss = () => {
               }}
             >
               <div className="form-header">
-                <h3 style={{ marginBottom: "30px" }}>Delete Profit/Loss</h3>
+                <h3 style={{ marginBottom: "30px" }}>{t('finance.Profit&loss.deleteProfitLoss')}</h3>
                 <p>
-                  Are you sure you want to delete the record of
                   <br />{" "}
-                  <b>
-                    {moment(open?.data?.month).format("MMMM")}{" "}
-                    {open?.data?.year}
-                  </b>
-                  ?
+                  <span dangerouslySetInnerHTML={{ __html: t('finance.Profit&loss.deletemsg', { project: `${moment(open?.data?.month).format("MMMM")} ${open?.data?.year}` }) }} />
                 </p>
               </div>
               <div className="modal-btn delete-action">
@@ -1119,7 +1136,7 @@ const ProfitLoss = () => {
                       {deleteLoader ? (
                         <Spin size="small" indicator={antIcon} />
                       ) : (
-                        "Delete"
+                        t('delete')
                       )}
                     </Button>
                   </div>
@@ -1129,7 +1146,7 @@ const ProfitLoss = () => {
                       className="btn btn-primary submit-btn"
                       style={{ width: "100%" }}
                     >
-                      Cancel
+                      {t('cancel')}
                     </Button>
                   </div>
                 </div>

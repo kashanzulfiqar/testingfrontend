@@ -5,9 +5,10 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {Applogo} from "../../../Entryfile/imagepath"
 import { useSelector } from 'react-redux';
 import invoicePDF from './invoicePDF';
+import { useTranslation } from 'react-i18next';
 
 const Invoiceview = () => {
-
+  const { t, i18n } = useTranslation();
   const location = useLocation();
   const invoice_data = location?.state?.invoice_data;
   const nav = useNavigate();
@@ -74,7 +75,7 @@ const calculateDiscountAmount = () => {
       return ( 
             <div className="page-wrapper">
             <Helmet>
-                <title>Invoice - DaftarPro</title>
+                <title>{t('finance.Invoices.invoice')} - {t('header.daftarPro')}</title>
                 <meta name="description" content="Login page"/>					
             </Helmet>
               {/* Page Content */}
@@ -83,10 +84,10 @@ const calculateDiscountAmount = () => {
                 <div className="page-header">
                   <div className="row align-items-center">
                     <div className="col">
-                      <h3 className="page-title">Invoice</h3>
+                      <h3 className="page-title">{t('finance.Invoices.invoice')}</h3>
                       <ul className="breadcrumb">
-                        <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>Dashboard</Link></li>
-                        <li className="breadcrumb-item active">Invoice</li>
+                        <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>{t('dashboard')}</Link></li>
+                        <li className="breadcrumb-item active">{t('finance.Invoices.invoice')}</li>
                       </ul>
                     </div>
                     <div className="col-auto float-end ms-auto">
@@ -98,7 +99,7 @@ const calculateDiscountAmount = () => {
                             invoicePDF(invoiceInfo);
                           }}
                         >
-                          <i className="fa fa-download fa-lg m-r-5" /> Export to PDF
+                          <i className="fa fa-download fa-lg m-r-5" /> {t('finance.Invoices.exporttoPdf')}
                         </button>
                         {/* <button className="btn btn-white"><i className="fa fa-print fa-lg" /> Print</button> */}
                       </div>
@@ -108,7 +109,7 @@ const calculateDiscountAmount = () => {
                 {/* /Page Header */}
                 <div className="row">
                   <div className="col-md-12">
-                    <div className="card">
+                    <div className="card" dir="ltr">
                       <div className="card-body">
                         <div className="row">
                           {/* <div className="col-sm-6 m-b-20 d-grid"> */}

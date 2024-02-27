@@ -18,9 +18,10 @@ import DetailsModal from './DetailsModal';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import GenerateSalaryPDF from './GenerateSalaryPDF';
+import { useTranslation } from 'react-i18next';
 
 const PayrollHistory = () => {
-
+  const { t, i18n } = useTranslation();
   const moment = require('moment');
   const [form] = Form.useForm();
   const [Dform] = Form.useForm();
@@ -72,7 +73,7 @@ const PayrollHistory = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Payrolls History Error"
+              : t('payroll.currentPayroll.getPayrollsHistoryError')
           }!`
         );
       });
@@ -95,7 +96,7 @@ const PayrollHistory = () => {
         
         const columns = [
             {
-              title: 'Employee Name',
+              title: t('payroll.currentPayroll.employeeName'),
               dataIndex: 'name',
               fixed: 'left',
               render: (text, record) => (            
@@ -107,7 +108,7 @@ const PayrollHistory = () => {
                 ),
             },
             {
-              title: 'Employee ID',
+              title: t('payroll.currentPayroll.employeeID'),
               dataIndex: 'employeeId',
               render: (text,record) => (
                 <>
@@ -116,22 +117,22 @@ const PayrollHistory = () => {
               )
             },
             {
-              title: 'Month',
+              title: t('finance.Profit&loss.month'),
               dataIndex: 'payMonth',
             },
             {
-              title: 'Year',
+              title: t('finance.Profit&loss.year'),
               dataIndex: 'payYear',
             },
             {
-                title: 'Salary',
+                title: t('payroll.currentPayroll.salary'),
                 dataIndex: 'salary',
                 render: (text, record) => (
                 <span>{record?.user?.salary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
                     ),
             },
             {
-                title: 'Tax',
+                title: t('payroll.currentPayroll.tax'),
                 dataIndex: 'tax',
                 render: (text,record) => (
                   <>
@@ -140,7 +141,7 @@ const PayrollHistory = () => {
                 )
             },
             {
-                title: 'Deduction',
+                title: t('payroll.currentPayroll.deduction'),
                 dataIndex: 'deduction',
                 render: (text,record) => (
                   <>
@@ -149,7 +150,7 @@ const PayrollHistory = () => {
                 )
             },
             {
-                title: 'Total Deduction',
+                title: t('payroll.currentPayroll.totalDeduction'),
                 dataIndex: 'totalDeduction',
                 render: (text,record) => (
                   <>
@@ -158,7 +159,7 @@ const PayrollHistory = () => {
                 )
             },
             {
-                title: 'Deduction Reason',
+                title: t('payroll.currentPayroll.deductionReason'),
                 dataIndex: 'deductionReason',
                 render: (text,record) => (
                     <label className='longText'>
@@ -167,7 +168,7 @@ const PayrollHistory = () => {
                   )
             },
             {
-                title: 'Bonus',
+                title: t('payroll.currentPayroll.bonus'),
                 dataIndex: 'bonus',
                 render: (text,record) => (
                   <>
@@ -176,7 +177,7 @@ const PayrollHistory = () => {
                 )
             },
             {
-                title: 'Bonus Reason',
+                title: t('payroll.currentPayroll.bonusReason'),
                 dataIndex: 'bonusReason',
                 render: (text,record) => (
                     <label className='longText'>
@@ -185,7 +186,7 @@ const PayrollHistory = () => {
                   )
             },
             {
-                title: 'Total Addition',
+                title: t('payroll.currentPayroll.totalAddition'),
                 dataIndex: 'totalAddition',
                 render: (text,record) => (
                   <>
@@ -194,7 +195,7 @@ const PayrollHistory = () => {
                 )
             },
             {
-                title: 'Extra Payment',
+                title: t('payroll.currentPayroll.extraPayment'),
                 dataIndex: 'extraPayment',
                 render: (text,record) => (
                   <>
@@ -203,7 +204,7 @@ const PayrollHistory = () => {
                 )
             },
             {
-                title: 'Extra Payment Reason',
+                title: t('payroll.currentPayroll.extraPaymentReason'),
                 dataIndex: 'extraPaymentReason',
                 render: (text,record) => (
                     <label className='longText'>
@@ -212,7 +213,7 @@ const PayrollHistory = () => {
                   )
             },
             {
-                title: 'Absent Fine',
+                title: t('payroll.currentPayroll.absentFine'),
                 dataIndex: 'absentFine',
                 render: (text,record) => (
                   <>
@@ -221,23 +222,23 @@ const PayrollHistory = () => {
                 )
             },
             {
-                title: 'Credit Salary',
+                title: t('payroll.currentPayroll.creditSalary'),
                 dataIndex: 'creditSalary',
                 render: (text,record) => (
                 <span>{text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
                 )
             },
             {
-                title: 'Mode Of Payment',
+                title: t('payroll.currentPayroll.modeOfPayment'),
                 dataIndex: 'modeOfPayment',
                 render: (text,record) => (
                   <>
-                    {text || '-'}
+                    {record?.modeOfPayment==="Cash" ? t('cash') : record?.modeOfPayment==="Cheque" ? t('cheque') : record?.modeOfPayment==="Bank Transfer" ? t('bankTransfer') : '-'}
                   </>
                 )
             },
             {
-                title: 'Transaction ID',
+                title: t('payroll.currentPayroll.transactionID'),
                 dataIndex: 'transactionId',
                 render: (text,record) => (
                   <>
@@ -246,7 +247,7 @@ const PayrollHistory = () => {
                 )
             },
             {
-                title: 'Payroll Processing Date',
+                title: t('payroll.currentPayroll.payrollProcessingDate'),
                 dataIndex: 'createdAt',
                 render: (text,record) => {
                   const date = new Date(text);
@@ -263,11 +264,14 @@ const PayrollHistory = () => {
                 }
             },
             {
-                title: 'Status',
+                title: t('status'),
                 dataIndex: 'status',
+                render: (text) => (
+                  <label>{text==="Paid" ? t('payroll.currentPayroll.paid') : "-"}</label>
+                ),
             },
             {
-              title: 'Action',
+              title: t('allEmp.action'),
               render: (text, record) => (
                   <div className="dropdown dropdown-action text-end">
                     <a href="javascript:void(0)" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
@@ -285,9 +289,9 @@ const PayrollHistory = () => {
                             }
                             Detailform.setFieldsValue(d);
                             console.log(record);
-                          }}><i className="fa fa-eye m-r-5" /> View</a>
+                          }}><i className="fa fa-eye m-r-5" /> {t('view')}</a>
                         {/* <a className="dropdown-item" href="javascript:void(0)" onClick={()=> downloadPDF(record)}><i className="fa fa-download m-r-5" /> Export to PDF</a> */}
-                        <a className="dropdown-item" href="javascript:void(0)" onClick={()=> GenerateSalaryPDF(record, false, 'history', false)}><i className="fa fa-download m-r-5" /> Export Payslip</a>
+                        <a className="dropdown-item" href="javascript:void(0)" onClick={()=> GenerateSalaryPDF(record, false, 'history', false)}><i className="fa fa-download m-r-5" /> {t('allEmp.exportPayslip')}</a>
                       </div>
                   </div>
                 ),
@@ -315,13 +319,13 @@ const PayrollHistory = () => {
                   setAllValuesDownload({})
                   Dform.resetFields()
                   setLoader(false)
-                  message.success('Payroll Data Exported Successfully!')
+                  message.success(t('payroll.currentPayroll.payrollDataExported'))
                 }else{
                   setOpenDownload(false)
                   setAllValuesDownload({})
                   Dform.resetFields()
                   setLoader(false)
-                  message.error('No Payroll Data Found!')
+                  message.error(t('payroll.currentPayroll.noPayrollDataFound'))
                 }
               }
             })
@@ -333,7 +337,7 @@ const PayrollHistory = () => {
                     ? err?.response?.data?.msg
                     : err?.response?.data?.validation?.body?.message
                     ? err?.response?.data?.validation?.body?.message
-                    : "Get Payroll Histroy Error"
+                    : t('payroll.currentPayroll.getPayrollsHistoryError')
                 }!`
               );
             });
@@ -480,7 +484,7 @@ const PayrollHistory = () => {
         <div className={`main-wrapper ${menu ? 'slide-nav': ''}`}> 
            <div className="page-wrapper">
               <Helmet>
-                  <title>Payroll History - DaftarPro</title>
+                  <title>{t('payroll.currentPayroll.payrollHistory')} - {t('header.daftarPro')}</title>
                   <meta name="description" content="Login page"/>
                   <link rel="icon" type="image/x-icon" href={favicon} />				
               </Helmet>
@@ -490,18 +494,18 @@ const PayrollHistory = () => {
              <div className="page-header">
                <div className="row align-items-center">
                  <div className="col">
-                   <h3 className="page-title">Payroll History</h3>
+                   <h3 className="page-title">{t('payroll.currentPayroll.payrollHistory')}</h3>
                    <ul className="breadcrumb">
-                     <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>Dashboard</Link></li>
-                     <li className="breadcrumb-item active">Payroll History</li>
+                     <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>{t('dashboard')}</Link></li>
+                     <li className="breadcrumb-item active">{t('payroll.currentPayroll.payrollHistory')}</li>
                    </ul>
                  </div>
                  <div className="col-auto float-end ms-auto">
                   {
                     data?.length > 0 ?
-                    <a href="javascript:void(0)" className="btn add-btn" onClick={()=> setOpenDownload(true)}><i className="fa fa-download" />Download</a>
+                    <a href="javascript:void(0)" className="btn add-btn" onClick={()=> setOpenDownload(true)}><i className="fa fa-download" />{t('payroll.currentPayroll.downLoad')}</a>
                     :
-                    <button href="javascript:void(0)" className="btn add-btn" disabled={true} style={{background: '#ff9b44', pointerEvents: 'auto', color: 'white', cursor: 'not-allowed'}}><i className="fa fa-download" />Download</button>
+                    <button href="javascript:void(0)" className="btn add-btn" disabled={true} style={{background: '#ff9b44', pointerEvents: 'auto', color: 'white', cursor: 'not-allowed'}}><i className="fa fa-download" />{t('payroll.currentPayroll.downLoad')}</button>
                   }
                 </div>
                </div>
@@ -512,7 +516,7 @@ const PayrollHistory = () => {
                 form={form}
                 onFinish={onFilterFinish}
                 onFinishFailed={() => {
-                  message.error("Please Fill Required Fields!")
+                  message.error(t('allEmp.errors.fillRequiredFields'))
                 }}
               >
               <div className="row filter-row">
@@ -525,7 +529,7 @@ const PayrollHistory = () => {
                     <Input
                       className="form-control"
                       style={{height:'50px'}}
-                      placeholder='Employee ID'
+                      placeholder={t('payroll.currentPayroll.employeeID')}
                     />
                     </Form.Item>
                   </div>
@@ -539,7 +543,7 @@ const PayrollHistory = () => {
                     <Input
                       className="form-control"
                       style={{height:'50px'}}
-                      placeholder='Employee Name'
+                      placeholder={t('payroll.currentPayroll.employeeName')}
                     />
                     </Form.Item>
                   </div>
@@ -554,7 +558,7 @@ const PayrollHistory = () => {
                           validator(rule, value) {
                             if ( !value && getFieldValue("payYear")) {
                               return Promise.reject(
-                                "please select month"
+                                t('finance.Profit&loss.pleaseSelectMonth'),
                                 );
                               }
                             return Promise.resolve();
@@ -566,7 +570,7 @@ const PayrollHistory = () => {
                         style={{ display: "none" }}
                         value={allValues?.payMonth}
                       />
-                      <DatePicker onChange={(date, datestring) => { onHandleChange("payMonth", datestring); }} format="MMMM" allowClear={false} size='large' picker="month" placeholder='Select Month' className='form-control filterDate' style={{minHeight: '50px', display: 'flex'}} getPopupContainer={() => document.getElementById('area')} />
+                      <DatePicker onChange={(date, datestring) => { onHandleChange("payMonth", datestring); }} format="MMMM" allowClear={false} size='large' picker="month" placeholder={t('payroll.currentPayroll.selectMonth')} className='form-control filterDate' style={{minHeight: '50px', display: 'flex'}} getPopupContainer={() => document.getElementById('area')} />
                     </Form.Item>
                   </div>
                 </div>
@@ -580,7 +584,7 @@ const PayrollHistory = () => {
                           validator(rule, value) {
                             if ( !value && getFieldValue("payMonth")) {
                               return Promise.reject(
-                                "please select year"
+                                t('finance.Profit&loss.pleaseSelectYear'),
                                 );
                               }
                             return Promise.resolve();
@@ -592,13 +596,13 @@ const PayrollHistory = () => {
                         style={{ display: "none" }}
                         value={allValues?.payYear}
                       />
-                      <DatePicker onChange={(date, datestring) => { onHandleChange("payYear", datestring); }} allowClear={false} size='large' picker="year" placeholder='Select Year' className='form-control filterDate' style={{minHeight: '50px', display: 'flex'}} getPopupContainer={() => document.getElementById('area')} />
+                      <DatePicker onChange={(date, datestring) => { onHandleChange("payYear", datestring); }} allowClear={false} size='large' picker="year" placeholder={t('aAttend.selectYear')} className='form-control filterDate' style={{minHeight: '50px', display: 'flex'}} getPopupContainer={() => document.getElementById('area')} />
                     </Form.Item>
                   </div>
                 </div>
                 <div className="col-sm-6 col-md-4" style={{display: 'flex', alignItems: 'flex-start', gap: '13px'}}>  
-                  <button href="javascript:void(0)" type="submit" className="btn btn-success btn-block w-50"> Search </button>  
-                  <button href="javascript:void(0)" type="reset" onClick={() => { form.resetFields(); setAllValues({}); getEmployeeSalary('', 1, pageSize); setFilterValues(null); setCurrentPage(1)}} className="btn btn-success btn-block w-50" style={{backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}}> Reset </button>  
+                  <button href="javascript:void(0)" type="submit" className="btn btn-success btn-block w-50"> {t('search')} </button>  
+                  <button href="javascript:void(0)" type="reset" onClick={() => { form.resetFields(); setAllValues({}); getEmployeeSalary('', 1, pageSize); setFilterValues(null); setCurrentPage(1)}} className="btn btn-success btn-block w-50" style={{backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}}> {t('reset')} </button>  
                 </div>
               </div>
               </Form>
@@ -617,6 +621,22 @@ const PayrollHistory = () => {
                     columns={columns}
                     dataSource={data}
                     pagination={false}
+                    components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                   />
                   {
                     data?.length > 0 &&
@@ -628,7 +648,7 @@ const PayrollHistory = () => {
                         defaultCurrent={1}
                         current={currentPage}
                         showTotal={(total, range) =>
-                          `Showing ${range[0]} to ${range[1]} of ${total} entries`}
+                          t('paginationShow', { range1: range[0], range2: range[1], total: total })}
                         onChange={(page, size) => {
                           console.log(page, size);
                           setPageSize(size); setCurrentPage(page);
@@ -636,7 +656,9 @@ const PayrollHistory = () => {
                         }}
                         showSizeChanger={true}
                         pageSizeOptions={['20', '30', '40', '50']}
-                        itemRender={itemRender}
+                        itemRender={(current, type, originalElement) =>
+                          itemRender(current, type, originalElement, t)
+                        }
                       />
                     </div>
                   }
@@ -667,7 +689,7 @@ const PayrollHistory = () => {
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">
-              Payroll Month & Year
+              {t('payroll.currentPayroll.downLoad')}
               </h5>
               <button type="button" className="close"
                 onClick={() => {
@@ -685,7 +707,7 @@ const PayrollHistory = () => {
                 name="control-hooks"
                 onFinish={(val) => onFinishDownload(val)}
                 onFinishFailed={({errorFields}) => {
-                    message.error("Please Fill Required Fields!")
+                    message.error(t('allEmp.errors.fillRequiredFields'))
                 }}
                 autoComplete="off"
               >
@@ -693,7 +715,7 @@ const PayrollHistory = () => {
                     <div className="col-md-6">
                         <div className="form-group">
                             <label>
-                            Month <span className="text-danger">*</span>
+                            {t('payroll.currentPayroll.payrollMonth')} <span className="text-danger">*</span>
                             </label>
                             <div className='filterDateMonth' style={{ position: 'relative' }} id='area'>
                                 <Form.Item
@@ -703,7 +725,7 @@ const PayrollHistory = () => {
                                     {
                                     whitespace: true,
                                     required: true,
-                                    message: "please select month",
+                                    message: t('finance.Profit&loss.pleaseSelectMonth'),
                                     },
                                 ]}
                                 >
@@ -711,7 +733,7 @@ const PayrollHistory = () => {
                                     style={{ display: "none" }}
                                     value={allValuesDownload?.month}
                                 />
-                                <DatePicker onChange={(date, datestring) => { onHandleChangeDownload("month", datestring); }} format="MMMM" allowClear={false} size='large' picker="month" placeholder='Select Month' className='form-control filterDate' style={{minHeight: '50px', display: 'flex'}} getPopupContainer={() => document.getElementById('area')} />
+                                <DatePicker onChange={(date, datestring) => { onHandleChangeDownload("month", datestring); }} format="MMMM" allowClear={false} size='large' picker="month" placeholder={t('payroll.currentPayroll.selectMonth')} className='form-control filterDate' style={{minHeight: '50px', display: 'flex'}} getPopupContainer={() => document.getElementById('area')} />
                                 </Form.Item>
                             </div>
                         </div>
@@ -719,7 +741,7 @@ const PayrollHistory = () => {
                     <div className="col-md-6">
                         <div className="form-group">
                             <label>
-                            Year <span className="text-danger">*</span>
+                            {t('payroll.currentPayroll.payrollYear')} <span className="text-danger">*</span>
                             </label>
                             <div className='filterDateMonth' style={{ position: 'relative' }} id='area'>
                                 <Form.Item
@@ -729,7 +751,7 @@ const PayrollHistory = () => {
                                     {
                                     whitespace: true,
                                     required: true,
-                                    message: "please select year",
+                                    message: t('finance.Profit&loss.pleaseSelectYear'),
                                     },
                                 ]}
                                 >
@@ -737,7 +759,7 @@ const PayrollHistory = () => {
                                     style={{ display: "none" }}
                                     value={allValuesDownload?.month}
                                 />
-                                <DatePicker onChange={(date, datestring) => { onHandleChangeDownload("year", datestring); }} allowClear={false} size='large' picker="year" placeholder='Select Year' className='form-control filterDate' style={{minHeight: '50px', display: 'flex'}} getPopupContainer={() => document.getElementById('area')} />
+                                <DatePicker onChange={(date, datestring) => { onHandleChangeDownload("year", datestring); }} allowClear={false} size='large' picker="year" placeholder={t('aAttend.selectYear')} className='form-control filterDate' style={{minHeight: '50px', display: 'flex'}} getPopupContainer={() => document.getElementById('area')} />
                                 </Form.Item>
                             </div>
                         </div>
@@ -753,7 +775,7 @@ const PayrollHistory = () => {
                       {loader ? (
                         <Spin size="small" indicator={antIcon} />
                       ) : (
-                        "Export"
+                        t('payroll.currentPayroll.export')
                       )}
                     </Button>
                   </Form.Item>

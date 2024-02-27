@@ -3,9 +3,11 @@ import React, { useState } from "react";
 import Modal from "@mui/material/Modal";
 import { LoadingOutlined } from "@ant-design/icons";
 import { apiServices } from "../../../../../Services/apiServices";
+import { useTranslation } from "react-i18next";
 
 function AddShift({ addShiftOpen, setAddShiftOpen, allShifts, setAllShifts, user_state }) {
 
+    const { t, i18n } = useTranslation();
     const [loader, setLoader] = useState(false);
 
     const onFinish = (values) => {
@@ -28,7 +30,7 @@ function AddShift({ addShiftOpen, setAddShiftOpen, allShifts, setAllShifts, user
                     }
                 ])
                 setAddShiftOpen(false)
-                message.success("Shift Added Successfully!");
+                message.success(t('allEmp.errors.shiftAdded'));
                 setLoader(false);
               }
             })
@@ -41,7 +43,7 @@ function AddShift({ addShiftOpen, setAddShiftOpen, allShifts, setAllShifts, user
                     ? err?.response?.data?.msg
                     : err?.response?.data?.validation?.body?.message
                     ? err?.response?.data?.validation?.body?.message
-                    : "Add Shift Info Error"
+                    : t('allEmp.errors.addShiftError')
                 }!`
               );
             });
@@ -72,7 +74,7 @@ function AddShift({ addShiftOpen, setAddShiftOpen, allShifts, setAllShifts, user
             <div className="modal-content">
                 <div className="modal-header">
                 <h5 className="modal-title">
-                    Add Shift
+                {t('allEmp.Modal.addShift')}
                 </h5>
                 <button type="button" className="close" onClick={() => setAddShiftOpen(false)}>
                     <span aria-hidden="true">×</span>
@@ -86,9 +88,9 @@ function AddShift({ addShiftOpen, setAddShiftOpen, allShifts, setAllShifts, user
                     onFinishFailed={({errorFields}) => {
                     const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
                     if(consecutiveSpacesError){
-                        message.error("Please Remove Consecutive Spaces!")
+                      message.error(t('allEmp.errors.removeConsecutiveSpaces'))
                     }else{
-                        message.error("Please Fill Required Fields!")
+                      message.error(t('allEmp.errors.fillRequiredFields'))
                     }
                     }}
                 >
@@ -96,7 +98,7 @@ function AddShift({ addShiftOpen, setAddShiftOpen, allShifts, setAllShifts, user
                     <div className="col-sm-6">
                         <div className="form-group">
                         <label>
-                            Shift Name <span className="text-danger">*</span>
+                        {t('allEmp.Modal.shiftName')} <span className="text-danger">*</span>
                         </label>
                         <Form.Item
                             name="title"
@@ -106,10 +108,10 @@ function AddShift({ addShiftOpen, setAddShiftOpen, allShifts, setAllShifts, user
                                 required: true,
                                 validator: (_, value) => {
                                 if(!value || value.trim() === ''){
-                                    return Promise.reject("please enter shift name");
+                                    return Promise.reject(t('allEmp.errors.enterShiftName'));
                                 }
                                 else if (/\s{2,}/.test(value)) {
-                                    return Promise.reject("please remove consecutive spaces");
+                                    return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                                 }
                                 return Promise.resolve();
                                 },
@@ -124,14 +126,14 @@ function AddShift({ addShiftOpen, setAddShiftOpen, allShifts, setAllShifts, user
                     <div className="col-sm-6">
                         <div className="form-group">
                         <label>
-                            Start Time <span className="text-danger">*</span>
+                        {t('allEmp.Modal.startTime')} <span className="text-danger">*</span>
                         </label>
                         <Form.Item
                             name="startTime"
                             rules={[
                             {
                                 required: true,
-                                message: "please enter start time",
+                                message: t('allEmp.errors.enterStartTime'),
                             },
                             ]}
                             className="custom-border"
@@ -147,14 +149,14 @@ function AddShift({ addShiftOpen, setAddShiftOpen, allShifts, setAllShifts, user
                     <div className="col-sm-6">
                         <div className="form-group">
                         <label>
-                            Max Start Time <span className="text-danger">*</span>
+                        {t('allEmp.Modal.maxStartTime')} <span className="text-danger">*</span>
                         </label>
                         <Form.Item
                             name="maxStartTime"
                             rules={[
                             {
                                 required: true,
-                                message: "please enter max start time",
+                                message: t('allEmp.errors.enterMaxStartTime'),
                             },
                             ({ getFieldValue }) => ({
                                 validator: (_, value) => {
@@ -163,7 +165,7 @@ function AddShift({ addShiftOpen, setAddShiftOpen, allShifts, setAllShifts, user
                                     return Promise.resolve();
                                 }
                                 if (startTime && value && value.isBefore(startTime)) {
-                                    return Promise.reject("Max start time must be equal to or greater than start time");
+                                    return Promise.reject(t('allEmp.errors.maxStartTimeGreaterEqualStartTime'));
                                 }
                                 return Promise.resolve();
                                 },
@@ -182,14 +184,14 @@ function AddShift({ addShiftOpen, setAddShiftOpen, allShifts, setAllShifts, user
                     <div className="col-sm-6">
                         <div className="form-group">
                         <label>
-                            End Time <span className="text-danger">*</span>
+                        {t('allEmp.Modal.endTime')} <span className="text-danger">*</span>
                         </label>
                         <Form.Item
                             name="endTime"
                             rules={[
                             {
                                 required: true,
-                                message: "please enter end time",
+                                message: t('allEmp.errors.enterEndTime'),
                             },
                             ({ getFieldValue }) => ({
                                 validator: (_, value) => {
@@ -199,9 +201,9 @@ function AddShift({ addShiftOpen, setAddShiftOpen, allShifts, setAllShifts, user
                                 }
                                 if (value && value.isSameOrBefore(maxStartTime)) {
                                     if (value.isSame(maxStartTime, 'minute')) {
-                                    return Promise.reject("End time and max start time cannot be the same");
+                                    return Promise.reject(t('allEmp.errors.endTimeMaxStartTimeCannotBeSame'));
                                     } else {
-                                    return Promise.reject("End time must be greater than max start time");
+                                    return Promise.reject(t('allEmp.errors.endTimeGreaterThanMaxStartTime'));
                                     }
                                 }
                                 return Promise.resolve();
@@ -228,7 +230,7 @@ function AddShift({ addShiftOpen, setAddShiftOpen, allShifts, setAllShifts, user
                             {loader ? (
                             <Spin size="small" indicator={antIcon} />
                             ) : (
-                            "Submit"
+                                t('submit')
                             )}
                         </Button>
                         </Form.Item>

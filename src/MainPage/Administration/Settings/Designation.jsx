@@ -9,10 +9,11 @@ import { useSelector } from "react-redux";
 // import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { LoadingOutlined } from '@ant-design/icons';
+import { useTranslation } from "react-i18next";
 
 const Designation = () => {
   const user_state = useSelector((state) => state.user.loginvalue);
-
+  const { t, i18n } = useTranslation();
   const [form] = Form.useForm();
 
   const [open, setOpen] = useState({
@@ -50,7 +51,7 @@ const Designation = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Designation Info Error"
+              : t('allEmp.errors.getDesignationInfoError')
           }!`
         );
       });
@@ -70,7 +71,7 @@ const Designation = () => {
           // console.log(data);
           setData([...data.filter((designation) => designation._id !== id)]);
           handleClose();
-          message.success("Designation Deleted Successfully!");
+          message.success(t('settings.designation.designationDeleted'));
           setLoader(false)
         }
       })
@@ -83,7 +84,7 @@ const Designation = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Delete Designation Error"
+              : t('settings.designation.deleteDesignationError')
           }!`
         );
       });
@@ -117,7 +118,7 @@ const Designation = () => {
               })
             );
             handleClose();
-            message.success("Designation Updated Successfully!");
+            message.success(t('settings.designation.designationUpdated'));
             setLoader(false)
           }
         })
@@ -130,7 +131,7 @@ const Designation = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Update Designation Info Error"
+                : t('settings.designation.updateDesignationError')
             }!`
           );
         });
@@ -148,7 +149,7 @@ const Designation = () => {
               },
             ]);
             handleClose();
-            message.success("Designation Added Successfully!");
+            message.success(t('allEmp.errors.desigAdded'));
             setLoader(false)
           }
         })
@@ -161,7 +162,7 @@ const Designation = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Add Designation Info Error"
+                : t('allEmp.errors.addDesigError')
             }!`
           );
         });
@@ -176,12 +177,12 @@ const Designation = () => {
       render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
     },
     {
-      title: "Designation Name",
+      title: t('allEmp.Modal.designationName'),
       dataIndex: "designationName",
       // sorter: (a, b) => a.departmentName.length - b.departmentName.length,
     },
     {
-      title: "Actions",
+      title: t('holiday.actions'),
       render: (text, record) => (
         <div className="dropdown dropdown-action text-end">
           <a
@@ -204,7 +205,7 @@ const Designation = () => {
                 });
               }}
             >
-              <i className="fa fa-pencil m-r-5" /> Edit
+              <i className="fa fa-pencil m-r-5" /> {t('edit')}
             </a>
             <a
               className="dropdown-item"
@@ -217,7 +218,7 @@ const Designation = () => {
                 });
               }}
             >
-              <i className="fa fa-trash-o m-r-5" /> Delete
+              <i className="fa fa-trash-o m-r-5" /> {t('edit')}
             </a>
           </div>
         </div>
@@ -251,12 +252,12 @@ const Designation = () => {
               margin: "7px 0px 4px 0px",
             }}
           >
-            No designation added yet
+            {t('settings.designation.noDesignationAdded')}
           </div>
           <div
             style={{ color: "#464665", fontWeight: "300", fontSize: "13px" }}
           >
-            Click 'Add Designation' Button To Create <br /> A New Designation{" "}
+            {t('settings.designation.clickToAddDesignation')} <br /> {t('settings.designation.newDesignation')}{" "}
           </div>
         </div>
       }
@@ -282,7 +283,7 @@ const Designation = () => {
         <div className="page-header">
           <div className="row align-items-center pt-3 pb-3">
             <div className="col">
-              <h3 className="page-title">Designations</h3>
+              <h3 className="page-title">{t('settings.designations')}</h3>
             </div>
             <div className="col-auto float-end ms-auto">
               <a
@@ -297,7 +298,7 @@ const Designation = () => {
                 }}
                 // data-bs-target="#add_leavetype"
               >
-                <i className="fa fa-plus" /> Add Designation
+                <i className="fa fa-plus" /> {t('allEmp.Modal.addDesignation')}
               </a>
             </div>
           </div>
@@ -320,18 +321,35 @@ const Designation = () => {
                   // pageSize: 1,
                   // hideOnSinglePage: true,
                   showTotal: (total, range) =>
-                    `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+                    t('paginationShow', { range1: range[0], range2: range[1], total: total }),
                   showSizeChanger: true,
                   onShowSizeChange: (current, size) => { setPageSize(size); setCurrentPage(1) },
                   pageSizeOptions: ['20', '30', '40', '50'],
                   onChange: (page, size) => setCurrentPage(page),
-                  itemRender: itemRender,
+                  itemRender: (current, type, originalElement) =>
+                  itemRender(current, type, originalElement, t),
                 }}
                 style={{ overflowX: "auto" }}
                 columns={columns}
                 bordered
                 dataSource={data}
                 rowKey={(record) => record.id}
+                components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                 // onChange={this.handleTableChange}
               />
             </div>
@@ -356,7 +374,7 @@ const Designation = () => {
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">
-                {open?.data ? "Update" : "Add"} Designation Name
+                {open?.data ? t('holiday.update') : t('holiday.add')} {t('allEmp.Modal.designationName')}
               </h5>
               <button type="button" className="close" onClick={handleClose}>
                 <span aria-hidden="true">×</span>
@@ -372,10 +390,10 @@ const Designation = () => {
                   console.log(errorFields);
                   const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
                   if(consecutiveSpacesError){
-                    message.error("Please Remove Consecutive Spaces!")
-                  }else{
-                    message.error("Please Fill Required Fields!")
-                  }
+                    message.error(t('allEmp.errors.removeConsecutiveSpaces'))
+                 }else{
+                    message.error(t('allEmp.errors.fillRequiredFields'))
+                  } 
                 }}
                 initialValues={{
                   designationName: open?.data
@@ -385,7 +403,7 @@ const Designation = () => {
               >
                 <div className="form-group">
                   <label>
-                    Designation Name <span className="text-danger">*</span>
+                  {t('allEmp.Modal.designationName')} <span className="text-danger">*</span>
                   </label>
                   <Form.Item
                     name="designationName"
@@ -394,13 +412,13 @@ const Designation = () => {
                         whitespace: true,
                         required: true,
                         validator: (_, value) => {
-                          if(value.trim() === ''){
-                            return Promise.reject("please enter designation name");
-                          }
-                          else if (/\s{2,}/.test(value)) {
-                            return Promise.reject("please remove consecutive spaces");
-                          }
-                          return Promise.resolve();
+                          if(!value || value.trim() === ''){
+                            return Promise.reject(t('allEmp.errors.enterDesignationName'));
+                        }
+                        else if (/\s{2,}/.test(value)) {
+                            return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
+                        }
+                        return Promise.resolve();
                         },
                       },
                     ]}
@@ -418,7 +436,7 @@ const Designation = () => {
                     >
                       {
                         loader ? <Spin size="small" indicator={antIcon} />
-                          : 'Submit'
+                          : t('submit')
                       }
                     </Button>
                   </Form.Item>
@@ -451,10 +469,9 @@ const Designation = () => {
               }}
             >
               <div className="form-header">
-                <h3 style={{ marginBottom: "30px" }}>Delete Designation</h3>
+                <h3 style={{ marginBottom: "30px" }}>{t('delete')} {t('allEmp.designation')}</h3>
                 <p>
-                  Are you sure you want to delete{" "}
-                  <b>{open?.data?.designationName}</b>?
+                <span dangerouslySetInnerHTML={{ __html: t('projectScreen.confirmDeleteProject', { project: open?.data?.designationName }) }} />
                 </p>
               </div>
               <div className="modal-btn delete-action">
@@ -469,7 +486,7 @@ const Designation = () => {
                     >
                       {
                         loader ? <Spin size="small" indicator={antIcon} />
-                          : 'Delete'
+                          : t('delete')
                       }
                     </Button>
                   </div>
@@ -479,7 +496,7 @@ const Designation = () => {
                       className="btn btn-primary submit-btn"
                       style={{width: '100%'}}
                     >
-                      Cancel
+                      {t('cancel')}
                     </Button>
                   </div>
                 </div>

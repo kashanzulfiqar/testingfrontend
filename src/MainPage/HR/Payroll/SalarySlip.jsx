@@ -15,9 +15,10 @@ import { apiServices } from '../../../Services/apiServices';
 import { LoadingOutlined } from '@ant-design/icons';
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import GenerateSalaryPDF from './GenerateSalaryPDF';
+import { useTranslation } from 'react-i18next';
 
 const SalarySlip = () => {
-
+  const { t, i18n } = useTranslation();
   const moment = require('moment');
   const [form] = Form.useForm();
   const nav = useNavigate();
@@ -63,7 +64,7 @@ const SalarySlip = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get All Employees Error"
+              : t('allEmp.errors.getEmployeesError')
           }!`
         );
       });
@@ -86,19 +87,19 @@ const SalarySlip = () => {
         
         const columns = [
             {
-              title: "Month",
+              title: t('finance.Profit&loss.month'),
               dataIndex: "payMonth",
               width:300
               // width:210
             },
             {
-              title: "Year",
+              title: t('finance.Profit&loss.year'),
               dataIndex: "payYear",
               width:300
               // width:200
             },
             {
-              title: "Date Of Issue",
+              title: t('payroll.currentPayroll.dateOfIssue'),
               dataIndex: "createdAt",
               width:300,
               render: (text,record) => {
@@ -117,7 +118,7 @@ const SalarySlip = () => {
               }
             },
             {
-              title: "Credit Salary",
+              title: t('payroll.currentPayroll.creditSalary'),
               dataIndex: "creditSalary",
               width:300,
               render: (text,record) => {
@@ -129,7 +130,7 @@ const SalarySlip = () => {
               }
             },
             {
-              title: "Actions",
+              title: t('holiday.actions'),
               width:76,
               render: (text, record) => (
                 <div className="dropdown dropdown-action text-end">
@@ -149,7 +150,7 @@ const SalarySlip = () => {
                         GenerateSalaryPDF(record, true, 'slip', false)
                       }}
                     >
-                      <i className="fa fa-eye m-r-5" /> View
+                      <i className="fa fa-eye m-r-5" /> {t('view')}
                     </a>
                     {/* <a
                       className="dropdown-item"
@@ -165,7 +166,7 @@ const SalarySlip = () => {
                         GenerateSalaryPDF(record, false, 'slip', false)
                       }}
                     >
-                      <i className="fa fa-download m-r-5" /> Download
+                      <i className="fa fa-download m-r-5" /> {t('payroll.currentPayroll.downLoad')}
                     </a>
                   </div>
                 </div>
@@ -222,7 +223,7 @@ const SalarySlip = () => {
                       margin: "7px 0px 4px 0px",
                     }}
                   >
-                    No Record Found!
+                    {t('finance.Profit&loss.noRecordFound')}
                   </div>
                 </div>
               }
@@ -235,7 +236,7 @@ const SalarySlip = () => {
         <div className={`main-wrapper ${menu ? 'slide-nav': ''}`}> 
            <div className="page-wrapper">
               <Helmet>
-                  <title>Payslip - DaftarPro</title>
+                  <title>{t('payroll.currentPayroll.payslip')} - {t('header.daftarPro')}</title>
                   <meta name="description" content="Login page"/>
                   <link rel="icon" type="image/x-icon" href={favicon} />				
               </Helmet>
@@ -245,10 +246,10 @@ const SalarySlip = () => {
              <div className="page-header">
                <div className="row align-items-center">
                  <div className="col">
-                   <h3 className="page-title">Payslip</h3>
+                   <h3 className="page-title">{t('payroll.currentPayroll.payslip')}</h3>
                    <ul className="breadcrumb">
-                     <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>Dashboard</Link></li>
-                     <li className="breadcrumb-item active">Payslip</li>
+                     <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>{t('dashboard')}</Link></li>
+                     <li className="breadcrumb-item active">{t('payroll.currentPayroll.payslip')}</li>
                    </ul>
                  </div>
                </div>
@@ -287,7 +288,7 @@ const SalarySlip = () => {
                       //   },
                       // ]}
                     >
-                      <DatePicker format="MMMM" allowClear={false} size='large' picker="month" placeholder='Select Month' className='form-control filterDate' style={{minHeight: '50px', display: 'flex'}} getPopupContainer={() => document.getElementById('area')} />
+                      <DatePicker format="MMMM" allowClear={false} size='large' picker="month" placeholder={t('aAttend.selectMonth')} className='form-control filterDate' style={{minHeight: '50px', display: 'flex'}} getPopupContainer={() => document.getElementById('area')} />
                     </Form.Item>
                   </div>
                 </div>
@@ -304,13 +305,13 @@ const SalarySlip = () => {
                       //   },
                       // ]}
                     >
-                      <DatePicker allowClear={false} size='large' picker="year" placeholder='Select Year' className='form-control filterDate' style={{minHeight: '50px', display: 'flex'}} getPopupContainer={() => document.getElementById('area1')} />
+                      <DatePicker allowClear={false} size='large' picker="year" placeholder={t('aAttend.selectYear')} className='form-control filterDate' style={{minHeight: '50px', display: 'flex'}} getPopupContainer={() => document.getElementById('area1')} />
                     </Form.Item>
                   </div>
                 </div>
                 <div className="col-sm-6 col-md-4" style={{display: 'flex', alignItems: 'flex-start', gap: '13px'}}>  
-                  <button href="javascript:void(0)" type="submit" className="btn btn-success btn-block w-50"> Search </button>  
-                  <button href="javascript:void(0)" type="reset" onClick={() => { form.resetFields(); getEmployeeSalary('', 1, pageSize); setFilterValues(null); setCurrentPage(1)}} className="btn btn-success btn-block w-50" style={{backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}}> Reset </button>  
+                  <button href="javascript:void(0)" type="submit" className="btn btn-success btn-block w-50"> {t('search')} </button>  
+                  <button href="javascript:void(0)" type="reset" onClick={() => { form.resetFields(); getEmployeeSalary('', 1, pageSize); setFilterValues(null); setCurrentPage(1)}} className="btn btn-success btn-block w-50" style={{backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}}> {t('reset')} </button>  
                 </div>
               </div>
               </Form>
@@ -328,6 +329,22 @@ const SalarySlip = () => {
                     columns={columns}
                     dataSource={data}
                     pagination={false}
+                    components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                   />
                   {
                     data?.length > 0 &&
@@ -339,7 +356,7 @@ const SalarySlip = () => {
                         defaultCurrent={1}
                         current={currentPage}
                         showTotal={(total, range) =>
-                          `Showing ${range[0]} to ${range[1]} of ${total} entries`}
+                          t('paginationShow', { range1: range[0], range2: range[1], total: total })}
                         onChange={(page, size) => {
                           console.log(page, size);
                           setPageSize(size); setCurrentPage(page);
@@ -347,7 +364,9 @@ const SalarySlip = () => {
                         }}
                         showSizeChanger={true}
                         pageSizeOptions={['20', '30', '40', '50']}
-                        itemRender={itemRender}
+                        itemRender={(current, type, originalElement) =>
+                          itemRender(current, type, originalElement, t)
+                        }
                       />
                     </div>
                   }

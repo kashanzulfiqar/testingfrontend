@@ -23,8 +23,10 @@ import { useSelector } from "react-redux";
 import { apiServices } from "../../../Services/apiServices";
 import { LoadingOutlined } from "@ant-design/icons";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
+import { useTranslation } from "react-i18next";
 
 const Holidays = () => {
+  const { t, i18n } = useTranslation();
   const [menu, setMenu] = useState(false);
 
   const navigate = useNavigate();
@@ -100,7 +102,7 @@ const Holidays = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Holidays Error"
+              : t('holiday.getHolidaysError')
           }!`
         );
       }).then(()=>{
@@ -133,7 +135,7 @@ const Holidays = () => {
       );
     
       if (isHolidayExisting) {
-        message.error('Holiday with this date already exists!');
+        message.error(t('holiday.holidayExists'));
         setLoader(false); 
         return; 
       }
@@ -158,7 +160,7 @@ const Holidays = () => {
             // );
             getHolidays();
             handleClose();
-            message.success("Holiday Updated Successfully");
+            message.success(t('holiday.holidayUpdatedSuccess'));
             setLoader(false);
           }
         })
@@ -171,7 +173,7 @@ const Holidays = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Update Holiday Info Error"
+                : t('holiday.updateHolidayError')
             }!`
           );
         });
@@ -190,7 +192,7 @@ const Holidays = () => {
             // ]);
             getHolidays();
             handleClose();
-            message.success("Holiday Added Successfully");
+            message.success(t('holiday.holidayAddedSuccess'));
             setLoader(false);
           }
         })
@@ -203,7 +205,7 @@ const Holidays = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Add Holiday Error"
+                : t('holiday.addHolidayError')
             }!`
           );
         });
@@ -219,24 +221,24 @@ const Holidays = () => {
         (page - 1) * size + index + 1,
     },
     {
-      title: "Title",
+      title: t('holiday.title'),
       dataIndex: "holidayTitle",
       key: "holidayTitle",
     },
     {
-      title: "Date",
+      title: t('holiday.date'),
       dataIndex: "holidayDate",
       key: "holidayDate",
       render: (text) => moment(text).format("D MMM YYYY"),
     },
     {
-      title: "Day",
+      title: t('holiday.day'),
       dataIndex: "holidayDate",
       key: "holidayDate",
       render: (text) => moment(text).format("dddd"),
     },
     {
-      title: "Actions",
+      title: t('holiday.actions'),
       render: (record, row) => (
         <div className="dropdown dropdown-action text-end">
           <a
@@ -263,7 +265,7 @@ const Holidays = () => {
                 });
               }}
             >
-              <i className="fa fa-pencil m-r-5" /> Edit
+              <i className="fa fa-pencil m-r-5" /> {t('holiday.edit')}
             </a>
             <a
               className="dropdown-item"
@@ -276,7 +278,7 @@ const Holidays = () => {
                 });
               }}
             >
-              <i className="fa fa-trash-o m-r-5" /> Delete
+              <i className="fa fa-trash-o m-r-5" /> {t('holiday.delete')}
             </a>
           </div>
         </div>
@@ -306,7 +308,7 @@ const Holidays = () => {
             getHolidays()
           }
           handleClose();
-          message.success("Holiday Deleted Successfully!");
+          message.success(t('holiday.holidayDeletedSuccess'));
           //viewCategory();
           setLoader(false);
         }
@@ -320,7 +322,7 @@ const Holidays = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Delete Holiday Error"
+              : t('holiday.deleteHolidayError')
           }!`
         );
       });
@@ -395,7 +397,7 @@ const Holidays = () => {
         {/* <Sidebar /> */}
         <div className="page-wrapper">
           <Helmet>
-            <title>Holidays - DaftarPro</title>
+            <title>{t('holiday.holidaysTitle')}</title>
             <meta name="description" content="Login page" />
           </Helmet>
           {/* Page Content */}
@@ -404,7 +406,7 @@ const Holidays = () => {
             <div className="page-header">
               <div className="row align-items-center">
                 <div className="col">
-                  <h3 className="page-title">Holidays {new Date().getFullYear()}</h3>
+                  <h3 className="page-title">{t('holiday.holidays')} {new Date().getFullYear()}</h3>
                   <ul className="breadcrumb">
                   <li className="breadcrumb-item">
                     <Link
@@ -414,10 +416,10 @@ const Holidays = () => {
                           : "/employee/dashboard"
                       }
                     >
-                      Dashboard
+                      {t('holiday.dashboard')}
                     </Link>
                   </li>
-                    <li className="breadcrumb-item active">Holidays</li>
+                    <li className="breadcrumb-item active">{t('holiday.holidays')}</li>
                   </ul>
                 </div>
                 {(role === "admin" || permissions?.companyManagement) && (<div className="col-auto float-end ms-auto">
@@ -432,7 +434,7 @@ const Holidays = () => {
                       });
                     }}
                   >
-                    <i className="fa fa-plus" /> Add Holiday
+                    <i className="fa fa-plus" /> {t('holiday.addholiday')}
                   </a>
                 </div>)}
               </div>
@@ -474,6 +476,22 @@ const Holidays = () => {
                 bordered
                 dataSource={holidays}
                 rowKey={(record) => record.id}
+                components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                 // onChange={this.handleTableChange}
               />
             </div>
@@ -486,12 +504,13 @@ const Holidays = () => {
                         pageSize={pagination.pageSize}
                         total={pagination.total}
                         showTotal={(total, range) =>
-                          `Showing ${range[0]} to ${range[1]} of ${total} entries`
-                        }
+                          t('paginationShow', { range1: range[0], range2: range[1], total: total })}
                         pageSizeOptions={["20", "30", "40", "50"]}
                         showSizeChanger
                         onChange={handlePageChange}
-                        itemRender={itemRender}
+                        itemRender={(current, type, originalElement) =>
+                          itemRender(current, type, originalElement, t)
+                        }
                         disabled={isLoading}
                       />
                     </div>
@@ -514,7 +533,7 @@ const Holidays = () => {
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">
-                {open?.data ? "Update" : "Add"} Holiday
+                {open?.data ? t('holiday.update') : t('holiday.add')} {t('holiday.holiday')}
               </h5>
               <button type="button" className="close" onClick={handleClose}>
                 <span aria-hidden="true">×</span>
@@ -528,10 +547,10 @@ const Holidays = () => {
                 onFinishFailed={({errorFields}) => {
                   const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
                   if(consecutiveSpacesError){
-                    message.error("Please Remove Consecutive Spaces!")
-                  }else{
-                    message.error("Please Fill Required Fields!")
-                  }
+                    message.error(t('allEmp.errors.removeConsecutiveSpaces'))
+                 }else{
+                    message.error(t('allEmp.errors.fillRequiredFields'))
+                  } 
                 }}
                 initialValues={{
                   holidayTitle: open?.data ? open?.data?.holidayTitle : "",
@@ -541,7 +560,7 @@ const Holidays = () => {
               >
                 <div className="form-group">
                   <label>
-                    Holiday Name <span className="text-danger">*</span>
+                  {t('holiday.holidayname')} <span className="text-danger">*</span>
                   </label>
                   <Form.Item
                     name="holidayTitle"
@@ -551,10 +570,10 @@ const Holidays = () => {
                         required: true,
                         validator: (_, value) => {
                           if(value.trim() === ''){
-                            return Promise.reject("please enter holiday name");
+                            return Promise.reject(t('holiday.pleaseenterholidayname'));
                           }
                           else if (/\s{2,}/.test(value)) {
-                            return Promise.reject("please remove consecutive spaces");
+                            return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                           }
                           return Promise.resolve();
                         },
@@ -566,14 +585,14 @@ const Holidays = () => {
                   </Form.Item>
                 </div>
                 <div className="form-group">
-                        <label>Holiday Date</label>
+                        <label>{t('holiday.holidaydate')}</label>
                         <div style={{ position: "relative" }} id="area">
                           <Form.Item
                             name="holidayDate"
                             rules={[
                               {
                                 required: true,
-                                message: "please enter a holiday date",
+                                message: t('holiday.pleaseenterholidaydate'),
                               },
                             ]}
                             className="custom-border"
@@ -583,6 +602,7 @@ const Holidays = () => {
                                 document.getElementById("area")
                               }
                               style={{ width: "100%" }}
+                              placeholder={t('requests.addModal.selectDate')}
                               className="form-control"
                               size="large"
                             />
@@ -599,7 +619,7 @@ const Holidays = () => {
                       {loader ? (
                         <Spin size="small" indicator={antIcon} />
                       ) : (
-                        "Submit"
+                        t('submit')
                       )}
                     </Button>
                   </Form.Item>
@@ -634,9 +654,9 @@ const Holidays = () => {
               }}
             >
               <div className="form-header">
-                <h3 style={{ marginBottom: "30px" }}>Delete Holiday</h3>
+                <h3 style={{ marginBottom: "30px" }}>{t('holiday.deleteHoliday')}</h3>
                 <p>
-                  Are you sure you want to delete <b>{open?.data?.holidayTitle}</b>?
+                  <span dangerouslySetInnerHTML={{ __html: t('holiday.confirmDelete', { holiday: open?.data?.holidayTitle }) }} />
                 </p>
               </div>
               <div className="modal-btn delete-action">
@@ -652,7 +672,7 @@ const Holidays = () => {
                       {loader ? (
                         <Spin size="small" indicator={antIcon} />
                       ) : (
-                        "Delete"
+                        t('delete')
                       )}
                     </Button>
                   </div>
@@ -662,7 +682,7 @@ const Holidays = () => {
                       className="btn btn-primary submit-btn"
                       style={{ width: "100%" }}
                     >
-                      Cancel
+                      {t('cancel')}
                     </Button>
                   </div>
                 </div>
@@ -682,7 +702,7 @@ const Holidays = () => {
             <div className="modal-dialog modal-dialog-centered" role="document">
               <div className="modal-content">
                 <div className="modal-header">
-                  <h5 className="modal-title">Add Holiday</h5>
+                  <h5 className="modal-title">{t('holiday.addholiday')}</h5>
                   <button
                     type="button"
                     className="close"
@@ -696,13 +716,13 @@ const Holidays = () => {
                   <form>
                     <div className="form-group">
                       <label>
-                        Holiday Name <span className="text-danger">*</span>
+                        {t('holiday.holidayname')} <span className="text-danger">*</span>
                       </label>
                       <input className="form-control" type="text" />
                     </div>
                     <div className="form-group">
                       <label>
-                        Holiday Date <span className="text-danger">*</span>
+                      {t('holiday.holidaydate')} <span className="text-danger">*</span>
                       </label>
                       <div>
                         <input
@@ -713,7 +733,7 @@ const Holidays = () => {
                     </div>
                     <div className="submit-section">
                       <button className="btn btn-primary submit-btn">
-                        Submit
+                      {t('submit')}
                       </button>
                     </div>
                   </form>
@@ -745,7 +765,7 @@ const Holidays = () => {
                   <form>
                     <div className="form-group">
                       <label>
-                        Holiday Name <span className="text-danger">*</span>
+                      {t('holiday.holidayname')} <span className="text-danger">*</span>
                       </label>
                       <input
                         className="form-control"
@@ -755,7 +775,7 @@ const Holidays = () => {
                     </div>
                     <div className="form-group">
                       <label>
-                        Holiday Date <span className="text-danger">*</span>
+                      {t('holiday.holidaydate')} <span className="text-danger">*</span>
                       </label>
                       <div>
                         <input
@@ -767,7 +787,7 @@ const Holidays = () => {
                     </div>
                     <div className="submit-section">
                       <button className="btn btn-primary submit-btn">
-                        Save
+                      {t('holiday.save')}
                       </button>
                     </div>
                   </form>
@@ -793,7 +813,7 @@ const Holidays = () => {
                     <div className="row">
                       <div className="col-6">
                         <a href="" className="btn btn-primary continue-btn">
-                          Delete
+                        {t('delete')}
                         </a>
                       </div>
                       <div className="col-6">
@@ -802,7 +822,7 @@ const Holidays = () => {
                           data-bs-dismiss="modal"
                           className="btn btn-primary cancel-btn"
                         >
-                          Cancel
+                          {t('cancel')}
                         </a>
                       </div>
                     </div>

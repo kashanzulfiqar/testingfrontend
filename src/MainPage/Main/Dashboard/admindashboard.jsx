@@ -17,10 +17,11 @@ import { Button, Spin, message } from 'antd';
 import { apiServices } from '../../../Services/apiServices.js';
 import { getAllISOCodes } from 'iso-country-currency';
 import { LoadingOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 
 
 const AdminDashboard = () => {
-
+  const { t, i18n } = useTranslation();
   const nav = useNavigate();
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
   const user_state = useSelector((state) => state.user.loginvalue);
@@ -167,7 +168,7 @@ const AdminDashboard = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Dashboard Data Error"
+              : t('aDash.errors.getDashboardDataError')
           }!`
         );
       });
@@ -193,7 +194,7 @@ const AdminDashboard = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get All Invoices Error"
+              : t('aDash.errors.getAllInvoicesError')
           }!`
         );
       });
@@ -219,7 +220,7 @@ const AdminDashboard = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get All Payments Error"
+              : t('aDash.errors.getAllPaymentsError')
           }!`
         );
       });
@@ -248,7 +249,7 @@ const AdminDashboard = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get All Clients Error"
+              : t('aDash.errors.getAllClientsError')
           }!`
         );
       });
@@ -277,7 +278,7 @@ const AdminDashboard = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Project Error"
+              : t('aDash.errors.getProjectError')
           }`
         );
       });
@@ -306,7 +307,7 @@ const AdminDashboard = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get All Requests Error"
+              : t('aDash.errors.getAllRequestsError')
           }!`
         );
       });
@@ -366,7 +367,7 @@ const antIcon = (
       <div className={`main-wrapper ${menu ? 'slide-nav' : ''}`}>
         <div className="page-wrapper">
           <Helmet>
-            <title>Dashboard - DaftarPro</title>
+            <title>{t('aDash.pageTitle')}</title>
             <meta name="description" content="Dashboard" />
           </Helmet>
           {/* Page Content */}
@@ -375,9 +376,9 @@ const antIcon = (
             <div className="page-header">
               <div className="row">
                 <div className="col-sm-12">
-                  <h3 className="page-title">Welcome {admin_name}!</h3>
+                  <h3 className="page-title">{t('aDash.welcome', { name: admin_name })}</h3>
                   <ul className="breadcrumb">
-                    <li className="breadcrumb-item active">Dashboard</li>
+                    <li className="breadcrumb-item active">{t('dashboard')}</li>
                   </ul>
                 </div>
               </div>
@@ -399,7 +400,7 @@ const antIcon = (
                     <span className="dash-widget-icon"><i className="fa fa-cubes" /></span>
                     <div className="dash-widget-info">
                       <h3>{allData?.projectsCount}</h3>
-                      <span>Projects</span>
+                      <span>{t('projects')}</span>
                     </div>
                   </div>
                 </div>
@@ -410,7 +411,7 @@ const antIcon = (
                     <span className="dash-widget-icon"><i className="fa fa-usd" /></span>
                     <div className="dash-widget-info">
                       <h3>{allData?.clientsCount}</h3>
-                      <span>Clients</span>
+                      <span>{t('aDash.clients')}</span>
                     </div>
                   </div>
                 </div>
@@ -421,7 +422,7 @@ const antIcon = (
                     <span className="dash-widget-icon"><i className="fa fa-diamond" /></span>
                     <div className="dash-widget-info">
                       <h3>{allData?.tasksCount}</h3>
-                      <span>Tasks</span>
+                      <span>{t('aDash.tasks')}</span>
                     </div>
                   </div>
                 </div>
@@ -432,7 +433,7 @@ const antIcon = (
                     <span className="dash-widget-icon"><i className="fa fa-user" /></span>
                     <div className="dash-widget-info">
                       <h3>{allData?.employeeCount}</h3>
-                      <span>Employees</span>
+                      <span>{t('aDash.employees')}</span>
                     </div>
                   </div>
                 </div>
@@ -443,9 +444,9 @@ const antIcon = (
               <div className="col-md-12">
                 <div className="row">
                   <div className="col-md-6 text-center">
-                    <div className="card">
+                    <div className="card" dir="ltr">
                       <div className="card-body">
-                        <h3 className="card-title">Total Revenue</h3>
+                        <h3 className="card-title">{t('aDash.totalRevenue')}</h3>
                         {/* <button onClick={() => {}}>SVG</button> */}
 
                         {
@@ -479,23 +480,24 @@ const antIcon = (
                                 }
                               }} />
                               <Tooltip
-                                labelFormatter={(value) => `Year : ${value}`}
+                                labelFormatter={(value) => `${t('empProfile.year')} : ${value}`}
                                 formatter={(value) => <label>{value.toLocaleString()}</label>}
+                                contentStyle={{ direction: i18n.dir() }}
                               />
                               <Legend />
-                              <Bar dataKey="totalRevenue" name='Total Revenue' fill="#ff9b44" maxBarSize={20} />
+                              <Bar dataKey="totalRevenue" name={t('finance.Profit&loss.totalRevenue')} fill="#ff9b44" maxBarSize={20} />
                             </BarChart>
                           </ResponsiveContainer> :
-                          <label style={{height: '300px', display: 'grid', placeItems: 'center', color: 'grey'}}>No Record Found!</label>
+                          <label style={{height: '300px', display: 'grid', placeItems: 'center', color: 'grey'}}>{t('aRequests.errors.noRecordFound')}</label>
                         }
 
                       </div>
                     </div>
                   </div>
                   <div className="col-md-6 text-center">
-                    <div className="card">
+                    <div className="card" dir="ltr">
                       <div className="card-body">
-                        <h3 className="card-title">Sales Overview {year ? ` - ${year}` : ''}</h3>
+                        <h3 className="card-title">{t('aDash.salesOverview')} {year ? ` - ${year}` : ''}</h3>
                         {
                           loader ? <Spin style={{height: '300px', display: 'grid', placeItems: 'center'}} /> :
                           allData?.revenue?.length > 0 ?
@@ -519,14 +521,15 @@ const antIcon = (
                               }} />
                               <Tooltip
                                 formatter={(value) => <label>{value === 0 ? 'N/A' : value?.toLocaleString()}</label>}
+                                contentStyle={{ direction: i18n.dir() }}
                               />
                               <Legend />
-                              <Line type="monotone" dataKey="totalRevenue" name='Total Revenue' stroke="#ff9b44" fill="#00c5fb" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 7 }} />
+                              <Line type="monotone" dataKey="totalRevenue" name={t('finance.Profit&loss.totalRevenue')} stroke="#ff9b44" fill="#00c5fb" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 7 }} />
                               {/* <Line type="monotone" dataKey="Total Sales" stroke="#ff9b44" fill="#00c5fb" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 7 }} /> */}
                               {/* <Line type="monotone" dataKey="Total Revenue" stroke="#fc6075" fill="#0253cc" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 7 }} /> */}
                             </LineChart>
                           </ResponsiveContainer> :
-                          <label style={{height: '300px', display: 'grid', placeItems: 'center', color: 'grey'}}>No Record Found!</label>
+                          <label style={{height: '300px', display: 'grid', placeItems: 'center', color: 'grey'}}>{t('aRequests.errors.noRecordFound')}</label>
                         }
 
                       </div>
@@ -542,7 +545,7 @@ const antIcon = (
                     <div className="card-body">
                       <div className="d-flex justify-content-between mb-3">
                         <div>
-                          <span className="d-block">New Employees</span>
+                          <span className="d-block">{t('aDash.newEmployees')}</span>
                         </div>
                         <div>
                           <span className="text-success">+10%</span>
@@ -552,14 +555,14 @@ const antIcon = (
                       <div className="progress mb-2" style={{ height: '5px' }}>
                         <div className="progress-bar bg-primary" role="progressbar" style={{ width: '70%' }} aria-valuenow={40} aria-valuemin={0} aria-valuemax={100} />
                       </div>
-                      <p className="mb-0">Overall Employees 218</p>
+                      <p className="mb-0">{t('aDash.overallEmployees')} 218</p>
                     </div>
                   </div>
                   <div className="card">
                     <div className="card-body">
                       <div className="d-flex justify-content-between mb-3">
                         <div>
-                          <span className="d-block">Earnings</span>
+                          <span className="d-block">{t('aDash.earnings')}</span>
                         </div>
                         <div>
                           <span className="text-success">+12.5%</span>
@@ -569,14 +572,14 @@ const antIcon = (
                       <div className="progress mb-2" style={{ height: '5px' }}>
                         <div className="progress-bar bg-primary" role="progressbar" style={{ width: '70%' }} aria-valuenow={40} aria-valuemin={0} aria-valuemax={100} />
                       </div>
-                      <p className="mb-0">Previous Month <span className="text-muted">$1,15,852</span></p>
+                      <p className="mb-0">{t('aDash.previousMonth')} <span className="text-muted">$1,15,852</span></p>
                     </div>
                   </div>
                   <div className="card">
                     <div className="card-body">
                       <div className="d-flex justify-content-between mb-3">
                         <div>
-                          <span className="d-block">Expenses</span>
+                          <span className="d-block">{t('aDash.expenses')}</span>
                         </div>
                         <div>
                           <span className="text-danger">-2.8%</span>
@@ -586,14 +589,14 @@ const antIcon = (
                       <div className="progress mb-2" style={{ height: '5px' }}>
                         <div className="progress-bar bg-primary" role="progressbar" style={{ width: '70%' }} aria-valuenow={40} aria-valuemin={0} aria-valuemax={100} />
                       </div>
-                      <p className="mb-0">Previous Month <span className="text-muted">$7,500</span></p>
+                      <p className="mb-0">{t('aDash.previousMonth')} <span className="text-muted">$7,500</span></p>
                     </div>
                   </div>
                   <div className="card">
                     <div className="card-body">
                       <div className="d-flex justify-content-between mb-3">
                         <div>
-                          <span className="d-block">Profit</span>
+                          <span className="d-block">{t('aDash.profit')}</span>
                         </div>
                         <div>
                           <span className="text-danger">-75%</span>
@@ -603,7 +606,7 @@ const antIcon = (
                       <div className="progress mb-2" style={{ height: '5px' }}>
                         <div className="progress-bar bg-primary" role="progressbar" style={{ width: '70%' }} aria-valuenow={40} aria-valuemin={0} aria-valuemax={100} />
                       </div>
-                      <p className="mb-0">Previous Month <span className="text-muted">$1,42,000</span></p>
+                      <p className="mb-0">{t('aDash.previousMonth')} <span className="text-muted">$1,42,000</span></p>
                     </div>
                   </div>
                 </div>
@@ -614,34 +617,34 @@ const antIcon = (
               <div className="col-md-12 col-lg-12 col-xl-4 d-flex">
                 <div className="card flex-fill dash-statistics">
                   <div className="card-body">
-                    <h5 className="card-title">Statistics</h5>
+                    <h5 className="card-title">{t('aDash.statistics')}</h5>
                     <div className="stats-list">
                       <div className="stats-info">
-                        <p>Today Leave <strong>{allData?.statistics?.todayLeaves} <small>/ {allData?.employeeCount}</small></strong></p>
+                        <p>{t('aDash.todayLeave')} <strong>{allData?.statistics?.todayLeaves} <small>/ {allData?.employeeCount}</small></strong></p>
                         <div className="progress">
                           <div className="progress-bar bg-primary" role="progressbar" style={{ width: `${allData?.statistics?.todayLeaves / allData?.employeeCount * 100}%` }} aria-valuenow={allData?.statistics?.todayLeaves / allData?.employeeCount * 100} aria-valuemin={0} aria-valuemax={100} />
                         </div>
                       </div>
                       <div className="stats-info">
-                        <p>Pending Invoice <strong>{allData?.statistics?.pendingInvoices} <small>/ {allData?.statistics?.totalInvoices}</small></strong></p>
+                        <p>{t('aDash.pendingInvoice')} <strong>{allData?.statistics?.pendingInvoices} <small>/ {allData?.statistics?.totalInvoices}</small></strong></p>
                         <div className="progress">
                           <div className="progress-bar bg-warning" role="progressbar" style={{ width: `${allData?.statistics?.pendingInvoices / allData?.statistics?.totalInvoices * 100}%` }} aria-valuenow={31} aria-valuemin={0} aria-valuemax={100} />
                         </div>
                       </div>
                       <div className="stats-info">
-                        <p>Completed Projects <strong>{allData?.statistics?.completedProject} <small>/ {allData?.projectsCount}</small></strong></p>
+                        <p>{t('aDash.completedProjects')} <strong>{allData?.statistics?.completedProject} <small>/ {allData?.projectsCount}</small></strong></p>
                         <div className="progress">
                           <div className="progress-bar bg-success" role="progressbar" style={{ width: `${allData?.statistics?.completedProject / allData?.projectsCount * 100}%` }} aria-valuenow={allData?.statistics?.completedProject / allData?.projectsCount * 100} aria-valuemin={0} aria-valuemax={100} />
                         </div>
                       </div>
                       <div className="stats-info">
-                        <p>Open Tickets <strong>190 <small>/ 212</small></strong></p>
+                        <p>{t('aDash.openTickets')} <strong>190 <small>/ 212</small></strong></p>
                         <div className="progress">
                           <div className="progress-bar bg-danger" role="progressbar" style={{ width: '62%' }} aria-valuenow={62} aria-valuemin={0} aria-valuemax={100} />
                         </div>
                       </div>
                       <div className="stats-info">
-                        <p>Closed Tickets <strong>22 <small>/ 212</small></strong></p>
+                        <p>{t('aDash.closedTickets')} <strong>22 <small>/ 212</small></strong></p>
                         <div className="progress">
                           <div className="progress-bar bg-info" role="progressbar" style={{ width: '22%' }} aria-valuenow={22} aria-valuemin={0} aria-valuemax={100} />
                         </div>
@@ -653,18 +656,18 @@ const antIcon = (
               <div className="col-md-12 col-lg-6 col-xl-4 d-flex">
                 <div className="card flex-fill">
                   <div className="card-body">
-                    <h4 className="card-title">Task Statistics</h4>
+                    <h4 className="card-title">{t('aDash.taskStatistics')}</h4>
                     <div className="statistics">
                       <div className="row">
                         <div className="col-md-6 col-6 text-center">
                           <div className="stats-box mb-4">
-                            <p>Total Tasks</p>
+                            <p>{t('totalTasks')}</p>
                             <h3>385</h3>
                           </div>
                         </div>
                         <div className="col-md-6 col-6 text-center">
                           <div className="stats-box mb-4">
-                            <p>Overdue Tasks</p>
+                            <p>{t('aDash.overdueTasks')}</p>
                             <h3>19</h3>
                           </div>
                         </div>
@@ -678,11 +681,11 @@ const antIcon = (
                       <div className="progress-bar bg-info" role="progressbar" style={{ width: '10%' }} aria-valuenow={14} aria-valuemin={0} aria-valuemax={100}>10%</div>
                     </div>
                     <div>
-                      <p><i className="fa fa-dot-circle-o text-purple me-2" />Completed Tasks <span className="float-end">166</span></p>
-                      <p><i className="fa fa-dot-circle-o text-warning me-2" />Inprogress Tasks <span className="float-end">115</span></p>
-                      <p><i className="fa fa-dot-circle-o text-success me-2" />On Hold Tasks <span className="float-end">31</span></p>
-                      <p><i className="fa fa-dot-circle-o text-danger me-2" />Pending Tasks <span className="float-end">47</span></p>
-                      <p className="mb-0"><i className="fa fa-dot-circle-o text-info me-2" />Review Tasks <span className="float-end">5</span></p>
+                      <p><i className={`fa fa-dot-circle-o text-purple ${i18n.dir() === 'rtl' ? 'ms-2' : 'me-2'}`} />{t('aDash.completedTasks')} <span className={`${i18n.dir() === 'rtl' ? 'float-start' : 'float-end'}`}>166</span></p>
+                      <p><i className={`fa fa-dot-circle-o text-warning ${i18n.dir() === 'rtl' ? 'ms-2' : 'me-2'}`} />{t('aDash.inprogressTasks')} <span className={`${i18n.dir() === 'rtl' ? 'float-start' : 'float-end'}`}>115</span></p>
+                      <p><i className={`fa fa-dot-circle-o text-success ${i18n.dir() === 'rtl' ? 'ms-2' : 'me-2'}`} />{t('aDash.onHoldTasks')} <span className={`${i18n.dir() === 'rtl' ? 'float-start' : 'float-end'}`}>31</span></p>
+                      <p><i className={`fa fa-dot-circle-o text-danger ${i18n.dir() === 'rtl' ? 'ms-2' : 'me-2'}`} />{t('aDash.pendingTasks')} <span className={`${i18n.dir() === 'rtl' ? 'float-start' : 'float-end'}`}>47</span></p>
+                      <p className="mb-0"><i className={`fa fa-dot-circle-o text-info ${i18n.dir() === 'rtl' ? 'ms-2' : 'me-2'}`} />{t('aDash.reviewTasks')} <span className={`${i18n.dir() === 'rtl' ? 'float-start' : 'float-end'}`}>5</span></p>
                     </div>
                   </div>
                 </div>
@@ -690,7 +693,7 @@ const antIcon = (
               <div className="col-md-12 col-lg-6 col-xl-4 d-flex">
                 <div className="card flex-fill">
                   <div className="card-body">
-                    <h4 className="card-title">Today Absent <span className="badge bg-inverse-danger ml-2">5</span></h4>
+                    <h4 className="card-title">{t('aDash.todayAbsent')} <span className="badge bg-inverse-danger ml-2">5</span></h4>
                     {
                       tableLoader?.request ? <Spin style={{display: 'grid', placeItems: 'center', height: '263px'}} /> :
                       !perm?.request ? <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '285px', textAlign: 'center'}}>You don't have permission to view <br /> Requests!</label> :
@@ -707,21 +710,21 @@ const antIcon = (
                           <div className="row align-items-center mt-3">
                             <div className="col-6 d-grid">
                               <label className="mb-0" style={{fontWeight: '500', fontSize: '12px'}}>{formatDate(req?.startDate || '')}</label>
-                              <label className="text-sm text-muted mt-1">Leave Date</label>
+                              <label className="text-sm text-muted mt-1">{t('aDash.leaveDate')}</label>
                             </div>
-                            <div className="col-6 text-end">
+                            <div className={`col-6 ${i18n.dir() === 'rtl' ? 'text-start' : 'text-end'}`}>
                               <span className={req?.status==="Approved" ? "badge bg-inverse-success" : req?.status==="Pending" ? "badge bg-inverse-warning" : (req?.status==="Declined" || req?.status==="Cancelled") ? "badge bg-inverse-danger" : ''}>
-                                {req?.status}
+                                {req?.status==="Approved" ? t('aRequests.Approved') : req?.status==="Declined" ? t('aRequests.Declined') : '-'}
                               </span>
                             </div>
                           </div>
                         </div>
-                      )) : <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '290px'}}>No Record Found!</label>
+                      )) : <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '290px'}}>{t('aRequests.errors.noRecordFound')}</label>
                     }
                     {
                       (allRequests?.length > 0 && perm?.request) && 
                       <div className="load-more text-center">
-                        <Link to="/employee/request-admin" className="text-dark">See More</Link>
+                        <Link to="/employee/request-admin" className="text-dark">{t('aDash.seeMore')}</Link>
                       </div>
                     }
                   </div>
@@ -733,7 +736,7 @@ const antIcon = (
               <div className="col-md-6 d-flex">
                 <div className="card card-table flex-fill">
                   <div className="card-header">
-                    <h3 className="card-title mb-0">Invoices</h3>
+                    <h3 className="card-title mb-0">{t('aDash.invoices')}</h3>
                   </div>
                   <div className="card-body">
                     <div className="table-responsive" style={{minHeight: '203px'}}>
@@ -744,11 +747,11 @@ const antIcon = (
                         <table className="table table-nowrap custom-table mb-0">
                           <thead>
                             <tr>
-                              <th>Invoice Number</th>
-                              <th>Client</th>
-                              <th>Due Date</th>
-                              <th>Total</th>
-                              <th>Status</th>
+                              <th>{t('aDash.invoiceNumber')}</th>
+                              <th>{t('aDash.client')}</th>
+                              <th>{t('aDash.dueDate')}</th>
+                              <th>{t('aDash.total')}</th>
+                              <th>{t('status')}</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -763,7 +766,7 @@ const antIcon = (
                                   <td>{invoice?.totalAmount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoice?.currency}</td>
                                   <td>
                                     <label className={invoice?.status==="Paid" ? "badge bg-inverse-success" : invoice?.status==="Partially Paid" ? "badge bg-inverse-info" : invoice?.status==="Pending" ? "badge bg-inverse-warning" : invoice?.status==="Cancelled" ? "badge bg-inverse-danger" : ''}>
-                                      {invoice?.status}
+                                      {invoice?.status==="Paid" ? t('aDash.paid') : invoice?.status==="Partially Paid" ? t('aDash.partiallyPaid') : invoice?.status==="Pending" ? t('aDash.pending') : invoice?.status==="Cancelled" ? t('aDash.cancelled') : '-'}
                                     </label>
                                   </td>
                                 </tr>
@@ -771,14 +774,14 @@ const antIcon = (
                             }
                           </tbody>
                         </table>  :
-                          <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '241px'}}>No Record Found!</label>
+                          <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '241px'}}>{t('aRequests.errors.noRecordFound')}</label>
                       }
                     </div>
                   </div>
                   {
                     (allInvoices?.length > 0 && perm?.invoice) && 
                     <div className="card-footer">
-                      <Link to="/invoices">View all invoices</Link>
+                      <Link to="/invoices">{t('aDash.viewAllInvoices')}</Link>
                     </div>
                   }
                 </div>
@@ -786,7 +789,7 @@ const antIcon = (
               <div className="col-md-6 d-flex">
                 <div className="card card-table flex-fill">
                   <div className="card-header">
-                    <h3 className="card-title mb-0">Payments</h3>
+                    <h3 className="card-title mb-0">{t('aDash.payments')}</h3>
                   </div>
                   <div className="card-body">
                     <div className="table-responsive" style={{minHeight: '203px'}}>
@@ -797,11 +800,11 @@ const antIcon = (
                       <table className="table custom-table table-nowrap mb-0">
                         <thead>
                           <tr>
-                            <th>Invoice Number</th>
-                            <th>Client</th>
-                            <th>Payment Type</th>
-                            <th>Paid Date</th>
-                            <th>Paid Amount</th>
+                            <th>{t('aDash.invoiceNumber')}</th>
+                            <th>{t('aDash.client')}</th>
+                            <th>{t('aDash.paymentType')}</th>
+                            <th>{t('aDash.dueDate')}</th>
+                            <th>{t('aDash.paidAmount')}</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -812,7 +815,7 @@ const antIcon = (
                               <td>
                                 <h2><a href="#">{payment?.client?.clientName}</a></h2>
                               </td>
-                              <td>{payment?.paymentType}</td>
+                              <td>{payment?.paymentType==="Cash" ? t('cash') : payment?.paymentType==="Cheque" ? t('cheque') : payment?.paymentType==="Bank Transfer" ? t('bankTransfer') : '-'}</td>
                               <td>{formatDate(payment?.paymentDate || '')}</td>
                               <td>{payment?.paidAmountInPreferredCurrency?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {payment?.company?.preferredCurrency}</td>
                             </tr>
@@ -820,14 +823,14 @@ const antIcon = (
                         }
                         </tbody>
                       </table> :
-                        <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '241px'}}>No Record Found!</label>
+                        <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '241px'}}>{t('aRequests.errors.noRecordFound')}</label>
                       }
                     </div>
                   </div>
                   {
                     (allPayments?.length > 0 && perm?.payment) && 
                     <div className="card-footer">
-                      <Link to="/payments">View all payments</Link>
+                      <Link to="/payments">{t('aDash.viewAllPayments')}</Link>
                     </div>
                   }
                 </div>
@@ -837,7 +840,7 @@ const antIcon = (
               <div className="col-md-6 d-flex">
                 <div className="card card-table flex-fill">
                   <div className="card-header">
-                    <h3 className="card-title mb-0">Clients</h3>
+                    <h3 className="card-title mb-0">{t('aDash.clients')}</h3>
                   </div>
                   <div className="card-body">
                     <div className="table-responsive" style={{minHeight: '385px'}}>
@@ -848,9 +851,9 @@ const antIcon = (
                       <table className="table custom-table mb-0">
                         <thead>
                           <tr>
-                            <th style={{paddingLeft: '20px'}}>Name</th>
-                            <th>Email</th>
-                            <th>Phone No</th>
+                            <th style={{paddingLeft: '20px'}}>{t('aDash.name')}</th>
+                            <th>{t('aDash.email')}</th>
+                            <th>{t('aDash.phoneNo')}</th>
                             {/* <th className="text-end">Action</th> */}
                           </tr>
                         </thead>
@@ -893,14 +896,14 @@ const antIcon = (
                         }
                         </tbody>
                       </table> :
-                        <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '402px'}}>No Record Found!</label>
+                        <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '402px'}}>{t('aRequests.errors.noRecordFound')}</label>
                       }
                     </div>
                   </div>
                   {
                     (allClients?.length > 0 && perm?.client) && 
                     <div className="card-footer">
-                      <Link to="/clients">View all clients</Link>
+                      <Link to="/clients">{t('aDash.viewAllClients')}</Link>
                     </div>
                   }
                 </div>
@@ -908,7 +911,7 @@ const antIcon = (
               <div className="col-md-6 d-flex">
                 <div className="card card-table flex-fill">
                   <div className="card-header">
-                    <h3 className="card-title mb-0">Recent Projects</h3>
+                    <h3 className="card-title mb-0">{t('aDash.recentProjects')}</h3>
                   </div>
                   <div className="card-body">
                     <div className="table-responsive" style={{minHeight: '385px'}}>
@@ -919,9 +922,9 @@ const antIcon = (
                       <table className="table custom-table mb-0">
                         <thead>
                           <tr>
-                            <th>Project Name </th>
+                            <th>{t('aDash.projectName')} </th>
                             {/* <th>Progress</th> */}
-                            <th>Status</th>
+                            <th>{t('status')}</th>
                             {/* <th className="text-end">Action</th> */}
                           </tr>
                         </thead>
@@ -943,7 +946,18 @@ const antIcon = (
                             </td> */}
                             <td>
                               <label className={project?.status==="Completed" ? "badge bg-inverse-success" : project?.status==="Paused" ? "badge bg-inverse-warning" : project?.status==="Archived" ? "badge bg-inverse-danger" : "badge bg-inverse-info"}>
-                                {project?.status}
+                                {project?.status === "Scheduled"
+                                  ? ` ${t('projectScreen.Modal.scheduled')}`
+                                  : project?.status === "On-Going"
+                                  ? ` ${t('projectScreen.Modal.onGoing')}`
+                                  : project?.status === "Paused"
+                                  ? ` ${t('projectScreen.Modal.paused')}`
+                                  : project?.status === "Archived"
+                                  ? ` ${t('projectScreen.Modal.archived')}`
+                                  : project?.status === "Completed"
+                                  ? ` ${t('projectScreen.Modal.completed')}`
+                                  : ""
+                                }
                               </label>
                             </td>
                             {/* <td className="text-end">
@@ -986,14 +1000,14 @@ const antIcon = (
                         }
                         </tbody>
                       </table> :
-                       <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '402px'}}>No Record Found!</label>
+                       <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '402px'}}>{t('aRequests.errors.noRecordFound')}</label>
                      }
                     </div>
                   </div>
                   {
                     (allProjects?.length > 0 && perm?.project) && 
                     <div className="card-footer">
-                      <Link to="/projects/project_dashboard">View all projects</Link>
+                      <Link to="/projects/project_dashboard">{t('aDash.viewAllProjects')}</Link>
                     </div>
                   }
                 </div>

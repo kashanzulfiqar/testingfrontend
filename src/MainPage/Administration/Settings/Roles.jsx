@@ -11,10 +11,11 @@ import { apiServices } from "../../../Services/apiServices";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { LoadingOutlined } from "@ant-design/icons";
 import PermissionsTable from "../../../Components/PermissionsTable";
+import { useTranslation } from "react-i18next";
 
 const Roles = () => {
   const { Option } = Select;
-
+  const { t, i18n } = useTranslation();
   const user_state = useSelector((state) => state.user.loginvalue);
   let comp_id = user_state?.user?.companyId;
 
@@ -60,7 +61,7 @@ const Roles = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Role Info Error"
+              : t('settings.Roles.getRoleInfoError')
           }`
         );
       });
@@ -84,7 +85,7 @@ const Roles = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Permissions Template Info Error"
+              : t('allEmp.errors.getPermTemplateError')
           }`
         );
       });
@@ -109,7 +110,7 @@ const Roles = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Permissions Template Info Error"
+              : t('allEmp.errors.getPermTemplateError')
           }`
         );
       });
@@ -141,7 +142,7 @@ const Roles = () => {
             ? err?.response?.data?.msg
             : err?.response?.data?.validation?.body?.message
             ? err?.response?.data?.validation?.body?.message
-            : "Delete role Error"
+            : t('settings.Roles.deleteRoleError')
         }`
       );
     });
@@ -177,7 +178,7 @@ const Roles = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Add Role Info Error"
+              : t('settings.Roles.addRoleInfoError')
           }`
         );
       });
@@ -210,7 +211,7 @@ const Roles = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Add Role Custom Permission Error"
+              : t('settings.Roles.addRoleCustomPermissionError')
           }`
         );
       });
@@ -234,7 +235,7 @@ const Roles = () => {
           // handlePermClose();
           setOpenPermissions({ isOpen: false, data: "" });
           setPermissions([]);
-          message.success("Role and Permissions Added Successfully!");
+          message.success(t('allEmp.errors.rolePermAdded'));
           setLoader(false)
         }
       })
@@ -247,7 +248,7 @@ const Roles = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Add Permissions Info Error"
+              : t('allEmp.errors.addRoleError')
           }`
         );
       });
@@ -275,7 +276,7 @@ const Roles = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Update Permissions Info Error"
+              : t('settings.Roles.updatePermissionsInfoError')
           }`
         );
       });
@@ -308,7 +309,7 @@ const Roles = () => {
             })
           );
           handleEditClose();
-          message.success("Role and Permissions Updated Successfully!");
+          message.success(t('settings.Roles.rolePermissionsUpdated'));
           setLoader(false);
         }
       })
@@ -321,7 +322,7 @@ const Roles = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Update Role Info Error"
+              : t('settings.Roles.updateRoleInfoError')
           }`
         );
       });
@@ -336,7 +337,7 @@ const Roles = () => {
           // console.log(data);
           setData([...data.filter((role) => role._id !== id)]);
           handleClose();
-          message.success("Role Deleted Successfully!");
+          message.success(t('settings.Roles.roleDeletedSuccessfully'));
           setLoader(false);
         }
       })
@@ -349,7 +350,7 @@ const Roles = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Delete role Error"
+              : t('settings.Roles.deleteRoleError')
           }`
         );
       });
@@ -363,12 +364,12 @@ const Roles = () => {
       render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
     },
     {
-      title: "Role Name",
+      title: t('settings.Roles.roleName'),
       dataIndex: "roleName",
       // sorter: (a, b) => a.shiftName.length - b.shiftName.length,
     },
     {
-      title: "Module Access",
+      title: t('settings.Roles.moduleAccess'),
       dataIndex: "customPermissions",
       // sorter: (a, b) => a.maxStartTime.length - b.maxStartTime.length,
       render: (record, row) => {
@@ -376,7 +377,7 @@ const Roles = () => {
       },
     },
     {
-      title: "Actions",
+      title: t('settings.Roles.actions'),
       render: (record, row) => (
         <div className="dropdown dropdown-action text-end">
           <a
@@ -401,7 +402,7 @@ const Roles = () => {
                 getRolePermissions(row);
               }}
             >
-              <i className="fa fa-pencil m-r-5" /> Edit
+              <i className="fa fa-pencil m-r-5" /> {t('edit')}
             </a>
             <a
               className="dropdown-item"
@@ -414,7 +415,7 @@ const Roles = () => {
                 });
               }}
             >
-              <i className="fa fa-trash-o m-r-5" /> Delete
+              <i className="fa fa-trash-o m-r-5" /> {t('delete')}
             </a>
           </div>
         </div>
@@ -448,12 +449,12 @@ const Roles = () => {
               margin: "7px 0px 4px 0px",
             }}
           >
-            No role added yet
+            {t('settings.Roles.noRoleAdded')}
           </div>
           <div
             style={{ color: "#464665", fontWeight: "300", fontSize: "13px" }}
           >
-            Click 'Add Role' Button To Create <br /> A New Role{" "}
+            {t('settings.Roles.clickToAddRole')} <br /> {t('settings.Roles.newRole')}{" "}
           </div>
         </div>
       }
@@ -479,7 +480,7 @@ const Roles = () => {
         <div className="page-header">
           <div className="row align-items-center pt-3 pb-3">
             <div className="col">
-              <h3 className="page-title">Roles</h3>
+              <h3 className="page-title">{t('settings.roles')}</h3>
             </div>
             <div className="col-auto float-end ms-auto">
               <a
@@ -494,7 +495,7 @@ const Roles = () => {
                 }}
                 // data-bs-target="#add_leavetype"
               >
-                <i className="fa fa-plus" /> Add Role
+                <i className="fa fa-plus" /> {t('settings.Roles.addRole')}
               </a>
             </div>
           </div>
@@ -517,7 +518,7 @@ const Roles = () => {
                   // pageSize: 1,
                   // hideOnSinglePage: true,
                   showTotal: (total, range) =>
-                    `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+                  t('paginationShow', { range1: range[0], range2: range[1], total: total }),
                   showSizeChanger: true,
                   onShowSizeChange: (current, size) => {
                     setPageSize(size);
@@ -525,13 +526,30 @@ const Roles = () => {
                   },
                   pageSizeOptions: ["20", "30", "40", "50"],
                   onChange: (page, size) => setCurrentPage(page),
-                  itemRender: itemRender,
+                  itemRender: (current, type, originalElement) =>
+                    itemRender(current, type, originalElement, t),
                 }}
                 style={{ overflowX: "auto" }}
                 columns={columns}
                 bordered
                 dataSource={data}
                 rowKey={(record) => record.id}
+                components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                 // onChange={this.handleTableChange}
               />
             </div>
@@ -589,7 +607,7 @@ const Roles = () => {
         <div className="modal-dialog modal-dialog-centered" role="document">
           <div className="modal-content">
             <div className="modal-header">
-              <h5 className="modal-title">Role Name</h5>
+              <h5 className="modal-title">{t('settings.Roles.roleName')}</h5>
               <button type="button" className="close" onClick={handleClose}>
                 <span aria-hidden="true">×</span>
               </button>
@@ -603,11 +621,11 @@ const Roles = () => {
                   const consecutiveSpacesError = errorFields.find((field) =>
                     field.errors.toString().includes("consecutive spaces")
                   );
-                  if (consecutiveSpacesError) {
-                    message.error("Please Remove Consecutive Spaces!");
-                  } else {
-                    message.error("Please Fill Required Fields!");
-                  }
+                  if(consecutiveSpacesError){
+                    message.error(t('allEmp.errors.removeConsecutiveSpaces'))
+                 }else{
+                    message.error(t('allEmp.errors.fillRequiredFields'))
+                  } 
                 }}
                 initialValues={{
                   roleName: open?.data ? open?.data?.roleName : "",
@@ -617,7 +635,7 @@ const Roles = () => {
                   <div className="col-12">
                     <div className="form-group">
                       <label>
-                        Role Name <span className="text-danger">*</span>
+                      {t('settings.Roles.roleName')} <span className="text-danger">*</span>
                       </label>
                       <Form.Item
                         name="roleName"
@@ -627,11 +645,9 @@ const Roles = () => {
                             required: true,
                             validator: (_, value) => {
                               if (value.trim() === "") {
-                                return Promise.reject("please enter role name");
+                                return Promise.reject(t('settings.Roles.enterRoleName'));
                               } else if (/\s{2,}/.test(value)) {
-                                return Promise.reject(
-                                  "please remove consecutive spaces"
-                                );
+                                return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                               }
                               return Promise.resolve();
                             },
@@ -690,9 +706,9 @@ const Roles = () => {
               }}
             >
               <div className="form-header">
-                <h3 style={{ marginBottom: "30px" }}>Delete Role</h3>
+                <h3 style={{ marginBottom: "30px" }}>{t('settings.Roles.deleteRole')}</h3>
                 <p>
-                  Are you sure you want to delete <b>{open?.data?.roleName}</b>?
+                  <span dangerouslySetInnerHTML={{ __html: t('projectScreen.confirmDeleteProject', { project: open?.data?.roleName }) }} />
                 </p>
               </div>
               <div className="modal-btn delete-action">
@@ -708,7 +724,7 @@ const Roles = () => {
                       {loader ? (
                         <Spin size="small" indicator={antIcon} />
                       ) : (
-                        "Delete"
+                        t('delete')
                       )}
                     </Button>
                   </div>
@@ -718,7 +734,7 @@ const Roles = () => {
                       className="btn btn-primary submit-btn"
                       style={{ width: "100%" }}
                     >
-                      Cancel
+                      {t('cancel')}
                     </Button>
                   </div>
                 </div>
@@ -822,7 +838,7 @@ const Roles = () => {
         >
           <div className="modal-content">
             <div className="modal-header">
-              <h5 className="modal-title">Edit Role & Permissions</h5>
+              <h5 className="modal-title">{t('settings.Roles.editRolePermissions')}</h5>
               <button type="button" className="close" onClick={handleEditClose}>
                 <span aria-hidden="true">×</span>
               </button>
@@ -836,11 +852,11 @@ const Roles = () => {
                   const consecutiveSpacesError = errorFields.find((field) =>
                     field.errors.toString().includes("consecutive spaces")
                   );
-                  if (consecutiveSpacesError) {
-                    message.error("Please Remove Consecutive Spaces!");
-                  } else {
-                    message.error("Please Fill Required Fields!");
-                  }
+                  if(consecutiveSpacesError){
+                    message.error(t('allEmp.errors.removeConsecutiveSpaces'))
+                 }else{
+                    message.error(t('allEmp.errors.fillRequiredFields'))
+                  } 
                 }}
                 initialValues={{
                   roleName: open?.data ? open?.data?.roleName : "",
@@ -850,7 +866,7 @@ const Roles = () => {
                   <div className="col-12">
                     <div className="form-group">
                       <label>
-                        Role Name <span className="text-danger">*</span>
+                      {t('settings.Roles.roleName')} <span className="text-danger">*</span>
                       </label>
                       <Form.Item
                         name="roleName"
@@ -860,11 +876,9 @@ const Roles = () => {
                             required: true,
                             validator: (_, value) => {
                               if (value.trim() === "") {
-                                return Promise.reject("please enter role name");
+                                return Promise.reject(t('settings.Roles.enterRoleName'));
                               } else if (/\s{2,}/.test(value)) {
-                                return Promise.reject(
-                                  "please remove consecutive spaces"
-                                );
+                                return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                               }
                               return Promise.resolve();
                             },
@@ -910,7 +924,7 @@ const Roles = () => {
                     >
                       {
                         loader ? <Spin size="small" indicator={antIcon} />
-                          : 'Submit'
+                          : t('submit')
                       }
                     </Button>
                   </Form.Item>

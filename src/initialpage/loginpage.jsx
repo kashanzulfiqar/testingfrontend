@@ -79,10 +79,11 @@ const Loginpage = (props) => {
             // window.location.replace(`${window?.location?.origin}/client/client-profile`)
             window.location.reload();
 
-
+            localStorage.setItem("languagePreference", JSON.stringify(res?.data?.result?.user?.languagePreference));
             localStorage.setItem("firstTimeLogin", JSON.stringify(res?.data?.result?.user?.firstTimeLogin));
           }, 1300);
         }else{
+          localStorage.setItem("languagePreference", JSON.stringify(res?.data?.result?.user?.languagePreference));
           // nav(`${res?.data?.result?.user?.role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}`);
           setTimeout(() => {
             setLoader(false)

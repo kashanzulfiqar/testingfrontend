@@ -37,10 +37,11 @@ import EditProjects from "./EditProjects";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 //import EditProjects from "./EditProjects";
 import { getAllISOCodes } from "iso-country-currency";
+import { useTranslation } from "react-i18next";
 
 const ProjectView = () => {
   const [form] = Form.useForm();
-
+  const { t, i18n } = useTranslation();
   const user_state = useSelector((state) => state.user.loginvalue);
   const employee_id = user_state?.user?._id;
   const role = user_state?.user?.role;
@@ -187,7 +188,7 @@ const ProjectView = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Domain Info Error"
+              : t('projectScreen.errors.getDomainInfoError')
           }!`
         );
       });
@@ -219,7 +220,7 @@ const ProjectView = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Projects Error"
+              : t('projectScreen.errors.getEmployeeProjectsError')
           }`
         );
         setIsLoading(false);
@@ -254,7 +255,7 @@ const ProjectView = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Employee Error"
+              : t('aAttend.errors.getEmployeesError')
           }`
         );
       });
@@ -275,7 +276,7 @@ const ProjectView = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Client Error"
+              : t('aDash.errors.getAllClientsError')
           }`
         );
       });
@@ -327,7 +328,7 @@ const ProjectView = () => {
     apiServices("PUT", `project-management/`, data, user_state)
       .then((res) => {
         if (res.data.success === true) {
-          message.success(`Project Team Updated Successfully`);
+          message.success(t('viewProject.projectTeamUpdated'));
           setLoader(false);
         }
       })
@@ -338,7 +339,7 @@ const ProjectView = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Error Updating Team"
+              : t('viewProject.errorUpdatingTeam')
           }`
         );
         setLoader(false);
@@ -365,7 +366,7 @@ const ProjectView = () => {
     apiServices("PUT", `project-management/`, data, user_state)
       .then((res) => {
         if (res.data.success === true) {
-          message.success(`Status set to Paid`);
+          message.success(t('viewProject.statusSetToPaid'));
           setTableLoad(true);
         }
       })
@@ -376,7 +377,7 @@ const ProjectView = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Error Updating Payment"
+              : t('viewProject.errorUpdatingPayment')
           }`
         );
       })
@@ -450,12 +451,12 @@ const ProjectView = () => {
 
   const paymentColumns = [
     {
-      title: "Payment Title",
+      title: t('viewProject.paymentTitle'),
       dataIndex: "paymentTitle",
       key: "paymentTitle",
     },
     {
-      title: "Amount in Figure",
+      title: t('viewProject.amountInFigure'),
       dataIndex: "amountInFigure",
       key: "amountInFigure",
       render: (amount) => {
@@ -468,18 +469,18 @@ const ProjectView = () => {
       },
     },
     {
-      title: "Amount in Percent",
+      title: t('viewProject.amountInPercent'),
       dataIndex: "amountInPercent",
       key: "amountInPercent",
     },
     {
-      title: "Due Date",
+      title: t('viewProject.dueDate'),
       dataIndex: "dueDate",
       key: "dueDate",
       render: (dueDate) => moment(dueDate).format("YYYY-MM-DD"),
     },
     {
-      title: "Paid",
+      title: t('viewProject.paid'),
       dataIndex: "paid",
       key: "paid",
       render: (paid, record) => (
@@ -558,7 +559,7 @@ const ProjectView = () => {
   return (
     <div className="page-wrapper">
       <Helmet>
-        <title>Project View - DaftarPro</title>
+        <title>{t('viewProject.Title')}</title>
         <meta name="description" content="Login page" />
       </Helmet>
       {/* Page Content */}
@@ -567,7 +568,7 @@ const ProjectView = () => {
         <div className="page-header">
           <div className="row align-items-center">
             <div className="col">
-              <h3 className="page-title">Project</h3>
+              <h3 className="page-title">{t('Timesheetemployee.project')}</h3>
               <ul className="breadcrumb">
                 <li className="breadcrumb-item">
                   <Link
@@ -577,10 +578,10 @@ const ProjectView = () => {
                         : "/employee/dashboard"
                     }
                   >
-                    Dashboard
+                    {t('holiday.dashboard')}
                   </Link>
                 </li>
-                <li className="breadcrumb-item active">Project View</li>
+                <li className="breadcrumb-item active">{t('viewProject.projectView')}</li>
               </ul>
             </div>
 
@@ -604,7 +605,7 @@ const ProjectView = () => {
                   }
                 >
                   <i className="fa fa-plus" />
-                  Edit Project
+                  {t('viewProject.editProject')}
                 </button>
               }
 
@@ -654,7 +655,7 @@ const ProjectView = () => {
 
               <div className="card">
                 <div className="card-body">
-                  <h5 className="card-title m-b-20">Uploaded Image Files</h5>
+                  <h5 className="card-title m-b-20">{t('viewProject.uploadedImageFiles')}</h5>
                   <div className="row">
                     {project?.docs?.length > 0 ? (
                       // project?.docs?.map((doc, index) => {
@@ -848,10 +849,10 @@ const ProjectView = () => {
                           return null;
                         })
                       ) : (
-                        <label>No images uploaded</label>
+                        <label>{t('viewProject.noImagesUploaded')}</label>
                       )
                     ) : (
-                      <label>No images uploaded</label>
+                      <label>{t('viewProject.noImagesUploaded')}</label>
                     )}
                   </div>
                 </div>
@@ -859,7 +860,7 @@ const ProjectView = () => {
 
               <div className="card">
                 <div className="card-body">
-                  <h5 className="card-title m-b-20">Uploaded Files</h5>
+                  <h5 className="card-title m-b-20">{t('viewProject.uploadedFiles')}</h5>
                   <ul className="files-list">
                     {project?.docs.length > 0 ? (
                       // project?.docs.map((doc, index) => {
@@ -944,7 +945,7 @@ const ProjectView = () => {
                         }
                       }) ? (
                         // Render "No files uploaded" message if all files are images
-                        <label>No files uploaded</label>
+                        <label>{t('viewProject.noFilesUploaded')}</label>
                       ) : (
                         // Render files
                         project?.docs.map((doc, index) => {
@@ -1021,7 +1022,7 @@ const ProjectView = () => {
                         })
                       )
                     ) : (
-                      <label>No files uploaded</label>
+                      <label>{t('viewProject.noFilesUploaded')}</label>
                     )}
                   </ul>
                 </div>
@@ -1030,7 +1031,7 @@ const ProjectView = () => {
               {role === "" && !permissions?.projectManagement ? null : (
                 <div className="card">
                   <div className="card-body">
-                    <h5 className="card-title m-b-20">Payments</h5>
+                    <h5 className="card-title m-b-20">{t('viewProject.payments')}</h5>
                     <div className="table-responsive">
                       <Table
                         locale={{
@@ -1317,14 +1318,14 @@ const ProjectView = () => {
             <div className="col-lg-4 col-xl-3">
               <div className="card">
                 <div className="card-body">
-                  <h6 className="card-title m-b-15">Project Details</h6>
+                  <h6 className="card-title m-b-15">{t('viewProject.projectDetails')}</h6>
                   <div className="table-responsive">
                     <table className="table table-striped table-border">
                       <tbody>
                         {role === "" &&
                         !permissions?.projectManagement ? null : (
                           <tr>
-                            <td>Cost:</td>
+                            <td>{t('viewProject.cost')}:</td>
                             <td className="text-end">
                               {project?.cost
                                 ?.toString()
@@ -1334,19 +1335,19 @@ const ProjectView = () => {
                           </tr>
                         )}
                         <tr>
-                          <td>Start Date:</td>
+                          <td>{t('viewProject.startDate')}:</td>
                           <td className="text-end">
                             {moment(project?.startDate).format("YYYY-MM-DD")}
                           </td>
                         </tr>
                         <tr>
-                          <td>Deadline:</td>
+                          <td>{t('viewProject.deadline')}:</td>
                           <td className="text-end">
                             {moment(project?.endDate).format("YYYY-MM-DD")}
                           </td>
                         </tr>
                         <tr>
-                          <td>Priority:</td>
+                          <td>{t('viewProject.priority')}:</td>
                           <td className="text-end">
                             <span
                               className={`badge ${
@@ -1361,17 +1362,30 @@ const ProjectView = () => {
                               style={{ pointerEvents: "none" }}
                             >
                               {project?.priority === "High Priority"
-                                ? "High"
+                                ? t('projectScreen.Modal.high')
                                 : project?.priority === "Normal Priority"
-                                ? "Normal"
-                                : "Low"}
+                                ? t('projectScreen.Modal.normal')
+                                : t('projectScreen.Modal.low')}
                             </span>
                           </td>
                         </tr>
 
                         <tr>
-                          <td>Status:</td>
-                          <td className="text-end">{project?.status}</td>
+                          <td>{t('viewProject.status')}:</td>
+                          <td className="text-end">
+                          {project?.status === 'Scheduled' 
+                            ? t('projectScreen.Modal.scheduled')
+                            : project?.status === 'On-Going' 
+                            ? t('projectScreen.Modal.onGoing')
+                            : project?.status === 'Paused' 
+                            ? t('projectScreen.Modal.paused')
+                            : project?.status === 'Completed' 
+                            ? t('projectScreen.Modal.completed')
+                            : project?.status === 'Archived' 
+                            ? t('projectScreen.Modal.archived') 
+                            : project?.status
+                            }
+                            </td>
                         </tr>
                       </tbody>
                     </table>
@@ -1394,11 +1408,11 @@ const ProjectView = () => {
               <div className="card project-user">
                 <div className="card-body">
                   <h6 className="card-title m-b-20">
-                    <label style={{ width: "69%" }}>Assigned Leader</label>
+                    <label style={{ width: "69%" }}>{t('viewProject.assignedLeader')}</label>
                     {(role === 'admin' || permissions?.projectManagement) &&
                       <button
                       type="button"
-                      className="float-end btn btn-primary btn-sm"
+                      className={`${i18n.dir() === 'rtl' ? 'float-start' : 'float-end'} btn btn-primary btn-sm`}
                       // data-bs-toggle="modal"
                       // data-bs-target="#assign_leader"
                       onClick={() => {
@@ -1411,7 +1425,7 @@ const ProjectView = () => {
                         (role === "" && !permissions?.projectManagement)
                       }
                     >
-                      <i className="fa fa-plus" /> Edit
+                      <i className="fa fa-plus" /> {t('edit')}
                     </button>
                     }
                   </h6>
@@ -1451,11 +1465,11 @@ const ProjectView = () => {
               <div className="card project-user">
                 <div className="card-body">
                   <h6 className="card-title m-b-20">
-                    <label style={{ width: "69%" }}>Assigned Developers</label>
+                    <label style={{ width: "69%" }}>{t('viewProject.assignedDevelopers')}</label>
                     { (role === 'admin' || permissions?.projectManagement) &&
                       <button
                       type="button"
-                      className="float-end btn btn-primary btn-sm"
+                      className={`${i18n.dir() === 'rtl' ? 'float-start' : 'float-end'} btn btn-primary btn-sm`}
                       onClick={() => {
                         openUserModal();
                         setSelectedDevelopers(project?.assignedDevelopers);
@@ -1466,7 +1480,7 @@ const ProjectView = () => {
                         (role === "" && !permissions?.projectManagement)
                       }
                     >
-                      <i className="fa fa-plus" /> Add
+                      <i className="fa fa-plus" /> {t('holiday.add')}
                     </button>
                     }
                   </h6>

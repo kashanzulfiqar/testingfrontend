@@ -41,10 +41,12 @@ import { itemRender } from "../../paginationfunction";
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { CSVLink } from 'react-csv';
+import { useTranslation } from "react-i18next";
 
 const { Option } = Select;
 
 const AttendanceReport = () => {
+  const { t, i18n } = useTranslation();
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
   const user_name = useSelector((state) => state?.user?.loginvalue?.user?.fullName);
   console.log("permissions", permissions)
@@ -168,7 +170,7 @@ const AttendanceReport = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Error Fetching Attendance Reports"
+              : t('reports.Attendance.errorFetchingAttendanceReports')
           }`
         );
       })
@@ -200,9 +202,9 @@ const AttendanceReport = () => {
     const { name, dateFrom, dateTo } = selectedFilters;
 
     if ((!dateFrom && dateTo) || (dateFrom && !dateTo)) {
-      message.error("Both start and end dates are required");
+      message.error(t('aRequests.errors.bothStartEndDateRequired'));
     } else if (!name && !dateFrom && !dateTo) {
-      message.error("No filters selected");
+      message.error(t('Timesheetadmin.noFiltersSelected'));
     } else {
       setFilters(selectedFilters);
       setPagination({
@@ -276,7 +278,7 @@ const AttendanceReport = () => {
 
   const columns = [
     {
-      title: "Employee",
+      title: t('reports.Attendance.employee'),
       dataIndex: "employeeName",
       key: "employeeName",
       render: (text, record) => (
@@ -303,27 +305,27 @@ const AttendanceReport = () => {
       ),
     },
     {
-      title: "Total Presents",
+      title: t('reports.Attendance.totalPresents'),
       dataIndex: "totalPresents",
       key: "totalPresents",
     },
     {
-      title: "Total Absents",
+      title: t('reports.Attendance.totalAbsents'),
       dataIndex: "totalAbsents",
       key: "totalAbsents",
     },
     {
-      title: "Total Leaves",
+      title: t('reports.Attendance.totalLeaves'),
       dataIndex: "totalLeaves",
       key: "totalLeaves",
     },
     {
-      title: "Late Arrivals",
+      title: t('reports.Attendance.lateArrivals'),
       dataIndex: "totalLates",
       key: "totalLates",
     },
     {
-      title: "Total WFH",
+      title: t('reports.Attendance.totalWFH'),
       dataIndex: "totalWFH",
       key: "totalWFH",
     },
@@ -357,7 +359,7 @@ const AttendanceReport = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Error Downloading Attendance Reports"
+              : t('reports.Attendance.errorDownloadingAttendanceReports')
           }`
         );
       })
@@ -464,7 +466,7 @@ const AttendanceReport = () => {
     
     if(type === 'pdf'){
       doc.save('attendance_report.pdf');
-      message.success("Report Exported in PDF Successfully!");
+      message.success(t('reports.Attendance.reportExportedPDFSuccessfully'));
       // ---- view pdf ----
       // const pdfBlob = doc.output('blob');
       // const blobUrl = URL.createObjectURL(pdfBlob);
@@ -486,7 +488,7 @@ const AttendanceReport = () => {
         srNum: `${index+1}.`,
       }));
       setCSVData(dataForCSV);
-      message.success("Report Exported in CSV Successfully!");
+      message.success(t('reports.Attendance.reportExportedCSVSuccessfully'));
     }
 
   };
@@ -510,7 +512,7 @@ const AttendanceReport = () => {
         {/* <Sidebar /> */}
         <div className="page-wrapper">
           <Helmet>
-            <title>Attednance Reports - DaftarPro</title>
+            <title>{t('reports.Attendance.attendanceReport')} - {t('header.daftarPro')}</title>
             <meta name="description" content="Login page" />
           </Helmet>
           <div className="content container-fluid">
@@ -518,7 +520,7 @@ const AttendanceReport = () => {
             <div className="page-header">
               <div className="row align-items-center">
                 <div className="col">
-                  <h3 className="page-title">Reports</h3>
+                  <h3 className="page-title">{t('reports.employeeReport.reports')}</h3>
                   <ul className="breadcrumb">
                     <li className="breadcrumb-item">
                       <Link
@@ -528,10 +530,10 @@ const AttendanceReport = () => {
                             : "/employee/dashboard"
                         }
                       >
-                        Dashboard
+                        {t('dashboard')}
                       </Link>
                     </li>
-                    <li className="breadcrumb-item active">Attendance Report</li>
+                    <li className="breadcrumb-item active">{t('reports.Attendance.attendanceReport')}</li>
                   </ul>
                 </div>
                 <div className="col-auto float-end ms-auto">
@@ -613,21 +615,21 @@ const AttendanceReport = () => {
             <div className="row">
               <div className="col-md-4">
                 <div className="stats-info">
-                  <label>Total working days</label>
+                  <label>{t('reports.Attendance.totalWorkingDays')}</label>
                   <h4>{statdata?.totalWorkingDays}
                   </h4>
                 </div>
               </div>
               <div className="col-md-4">
                 <div className="stats-info">
-                  <label>Total Non-working days</label>
+                  <label>{t('reports.Attendance.totalNonWorkingDays')}</label>
                   <h4>{statdata?.totalHolidays}
                   </h4>
                 </div>
               </div>
               <div className="col-md-4">
                 <div className="stats-info">
-                  <label>Total no. of Employees</label>
+                  <label>{t('reports.Attendance.totalEmployees')}</label>
                   <h4>{statdata?.totalEmployees}
                   </h4>
                 </div>
@@ -645,7 +647,7 @@ const AttendanceReport = () => {
                       <Input
                         className="form-control"
                         allowClear={false}
-                        placeholder="Employee Name"
+                        placeholder={t('reports.Attendance.employeeName')}
                         onChange={(e) =>
                           handleFilterChange(e.target.value, "name")
                         }
@@ -662,7 +664,7 @@ const AttendanceReport = () => {
                         style={{
                           width: "100%",
                         }}
-                        placeholder="Select a start date"
+                        placeholder={t('reports.Attendance.selectStartDate')}
                         size="large"
                         //allowClear={false}
                         onChange={(date, dateString) => {
@@ -682,7 +684,7 @@ const AttendanceReport = () => {
                         style={{
                           width: "100%",
                         }}
-                        placeholder="Select an end date"
+                        placeholder={t('reports.Attendance.selectAnEndDate')}
                         size="large"
                         //allowClear={false}
                         onChange={(date, dateString) => {
@@ -714,7 +716,7 @@ const AttendanceReport = () => {
                     }
                     style={{ borderRadius: "4px", display: "flex", justifyContent: "center", alignItems: "center" }}
                   >
-                    SEARCH
+                    {t('search')}
                   </Button>
 
                   <Button
@@ -737,7 +739,7 @@ const AttendanceReport = () => {
                       alignItems: "center"
                     }}
                   >
-                    RESET
+                    {t('reset')}
                   </Button>
                 </div>
               </div>
@@ -761,6 +763,22 @@ const AttendanceReport = () => {
                     dataSource={attendancerecords}
                     bordered
                     pagination={false}
+                    components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                   />
                 </div>
 
@@ -773,12 +791,13 @@ const AttendanceReport = () => {
                         pageSize={pagination.pageSize}
                         total={pagination.total}
                         showTotal={(total, range) =>
-                          `Showing ${range[0]} to ${range[1]} of ${total} entries`
-                        }
+                          t('paginationShow', { range1: range[0], range2: range[1], total: total })}
                         pageSizeOptions={["20", "30", "40", "50"]}
                         showSizeChanger={true}
                         onChange={(page, pageSize) => setPagination({...pagination, current: page, pageSize: pageSize,})}
-                        itemRender={itemRender}
+                        itemRender={(current, type, originalElement) =>
+                          itemRender(current, type, originalElement, t)
+                        }
                         disabled={isLoading}
                       />
                     </div>

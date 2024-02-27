@@ -14,9 +14,10 @@ import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import Modal from "@mui/material/Modal";
 import { apiServices } from '../../../Services/apiServices';
 import ExpenseModal from './ExpenseModal';
+import { useTranslation } from 'react-i18next';
 
 const Expenses = () => {
-
+  const { t, i18n } = useTranslation();
   const moment = require('moment');
 
   const [form] = Form.useForm();
@@ -70,7 +71,7 @@ const Expenses = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get All Expanses Error"
+              : t('finance.expenses.getAllExpensesError')
           }!`
         );
       });
@@ -91,7 +92,7 @@ const Expenses = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get All Employees Error"
+              : t('allEmp.errors.getEmployeesError')
           }!`
         );
       });
@@ -119,7 +120,7 @@ const Expenses = () => {
         if (res?.data?.success === true) {
           getAllExpenses(filterValues,currentPage, pageSize);
           handleClose('delete');
-          message.success("Expense Deleted Successfully!");
+          message.success(t('finance.expenses.expenseDeletedSuccessfully'));
           setLoader(false);
         }
       })
@@ -131,7 +132,7 @@ const Expenses = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Delete Expense Error"
+              : t('finance.expenses.deleteExpenseError')
           }`
         );
       });
@@ -146,7 +147,7 @@ const Expenses = () => {
     apiServices("PUT", "expenses", formatted_data, user_state)
     .then((res) => {
         if (res?.data?.success === true) {
-        message.success('Status Updated Successfully!')
+        message.success(t('finance.expenses.statusUpdatedSuccessfully'))
         handleClose('update');
         }
     })
@@ -158,7 +159,7 @@ const Expenses = () => {
             ? err?.response?.data?.msg
             : err?.response?.data?.validation?.body?.message
             ? err?.response?.data?.validation?.body?.message
-            : "Update Status Info Error"
+            : t('finance.expenses.updateStatusInfoError')
         }!`
         );
     });
@@ -226,7 +227,7 @@ const formatDate = (inputDate) => {
     const columns = [
            
       {
-        title: 'Item',
+        title: t('finance.Invoices.item'),
         dataIndex: 'itemName',
         fixed: 'left',
         render: (text, record) => (            
@@ -234,28 +235,28 @@ const formatDate = (inputDate) => {
           ),
       },     
       {
-        title: 'Category',
+        title: t('finance.expenses.category'),
         dataIndex: 'category',
         render: (text, record) => (
           <label>{record?.category?.expenseCategoryName}</label>
             ),
       },     
       {
-        title: 'Purchase From',
+        title: t('finance.expenses.purchaseFrom'),
         dataIndex: 'purchaseFrom',
         render: (text, record) => (
           <label>{text}</label>
             ),
       },     
       {
-        title: 'Purchase Date',
+        title: t('finance.expenses.purchaseDate'),
         dataIndex: 'purchaseDate',
         render: (text, record) => (
           <label>{formatDate(text || '')}</label>
             ),
       },
       {
-        title: 'Purchased By',
+        title: t('finance.expenses.purchasedBy'),
         dataIndex: 'purchasedBy',
         render: (text, record) => (            
             <h2 className="table-avatar">
@@ -267,7 +268,7 @@ const formatDate = (inputDate) => {
           ),
       },      
       {
-        title: 'Amount',
+        title: t('finance.Invoices.amount'),
         dataIndex: 'amount',
         render: (text, record) => (
         <label>{text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {record?.currency}</label>
@@ -275,8 +276,11 @@ const formatDate = (inputDate) => {
       },
 
       {
-        title: 'Paid By',
+        title: t('finance.expenses.paidBy'),
         dataIndex: 'paidBy',
+        render: (text, record) => (
+          <label>{text==="Cash" ? t('cash') : text==="Cheque" ? t('cheque') : text==="Bank Transfer" ? t('bankTransfer') : '-'}</label>
+            ),
       },  
       // {
       //   title: 'Status',
@@ -295,13 +299,13 @@ const formatDate = (inputDate) => {
       //     ),
       // },
       {
-        title: 'Action',
+        title: t('allEmp.action'),
         render: (text, record) => (
             <div className="dropdown dropdown-action text-end">
                   <a href="#" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
                       <div className="dropdown-menu dropdown-menu-right">
-                        <a className="dropdown-item" href='javascript:void(0)' onClick={() => { setOpen({ isAddOpen: true, data: record }); }}><i className="fa fa-pencil m-r-5" /> Edit</a>
-                        <a className="dropdown-item" href='javascript:void(0)' onClick={() => { setOpen({ isDelOpen: true, data: record }); }}><i className="fa fa-trash-o m-r-5" /> Delete</a>
+                        <a className="dropdown-item" href='javascript:void(0)' onClick={() => { setOpen({ isAddOpen: true, data: record }); }}><i className="fa fa-pencil m-r-5" /> {t('edit')}</a>
+                        <a className="dropdown-item" href='javascript:void(0)' onClick={() => { setOpen({ isDelOpen: true, data: record }); }}><i className="fa fa-trash-o m-r-5" /> {t('delete')}</a>
                       </div>
             </div>
           ),
@@ -337,7 +341,7 @@ const formatDate = (inputDate) => {
               {/* {
                 (role === 'admin' || permissions?.viewAllUsers) ? 'No Employee Record found!' : 'You are Restricted to View Employees'
               } */}
-              No Expense Record Found!
+              {t('finance.Profit&loss.noRecordFound')}
             </div>
           </div>
         }
@@ -367,7 +371,7 @@ const formatDate = (inputDate) => {
         <>
         <div className="page-wrapper">
             <Helmet>
-                <title>Expenses - DaftarPro</title>
+                <title>{t('finance.Profit&loss.expenses')} - {t('header.daftarPro')}</title>
                 <meta name="description" content="Login page"/>					
             </Helmet>
         {/* Page Content */}
@@ -376,14 +380,14 @@ const formatDate = (inputDate) => {
           <div className="page-header">
             <div className="row align-items-center">
               <div className="col">
-                <h3 className="page-title">Expenses</h3>
+                <h3 className="page-title">{t('finance.Profit&loss.expenses')}</h3>
                 <ul className="breadcrumb">
-                  <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>Dashboard</Link></li>
-                  <li className="breadcrumb-item active">Expenses</li>
+                  <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>{t('dashboard')}</Link></li>
+                  <li className="breadcrumb-item active">{t('finance.Profit&loss.expenses')}</li>
                 </ul>
               </div>
               <div className="col-auto float-end ms-auto">
-                <a href="javascript:void(0)" className="btn add-btn" onClick={() => { setOpen({ isAddOpen: true, data: '' }); }}><i className="fa fa-plus" /> Add Expense</a>
+                <a href="javascript:void(0)" className="btn add-btn" onClick={() => { setOpen({ isAddOpen: true, data: '' }); }}><i className="fa fa-plus" /> {t('finance.expenses.addExpense')}</a>
               </div>
             </div>
           </div>
@@ -411,7 +415,7 @@ const formatDate = (inputDate) => {
                       },
                     ]}
                   >
-                    <Input className='form-control' style={{height:'50px'}} placeholder='Item Name' />
+                    <Input className='form-control' style={{height:'50px'}} placeholder={t('finance.expenses.itemName')} />
                   </Form.Item>
               </div>
             </div>
@@ -438,7 +442,7 @@ const formatDate = (inputDate) => {
                     style={{
                       width: '100%',
                     }}
-                    placeholder='Purchased By'
+                    placeholder={t('finance.expenses.purchasedBy')}
                     size='large'
                     getPopupContainer={() => document.getElementById('area11')}
                   >
@@ -464,21 +468,21 @@ const formatDate = (inputDate) => {
                     style={{
                       width: '100%',
                     }}
-                    placeholder='Paid By'
+                    placeholder={t('finance.expenses.paidBy')}
                     size='large'
                     getPopupContainer={() => document.getElementById('area11')}
                     options={[
                       {
                         value: 'Cash',
-                        label: "Cash",
+                        label: t('cash'),
                       },
                       {
                         value: 'Cheque',
-                        label: "Cheque",
+                        label: t('cheque'),
                       },
                       {
                         value: 'Bank Transfer',
-                        label: "Bank Transfer",
+                        label: t('bankTransfer'),
                       },
                     ]}
                   />
@@ -506,7 +510,7 @@ const formatDate = (inputDate) => {
                     <DatePicker 
                       allowClear={false}
                       size='large'
-                      placeholder='From'
+                      placeholder={t('finance.Invoices.from')}
                       className='form-control filterDate'
                       style={{minHeight: '50px', display: 'flex'}} 
                       getPopupContainer={() => document.getElementById('area11')}
@@ -540,7 +544,7 @@ const formatDate = (inputDate) => {
                 <DatePicker 
                   allowClear={false}
                   size='large'
-                  placeholder='To'
+                  placeholder={t('finance.Invoices.to')}
                   className='form-control filterDate'
                   style={{minHeight: '50px', display: 'flex'}} 
                   getPopupContainer={() => document.getElementById('area11')}
@@ -557,7 +561,7 @@ const formatDate = (inputDate) => {
                 // disabled={role === 'admin' ? false : permissions?.viewAllUsers ? false : true}
                 style={{marginBottom: '24px', paddingInline: '10px'}}
               > 
-                Search 
+                {t('search')}
               </button>
               <button
                 href="javascript:void(0)" type="reset"
@@ -571,7 +575,7 @@ const formatDate = (inputDate) => {
                 className="btn btn-success btn-block w-50 resetButton" style={{marginBottom: '24px', backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}} 
                 // disabled={role === 'admin' ? false : permissions?.viewAllUsers ? false : true}
               >
-                Reset 
+                {t('reset')} 
               </button>  
             </div>
           </div>
@@ -593,6 +597,22 @@ const formatDate = (inputDate) => {
                   dataSource={allExpenses}
                   rowKey={record => record.id}
                   // onChange={this.handleTableChange}
+                  components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                 />
                 {
                     allExpenses?.length > 0 &&
@@ -604,14 +624,16 @@ const formatDate = (inputDate) => {
                         defaultCurrent={1}
                         current={currentPage}
                         showTotal={(total, range) =>
-                          `Showing ${range[0]} to ${range[1]} of ${total} entries`}
+                          t('paginationShow', { range1: range[0], range2: range[1], total: total })}
                         onChange={(page, size) => {
                           setPageSize(size); setCurrentPage(page);
                           getAllExpenses(filterValues, page, size)
                         }}
                         showSizeChanger={true}
                         pageSizeOptions={['20', '30', '40', '50']}
-                        itemRender={itemRender}
+                        itemRender={(current, type, originalElement) =>
+                          itemRender(current, type, originalElement, t)
+                        }
                       />
                     </div>
                   }
@@ -660,10 +682,9 @@ const formatDate = (inputDate) => {
                 }}
               >
                 <div className="form-header">
-                  <h3 style={{ marginBottom: "30px" }}>Delete Expense</h3>
+                  <h3 style={{ marginBottom: "30px" }}>{t('finance.expenses.deleteExpense')}</h3>
                   <p>
-                    Are you sure you want to delete{" "}
-                    <b>{open?.data?.itemName}</b>?
+                  <span dangerouslySetInnerHTML={{ __html: t('projectScreen.confirmDeleteProject', { project: open?.data?.itemName }) }} />
                   </p>
                 </div>
                 <div className="modal-btn delete-action">
@@ -678,7 +699,7 @@ const formatDate = (inputDate) => {
                       >
                         {
                           loader ? <Spin size="small" indicator={antIcon} />
-                            : 'Delete'
+                            : t('delete')
                         }
                       </Button>
                     </div>
@@ -688,7 +709,7 @@ const formatDate = (inputDate) => {
                         className="btn btn-primary submit-btn"
                         style={{width: '100%'}}
                       >
-                        Cancel
+                        {t('cancel')}
                       </Button>
                     </div>
                   </div>

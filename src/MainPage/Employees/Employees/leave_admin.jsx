@@ -30,10 +30,12 @@ import { counter } from "../../../Redux/Reducer/permissions/pendingCounterSlice"
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { user_icon } from "../../../Entryfile/imagepath";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import { useTranslation } from "react-i18next";
 
 const { Option } = Select;
 
 const LeaveAdmin = () => {
+  const { t, i18n } = useTranslation();
   const { id } = useParams();
 
   const navigate = useNavigate();
@@ -71,6 +73,19 @@ const LeaveAdmin = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [statdata, setStatdata] = useState("");
+
+  const leaveTypeTranslations = {
+    casual: t('aRequests.casual'),
+    sick: t('aRequests.sick'),
+    bereavement: t('aRequests.bereavement'),
+    marriage: t('aRequests.marriage'),
+    maternity: t('aRequests.maternity'),
+    paternity: t('aRequests.paternity'),
+    annual: t('aRequests.annual'),
+    half: t('aRequests.half'),
+    Unpaid: t('aRequests.unpaid'),
+    wfh: t('aRequests.wfh')
+  };
 
   const closeModal = () => {
     setSelectedRecord(null);
@@ -114,12 +129,12 @@ const LeaveAdmin = () => {
       description,
       approvedBy,
     };
-
+    const rStatus = newStatus === "Approved" ? t('aRequests.Approved') : newStatus === "Declined" ? t('aRequests.Declined') : ""
     const apiUrl = `requests/update-request`;
     apiServices("PUT", apiUrl, updatedData, user_state)
       .then((res) => {
         if (res.data.success === true) {
-          message.success(`Leave request updated to ${newStatus}`);
+          message.success(t('aRequests.errors.leaveRequestUpdated', {newStatus: rStatus}));
 
           //handleReset();
           //navigate('/employee/request-admin')
@@ -130,7 +145,7 @@ const LeaveAdmin = () => {
       })
       .catch((error) => {
         console.log("error", error);
-        message.error("Failed to update leave request status");
+        message.error(t('aRequests.errors.failedToUpdateLeaveRequest'));
       })
       .finally(() => {
         closeModal();
@@ -170,7 +185,7 @@ const LeaveAdmin = () => {
         current: 1,
       });
     } else {
-      message.warning("Both Start and End Date required");
+      message.warning(t('aRequests.errors.bothStartEndDateRequired'));
     }
   };
 
@@ -317,7 +332,7 @@ const LeaveAdmin = () => {
               margin: "7px 0px 4px 0px",
             }}
           >
-            No Record Found!
+            {t('aRequests.errors.noRecordFound')}
           </div>
           {/* <div
                   style={{ color: "#464665", fontWeight: "300", fontSize: "13px" }}
@@ -347,25 +362,25 @@ const LeaveAdmin = () => {
   const capitalizeLeaveType = (leaveType) => {
     switch (leaveType?.toLowerCase()) {
       case 'sick':
-        return 'Sick Leave';
+        return t('aRequests.sick');
       case 'casual':
-        return 'Casual Leave';
+        return t('aRequests.casual');
       case 'bereavement':
-        return 'Bereavement Leave';
+        return t('aRequests.bereavement');
       case 'marriage':
-        return 'Marriage Leave';
+        return t('aRequests.marriage');
       case 'maternity':
-        return 'Maternity Leave';
+        return t('aRequests.maternity');
       case 'paternity':
-        return 'Paternity Leave';
+        return t('aRequests.paternity');
       case 'annual':
-        return 'Annual Leave';
+        return t('aRequests.annual');
       case 'half':
-        return 'Half Leave';
+        return t('aRequests.half');
       case 'unpaid':
-        return 'Unpaid Leave';
+        return t('aRequests.unpaid');
       case 'wfh':
-        return 'Work From Home';
+        return t('aRequests.wfh');
       default:
         return leaveType; // Default to original value if not found in cases
     }
@@ -373,7 +388,7 @@ const LeaveAdmin = () => {
 
   const columns = [
     {
-      title: "Employee",
+      title: t('aAttend.employee'),
       dataIndex: "user.fullName", // Assuming 'fullName' is the name field in the user object
       render: (text, record) => (
         <h2 className="table-avatar">
@@ -395,7 +410,7 @@ const LeaveAdmin = () => {
       //sorter: (a, b) => a.user.fullName.localeCompare(b.user.fullName), // Sort by employee name
     },
     {
-      title: "Request Type",
+      title: t('requests.addModal.requestType'),
       dataIndex: "leaveType",
       render: (text, record) => (
         <label>{capitalizeLeaveType(text)}</label>
@@ -403,7 +418,7 @@ const LeaveAdmin = () => {
       //sorter: (a, b) => a.leaveType.localeCompare(b.leaveType), // Sort by leave type
     },
     {
-      title: "From",
+      title: t('requests.from'),
       dataIndex: "startDate",
       render: (text, record) => {
         const date = new Date(text);
@@ -436,7 +451,7 @@ const LeaveAdmin = () => {
       //sorter: (a, b) => a.startDate.localeCompare(b.startDate), // Sort by start date
     },
     {
-      title: "To",
+      title: t('requests.to'),
       dataIndex: "endDate",
       render: (text, record) => {
         const date = new Date(text);
@@ -469,11 +484,11 @@ const LeaveAdmin = () => {
       //sorter: (a, b) => a.endDate.localeCompare(b.endDate), // Sort by end date
     },
     {
-      title: "Days Off",
+      title: t('aRequests.daysOff'),
       dataIndex: "totalDays",
     },
     {
-      title: "Reason",
+      title: t('requests.reason'),
       dataIndex: "description",
       render: (text, record) => (
         <label className="longText">
@@ -483,7 +498,7 @@ const LeaveAdmin = () => {
       //sorter: (a, b) => a.description.localeCompare(b.description), // Sort by reason
     },
     {
-      title: "Status",
+      title: t('status'),
       dataIndex: "status",
       render: (text, record) => (
         <div>
@@ -524,7 +539,7 @@ const LeaveAdmin = () => {
                   : "fa-dot-circle-o text-danger"
               }`}
             />{" "}
-            {text}
+            {text === "Pending" ? t("aRequests.Pending") : text === "Approved" ? t("aRequests.Approved") : text === "Declined" ? t("aRequests.Declined") : text === "Cancelled" ? t("aRequests.cancelled") : text}
           </a>
           <div
             className={`dropdown-menu dropdown-menu-right ${
@@ -541,7 +556,7 @@ const LeaveAdmin = () => {
                 handleUpdateStatus(record, "Approved");
               }}
             >
-              <i className="fa fa-dot-circle-o text-success" /> Approved
+              <i className="fa fa-dot-circle-o text-success" /> {t('aRequests.Approved')}
             </a>
             <a
               className={`dropdown-item ${text === "Declined" && "disabled"}`}
@@ -551,7 +566,7 @@ const LeaveAdmin = () => {
                 handleUpdateStatus(record, "Declined");
               }}
             >
-              <i className="fa fa-dot-circle-o text-danger" /> Declined
+              <i className="fa fa-dot-circle-o text-danger" /> {t('aRequests.Declined')}
             </a>
           </div>
         </div>
@@ -560,7 +575,7 @@ const LeaveAdmin = () => {
     },
 
     {
-      title: "Action",
+      title: t('allEmp.action'),
       render: (text, record) => (
         <div className="dropdown dropdown-action">
           <a
@@ -582,7 +597,7 @@ const LeaveAdmin = () => {
         {/* <Sidebar />         */}
         <div className="page-wrapper">
           <Helmet>
-            <title>Requests - DaftarPro Admin</title>
+            <title>{t('requests.pageTitle')}</title>
             <meta name="description" content="Login page" />
           </Helmet>
           {/* Page Content */}
@@ -591,7 +606,7 @@ const LeaveAdmin = () => {
             <div className="page-header">
               <div className="row align-items-center">
                 <div className="col">
-                  <h3 className="page-title">Requests</h3>
+                  <h3 className="page-title">{t('requests.requests')}</h3>
                   <ul className="breadcrumb">
                     <li className="breadcrumb-item">
                       <Link
@@ -601,10 +616,10 @@ const LeaveAdmin = () => {
                             : "/employee/dashboard"
                         }
                       >
-                        Dashboard
+                        {t('dashboard')}
                       </Link>
                     </li>
-                    <li className="breadcrumb-item active">Requests</li>
+                    <li className="breadcrumb-item active">{t('requests.requests')}</li>
                   </ul>
                 </div>
               </div>
@@ -619,25 +634,25 @@ const LeaveAdmin = () => {
             <div className="row">
             <div className="col-md-3">
               <div className="stats-info">
-                <label>Sick Leave Requests</label>
+                <label>{t('aRequests.sickLeaveRequests')}</label>
                 <h4>{statdata?.sickLeaves}</h4>
               </div>
             </div>
             <div className="col-md-3">
               <div className="stats-info">
-              <label>Casual Leave Requests</label>
+              <label>{t('aRequests.casualLeaveRequests')}</label>
                 <h4>{statdata?.casualLeaves}</h4>
               </div>
             </div>
             <div className="col-md-3">
               <div className="stats-info">
-              <label>Work From Home Requests</label>
+              <label>{t('aRequests.workFromHomeRequests')}</label>
                 <h4>{statdata?.wfhRequests}</h4>
               </div>
             </div>
             <div className="col-md-3">
               <div className="stats-info">
-              <label>Pending Requests</label>
+              <label>{t('aRequests.pendingRequests')}</label>
                 <h4>{statdata?.pendingRequests}</h4>
                 </div>
             </div>
@@ -656,7 +671,7 @@ const LeaveAdmin = () => {
                 <Input
                   className="form-control"
                   allowClear={false}
-                  placeholder="Employee Name"
+                  placeholder={t('employeeName')}
                   onChange={(e)=>handleFilterChange(e.target.value, "name")}
                 />
               </Form.Item>
@@ -666,32 +681,32 @@ const LeaveAdmin = () => {
                     <div className="form-group form-focus">
                       <Form.Item name="type" className="custom-border">
                         <Select
-                          placeholder="Request type"
+                          placeholder={t('requests.addModal.requestType')}
                           style={{ width: "100%" }}
                           onChange={(value) =>
                             handleFilterChange(value, "type")
                           }
                         >
-                          <Select.Option value="wfh">Work From Home</Select.Option>
-                          <Select.Option value="casual">Casual Leave</Select.Option>
-                          <Select.Option value="sick">Sick Leave</Select.Option>
+                          <Select.Option value="wfh">{t('aRequests.wfh')}</Select.Option>
+                          <Select.Option value="casual">{t('aRequests.casual')}</Select.Option>
+                          <Select.Option value="sick">{t('aRequests.sick')}</Select.Option>
                           <Select.Option value="bereavement">
-                            Bereavement Leave
+                          {t('aRequests.bereavement')}
                           </Select.Option>
                           <Select.Option value="marriage">
-                            Marriage Leave
+                          {t('aRequests.marriage')}
                           </Select.Option>
                           <Select.Option value="maternity">
-                            Maternity Leave
+                          {t('aRequests.maternity')}
                           </Select.Option>
                           <Select.Option value="paternity">
-                            Paternity Leave
+                          {t('aRequests.paternity')}
                           </Select.Option>
-                          <Select.Option value="annual">Annual Leave</Select.Option>
+                          <Select.Option value="annual">{t('aRequests.annual')}</Select.Option>
                           <Select.Option value="half">
-                            Half Leave
+                          {t('aRequests.half')}
                           </Select.Option>
-                          <Select.Option value="unpaid">Unpaid Leave</Select.Option>
+                          <Select.Option value="unpaid">{t('aRequests.unpaid')}</Select.Option>
                         </Select>
                       </Form.Item>
                     </div>
@@ -700,18 +715,21 @@ const LeaveAdmin = () => {
                     <div className="form-group form-focus">
                       <Form.Item name="status" className="custom-border">
                         <Select
-                          placeholder="Request Status"
+                          placeholder={t('aRequests.requestStatus')}
                           style={{ width: "100%" }}
                           onChange={(value) =>
                             handleFilterChange(value, "status")
                           }
                         >
-                          <Select.Option value="Pending">Pending</Select.Option>
+                          <Select.Option value="Pending">{t('aRequests.Pending')}</Select.Option>
                           <Select.Option value="Approved">
-                            Approved
+                          {t('aRequests.Approved')}
                           </Select.Option>
                           <Select.Option value="Declined">
-                            Declined
+                          {t('aRequests.Declined')}
+                          </Select.Option>
+                          <Select.Option value="Cancelled">
+                          {t('aRequests.cancelled')}
                           </Select.Option>
                         </Select>
                       </Form.Item>
@@ -721,7 +739,7 @@ const LeaveAdmin = () => {
                     <div className="form-group">
                       <Form.Item name="from">
                         <DatePicker
-                          placeholder="From"
+                          placeholder={t('requests.from')}
                           className="form-control"
                           onChange={(from, dateString) => {
                             handleFilterChange(dateString, "from");
@@ -736,7 +754,7 @@ const LeaveAdmin = () => {
                     <div className="form-group">
                       <Form.Item name="to">
                         <DatePicker
-                          placeholder="To"
+                          placeholder={t('requests.to')}
                           className="form-control"
                           onChange={(to, dateString) => {
                             handleFilterChange(dateString, "to");
@@ -771,7 +789,7 @@ const LeaveAdmin = () => {
                       }
                     >
                       <span className="d-flex justify-content-center">
-                        Search
+                      {t('search')}
                       </span>
                     </Button>
 
@@ -782,7 +800,7 @@ const LeaveAdmin = () => {
                 disabled={role === 'admin' ? false : permissions?.viewAllRequest ? false : permissions?.teamRequest ? false : true}
                 style={{ backgroundColor: "#616161", borderColor: "#616161" }}
                 >
-                  <span className="d-flex justify-content-center">Reset</span> 
+                  <span className="d-flex justify-content-center">{t('reset')}</span> 
               </Button>
 
             </div>     
@@ -823,6 +841,22 @@ const LeaveAdmin = () => {
                     onChange={(pagination, filters, sorter) => {
                       // Handle table onChange event here if needed
                     }}
+                    components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                   />
                 </div>
                 {
@@ -834,12 +868,13 @@ const LeaveAdmin = () => {
                         pageSize={pagination.pageSize}
                         total={pagination.total}
                         showTotal={(total, range) =>
-                          `Showing ${range[0]} to ${range[1]} of ${total} entries`
-                        }
+                          t('paginationShow', { range1: range[0], range2: range[1], total: total })}
                         pageSizeOptions={["20", "30", "40", "50"]}
                         showSizeChanger={true}
                         onChange={(page, pageSize) => setPagination({...pagination, current: page, pageSize: pageSize,})}
-                        itemRender={itemRender}
+                        itemRender={(current, type, originalElement) =>
+                          itemRender(current, type, originalElement, t)
+                        }
                         disabled={isLoading}
                       />
                     </div>
@@ -882,7 +917,7 @@ const LeaveAdmin = () => {
             <div className="modal-dialog modal-dialog-centered" role="document">
               <div className="modal-content">
                 <div className="modal-header">
-                  <h5 className="modal-title">Details</h5>
+                  <h5 className="modal-title">{t('aRequests.viewModal.details')}</h5>
 
                   <button type="button" className="close" onClick={closeModal}>
                     <span aria-hidden="true">×</span>
@@ -893,7 +928,7 @@ const LeaveAdmin = () => {
                   <div className="row" style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
                     <div className="col-md-3">
                       <div className="stats-info text-center">
-                        <label className="text-muted">Sick</label>
+                        <label className="text-muted">{t('aRequests.viewModal.sick')}</label>
                         <h4 className="fw-bold" style={{ fontSize: "14px", fontFamily: "Arial, sans-serif" }}>
                           {parseFloat(selectedRecord?.user?.remainingSickLeaves).toFixed(1)}/{parseFloat(statdata?.totalCompanySickLeave).toFixed(1)}
                         </h4>
@@ -901,7 +936,7 @@ const LeaveAdmin = () => {
                     </div>
                     <div className="col-md-3">
                       <div className="stats-info text-center">
-                        <label className="text-muted">Casual</label>
+                        <label className="text-muted">{t('aRequests.viewModal.casual')}</label>
                         <h4 className="fw-bold" style={{ fontSize: "14px", fontFamily: "Arial, sans-serif" }}>
                           {parseFloat(selectedRecord?.user?.remainingCasualLeaves).toFixed(1)}/{parseFloat(statdata?.totalCompanyCasualLeave).toFixed(1)}
                         </h4>
@@ -909,7 +944,7 @@ const LeaveAdmin = () => {
                     </div>
                     <div className="col-md-3">
                       <div className="stats-info text-center">
-                        <label className="text-muted">Annual</label>
+                        <label className="text-muted">{t('aRequests.viewModal.annual')}</label>
                         <h4 className="fw-bold" style={{ fontSize: "14px", fontFamily: "Arial, sans-serif" }}>
                           {parseFloat(selectedRecord?.user?.remainingAnnualLeaves).toFixed(1)}/{parseFloat(statdata?.totalCompanyAnnualLeave).toFixed(1)}
                         </h4>
@@ -917,7 +952,7 @@ const LeaveAdmin = () => {
                     </div>
                     <div className="col-md-3">
                       <div className="stats-info text-center">
-                        <label className="text-muted">WFH</label>
+                        <label className="text-muted">{t('aRequests.viewModal.wfh')}</label>
                         <h4 className="fw-bold" style={{ fontSize: "14px", fontFamily: "Arial, sans-serif" }}>
                           {parseFloat(selectedRecord?.user?.remainingWfhLeaves).toFixed(1)}/{parseFloat(statdata?.totalCompanyWfhLeave).toFixed(1)}
                         </h4>
@@ -930,9 +965,10 @@ const LeaveAdmin = () => {
                     initialValues={{
                       fullName: selectedRecord?.user.fullName || "",
 
-                      requestType: selectedRecord?.requestType || "",
+                      requestType: (selectedRecord?.requestType === "leave" ? t('requests.leave') : selectedRecord?.requestType === "wfh" ? t('aRequests.wfh') : "") || "",
 
-                      leaveType: selectedRecord?.leaveType || "",
+                      //leaveType: selectedRecord?.leaveType || "",
+                      leaveType: leaveTypeTranslations[selectedRecord?.leaveType] || "",
 
                       startDate:
                         moment(selectedRecord?.startDate, "YYYY-MM-DD") || "",
@@ -948,7 +984,7 @@ const LeaveAdmin = () => {
                   >
                     <div className="form-group">
                       <label>
-                        Employee Name <span className="text-danger"></span>
+                      {t('employeeName')} <span className="text-danger"></span>
                       </label>
 
                       <div style={{ position: "relative" }} id="area">
@@ -960,7 +996,7 @@ const LeaveAdmin = () => {
 
                     <div className="form-group">
                       <label>
-                        Request Type <span className="text-danger"></span>
+                      {t('requests.addModal.requestType')} <span className="text-danger"></span>
                       </label>
 
                       <div style={{ position: "relative" }} id="area">
@@ -972,7 +1008,7 @@ const LeaveAdmin = () => {
 
                     <div className="form-group">
                       <label>
-                        Leave Type <span className="text-danger"></span>
+                      {t('requests.addModal.leaveType')} <span className="text-danger"></span>
                       </label>
 
                       <div style={{ position: "relative" }} id="area">
@@ -984,7 +1020,7 @@ const LeaveAdmin = () => {
 
                     <div className="form-group">
                       <label>
-                        From <span className="text-danger"></span>
+                      {t('requests.from')} <span className="text-danger"></span>
                       </label>
 
                       <div style={{ position: "relative" }} id="area">
@@ -1001,7 +1037,7 @@ const LeaveAdmin = () => {
 
                     <div className="form-group">
                       <label>
-                        To <span className="text-danger"></span>
+                      {t('requests.to')} <span className="text-danger"></span>
                       </label>
 
                       <div style={{ position: "relative" }} id="area">
@@ -1018,7 +1054,7 @@ const LeaveAdmin = () => {
 
                     <div className="form-group">
                       <label>
-                        Number of Days <span className="text-danger"></span>
+                      {t('requests.addModal.numberOfDays')} <span className="text-danger"></span>
                       </label>
 
                       <Form.Item name="totalDays" className="custom-border">
@@ -1034,7 +1070,7 @@ const LeaveAdmin = () => {
                         }}
                       >
                         <div>
-                          Reason <span className="text-danger"></span>
+                        {t('requests.reason')} <span className="text-danger"></span>
                         </div>
                       </label>
 
@@ -1066,7 +1102,7 @@ const LeaveAdmin = () => {
                               className="btn-success btn-block w-50"
                             >
                               <span className="d-flex justify-content-center">
-                                Approve
+                              {t('approve')}
                               </span>
                             </Button>
 
@@ -1083,7 +1119,7 @@ const LeaveAdmin = () => {
                               }}
                             >
                               <span className="d-flex justify-content-center">
-                                Decline
+                              {t('decline')}
                               </span>
                             </Button>
                           </>

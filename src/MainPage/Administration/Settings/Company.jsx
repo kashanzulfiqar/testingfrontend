@@ -8,10 +8,11 @@ import ImgCrop from "antd-img-crop";
 import { apiUploadToS3 } from "../../../Services/uploadImage.js";
 import { user_icon } from "../../../Entryfile/imagepath.jsx";
 import { getAllISOCodes } from 'iso-country-currency';
+import { useTranslation } from "react-i18next";
 
 const Company = () => {
   const user_state = useSelector((state) => state.user.loginvalue);
-
+  const { t, i18n } = useTranslation();
   const [form] = Form.useForm();
   const [allValues, setAllValues] = useState({});
   const [data, setData] = useState({});
@@ -41,8 +42,8 @@ const Company = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Company Info"
-          } Error`
+              : t('settings.companySettings.companyInfoError')
+          }`
         );
       });
   };
@@ -85,7 +86,7 @@ const Company = () => {
     .then((res) => {
       if (res?.data?.success === true) {
         setLoader(false)
-        message.success("Company Settings Updated Successfully!");
+        message.success(t('settings.companySettings.companySettingsUpdated'));
       }
     })
     .catch((err) => {
@@ -97,8 +98,8 @@ const Company = () => {
             ? err?.response?.data?.msg
             : err?.response?.data?.validation?.body?.message
             ? err?.response?.data?.validation?.body?.message
-            : "Update Company Info"
-        } Error`
+            : t('settings.companySettings.updateCompanyInfoError')
+        }`
       );
     });
   };
@@ -126,7 +127,7 @@ const Company = () => {
     const isFileTypeAllowed = allowedFileTypes.includes(file.type);
 
     if (!isFileTypeAllowed) {
-      message.error('You can only upload PNG, JPG, or JPEG files!');
+      message.error(t('allEmp.errors.fileTypeNotAllowed'));
       return false;
     }
 
@@ -134,7 +135,7 @@ const Company = () => {
     const isSizeAllowed = file.size <= maxSizeInBytes;
 
     if (!isSizeAllowed) {
-      message.error('File size is too large. Maximum allowed size is 5MB.');
+      message.error(t('allEmp.errors.fileSizeTooLarge'));
       return false;
     }
 
@@ -163,7 +164,7 @@ const Company = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "upload image Error"
+                : t('allEmp.errors.uploadImageError')
             }!`
           );
       })
@@ -195,7 +196,7 @@ const Company = () => {
         <div className="page-header">
           <div className="row pt-3 pb-3">
             <div className="col-sm-12">
-              <h3 className="page-title">Company Settings</h3>
+              <h3 className="page-title">{t('settings.companySettings.companySettings')}</h3>
             </div>
           </div>
         </div>
@@ -206,10 +207,10 @@ const Company = () => {
           onFinishFailed={({errorFields}) => {
             const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
             if(consecutiveSpacesError){
-              message.error("Please Remove Consecutive Spaces!")
-            }else{
-              message.error("Please Fill Required Fields!")
-            }
+              message.error(t('allEmp.errors.removeConsecutiveSpaces'))
+           }else{
+              message.error(t('allEmp.errors.fillRequiredFields'))
+            } 
           }}
         >
           <div className="row">
@@ -239,7 +240,7 @@ const Company = () => {
                                             fileList={null}
                                             maxCount={1}
                                         >
-                                            <div className="btn-text" style={{width: '80px', padding: '4px'}}>edit</div>
+                                            <div className="btn-text" style={{width: '80px', padding: '4px'}}>{t('edit1')}</div>
                                         </Upload>
                                     </ImgCrop>
                                     </div>
@@ -250,7 +251,7 @@ const Company = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                  Company Name <span className="text-danger">*</span>
+                {t('settings.companySettings.companyName')} <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="companyName"
@@ -260,11 +261,11 @@ const Company = () => {
                       required: true,
                       validator: (_, value) => {
                         if (value.trim() === '') {
-                          return Promise.reject('Please enter company name');
+                          return Promise.reject(t('settings.companySettings.pleaseEnterCompanyName'));
                         } else if (/\s{2,}/.test(value)) {
-                          return Promise.reject('Please remove consecutive spaces');
+                          return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                         } else if (value.length < 3) {
-                          return Promise.reject('Company name must be at least 3 characters long');
+                          return Promise.reject(t('settings.minLength', { name: t('settings.companySettings.companyName') }));
                         }
                         return Promise.resolve();
                       },
@@ -289,7 +290,7 @@ const Company = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                  Legal Name <span className="text-danger">*</span>
+                {t('settings.companySettings.legalName')} <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="legalName"
@@ -299,17 +300,17 @@ const Company = () => {
                       required: true,
                       validator: (_, value) => {
                         if(value.trim() === ''){
-                          return Promise.reject("please enter legal name");
+                          return Promise.reject(t('settings.companySettings.pleaseEnterLegalName'));
                         }
                         else if (/\s{2,}/.test(value)) {
-                          return Promise.reject("please remove consecutive spaces");
+                          return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                         }
                         return Promise.resolve();
                       },
                     },
                     {
                       min: 3,
-                      message: "name length must be at least 3 characters long",
+                      message: t('settings.minLength2', { name: t('settings.companySettings.legalName') }),
                     },
                   ]}
                 >
@@ -331,7 +332,7 @@ const Company = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                  Contact Person <span className="text-danger">*</span>
+                {t('settings.companySettings.contactPerson')} <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="contactPerson"
@@ -341,17 +342,17 @@ const Company = () => {
                       required: true,
                       validator: (_, value) => {
                         if(value.trim() === ''){
-                          return Promise.reject("please enter contact name");
+                          return Promise.reject(t('settings.companySettings.pleaseEnterContactName'));
                         }
                         else if (/\s{2,}/.test(value)) {
-                          return Promise.reject("please remove consecutive spaces");
+                          return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                         }
                         return Promise.resolve();
                       },
                     },
                     {
                       min: 3,
-                      message: "person length must be at least 3 characters long",
+                      message: t('settings.minLength2', { name: t('settings.companySettings.contactPerson') }),
                     },
                   ]}
                 >
@@ -373,7 +374,7 @@ const Company = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                  Address <span className="text-danger">*</span>
+                {t('settings.companySettings.address')} <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="companyAddress"
@@ -383,17 +384,17 @@ const Company = () => {
                       required: true,
                       validator: (_, value) => {
                         if(value.trim() === ''){
-                          return Promise.reject("please enter address name");
+                          return Promise.reject(t('settings.companySettings.pleaseEnterAddress'));
                         }
                         else if (/\s{2,}/.test(value)) {
-                          return Promise.reject("please remove consecutive spaces");
+                          return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                         }
                         return Promise.resolve();
                       },
                     },
                     {
                       min: 5,
-                      message: "address length must be at least 5 characters long",
+                      message: t('settings.minLength3', { name: t('settings.companySettings.address') }),
                     },
                   ]}
                 >
@@ -415,7 +416,7 @@ const Company = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                 Preferred Currency <span className="text-danger">*</span>
+                {t('settings.companySettings.preferredCurrency')} <span className="text-danger">*</span>
                 </label>
                 <div style={{ position: "relative" }} id="area">
                       <Form.Item
@@ -424,7 +425,7 @@ const Company = () => {
                         rules={[
                           {
                             required: true,
-                            message: "please select a currency",
+                            message: t('settings.companySettings.pleaseSelectCurrency'),
                           },
                         ]}
                       >
@@ -434,7 +435,7 @@ const Company = () => {
                           getPopupContainer={() =>
                             document.getElementById("area")
                           }
-                          placeholder="Select currency"
+                          placeholder={t('projectScreen.Modal.selectCurrency')}
                         >
                           {
                             allCurrencies.map((currency, index) => (
@@ -451,7 +452,7 @@ const Company = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                  Postal Code <span className="text-danger">*</span>
+                {t('settings.companySettings.postalCode')} <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="postalCode"
@@ -459,7 +460,7 @@ const Company = () => {
                     {
                       whitespace: true,
                       required: true,
-                      message: "please enter postal code",
+                      message: t('settings.companySettings.pleaseEnterPostalCode'),
                     },
                     // ({ getFieldValue }) => ({
                     //   validator(rule, value) {
@@ -482,7 +483,7 @@ const Company = () => {
                     // }),
                     {
                       min: 3,
-                      message: "postal code length must be at least 3 digits long",
+                      message: t('settings.digitLength', { name: t('settings.companySettings.postalCode') }),
                     },
                   ]}
                 >
@@ -509,7 +510,7 @@ const Company = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                  City <span className="text-danger">*</span>
+                {t('settings.companySettings.city')} <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="city"
@@ -519,17 +520,17 @@ const Company = () => {
                       required: true,
                       validator: (_, value) => {
                         if(value.trim() === ''){
-                          return Promise.reject("please enter city name");
+                          return Promise.reject(t('settings.companySettings.pleaseEnterCityName'));
                         }
                         else if (/\s{2,}/.test(value)) {
-                          return Promise.reject("please remove consecutive spaces");
+                          return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                         }
                         return Promise.resolve();
                       },
                     },
                     {
                       min: 3,
-                      message: "city length must be at least 3 characters long",
+                      message: t('settings.minLength2', { name: t('settings.companySettings.city') }),
                     },
                   ]}
                 >
@@ -548,7 +549,7 @@ const Company = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                  State <span className="text-danger">*</span>
+                {t('settings.companySettings.state')} <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="state"
@@ -558,17 +559,17 @@ const Company = () => {
                       required: true,
                       validator: (_, value) => {
                         if(value.trim() === ''){
-                          return Promise.reject("please enter state name");
+                          return Promise.reject(t('settings.companySettings.pleaseEnterStateName'));
                         }
                         else if (/\s{2,}/.test(value)) {
-                          return Promise.reject("please remove consecutive spaces");
+                          return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                         }
                         return Promise.resolve();
                       },
                     },
                     {
                       min: 3,
-                      message: "state length must be at least 3 characters long",
+                      message: t('settings.minLength2', { name: t('settings.companySettings.state') }),
                     },
                   ]}
                 >
@@ -587,7 +588,7 @@ const Company = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                  Country <span className="text-danger">*</span>
+                {t('settings.companySettings.country')} <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="country"
@@ -597,17 +598,17 @@ const Company = () => {
                       required: true,
                       validator: (_, value) => {
                         if(value.trim() === ''){
-                          return Promise.reject("please enter country name");
+                          return Promise.reject(t('settings.companySettings.pleaseEnterCountryName'));
                         }
                         else if (/\s{2,}/.test(value)) {
-                          return Promise.reject("please remove consecutive spaces");
+                          return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                         }
                         return Promise.resolve();
                       },
                     },
                     {
                       min: 3,
-                      message: "country length must be at least 3 characters long",
+                      message: t('settings.minLength2', { name: t('settings.companySettings.country') }),
                     },
                   ]}
                 >
@@ -629,7 +630,7 @@ const Company = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                  Company Email <span className="text-danger">*</span>
+                {t('settings.companySettings.companyEmail')} <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="companyEmail"
@@ -639,11 +640,11 @@ const Company = () => {
                       required: true,
                       validator: (_, value) => {
                         if (value.trim() === '') {
-                          return Promise.reject('Please enter company email');
+                          return Promise.reject(t('settings.companySettings.pleaseEnterCompanyEmail'));
                         } else if (/\s{2,}/.test(value)) {
-                          return Promise.reject('Please remove consecutive spaces');
+                          return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                         } else if (!isValidEmail(value)) {
-                          return Promise.reject('please enter a valid email');
+                          return Promise.reject(t('settings.companySettings.validEmail'));
                         }
                         return Promise.resolve();
                       },
@@ -656,7 +657,7 @@ const Company = () => {
                     //       return Promise.reject("please enter company email");
                     //     }
                     //     else if (/\s{2,}/.test(value)) {
-                    //       return Promise.reject("please remove consecutive spaces");
+                    //       return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                     //     }
                     //     return Promise.resolve();
                     //   },
@@ -685,7 +686,7 @@ const Company = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                  Registration No <span className="text-danger">*</span>
+                {t('settings.companySettings.registrationNo')} <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="companyRegistrationNo"
@@ -695,17 +696,17 @@ const Company = () => {
                       required: true,
                       validator: (_, value) => {
                         if(value.trim() === ''){
-                          return Promise.reject("please enter registration no");
+                          return Promise.reject(t('settings.companySettings.pleaseEnterRegistrationNo'));
                         }
                         else if (/\s{2,}/.test(value)) {
-                          return Promise.reject("please remove consecutive spaces");
+                          return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                         }
                         return Promise.resolve();
                       },
                     },
                     {
                       min: 3,
-                      message: "Registration length must be at least 3 characters long",
+                      message: t('settings.minLength', { name: t('settings.companySettings.registrationNo') }),
                     },
                   ]}
                 >
@@ -727,7 +728,7 @@ const Company = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                  Phone Number <span className="text-danger">*</span>
+                {t('settings.companySettings.phoneNumber')} <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="companyPhoneNo"
@@ -735,11 +736,11 @@ const Company = () => {
                     {
                       whitespace: true,
                       required: true,
-                      message: "please enter phone number",
+                      message: t('settings.companySettings.pleaseEnterPhoneNumber'),
                     },
                     {
                       min: 5,
-                      message: "phone length must be at least 5 digits long",
+                      message: t('settings.phoneLength', { name: t('settings.companySettings.phoneNumber') }),
                     },
                   ]}
                 >
@@ -756,7 +757,7 @@ const Company = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                  Mobile Number <span className="text-danger">*</span>
+                {t('settings.companySettings.mobileNumber')} <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="mobileNumber"
@@ -764,11 +765,11 @@ const Company = () => {
                     {
                       whitespace: true,
                       required: true,
-                      message: "please enter mobile number",
+                      message: t('settings.companySettings.pleaseEnterMobileNumber'),
                     },
                     {
                       min: 5,
-                      message: "mobile length must be at least 5 digits long",
+                      message: t('settings.phoneLength', { name: t('settings.companySettings.mobileNumber') }),
                     },
                   ]}
                 >
@@ -785,7 +786,7 @@ const Company = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                  Website <span className="text-danger">*</span>
+                {t('settings.companySettings.website')} <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="website"
@@ -795,17 +796,17 @@ const Company = () => {
                       required: true,
                       validator: (_, value) => {
                         if(value.trim() === ''){
-                          return Promise.reject("please enter website");
+                          return Promise.reject(t('settings.companySettings.pleaseEnterWebsite'));
                         }
                         else if (/\s{2,}/.test(value)) {
-                          return Promise.reject("please remove consecutive spaces");
+                          return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                         }
                         return Promise.resolve();
                       },
                     },
                     {
                       min: 3,
-                      message: "website length must be at least 3 characters long",
+                      message: t('settings.minLength2', { name: t('settings.companySettings.website') }),
                     },
                   ]}
                 >
@@ -827,7 +828,7 @@ const Company = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                  Fax <span className="text-danger">*</span>
+                {t('settings.companySettings.fax')} <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="fax"
@@ -835,11 +836,11 @@ const Company = () => {
                     {
                       whitespace: true,
                       required: true,
-                      message: "please enter fax",
+                      message: t('settings.companySettings.pleaseEnterFax'),
                     },
                     {
                       min: 5,
-                      message: "fax length must be at least 5 digits long",
+                      message: t('settings.phoneLength', { name: t('settings.companySettings.fax') }),
                     },
                   ]}
                 >
@@ -863,7 +864,7 @@ const Company = () => {
               <Button htmlType="submit" className="btn btn-primary submit-btn" disabled={loader}>
                 {
                   loader ? <Spin size="small" indicator={antIcon} />
-                    : 'Save Changes'
+                    : t('settings.saveChanges')
                 }
               </Button>
             </Form.Item>

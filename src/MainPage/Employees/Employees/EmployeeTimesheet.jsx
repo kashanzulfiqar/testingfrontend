@@ -13,9 +13,10 @@ import Modal from "@mui/material/Modal";
 import { apiServices } from '../../../Services/apiServices';
 import DayViewTimesheet from './DayViewTimesheet';
 import WeekViewTimeSheet from './WeekViewTimeSheet';
+import { useTranslation } from 'react-i18next';
 
 const EmployeeTimesheet = () => {
-
+  const { t, i18n } = useTranslation();
   const moment = require('moment');
 
   const [form] = Form.useForm();
@@ -99,7 +100,7 @@ const EmployeeTimesheet = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get All Projects Error"
+              : t('aDash.errors.getProjectError')
           }!`
         );
       });
@@ -182,7 +183,7 @@ const EmployeeTimesheet = () => {
         <>
         <div className="page-wrapper">
             <Helmet>
-                <title>Timesheet - DaftarPro</title>
+                <title>{t('Timesheetemployee.timesheetTitle')}</title>
                 <meta name="description" content="Login page"/>					
             </Helmet>
         {/* Page Content */}
@@ -191,10 +192,10 @@ const EmployeeTimesheet = () => {
           <div className="page-header">
             <div className="row align-items-center">
               <div className="col">
-                <h3 className="page-title">Timesheet</h3>
+                <h3 className="page-title">{t('Timesheetemployee.timesheet')}</h3>
                 <ul className="breadcrumb">
-                  <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>Dashboard</Link></li>
-                  <li className="breadcrumb-item active">Timesheet</li>
+                  <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>{t('Timesheetemployee.dashboard')}</Link></li>
+                  <li className="breadcrumb-item active">{t('Timesheetemployee.timesheet')}</li>
                 </ul>
               </div>
               <div className="col-auto float-end ms-auto" style={{display: 'flex', alignItems: 'center', gap: '20px'}}>
@@ -212,20 +213,20 @@ const EmployeeTimesheet = () => {
                     size="large"
                     options={[
                     {
-                        label: 'Day',
+                        label: t('Timesheetemployee.day'),
                         value: 'Day',
                     },
                     {
-                        label: 'Week',
+                        label: t('Timesheetemployee.week'),
                         value: 'Week',
                     },
                     ]}
                 />
                 {
                   view === 'Day' ?
-                  <a href="javascript:void(0)" className="btn add-btn" onClick={() => { setOpen({ isAddOpen: true, data: '' }); form2.setFieldsValue({date: moment(selectedDate, 'YYYY-MM-DD')}); getAllProjects(); setShowCalendar(false); }}><i className="fa fa-plus" /> Add Entry</a>
+                  <a href="javascript:void(0)" className="btn add-btn" onClick={() => { setOpen({ isAddOpen: true, data: '' }); form2.setFieldsValue({date: moment(selectedDate, 'YYYY-MM-DD')}); getAllProjects(); setShowCalendar(false); }}><i className="fa fa-plus" /> {t('Timesheetemployee.addentry')}</a>
                   :
-                  <a href="javascript:void(0)" className="btn add-btn" onClick={() => { setOpen({ isAddWeekOpen: true, data: '' }); getAllProjects(); setShowCalendar(false); }}><i className="fa fa-plus" /> Add Row</a>
+                  <a href="javascript:void(0)" className="btn add-btn" onClick={() => { setOpen({ isAddWeekOpen: true, data: '' }); getAllProjects(); setShowCalendar(false); }}><i className="fa fa-plus" /> {t('Timesheetemployee.addrow')}</a>
                 }
               </div>
             </div>
@@ -282,14 +283,14 @@ const EmployeeTimesheet = () => {
                         className='NextPrevButtons'
                         style={{border: '2px solid #DEE2E6', borderRadius: '8px', background: '#fff', color: '#333333', minWidth: '42px', height: '42px', padding: '4px 3.6px 0px 0px'}}
                     >
-                        <i className="fa fa-angle-left" style={{fontSize: '26px', margin: '0px'}} />
+                        <i className={`fa ${i18n.dir() === 'rtl' ? 'fa-angle-right' : 'fa-angle-left'}`} style={{fontSize: '26px', margin: '0px'}} />
                     </button>
                     <button
                         onClick={handleToday}
                         className='NextPrevButtons'
                         style={{border: '2px solid #DEE2E6', borderRadius: '8px', background: '#fff', color: '#333333', minWidth: '90px', height: '42px', paddingTop: '3px'}}
                     >
-                        <span style={{fontSize: '16px', fontWeight: '500'}}>Today</span>
+                        <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetemployee.today')}</span>
                     </button>
                     <button
                         onClick={handleNextWeek}
@@ -297,7 +298,7 @@ const EmployeeTimesheet = () => {
                         className='NextPrevButtons'
                         style={{ cursor: moment(selectedDate).format('YYYY-MM-DD') === moment(new Date()).format('YYYY-MM-DD') ? 'no-drop' : 'pointer', border: '2px solid #DEE2E6', borderRadius: '8px', background: moment(selectedDate).format('YYYY-MM-DD') === moment(new Date()).format('YYYY-MM-DD') ? '#ebebeb' : '#fff', color: moment(selectedDate).format('YYYY-MM-DD') === moment(new Date()).format('YYYY-MM-DD') ? '#bdbdbd' : '#333333', minWidth: '42px', height: '42px', padding: '4px 0px 0px 3.6px'}}
                     >
-                        <i className="fa fa-angle-right" style={{fontSize: '26px', margin: '0px'}} />
+                        <i className={`fa ${i18n.dir() === 'rtl' ? 'fa-angle-left' : 'fa-angle-right'}`} style={{fontSize: '26px', margin: '0px'}} />
                     </button>
                 </div>
               </div>

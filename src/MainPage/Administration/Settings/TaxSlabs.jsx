@@ -18,11 +18,12 @@ import { useSelector } from "react-redux";
 import { apiServices } from "../../../Services/apiServices";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { LoadingOutlined } from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
 
 const TaxSlabs = () => {
   const user_state = useSelector((state) => state.user.loginvalue);
   let comp_id = user_state?.user?.companyId
-
+  const { t, i18n } = useTranslation();
   const { Option } = Select;
 
   const [open, setOpen] = useState({
@@ -60,7 +61,7 @@ const TaxSlabs = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Tax Slabs Info Error"
+              : t('allEmp.errors.getTaxSlabInfoError')
           }!`
         );
       });
@@ -79,7 +80,7 @@ const TaxSlabs = () => {
           // console.log(data);
           setData([...data.filter((tax) => tax._id !== id)]);
           handleClose();
-          message.success("Tax Slab Deleted Successfully!");
+          message.success(t('settings.tax.taxSlabDeletedSuccessfully'));
           setLoader(false);
         }
       })
@@ -92,7 +93,7 @@ const TaxSlabs = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Delete Tax Slab Error"
+              : t('settings.tax.deleteTaxSlabError')
           }!`
         );
       });
@@ -126,7 +127,7 @@ const TaxSlabs = () => {
               })
             );
             handleClose();
-            message.success("Tax Slab Updated Successfully");
+            message.success(t('settings.tax.taxSlabUpdatedSuccessfully'));
             setLoader(false);
           }
         })
@@ -139,7 +140,7 @@ const TaxSlabs = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Update Tax Slab Info Error"
+                : t('settings.tax.updateTaxSlabInfoError')
             }!`
           );
         });
@@ -157,7 +158,7 @@ const TaxSlabs = () => {
               },
             ]);
             handleClose();
-            message.success("Tax Slab Added Successfully");
+            message.success(t('allEmp.errors.taxSlabAdded'));
             setLoader(false);
           }
         })
@@ -170,7 +171,7 @@ const TaxSlabs = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : "Add Tax Slab Info Error"
+                : t('allEmp.errors.addTaxSlabError')
             }!`
           );
         });
@@ -184,12 +185,12 @@ const TaxSlabs = () => {
       render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
     },
     {
-      title: "Slab Name",
+      title: t('allEmp.Modal.slabName'),
       dataIndex: "title",
       // sorter: (a, b) => a.shiftName.length - b.shiftName.length,
     },
     {
-      title: "Lower Limit",
+      title: t('settings.tax.lowerLimit'),
       dataIndex: "yearlyPayLowerLimit",
       // sorter: (a, b) => a.maxStartTime.length - b.maxStartTime.length,
       render: (record, row) => {
@@ -200,7 +201,7 @@ const TaxSlabs = () => {
       },
     },
     {
-      title: "Upper Limit",
+      title: t('settings.tax.upperLimit'),
       dataIndex: "yearlyPayUpperLimit",
       // sorter: (a, b) => a.startTime.length - b.startTime.length,
       render: (record, row) => {
@@ -211,7 +212,7 @@ const TaxSlabs = () => {
       },
     },
     {
-      title: "Tax",
+      title: t('settings.tax.tax'),
       dataIndex: "monthlyTaxInPercent",
       // sorter: (a, b) => a.endTime.length - b.endTime.length,
       width: "14%",
@@ -220,7 +221,7 @@ const TaxSlabs = () => {
       },
     },
     {
-      title: "Fix Tax",
+      title: t('settings.tax.fixTax'),
       dataIndex: "fixedYearlyTax",
       render: (record, row) => {
         const record_fixedYearlyTax = record
@@ -230,7 +231,7 @@ const TaxSlabs = () => {
       },
     },
     {
-      title: "Actions",
+      title: t('holiday.actions'),
       render: (record, row) => (
         <div className="dropdown dropdown-action text-end">
           <a
@@ -253,7 +254,7 @@ const TaxSlabs = () => {
                 });
               }}
             >
-              <i className="fa fa-pencil m-r-5" /> Edit
+              <i className="fa fa-pencil m-r-5" /> {t('edit')}
             </a>
             <a
               className="dropdown-item"
@@ -266,7 +267,7 @@ const TaxSlabs = () => {
                 });
               }}
             >
-              <i className="fa fa-trash-o m-r-5" /> Delete
+              <i className="fa fa-trash-o m-r-5" /> {t('delete')}
             </a>
           </div>
         </div>
@@ -300,12 +301,12 @@ const TaxSlabs = () => {
               margin: "7px 0px 4px 0px",
             }}
           >
-            No tax slab added yet
+            {t('settings.tax.noTaxSlabAddedYet')}
           </div>
           <div
             style={{ color: "#464665", fontWeight: "300", fontSize: "13px" }}
           >
-            Click 'Add New Tax Slab' Button To Create <br /> A New Tax Slab{" "}
+            {t('settings.tax.clickToAddNewTaxSlab')} <br /> {t('settings.tax.newTaxSlab')}{" "}
           </div>
         </div>
       }
@@ -331,7 +332,7 @@ const TaxSlabs = () => {
         <div className="page-header">
           <div className="row align-items-center pt-3 pb-3">
             <div className="col">
-              <h3 className="page-title">Tax Slabs</h3>
+              <h3 className="page-title">{t('settings.taxSlabs')}</h3>
             </div>
             <div className="col-auto float-end ms-auto">
               <a
@@ -346,7 +347,7 @@ const TaxSlabs = () => {
                 }}
                 // data-bs-target="#add_leavetype"
               >
-                <i className="fa fa-plus" /> Add New Tax Slab
+                <i className="fa fa-plus" /> {t('settings.tax.addNewTaxSlab')}
               </a>
             </div>
           </div>
@@ -371,7 +372,7 @@ const TaxSlabs = () => {
                   // pageSize: 1,
                   // hideOnSinglePage: true,
                   showTotal: (total, range) =>
-                    `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+                  t('paginationShow', { range1: range[0], range2: range[1], total: total }),
                   showSizeChanger: true,
                   onShowSizeChange: (current, size) => {
                     setPageSize(size);
@@ -379,13 +380,30 @@ const TaxSlabs = () => {
                   },
                   pageSizeOptions: ["20", "30", "40", "50"],
                   onChange: (page, size) => setCurrentPage(page),
-                  itemRender: itemRender,
+                  itemRender: (current, type, originalElement) =>
+                  itemRender(current, type, originalElement, t),
                 }}
                 // style={{ overflowX: "auto" }}
                 columns={columns}
                 bordered
                 dataSource={data}
                 rowKey={(record) => record.id}
+                components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                 // onChange={this.handleTableChange}
               />
             </div>
@@ -408,7 +426,7 @@ const TaxSlabs = () => {
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">
-                {open?.data ? "Update" : "Add"} Tax Slab
+                {open?.data ? t('holiday.update') : t('holiday.add')} {t('allEmp.Modal.taxSlab')}
               </h5>
               <button type="button" className="close" onClick={handleClose}>
                 <span aria-hidden="true">×</span>
@@ -422,10 +440,10 @@ const TaxSlabs = () => {
                 onFinishFailed={({errorFields}) => {
                   const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
                   if(consecutiveSpacesError){
-                    message.error("Please Remove Consecutive Spaces!")
-                  }else{
-                    message.error("Please Fill Required Fields!")
-                  }
+                    message.error(t('allEmp.errors.removeConsecutiveSpaces'))
+                 }else{
+                    message.error(t('allEmp.errors.fillRequiredFields'))
+                  } 
                 }}
                 initialValues={{
                   title: open?.data ? open?.data?.title : "",
@@ -445,7 +463,7 @@ const TaxSlabs = () => {
                   <div className="col-12">
                     <div className="form-group">
                       <label>
-                        Slab Name <span className="text-danger">*</span>
+                      {t('allEmp.Modal.slabName')} <span className="text-danger">*</span>
                       </label>
                       <Form.Item
                         name="title"
@@ -454,13 +472,13 @@ const TaxSlabs = () => {
                             whitespace: true,
                             required: true,
                             validator: (_, value) => {
-                              if(value.trim() === ''){
-                                return Promise.reject("please enter slab name");
-                              }
-                              else if (/\s{2,}/.test(value)) {
-                                return Promise.reject("please remove consecutive spaces");
-                              }
-                              return Promise.resolve();
+                              if(!value || value.trim() === ''){
+                                return Promise.reject(t('allEmp.errors.enterSlabName'));
+                            }
+                            else if (/\s{2,}/.test(value)) {
+                                return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
+                            }
+                            return Promise.resolve();
                             },
                           },
                         ]}
@@ -473,7 +491,7 @@ const TaxSlabs = () => {
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>
-                        Yearly Pay Lower Limit{" "}
+                      {t('allEmp.Modal.yearlyPayLowerLimit')}{" "}
                         <span className="text-danger">*</span>
                       </label>
                       <Form.Item
@@ -481,7 +499,7 @@ const TaxSlabs = () => {
                         rules={[
                           {
                             required: true,
-                            message: "please enter lower limit",
+                            message: t('allEmp.errors.enterLowerLimit'),
                           },
                         ]}
                         className="custom-border"
@@ -509,7 +527,7 @@ const TaxSlabs = () => {
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>
-                        Yearly Pay Upper Limit{" "}
+                      {t('allEmp.Modal.yearlyPayUpperLimit')}{" "}
                         <span className="text-danger">*</span>
                       </label>
                       <Form.Item
@@ -517,7 +535,7 @@ const TaxSlabs = () => {
                         rules={[
                           {
                             required: true,
-                            message: "please enter upper limit",
+                            message: t('allEmp.errors.enterUpperLimit'),
                           },
                           ({ getFieldValue }) => ({
                             validator: (_, value) => {
@@ -529,9 +547,9 @@ const TaxSlabs = () => {
                               }
                               if (parseFloat(value) < parseFloat(lowerLimit)) {
                                 return Promise.reject(
-                                  "Yearly Pay Upper Limit must be greater than or equal to Yearly Pay Lower Limit"
+                                    t('allEmp.errors.upperLimitGreaterLowerLimit')
                                 );
-                              }
+                            }
                               return Promise.resolve();
                             },
                           }),
@@ -561,7 +579,7 @@ const TaxSlabs = () => {
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>
-                        Tax (%) <span className="text-danger">*</span>
+                        {t('allEmp.Modal.taxPercentage')} <span className="text-danger">*</span>
                       </label>
                       <Form.Item
                         name="monthlyTaxInPercent"
@@ -569,12 +587,12 @@ const TaxSlabs = () => {
                           {
                             required: true,
                             validator: (_, value) => {
-                              if(value.trim() === ''){
-                                return Promise.reject("please enter tax percentage");
-                              }
-                              else if (value > 100) {
-                                return Promise.reject("tax percentage must not be more than 100");
-                              }
+                              if(!value || value.trim() === ''){
+                                return Promise.reject(t('allEmp.errors.enterTaxPercentage'));
+                            }
+                            else if (value > 100) {
+                                return Promise.reject(t('allEmp.errors.taxPercentageNotMoreThan100'));
+                            }
                               return Promise.resolve();
                             },
                           },
@@ -604,14 +622,14 @@ const TaxSlabs = () => {
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>
-                        Fix Tax (Amount) <span className="text-danger">*</span>
+                      {t('allEmp.Modal.fixTaxAmount')} <span className="text-danger">*</span>
                       </label>
                       <Form.Item
                         name="fixedYearlyTax"
                         rules={[
                           {
                             required: true,
-                            message: "please enter fix tax",
+                            message: t('allEmp.errors.enterFixTax'),
                           },
                         ]}
                         className="custom-border"
@@ -646,7 +664,7 @@ const TaxSlabs = () => {
                         {loader ? (
                           <Spin size="small" indicator={antIcon} />
                         ) : (
-                          "Submit"
+                          t('submit')
                         )}
                       </Button>
                     </Form.Item>
@@ -680,9 +698,9 @@ const TaxSlabs = () => {
               }}
             >
               <div className="form-header">
-                <h3 style={{ marginBottom: "30px" }}>Delete Tax Slab</h3>
+                <h3 style={{ marginBottom: "30px" }}>{t('delete')} {t('allEmp.Modal.taxSlab')}</h3>
                 <p>
-                  Are you sure you want to delete <b>{open?.data?.title}</b>?
+                <span dangerouslySetInnerHTML={{ __html: t('projectScreen.confirmDeleteProject', { project: open?.data?.title }) }} />
                 </p>
               </div>
               <div className="modal-btn delete-action">
@@ -698,7 +716,7 @@ const TaxSlabs = () => {
                       {loader ? (
                         <Spin size="small" indicator={antIcon} />
                       ) : (
-                        "Delete"
+                        t('delete')
                       )}
                     </Button>
                   </div>
@@ -708,7 +726,7 @@ const TaxSlabs = () => {
                       className="btn btn-primary submit-btn"
                       style={{ width: "100%" }}
                     >
-                      Cancel
+                      {t('cancel')}
                     </Button>
                   </div>
                 </div>

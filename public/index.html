@@ -35,5 +35,14 @@
             // }
     </script> -->
 
+    <script>
+      // Lang value from local storage
+      var localStorageValue = localStorage.getItem("lang");
+      if (localStorageValue !== null) {
+        var htmlElement = document.querySelector('html');
+        htmlElement.setAttribute('lang', localStorageValue);
+      }
+    </script>
+
 </body>
 </html>

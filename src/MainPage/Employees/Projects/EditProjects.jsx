@@ -38,10 +38,12 @@ import moment from "moment";
 import { apiServices } from "../../../Services/apiServices";
 import { apiUploadToS3 } from "../../../Services/uploadImage";
 import { LoadingOutlined, MinusCircleFilled } from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
 
 function EditProjects({ data, editModal, closeEditModal, getprojects, getlistprojects, allCurrencies, allDomain }) {
   const [form] = Form.useForm();
 
+  const { t, i18n } = useTranslation();
   const user_state = useSelector((state) => state.user.loginvalue);
   const role = user_state?.user?.role;
 
@@ -189,7 +191,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
             ? err?.response?.data?.msg
             : err?.response?.data?.validation?.body?.message
             ? err?.response?.data?.validation?.body?.message
-            : "Get Domain Info Error"
+            : t('projectScreen.errors.getDomainInfoError')
         }!`
       );
     });
@@ -211,7 +213,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get All Employees Error"
+              : t('aAttend.errors.getEmployeesError')
           }`
         );
       });
@@ -240,7 +242,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Get Client Error"
+              : t('aDash.errors.getAllClientsError')
           }`
         );
       });
@@ -325,7 +327,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
     apiServices("PUT", `project-management/`, data, user_state)
       .then((res) => {
         if (res.data.success === true) {
-          message.success(`Project Details Updated Successfully`);
+          message.success(t('projectScreen.errors.projectDetailsUpdatedSuccessfully'));
           getprojects();
           getlistprojects();
           setLoader(false);
@@ -338,7 +340,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Error Updating Project Details"
+              : t('projectScreen.errors.errorUpdatingProjectDetails')
           }`
         );
       })
@@ -364,20 +366,20 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
       // Check file format (extension)
       const fileExtension = file?.name?.split(".").pop().toLowerCase();
       if (!acceptableFormats.includes(fileExtension)) {
-        message.error(`File format not supported: ${file?.name}`);
+        message.error(t('projectScreen.errors.fileFormatNotSupported', { file: file?.name }));
         setLoader(false);
         continue; // Skip this file and continue with the next one
       }
   
       // Check file size
       if (file?.size > 10485760) {
-        message.error(`File size exceeds 10MB: ${file?.name}`);
+        message.error(t('projectScreen.errors.fileSizeExceedsLimit', { file: file?.name }));
         setLoader(false);
         continue; // Skip this file and continue with the next one
       }
 
       if (existingFileNames.includes(file?.name)) {
-        message.error(`File already selected: ${file?.name}`);
+        message.error(t('projectScreen.errors.fileAlreadySelected', { file: file?.name }));
         setLoader(false);
         continue; // Skip this file and continue with the next one
       }
@@ -387,7 +389,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
         .then((res) => {
           //console.log(res?.data?.result);
           setLoader(false);
-          message.success(`File: ${file?.name} ready to upload`)
+          message.success(t('projectScreen.errors.fileReadyToUpload', { file: file?.name }))
           validFiles.push(file);
           setSelectedFiles((prevSelectedFiles) => {
             const uniqueValidFiles = validFiles.filter((newFile) => {
@@ -406,7 +408,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : `File upload error: ${file.name}`
+                : t('projectScreen.errors.fileUploadError', { file: file?.name })
             }`
           );
           setLoader(false);
@@ -566,7 +568,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
 
   const paymentColumns = [
     {
-      title: "Payment Title",
+      title: t('projectScreen.Modal.paymentTitle'),
       dataIndex: "paymentTitle",
       key: "paymentTitle",
       render: (text, record, index) => (
@@ -576,17 +578,17 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
           rules={[
             {
               required: true,
-              message: "Enter a Payment Title",
+              message: t('projectScreen.Modal.enterPaymentTitle'),
             },
           ]}
         >
           <Input className="form-control"
-          placeholder="Enter title" />
+          placeholder={t('projectScreen.Modal.enterTitle')} />
         </Form.Item>
       ),
     },
     {
-      title: "Amount in Figure",
+      title: t('projectScreen.Modal.amountInFigure'),
       dataIndex: "amountInFigure",
       key: "amountInFigure",
       render: (text, record, index) => (
@@ -596,14 +598,14 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
           rules={[
             {
               required: true,
-              message: "Please enter the amount in figure.",
+              message: t('projectScreen.Modal.pleaseEnterAmountInFigure'),
             },
           ]}
         >
           {/* <Input type="number" className="form-control" /> */}
           <InputNumber
             className="form-control"
-            placeholder="Enter an amount"
+            placeholder={t('projectScreen.Modal.enterAmount')}
             formatter={(value) => {
               return `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
             }}
@@ -616,7 +618,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
       ),
     },
     {
-      title: "Amount in Percent",
+      title: t('projectScreen.Modal.amountInPercent'),
       dataIndex: "amountInPercent",
       key: "amountInPercent",
       render: (text, record, index) => (
@@ -626,14 +628,14 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
           rules={[
             {
               required: true,
-              message: "Please enter the amount in percentage.",
+              message: t('projectScreen.Modal.pleaseEnterAmountInPercentage'),
             },
           ]}
         >
           {/* <Input type="number" className="form-control" /> */}
           <InputNumber
             className="form-control"
-            placeholder="Enter percentage"
+            placeholder={t('projectScreen.Modal.enterPercentage')}
             max={100}
             min={0}
             maxLength={5}
@@ -643,7 +645,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
       ),
     },
     {
-      title: "Due Date",
+      title: t('projectScreen.Modal.dueDate'),
       dataIndex: "dueDate",
       key: "dueDate",
       render: (text, record, index) => (
@@ -653,7 +655,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
             rules={[
               {
                 required: true,
-                message: "Select a due date",
+                message: t('projectScreen.Modal.selectDueDate'),
               },
             ]}
             className="custom-border"
@@ -664,6 +666,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
               getPopupContainer={() =>
                 document.getElementById(`dueDate-${index}`)
               }
+              placeholder={t('requests.addModal.selectDate')}
               className="form-control"
               size="large"
             />
@@ -672,7 +675,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
       ),
     },
     {
-      title: "Paid",
+      title: t('projectScreen.Modal.paid'),
       dataIndex: "paid",
       key: "paid",
       render: (text, record, index) => (
@@ -699,7 +702,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
     //   ),
     // },
     {
-      title: "Action",
+      title: t('projectScreen.Modal.action'),
       key: "action",
       render: (text, record, index) => (
         <span
@@ -782,7 +785,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
       >
         <div className="modal-content">
           <div className="modal-header">
-            <h5 className="modal-title">Edit Details</h5>
+            <h5 className="modal-title">{t('projectScreen.Modal.editDetails')}</h5>
 
             <button type="button" className="close" onClick={closeEditModal}>
               <span aria-hidden="true">×</span>
@@ -797,10 +800,10 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                 const consecutiveSpacesError = errorFields.find((field) =>
                   field.errors.toString().includes("consecutive spaces")
                 );
-                if (consecutiveSpacesError) {
-                  message.error("Please Remove Consecutive Spaces!");
-                } else {
-                  message.error("Please Fill Required Fields!");
+                if(consecutiveSpacesError){
+                  message.error(t('allEmp.errors.removeConsecutiveSpaces'))
+                }else{
+                  message.error(t('allEmp.errors.fillRequiredFields'))
                 }
               }}
               name="control-hooks"
@@ -808,27 +811,27 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
               <div className="row">
                 <div className="col-sm-6">
                   <div className="form-group">
-                    <label>Project Name</label>
+                    <label>{t('projectScreen.Modal.projectName')}</label>
                     <Form.Item
                       name="projectName"
                       className="custom-border"
                       rules={[
                         {
                           required: true,
-                          message: "Enter the Project Name.",
+                          message: t('projectScreen.Modal.enterProjectName'),
                         },
                       ]}
                     >
                       <Input
                         className="form-control"
-                        placeholder="Enter Project Name"
+                        placeholder={t('projectScreen.Modal.enterprojectName')}
                       />
                     </Form.Item>
                   </div>
                 </div>
                 <div className="col-sm-6">
                   <div className="form-group">
-                    <label>Client</label>
+                    <label>{t('projectScreen.Modal.client')}</label>
                     <div style={{ position: "relative" }} id="area">
                       <Form.Item
                         name="clientId"
@@ -836,7 +839,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                         rules={[
                           {
                             required: true,
-                            message: "Choose a Client.",
+                            message: t('projectScreen.Modal.chooseClient'),
                           },
                         ]}
                       >
@@ -859,7 +862,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                           getPopupContainer={() =>
                             document.getElementById("area")
                           }
-                          placeholder="Select a Client"
+                          placeholder={t('projectScreen.Modal.selectClient')}
                           onChange={(value) => {
                             // Set the selected client when it changes
                             setSelectedClient(value);
@@ -884,7 +887,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
               <div className="row">
                 <div className="col-sm-6">
                   <div className="form-group">
-                    <label>Focal Person</label>
+                    <label>{t('projectScreen.Modal.focalPerson')}</label>
                     <div style={{ position: "relative" }} id="area">
                       <Form.Item
                         name="focalPersonId"
@@ -892,7 +895,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                         rules={[
                           {
                             required: true,
-                            message: "Select a Focal Person",
+                            message: t('projectScreen.Modal.selectFocalPerson'),
                           },
                         ]}
                       >
@@ -915,7 +918,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                           getPopupContainer={() =>
                             document.getElementById("area")
                           }
-                          placeholder="Select a Focal Person"
+                          placeholder={t('projectScreen.Modal.selectfocalPerson')}
                         >
                           {focalPersons?.map((focalPerson) => (
                             <Select.Option
@@ -933,7 +936,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                 </div>
                 <div className="col-sm-6">
                   <div className="form-group">
-                    <label>Project Status</label>
+                    <label>{t('projectScreen.Modal.projectStatus')}</label>
                     <div style={{ position: "relative" }} id="area">
                       <Form.Item
                         name="status"
@@ -941,7 +944,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                         rules={[
                           {
                             required: true,
-                            message: "Choose a status",
+                            message: t('projectScreen.Modal.chooseStatus'),
                           },
                         ]}
                       >
@@ -950,20 +953,20 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                           getPopupContainer={() =>
                             document.getElementById("area")
                           }
-                          placeholder="Select a Status"
+                          placeholder={t('projectScreen.Modal.selectStatus')}
                         >
-                          <Select.Option value="Paused">Paused</Select.Option>
+                          <Select.Option value="Paused">{t('projectScreen.Modal.paused')}</Select.Option>
                           <Select.Option value="Scheduled">
-                            Scheduled
+                          {t('projectScreen.Modal.scheduled')}
                           </Select.Option>
                           <Select.Option value="On-Going">
-                                On-Going
+                          {t('projectScreen.Modal.onGoing')}
                           </Select.Option>
                           <Select.Option value="Archived">
-                            Archived
+                          {t('projectScreen.Modal.archived')}
                           </Select.Option>
                           <Select.Option value="Completed">
-                            Completed
+                          {t('projectScreen.Modal.completed')}
                           </Select.Option>
                         </Select>
                       </Form.Item>
@@ -975,7 +978,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
               <div className="row">
                 <div className="col-sm-6">
                   <div className="form-group">
-                    <label>Start Date</label>
+                    <label>{t('projectScreen.Modal.startDate')}</label>
                     <div style={{ position: "relative" }} id="area">
                       <Form.Item
                         name="startDate"
@@ -983,7 +986,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                         rules={[
                           {
                             required: true,
-                            message: "Enter a start date",
+                            message: t('projectScreen.Modal.enterStartDate'),
                           },
                         ]}
                       >
@@ -993,6 +996,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                           }
                           style={{ width: "100%" }}
                           className="form-control"
+                          placeholder={t('requests.addModal.selectDate')}
                           size="large"
                         />
                       </Form.Item>
@@ -1001,7 +1005,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                 </div>
                 <div className="col-sm-6">
                   <div className="form-group">
-                    <label>End Date</label>
+                    <label>{t('projectScreen.Modal.endDate')}</label>
                     <div style={{ position: "relative" }} id="area">
                       {/* <Form.Item
                         name="endDate"
@@ -1028,7 +1032,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                         rules={[
                           {
                             required: true,
-                            message: "Enter an end date",
+                            message: t('projectScreen.Modal.enterEndDate'),
                           },
                           ({ getFieldValue }) => ({
                             validator(_, value) {
@@ -1042,7 +1046,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                                 // End date is valid
                                 return Promise.resolve();
                               }
-                              return Promise.reject('End date must not be before or same as start date');
+                              return Promise.reject(t('projectScreen.errors.endDateMustNotBeBeforeStartDate'));
                             },
                           }),
                         ]}
@@ -1052,6 +1056,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                           getPopupContainer={() => document.getElementById("area")}
                           style={{ width: "100%" }}
                           className="form-control"
+                          placeholder={t('requests.addModal.selectDate')}
                           size="large"
                         />
                       </Form.Item>
@@ -1063,7 +1068,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
               <div className="row">
                 <div className="col-sm-6">
                   <div className="form-group">
-                    <label>Domain</label>
+                    <label>{t('projectScreen.Modal.domain')}</label>
                     <div style={{ position: "relative" }} id="area">
                       <Form.Item
                         name="projectDomain"
@@ -1071,7 +1076,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                         rules={[
                           {
                             required: true,
-                            message: "Domain cannot be empty",
+                            message: t('projectScreen.Modal.domainCannotBeEmpty'),
                           },
                         ]}
                       >
@@ -1094,7 +1099,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                           }
                           className="customselect-height custom-select"
                           mode="multiple"
-                          placeholder="Select Domain"
+                          placeholder={t('projectScreen.Modal.selectDomain')}
                         >
                           {allDomain?.map((domain) => (
                             <Select.Option
@@ -1111,7 +1116,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                 </div>
                 <div className="col-sm-6">
                   <div className="form-group">
-                    <label>Project Type</label>
+                    <label>{t('projectScreen.Modal.projectType')}</label>
                     <div style={{ position: "relative" }} id="area">
                       <Form.Item
                         name="projectType"
@@ -1119,7 +1124,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                         rules={[
                           {
                             required: true,
-                            message: "Choose a project type",
+                            message: t('projectScreen.Modal.chooseProjectType'),
                           },
                         ]}
                       >
@@ -1129,17 +1134,17 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                           getPopupContainer={() =>
                             document.getElementById("area")
                           }
-                          placeholder="Select Project Type"
+                          placeholder={t('projectScreen.Modal.selectProjectType')}
                           onChange={(value) => handlePaymentRow(value)}
                           //onChange={handlePaymentRow(value)}
                           options={[
                             {
                                 value: 'Billed',
-                                label: "Billed ",
+                                label: t('projectScreen.Modal.billed'),
                             },
                             {
                                 value: 'nonBilled',
-                                label: "Non-Billed",
+                                label: t('projectScreen.Modal.nonBilled'),
                             },
                             ]}
                         />
@@ -1149,7 +1154,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                 </div>
                 <div className="col-sm-6">
                   <div className="form-group">
-                    <label>Currency</label>
+                    <label>{t('projectScreen.Modal.currency')}</label>
                     <div style={{ position: "relative" }} id="area">
                       <Form.Item
                         name="currency"
@@ -1157,7 +1162,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                         rules={[
                           {
                             required: true,
-                            message: "Choose a currency",
+                            message: t('projectScreen.Modal.chooseCurrency'),
                           },
                         ]}
                       >
@@ -1167,7 +1172,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                           getPopupContainer={() =>
                             document.getElementById("area")
                           }
-                          placeholder="Select Currency"
+                          placeholder={t('projectScreen.Modal.selectCurrency')}
                         >
                           {
                             allCurrencies.map((currency, index) => (
@@ -1184,7 +1189,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
 
                 <div className="col-sm-6">
                   <div className="form-group">
-                    <label>Cost</label>
+                    <label>{t('projectScreen.Modal.cost')}</label>
 
                     <Form.Item
                       name="cost"
@@ -1192,7 +1197,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                       rules={[
                         {
                           required: true,
-                          message: "Please enter the cost.",
+                          message: t('projectScreen.Modal.pleaseEnterCost'),
                         },
                       ]}
                     >
@@ -1212,7 +1217,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                 </div>
                 <div className="col-sm-6">
                   <div className="form-group">
-                    <label>Cost Type</label>
+                    <label>{t('projectScreen.Modal.costType')}</label>
                     <div style={{ position: "relative" }} id="area">
                       <Form.Item
                         name="costType"
@@ -1220,7 +1225,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                         rules={[
                           {
                             required: true,
-                            message: "Choose a cost type",
+                            message: t('projectScreen.Modal.chooseCostType'),
                           },
                         ]}
                       >
@@ -1229,11 +1234,11 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                           getPopupContainer={() =>
                             document.getElementById("area")
                           }
-                          placeholder="Select a Cost Type"
+                          placeholder={t('projectScreen.Modal.selectCostType')}
                         >
-                          <Select.Option value="Hourly">Hourly</Select.Option>
-                          <Select.Option value="Fixed">Fixed</Select.Option>
-                          <Select.Option value="Monthly">Monthly</Select.Option>
+                          <Select.Option value="Hourly">{t('projectScreen.Modal.hourly')}</Select.Option>
+                          <Select.Option value="Fixed">{t('projectScreen.Modal.fixed')}</Select.Option>
+                          <Select.Option value="Monthly">{t('projectScreen.Modal.monthly')}</Select.Option>
                         </Select>
                       </Form.Item>
                     </div>
@@ -1241,7 +1246,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                 </div>
                 <div className="col-sm-6">
                   <div className="form-group">
-                    <label>Priority</label>
+                    <label>{t('projectScreen.Modal.priority')}</label>
                     <div style={{ position: "relative" }} id="area">
                       <Form.Item
                         name="priority"
@@ -1249,7 +1254,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                         rules={[
                           {
                             required: true,
-                            message: "Choose a priority",
+                            message: t('projectScreen.Modal.choosePriority'),
                           },
                         ]}
                       >
@@ -1258,16 +1263,16 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                           getPopupContainer={() =>
                             document.getElementById("area")
                           }
-                          placeholder="Choose a Priority"
+                          placeholder={t('projectScreen.Modal.choosepriority')}
                         >
                           <Select.Option value="High Priority">
-                            High Priority
+                          {t('projectScreen.Modal.highPriority')}
                           </Select.Option>
                           <Select.Option value="Normal Priority">
-                            Normal Priority
+                          {t('projectScreen.Modal.normalPriority')}
                           </Select.Option>
                           <Select.Option value="Low Priority">
-                            Low Priority
+                          {t('projectScreen.Modal.lowPriority')}
                           </Select.Option>
                         </Select>
                       </Form.Item>
@@ -1279,7 +1284,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
               <div className="row">
                 <div className="col-sm-6">
                   <div className="form-group">
-                    <label>Leader</label>
+                    <label>{t('projectScreen.Modal.leader')}</label>
                     <div style={{ position: "relative" }} id="area">
                       <Form.Item
                         name="projectLead"
@@ -1287,7 +1292,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                         rules={[
                           {
                             required: true,
-                            message: "Select a Leader",
+                            message: t('projectScreen.Modal.selectLeader'),
                           },
                         ]}
                       >
@@ -1310,7 +1315,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                           getPopupContainer={() =>
                             document.getElementById("area")
                           }
-                          placeholder="Select a Leader"
+                          placeholder={t('projectScreen.Modal.selectleader')}
                           onChange={(value) => setSelectedLeader(value)}
                         >
                           {employees?.map((employee) => (
@@ -1328,7 +1333,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                 </div>
                 <div className="col-sm-6">
                   <div className="form-group">
-                    <label>Team Leader</label>
+                    <label>{t('projectScreen.Modal.teamLeader')}</label>
                     <div className="project-members">
                       {selectedLeader && (
                         <a
@@ -1350,7 +1355,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
               <div className="row">
                 <div className="col-sm-6">
                   <div className="form-group">
-                    <label>Add Team</label>
+                    <label>{t('projectScreen.Modal.addTeam')}</label>
                     <div style={{ position: "relative" }} id="area">
                       <Form.Item
                         name="assignedDevelopers"
@@ -1358,7 +1363,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                         rules={[
                           {
                             required: true,
-                            message: "Team cannot be empty",
+                            message: t('projectScreen.Modal.teamCannotBeEmpty'),
                           },
                         ]}
                       >
@@ -1382,7 +1387,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                           }
                           className="customselect-height custom-select"
                           mode="multiple"
-                          placeholder="Select Team Members"
+                          placeholder={t('projectScreen.Modal.selectTeamMembers')}
                           onChange={(values) => setSelectedTeamMembers(values)}
                         >
                           {getTeamMemberOptions()}
@@ -1393,7 +1398,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                 </div>
                 <div className="col-sm-6">
   <div className="form-group">
-    <label>Team Members</label>
+    <label>{t('projectScreen.Modal.teamMembers')}</label>
     <div className="project-members" style={{ margin: '4px auto' }}>
       <ul className="team-members" style={{ minWidth: 'max-content' }}>
         {selectedTeamMembers?.slice(0, 4).map((teamMember, index) => (
@@ -1441,13 +1446,13 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
               </div>
 
               <div className="form-group">
-                <label>Description</label>
+                <label>{t('projectScreen.Modal.description')}</label>
                 <Form.Item
                   name="projectDescription"
                   rules={[
                     {
                       required: true,
-                      message: "Enter a Project Description",
+                      message: t('projectScreen.Modal.enterProjectDescription'),
                     },
                   ]}
                 >
@@ -1457,9 +1462,9 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
               </div>
 
               <div className="form-group">
-                <label>Upload Files{" "}
+                <label>{t('projectScreen.Modal.uploadFiles')}{" "}
                   <small style={{ color: 'grey', fontSize: 'small' }}>
-                    (Allowed formats: pdf, doc, docx, jpg, jpeg, png, gif, xls, xlsx)
+                    ({t('projectScreen.Modal.allowedFormats')})
                   </small>
                 </label>
                 <input
@@ -1489,7 +1494,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                   alignItems: "center",
                 }}
               >
-                Payment Schedules
+                {t('projectScreen.Modal.paymentSchedules')}
               </h4>
               <hr
                 className="developer-dividerdddd"
@@ -1502,6 +1507,22 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                   rowKey={(record, index) => index}
                   pagination={false}
                   style={{ overflowX: "auto", height: "320px", }}
+                  components={i18n.dir()==="rtl" ?
+                      {
+                      header: {
+                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                      },
+                    } :
+                    null
+                    }
+                    onRow={ i18n.dir()==="rtl" ?
+                      (record, rowIndex) => {
+                      return {
+                        style: { textAlign: 'right' }, // Align table data to the right
+                      };
+                    } :
+                    null
+                    }
                 />
               </div>
 
@@ -1509,7 +1530,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                 <Form.Item>
                   <Button type="primary" onClick={addPaymentSchedule} className="btn btn-primary submit-btn btn-add" style={{fontSize: '14px', minWidth: '30px', height: '39px', lineHeight: '0px'}}>
                     <i className="fa fa-plus m-r-5" />
-                    Add More Payments
+                    {t('projectScreen.Modal.addMorePayments')}
                   </Button>
                 </Form.Item>
                 <hr />
@@ -1528,7 +1549,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                       {loader ? (
                       <Spin size="small" indicator={antIcon} />
                     ) : (
-                      "Submit"
+                      t('submit')
                     )}
                   </Button>
                 </Form.Item>
