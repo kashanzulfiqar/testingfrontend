@@ -12785,3 +12785,16 @@ padding-right: unset;
 .ant-picker-dropdown, .ant-select-dropdown {
   direction: ltr;
 }
+
+[dir="rtl"] .welcome-box .welcome-img {
+  margin-left: 15px;
+}
+
+
+[dir="rtl"] .welcome-box {
+  margin: -30px -30px 30px -15px;
+}
+
+[dir="rtl"] .ant-pagination {
+  float: left !important;
+}
