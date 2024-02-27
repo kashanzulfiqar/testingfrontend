@@ -83,7 +83,11 @@
     "languagePreferenceUpdated": "Language preference updated!",
     "failedToUpdateLanguage": "Failed to update language",
     "searchHere": "Search here",
-    "daftarPro": "DaftarPro"
+    "daftarPro": "DaftarPro",
+    "switchToLanguage": "Switch to {{language}}",
+    "myProfile": "My Profile",
+    "changePassword": "Change Password",
+    "logout": "Logout"
   },
   "sideBar": {
     "apps": "Apps",

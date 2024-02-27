@@ -289,7 +289,7 @@ const PermissionsTable = ({ permissions, setPermissions, disabled }) => {
         )},
     },
     {
-      title: t('permissionTable.manageTeamRequests'),
+      title: t('permissionTable.manageTeamRequest'),
       dataIndex: 'roleId',
       render: (text, record) => {
         const sub = record?.subPermissions?.find(permission => permission.title === "Manage Request From Team");

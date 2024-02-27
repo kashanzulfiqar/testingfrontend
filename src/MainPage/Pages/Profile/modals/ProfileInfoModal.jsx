@@ -63,7 +63,7 @@ const [addRoleOpen, setAddRoleOpen] = useState(false)
         let data = {
             ...user_data,
             dateOfBirth: user_data?.dateOfBirth === null ? "" : moment(user_data?.dateOfBirth, 'YYYY-MM-DD'),
-            joiningDate: moment(user_data?.joiningDate, 'YYYY-MM-DD'),
+            joiningDate: user_data?.joiningDate === null ? "" : moment(user_data?.joiningDate, 'YYYY-MM-DD'), 
         }
         form.setFieldsValue(data)
         setImage(user_data?.imageUrl);

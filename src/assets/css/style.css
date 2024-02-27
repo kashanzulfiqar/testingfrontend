@@ -12777,3 +12777,11 @@ padding-right: unset;
 .dropdown-menu1 {
   transform: translate3d(0px, 50px, 0px) !important;
 }
+
+.ant-select-selection-item {
+  direction: ltr;
+}
+
+.ant-picker-dropdown, .ant-select-dropdown {
+  direction: ltr;
+}

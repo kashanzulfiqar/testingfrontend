@@ -82,7 +82,11 @@
     "languagePreferenceUpdated": "تم تحديث تفضيل اللغة!",
     "failedToUpdateLanguage": "فشل تحديث اللغة",
     "searchHere": "البحث هنا",
-    "daftarPro": "دفتر برو"
+    "daftarPro": "دفتر برو",
+    "switchToLanguage": "التبديل إلى {{language}}",
+    "myProfile": "ملفي الشخصي",
+    "changePassword": "تغيير كلمة المرور",
+    "logout": "تسجيل الخروج"
   },
   "sideBar": {
     "apps": "التطبيقات",
