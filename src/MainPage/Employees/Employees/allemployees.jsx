@@ -496,11 +496,11 @@ const AllEmployees = () => {
                   options={[
                     {
                       value: 'Active',
-                      label: "Active",
+                      label: t('active'),
                     },
                     {
                       value: 'In-Active',
-                      label: "In-Active",
+                      label: t('inActive'),
                     },
                   ]}
                 />
