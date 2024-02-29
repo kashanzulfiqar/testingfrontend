@@ -12822,3 +12822,13 @@ padding-right: unset;
   margin-right: 0;
   margin-left: unset;
 }
+
+[dir="rtl"] .ant-message .anticon {
+  margin-left: 8px;
+}
+
+@media (max-width: 991px) {
+  [dir="rtl"] .welcome-box .welcome-det h3 {
+    word-spacing: unset;
+  }
+}
