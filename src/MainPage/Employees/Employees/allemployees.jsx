@@ -535,11 +535,11 @@ const AllEmployees = () => {
                     <div className="dropdown-menu dropdown-menu-right">
                     {
                       (role === 'admin' || permissions?.updateUser) &&
-                      <a className="dropdown-item" href="javascript:void(0)" onClick={() => setOpen({ isAddOpen: false, isEditOpen: true, data: user })}><i className="fa fa-pencil m-r-5" /> Edit</a>
+                      <a className="dropdown-item" href="javascript:void(0)" onClick={() => setOpen({ isAddOpen: false, isEditOpen: true, data: user })}><i className={`fa fa-pencil ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} /> {t('edit')}</a>
                     }
                     {
                       (role === 'admin' || permissions?.updateStatusOfEmployee) &&
-                      <a className="dropdown-item" href="javascript:void(0)" onClick={() => setOpen({ isAddOpen: false, isEditOpen: false, isDelOpen: true, data: user })}><i className={user?.userStatus === 'Active' ? 'fa fa-user-times m-r-5' : 'fa fa-check m-r-5'} />{user?.userStatus === 'Active' ? 'Disable' : 'Enable'}</a>
+                      <a className="dropdown-item" href="javascript:void(0)" onClick={() => setOpen({ isAddOpen: false, isEditOpen: false, isDelOpen: true, data: user })}><i className={user?.userStatus === 'Active' ? `fa fa-user-times ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}` : `fa fa-check ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />{user?.userStatus === 'Active' ? t('disable') : t('enable')}</a>
                     }
                     </div>
                   </div>

@@ -894,7 +894,7 @@ const LeaveAdmin = () => {
                         navigate("/employee/request-admin");
                       }}
                     >
-                      Back to All Requests
+                      {t('backToAllRequests')}
                     </button>
                   </div>
                 )}
