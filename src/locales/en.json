@@ -231,6 +231,12 @@
     "status": "Status",
     "onGoing": "On-Going",
     "viewAllProjects": "View all projects",
+    "noPermissionToViewInvoices": "You don't have permission to view Invoices!",
+    "noPermissionToView": "You don't have permission to view",
+    "noPermissionToViewPayments": "You don't have permission to view Payments!",
+    "noPermissionToViewClients": "You don't have permission to view Clients!",
+    "noPermissionToViewProjects": "You don't have permission to view Projects!",
+    "requests": "Requests!",
     "errors": {
       "getDashboardDataError": "Error getting dashboard data",
       "getAllInvoicesError": "Error getting all invoices",

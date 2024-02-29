@@ -231,6 +231,12 @@
     "projectName": "اسم المشروع",
     "onGoing": "قيد التنفيذ",
     "viewAllProjects": "عرض جميع المشاريع",
+    "noPermissionToViewInvoices": "ليس لديك إذن لعرض الفواتير!",
+    "noPermissionToView": "ليس لديك إذن للعرض",
+    "noPermissionToViewPayments": "ليس لديك إذن لعرض المدفوعات!",
+    "noPermissionToViewClients": "ليس لديك إذن لعرض العملاء!",
+    "noPermissionToViewProjects": "ليس لديك إذن لعرض المشاريع!",
+    "requests": "الطلبات!",
     "errors": {
       "getDashboardDataError": "حدث خطأ في الحصول على بيانات لوحة التحكم",
       "getAllInvoicesError": "حدث خطأ في الحصول على جميع الفواتير",
