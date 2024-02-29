@@ -8657,7 +8657,7 @@ padding: 10px 20px !important;
 }
 
 [dir="rtl"] .profile-action {
-  text-align: left;
+  text-align: left !important;
   position: absolute;
   top: 10px;
   left: 5px;
@@ -12784,4 +12784,29 @@ padding-right: unset;
 
 .ant-picker-dropdown, .ant-select-dropdown {
   direction: ltr;
+}
+
+[dir="rtl"] .welcome-box .welcome-img {
+  margin-left: 15px;
+}
+
+
+[dir="rtl"] .welcome-box {
+  margin: -30px -30px 30px -15px;
+}
+
+[dir="rtl"] .ant-pagination {
+  float: left !important;
+}
+
+[dir="rtl"] .ant-table-cell {
+  unicode-bidi: plaintext;
+}
+
+[dir="rtl"] .badge {
+  unicode-bidi: plaintext;
+}
+
+.m-l-5 {
+  margin-left: 5px !important;
 }

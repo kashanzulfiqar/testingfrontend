@@ -1,6 +1,6 @@
 {
-  "pageprev": "رقم الموظف",
-  "pagenext": "التسمية",
+  "pageprev": "سابق",
+  "pagenext": "التالي",
   "search": "بحث",
   "edit": "تعديل",
   "edit1": "تعديل",
@@ -69,6 +69,10 @@
   "attendanceMarked": "تم تسجيل الحضور",
   "loading": "جارٍ التحميل...",
   "notCheckedIn": "لم يتم السجل بعد",
+  "backToAllRequests": "العودة إلى جميع الطلبات",
+  "age": "سنة {{age}}",
+  "noUpcomingHoliday": "لا يوجد عطلة قادمة",
+  "yearsSinceJoining": "سنة في الشركة {{yearsSinceJoining}}",
   "days": {
     "thu": "الخميس",
     "fri": "الجمعة",

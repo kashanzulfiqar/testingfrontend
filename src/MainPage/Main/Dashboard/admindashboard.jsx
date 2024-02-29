@@ -714,7 +714,7 @@ const antIcon = (
                             </div>
                             <div className={`col-6 ${i18n.dir() === 'rtl' ? 'text-start' : 'text-end'}`}>
                               <span className={req?.status==="Approved" ? "badge bg-inverse-success" : req?.status==="Pending" ? "badge bg-inverse-warning" : (req?.status==="Declined" || req?.status==="Cancelled") ? "badge bg-inverse-danger" : ''}>
-                                {req?.status==="Approved" ? t('aRequests.Approved') : req?.status==="Declined" ? t('aRequests.Declined') : '-'}
+                                {req?.status==="Approved" ? t('aRequests.Approved') : req?.status==="Declined" ? t('aRequests.Declined') : req?.status==="Pending" ? t('aDash.pending') : req?.status==="Cancelled" ? t('aDash.cancelled') : req?.status}
                               </span>
                             </div>
                           </div>
@@ -870,7 +870,7 @@ const antIcon = (
                               </h2>
                             </td>
                             <td>{client?.clientEmail}</td>
-                            <td>{client?.clientPhoneNo}</td>
+                            <td style={{unicodeBidi:'plaintext'}}>{client?.clientPhoneNo}</td>
                             {/* <td>
                               <div className="dropdown action-label">
                                 <a className="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">

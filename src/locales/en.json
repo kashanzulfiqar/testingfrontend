@@ -70,6 +70,9 @@
   "attendanceMarked": "Attendance Marked",
   "loading": "Loading...",
   "notCheckedIn": "Not yet checked in",
+  "backToAllRequests": "Back to All Requests",
+  "age": "{{age}} years old",
+  "yearsSinceJoining": "{{yearsSinceJoining}} years at the company",
   "days": {
     "thu": "Thu",
     "fri": "Fri",
