@@ -12778,9 +12778,9 @@ padding-right: unset;
   transform: translate3d(0px, 50px, 0px) !important;
 }
 
-.ant-select-selection-item {
+/* .ant-select-selection-item {
   direction: ltr;
-}
+} */
 
 .ant-picker-dropdown, .ant-select-dropdown {
   direction: ltr;
@@ -12809,4 +12809,16 @@ padding-right: unset;
 
 .m-l-5 {
   margin-left: 5px !important;
+}
+
+[dir="rtl"] .form-control {
+  unicode-bidi: plaintext;
+  text-align: right;
+}
+
+[dir="rtl"] .react-tel-input .form-control {
+  padding-right: 48px;
+  padding-left: unset;
+  margin-right: 0;
+  margin-left: unset;
 }
