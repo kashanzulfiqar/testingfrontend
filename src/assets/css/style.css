@@ -12782,9 +12782,9 @@ padding-right: unset;
   direction: ltr;
 } */
 
-.ant-picker-dropdown, .ant-select-dropdown {
+/* .ant-picker-dropdown, .ant-select-dropdown {
   direction: ltr;
-}
+} */
 
 [dir="rtl"] .welcome-box .welcome-img {
   margin-left: 15px;
