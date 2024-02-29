@@ -19,9 +19,10 @@ import { apiLoginEmployee } from "../Services/apiLogin";
 import { LoadingOutlined } from '@ant-design/icons';
 import { apiServices } from '../Services/apiServices';
 import { getPermissionList } from '../Redux/Reducer/permissions/actions';
+import { useTranslation } from 'react-i18next';
 
 const Loginpage = (props) => {
-
+  const { t, i18n } = useTranslation(); 
   const isLogin = useSelector((state) => state.user.loginvalue);
   const role = isLogin?.user?.role
 
@@ -53,6 +54,31 @@ const Loginpage = (props) => {
     }
   }, [])
 
+  const languageNames = {
+    'en': 'English',
+    'ar': 'Arabic'
+  };
+
+  const langChange = (userLang) => {
+    let languageCode = "";
+    if (userLang) {
+      for (const code in languageNames) {
+        if (languageNames[code] === userLang) {
+          languageCode = code;
+          break;
+        }
+      }
+      i18n.changeLanguage(languageCode);
+      localStorage.setItem('lang', languageCode);
+      document.querySelector('html').setAttribute('lang', languageCode);
+    }
+    else {
+      languageCode = 'en'
+      i18n.changeLanguage(languageCode);
+      localStorage.setItem('lang', languageCode);
+      document.querySelector('html').setAttribute('lang', languageCode);
+    }
+  }
 
   const onFinish = (values) => {
     setLoader(true)
@@ -81,9 +107,11 @@ const Loginpage = (props) => {
 
             localStorage.setItem("languagePreference", JSON.stringify(res?.data?.result?.user?.languagePreference));
             localStorage.setItem("firstTimeLogin", JSON.stringify(res?.data?.result?.user?.firstTimeLogin));
+            langChange(res?.data?.result?.user?.languagePreference);
           }, 1300);
         }else{
           localStorage.setItem("languagePreference", JSON.stringify(res?.data?.result?.user?.languagePreference));
+          langChange(res?.data?.result?.user?.languagePreference);
           // nav(`${res?.data?.result?.user?.role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}`);
           setTimeout(() => {
             setLoader(false)
