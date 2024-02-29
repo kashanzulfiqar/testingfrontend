@@ -268,7 +268,7 @@ const EmployeeDashboard = () => {
               <div className="col-lg-4 col-md-4">
                 <div className="dash-sidebar">
                 <section>
-                    <h5 className="dash-title">{t('totalProjects')}</h5>
+                    <h5 className="dash-title">{t('projects')}</h5>
                     <div className="card">
                       <div className="card-body">
                         <div className="time-list">
@@ -278,13 +278,13 @@ const EmployeeDashboard = () => {
                           </div>
                           <div className="dash-stats-list">
                             <h4>14</h4>
-                            <p>{t('totalTasks')}</p>
+                            <p>{t('pendingTasks')}</p>
                           </div>
                         </div>
                         <div className="request-btn">
                           <div className="dash-stats-list">
                             <h4>{userData?.userProjects}</h4>
-                            <p>{t('pendingTasks')}</p>
+                            <p>{t('totalProjects')}</p>
                           </div>
                         </div>
                       </div>
@@ -356,7 +356,7 @@ const EmployeeDashboard = () => {
                 <img src={item.imageUrl || user_icon} alt={item.fullName} className="avatar" />
                 <div style={{marginLeft: '10px'}}>
                   <h4>{item.fullName}</h4>
-                  <p>{yearsSinceJoining} years at the company</p>
+                  <p>{t('yearsSinceJoining', {yearsSinceJoining: yearsSinceJoining})}</p>
                 </div>
               </div>
             </div>
@@ -394,7 +394,7 @@ const EmployeeDashboard = () => {
                                 <img src={item.imageUrl || user_icon} alt={item.fullName} className="avatar" />
                                 <div style={{marginLeft: '10px'}}>
                                   <h4>{item.fullName}</h4>
-                                  <p>{age} years old</p>
+                                  <p>{t('age', {age: age})}</p>
                                 </div>
                               </div>
                             </div>
@@ -413,7 +413,7 @@ const EmployeeDashboard = () => {
                         <Spin style={{height: '38px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center'}} />
                       ) : (
                         userData?.upcomingHoliday === null ? (
-                          <label style={{marginBottom: '16px'}}>No upcoming holiday</label>
+                          <label style={{marginBottom: '16px'}}>{t('noUpcomingHoliday')}</label>
                         ) : 
                         <label style={{textAlign: 'center', display: 'grid', placeContent: 'center', gap: '8px'}}>
                           <h4 style={{margin: '0px'}}>{userData?.upcomingHoliday?.holidayTitle}</h4>
