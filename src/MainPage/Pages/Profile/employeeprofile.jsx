@@ -712,7 +712,7 @@ const antIcon = (
                             <ul className="personal-info">
                               <li>
                                 <div className="title">{t('empProfile.phone')}:</div>
-                                <div className="text"><a href="javascript:void(0)" style={{cursor: 'default'}}>{allData?.phoneNo}</a></div>
+                                <div className="text"><a href="javascript:void(0)" style={{cursor: 'default', unicodeBidi: 'plaintext'}}>{allData?.phoneNo}</a></div>
                               </li>
                               <li>
                                 <div className="title">{t('aDash.email')}:</div>
@@ -838,7 +838,7 @@ const antIcon = (
                                             </li>
                                             <li>
                                               <div className="title">{t('allEmp.Modal.phoneNumber')}. </div>
-                                              <div className="text">{emerg?.phoneNo}</div>
+                                              <div className="text" style={{unicodeBidi: 'plaintext'}}>{emerg?.phoneNo}</div>
                                             </li>
                                           </>
                                         ))
@@ -891,7 +891,7 @@ const antIcon = (
                                               <div className="timeline-content">
                                                 <a href="javascript:void(0)" className="name" style={{cursor: 'text'}}>{edu?.institute}</a>
                                                 <div>{edu?.degree}</div>
-                                                <span className="time">{edu?.year}</span>
+                                                <span className="time" style={{unicodeBidi: 'plaintext'}}>{edu?.year}</span>
                                               </div>
                                             </div>
                                           </li>
@@ -926,7 +926,7 @@ const antIcon = (
                                             <div className="experience-content">
                                               <div className="timeline-content">
                                                 <a href="javascript:void(0)" style={{cursor: 'text'}} className="name">{exp?.designation} at {exp?.company}</a>
-                                                <span className="time">{exp?.duration}</span>
+                                                <span className="time" style={{unicodeBidi: 'plaintext'}}>{exp?.duration}</span>
                                               </div>
                                             </div>
                                           </li>

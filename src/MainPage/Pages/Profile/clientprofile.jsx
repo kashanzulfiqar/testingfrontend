@@ -132,7 +132,7 @@ const ClientProfile = () => {
                               <ul className="personal-info">
                                 <li>
                                   <span className="title">{t('empProfile.phone')}:</span>
-                                  <span className="text"><a href="javascript:void(0)" style={{cursor: 'default'}}>{clientData?.clientPhoneNo}</a></span>
+                                  <span className="text"><a href="javascript:void(0)" style={{cursor: 'default', unicodeBidi: 'plaintext'}}>{clientData?.clientPhoneNo}</a></span>
                                 </li>
                                 <li>
                                   <span className="title">{t('aDash.email')}:</span>
