@@ -386,6 +386,7 @@
       "enterFullName": "Please enter full name"
     },
     "disableConfirmation": "Are you sure you want to Disable <b>{{fullName}}</b>?",
+    "enableConfirmation": "Are you sure you want to Enable <b>{{fullName}}</b>?",
     "employeeExitDate": "Employee Exit Date",
     "Modal": {
       "profileInformation": "Profile Information",
