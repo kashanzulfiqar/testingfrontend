@@ -73,6 +73,11 @@
   "age": "سنة {{age}}",
   "noUpcomingHoliday": "لا يوجد عطلة قادمة",
   "yearsSinceJoining": "سنة في الشركة {{yearsSinceJoining}}",
+  "on-Leave": "في إجازة",
+  "absent": "غائب",
+  "holiDay": "عطلة",
+  "present": "حاضر",
+  "late": "متأخر",
   "days": {
     "thu": "الخميس",
     "fri": "الجمعة",

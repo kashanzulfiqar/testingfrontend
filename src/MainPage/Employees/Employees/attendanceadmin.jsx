@@ -849,7 +849,7 @@ const AttendanceAdmin = () => {
                               {t('timesheet')}
                                 <h5
                                   className="text-muted"
-                                  style={{ fontSize: "20px" }}
+                                  style={{ fontSize: "20px", unicodeBidi:'plaintext' }}
                                 >
                                   {moment(dayRecord.attendanceDate).format(
                                     "DD MMM YYYY"
@@ -987,7 +987,7 @@ const AttendanceAdmin = () => {
                                                 : "red",
                                           }}
                                         >
-                                          {dayRecord.status}
+                                          {dayRecord.status==="Present" ? t('present') : dayRecord.status==="Late" ? t('late') : dayRecord.status==="On-Leave" ? t('on-Leave') : dayRecord.status==="Holiday" ? t('holiDay') : dayRecord.status==="Absent" ? t('absent') : dayRecord.status}
                                         </label>
                                       </h4>
                                     </div>
@@ -1256,15 +1256,15 @@ const AttendanceAdmin = () => {
                             onChange={(value) => setSelectedStatus(value)}
                           >
                             <Select.Option value="Present">
-                              Present
+                            {t('present')}
                             </Select.Option>
-                            <Select.Option value="Late">Late</Select.Option>
-                            <Select.Option value="Absent">Absent</Select.Option>
+                            <Select.Option value="Late">{t('late')}</Select.Option>
+                            <Select.Option value="Absent">{t('absent')}</Select.Option>
                             <Select.Option value="On-Leave">
-                              On Leave
+                            {t('on-Leave')}
                             </Select.Option>
                             <Select.Option value="Holiday">
-                              Holiday
+                            {t('holiDay')}
                             </Select.Option>
                           </Select>
                         </Form.Item>

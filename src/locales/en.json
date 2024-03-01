@@ -73,6 +73,11 @@
   "backToAllRequests": "Back to All Requests",
   "age": "{{age}} years old",
   "yearsSinceJoining": "{{yearsSinceJoining}} years at the company",
+  "on-Leave": "On Leave",
+  "absent": "Absent",
+  "holiDay": "Holiday",
+  "present": "Present",
+  "late": "Late",
   "days": {
     "thu": "Thu",
     "fri": "Fri",

@@ -548,14 +548,14 @@ const antIcon = (
                           <span className="d-block">{t('aDash.newEmployees')}</span>
                         </div>
                         <div>
-                          <span className="text-success">+10%</span>
+                          <span className="text-success" style={{unicodeBidi:'plaintext'}}>+10%</span>
                         </div>
                       </div>
                       <h3 className="mb-3">10</h3>
                       <div className="progress mb-2" style={{ height: '5px' }}>
                         <div className="progress-bar bg-primary" role="progressbar" style={{ width: '70%' }} aria-valuenow={40} aria-valuemin={0} aria-valuemax={100} />
                       </div>
-                      <p className="mb-0">{t('aDash.overallEmployees')} 218</p>
+                      <p className="mb-0">{t('aDash.overallEmployees')}</p>
                     </div>
                   </div>
                   <div className="card">
@@ -565,14 +565,14 @@ const antIcon = (
                           <span className="d-block">{t('aDash.earnings')}</span>
                         </div>
                         <div>
-                          <span className="text-success">+12.5%</span>
+                          <span className="text-success" style={{unicodeBidi:'plaintext'}}>+12.5%</span>
                         </div>
                       </div>
                       <h3 className="mb-3">$1,42,300</h3>
                       <div className="progress mb-2" style={{ height: '5px' }}>
                         <div className="progress-bar bg-primary" role="progressbar" style={{ width: '70%' }} aria-valuenow={40} aria-valuemin={0} aria-valuemax={100} />
                       </div>
-                      <p className="mb-0">{t('aDash.previousMonth')} <span className="text-muted">$1,15,852</span></p>
+                      <p className="mb-0">{t('aDash.previousMonth')} <span className="text-muted" style={{unicodeBidi:'plaintext'}}>$1,15,852</span></p>
                     </div>
                   </div>
                   <div className="card">
@@ -582,14 +582,14 @@ const antIcon = (
                           <span className="d-block">{t('aDash.expenses')}</span>
                         </div>
                         <div>
-                          <span className="text-danger">-2.8%</span>
+                          <span className="text-danger" style={{unicodeBidi:'plaintext'}}>-2.8%</span>
                         </div>
                       </div>
                       <h3 className="mb-3">$8,500</h3>
                       <div className="progress mb-2" style={{ height: '5px' }}>
                         <div className="progress-bar bg-primary" role="progressbar" style={{ width: '70%' }} aria-valuenow={40} aria-valuemin={0} aria-valuemax={100} />
                       </div>
-                      <p className="mb-0">{t('aDash.previousMonth')} <span className="text-muted">$7,500</span></p>
+                      <p className="mb-0">{t('aDash.previousMonth')} <span className="text-muted" style={{unicodeBidi:'plaintext'}}>$7,500</span></p>
                     </div>
                   </div>
                   <div className="card">
@@ -599,14 +599,14 @@ const antIcon = (
                           <span className="d-block">{t('aDash.profit')}</span>
                         </div>
                         <div>
-                          <span className="text-danger">-75%</span>
+                          <span className="text-danger" style={{unicodeBidi:'plaintext'}}>-75%</span>
                         </div>
                       </div>
                       <h3 className="mb-3">$1,12,000</h3>
                       <div className="progress mb-2" style={{ height: '5px' }}>
                         <div className="progress-bar bg-primary" role="progressbar" style={{ width: '70%' }} aria-valuenow={40} aria-valuemin={0} aria-valuemax={100} />
                       </div>
-                      <p className="mb-0">{t('aDash.previousMonth')} <span className="text-muted">$1,42,000</span></p>
+                      <p className="mb-0">{t('aDash.previousMonth')} <span className="text-muted" style={{unicodeBidi:'plaintext'}}>$1,42,000</span></p>
                     </div>
                   </div>
                 </div>
@@ -620,31 +620,31 @@ const antIcon = (
                     <h5 className="card-title">{t('aDash.statistics')}</h5>
                     <div className="stats-list">
                       <div className="stats-info">
-                        <p>{t('aDash.todayLeave')} <strong>{allData?.statistics?.todayLeaves} <small>/ {allData?.employeeCount}</small></strong></p>
+                        <p>{t('aDash.todayLeave')} <strong style={{unicodeBidi:'plaintext'}}>{allData?.statistics?.todayLeaves} <small>/ {allData?.employeeCount}</small></strong></p>
                         <div className="progress">
                           <div className="progress-bar bg-primary" role="progressbar" style={{ width: `${allData?.statistics?.todayLeaves / allData?.employeeCount * 100}%` }} aria-valuenow={allData?.statistics?.todayLeaves / allData?.employeeCount * 100} aria-valuemin={0} aria-valuemax={100} />
                         </div>
                       </div>
                       <div className="stats-info">
-                        <p>{t('aDash.pendingInvoice')} <strong>{allData?.statistics?.pendingInvoices} <small>/ {allData?.statistics?.totalInvoices}</small></strong></p>
+                        <p>{t('aDash.pendingInvoice')} <strong style={{unicodeBidi:'plaintext'}}>{allData?.statistics?.pendingInvoices} <small>/ {allData?.statistics?.totalInvoices}</small></strong></p>
                         <div className="progress">
                           <div className="progress-bar bg-warning" role="progressbar" style={{ width: `${allData?.statistics?.pendingInvoices / allData?.statistics?.totalInvoices * 100}%` }} aria-valuenow={31} aria-valuemin={0} aria-valuemax={100} />
                         </div>
                       </div>
                       <div className="stats-info">
-                        <p>{t('aDash.completedProjects')} <strong>{allData?.statistics?.completedProject} <small>/ {allData?.projectsCount}</small></strong></p>
+                        <p>{t('aDash.completedProjects')} <strong style={{unicodeBidi:'plaintext'}}>{allData?.statistics?.completedProject} <small>/ {allData?.projectsCount}</small></strong></p>
                         <div className="progress">
                           <div className="progress-bar bg-success" role="progressbar" style={{ width: `${allData?.statistics?.completedProject / allData?.projectsCount * 100}%` }} aria-valuenow={allData?.statistics?.completedProject / allData?.projectsCount * 100} aria-valuemin={0} aria-valuemax={100} />
                         </div>
                       </div>
                       <div className="stats-info">
-                        <p>{t('aDash.openTickets')} <strong>190 <small>/ 212</small></strong></p>
+                        <p>{t('aDash.openTickets')} <strong style={{unicodeBidi:'plaintext'}}>190 <small>/ 212</small></strong></p>
                         <div className="progress">
                           <div className="progress-bar bg-danger" role="progressbar" style={{ width: '62%' }} aria-valuenow={62} aria-valuemin={0} aria-valuemax={100} />
                         </div>
                       </div>
                       <div className="stats-info">
-                        <p>{t('aDash.closedTickets')} <strong>22 <small>/ 212</small></strong></p>
+                        <p>{t('aDash.closedTickets')} <strong style={{unicodeBidi:'plaintext'}}>22 <small>/ 212</small></strong></p>
                         <div className="progress">
                           <div className="progress-bar bg-info" role="progressbar" style={{ width: '22%' }} aria-valuenow={22} aria-valuemin={0} aria-valuemax={100} />
                         </div>
