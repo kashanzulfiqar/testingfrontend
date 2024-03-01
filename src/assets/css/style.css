@@ -12778,13 +12778,13 @@ padding-right: unset;
   transform: translate3d(0px, 50px, 0px) !important;
 }
 
-.ant-select-selection-item {
+.ant-table .ant-select-selection-item {
   direction: ltr;
 }
 
-.ant-picker-dropdown, .ant-select-dropdown {
+/* .ant-picker-dropdown, .ant-select-dropdown {
   direction: ltr;
-}
+} */
 
 [dir="rtl"] .welcome-box .welcome-img {
   margin-left: 15px;
@@ -12809,4 +12809,48 @@ padding-right: unset;
 
 .m-l-5 {
   margin-left: 5px !important;
+}
+
+[dir="rtl"] .form-control:not([type="file"]) {
+  unicode-bidi: plaintext;
+  text-align: right;
+}
+
+[dir="rtl"] .react-tel-input .form-control {
+  padding-right: 48px;
+  padding-left: unset;
+  margin-right: 0;
+  margin-left: unset;
+}
+
+[dir="rtl"] .ant-message .anticon {
+  margin-left: 8px;
+}
+
+@media (max-width: 991px) {
+  [dir="rtl"] .welcome-box .welcome-det h3 {
+    word-spacing: unset;
+  }
+}
+
+[dir="rtl"] .ant-picker-header-super-next-btn {
+  transform: scaleX(-1);
+}
+
+[dir="rtl"] .ant-picker-header-super-prev-btn {
+  transform: scaleX(-1);
+}
+
+[dir="rtl"] .ant-input-number-handler-wrap {
+  left: 0;
+  right: unset;
+}
+
+[dir="rtl"] .ant-input-number-handler {
+  border-right: 1px solid #d9d9d9;
+}
+
+[dir="rtl"] .ant-picker-clear {
+  left: 0;
+  right: unset;
 }

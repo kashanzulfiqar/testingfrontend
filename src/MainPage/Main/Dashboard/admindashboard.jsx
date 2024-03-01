@@ -696,7 +696,7 @@ const antIcon = (
                     <h4 className="card-title">{t('aDash.todayAbsent')} <span className="badge bg-inverse-danger ml-2">5</span></h4>
                     {
                       tableLoader?.request ? <Spin style={{display: 'grid', placeItems: 'center', height: '263px'}} /> :
-                      !perm?.request ? <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '285px', textAlign: 'center'}}>You don't have permission to view <br /> Requests!</label> :
+                      !perm?.request ? <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '285px', textAlign: 'center'}}>{t('aDash.noPermissionToView')} <br /> {t('aDash.requests')}</label> :
                       allRequests?.length > 0 ?
                       allRequests?.map((req) => (
                         <div className="leave-info-box">
@@ -742,7 +742,7 @@ const antIcon = (
                     <div className="table-responsive" style={{minHeight: '203px'}}>
                       {
                         tableLoader?.invoice ? <Spin style={{display: 'grid', placeItems: 'center', height: '203px'}} /> :
-                        !perm?.invoice ? <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '241px'}}>You don't have permission to view Invoices!</label> :
+                        !perm?.invoice ? <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '241px'}}>{t('aDash.noPermissionToViewInvoices')}</label> :
                         allInvoices?.length > 0 ?
                         <table className="table table-nowrap custom-table mb-0">
                           <thead>
@@ -795,7 +795,7 @@ const antIcon = (
                     <div className="table-responsive" style={{minHeight: '203px'}}>
                     {
                       tableLoader?.payment ? <Spin style={{display: 'grid', placeItems: 'center', height: '203px'}} /> :
-                      !perm?.payment ? <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '241px'}}>You don't have permission to view Payments!</label> :
+                      !perm?.payment ? <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '241px'}}>{t('aDash.noPermissionToViewPayments')}</label> :
                       allPayments?.length > 0 ?
                       <table className="table custom-table table-nowrap mb-0">
                         <thead>
@@ -846,7 +846,7 @@ const antIcon = (
                     <div className="table-responsive" style={{minHeight: '385px'}}>
                     {
                       tableLoader?.client ? <Spin style={{display: 'grid', placeItems: 'center', height: '402px'}} /> :
-                      !perm?.client ? <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '402px'}}>You don't have permission to view Clients!</label> :
+                      !perm?.client ? <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '402px'}}>{t('aDash.noPermissionToViewClients')}</label> :
                       allClients?.length > 0 ?
                       <table className="table custom-table mb-0">
                         <thead>
@@ -917,7 +917,7 @@ const antIcon = (
                     <div className="table-responsive" style={{minHeight: '385px'}}>
                     {
                       tableLoader?.project ? <Spin style={{display: 'grid', placeItems: 'center', height: '402px'}} /> :
-                      !perm?.project ? <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '402px'}}>You don't have permission to view Projects!</label> :
+                      !perm?.project ? <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '402px'}}>{t('aDash.noPermissionToViewProjects')}</label> :
                       allProjects?.length > 0 ?
                       <table className="table custom-table mb-0">
                         <thead>

@@ -19,30 +19,30 @@ import { DownOutlined, GlobalOutlined } from '@ant-design/icons';
 const Header = (props) => {
   const { t, i18n } = useTranslation(); 
 
-  const firstchange = (lng) =>{
-    i18n.changeLanguage(lng);
-    localStorage.setItem('lang', lng);
-    document.querySelector('html').setAttribute('lang', lng); // Update lang attribute
-  }
+  // const firstchange = (lng) =>{
+  //   i18n.changeLanguage(lng);
+  //   localStorage.setItem('lang', lng);
+  //   document.querySelector('html').setAttribute('lang', lng); // Update lang attribute
+  // }
 
   let userLang = localStorage.getItem("languagePreference");
-  console.log(userLang)
+  //console.log(userLang)
 
   const languageNames = {
     'en': 'English',
     'ar': 'Arabic'
   };
 
-  useEffect(() => {
-    let languageCode = "";
-    for (const code in languageNames) {
-      if (languageNames[code] === userLang) {
-        languageCode = code;
-        break;
-      }
-    }
-    firstchange(languageCode)
-  }, [])
+  // useEffect(() => {
+  //   let languageCode = "";
+  //   for (const code in languageNames) {
+  //     if (languageNames[code] === userLang) {
+  //       languageCode = code;
+  //       break;
+  //     }
+  //   }
+  //   firstchange(languageCode)
+  // }, [])
 
 
   const changeLanguage = (lng) => {

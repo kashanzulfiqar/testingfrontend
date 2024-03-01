@@ -231,6 +231,12 @@
     "projectName": "اسم المشروع",
     "onGoing": "قيد التنفيذ",
     "viewAllProjects": "عرض جميع المشاريع",
+    "noPermissionToViewInvoices": "ليس لديك إذن لعرض الفواتير!",
+    "noPermissionToView": "ليس لديك إذن للعرض",
+    "noPermissionToViewPayments": "ليس لديك إذن لعرض المدفوعات!",
+    "noPermissionToViewClients": "ليس لديك إذن لعرض العملاء!",
+    "noPermissionToViewProjects": "ليس لديك إذن لعرض المشاريع!",
+    "requests": "الطلبات!",
     "errors": {
       "getDashboardDataError": "حدث خطأ في الحصول على بيانات لوحة التحكم",
       "getAllInvoicesError": "حدث خطأ في الحصول على جميع الفواتير",
@@ -380,6 +386,7 @@
       "enterFullName": "يرجى إدخال الاسم الكامل"
     },
     "disableConfirmation": "هل أنت متأكد أنك تريد تعطيل <b>{{fullName}}</b>؟",
+    "enableConfirmation": "هل أنت متأكد أنك تريد تمكين <b>{{fullName}}</b>؟",
     "employeeExitDate": "تاريخ خروج الموظف",
     "Modal": {
       "profileInformation": "معلومات الملف الشخصي",

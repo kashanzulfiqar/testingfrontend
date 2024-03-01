@@ -496,11 +496,11 @@ const AllEmployees = () => {
                   options={[
                     {
                       value: 'Active',
-                      label: "Active",
+                      label: t('active'),
                     },
                     {
                       value: 'In-Active',
-                      label: "In-Active",
+                      label: t('inActive'),
                     },
                   ]}
                 />
@@ -709,7 +709,7 @@ const AllEmployees = () => {
                 <div className="form-header">
                   <h3 style={{ marginBottom: "30px" }}>{open?.data?.userStatus === 'Active' ? t('disable') : t('enable')} {t('aAttend.employee')}</h3>
                   <p>
-                  <span dangerouslySetInnerHTML={{ __html: t('allEmp.disableConfirmation', { fullName: open?.data?.fullName }) }} />
+                  <span dangerouslySetInnerHTML={{ __html: t('allEmp.enableConfirmation', { fullName: open?.data?.fullName }) }} />
                   </p>
                 </div>
                 <div className="modal-btn delete-action">

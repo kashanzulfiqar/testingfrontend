@@ -722,7 +722,7 @@ const ProfitLoss = () => {
                                       {value >= 0
                                         ? `${t('finance.Profit&loss.profit')}    :    `
                                         : `${t('finance.Profit&loss.Loss')}     :    `}{" "}
-                                      {amountFormatter(value)}
+                                      {`\u200E${amountFormatter(value)}\u200E`}
                                     </>
                                   );
                                 }

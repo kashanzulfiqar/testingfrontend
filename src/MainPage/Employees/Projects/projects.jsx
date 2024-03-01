@@ -820,7 +820,7 @@ const Projects = () => {
                 });
               }}
             >
-              <i className="fa fa-pencil m-r-5" />
+              <i className={`fa fa-pencil ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
               {t('edit')}
             </button>
             <button
@@ -829,7 +829,7 @@ const Projects = () => {
                 openDelete(record);
               }}
             >
-              <i className="fa fa-trash-o m-r-5" /> {t('delete')}
+              <i className={`fa fa-trash ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} /> {t('delete')}
             </button>
           </div>
         </div>
@@ -1705,7 +1705,7 @@ const filteredColumns = columns.filter(column => {
                                   });
                                 }}
                               >
-                                <i className="fa fa-pencil m-r-5" />
+                                <i className={`fa fa-pencil ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
                                 {t('edit')}
                               </button>
                               <button
@@ -1714,7 +1714,7 @@ const filteredColumns = columns.filter(column => {
                                   openDelete(project);
                                 }}
                               >
-                                <i className="fa fa-trash-o m-r-5" /> {t('delete')}
+                                <i className={`fa fa-trash ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} /> {t('delete')}
                               </button>
                             </div>
                           </div>

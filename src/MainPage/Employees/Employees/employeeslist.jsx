@@ -368,11 +368,11 @@ const Employeeslist = () => {
                     <div className="dropdown-menu dropdown-menu-right">
                     {
                       (role === 'admin' || permissions?.updateUser) &&
-                      <a className="dropdown-item" href="javascript:void(0)" onClick={() => setOpen({ isAddOpen: false, isEditOpen: true, data: record })}><i className="fa fa-pencil m-r-5" /> {t('edit')}</a>
+                      <a className="dropdown-item" href="javascript:void(0)" onClick={() => setOpen({ isAddOpen: false, isEditOpen: true, data: record })}><i className={`fa fa-pencil ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} /> {t('edit')}</a>
                     }
                     {
                       (role === 'admin' || permissions?.updateStatusOfEmployee) &&
-                      <a className="dropdown-item" href="javascript:void(0)" onClick={() => setOpen({ isAddOpen: false, isEditOpen: false, isDelOpen: true, data: record })}><i className={record?.userStatus === 'Active' ? 'fa fa-user-times m-r-5' : 'fa fa-check m-r-5'} /> {record?.userStatus === 'Active' ? t('disable') : t('enable')}</a>
+                      <a className="dropdown-item" href="javascript:void(0)" onClick={() => setOpen({ isAddOpen: false, isEditOpen: false, isDelOpen: true, data: record })}><i className={record?.userStatus === 'Active' ? `fa fa-user-times ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}` : `fa fa-check ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} /> {record?.userStatus === 'Active' ? t('disable') : t('enable')}</a>
                     }
                     </div>
                   </div>
@@ -512,7 +512,7 @@ const Employeeslist = () => {
         <div className={`main-wrapper ${menu ? 'slide-nav': ''}`}> 
            <div className="page-wrapper">
               <Helmet>
-                  <title>{t('allEmp.listpageTitle')}</title>
+                  <title>{t('allEmp.listpageTitle')} - {t('header.daftarPro')}</title>
                   <meta name="description" content="Login page"/>
                   <link rel="icon" type="image/x-icon" href={favicon} />				
               </Helmet>
@@ -616,11 +616,11 @@ const Employeeslist = () => {
                         options={[
                           {
                             value: 'Active',
-                            label: "Active",
+                            label: t('active'),
                           },
                           {
                             value: 'In-Active',
-                            label: "In-Active",
+                            label: t('inActive'),
                           },
                         ]}
                       />
@@ -842,7 +842,7 @@ const Employeeslist = () => {
                       <div className="form-header">
                         <h3 style={{ marginBottom: "30px" }}>{open?.data?.userStatus === 'Active' ? t('disable') : t('enable')} {t('aAttend.employee')}</h3>
                         <p>
-                        <span dangerouslySetInnerHTML={{ __html: t('allEmp.disableConfirmation', { fullName: open?.data?.fullName }) }} />
+                        <span dangerouslySetInnerHTML={{ __html: t('allEmp.enableConfirmation', { fullName: open?.data?.fullName }) }} />
                         </p>
                       </div>
                       <div className="modal-btn delete-action">
