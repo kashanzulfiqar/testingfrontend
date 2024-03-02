@@ -273,11 +273,11 @@ const EmployeeDashboard = () => {
                       <div className="card-body">
                         <div className="time-list">
                           <div className="dash-stats-list">
-                            <h4>71</h4>
+                            <h4>0</h4>
                             <p>{t('totalTasks')}</p>
                           </div>
                           <div className="dash-stats-list">
-                            <h4>14</h4>
+                            <h4>0</h4>
                             <p>{t('pendingTasks')}</p>
                           </div>
                         </div>

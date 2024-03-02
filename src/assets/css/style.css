@@ -12865,6 +12865,10 @@ padding-right: unset;
   left: 0;
   right: unset;
 }
+[dir="rtl"] .ant-picker-suffix {
+  margin-right: 4px;
+  margin-left: unset;
+}
 /* 
 [dir="rtl"] .bg-custom {
   margin-right: unset !important;
