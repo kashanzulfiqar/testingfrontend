@@ -12847,6 +12847,12 @@ padding-right: unset;
 [dir="rtl"] .ant-picker-header-prev-btn {
   transform: scaleX(-1);
 }
+[dir="rtl"] .anticon-double-right {
+  transform: scaleX(-1);
+}
+[dir="rtl"] .anticon-double-left {
+  transform: scaleX(-1);
+}
 
 [dir="rtl"] .ant-picker-header-view {
   direction: ltr;

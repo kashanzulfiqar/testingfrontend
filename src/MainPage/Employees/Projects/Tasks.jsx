@@ -687,7 +687,7 @@ const onFinishEdit = (values) => {
                             {
                                 // whitespace: true,
                                 required: true,
-                                message: t('Tasks.pleasenetertags'),
+                                message: t('Tasks.pleaseentertags'),
                             },
                             ]}
                         >
