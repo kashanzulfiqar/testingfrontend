@@ -509,7 +509,7 @@ const BankDetails = () => {
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">
-                {open?.data ? t('holiday.update') : t('holiday.add')} {t('requests.addModal.add')} {t('settings.bankDetails')}
+                {open?.data ? t('holiday.update') : t('holiday.add')} {t('settings.bankDetails')}
               </h5>
               <button type="button" className="close" onClick={handleClose}>
                 <span aria-hidden="true">×</span>
