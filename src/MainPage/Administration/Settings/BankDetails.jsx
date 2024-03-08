@@ -279,6 +279,16 @@ const BankDetails = () => {
       // sorter: (a, b) => a.TagName.length - b.TagName.length,
     },
     {
+      title: t('settings.BankDetails.accountTitle'),
+      dataIndex: "accountTitle",
+      // sorter: (a, b) => a.TagName.length - b.TagName.length,
+    },
+    {
+      title: t('settings.BankDetails.accountNo'),
+      dataIndex: "accountNo",
+      // sorter: (a, b) => a.TagName.length - b.TagName.length,
+    },
+    {
       title: t('settings.BankDetails.country'),
       dataIndex: "country",
       // sorter: (a, b) => a.TagName.length - b.TagName.length,
@@ -532,6 +542,8 @@ const BankDetails = () => {
                 }}
                 initialValues={{
                   bankName: open?.data ? open?.data?.bankName : "",
+                  accountNo: open?.data ? open?.data?.accountNo : "",
+                  accountTitle: open?.data ? open?.data?.accountTitle : "",
                   country: open?.data ? open?.data?.country : "",
                   city: open?.data ? open?.data?.city : "",
                   address: open?.data ? open?.data?.address : "",
@@ -558,6 +570,62 @@ const BankDetails = () => {
                         className="custom-border"
                       >
                         <Input className="form-control" />
+                      </Form.Item>
+                    </div>
+                  </div>
+                  <div className="col-sm-6">
+                    <div className="form-group">
+                      <label className="col-form-label">
+                      {t('settings.BankDetails.accountTitle')}  <span className="text-danger">*</span>
+                      </label>
+                      <Form.Item
+                        name="accountTitle"
+                        rules={[
+                          {
+                            required: true,
+                            message: t('settings.BankDetails.pleaseEnterAccountTitle'),
+                          },
+                        ]}
+                        validateTrigger="onSubmit"
+                        className="custom-border"
+                      >
+                        <Input className="form-control" />
+                      </Form.Item>
+                    </div>
+                  </div>
+                  <div className="col-sm-6">
+                    <div className="form-group">
+                      
+                    <label className="col-form-label">
+                      {t('empProfile.bankAccountNo')} <span className="text-danger">*</span>
+                      </label>
+                      <Form.Item
+                        name='accountNo'
+                        className='custom-border'
+                        rules={[
+                          {
+                            whitespace: true,
+                            required: true,
+                            validator: (_, value) => {
+                              if (!value || value.trim() === '') {
+                                return Promise.reject(t('empProfile.errors.pleaseEnterBankAccountNumber'));
+                              } else if (/\s{2,}/.test(value)) {
+                                return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
+                              } else if (value.length < 3) {
+                                return Promise.reject(t('empProfile.errors.accountNumberMinLength'));
+                              }
+                              return Promise.resolve();
+                            },
+                          },
+                        ]}
+                      >
+                        <Input className='form-control' maxLength={50}
+                          // onKeyPress={(e) => {
+                          //   if ((e.which >= 65 && e.which <= 90) || (e.which >= 97 && e.which <= 122) || (e.which >= 33 &&  e.which <= 47) || (e.which >= 58 && e.which <= 64) || (e.which >= 91 && e.which <= 96) || (e.which >= 123 && e.which <= 126) ) {
+                          //     e.preventDefault();
+                          //   }
+                          // }}
+                        />
                       </Form.Item>
                     </div>
                   </div>

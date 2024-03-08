@@ -118,7 +118,7 @@ function GenerateSalaryPDF(row, view, screen, print) {
   // line 4
   doc.setFontSize(11);
   doc.setFont(undefined, 'normal')
-  doc.text(x, 230, '* This is computer generated slip does not require signature.');
+  doc.text(x, 230, '* This is a computer generated slip and does not require signature.');
   doc.text(x, 235, '* Contact us for any details.');
 
   //footer
