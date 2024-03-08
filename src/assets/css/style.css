@@ -12875,6 +12875,10 @@ padding-right: unset;
   margin-right: 4px;
   margin-left: unset;
 }
+
+[dir="rtl"] .ant-tooltip-inner {
+  text-align: right;
+}
 /* 
 [dir="rtl"] .bg-custom {
   margin-right: unset !important;
