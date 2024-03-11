@@ -619,7 +619,7 @@ const BankDetails = () => {
                           },
                         ]}
                       >
-                        <Input className='form-control' maxLength={50}
+                        <Input className='form-control' maxLength={17}
                           // onKeyPress={(e) => {
                           //   if ((e.which >= 65 && e.which <= 90) || (e.which >= 97 && e.which <= 122) || (e.which >= 33 &&  e.which <= 47) || (e.which >= 58 && e.which <= 64) || (e.which >= 91 && e.which <= 96) || (e.which >= 123 && e.which <= 126) ) {
                           //     e.preventDefault();
