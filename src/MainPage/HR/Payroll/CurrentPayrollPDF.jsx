@@ -59,6 +59,7 @@ function CurrentPayrollPDF(row_data, bankData) {
 
   const x = 20;
   let y = 0;
+  let xy = 0;
 
   const headerStyles = {
     // fillColor: '#F6F6F6',
@@ -112,6 +113,33 @@ function CurrentPayrollPDF(row_data, bankData) {
     record?.creditSalary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","),
   ]);
 
+  const maxCharsPerLine = 97;
+  const transferSentence = `Kindly Transfer the amount from account no ${bankData?.accountNo} titled ${bankData?.accountTitle} to the following employee account numbers mentioned below.`;
+
+  const splitSentence = [];
+  let startIndex = 0;
+
+  while (startIndex < transferSentence?.length) {
+    // Find the substring from the start index to the next whitespace or maximum characters per line
+    let endIndex = startIndex + maxCharsPerLine;
+    if (endIndex < transferSentence?.length) {
+      while (endIndex > startIndex && transferSentence[endIndex] !== ' ' && transferSentence[endIndex - 1] !== ' ') {
+        endIndex--;
+      }
+    }
+  
+    // Add the substring to the splitSentence array
+    splitSentence.push(transferSentence?.substring(startIndex, endIndex));
+  
+    // Move the start index to the next character after the end index
+    startIndex = endIndex;
+  
+    // Skip leading space on the next line if present
+    if (transferSentence[startIndex] === ' ') {
+      startIndex++;
+    }
+  }
+
   doc.setFontSize(10);
 
   doc.setFont(undefined, "normal");
@@ -146,16 +174,25 @@ function CurrentPayrollPDF(row_data, bankData) {
 
   doc.text(x, 52+y, "Sir,");
 
-  doc.text(
-    x,
-    60+y,
-    `Kindly Transfer the amount from account no ${bankData?.accountNo} titled ${bankData?.accountTitle}`
-  );
+  splitSentence?.forEach((line, index) => {
+    doc.text(x, 60 + y + index * 5, line);
+    
+    if (index >= 2) {
+      xy += 5;
+    }
+    
+  });
 
-  doc.text(x, 65+y, "to the following employee account numbers mentioned below.");
+  // doc.text(
+  //   x,
+  //   60+y,
+  //   `Kindly Transfer the amount from account no ${bankData?.accountNo} titled ${bankData?.accountTitle} to the following employee account numbers mentioned below.`
+  // );
+
+  //doc.text(x, 60+y, "to the following employee account numbers mentioned below.");
 
   doc.autoTable({
-    margin: { top: 75+y, right: 20, left: 20 },
+    margin: { top: 75+y+xy, right: 20, left: 20 },
 
     headStyles: headerStyles,
 

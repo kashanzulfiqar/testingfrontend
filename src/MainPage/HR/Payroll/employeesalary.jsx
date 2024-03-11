@@ -1248,7 +1248,14 @@ const EmployeeSalary = () => {
                   type="default"
                   icon={<DownloadOutlinedIcon />}
                   onClick={() => {
-                    if (!bankData?.financeHeadName) {
+                    if (!bankData) {
+                      //if (!messageflag) {
+                      message.warning(t('noBankAdded'));
+                      nav('/settings')
+                      //console.log("empty");
+                      return;
+                    }
+                    else if (!bankData?.financeHeadName) {
                       //if (!messageflag) {
                       message.warning(t('addFinancialHeadFirst'));
                       nav('/settings')
