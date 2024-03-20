@@ -212,7 +212,7 @@ const LeaveEmployee = () => {
               <a className="btn btn-white btn-sm btn-rounded" href="javascript:void(0)">
                 <i className={text==="New" ? "fa fa-dot-circle-o text-purple" : text === "Pending" ?
               "fa fa-dot-circle-o text-warning" : text === "Approved" ? "fa fa-dot-circle-o text-success" 
-              :"fa fa-dot-circle-o text-danger" } /> {text}
+              :"fa fa-dot-circle-o text-danger" } /> {text==="Approved" ? t('aRequests.Approved') : text==="Declined" ? t('aRequests.Declined') : text==="Pending" ? t('aDash.pending') : text==="Cancelled" ? t('aDash.cancelled') : text}
               </a>
             </div>
             ),
@@ -567,19 +567,19 @@ const leaves = [
           <div className="col-md-3">
             <div className="stats-info">
               <label>{t('requests.casualLeave')}</label>
-              <h4>{singleUser?.casualLeaves} / {compLeaves?.casualLeaves}</h4>
+              <h4 style={{unicodeBidi:'plaintext'}}>{singleUser?.casualLeaves} / {compLeaves?.casualLeaves}</h4>
             </div>
           </div>
           <div className="col-md-3">
             <div className="stats-info">
               <label>{t('requests.sickLeave')}</label>
-              <h4>{singleUser?.sickLeaves} / {compLeaves?.sickLeaves}</h4>
+              <h4 style={{unicodeBidi:'plaintext'}}>{singleUser?.sickLeaves} / {compLeaves?.sickLeaves}</h4>
             </div>
           </div>
           <div className="col-md-3">
             <div className="stats-info">
               <label>{t('requests.workFromHome')}</label>
-              <h4>{singleUser?.workFromHomeLeaves} / {compLeaves?.workFromHomeLeaves}</h4>
+              <h4 style={{unicodeBidi:'plaintext'}}>{singleUser?.workFromHomeLeaves} / {compLeaves?.workFromHomeLeaves}</h4>
             </div>
           </div>
           <div className="col-md-3">

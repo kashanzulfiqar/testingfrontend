@@ -68,7 +68,10 @@ const EmployeeSalary = () => {
   const [data, setData] = useState([]);
   const [editModal, setEditModal] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
+  const [bankData, setBankData] = useState({});
 
+  
+  const [employees, setEmployees] = useState([]);
   const [paginationDetail, setPaginationDetail] = useState();
 
   const [pagination, setPagination] = useState({
@@ -92,6 +95,10 @@ const EmployeeSalary = () => {
   const [dataAvailable, setDataAvailable] = useState(false);
   const [downAvailable, setDownAvailable] = useState(false);
   
+  useEffect(()=>{
+    getBankDetails();
+  },[])
+
   useEffect(()=>{
     if (data.length===0){
       setDataAvailable(false);
@@ -240,6 +247,38 @@ const EmployeeSalary = () => {
     setGenModal(false);
     setLoader(false);
     PayFilterReset();
+  };
+
+  const getBankDetails = () => {
+    //setTableLoader(true);
+    apiServices("GET", "bank-details", null, user_state)
+      .then((res) => {
+        // console.log(res?.data?.leavePolicies);
+        if (res?.data?.success === true) {
+          setBankData(res?.data?.bankDetail[0]);
+          console.log(res?.data?.bankDetail[0])
+          // setBankId(
+          //   res?.data?.bankDetail?._id ? res?.data?.bankDetail?._id : null
+          // );
+          //setTableLoader(false);
+        }
+      })
+      .catch((err) => {
+        //setTableLoader(false);
+        // console.log(err);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : t('settings.BankDetails.getBankDetailError')
+          }!`
+        );
+      });
+
+    // setData(data1 ? data1 : {})
+    // setFirstLeaves(data1)
   };
 
   const handleGeneratePayroll = () => {
@@ -1209,7 +1248,24 @@ const EmployeeSalary = () => {
                   type="default"
                   icon={<DownloadOutlinedIcon />}
                   onClick={() => {
-                    setDownloadModal(true);
+                    if (!bankData) {
+                      //if (!messageflag) {
+                      message.warning(t('noBankAdded'));
+                      nav('/settings')
+                      //console.log("empty");
+                      return;
+                    }
+                    else if (!bankData?.financeHeadName) {
+                      //if (!messageflag) {
+                      message.warning(t('addFinancialHeadFirst'));
+                      nav('/settings')
+                      //console.log("empty");
+                      return;
+                    }
+                    else{
+                      setDownloadModal(true);
+                    }
+                    //setDownloadModal(true);
                   }}
                   style={{ backgroundColor: '#ff9b44', color: '#ffffff', borderRadius: "40px",
                   pointerEvents: isDisabled ? 'none' : 'auto',
@@ -1615,7 +1671,7 @@ const EmployeeSalary = () => {
                   className="btn add-btn"
                   disabled={isdownDisabled}
                   onClick={() => {
-                    CurrentPayrollPDF(downloadData)
+                    CurrentPayrollPDF(downloadData, bankData)
                     // downloadPDF(downloadData);
                     // console.log(downloadData);
                   }}>

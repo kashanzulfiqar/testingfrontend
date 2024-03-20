@@ -130,7 +130,7 @@ const EmployeeDashboard = () => {
       width: '35%',
       render: (status) => (
         <span style={{ color: status === 'Pending' ? 'orange' : status === 'Approved' ? 'green' : 'red' }}>
-        {status}
+        {status==="Approved" ? t('aRequests.Approved') : status==="Declined" ? t('aRequests.Declined') : status==="Pending" ? t('aDash.pending') : status==="Cancelled" ? t('aDash.cancelled') : status}
       </span>
       ),
     },

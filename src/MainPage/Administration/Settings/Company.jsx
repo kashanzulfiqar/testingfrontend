@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import PhoneNoInput from "../../../Components/PhoneNoInput/index.jsx";
-import { Button, Form, Input, Spin, Upload, message, Select } from "antd";
+import { Button, Form, Input, Spin, Upload, message, Select, Empty, Tooltip } from "antd";
 import { useSelector } from "react-redux";
 import { apiServices } from "../../../Services/apiServices.js";
 import { LoadingOutlined } from '@ant-design/icons';
@@ -20,10 +20,12 @@ const Company = () => {
   const [imageLoader, setImageLoader] = useState(false)
   const [image, setImage] = useState('')
   const [allCurrencies, setAllCurrencies] = useState([]);
+  const [employees, setEmployees] = useState([]);
 
   useEffect(() => {
     getCompanyData();
     getAllCurrencies();
+    fetchEmployees();
   }, []);
 
   const getCompanyData = () => {
@@ -46,6 +48,36 @@ const Company = () => {
           }`
         );
       });
+  };
+
+  const fetchEmployees = () => {
+    apiServices("GET", `user/all-employees`, null, user_state)
+      .then((res) => {
+        if (res.data.success === true) {
+          const emps = res?.data?.User;
+          const sortedData = emps?.slice().sort((a, b) => a.fullName.localeCompare(b.fullName));
+          setEmployees(sortedData);
+        }
+      })
+      .catch((err) => {
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : t('aAttend.errors.getEmployeesError')
+          }`
+        );
+      });
+  };
+
+  const getTeamMemberOptions = () => {
+    return employees?.map((employee) => (
+      <Select.Option key={employee._id} value={employee._id}>
+        {employee.fullName}
+      </Select.Option>
+    ));
   };
 
   const onHandleChange = (type, value) => {
@@ -374,6 +406,57 @@ const Company = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
+                {t('settings.companySettings.finance')} <span className="text-danger">*</span>
+                  <Tooltip className="custom-tooltip" placement="rightBottom" title={(
+                      <label>{t('settings.companySettings.financeInstruction')}</label>
+                  )}>
+                      <span style={{border: '1px solid grey', color: 'grey', fontSize: '12px', borderRadius: '50%', padding: '1.5px 4px 1px', margin: '5px', cursor: 'pointer'}}>
+                      {t('Tasks.Qmark')}
+                      </span>
+                  </Tooltip>
+                </label>
+                <div style={{ position: "relative" }} id="area">
+                      <Form.Item
+                        name="financeHead"
+                        className="custom-border"
+                        rules={[
+                          {
+                            required: true,
+                            message: t('finance.expenses.pleaseSelectFinanceHead'),
+                          },
+                        ]}
+                      >
+                        <Select
+                          showSearch
+                          // onSearch={(val) => {
+                          //   showTeamSearch(val, 'Team')
+                          //   // onTeamChange(val)
+                          // }}
+                          filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                          optionFilterProp="children"
+                          notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                          dropdownRender={(menu) => (
+                            <>
+                              {menu}
+                            </>
+                          )}
+
+                          getPopupContainer={() =>
+                            document.getElementById("area")
+                          }
+                          className="custom-select custom-normal"
+                          placeholder={t('selectFinanceHead')}
+                          //onChange={(values) => setSelectedTeamMembers(values)}
+                        >
+                          {getTeamMemberOptions()}
+                        </Select>
+                      </Form.Item>
+                    </div>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
                 {t('settings.companySettings.address')} <span className="text-danger">*</span>
                 </label>
                 <Form.Item
@@ -425,7 +508,7 @@ const Company = () => {
                         rules={[
                           {
                             required: true,
-                            message: t('settings.companySettings.pleaseSelectCurrency'),
+                            message: t('finance.expenses.pleaseSelectCurrency'),
                           },
                         ]}
                       >

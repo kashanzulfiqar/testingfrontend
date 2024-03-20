@@ -4,7 +4,7 @@ import jsPDF from "jspdf";
 
 import "jspdf-autotable";
 
-function CurrentPayrollPDF(row_data) {
+function CurrentPayrollPDF(row_data, bankData) {
   function getCurrentFormattedDate() {
     const months = [
       "January",
@@ -58,6 +58,8 @@ function CurrentPayrollPDF(row_data) {
   doc.setTextColor(50, 50, 50);
 
   const x = 20;
+  let y = 0;
+  let xy = 0;
 
   const headerStyles = {
     // fillColor: '#F6F6F6',
@@ -70,6 +72,32 @@ function CurrentPayrollPDF(row_data) {
 
     fontSize: 10,
   };
+
+  const splitAddress = (address) => {
+    const maxLength = 32; // maximum characters per line
+    const words = address?.split(" ");
+    const lines = [];
+    let currentLine = "";
+
+    words?.forEach((word) => {
+      if ((currentLine + word).length > maxLength) {
+        lines.push(currentLine.trim());
+        currentLine = "";
+      }
+      currentLine += word + " ";
+    });
+
+    if (currentLine !== "") {
+      lines?.push(currentLine.trim());
+    }
+
+    return lines;
+  };
+
+  //const address="DHA Avenue "
+  const addressLines = splitAddress(bankData?.address);
+
+  const addressHeight = addressLines?.length * 8;
 
   const dataForPDF = d1.map((record, index) => [
     `${index + 1}.`,
@@ -84,6 +112,33 @@ function CurrentPayrollPDF(row_data) {
 
     record?.creditSalary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","),
   ]);
+
+  const maxCharsPerLine = 97;
+  const transferSentence = `Kindly Transfer the amount from account no ${bankData?.accountNo} titled ${bankData?.accountTitle} to the following employee account numbers mentioned below.`;
+
+  const splitSentence = [];
+  let startIndex = 0;
+
+  while (startIndex < transferSentence?.length) {
+    // Find the substring from the start index to the next whitespace or maximum characters per line
+    let endIndex = startIndex + maxCharsPerLine;
+    if (endIndex < transferSentence?.length) {
+      while (endIndex > startIndex && transferSentence[endIndex] !== ' ' && transferSentence[endIndex - 1] !== ' ') {
+        endIndex--;
+      }
+    }
+  
+    // Add the substring to the splitSentence array
+    splitSentence.push(transferSentence?.substring(startIndex, endIndex));
+  
+    // Move the start index to the next character after the end index
+    startIndex = endIndex;
+  
+    // Skip leading space on the next line if present
+    if (transferSentence[startIndex] === ' ') {
+      startIndex++;
+    }
+  }
 
   doc.setFontSize(10);
 
@@ -103,30 +158,41 @@ function CurrentPayrollPDF(row_data) {
 
   doc.setFont(undefined, "normal");
 
-  doc.text(x, 32, "Meezan Bank Limited");
+  doc.text(x, 32, bankData?.bankName);
 
-  doc.text(x, 40, "DHA Avenue Mall, Main Boulevard,");
-
-  doc.text(x, 48, "DHA Phase 1, Rawalpindi");
+  //doc.text(x, 40, bankData?.address);
+  addressLines.forEach((line, index) => {
+    doc.text(x, 40 + index * 8, line);
+    y += 8;
+  });
 
   doc.setFont(undefined, "bold");
 
-  doc.text(x, 56, "Subject: Salary Transfer to Employees Accounts");
+  doc.text(x, 40+y, "Subject: Salary Transfer to Employees Accounts");
 
   doc.setFont(undefined, "normal");
 
-  doc.text(x, 66, "Sir,");
+  doc.text(x, 52+y, "Sir,");
 
-  doc.text(
-    x,
-    74,
-    "Kindly Transfer the amount from account no 0831-0107338610 titled DEVGATE (SMC-PRIVATE) LIMITED"
-  );
+  splitSentence?.forEach((line, index) => {
+    doc.text(x, 60 + y + index * 5, line);
+    
+    if (index >= 2) {
+      xy += 5;
+    }
+    
+  });
 
-  doc.text(x, 79, "to the following employee account numbers mentioned below.");
+  // doc.text(
+  //   x,
+  //   60+y,
+  //   `Kindly Transfer the amount from account no ${bankData?.accountNo} titled ${bankData?.accountTitle} to the following employee account numbers mentioned below.`
+  // );
+
+  //doc.text(x, 60+y, "to the following employee account numbers mentioned below.");
 
   doc.autoTable({
-    margin: { top: 88, right: 20, left: 20 },
+    margin: { top: 75+y+xy, right: 20, left: 20 },
 
     headStyles: headerStyles,
 
@@ -155,11 +221,11 @@ function CurrentPayrollPDF(row_data) {
 
   doc.text(x, currentY + 25, "Regards,");
 
-  doc.text(x, currentY + 33, "Aqib Zulfiqar");
+  doc.text(x, currentY + 33, bankData?.financeHeadName);
 
-  doc.text(x, currentY + 41, "C.E.O.");
+  doc.text(x, currentY + 41, bankData?.financeHeadDesignation);
 
-  doc.text(x, currentY + 49, "DEVGATE (SMC-PRIVATE) LIMITED");
+  doc.text(x, currentY + 49, bankData?.companyName);
 
   doc.save("payroll_export.pdf");
 

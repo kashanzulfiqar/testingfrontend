@@ -187,7 +187,7 @@ const Header = (props) => {
               aria-expanded="false"
               style={{ background: 'transparent', border: 'none' }}
             >
-              <GlobalOutlined style={{ marginRight: '5px' }} /> 
+              <GlobalOutlined style={{ marginRight: '5px' }} />
               {i18n.language === 'en' ? 'English' : 'العربية'} 
             </button>
             <ul className="dropdown-menu dropdown-menu1 dropdown-menu-end" aria-labelledby="languageDropdown">
@@ -244,7 +244,6 @@ const Header = (props) => {
     >
       <GlobalOutlined style={{ marginLeft: i18n.dir()==="rtl" ? '5px' : "unset", marginRight: i18n.dir()==="rtl" ? 'unset' : "5px" }} /> 
       {i18n.language === 'en' ? t('header.switchToLanguage', {language: "'العربية'"}) : t('header.switchToLanguage', {language: "'English'"})}
-      
     </a> */}
           <a className="dropdown-item" onClick={() => {
               localStorage.clear();

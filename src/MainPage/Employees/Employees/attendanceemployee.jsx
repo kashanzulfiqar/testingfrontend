@@ -668,7 +668,7 @@ const AttendanceEmployee = () => {
                 : "black",
           }}
         >
-          {status}
+          {status==="Present" ? t('present') : status==="Late" ? t('late') : status==="On-Leave" ? t('on-Leave') : status==="Holiday" ? t('holiDay') : status==="Absent" ? t('absent') : status}
         </span>
       ),
     },
@@ -746,7 +746,7 @@ const AttendanceEmployee = () => {
                   <div className="card-body">
                     <h5 className="card-title d-flex gap-1">
                     {t('timesheet')}
-                      <h5 className="text-muted" style={{ fontSize: "20px" }}>
+                      <h5 className="text-muted" style={{ fontSize: "20px", unicodeBidi:'plaintext' }}>
                         {currentDate}
                       </h5>
                     </h5>
@@ -857,7 +857,7 @@ const AttendanceEmployee = () => {
                                 checkIn.status === "Absent" ||
                                 checkIn.status === "On-Leave" ||
                                 checkIn.status === "Holiday"
-                                  ? checkIn.status
+                                  ? (checkIn.status==="Present" ? t('present') : checkIn.status==="Late" ? t('late') : checkIn.status==="On-Leave" ? t('on-Leave') : checkIn.status==="Holiday" ? t('holiDay') : checkIn.status==="Absent" ? t('absent') : checkIn.status)
                                   : "--"}
                               </label>
                             </h6>
@@ -890,14 +890,14 @@ const AttendanceEmployee = () => {
                       <div className="stats-info">
                         <p>
                         {t('today')}{" "}
-                          <strong>
+                          <strong style={{direction:"ltr"}}>
                             {isCheckedOut
                               ? formatHoursMinutes(checkOut.hoursWorked)
                               : formatTodayTime(
                                   elapsedTime
                                 ) // Create a function to format elapsed time
                             }{" "}
-                            <small>/ {formatHoursMinutes(Math.floor(shiftDuration))}</small>
+                            <small style={{unicodeBidi:'plaintext'}}>/ {formatHoursMinutes(Math.floor(shiftDuration))}</small>
                           </strong>
                         </p>
                         <div className="progress">
@@ -914,7 +914,7 @@ const AttendanceEmployee = () => {
                       <div className="stats-info">
                         <p>
                           <label>{t('thisWeek')}</label>
-                          <strong>
+                          <strong style={{direction:"ltr"}}>
                             {isCheckedOut
                               ? ( !statDisable ? 
                                 formatHoursMinutes(stats.lastWeek) 
@@ -924,7 +924,7 @@ const AttendanceEmployee = () => {
                                 ) // Create a function to format elapsed time
                             }{" "}
                             {/* {formatHoursMinutes(stats.lastWeek)}{" "} */}
-                            <small>/ {formatHoursMinutes(Math.floor(shiftDuration*5))}</small>
+                            <small style={{unicodeBidi:'plaintext'}}>/ {formatHoursMinutes(Math.floor(shiftDuration*5))}</small>
                           </strong>
                         </p>
                         <div className="progress">
@@ -945,7 +945,7 @@ const AttendanceEmployee = () => {
                       <div className="stats-info">
                         <p>
                           <label>{t('thisMonth')}</label>
-                          <strong>
+                          <strong style={{direction:"ltr"}}>
                           {isCheckedOut
                               ? ( !statDisable ? 
                                 formatHoursMinutes(stats.lastMonth) 
@@ -956,7 +956,7 @@ const AttendanceEmployee = () => {
                                 ) // Create a function to format elapsed time
                             }{" "}
                             {/* {formatHoursMinutes(stats.lastMonth)}{" "} */}
-                            <small>/ {formatHoursMinutes(Math.floor(shiftDuration*22))}</small>
+                            <small style={{unicodeBidi:'plaintext'}}>/ {formatHoursMinutes(Math.floor(shiftDuration*22))}</small>
                           </strong>
                         </p>
                         <div className="progress">
@@ -978,7 +978,7 @@ const AttendanceEmployee = () => {
                       <div className="stats-info">
                         <p>
                         {t('remaining')}{" "}
-                          <strong>
+                          <strong style={{direction:"ltr"}}>
                           {isCheckedOut
                               ? ( !statDisable ? 
                                 formatHoursMinutes(Math.max(0, Math.floor((shiftDuration*22) - parseFloat(stats.lastMonth))))
@@ -996,7 +996,7 @@ const AttendanceEmployee = () => {
                             {/* {formatHoursMinutes(
                               Math.floor((shiftDuration*22) - parseFloat(stats.lastMonth))
                             )}{" "} */}
-                            <small>/ {formatHoursMinutes(Math.floor(shiftDuration*22))}</small>
+                            <small style={{unicodeBidi:'plaintext'}}>/ {formatHoursMinutes(Math.floor(shiftDuration*22))}</small>
                           </strong>
                         </p>
                         <div className="progress">
@@ -1228,7 +1228,7 @@ const AttendanceEmployee = () => {
                                         : "black",
                                   }}
                                 >
-                                  {attendance.status}
+                                  {attendance.status==="Present" ? t('present') : attendance.status==="Late" ? t('late') : attendance.status==="On-Leave" ? t('on-Leave') : attendance.status==="Holiday" ? t('holiDay') : attendance.status==="Absent" ? t('absent') : attendance.status}
                                 </label>
                               </a>
                             </p>

@@ -12778,13 +12778,13 @@ padding-right: unset;
   transform: translate3d(0px, 50px, 0px) !important;
 }
 
-.ant-table .ant-select-selection-item {
+.ant-pagination .ant-select-selection-item {
   direction: ltr;
 }
 
-/* .ant-picker-dropdown, .ant-select-dropdown {
+.ant-pagination .ant-select-dropdown {
   direction: ltr;
-} */
+}
 
 [dir="rtl"] .welcome-box .welcome-img {
   margin-left: 15px;
@@ -12840,6 +12840,23 @@ padding-right: unset;
 [dir="rtl"] .ant-picker-header-super-prev-btn {
   transform: scaleX(-1);
 }
+[dir="rtl"] .ant-picker-header-next-btn {
+  transform: scaleX(-1);
+}
+
+[dir="rtl"] .ant-picker-header-prev-btn {
+  transform: scaleX(-1);
+}
+[dir="rtl"] .anticon-double-right {
+  transform: scaleX(-1);
+}
+[dir="rtl"] .anticon-double-left {
+  transform: scaleX(-1);
+}
+
+[dir="rtl"] .ant-picker-header-view {
+  direction: ltr;
+}
 
 [dir="rtl"] .ant-input-number-handler-wrap {
   left: 0;
@@ -12854,3 +12871,19 @@ padding-right: unset;
   left: 0;
   right: unset;
 }
+[dir="rtl"] .ant-picker-suffix {
+  margin-right: 4px;
+  margin-left: unset;
+}
+
+[dir="rtl"] .ant-tooltip-inner {
+  text-align: right;
+}
+/* 
+[dir="rtl"] .bg-custom {
+  margin-right: unset !important;
+}
+
+[dir="rtl"] .custom-badgeclass{
+  margin-right: auto !important; 
+} */
