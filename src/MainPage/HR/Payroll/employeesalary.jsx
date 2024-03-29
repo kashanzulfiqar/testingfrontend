@@ -1150,7 +1150,8 @@ const EmployeeSalary = () => {
         if (res.data.success === true) {
           message.success(`Payroll Details Updated`);
           closeEditModal();
-          handleReset();
+          //handleReset();
+          firstAPI()
         }
       })
       .catch((error) => {
