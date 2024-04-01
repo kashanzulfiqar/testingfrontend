@@ -24,7 +24,6 @@ import {
   Empty,
   Input,
   Pagination,
-  Tooltip,
 } from "antd";
 import "antd/dist/antd.css";
 import { itemRender, onShowSizeChange } from "../../paginationfunction";
@@ -1398,27 +1397,7 @@ const EmployeeSalary = () => {
             <div className="modal-dialog modal-dialog-centered" role="document">
               <div className="modal-content">
                 <div className="modal-header">
-                  <h5 className="modal-title" style={{display:"flex", flexDirection:"row", alignItems:"center"}}>{t('payroll.currentPayroll.GeneratePayroll')}
-                    <Tooltip className="custom-tooltip" placement="rightBottom" title={(
-                        <label>Before generating payrolls, ensure that tax slabs have been added properly for all employees</label>
-                    )}>
-                      <span style={{
-                        width: '20px',
-                        height: '20px',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        border: '1px solid red',
-                        color: 'red',
-                        fontSize: '12px',
-                        borderRadius: '50%',
-                        padding: '1.5px 4px 1px',
-                        margin: '5px',
-                        cursor: 'pointer'
-                      }}>
-                      ?
-                      </span>
-                  </Tooltip></h5>
+                  <h5 className="modal-title">{t('payroll.currentPayroll.GeneratePayroll')}</h5>
                   <button
                     type="button"
                     className="close"
