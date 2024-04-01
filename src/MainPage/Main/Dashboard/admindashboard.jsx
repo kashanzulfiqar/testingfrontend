@@ -693,7 +693,7 @@ const antIcon = (
               <div className="col-md-12 col-lg-6 col-xl-4 d-flex">
                 <div className="card flex-fill">
                   <div className="card-body">
-                    <h4 className="card-title">{t('aDash.todayAbsent')} <span className="badge bg-inverse-danger ml-2">5</span></h4>
+                    <h4 className="card-title">Recent Requests</h4>
                     {
                       tableLoader?.request ? <Spin style={{display: 'grid', placeItems: 'center', height: '263px'}} /> :
                       !perm?.request ? <label style={{display: 'grid', placeItems: 'center', color: 'grey', height: '285px', textAlign: 'center'}}>{t('aDash.noPermissionToView')} <br /> {t('aDash.requests')}</label> :
