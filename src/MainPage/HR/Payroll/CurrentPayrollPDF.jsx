@@ -110,7 +110,7 @@ function CurrentPayrollPDF(row_data, bankData) {
 
     record?.user?.bankAccountNumber,
 
-    record?.creditSalary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+    record?.creditSalary === "NaN" ? "-" : record?.creditSalary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","),
   ]);
 
   const maxCharsPerLine = 97;
