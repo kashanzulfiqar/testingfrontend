@@ -51,6 +51,7 @@ const AttendanceAdmin = () => {
   const [selectedMonthYear, setSelectedMonthYear] = useState("");
   const [statdata, setStatdata] = useState(null);
   const [specific, setSpecific] = useState(null);
+  const [multiple, setMultiple] = useState([]);
 
   const toggleMobileMenu = () => {
     setMenu(!menu);
@@ -187,12 +188,33 @@ const AttendanceAdmin = () => {
   const openModal = (dayRecord, abbreviation) => {
     if (abbreviation !== "-") {
       setIsModalVisible(true);
-      setDayRecord(dayRecord);
+      if (dayRecord?.attendanceRecords){
+        console.log(dayRecord?.attendanceRecords)
+        setMultiple(dayRecord?.attendanceRecords);
+        const len = dayRecord?.attendanceRecords?.length
+        const checkIn = dayRecord?.attendanceRecords[0]?.checkInTime
+        const checkOut = dayRecord?.attendanceRecords[len-1]?.checkOutTime
+        const update = {
+          ...dayRecord,
+          checkInTime: checkIn,
+          checkOutTime: checkOut
+        }
+        setDayRecord(update); 
+      }
+      else{
+        setMultiple([{
+          checkInTime: dayRecord?.checkInTime,
+          checkOutTime: dayRecord?.checkOutTime,
+          hoursWorked: dayRecord?.hoursWorked
+        }]);
+        setDayRecord(dayRecord)
+      }
     }
   };
 
   const closeModal = () => {
     setIsModalVisible(false);
+    setMultiple([]);
   };
 
   const antIcon = (
@@ -529,6 +551,7 @@ const AttendanceAdmin = () => {
           // );
           const updatedDayRecord = {
             ...dayRecord,
+            //attendanceRecords: res.data.Attendance.attendanceRecords,
             checkInTime: updated_data.checkInTime,
             checkOutTime: updated_data.checkOutTime,
             status: updated_data.status,
@@ -536,6 +559,7 @@ const AttendanceAdmin = () => {
             overTime: res.data.Attendance.overTime,
           };
 
+          setMultiple(res.data.Attendance.attendanceRecords);
           // Update the dayRecord state with the new values
           setDayRecord(updatedDayRecord);
           fetchAttendanceData();
@@ -917,7 +941,33 @@ const AttendanceAdmin = () => {
                                     alignItems: "center",
                                   }}
                                 >
-                                  <div className="text-center">
+                                  <div className="col-md-6 col-6 text-center">
+                                    <div className="stats-box">
+                                      <p>{t('status')}</p>
+
+                                      <h6>
+                                        <label
+                                          style={{
+                                            color:
+                                              dayRecord.status === "Late"
+                                                ? "red"
+                                                : dayRecord.status === "Absent"
+                                                ? "red"
+                                                : dayRecord.status === "Present"
+                                                ? "green"
+                                                : dayRecord.status === "On-Leave"
+                                                ? "orange"
+                                                : dayRecord.status === "Holiday"
+                                                ? "blue"
+                                                : "black",
+                                          }}
+                                        >
+                                          {dayRecord.status}
+                                        </label>
+                                      </h6>
+                                    </div>
+                                  </div>
+                                  <div className="col-md-6 col-6 text-center">
                                     <div className="stats-box">
                                       <p>{t('overtime')}</p>
 
@@ -944,77 +994,87 @@ const AttendanceAdmin = () => {
                               <h5 className="card-title">{t('aAttend.Modal.todayActivity')}</h5>
                               <div
                                 className="stats-list"
-                                style={{ height: "365px" }}
+                                style={{ height: "365px",overflowY: "auto"  }}
                               >
-                                <ul className="res-activity-list">
-                                  <li>
-                                    <h4 className="mb-0">
-                                      <label>{t('aAttend.Modal.checkInAt')}</label>
-                                    </h4>
-                                    <h5 className="res-activity-time">
-                                      <i className="fa fa-clock-o" />
-                                      <label>
-                                        <h5>
-                                          {dayRecord.checkInTime
-                                            ? moment(
-                                                dayRecord.checkInTime,
-                                                "HH:mm"
-                                              ).format("h:mm A")
-                                            : "--"}
-                                        </h5>
-                                      </label>
-                                    </h5>
-                                  </li>
-                                  <br />
-                                  <br />
-                                  <div className="text-center">
-                                    <div className="stats-box">
-                                      <h2>{t('status')}</h2>
+                                <p className="mb-0"
+                                  style={{
+                                    display: "flex",
+                                    flexDirection: "row",
+                                    justifyContent: "space-between",
+                                  }}>
+                                    <label
+                                    style={{paddingLeft:'29px'}}>
+                                      CheckIn:
+                                    </label>
+                                    <label
+                                    style={{paddingRight:'11px',paddingLeft:'20px'}}>
+                                      CheckOut:
+                                    </label>
+                                    <label
+                                    style={{paddingRight:'19px'}}>
+                                      Duration:
+                                    </label>
+                                  </p>
+                                {multiple?.slice().reverse().map((attendance, index) => (
+                          <ul
+                          className="res-activity-list"
+                          style={{ 
+                            marginRight: (i18n.dir() === 'rtl') ? "unset" : "10px", 
+                            marginLeft: (i18n.dir() === 'rtl') ? "10px" : "unset",
+                            
+                           }}
+                        >
+                          <li key={index}>
+                            <p
+                              className="res-activity-time"
+                              style={{
+                                display: "flex",
+                                flexDirection: "row",
+                                justifyContent: "space-between",
+                              }}
+                            >
+                              {attendance.checkInTime ? (
+                                <a style={{width:'75px', textAlign:'left'}}>
+                                  <i className="fa fa-clock-o" />{" "}
+                                  <label>
+                                    {attendance.checkInTime
+                                      ? moment(
+                                          attendance.checkInTime,
+                                          "HH:mm"
+                                        ).format("h:mm A")
+                                      : "--"}
+                                  </label>
+                                </a>
+                              ) : (
+                                ""
+                              )}
 
-                                      <h4>
-                                        <label
-                                          style={{
-                                            color:
-                                              dayRecord.status === "Late"
-                                                ? "orange"
-                                                : dayRecord.status === "Present"
-                                                ? "green"
-                                                : dayRecord.status ===
-                                                  "On-Leave"
-                                                ? "red"
-                                                : dayRecord.status === "Holiday"
-                                                ? "blue"
-                                                : "red",
-                                          }}
-                                        >
-                                          {dayRecord.status==="Present" ? t('present') : dayRecord.status==="Late" ? t('late') : dayRecord.status==="On-Leave" ? t('on-Leave') : dayRecord.status==="Holiday" ? t('holiDay') : dayRecord.status==="Absent" ? t('absent') : dayRecord.status}
-                                        </label>
-                                      </h4>
-                                    </div>
-                                  </div>
-                                  <br />
-                                  <br />
+                              {attendance.checkInTime ? (
+                                <a style={{width:'70px', textAlign:'left'}}>
+                                  <i className="fa fa-clock-o" />{" "}
+                                  <label>
+                                    {attendance.checkOutTime
+                                      ? moment(
+                                          attendance.checkOutTime,
+                                          "HH:mm"
+                                        ).format("h:mm A")
+                                      : "--"}
+                                  </label>
+                                </a>
+                              ) : (
+                                ""
+                              )}
 
-                                  <li>
-                                    <h4 className="mb-0">
-                                      <label>{t('aAttend.Modal.checkOutAt')}</label>
-                                    </h4>
-                                    <h5 className="res-activity-time">
-                                      <i className="fa fa-clock-o" />
-                                      <label>
-                                        <h5>
-                                          {dayRecord.checkOutTime
-                                            ? moment(
-                                                dayRecord.checkOutTime,
-                                                "HH:mm"
-                                              ).format("h:mm A")
-                                            : "--"}
-                                        </h5>
-                                      </label>
-                                    </h5>
-                                  </li>
-                                  {/* Add more entries as needed */}
-                                </ul>
+                              <a style={{paddingLeft:'9px',width:'75px', textAlign:'left'}}>
+                                <label>
+                                  {(!attendance?.checkInTime && !attendance?.checkOutTime) ? "" : formatHoursMinutes(attendance?.hoursWorked)}
+                                </label>
+                              </a>
+                            </p>
+                          </li>
+                          
+                      </ul>
+                        ))}
                               </div>
                             </div>
                           </div>

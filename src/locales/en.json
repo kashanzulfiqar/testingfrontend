@@ -281,7 +281,7 @@
     },
     "Modal": {
       "attendanceDetails": "Attendance Details",
-      "todayActivity": "Today Activity",
+      "todayActivity": "Today's Activity",
       "editAttendance": "Edit Attendance",
       "updateAttendance": "Update Attendance",
       "checkInTime": "Check In Time",

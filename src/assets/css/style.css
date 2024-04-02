@@ -5487,8 +5487,15 @@ table.table-new.dataTable > thead .sorting_desc_disabled:focus:before {
   margin: 0;
 }
 
-.recent-activity .res-activity-list {
+/* .recent-activity .res-activity-list {
   height: 328px;
+  list-style-type: none;
+  overflow-y: auto;
+  position: relative;
+  margin: 0;
+  padding: 0 0 0 30px;
+} */
+.recent-activity .res-activity-list {
   list-style-type: none;
   overflow-y: auto;
   position: relative;
