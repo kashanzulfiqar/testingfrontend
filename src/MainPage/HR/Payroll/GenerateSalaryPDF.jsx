@@ -131,7 +131,7 @@ function GenerateSalaryPDF(row, view, screen, print) {
   
   // Define the table data
   const tableData = [
-    ['Absent Fine', `${row?.absentFine?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`],
+    ['Absent Fine', `${(+row?.absentFine)?.toFixed(2)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`],
     ['Tax', `${row?.tax?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`],
     ['Deduction', `${row?.deduction?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`],
   ];
@@ -178,7 +178,7 @@ function GenerateSalaryPDF(row, view, screen, print) {
   doc.text(x + 110, 231, 'Total Deduction: ');
   const widthofDeduction = doc.getTextWidth('Total Deduction: ');
   doc.setFont(undefined, 'bold')
-  doc.text(x + widthofDeduction + 110, 231, `${row?.totalDeduction?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`);
+  doc.text(x + widthofDeduction + 110, 231, `${(+row?.totalDeduction)?.toFixed(2)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`);
 
   doc.setFontSize(18);
   doc.setFont(undefined, 'bold')
