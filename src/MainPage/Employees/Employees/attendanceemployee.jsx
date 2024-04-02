@@ -41,13 +41,16 @@ const AttendanceEmployee = () => {
   const [firstload, setFirstLoad] = useState(false);
 
   const [timer, setTimer] = useState(null);
+  const [multiple, setMultiple] = useState([]);
   const [elapsedTime, setElapsedTime] = useState(0);
+  const [elapse, setElapse] = useState(0);
   const [shiftStartTime, setShiftStartTime] = useState('');
   const [shiftEndTime, setShiftEndTime] = useState('');
   const [shiftDuration, setShiftDuration] = useState(0);
 
   const [checkIn, setCheckIn] = useState({
     attendanceId: "",
+    attendanceRecordId: "",
     attendanceDate: "",
     checkInTime: "",
     status: "",
@@ -121,11 +124,33 @@ const AttendanceEmployee = () => {
       .then((res) => {
         if (res.data.success === true) {
           const attendanceData = res?.data?.Attendance?.docs;
+          const aData = res?.data?.Attendance?.docs;
           setAttendanceData(attendanceData);
           const { shiftId } = res?.data?.user;
           const shiftStartTime = shiftId.startTime;
           const shiftEndTime = shiftId.endTime;
-
+          //const array = aData?.attendanceRecords
+          //console.log(array)
+          const len1 = aData?.map((a)=>{
+            return a?.attendanceRecords?.length
+          });
+          const len = len1[0];
+          console.log("aData",aData)
+          const records = aData?.map((a)=>{
+            const len = a?.attendanceRecords?.length
+            return a?.attendanceRecords[len-1]
+          })
+          let elp = 0
+          const multipleArray = aData?.map((a)=>{
+            setElapsedTime((a?.hoursWorked)*60000)
+            console.log((a?.hoursWorked)*60000)
+            elp = (a?.hoursWorked)*60000
+            setMultiple(a?.attendanceRecords)
+            //return a?.attendanceRecords
+          })
+          //setMultiple();
+          const attendanceRecord = records[0]
+          console.log("this is",records)
           // Calculate shift duration
           const shiftStart = moment(shiftStartTime, 'HH:mm:ss');
           const shiftEnd = moment(shiftEndTime, 'HH:mm:ss');
@@ -160,8 +185,9 @@ const AttendanceEmployee = () => {
             //   setElapsedTime(newElapsedTime);
             //   startTimer(startTime);
             // }
-            if (firstAttendanceRecord?.checkInTime) {
-              const checkInTime = firstAttendanceRecord?.checkInTime;
+            if (attendanceRecord?.checkInTime) {
+              const checkInTime = attendanceRecord?.checkInTime;
+              console.log("this is checkIn time")
               const [hours, minutes] = checkInTime.split(":").map(Number);
               const currentTime = new Date();
               const startTime = new Date(
@@ -171,8 +197,8 @@ const AttendanceEmployee = () => {
                 hours,
                 minutes
               );
-              if (firstAttendanceRecord?.checkOutTime) {
-                const checkOutTime = firstAttendanceRecord?.checkOutTime;
+              if (attendanceRecord?.checkOutTime) {
+                const checkOutTime = attendanceRecord?.checkOutTime;
                 const [outHours, outMinutes] = checkOutTime
                   .split(":")
                   .map(Number);
@@ -186,24 +212,25 @@ const AttendanceEmployee = () => {
 
                 const newElapsedTime = outTime - startTime;
                 // Set the elapsed time
-                setElapsedTime(newElapsedTime);
+                setElapse(newElapsedTime);
               } else {
                 let newElapsedTime = Date.now() - startTime.getTime();
                 // Start the timer only if it's a check-in
-                startTimer(startTime);
+                startTimer(startTime, elp);
                 // Set the elapsed time
-                setElapsedTime(newElapsedTime);
+                setElapsedTime((prev)=> prev + newElapsedTime);
               }
             }
 
             //console.log("First Attendance Record:", firstAttendanceRecord);
             //console.log(firstAttendanceRecord.checkInTime);
 
-            if (firstAttendanceRecord?.checkOutTime) {
+            if (attendanceRecord?.checkOutTime) {
               //setIsCheckedOut(true);
               setCheckout({
                 ...checkOut,
-                checkOutTime: firstAttendanceRecord?.checkOutTime,
+                //checkOutTime: firstAttendanceRecord?.checkOutTime,
+                checkOutTime: attendanceRecord?.checkOutTime,
                 hoursWorked: firstAttendanceRecord?.hoursWorked,
                 overTime: firstAttendanceRecord?.overTime,
               });
@@ -213,7 +240,7 @@ const AttendanceEmployee = () => {
                 firstAttendanceRecord.attendanceDate
               ).format("ddd, Do MMM YYYY")} 
                                       ${moment(
-                                        firstAttendanceRecord.checkOutTime,
+                                        attendanceRecord?.checkOutTime,
                                         "HH:mm"
                                       ).format("h:mm A")}`);
             } else if (
@@ -231,16 +258,17 @@ const AttendanceEmployee = () => {
                 firstAttendanceRecord.attendanceDate
               ).format("ddd, Do MMM YYYY")} 
                                       ${moment(
-                                        firstAttendanceRecord.checkInTime,
+                                        attendanceRecord?.checkInTime,
                                         "HH:mm"
                                       ).format("h:mm A")}`);
             }
             setCheckIn({
               ...checkIn,
-              attendanceId: firstAttendanceRecord._id,
-              checkInTime: firstAttendanceRecord.checkInTime,
-              attendanceDate: firstAttendanceRecord.attendanceDate,
-              status: firstAttendanceRecord.status,
+              attendanceId: firstAttendanceRecord?._id,
+              attendanceRecordId: attendanceRecord?._id,
+              checkInTime: attendanceRecord?.checkInTime,
+              attendanceDate: firstAttendanceRecord?.attendanceDate,
+              status: firstAttendanceRecord?.status,
             });
           }
         }
@@ -291,19 +319,25 @@ const AttendanceEmployee = () => {
     }
   });
 
-  const startTimer = (ftime) => {
+  const startTimer = (ftime, elp) => {
     if (ftime) {
       //console.log("first time",ftime)
       //const startTime = Date.now() - elapsedTime;
       const newTimer = setInterval(() => {
-        const newElapsedTime = Date.now() - ftime.getTime();
+        const newElapsedTime = Date.now() - ftime.getTime() + elp;
+        const stat = Date.now() - ftime.getTime()
         setElapsedTime(newElapsedTime);
+        setElapse(stat)
       }, 1000); // Update every second (1000 milliseconds)
       setTimer(newTimer);
     } else {
+      console.log(elapsedTime)
       const startTime = Date.now() - elapsedTime;
+      const newT = Date.now() - elapse;
       const newTimer = setInterval(() => {
         const newElapsedTime = Date.now() - startTime;
+        const ElapseTime = Date.now() - newT;
+        setElapse(ElapseTime);
         setElapsedTime(newElapsedTime);
       }, 1000); // Update every second (1000 milliseconds)
       setTimer(newTimer);
@@ -320,8 +354,8 @@ const AttendanceEmployee = () => {
   const MWorkTime = ((shiftDuration*22)/60) * 60 * 60 * 1000;
 
   const percentageCompleted = (elapsedTime / totalWorkTime) * 100;
-  const percentageweek = ((elapsedTime + (stats?.lastWeek * 60000)) / WWorkTime) * 100;
-  const percentagemonth = ((elapsedTime + (stats?.lastMonth * 60000)) / MWorkTime) * 100;
+  const percentageweek = ((elapse + (stats?.lastWeek * 60000)) / WWorkTime) * 100;
+  const percentagemonth = ((elapse + (stats?.lastMonth * 60000)) / MWorkTime) * 100;
 
   const formatElapsedTime = (milliseconds) => {
     if (!milliseconds) return "--";
@@ -361,13 +395,18 @@ const AttendanceEmployee = () => {
       apiServices("POST", "attendance/", data, user_state)
         .then((res) => {
           if (res.data.success === true) {
+            const len = res?.data?.Attendance?.attendanceRecords?.length
+            const attendanceRecord =  res?.data?.Attendance?.attendanceRecords[len-1]
+            console.log("this is",len)
+            setMultiple(res?.data?.Attendance?.attendanceRecords)
             startTimer();
             message.success(t('checkInSuccess'));
             setFirstLoad(false);
             setCheckIn({
               ...checkIn,
               attendanceId: res?.data?.Attendance?._id,
-              checkInTime: res?.data?.Attendance?.checkInTime,
+              attendanceRecordId: attendanceRecord?._id,
+              checkInTime: attendanceRecord?.checkInTime,
               attendanceDate: res?.data?.Attendance?.attendanceDate,
               status: res?.data?.Attendance?.status,
             });
@@ -421,6 +460,7 @@ const AttendanceEmployee = () => {
         `attendance/`,
         {
           _id: checkIn?.attendanceId,
+          attendanceRecordId: checkIn?.attendanceRecordId,
           checkOutTime: checkOutTime,
         },
         user_state
@@ -428,6 +468,8 @@ const AttendanceEmployee = () => {
         .then((res) => {
           if (res.data.success === true) {
             stopTimer();
+            setMultiple(res?.data?.Attendance?.attendanceRecords)
+            console.log(res?.data?.Attendance?.attendanceRecords)
             message.success(t('attendanceMarked'));
             setFirstLoad(false);
             setCheckout({
@@ -637,17 +679,31 @@ const AttendanceEmployee = () => {
     },
     {
       title: t('checkIn'),
-      dataIndex: "checkInTime",
+      dataIndex: "attendanceRecords",
       key: "checkInTime",
-      render: (checkInTime) =>
-        checkInTime ? moment(checkInTime, "HH:mm").format("h:mm A") : "--",
+      render: (attendanceRecords, record) => {
+        if (attendanceRecords && attendanceRecords?.length > 0) {
+        const firstRecord = attendanceRecords[0];
+        const checkInTime = firstRecord ? firstRecord.checkInTime : null;
+        return checkInTime ? moment(checkInTime, "HH:mm").format("h:mm A") : "--";
+        }else {
+          return record?.checkInTime ? moment(record?.checkInTime, "HH:mm").format("h:mm A") : "--";
+        }
+      }
     },
     {
       title: t('checkOut'),
-      dataIndex: "checkOutTime",
+      dataIndex: "attendanceRecords",
       key: "checkOutTime",
-      render: (checkOutTime) =>
-        checkOutTime ? moment(checkOutTime, "HH:mm").format("h:mm A") : "--",
+      render: (attendanceRecords, record) => {
+        if (attendanceRecords && attendanceRecords?.length > 0) {
+        const latestRecord = attendanceRecords[attendanceRecords.length - 1];
+        const checkOutTime = latestRecord ? latestRecord.checkOutTime : null;
+        return checkOutTime ? moment(checkOutTime, "HH:mm").format("h:mm A") : "--";
+      } else {
+        return record.checkOutTime ? moment(record.checkOutTime, "HH:mm").format("h:mm A") : "--";
+      }
+      }
     },
     {
       title: t('status'),
@@ -795,8 +851,7 @@ const AttendanceEmployee = () => {
                     <div className="punch-btn-section">
                       <button
                         type="button"
-                        className={`btn btn-${
-                          isCheckedOut || checkIn.status === "Absent" || checkIn.status === "Holiday"
+                        className={`btn btn-${checkIn.status === "Absent" || checkIn.status === "Holiday"
                             ? "success"
                             : isCheckedIn
                             ? "danger"
@@ -804,7 +859,6 @@ const AttendanceEmployee = () => {
                         } punch-btn`}
                         onClick={isCheckedIn ? handleCheckOut : handleCheckIn}
                         disabled={
-                          isCheckedOut ||
                           checkIn.status === "Absent" ||
                           checkIn.status === "On-Leave" ||
                           checkIn.status === "Holiday" ||
@@ -813,7 +867,7 @@ const AttendanceEmployee = () => {
                       >
                         {isDisabled ? (
                           <Spin size="medium" />
-                        ) : isCheckedOut || checkIn.status === "Absent" || checkIn.status === "Holiday" ? (
+                        ) : checkIn.status === "Absent" || checkIn.status === "Holiday" ? (
                           t('marked')
                         ) : isCheckedIn ? (
                           t('checkOut')
@@ -918,9 +972,9 @@ const AttendanceEmployee = () => {
                             {isCheckedOut
                               ? ( !statDisable ? 
                                 formatHoursMinutes(stats.lastWeek) 
-                                : formatTodayTime((elapsedTime + (stats.lastWeek * 60000))))
+                                : formatTodayTime((elapse + (stats.lastWeek * 60000))))
                               : formatTodayTime(
-                                  (elapsedTime + (stats.lastWeek * 60000))
+                                  (elapse + (stats.lastWeek * 60000))
                                 ) // Create a function to format elapsed time
                             }{" "}
                             {/* {formatHoursMinutes(stats.lastWeek)}{" "} */}
@@ -949,10 +1003,10 @@ const AttendanceEmployee = () => {
                           {isCheckedOut
                               ? ( !statDisable ? 
                                 formatHoursMinutes(stats.lastMonth) 
-                                : formatTodayTime((elapsedTime + (stats.lastMonth * 60000))))
+                                : formatTodayTime((elapse + (stats.lastMonth * 60000))))
                               //? formatHoursMinutes(stats.lastMonth)
                               : formatTodayTime(
-                                (elapsedTime + (stats?.lastMonth * 60000))
+                                (elapse + (stats?.lastMonth * 60000))
                                 ) // Create a function to format elapsed time
                             }{" "}
                             {/* {formatHoursMinutes(stats.lastMonth)}{" "} */}
@@ -983,14 +1037,14 @@ const AttendanceEmployee = () => {
                               ? ( !statDisable ? 
                                 formatHoursMinutes(Math.max(0, Math.floor((shiftDuration*22) - parseFloat(stats.lastMonth))))
                                 : formatHoursMinutes(
-                                  Math.max(0, Math.ceil((shiftDuration*22) - parseFloat(((elapsedTime/60000)+stats.lastMonth))))
+                                  Math.max(0, Math.ceil((shiftDuration*22) - parseFloat(((elapse/60000)+stats.lastMonth))))
                                 )
                                 )
                               // formatHoursMinutes(
                               //   Math.floor((shiftDuration*22) - parseFloat(stats.lastMonth))
                               // )
                               : formatHoursMinutes(
-                                Math.max(0, Math.ceil((shiftDuration*22) - parseFloat(((elapsedTime/60000)+stats.lastMonth))))
+                                Math.max(0, Math.ceil((shiftDuration*22) - parseFloat(((elapse/60000)+stats.lastMonth))))
                               ) // Create a function to format elapsed time
                             }{" "}
                             {/* {formatHoursMinutes(
@@ -1007,9 +1061,9 @@ const AttendanceEmployee = () => {
                               width: `${
                                 isCheckedOut ? ( !statDisable ? ((((shiftDuration*22) - parseFloat(stats.lastMonth)) /
                                 (shiftDuration*22)) *
-                                100) : ((((shiftDuration*22) - parseFloat(stats.lastMonth + (elapsedTime/60000))) /
+                                100) : ((((shiftDuration*22) - parseFloat(stats.lastMonth + (elapse/60000))) /
                                 (shiftDuration*22)) *
-                                100)) : ((((shiftDuration*22) - parseFloat(stats.lastMonth + (elapsedTime/60000))) /
+                                100)) : ((((shiftDuration*22) - parseFloat(stats.lastMonth + (elapse/60000))) /
                                 (shiftDuration*22)) *
                                 100)
                               }%`,
@@ -1017,9 +1071,9 @@ const AttendanceEmployee = () => {
                             aria-valuenow={
                               isCheckedOut ? ( !statDisable ? ((((shiftDuration*22) - parseFloat(stats.lastMonth)) /
                                 (shiftDuration*22)) *
-                                100) : ((((shiftDuration*22) - parseFloat(stats.lastMonth + (elapsedTime/60000))) /
+                                100) : ((((shiftDuration*22) - parseFloat(stats.lastMonth + (elapse/60000))) /
                                 (shiftDuration*22)) *
-                                100)) : ((((shiftDuration*22) - parseFloat(stats.lastMonth + (elapsedTime/60000))) /
+                                100)) : ((((shiftDuration*22) - parseFloat(stats.lastMonth + (elapse/60000))) /
                                 (shiftDuration*22)) *
                                 100)
                             }
@@ -1156,21 +1210,37 @@ const AttendanceEmployee = () => {
                 </div> */}
                 <div className="card recent-activity">
                   <div className="card-body">
-                    <h5 className="card-title">{t('last6Days')}</h5>
-                    <div className="stats-list" style={{ height: "347px" }}>
-                      <ul
-                        className="res-activity-list"
-                        style={{ marginRight: (i18n.dir() === 'rtl') ? "unset" : "10px", marginLeft: (i18n.dir() === 'rtl') ? "10px" : "unset" }}
-                      >
-                        {fetchattend6?.slice(0, 6).map((attendance, index) => (
+                    <h5 className="card-title">Today's Activity</h5>
+                    <div className="stats-list" style={{ height: "347px",overflowY: "auto" }}>
+                      <p className="mb-0"
+                        style={{
+                          display: "flex",
+                          flexDirection: "row",
+                          justifyContent: "space-between",
+                        }}>
+                          <label
+                          style={{paddingLeft:'29px'}}>
+                            CheckIn:
+                          </label>
+                          <label
+                          style={{paddingRight:'11px',paddingLeft:'20px'}}>
+                            CheckOut:
+                          </label>
+                          <label
+                          style={{paddingRight:'19px'}}>
+                            Duration:
+                          </label>
+                        </p>
+                        {multiple?.slice().reverse().map((attendance, index) => (
+                          <ul
+                          className="res-activity-list"
+                          style={{ 
+                            marginRight: (i18n.dir() === 'rtl') ? "unset" : "10px", 
+                            marginLeft: (i18n.dir() === 'rtl') ? "10px" : "unset",
+                            
+                           }}
+                        >
                           <li key={index}>
-                            <p className="mb-0">
-                              <label>
-                                {moment(attendance.attendanceDate).format(
-                                  "ddd, Do MMM YYYY"
-                                )}
-                              </label>
-                            </p>
                             <p
                               className="res-activity-time"
                               style={{
@@ -1180,7 +1250,7 @@ const AttendanceEmployee = () => {
                               }}
                             >
                               {attendance.checkInTime ? (
-                                <a>
+                                <a style={{width:'75px', textAlign:'left'}}>
                                   <i className="fa fa-clock-o" />{" "}
                                   <label>
                                     {attendance.checkInTime
@@ -1196,7 +1266,7 @@ const AttendanceEmployee = () => {
                               )}
 
                               {attendance.checkInTime ? (
-                                <a>
+                                <a style={{width:'70px', textAlign:'left'}}>
                                   <i className="fa fa-clock-o" />{" "}
                                   <label>
                                     {attendance.checkOutTime
@@ -1211,30 +1281,16 @@ const AttendanceEmployee = () => {
                                 ""
                               )}
 
-                              <a>
-                                <span>{t('status')}:</span>{" "}
-                                <label
-                                  style={{
-                                    color:
-                                      attendance.status === "Late" ||
-                                      attendance.status === "Absent"
-                                        ? "red"
-                                        : attendance.status === "Present"
-                                        ? "green"
-                                        : attendance.status === "On-Leave"
-                                        ? "orange"
-                                        : attendance.status === "Holiday"
-                                        ? "blue"
-                                        : "black",
-                                  }}
-                                >
-                                  {attendance.status==="Present" ? t('present') : attendance.status==="Late" ? t('late') : attendance.status==="On-Leave" ? t('on-Leave') : attendance.status==="Holiday" ? t('holiDay') : attendance.status==="Absent" ? t('absent') : attendance.status}
+                              <a style={{paddingLeft:'9px',width:'75px', textAlign:'left'}}>
+                                <label>
+                                  {(!attendance?.checkInTime && !attendance?.checkOutTime) ? "" : formatHoursMinutes(attendance?.hoursWorked)}
                                 </label>
                               </a>
                             </p>
                           </li>
-                        ))}
+                          
                       </ul>
+                        ))}
                     </div>
                   </div>
                 </div>
