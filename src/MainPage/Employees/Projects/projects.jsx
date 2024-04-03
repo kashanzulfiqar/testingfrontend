@@ -227,14 +227,14 @@ const Projects = () => {
     projectName: "",
     clientName: "",
     projectDomain: "",
-    projectType: "",
+    costType: "",
   });
 
   const [selectedFilters, setSelectedFilters] = useState({
     projectName: "",
     clientName: "",
     projectDomain: "",
-    projectType: "",
+    costType: "",
   });
 
   const handleFilterChange = (value, filterType) => {
@@ -257,13 +257,13 @@ const Projects = () => {
       projectName: "",
       clientName: "",
       projectDomain: "",
-      projectType: "",
+      costType: "",
     });
     setFilters({
       projectName: "",
       clientName: "",
       projectDomain: "",
-      projectType: "",
+      costType: "",
     });
 
     form.resetFields();
@@ -401,7 +401,7 @@ const Projects = () => {
     apiServices(
       "GET",
       // `project-management/?clientName=${filters.clientName}&projectName=${filters.projectName}&page=${params.page}&limit=${params.limit}`,
-      `project-management/?clientName=${filters.clientName}&projectName=${filters.projectName}&projectDomain=${filters.projectDomain}&projectType=${filters.projectType}&employeeId=${(role === '' && !permissions?.projectManagement) ? employee_id : ''}&page=${params.page}&limit=${params.limit}`,
+      `project-management/?clientName=${filters.clientName}&projectName=${filters.projectName}&projectDomain=${filters.projectDomain}&costType=${filters.costType}&employeeId=${(role === '' && !permissions?.projectManagement) ? employee_id : ''}&page=${params.page}&limit=${params.limit}`,
       null,
       user_state
     )
@@ -1501,7 +1501,7 @@ const filteredColumns = columns.filter(column => {
                   </div>
                 :
                 <div className="row filter-row">
-                  <div className="col-sm-6 col-md-2">
+                  <div className={`col-sm-6 ${(role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) ? 'col-md-2' : 'col-md-3'}`}>
                     <div className="form-group">
                       <Form.Item name="projectName" className="custom-border">
                         <Input
@@ -1516,7 +1516,7 @@ const filteredColumns = columns.filter(column => {
                       </Form.Item>
                     </div>
                   </div>
-                  <div className="col-sm-6 col-md-2">
+                  <div className={`col-sm-6 ${(role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) ? 'col-md-2' : 'col-md-3'}`}>
                     <div className="form-group">
                       <Form.Item name="clientName" className="custom-border">
                         {/* <Select
@@ -1561,11 +1561,12 @@ const filteredColumns = columns.filter(column => {
                       </Form.Item>
                     </div>
                   </div>
-                  <div className="col-sm-6 col-md-2">
+                  {(role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) &&
+                    <div className="col-sm-6 col-md-2">
                     <div className="form-group">
                       <div style={{ position: "relative" }} id="area1">
                         <Form.Item
-                          name="projectType"
+                          name="costType"
                           className="custom-border"
                         >
                           <Select
@@ -1576,7 +1577,7 @@ const filteredColumns = columns.filter(column => {
                             placeholder={t('projectScreen.Modal.costType')}
                             style={{height:'50px'}}
                             onChange={(value) => {
-                              handleFilterChange(value, "projectType");
+                              handleFilterChange(value, "costType");
                             }}
                           >
                             <Select.Option value="Hourly">{t('projectScreen.Modal.hourly')}</Select.Option>
@@ -1586,8 +1587,8 @@ const filteredColumns = columns.filter(column => {
                         </Form.Item>
                       </div>
                     </div>
-                  </div>
-                  <div className="col-sm-6 col-md-2">
+                  </div>}
+                  <div className={`col-sm-6 ${(role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) ? 'col-md-2' : 'col-md-3'}`}>
                     <div className="form-group">
                       <div style={{ position: "relative" }} id="area1">
                         <Form.Item
@@ -1631,7 +1632,12 @@ const filteredColumns = columns.filter(column => {
                       </div>
                     </div>
                   </div>
-                  <div className="col-sm-6 col-md-2">
+                  <div className={`${(role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) ? 'col-sm-12 col-md-4' : 'col-sm-6 col-md-3'}`}
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: "24px",
+                  }}>
                     <button
                       type="primary"
                       htmlType="submit"
@@ -1641,8 +1647,6 @@ const filteredColumns = columns.filter(column => {
                     >
                       <span className="d-flex justify-content-center">{t('search')}</span>
                     </button>
-                  </div>
-                  <div className="col-sm-6 col-md-2">
                     <button
                       htmlType="button"
                       className="btn btn-success btn-block w-100"
@@ -2058,8 +2062,8 @@ const filteredColumns = columns.filter(column => {
                   <span aria-hidden="true">×</span>
                 </button>
               </div>
-
-              <div className="modal-body">
+              {(role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) ? 
+              (<div className="modal-body">
                 <Form
                   form={form}
                   onFinish={AddProject}
@@ -2822,7 +2826,584 @@ const filteredColumns = columns.filter(column => {
                     </Form.Item>
                   </div>
                 </Form>
+              </div>)
+              :
+              (<div className="modal-body">
+                <Form
+                  form={form}
+                  onFinish={AddProject}
+                  onFinishFailed={({ errorFields }) => {
+                    const consecutiveSpacesError = errorFields.find((field) =>
+                      field.errors.toString().includes("consecutive spaces")
+                    );
+                    if(consecutiveSpacesError){
+                      message.error(t('allEmp.errors.removeConsecutiveSpaces'))
+                    }else{
+                      message.error(t('allEmp.errors.fillRequiredFields'))
+                    }
+                  }}
+                  name="control-hooks"
+                >
+                  <div className="row">
+                <div className="col-sm-6">
+                  <div className="form-group">
+                    <label>{t('projectScreen.Modal.projectName')}</label>
+                    <Form.Item
+                      name="projectName"
+                      className="custom-border"
+                      rules={[
+                        {
+                          required: true,
+                          message: t('projectScreen.Modal.enterProjectName'),
+                        },
+                      ]}
+                    >
+                      <Input
+                        className="form-control"
+                        placeholder={t('projectScreen.Modal.enterprojectName')}
+                      />
+                    </Form.Item>
+                  </div>
+                </div>
+                <div className="col-sm-6">
+                  <div className="form-group">
+                    <label>{t('projectScreen.Modal.client')}</label>
+                    <div style={{ position: "relative" }} id="area">
+                      <Form.Item
+                        name="clientId"
+                        className="custom-border"
+                        rules={[
+                          {
+                            required: true,
+                            message: t('projectScreen.Modal.chooseClient'),
+                          },
+                        ]}
+                      >
+                        <Select
+                          showSearch
+                          onSearch={(val) => {
+                            showTeamSearch(val, 'client')
+                            // onTeamChange(val)
+                          }}
+                          filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                          optionFilterProp="children"
+                          notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                          dropdownRender={(menu) => (
+                            <>
+                              {menu}
+                            </>
+                          )}
+
+                          className="custom-select custom-normal"
+                          getPopupContainer={() =>
+                            document.getElementById("area")
+                          }
+                          placeholder={t('projectScreen.Modal.selectClient')}
+                          onChange={(value) => {
+                            // Set the selected client when it changes
+                            setSelectedClient(value);
+
+                            form.setFieldsValue({ focalPersonId: null });
+                            // Fetch the focal persons based on the selected client
+                            fetchFocalPersons(value);
+                          }}
+                        >
+                          {clients?.map((client) => (
+                            <Select.Option key={client._id} value={client._id}>
+                              {client.clientName}
+                            </Select.Option>
+                          ))}
+                        </Select>
+                      </Form.Item>
+                    </div>
+                  </div>
+                </div>
               </div>
+
+              <div className="row">
+                <div className="col-sm-6">
+                  <div className="form-group">
+                    <label>{t('projectScreen.Modal.focalPerson')}</label>
+                    <div style={{ position: "relative" }} id="area">
+                      <Form.Item
+                        name="focalPersonId"
+                        className="custom-border"
+                        rules={[
+                          {
+                            required: true,
+                            message: t('projectScreen.Modal.selectFocalPerson'),
+                          },
+                        ]}
+                      >
+                        <Select
+                          showSearch
+                          onSearch={(val) => {
+                            showTeamSearch(val, 'focal')
+                            // onTeamChange(val)
+                          }}
+                          filterOption={(input, option) => option.children[0].toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                          optionFilterProp="children"
+                          notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                          dropdownRender={(menu) => (
+                            <>
+                              {menu}
+                            </>
+                          )}
+
+                          className="custom-select custom-normal"
+                          getPopupContainer={() =>
+                            document.getElementById("area")
+                          }
+                          placeholder={t('projectScreen.Modal.selectfocalPerson')}
+                        >
+                          {focalPersons?.map((focalPerson) => (
+                            <Select.Option
+                              key={focalPerson._id}
+                              value={focalPerson._id}
+                            >
+                              {focalPerson?.focalPersonName}{" "}
+                              {/* Adjust the field name as needed */}
+                            </Select.Option>
+                          ))}
+                        </Select>
+                      </Form.Item>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-sm-6">
+                  <div className="form-group">
+                    <label>{t('projectScreen.Modal.projectStatus')}</label>
+                    <div style={{ position: "relative" }} id="area">
+                      <Form.Item
+                        name="status"
+                        className="custom-border"
+                        rules={[
+                          {
+                            required: true,
+                            message: t('projectScreen.Modal.chooseStatus'),
+                          },
+                        ]}
+                      >
+                        <Select
+                          className="custom-select custom-normal"
+                          getPopupContainer={() =>
+                            document.getElementById("area")
+                          }
+                          placeholder={t('projectScreen.Modal.selectStatus')}
+                        >
+                          <Select.Option value="Paused">{t('projectScreen.Modal.paused')}</Select.Option>
+                          <Select.Option value="Scheduled">
+                          {t('projectScreen.Modal.scheduled')}
+                          </Select.Option>
+                          <Select.Option value="On-Going">
+                          {t('projectScreen.Modal.onGoing')}
+                          </Select.Option>
+                          <Select.Option value="Archived">
+                          {t('projectScreen.Modal.archived')}
+                          </Select.Option>
+                          <Select.Option value="Completed">
+                          {t('projectScreen.Modal.completed')}
+                          </Select.Option>
+                        </Select>
+                      </Form.Item>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="row">
+                <div className="col-sm-6">
+                  <div className="form-group">
+                    <label>{t('projectScreen.Modal.startDate')}</label>
+                    <div style={{ position: "relative" }} id="area">
+                      <Form.Item
+                        name="startDate"
+                        className="custom-border"
+                        rules={[
+                          {
+                            required: true,
+                            message: t('projectScreen.Modal.enterStartDate'),
+                          },
+                        ]}
+                      >
+                        <DatePicker
+                          getPopupContainer={() =>
+                            document.getElementById("area")
+                          }
+                          style={{ width: "100%" }}
+                          className="form-control"
+                          placeholder={t('requests.addModal.selectDate')}
+                          size="large"
+                        />
+                      </Form.Item>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-sm-6">
+                  <div className="form-group">
+                    <label>{t('projectScreen.Modal.endDate')}</label>
+                    <div style={{ position: "relative" }} id="area">
+                      {/* <Form.Item
+                        name="endDate"
+                        className="custom-border"
+                        rules={[
+                          {
+                            required: true,
+                            message: "Enter an end date",
+                          },
+                        ]}
+                      >
+                        <DatePicker
+                          getPopupContainer={() =>
+                            document.getElementById("area")
+                          }
+                          style={{ width: "100%" }}
+                          className="form-control"
+                          size="large"
+                        />
+                      </Form.Item> */}
+
+                      <Form.Item
+                        name="endDate"
+                        rules={[
+                          {
+                            required: true,
+                            message: t('projectScreen.Modal.enterEndDate'),
+                          },
+                          ({ getFieldValue }) => ({
+                            validator(_, value) {
+                              // Ensure that the end date is not before the start date
+                              const startDate = getFieldValue('startDate');
+                              if (!startDate || !value) {
+                                // If either date is not selected, do not perform validation
+                                return Promise.resolve();
+                              }
+                              if (!value.isSame(startDate, 'day') && value.isSameOrAfter(startDate)) {
+                                // End date is valid
+                                return Promise.resolve();
+                              }
+                              return Promise.reject(t('projectScreen.errors.endDateMustNotBeBeforeStartDate'));
+                            },
+                          }),
+                        ]}
+                        className="custom-border"
+                      >
+                        <DatePicker
+                          getPopupContainer={() => document.getElementById("area")}
+                          style={{ width: "100%" }}
+                          className="form-control"
+                          placeholder={t('requests.addModal.selectDate')}
+                          size="large"
+                        />
+                      </Form.Item>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+                  <div className="row">
+                  <div className="col-sm-6">
+                  <div className="form-group">
+                    <label>{t('projectScreen.Modal.domain')}</label>
+                    <div style={{ position: "relative" }} id="area">
+                      <Form.Item
+                        name="projectDomain"
+                        className="addTeamHeight"
+                        rules={[
+                          {
+                            required: true,
+                            message: t('projectScreen.Modal.domainCannotBeEmpty'),
+                          },
+                        ]}
+                      >
+                        <Select
+                          showSearch
+                          onSearch={(val) => {
+                            showTeamSearch(val, 'domain')
+                          }}
+                          filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                          optionFilterProp="children"
+                          notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                          dropdownRender={(menu) => (
+                            <>
+                              {menu}
+                            </>
+                          )}
+
+                          getPopupContainer={() =>
+                            document.getElementById("area")
+                          }
+                          className="customselect-height custom-select"
+                          mode="multiple"
+                          placeholder={t('projectScreen.Modal.selectDomain')}
+                        >
+                          {allDomain?.map((domain) => (
+                            <Select.Option
+                              key={domain._id}
+                              value={domain._id}
+                            >
+                              {domain.teamName}
+                            </Select.Option>
+                          ))}
+                        </Select>
+                      </Form.Item>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-sm-6">
+                  <div className="form-group">
+                    <label>{t('projectScreen.Modal.priority')}</label>
+                    <div style={{ position: "relative" }} id="area">
+                      <Form.Item
+                        name="priority"
+                        className="custom-border"
+                        rules={[
+                          {
+                            required: true,
+                            message: t('projectScreen.Modal.choosePriority'),
+                          },
+                        ]}
+                      >
+                        <Select
+                          className="custom-select custom-normal"
+                          getPopupContainer={() =>
+                            document.getElementById("area")
+                          }
+                          placeholder={t('projectScreen.Modal.choosepriority')}
+                        >
+                          <Select.Option value="High Priority">
+                          {t('projectScreen.Modal.highPriority')}
+                          </Select.Option>
+                          <Select.Option value="Normal Priority">
+                          {t('projectScreen.Modal.normalPriority')}
+                          </Select.Option>
+                          <Select.Option value="Low Priority">
+                          {t('projectScreen.Modal.lowPriority')}
+                          </Select.Option>
+                        </Select>
+                      </Form.Item>
+                    </div>
+                  </div>
+                </div>
+                  </div>
+
+                  <div className="row">
+                <div className="col-sm-6">
+                  <div className="form-group">
+                    <label>{t('projectScreen.Modal.leader')}</label>
+                    <div style={{ position: "relative" }} id="area">
+                      <Form.Item
+                        name="projectLead"
+                        className="custom-border"
+                        rules={[
+                          {
+                            required: true,
+                            message: t('projectScreen.Modal.selectLeader'),
+                          },
+                        ]}
+                      >
+                        <Select
+                          showSearch
+                          onSearch={(val) => {
+                            showTeamSearch(val, 'Team')
+                            // onTeamChange(val)
+                          }}
+                          filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                          optionFilterProp="children"
+                          notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                          dropdownRender={(menu) => (
+                            <>
+                              {menu}
+                            </>
+                          )}
+
+                          className="custom-select custom-normal"
+                          getPopupContainer={() =>
+                            document.getElementById("area")
+                          }
+                          placeholder={t('projectScreen.Modal.selectleader')}
+                          onChange={(value) => setSelectedLeader(value)}
+                        >
+                          {employees?.map((employee) => (
+                            <Select.Option
+                              key={employee._id}
+                              value={employee._id}
+                            >
+                              {employee.fullName}
+                            </Select.Option>
+                          ))}
+                        </Select>
+                      </Form.Item>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-sm-6">
+                  <div className="form-group">
+                    <label>{t('projectScreen.Modal.teamLeader')}</label>
+                    <div className="project-members">
+                      {selectedLeader && (
+                        <a
+                          data-bs-toggle="tooltip"
+                          title={getEmployeeFullName(selectedLeader)}
+                          className="avatar"
+                        >
+                          <img
+                            src={getEmployeeImage(selectedLeader) || user_icon}
+                            alt=""
+                          />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="row">
+                <div className="col-sm-6">
+                  <div className="form-group">
+                    <label>{t('projectScreen.Modal.addTeam')}</label>
+                    <div style={{ position: "relative" }} id="area">
+                      <Form.Item
+                        name="assignedDevelopers"
+                        className="addTeamHeight"
+                        rules={[
+                          {
+                            required: true,
+                            message: t('projectScreen.Modal.teamCannotBeEmpty'),
+                          },
+                        ]}
+                      >
+                        <Select
+                          showSearch
+                          onSearch={(val) => {
+                            showTeamSearch(val, 'Team')
+                            // onTeamChange(val)
+                          }}
+                          filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                          optionFilterProp="children"
+                          notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                          dropdownRender={(menu) => (
+                            <>
+                              {menu}
+                            </>
+                          )}
+
+                          getPopupContainer={() =>
+                            document.getElementById("area")
+                          }
+                          className="customselect-height custom-select"
+                          mode="multiple"
+                          placeholder={t('projectScreen.Modal.selectTeamMembers')}
+                          onChange={(values) => setSelectedTeamMembers(values)}
+                        >
+                          {getTeamMemberOptions()}
+                        </Select>
+                      </Form.Item>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-sm-6">
+  <div className="form-group">
+    <label>{t('projectScreen.Modal.teamMembers')}</label>
+    <div className="project-members" style={{ margin: '4px auto' }}>
+      <ul className="team-members" style={{ minWidth: 'max-content' }}>
+        {selectedTeamMembers?.slice(0, 4).map((teamMember, index) => (
+          <li key={index}>
+            <Tooltip title={getEmployeeFullName(teamMember)}>
+              <Avatar style={{ cursor: 'pointer' }} src={getEmployeeImage(teamMember) || user_icon} />
+            </Tooltip>
+          </li>
+        ))}
+        {selectedTeamMembers?.length > 4 && (
+          <li className="dropdown avatar-dropdown">
+            <Link
+              className="all-users dropdown-toggle projectTeamMember"
+              style={{ display: 'inline-flex', height: '33px', width: '33px' }}
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              +{selectedTeamMembers?.length - 4}
+            </Link>
+            {/* Dropdown menu for additional team members */}
+            <div className="dropdown-menu dropdown-menu-right">
+              <div className="avatar-group">
+                {selectedTeamMembers?.slice(4).map((teamMember, index) => (
+                  <a
+                    className="avatar avatar-xs projectTeamMember"
+                    key={index}
+                  >
+                    <Tooltip title={getEmployeeFullName(teamMember)}>
+                      <Avatar
+                        src={getEmployeeImage(teamMember) || user_icon}
+                        style={{ cursor: 'pointer' }}
+                      />
+                    </Tooltip>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </li>
+        )}
+      </ul>
+    </div>
+  </div>
+</div>
+
+              </div>
+
+              <div className="form-group">
+                <label>{t('projectScreen.Modal.description')}</label>
+                <Form.Item
+                  name="projectDescription"
+                  rules={[
+                    {
+                      required: true,
+                      message: t('projectScreen.Modal.enterProjectDescription'),
+                    },
+                  ]}
+                >
+                  <Input.TextArea className="form-control" rows={5} />
+                </Form.Item>
+                {/* <textarea rows={4} className="form-control summernote" placeholder="Enter your message here" defaultValue={""} /> */}
+              </div>
+
+              <div className="form-group">
+                <label>{t('projectScreen.Modal.uploadFiles')}{" "}
+                  <small style={{ color: 'grey', fontSize: 'small' }}>
+                    ({t('projectScreen.Modal.allowedFormats')})
+                  </small>
+                </label>
+                <input
+                  className="form-control"
+                  multiple
+                  onChange={(e) => {
+                    onFileUpload(e.target.files);
+                  }}
+                  type="file"
+                />
+              </div>
+              <div className="selected-files">{displaySelectedFiles()}</div>
+
+                  <div className="submit-section">
+                    <Form.Item>
+                      <Button
+                        type="primary"
+                        htmlType="submit"
+                        className="btn btn-primary submit-btn"
+                        disabled={loader}
+                      >
+                        {loader ? (
+                        <Spin size="small" indicator={antIcon} />
+                      ) : (
+                        t('submit')
+                      )}
+                        
+                      </Button>
+                    </Form.Item>
+                  </div>
+                </Form>
+              </div>)
+              }
             </div>
           </div>
         </Modal>
