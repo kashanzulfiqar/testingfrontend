@@ -135,7 +135,7 @@ const AttendanceEmployee = () => {
             return a?.attendanceRecords?.length
           });
           const len = len1[0];
-          console.log("aData",aData)
+          //console.log("aData",aData)
           const records = aData?.map((a)=>{
             const len = a?.attendanceRecords?.length
             return a?.attendanceRecords[len-1]
@@ -143,14 +143,14 @@ const AttendanceEmployee = () => {
           let elp = 0
           const multipleArray = aData?.map((a)=>{
             setElapsedTime((a?.hoursWorked)*60000)
-            console.log((a?.hoursWorked)*60000)
+            //console.log((a?.hoursWorked)*60000)
             elp = (a?.hoursWorked)*60000
             setMultiple(a?.attendanceRecords)
             //return a?.attendanceRecords
           })
           //setMultiple();
           const attendanceRecord = records[0]
-          console.log("this is",records)
+          //console.log("this is",records)
           // Calculate shift duration
           const shiftStart = moment(shiftStartTime, 'HH:mm:ss');
           const shiftEnd = moment(shiftEndTime, 'HH:mm:ss');
@@ -187,7 +187,7 @@ const AttendanceEmployee = () => {
             // }
             if (attendanceRecord?.checkInTime) {
               const checkInTime = attendanceRecord?.checkInTime;
-              console.log("this is checkIn time")
+              //console.log("this is checkIn time")
               const [hours, minutes] = checkInTime.split(":").map(Number);
               const currentTime = new Date();
               const startTime = new Date(
@@ -331,7 +331,7 @@ const AttendanceEmployee = () => {
       }, 1000); // Update every second (1000 milliseconds)
       setTimer(newTimer);
     } else {
-      console.log(elapsedTime)
+      //console.log(elapsedTime)
       const startTime = Date.now() - elapsedTime;
       const newT = Date.now() - elapse;
       const newTimer = setInterval(() => {
@@ -397,7 +397,7 @@ const AttendanceEmployee = () => {
           if (res.data.success === true) {
             const len = res?.data?.Attendance?.attendanceRecords?.length
             const attendanceRecord =  res?.data?.Attendance?.attendanceRecords[len-1]
-            console.log("this is",len)
+            //console.log("this is",len)
             setMultiple(res?.data?.Attendance?.attendanceRecords)
             startTimer();
             message.success(t('checkInSuccess'));
@@ -469,7 +469,7 @@ const AttendanceEmployee = () => {
           if (res.data.success === true) {
             stopTimer();
             setMultiple(res?.data?.Attendance?.attendanceRecords)
-            console.log(res?.data?.Attendance?.attendanceRecords)
+            //console.log(res?.data?.Attendance?.attendanceRecords)
             message.success(t('attendanceMarked'));
             setFirstLoad(false);
             setCheckout({
