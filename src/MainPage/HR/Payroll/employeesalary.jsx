@@ -564,10 +564,10 @@ const EmployeeSalary = () => {
     },
     {
       title: t('payroll.currentPayroll.salary'),
-      dataIndex: "salary",
+      dataIndex: "basicSalary",
       render: (text, record) => (
         <span>
-          {record?.user?.salary ? `${record?.user?.salary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} PKR` : "-"}
+          {record?.basicSalary ? `${record?.basicSalary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} PKR` : record?.user?.salary ? `${record?.user?.salary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} PKR` : "-"}
         </span>
       ),
     },
@@ -753,10 +753,10 @@ const EmployeeSalary = () => {
     },
     {
       title: t('payroll.currentPayroll.salary'),
-      dataIndex: "salary",
+      dataIndex: "basicSalary",
       render: (text, record) => (
         <span>
-          {record?.user?.salary ? `${record?.user?.salary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} PKR` : "-"}
+          {record?.basicSalary ? `${record?.basicSalary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} PKR` : record?.user?.salary ? `${record?.user?.salary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} PKR` : "-"}
         </span>
       ),
     },
@@ -1797,7 +1797,7 @@ const EmployeeSalary = () => {
                     updatedAt: moment(selectedRecord?.updatedAt).format("D MMM YYYY") || "",
                     employeeId: selectedRecord?.user?.employeeId || "",
                     fullName: selectedRecord?.user?.fullName || "",
-                    salary: selectedRecord?.user?.salary || "0.00",
+                    salary: selectedRecord?.basicSalary ? selectedRecord?.basicSalary : selectedRecord?.user?.salary ? selectedRecord?.user?.salary : "0.00",
                     email: selectedRecord?.user?.email || "",
                     bankAccountNumber: selectedRecord?.user?.bankAccountNumber || "-",
                     bankName: selectedRecord?.user?.bankName || "-",
