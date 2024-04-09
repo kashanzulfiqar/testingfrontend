@@ -42,6 +42,7 @@ const AttendanceEmployee = () => {
 
   const [timer, setTimer] = useState(null);
   const [multiple, setMultiple] = useState([]);
+  const [aStatus, setAStatus] = useState('');
   const [elapsedTime, setElapsedTime] = useState(0);
   const [elapse, setElapse] = useState(0);
   const [shiftStartTime, setShiftStartTime] = useState('');
@@ -146,6 +147,7 @@ const AttendanceEmployee = () => {
             //console.log((a?.hoursWorked)*60000)
             elp = (a?.hoursWorked)*60000
             setMultiple(a?.attendanceRecords)
+            setAStatus(a?.status);
             //return a?.attendanceRecords
           })
           //setMultiple();
@@ -398,7 +400,8 @@ const AttendanceEmployee = () => {
             const len = res?.data?.Attendance?.attendanceRecords?.length
             const attendanceRecord =  res?.data?.Attendance?.attendanceRecords[len-1]
             //console.log("this is",len)
-            setMultiple(res?.data?.Attendance?.attendanceRecords)
+            setMultiple(res?.data?.Attendance?.attendanceRecords);
+            setAStatus(res?.data?.Attendance?.status);
             startTimer();
             message.success(t('checkInSuccess'));
             setFirstLoad(false);
@@ -469,6 +472,7 @@ const AttendanceEmployee = () => {
           if (res.data.success === true) {
             stopTimer();
             setMultiple(res?.data?.Attendance?.attendanceRecords)
+            setAStatus(res?.data?.Attendance?.status);
             //console.log(res?.data?.Attendance?.attendanceRecords)
             message.success(t('attendanceMarked'));
             setFirstLoad(false);
@@ -1231,7 +1235,8 @@ const AttendanceEmployee = () => {
                             Duration:
                           </label>
                         </p>
-                        {multiple?.slice().reverse().map((attendance, index) => (
+                        {(multiple?.length >= 1 && aStatus !== "Absent" && aStatus !== "On-Leave" && aStatus !== "Holiday") ?
+                        multiple?.slice().reverse().map((attendance, index) => (
                           <ul
                           className="res-activity-list"
                           style={{ 
@@ -1290,7 +1295,10 @@ const AttendanceEmployee = () => {
                           </li>
                           
                       </ul>
-                        ))}
+                        ))
+                        :
+                        customEmptyText
+                        }
                     </div>
                   </div>
                 </div>
