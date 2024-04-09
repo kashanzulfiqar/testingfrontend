@@ -52,6 +52,7 @@ const AttendanceAdmin = () => {
   const [statdata, setStatdata] = useState(null);
   const [specific, setSpecific] = useState(null);
   const [multiple, setMultiple] = useState([]);
+  const [aStatus, setAStatus] = useState('');
 
   const toggleMobileMenu = () => {
     setMenu(!menu);
@@ -191,6 +192,7 @@ const AttendanceAdmin = () => {
       if (dayRecord?.attendanceRecords){
         console.log(dayRecord?.attendanceRecords)
         setMultiple(dayRecord?.attendanceRecords);
+        setAStatus(dayRecord?.status);
         const len = dayRecord?.attendanceRecords?.length
         const checkIn = dayRecord?.attendanceRecords[0]?.checkInTime
         const checkOut = dayRecord?.attendanceRecords[len-1]?.checkOutTime
@@ -215,6 +217,7 @@ const AttendanceAdmin = () => {
   const closeModal = () => {
     setIsModalVisible(false);
     setMultiple([]);
+    setAStatus('');
   };
 
   const antIcon = (
@@ -560,6 +563,7 @@ const AttendanceAdmin = () => {
           };
 
           setMultiple(res.data.Attendance.attendanceRecords);
+          setAStatus(res.data.Attendance.status);
           // Update the dayRecord state with the new values
           setDayRecord(updatedDayRecord);
           fetchAttendanceData();
@@ -1015,7 +1019,8 @@ const AttendanceAdmin = () => {
                                       Duration:
                                     </label>
                                   </p>
-                                {multiple?.slice().reverse().map((attendance, index) => (
+                                {(multiple?.length >= 1 && aStatus !== "Absent" && aStatus !== "On-Leave" && aStatus !== "Holiday") ?
+                                multiple?.slice().reverse().map((attendance, index) => (
                           <ul
                           className="res-activity-list"
                           style={{ 
@@ -1074,7 +1079,9 @@ const AttendanceAdmin = () => {
                           </li>
                           
                       </ul>
-                        ))}
+                        ))
+                        : customEmptyText
+                        }
                               </div>
                             </div>
                           </div>
