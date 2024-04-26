@@ -354,7 +354,7 @@ const antIcon = (
                             },
                         ]}
                         >
-                        <Input className='form-control' maxLength={50} disabled={open?.data} />
+                        <Input className='form-control' maxLength={50} />
                         </Form.Item>
                     </div>
                     </div>
