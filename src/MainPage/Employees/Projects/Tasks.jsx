@@ -263,7 +263,7 @@ const onFinishEdit = (values) => {
             ),
       },     
       {
-        title: t('Tasks.description'),
+        title: t('finance.Invoices.description'),
         dataIndex: 'description',
         render: (text, record) => (
           <label className='taskLongDesc'>{text}</label>
@@ -706,7 +706,7 @@ const onFinishEdit = (values) => {
                     <div className="col-12">
                         <div className="form-group">
                         <label style={{display: 'flex', justifyContent: 'space-between'}}>
-                            <div>{t('Tasks.description')} <span className="text-danger">*</span></div>
+                            <div>{t('finance.Invoices.description')} <span className="text-danger">*</span></div>
                             <small style={{marginTop: '5px', fontSize: '10px', color: 'rgba(0, 0, 0, 0.5)'}}>{descLength} / 150</small>
                         </label>
                         <Form.Item

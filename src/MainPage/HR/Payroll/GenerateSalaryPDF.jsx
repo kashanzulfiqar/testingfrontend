@@ -83,7 +83,7 @@ function GenerateSalaryPDF(row, view, screen, print) {
 
 
   const earningsTableData = [
-    ['Basic Salary', `${screen === 'slip' ? row?.userId?.salary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : row?.user?.salary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`],
+    ['Basic Salary', `${screen === 'slip' ? (row?.basicSalary ? row?.basicSalary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : row?.userId?.salary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")) : (row?.basicSalary ? row?.basicSalary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : row?.userId?.salary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","))}`],
     ['Bonus', `${row?.bonus?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`], // Added comma here
     ['Extra Payment', `${row?.extraPayment?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`], // Added comma here
   ];
@@ -127,7 +127,7 @@ function GenerateSalaryPDF(row, view, screen, print) {
   doc.text(x + 110, 166, 'Gross Pay: ');
   const widthofgrossPay = doc.getTextWidth('Gross Pay: ');
   doc.setFont(undefined, 'bold')
-  doc.text(x + widthofgrossPay + 110, 166, `${(+row?.totalAddition + +row?.userId?.salary)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`);
+  doc.text(x + widthofgrossPay + 110, 166, `${(+row?.totalAddition + +(row?.basicSalary ? row?.basicSalary : row?.userId?.salary))?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`);
   
   // Define the table data
   const tableData = [

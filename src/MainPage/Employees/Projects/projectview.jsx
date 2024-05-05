@@ -1028,7 +1028,8 @@ const ProjectView = () => {
                 </div>
               </div>
 
-              {role === "" && !permissions?.projectManagement ? null : (
+              {(role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) ? 
+              (
                 <div className="card">
                   <div className="card-body">
                     <h5 className="card-title m-b-20">{t('viewProject.payments')}</h5>
@@ -1051,7 +1052,10 @@ const ProjectView = () => {
                     </div>
                   </div>
                 </div>
-              )}
+              )
+              : 
+              null
+              }
 
               {/* <div className="project-task">
               <ul className="nav nav-tabs nav-tabs-top nav-justified mb-0">
@@ -1322,18 +1326,21 @@ const ProjectView = () => {
                   <div className="table-responsive">
                     <table className="table table-striped table-border">
                       <tbody>
-                        {role === "" &&
-                        !permissions?.projectManagement ? null : (
-                          <tr>
-                            <td>{t('viewProject.cost')}:</td>
-                            <td className="text-end">
-                              {project?.cost
-                                ?.toString()
-                                .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}{" "}
-                              {project?.currency}
-                            </td>
-                          </tr>
-                        )}
+                        {(role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) ? 
+                        (
+                        <tr>
+                          <td>{t('viewProject.cost')}:</td>
+                          <td className="text-end">
+                            {project?.cost
+                              ?.toString()
+                              .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}{" "}
+                            {project?.currency}
+                          </td>
+                        </tr>
+                        )
+                        : 
+                        null
+                        }
                         <tr>
                           <td>{t('viewProject.startDate')}:</td>
                           <td className="text-end">
