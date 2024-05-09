@@ -172,7 +172,7 @@ function WeekViewTimeSheet({ tableStartDate, setTableStartDate, selectedDate, se
     }
 
     if (foundMatch) {
-      message.error(t('Timesheetemployee.dateAlreadyExistsError'));
+      message.error(t('Timesheetemployee.dataAlreadyExistError'));
     } else {
       setAllData([d, ...allData]);
       handleClose();

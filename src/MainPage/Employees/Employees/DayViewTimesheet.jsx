@@ -560,7 +560,7 @@ let t_data = [
                           : record?.status === 'Declined' ?
                           <label style={{fontSize: '16px', fontWeight: '400', color: '#DD0000', marginLeft: 'auto', marginTop: 'auto',marginBottom: 'auto', paddingRight: '15px'}}>{t('Timesheetemployee.declined')}</label>
                           : record?.submittedForApproval &&
-                          <label style={{fontSize: '16px', fontWeight: '400', color: '#00b112', marginLeft: 'auto', marginTop: 'auto',marginBottom: 'auto', paddingRight: '15px'}}>{t('Timesheetemployee.submittedforApproval')}</label>
+                          <label style={{fontSize: '16px', fontWeight: '400', color: '#00b112', marginLeft: 'auto', marginTop: 'auto',marginBottom: 'auto', paddingRight: '15px'}}>{t('Timesheetemployee.submittedForApproval')}</label>
                         }
                     </div>
                   </>
@@ -938,7 +938,7 @@ let t_data = [
                                   return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
                                 }
                                 else if (value.length <= 4) {
-                                    return Promise.reject(t('Timesheetemployee.notesLengthMustBeAtleastFive'));
+                                    return Promise.reject(t('Timesheetemployee.notesLengthMustBeAtLeastFive'));
                                 }
                                 return Promise.resolve();
                                 },
