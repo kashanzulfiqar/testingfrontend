@@ -354,7 +354,7 @@ function WeekViewTimeSheet({ tableStartDate, setTableStartDate, selectedDate, se
             }
           }
           handleClose('delete');
-          message.success(t('Timesheetemployee.timesheeDeletedSuccessfully'));
+          message.success(t('Timesheetemployee.timesheetDeletedSuccessfully'));
           setLoader(false)
         }
       })

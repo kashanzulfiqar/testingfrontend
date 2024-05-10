@@ -268,7 +268,7 @@ let t_data = [
             }
           }
           handleClose('delete');
-          message.success(t('Timesheetemployee.timesheeDeletedSuccessfully'));
+          message.success(t('Timesheetemployee.timesheetDeletedSuccessfully'));
           setLoader(false)
         }
       })
