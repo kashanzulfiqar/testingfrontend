@@ -62,6 +62,8 @@ import AdminTimeSheet from '../MainPage/Employees/Employees/timesheetAdmin';
 import ViewDetailTimesheet from '../MainPage/Employees/Employees/ViewDetailTimesheet';
 import AttendanceReport from '../MainPage/HR/Reports/attendancereport';
 import EmployeesReport from '../MainPage/HR/Reports/EmployeesReport';
+import TaskBoard from '../MainPage/Employees/Projects/taskboard';
+import TaskBoardList from '../MainPage/Employees/Projects/taskboardlist';
 
 
 const App = () => {
@@ -132,6 +134,9 @@ const App = () => {
           <Route path={`employee/dashboard`} element={<EmployeeDashboard />} />
 
           {/* Employee */}
+          <Route path={`employee/allemployees`} element={<AllEmployees />} />
+          <Route path={`task-board/:id`} element={<TaskBoard />} />
+          <Route path={`task-board`} element={<TaskBoardList />} />
           <Route path={`employee/allemployees`} element={<AllEmployees />} />
           <Route path={`employee/employees-list`} element={<Employeeslist />} />
           <Route path={`employee/holidays`} element={<Holidays />} />
