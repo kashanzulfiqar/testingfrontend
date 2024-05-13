@@ -703,7 +703,7 @@ const Sidebar = (props) => {
                         (user_state?.role === 'admin' || permissions?.projectManagement) &&
                         <li><Link onClick={() => localStorage.setItem("minheight", "true")} className={pathname.includes('/projects/tasks') ? "active" : ""} to="/projects/tasks">{t('Tasks.tasks')}</Link></li>
                       }
-                      <li><Link className={pathname.includes('task-board') ? "active" : ""} to="/app/projects/task-board">{t('sideBar.taskBoard')}</Link></li>
+                      <li><Link className={pathname.includes('task-board') ? "active" : ""} to="/task-board">{t('sideBar.taskBoard')}</Link></li>
                     </ul>
                     : ""
                   }
