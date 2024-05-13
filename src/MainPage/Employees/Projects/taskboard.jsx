@@ -112,68 +112,84 @@ const TaskBoard = () => {
     if (!result.destination) {
       return;
     }
-
+  
     const { source, destination } = result;
+    console.log(result)
 
-    // Find the source column from the response array based on droppableId
-    const sourceColumn = columns?.find(
-      (column) => column._id === source.droppableId
-    );
+    const sourceColumn = columns.find((column) => column._id === source.droppableId);
+    const destinationColumn = columns.find((column) => column._id === destination.droppableId);
 
-    // Find the task being moved
-    const movedTask = sourceColumn?.columns?.find(
-      (task) => task.id === result.draggableId
-    );
+    const draggedTask = sourceColumn.tasks.find((task) => task.taskId === result.draggableId);
 
-    // Remove the task from the source column
-    const updatedSourceTasks = sourceColumn?.columns?.filter(
-      (task) => task.id !== result.draggableId
-    );
-
-    // If source and destination columns are different, update the status of the moved task
-    if (source.droppableId !== destination.droppableId) {
-      // Find the destination column
-      const destinationColumn = columns?.find(
-        (column) => column._id === destination.droppableId
+    if (source.droppableId === destination.droppableId) {
+      
+      const updatedTasks = Array.from(sourceColumn.tasks);
+      updatedTasks.splice(source.index, 1);
+      updatedTasks.splice(destination.index, 0, draggedTask);
+  
+      const updatedColumn = { ...sourceColumn, tasks: updatedTasks };
+  
+      // Update the state with the updated column
+      setColumns((prevColumns) =>
+        prevColumns.map((column) => (column._id === updatedColumn._id ? updatedColumn : column))
       );
-
-      // Update the status of the moved task
-      //movedTask.status = destination.droppableId;
-
-      // Insert the moved task into the destination column
-      const updatedDestinationTasks = Array.from(destinationColumn.tasks);
-      updatedDestinationTasks.splice(destination.index, 0, movedTask);
-
-      // Update tasks state with updated columns
-      const updatedTasks = columns?.map((column) => {
-        if (column._id === sourceColumn._id) {
-          return { ...column, tasks: updatedSourceTasks };
-        }
-        if (column._id === destinationColumn._id) {
-          return { ...column, tasks: updatedDestinationTasks };
-        }
-        return column;
-      });
-
-      // Set the updated tasks state
-      setColumns(updatedTasks);
-    } else {
-      // If the task is dropped in the same board, just update the tasks array without modifying the task's status
-      const updatedSourceTasksSameBoard = Array.from(updatedSourceTasks);
-      updatedSourceTasksSameBoard.splice(destination.index, 0, movedTask);
-
-      // Update tasks state with the same board
-      const updatedTasksSameBoard = columns?.map((column) => {
-        if (column._id === sourceColumn._id) {
-          return { ...column, tasks: updatedSourceTasksSameBoard };
-        }
-        return column;
-      });
-
-      // Set the updated tasks state
-      setColumns(updatedTasksSameBoard);
     }
+    else{
+
+      let updated_data = {
+        _id: boardId,
+        columnId: destination.droppableId,
+        prevColumn: source.droppableId,
+        taskId: result.draggableId
+      };
+      apiServices("PUT", "taskBoard/add-taskBoard", updated_data, user_state)
+        .then((res) => {
+          if (res?.data?.success === true) {
+            //const sortedData = res?.data?.Task?.docs?.slice().sort((a, b) => a.title.localeCompare(b.title));
+            //setAllTasks(sortedData);
+            //setColumns(res?.data?.taskBoard?.columns);
+            //setIsLoading(false);
+            //setLoader(false);
+            //message.success('Task Moved successfully')
+            //closeTaskModal();
+          }
+        })
+        .catch((err) => {
+          //setIsLoading(false);
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : "Error Moving task"
+            }!`
+          );
+          //setLoader(false);
+        });
+
+    const updatedSourceTasks = sourceColumn.tasks.filter((task) => task.taskId !== result.draggableId);
+
+    const updatedSourceColumn = { ...sourceColumn, tasks: updatedSourceTasks };
+
+    const updatedDestinationTasks = [...destinationColumn.tasks, draggedTask];
+    const updatedDestinationColumn = { ...destinationColumn, tasks: updatedDestinationTasks };
+
+    setColumns((prevColumns) => {
+      const updatedColumns = prevColumns.map((column) => {
+        if (column._id === updatedSourceColumn._id) {
+          return updatedSourceColumn;
+        }
+        if (column._id === updatedDestinationColumn._id) {
+          return updatedDestinationColumn;
+        }
+        return column;
+      });
+      return updatedColumns;
+    });
+  }
   };
+  
   const [loader, setLoader] = useState(false);
 
   const [descLength, setDescLength] = useState(0);
@@ -373,7 +389,8 @@ const TaskBoard = () => {
     } else {
       let updated_data = {
         _id: boardId,
-        ...values,
+        color: !(values.color) ? 'primary' : values.color,
+        title: values.title
       };
       apiServices("PUT", "taskBoard/add-taskBoard", updated_data, user_state)
         .then((res) => {
@@ -975,7 +992,10 @@ const onFinishEdit = (values) => {
                             name="color"
                             value={color.value}
                             className="board-control-input"
-                            defaultChecked={color.value === open?.data?.color}
+                            defaultChecked={
+                              (open?.data?.color && color.value === open?.data?.color) ||
+                              (!open?.data?.color && color.value === "primary")
+                            }
                           />
                           <span className="board-indicator" />
                         </label>
