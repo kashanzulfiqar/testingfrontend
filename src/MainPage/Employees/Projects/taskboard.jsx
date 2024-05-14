@@ -25,6 +25,7 @@ import { apiServices } from "../../../Services/apiServices";
 import { useSelector } from "react-redux";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { useForm } from "react-hook-form";
+//import TaskModal from "./taskModal";
 
 const response = [
   {
@@ -80,9 +81,17 @@ const response = [
 const TaskBoard = () => {
   const [columns, setColumns] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  //const [viewModal, setViewModal] = useState(false);
   const [allTasks, setAllTasks] = useState([]);
   const [optTasks, setOptTasks] = useState([]);
   const [boardId, setBoardId] = useState("");
+  // const [selectedTask, setSelectedTask] = useState({
+  //   _id: "",
+  //   title: "",
+  //   tags:[],
+  //   description: "",
+  //   ProjectData: {}
+  // });
   const [columnId, setColumnId] = useState("");
   const [editId, setEditId] = useState("");
   const [boardTitle, setBoardTitle] = useState("");
@@ -290,6 +299,10 @@ const TaskBoard = () => {
     setOpen({ isAddOpen: false, isDelOpen: false, data: "" });
     setLoader(false);
   };
+
+  // const closeViewModal = () => {
+  //   setViewModal(false)
+  // };
 
   const closeTaskModal = () => {
     setTaskModal(false);
@@ -979,7 +992,17 @@ const onFinishEdit = (values) => {
                                           <div className="kanban-box">
                                             <div className="task-board-header">
                                               <span className="status-title">
-                                                <a>                                              
+                                                <a
+                                                onClick={() => 
+                                                  { 
+                                                    const title = getTaskTitle(task.taskId);
+                                                    const tags = getTaskTags(task.taskId);
+                                                    const description = getTaskDescription(task.taskId);
+                                                    setAddTask({ isAddOpen: true, data: task }); 
+                                                    form2.setFieldsValue({ title, tags, description  }) 
+                                                    setEditId(task.taskId);
+                                                  }}
+                                                  >                                              
                                                   {getTaskTitle(task.taskId)}
                                                 </a>
                                               </span>
@@ -1461,7 +1484,11 @@ const onFinishEdit = (values) => {
             <div className="modal-dialog modal-dialog-centered" role="document">
             <div className="modal-content">
                 <div className="modal-header">
+                {(role == "admin" || permissions.projectManagement) ?
                 <h5 className="modal-title">{addTask?.data ? t('edit') : t('holiday.add')} {t('Timesheetemployee.task')}</h5>
+                :
+                <h5 className="modal-title">View {t('Timesheetemployee.task')}</h5>
+                }
                 <button type="button" className="close" onClick={closeNewTask}>
                     <span aria-hidden="true">×</span>
                 </button>
@@ -1509,7 +1536,7 @@ const onFinishEdit = (values) => {
                             },
                             ]}
                         >
-                            <Input className='form-control' maxLength={50} />
+                            <Input className='form-control' maxLength={50} readOnly={(role == "admin" || permissions.projectManagement) ? false : true}/>
                         </Form.Item>
                         </div>
                     </div>
@@ -1544,6 +1571,7 @@ const onFinishEdit = (values) => {
                                     getPopupContainer={() =>
                                         document.getElementById("area22")
                                     }
+                                    disabled={(role === "admin" || permissions.projectManagement) ? false : true}
                                 />
                         </Form.Item>
                         </div>
@@ -1577,24 +1605,35 @@ const onFinishEdit = (values) => {
                             ]}
                             className="custom-border"
                         >
-                            <Input.TextArea rows={3} className='form-control' onChange={(e) => setDescLength(e.target.value.length)} maxLength={150} />
+                            <Input.TextArea rows={3} className='form-control' onChange={(e) => setDescLength(e.target.value.length)} maxLength={150} readOnly={(role == "admin" || permissions.projectManagement) ? false : true} />
                         </Form.Item>
                         </div>
                     </div>
                 </div>
+                {(role == "admin" || permissions.projectManagement) && 
                 <div className="submit-section">
-                    <button type='submit' className="btn btn-primary submit-btn" disabled={loader}>
-                    {
-                        loader ? <Spin size="small" indicator={antIcon} />
-                        : t('submit')
-                    }
-                    </button>
+                  <button type='submit' className="btn btn-primary submit-btn" disabled={loader}>
+                  {
+                      loader ? <Spin size="small" indicator={antIcon} />
+                      : t('submit')
+                  }
+                  </button>
                 </div>
+                }
+                
                 </Form>
                 </div>
             </div>
             </div>
         </Modal>
+
+        {/* {viewModal && (
+          <TaskModal
+            data={selectedTask}
+            taskModal={viewModal}
+            closeTask={closeViewModal}
+          />
+        )} */}
     </>
   );
 };
