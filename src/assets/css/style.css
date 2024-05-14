@@ -1481,6 +1481,10 @@ a.bg-danger:focus, a.bg-danger:hover, button.bg-danger:focus, button.bg-danger:h
   margin-right: 5px !important;
 }
 
+.m-r-10 {
+  margin-right: 10px !important;
+}
+
 .m-b-15 {
   margin-bottom: 15px !important;
 }
@@ -12816,6 +12820,10 @@ padding-right: unset;
 
 .m-l-5 {
   margin-left: 5px !important;
+}
+
+.m-l-10 {
+  margin-left: 10px !important;
 }
 
 [dir="rtl"] .form-control:not([type="file"]) {

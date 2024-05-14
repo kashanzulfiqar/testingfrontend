@@ -85,6 +85,7 @@ const TaskBoard = () => {
   const [boardId, setBoardId] = useState("");
   const [columnId, setColumnId] = useState("");
   const [editId, setEditId] = useState("");
+  const [boardTitle, setBoardTitle] = useState("");
   const [taskModal, setTaskModal] = useState(false);
   const [remove, setRemove] = useState(false);
   const [newTaskModal, setNewTaskModal] = useState(false);
@@ -95,6 +96,58 @@ const TaskBoard = () => {
     title: "",
   });
 
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedProjectName, setEditedProjectName] = useState('');
+
+  const handleEditClick = () => {
+    setIsEditing(true);
+  };
+
+  const handleSave = () => {
+    // Apply your save logic here
+    let updated_data = {
+      _id: boardId,
+      boardTitle: boardTitle
+    };
+    apiServices("PUT", "taskBoard/add-taskBoard", updated_data, user_state)
+      .then((res) => {
+        if (res?.data?.success === true) {
+          console.log("Name changed ")
+        }
+      })
+      .catch((err) => {
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : 'Error editing name'
+          }!`
+        );
+      })
+    console.log("Save edited project name:", boardTitle);
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    // Revert to original project name
+    setBoardTitle(ProjectData?.projectName);
+    setIsEditing(false);
+  };
+
+  const handleInputChange = (e) => {
+    setBoardTitle(e.target.value);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleSave();
+    } else if (e.key === "Escape") {
+      handleCancel();
+    }
+  };
   
   const [form2] = Form.useForm();
 
@@ -352,6 +405,7 @@ const TaskBoard = () => {
           //setAllTasks(sortedData);
           res?.data?.taskBoards?.map((board) => {
             setBoardId(board?._id);
+            setBoardTitle(board?.boardTitle ? board?.boardTitle : ProjectData?.projectName);
             setColumns(board?.columns);
           });
           setIsLoading(false);
@@ -782,9 +836,32 @@ const onFinishEdit = (values) => {
           <div className="page-header">
             <div className="row align-items-center">
               <div className="col">
-                <h3 className="page-title">
+              {isEditing ? (
+            <input
+              type="text"
+              className="form-control"
+              value={boardTitle}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              onBlur={handleCancel}
+              autoFocus
+              style={{width:'200px'}}
+            />
+          ) : (
+            <div style={{display:'flex', flexDirection:'row', alignItems:'center'}}>
+            <h3 className="page-title" >
+              {boardTitle ? boardTitle : ProjectData?.projectName}
+            </h3>
+            {(role === "admin" || permissions?.projectManagement) &&
+            (<h3 style={{marginLeft:'2%'}}>
+            <a onClick={handleEditClick}><i className="fa fa-pencil ml-2" /></a>
+            </h3>
+          )}
+            </div>
+          )}
+                {/* <h3 className="page-title">
                   {`${ProjectData?.projectName}`} - Task Board
-                </h3>
+                </h3> */}
                 <ul className="breadcrumb">
                   <li className="breadcrumb-item">
                     <Link
@@ -800,7 +877,7 @@ const onFinishEdit = (values) => {
                   <li className="breadcrumb-item active">Task Board</li>
                 </ul>
               </div>
-              <div className="col-auto float-end ms-auto">
+              {(role === "admin" || permissions?.projectManagement) && (<div className="col-auto float-end ms-auto">
                 <a
                   className="btn btn-white float-end ml-2"
                   onClick={() => {
@@ -809,7 +886,7 @@ const onFinishEdit = (values) => {
                 >
                   <i className="fa fa-plus" /> Add Column
                 </a>
-              </div>
+              </div>)}
             </div>
           </div>
           {/* /Page Header */}
@@ -841,8 +918,11 @@ const onFinishEdit = (values) => {
                                   {column.title}
                                 </span>
                                 <div className="dropdown kanban-action">
-                                  <a data-bs-toggle="dropdown">
-                                    <i className="fa fa-ellipsis-v" />
+                                  <a
+                                  data-bs-toggle={(role === "admin" || permissions.projectManagement) ? 'dropdown' : ''}
+                                  aria-expanded={(role === "admin" || permissions.projectManagement) ? 'true' : 'false'}
+                                  style={{ cursor: (role == "admin" || permissions.projectManagement) ? "pointer" : "not-allowed" }}>
+                                    <i className="fa fa-ellipsis-v " />
                                   </a>
                                   <div className="dropdown-menu dropdown-menu-right">
                                     <a
@@ -892,14 +972,15 @@ const onFinishEdit = (values) => {
                                           <div className="kanban-box">
                                             <div className="task-board-header">
                                               <span className="status-title">
-                                                <a href="task-view.html">
+                                                <a>                                              
                                                   {getTaskTitle(task.taskId)}
                                                 </a>
                                               </span>
                                               <div className="dropdown kanban-task-action">
                                                 <a
-                                                  href=""
-                                                  data-bs-toggle="dropdown"
+                                                  data-bs-toggle={(role === "admin" || permissions.projectManagement) ? 'dropdown' : ''}
+                                                  aria-expanded={(role === "admin" || permissions.projectManagement) ? 'true' : 'false'}
+                                                  style={{ cursor: (role == "admin" || permissions.projectManagement) ? "pointer" : "not-allowed" }}
                                                 >
                                                   <i className="fa fa-angle-down" />
                                                 </a>
@@ -964,10 +1045,16 @@ const onFinishEdit = (values) => {
                               </div>
                               <div className="add-new-task" style={{marginTop:'4%'}}>
                                 <a
+                                  style={{ cursor: (role == "admin" || permissions.projectManagement) ? "pointer" : "not-allowed" }}
                                   onClick={() => {
-                                    getTasksOptions(ProjectData?._id);
-                                    setTaskModal(true);
-                                    setColumnId(column._id);
+                                    if ((role === "admin" || permissions.projectManagement)){
+                                      getTasksOptions(ProjectData?._id);
+                                      setTaskModal(true);
+                                      setColumnId(column._id);
+                                    }
+                                    else{
+                                      return
+                                    }
                                   }}
                                 >
                                   Add New Task
