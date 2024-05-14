@@ -609,14 +609,19 @@ const ProjectView = () => {
                 </button>
               }
 
-              {/* <Link
-                to="/app/projects/task-board"
-                className="btn btn-white float-end m-r-10"
+              {
+                (project?.taskBoard ? 
+                <a
+                className="btn btn-white float-start m-r-10"
                 data-bs-toggle="tooltip"
                 title="Task Board"
+                onClick={() => nav(`/task-board/${_id}`, { state: project})} 
               >
                 <i className="fa fa-bars" />
-              </Link> */}
+              </a>
+              :
+              null)
+              }
             </div>
           </div>
         </div>

@@ -37,7 +37,8 @@ const TaskBoardList = () => {
   const company_id = user_state?.user?.companyId;
   const role = user_state?.user?.role;
   const [allProjects, setAllProjects] = useState([]);
-
+  const employee_id = user_state?.user?._id;
+  const [categoryObj, setCategoryObj] = useState();
   const [loader, setLoader] = useState(false);
   const [holidayObj, setHolidayObj] = useState();
   const [tableData, setTableData] = useState([]);
@@ -123,7 +124,7 @@ const TaskBoardList = () => {
   useEffect(() => {
     setIsLoading(true);
     GetListProjects();
-  }, []);
+  }, [pagination.current, pagination.pageSize]);
 
   const searchHandler = (val, type) => {
     let dropdownValues = []
@@ -197,7 +198,7 @@ const TaskBoardList = () => {
     )
       .then((res) => {
         if (res.data.success === true) {
-          //setCategoryObj(res?.data?.projects);
+          setCategoryObj(res?.data?.projects);
           setTableData(res?.data?.projects?.docs);
  
           setIsLoading(false);
@@ -280,7 +281,7 @@ const TaskBoardList = () => {
         <a
         onClick={() => nav(`/task-board/${record?._id}`, { state: record})} 
       >
-        <label>{text}</label>
+        <label style={{cursor: 'pointer'}}>{text}</label>
       </a>
       ),
     },
@@ -305,10 +306,10 @@ const TaskBoardList = () => {
             // className="action-icon dropdown-toggle"
             // data-bs-toggle="dropdown"
             // aria-expanded="false"
-            className={`action-icon dropdown-toggle ${role === "admin" || permissions.companyManagement ? '' : 'disabled'}`}
-            style={{ cursor: role == "admin" || permissions.companyManagement ? "pointer" : "not-allowed" }}
-            data-bs-toggle={role === "admin" || permissions.companyManagement ? 'dropdown' : ''}
-            aria-expanded={role === "admin" || permissions.companyManagement ? 'true' : 'false'}
+            className={`action-icon dropdown-toggle ${role === "admin" || permissions.projectManagement ? '' : 'disabled'}`}
+            style={{ cursor: (role == "admin" || permissions.projectManagement) ? "pointer" : "not-allowed" }}
+            data-bs-toggle={(role === "admin" || permissions.projectManagement) ? 'dropdown' : ''}
+            aria-expanded={(role === "admin" || permissions.projectManagement) ? 'true' : 'false'}
           >
             <i className="material-icons">more_vert</i>
           </a>
@@ -340,7 +341,14 @@ const TaskBoardList = () => {
         if (res?.data?.success === true) {
           handleClose();
           message.success('Task board deleted successfully');
-          setTableData(prevtable => prevtable.filter(proj=> proj._id !== id));
+          if(categoryObj?.docs?.length === 1){
+            //console.log(categoryObj.totalPages)
+            GetListProjects((categoryObj.totalPages-1),null);
+          }
+          else{
+            GetListProjects()
+          }
+          //setTableData(prevtable => prevtable.filter(proj=> proj._id !== id));
           //viewCategory();
           setLoader(false);
         }
@@ -407,16 +415,16 @@ const TaskBoardList = () => {
     />
   );
 
-  const handlePageChange = (page, pageSize) => {
-    // Update the pagination state
-    setPagination({
-      ...pagination,
-      current: page,
-      pageSize: pageSize,
-    });
-    setIsLoading(true);
-    GetListProjects(page, pageSize);
-  };
+  // const handlePageChange = (page, pageSize) => {
+  //   // Update the pagination state
+  //   setPagination({
+  //     ...pagination,
+  //     current: page,
+  //     pageSize: pageSize,
+  //   });
+  //   setIsLoading(true);
+  //   GetListProjects(page, pageSize);
+  // };
 
   const toggleMobileMenu = () => {
     setMenu(!menu);
@@ -454,7 +462,7 @@ const TaskBoardList = () => {
                     <li className="breadcrumb-item active">{t('Task Boards')}</li>
                   </ul>
                 </div>
-                {(role === "admin" || permissions?.companyManagement) && (<div className="col-auto float-end ms-auto">
+                {(role === "admin" || permissions?.projectManagement) && (<div className="col-auto float-end ms-auto">
                   <a
                     href="javascript:void(0)"
                     className="btn add-btn"
@@ -537,10 +545,11 @@ const TaskBoardList = () => {
                         pageSize={pagination.pageSize}
                         total={pagination.total}
                         showTotal={(total, range) =>
-                          t('paginationShow', { range1: range[0], range2: range[1], total: total })}
-                        pageSizeOptions={["10","20", "30", "40", "50"]}
+                          t('paginationShow', { range1: range[0], range2: range[1], total: total })
+                        }
+                        pageSizeOptions={["20", "30", "40", "50"]}
                         showSizeChanger
-                        onChange={handlePageChange}
+                        onChange={(page, pageSize) => setPagination({...pagination, current: page, pageSize: pageSize,})}
                         itemRender={(current, type, originalElement) =>
                           itemRender(current, type, originalElement, t)
                         }
