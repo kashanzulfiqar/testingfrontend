@@ -105,7 +105,10 @@ const TaskBoard = () => {
   };
 
   const handleSave = () => {
-    // Apply your save logic here
+  
+    if (boardTitle?.trim() === '') {
+      return
+    }
     let updated_data = {
       _id: boardId,
       boardTitle: boardTitle
@@ -837,6 +840,7 @@ const onFinishEdit = (values) => {
             <div className="row align-items-center">
               <div className="col">
               {isEditing ? (
+                <React.Fragment>
             <input
               type="text"
               className="form-control"
@@ -845,8 +849,11 @@ const onFinishEdit = (values) => {
               onKeyDown={handleKeyDown}
               onBlur={handleCancel}
               autoFocus
-              style={{width:'200px'}}
+              style={{width:'300px'}}
+              required
             />
+            {boardTitle?.trim() === '' && <p className="text-danger">Board title cannot be empty.</p>}
+            </React.Fragment>
           ) : (
             <div style={{display:'flex', flexDirection:'row', alignItems:'center'}}>
             <h3 className="page-title" >
