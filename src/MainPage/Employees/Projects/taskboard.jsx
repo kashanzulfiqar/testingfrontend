@@ -128,7 +128,37 @@ const TaskBoard = () => {
       updatedTasks.splice(destination.index, 0, draggedTask);
   
       const updatedColumn = { ...sourceColumn, tasks: updatedTasks };
-  
+      console.log(updatedTasks);
+      let updated_data = {
+        _id: boardId,
+        columnId: destination.droppableId,
+        updatedTasks: updatedTasks,
+      };
+      apiServices("PUT", "taskBoard/add-taskBoard", updated_data, user_state)
+        .then((res) => {
+          if (res?.data?.success === true) {
+            //const sortedData = res?.data?.Task?.docs?.slice().sort((a, b) => a.title.localeCompare(b.title));
+            //setAllTasks(sortedData);
+            //setColumns(res?.data?.taskBoard?.columns);
+            //setIsLoading(false);
+            //setLoader(false);
+            //message.success('Task Moved successfully')
+            //closeTaskModal();
+          }
+        })
+        .catch((err) => {
+          //setIsLoading(false);
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : "Error Moving task"
+            }!`
+          );
+          //setLoader(false);
+        });
       // Update the state with the updated column
       setColumns((prevColumns) =>
         prevColumns.map((column) => (column._id === updatedColumn._id ? updatedColumn : column))
@@ -669,6 +699,44 @@ const onFinishEdit = (values) => {
     />
   );
 
+  const customEmptyText2 = (
+    <Empty
+      image={<img src={EmptyTable} />}
+      // image={<InboxOutlined />}
+      imageStyle={
+        {
+          // fontSize: 48,
+          // color: '#1890ff',
+        }
+      }
+      style={{
+        height: "250px",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+      }}
+      description={
+        <div style={{ display: "" }}>
+          <div
+            style={{
+              color: "#34343F",
+              fontWeight: "500",
+              fontSize: "14px",
+              margin: "7px 0px 4px 0px",
+            }}
+          >
+            No tasks added
+          </div>
+          {/* <div
+                    style={{ color: "#464665", fontWeight: "300", fontSize: "13px" }}
+                  >
+                    Click 'Add Employees' Button To Create <br /> A New Employee{" "}
+                  </div> */}
+        </div>
+      }
+    />
+  );
+
   const searchHandler = (val, type) => {
     let dropdownValues = [];
     if (type === "task") {
@@ -805,8 +873,10 @@ const onFinishEdit = (values) => {
                                   </div>
                                 </div>
                               </div>
-                              <div className="kanban-wrap">
-                                {column.tasks.map((task, index) => (
+                              <div className="kanban-wrap" style={{ height: "300px", overflowY: "auto" }}>
+                                {
+                                column?.tasks?.length > 0 ? (
+                                column.tasks.map((task, index) => (
                                   <Draggable
                                     key={task.taskId}
                                     draggableId={task.taskId}
@@ -872,7 +942,8 @@ const onFinishEdit = (values) => {
                                                     )?.map((tag) => (
                                                       <Tag
                                                         key={tag}
-                                                        color="blue"
+                                                        color = "blue"
+                                                        // color={`${column.color}`}
                                                       >
                                                         {tag}
                                                       </Tag>
@@ -886,9 +957,12 @@ const onFinishEdit = (values) => {
                                       </div>
                                     )}
                                   </Draggable>
-                                ))}
+                                ))
+                              ):
+                              customEmptyText2
+                              }
                               </div>
-                              <div className="add-new-task">
+                              <div className="add-new-task" style={{marginTop:'4%'}}>
                                 <a
                                   onClick={() => {
                                     getTasksOptions(ProjectData?._id);
