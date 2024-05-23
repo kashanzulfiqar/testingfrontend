@@ -326,7 +326,7 @@ const TaskBoard = () => {
   };
 
   const colors = [
-    { name: "Primary", value: "primary", color: "#007bff" },
+    { name: "Primary", value: "primary", color: "#ff9b44" },
     { name: "Success", value: "success", color: "#28a745" },
     { name: "Info", value: "info", color: "#17a2b8" },
     { name: "Purple", value: "purple", color: "#6f42c1" },
@@ -335,7 +335,7 @@ const TaskBoard = () => {
   ];
 
   const colorMapping = {
-    primary: "#007bff",
+    primary: "#ff9b44",
     success: "#28a745",
     info: "#17a2b8",
     purple: "#6f42c1",
@@ -953,7 +953,7 @@ const onFinishEdit = (values) => {
                                 column.color ? column.color : "primary"
                               }`}
                               style={{
-                                marginRight:'15px'
+                                marginRight:'10px'
                               }}
                             >
                               <div className="kanban-header">
@@ -1100,7 +1100,7 @@ const onFinishEdit = (values) => {
                               customEmptyText2
                               }
                               </div>
-                              <div className="add-new-task" style={{padding:'5px'}}>
+                              <div className="add-new-task" style={{padding:'5px', borderTop: '1px solid #ddd'}}>
                                 <a
                                   style={{ cursor: (role == "admin" || permissions.projectManagement) ? "pointer" : "not-allowed" }}
                                   onClick={() => {
