@@ -145,6 +145,7 @@ const TaskBoard = () => {
 
   const handleCancel = () => {
     // Revert to original project name
+    console.log("called")
     setBoardTitle(ProjectData?.projectName);
     setIsEditing(false);
   };
@@ -332,6 +333,15 @@ const TaskBoard = () => {
     { name: "Warning", value: "warning", color: "#ffc107" },
     { name: "Danger", value: "danger", color: "#dc3545" },
   ];
+
+  const colorMapping = {
+    primary: "#007bff",
+    success: "#28a745",
+    info: "#17a2b8",
+    purple: "#6f42c1",
+    warning: "#ffc107",
+    danger: "#dc3545",
+  };
 
   const getTaskTitle = (taskId) => {
     const task = allTasks.find((task) => task._id === taskId);
@@ -854,6 +864,7 @@ const onFinishEdit = (values) => {
               <div className="col">
               {isEditing ? (
                 <React.Fragment>
+                  <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
             <input
               type="text"
               className="form-control"
@@ -865,6 +876,15 @@ const onFinishEdit = (values) => {
               style={{width:'300px'}}
               required
             />
+            <a
+              className="btn btn-primary"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={handleSave}
+              style={{ marginLeft: '10px', height:'42px', textAlign:'center' }}
+            >
+              Save
+            </a>
+            </div>
             {boardTitle?.trim() === '' && <p className="text-danger">Board title cannot be empty.</p>}
             </React.Fragment>
           ) : (
@@ -932,6 +952,9 @@ const onFinishEdit = (values) => {
                               className={`kanban-list kanban-${
                                 column.color ? column.color : "primary"
                               }`}
+                              style={{
+                                marginRight:'15px'
+                              }}
                             >
                               <div className="kanban-header">
                                 <span className="status-title">
@@ -973,7 +996,7 @@ const onFinishEdit = (values) => {
                                   </div>
                                 </div>
                               </div>
-                              <div className="kanban-wrap" style={{ height: "300px", overflowY: "auto" }}>
+                              <div className="kanban-wrap" style={{ height: "365px", overflowY: "auto", padding:5 }}>
                                 {
                                 column?.tasks?.length > 0 ? (
                                 column.tasks.map((task, index) => (
@@ -988,10 +1011,14 @@ const onFinishEdit = (values) => {
                                         {...provided.dragHandleProps}
                                         ref={provided.innerRef}
                                       >
-                                        <div className="card panel">
+                                        <div className="card panel"
+                                        style={{
+                                          marginBottom:'5px'
+                                        }}>
                                           <div className="kanban-box">
                                             <div className="task-board-header">
-                                              <span className="status-title">
+                                              <span className="status-title"
+                                              style={{paddingRight:'inherit'}}>
                                                 <a
                                                 onClick={() => 
                                                   { 
@@ -1053,7 +1080,7 @@ const onFinishEdit = (values) => {
                                                     )?.map((tag) => (
                                                       <Tag
                                                         key={tag}
-                                                        color = "blue"
+                                                        color={colorMapping[column.color]}
                                                         // color={`${column.color}`}
                                                       >
                                                         {tag}
@@ -1073,7 +1100,7 @@ const onFinishEdit = (values) => {
                               customEmptyText2
                               }
                               </div>
-                              <div className="add-new-task" style={{marginTop:'4%'}}>
+                              <div className="add-new-task" style={{padding:'5px'}}>
                                 <a
                                   style={{ cursor: (role == "admin" || permissions.projectManagement) ? "pointer" : "not-allowed" }}
                                   onClick={() => {
