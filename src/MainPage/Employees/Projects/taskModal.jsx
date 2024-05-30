@@ -167,8 +167,9 @@ function TaskModal({data, viewModal, closeViewModal, getAllTasks}) {
                 {!isEditing && (<div className="dropdown dropdown-action profile-action">
                   <a
                     className="action-icon dropdown-toggle"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
+                    data-bs-toggle={(role === "admin" || permissions.projectManagement) ? 'dropdown' : ''}
+                    aria-expanded={(role === "admin" || permissions.projectManagement) ? 'true' : 'false'}
+                    style={{ cursor: (role == "admin" || permissions.projectManagement) ? "pointer" : "not-allowed" }}
                   >
                     <i className="material-icons">more_vert</i>
                   </a>
@@ -250,7 +251,7 @@ function TaskModal({data, viewModal, closeViewModal, getAllTasks}) {
                     </table>
                           <div style={{display:'flex', flexDirection:'row', justifyContent:'space-between', alignItems:'center'}}><h4>Tags</h4>
                             {!isEditingTag && (<h5>
-                            <a onClick={handleTagClick}><i className="fa fa-pencil ml-2" /></a>
+                              {(role === "admin" || permissions.projectManagement) && <a onClick={handleTagClick}><i className="fa fa-pencil ml-2" /></a>}
                             </h5>)}
                           </div>
                           {isEditingTag ? (
