@@ -35,6 +35,7 @@ import { useTranslation } from "react-i18next";
 function TaskModal({data, viewModal, closeViewModal, getAllTasks}) {
     const [form] = Form.useForm();
     const [form2] = Form.useForm();
+    const [form3] = Form.useForm();
     const { t, i18n } = useTranslation();
     const user_state = useSelector((state) => state.user.loginvalue);
     const employee_id = user_state?.user?._id;
@@ -46,27 +47,29 @@ function TaskModal({data, viewModal, closeViewModal, getAllTasks}) {
     const task = data;
     
     const [description, setDescription] = useState('');
+    const [title, setTitle] = useState('');
     const [tags, setTags] = useState([]);
     const [loader, setLoader] = useState(false);
+    const [loader2, setLoader2] = useState(false);
+    const [loader3, setLoader3] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [isEditingTag, setIsEditingTag] = useState(false);
+    const [isEditingTitle, setIsEditingTitle] = useState(false);
 
     useEffect(()=>{
       setDescription(data?.description);
       setTags(data?.tags);
+      setTitle(data?.title)
     },[])
 
-    const handleTagClick = () => {
-      setIsEditingTag(true);
-      form2.setFieldsValue({ tags: task?.tags });
+    const handleTitleClick = () => {
+      setIsEditingTitle(true);
+      form3.setFieldsValue({ title: title });
     };
-  
-    const handleCancelTag = () => {
-      setIsEditingTag(false);
-    };
-  
-    const handleSaveTag = (values) => {
-      console.log("called tag")
+
+    const handleSaveTitle = (values) => {
+      setLoader(true);
+      console.log("called title")
       const data = {
         ...values,
         projectId: task?.ProjectData?._id,
@@ -75,9 +78,10 @@ function TaskModal({data, viewModal, closeViewModal, getAllTasks}) {
       apiServices("PUT", 'tasks', data, user_state)
         .then((res) => {
             if (res?.data?.success === true) {
+              message.success('Task details updated')
               setLoader(false)
-              setTags(values?.tags);
-              handleCancelTag();
+              setTitle(values?.title);
+              handleCancelTitle();
               getAllTasks();
               }
             })
@@ -95,9 +99,54 @@ function TaskModal({data, viewModal, closeViewModal, getAllTasks}) {
         });
     };
 
+    const handleTagClick = () => {
+      setIsEditingTag(true);
+      form2.setFieldsValue({ tags: tags });
+    };
+  
+    const handleCancelTitle = () => {
+      setIsEditingTitle(false);
+    };
+
+    const handleCancelTag = () => {
+      setIsEditingTag(false);
+    };
+  
+    const handleSaveTag = (values) => {
+      setLoader2(true);
+      console.log("called tag")
+      const data = {
+        ...values,
+        projectId: task?.ProjectData?._id,
+        _id: task?._id
+      }
+      apiServices("PUT", 'tasks', data, user_state)
+        .then((res) => {
+            if (res?.data?.success === true) {
+              message.success('Task details updated')
+              setLoader2(false)
+              setTags(values?.tags);
+              handleCancelTag();
+              getAllTasks();
+              }
+            })
+            .catch((err) => {
+          setLoader2(false)
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : t('Tasks.updateTaskError')
+            }!`
+          );
+        });
+    };
+
     const handleEditClick = () => {
       setIsEditing(true);
-      form.setFieldsValue({ description: task?.description });
+      form.setFieldsValue({ description: description });
     };
   
     const handleCancelClick = () => {
@@ -105,6 +154,7 @@ function TaskModal({data, viewModal, closeViewModal, getAllTasks}) {
     };
   
     const handleSaveClick = (values) => {
+      setLoader3(true);
       console.log("called desc")
       const data = {
         ...values,
@@ -114,14 +164,15 @@ function TaskModal({data, viewModal, closeViewModal, getAllTasks}) {
     apiServices("PUT", 'tasks', data, user_state)
       .then((res) => {
           if (res?.data?.success === true) {
-            setLoader(false)
+            message.success('Task details updated')
+            setLoader3(false)
             setDescription(values?.description);
             handleCancelClick();
             getAllTasks();
             }
           })
           .catch((err) => {
-        setLoader(false)
+        setLoader3(false)
         message.error(
           `${
             err?.response?.data?.msg
@@ -152,8 +203,56 @@ function TaskModal({data, viewModal, closeViewModal, getAllTasks}) {
         role="document"
       >
         <div className="modal-content">
-          <div className="modal-header">
-            <h5 className="modal-title">{task?.title}</h5>
+          <div className="modal-header" style={{display:'flex', flexDirection:'row', alignItems:'flex-start'}}> 
+          {
+            isEditingTitle 
+            ? 
+            <Form form={form3} onFinish={handleSaveTitle} style={{display:'flex', flexDirection:'row', alignItems:'flex-start'}}>
+              <Form.Item
+                    name="title"
+                    className="custom-border"
+                    rules={[
+                      {
+                        validator: (_, value) => {
+                          if (/\s{2,}/.test(value)) {
+                            return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
+                          }
+                          return Promise.resolve();
+                        },
+                      },
+                      { 
+                        required: true, 
+                        message: "Please enter a title" 
+                      }
+                    ]}
+                  >
+                    <Input className='form-control' placeholder={t('Tasks.title')} />
+                  </Form.Item>
+              <div className="form-actions" style={{marginLeft:'2%', display:'flex', flexDirection:'row'}}>
+                <Button 
+                className="btn"
+                style={{backgroundColor: 'lightgrey', color: 'white'}}
+                onClick={handleCancelTitle}>
+                  {t("cancel")}
+                </Button>
+                <Button 
+                  className="btn btn-primary"
+                  type="primary"
+                  htmlType="submit" 
+                  disabled={loader}
+                  style={{marginLeft:'3%'}}
+                >
+                  {t("save")}
+                </Button>
+              </div>
+            </Form>
+            :
+            <h5 className="modal-title">{title ? title : task?.title}</h5>
+            }
+
+            {!isEditingTitle && (<h3 style={{marginLeft:'1%'}}>
+              {(role === "admin" || permissions.projectManagement) && <a onClick={handleTitleClick}><i className="fa fa-pencil ml-2" /></a>}
+            </h3>)}
 
             <button type="button" className="close" onClick={closeViewModal}>
               <span aria-hidden="true">×</span>
@@ -195,13 +294,16 @@ function TaskModal({data, viewModal, closeViewModal, getAllTasks}) {
                         <Input.TextArea rows={4} />
                       </Form.Item>
                       <div className="form-actions">
-                        <Button onClick={handleCancelClick}>
+                        <Button className="btn"
+                        style={{backgroundColor: 'lightgrey', color: 'white'}}
+                        onClick={handleCancelClick}>
                           {t("cancel")}
                         </Button>
                         <Button 
+                          className="btn btn-primary"
                           type="primary"
                           htmlType="submit" 
-                          disabled={loader}
+                          disabled={loader3}
                           style={{marginLeft:'2%'}}
                         >
                           {t("save")}
@@ -278,13 +380,16 @@ function TaskModal({data, viewModal, closeViewModal, getAllTasks}) {
                                 />
                               </Form.Item>
                               <div className="form-actions">
-                                <Button onClick={handleCancelTag}>
+                                <Button className="btn"
+                                style={{backgroundColor: 'lightgrey', color: 'white'}}
+                                onClick={handleCancelTag}>
                                   {t("cancel")}
                                 </Button>
                                 <Button 
+                                  className="btn btn-primary"
                                   type="primary"
                                   htmlType="submit" 
-                                  disabled={loader}
+                                  disabled={loader2}
                                   style={{marginLeft:'2%'}}
                                 >
                                   {t("save")}
