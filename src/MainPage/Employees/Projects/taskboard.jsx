@@ -25,73 +25,23 @@ import { apiServices } from "../../../Services/apiServices";
 import { useSelector } from "react-redux";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { useForm } from "react-hook-form";
-//import TaskModal from "./taskModal";
-
-const response = [
-  {
-    _id: "1234",
-    title: "Todo",
-    color: "primary",
-    tasks: [
-      {
-        id: "task1",
-        title: "Website redesign",
-        status: "backlog",
-        progress: 70,
-        priority: "Normal",
-        date: "Sep 26",
-        assignedUsers: [Avatar_12],
-      },
-      {
-        id: "task2",
-        title: "Website new",
-        status: "backlog",
-        progress: 13,
-        priority: "Normal",
-        date: "Sep 26",
-        assignedUsers: [Avatar_12],
-      },
-    ],
-  },
-  {
-    _id: "1235",
-    title: "InProgress",
-    color: "success",
-    tasks: [
-      {
-        id: "task3",
-        title: "dummytask",
-        status: "backlog",
-        progress: 70,
-        priority: "Normal",
-        date: "Sep 26",
-        assignedUsers: [Avatar_12],
-      },
-    ],
-  },
-  {
-    _id: "1236",
-    title: "Done",
-    color: "info",
-    tasks: [],
-  },
-];
+import TaskModal from "./taskModal";
 
 
 const TaskBoard = () => {
   const [columns, setColumns] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  //const [viewModal, setViewModal] = useState(false);
+  const [viewModal, setViewModal] = useState(false);
   const [allTasks, setAllTasks] = useState([]);
   const [optTasks, setOptTasks] = useState([]);
   const [boardId, setBoardId] = useState("");
-  // const [selectedTask, setSelectedTask] = useState({
-  //   _id: "",
-  //   title: "",
-  //   tags:[],
-  //   description: "",
-  //   ProjectData: {}
-  // });
+  const [selectedTask, setSelectedTask] = useState({
+    _id: "",
+    title: "",
+    tags:[],
+    description: "",
+    ProjectData: {}
+  });
   const [columnId, setColumnId] = useState("");
   const [editId, setEditId] = useState("");
   const [boardTitle, setBoardTitle] = useState("");
@@ -106,6 +56,7 @@ const TaskBoard = () => {
   });
 
 
+  const [disableDrag, setDisableDrag] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedProjectName, setEditedProjectName] = useState('');
 
@@ -178,7 +129,7 @@ const TaskBoard = () => {
     if (!result.destination) {
       return;
     }
-  
+    setDisableDrag(true);
     const { source, destination } = result;
     console.log(result)
 
@@ -210,6 +161,7 @@ const TaskBoard = () => {
             //setLoader(false);
             //message.success('Task Moved successfully')
             //closeTaskModal();
+            setDisableDrag(false);
           }
         })
         .catch((err) => {
@@ -223,6 +175,7 @@ const TaskBoard = () => {
                 : "Error Moving task"
             }!`
           );
+          setDisableDrag(false);
           //setLoader(false);
         });
       // Update the state with the updated column
@@ -248,6 +201,7 @@ const TaskBoard = () => {
             //setLoader(false);
             //message.success('Task Moved successfully')
             //closeTaskModal();
+            setDisableDrag(false);
           }
         })
         .catch((err) => {
@@ -261,6 +215,7 @@ const TaskBoard = () => {
                 : "Error Moving task"
             }!`
           );
+          setDisableDrag(false);
           //setLoader(false);
         });
 
@@ -301,10 +256,11 @@ const TaskBoard = () => {
     setLoader(false);
   };
 
-  // const closeViewModal = () => {
-  //   setViewModal(false)
-  // };
-
+  const closeViewModal = () => {
+    console.log("hello")
+    setViewModal(false)
+  };
+  
   const closeTaskModal = () => {
     setTaskModal(false);
     setColumnId('');
@@ -328,8 +284,8 @@ const TaskBoard = () => {
   const colors = [
     { name: "Primary", value: "primary", color: "#ff9b44" },
     { name: "Success", value: "success", color: "#28a745" },
-    { name: "Info", value: "info", color: "#17a2b8" },
-    { name: "Purple", value: "purple", color: "#6f42c1" },
+    { name: "Info", value: "info", color: "#42a5f5" },
+    { name: "Purple", value: "purple", color: "#7460ee" },
     { name: "Warning", value: "warning", color: "#ffc107" },
     { name: "Danger", value: "danger", color: "#dc3545" },
   ];
@@ -337,8 +293,8 @@ const TaskBoard = () => {
   const colorMapping = {
     primary: "#ff9b44",
     success: "#28a745",
-    info: "#17a2b8",
-    purple: "#6f42c1",
+    info: "#42a5f5",
+    purple: "#7460ee",
     warning: "#ffc107",
     danger: "#dc3545",
   };
@@ -893,7 +849,7 @@ const onFinishEdit = (values) => {
               {boardTitle ? boardTitle : ProjectData?.projectName}
             </h3>
             {(role === "admin" || permissions?.projectManagement) &&
-            (<h3 style={{marginLeft:'2%'}}>
+            (<h3 style={{marginLeft:'1%'}}>
             <a onClick={handleEditClick}><i className="fa fa-pencil ml-2" /></a>
             </h3>
           )}
@@ -1004,6 +960,7 @@ const onFinishEdit = (values) => {
                                     key={task.taskId}
                                     draggableId={task.taskId}
                                     index={index}
+                                    isDragDisabled={disableDrag}
                                   >
                                     {(provided) => (
                                       <div
@@ -1025,9 +982,19 @@ const onFinishEdit = (values) => {
                                                     const title = getTaskTitle(task.taskId);
                                                     const tags = getTaskTags(task.taskId);
                                                     const description = getTaskDescription(task.taskId);
-                                                    setAddTask({ isAddOpen: true, data: task }); 
-                                                    form2.setFieldsValue({ title, tags, description  }) 
-                                                    setEditId(task.taskId);
+                                                    const status = column.title
+                                                    //setAddTask({ isAddOpen: true, data: task }); 
+                                                    //form2.setFieldsValue({ title, tags, description  }) 
+                                                    //setEditId(task.taskId);
+                                                    setSelectedTask({
+                                                      _id: task.taskId,
+                                                      title,
+                                                      tags,
+                                                      description,
+                                                      ProjectData,
+                                                      status
+                                                    })
+                                                    setViewModal(true)
                                                   }}
                                                   >                                              
                                                   {getTaskTitle(task.taskId)}
@@ -1072,7 +1039,7 @@ const onFinishEdit = (values) => {
                                             </div>
                                             <div className="task-board-body">
                                               <div className="kanban-footer">
-                                                <span className="task-info-cont">
+                                                <span className="task-info-cont" style={{maxHeight: "4em", overflow: "hidden",}}>
                                                   <span className="task-date">
                                                     {" "}
                                                     {getTaskTags(
@@ -1082,6 +1049,7 @@ const onFinishEdit = (values) => {
                                                         key={tag}
                                                         color={colorMapping[column.color]}
                                                         // color={`${column.color}`}
+                                                        style={{ marginBottom: "4px" }}
                                                       >
                                                         {tag}
                                                       </Tag>
@@ -1563,7 +1531,7 @@ const onFinishEdit = (values) => {
                             },
                             ]}
                         >
-                            <Input className='form-control' maxLength={50} readOnly={(role == "admin" || permissions.projectManagement) ? false : true}/>
+                            <Input className='form-control' readOnly={(role == "admin" || permissions.projectManagement) ? false : true}/>
                         </Form.Item>
                         </div>
                     </div>
@@ -1608,7 +1576,6 @@ const onFinishEdit = (values) => {
                         <div className="form-group">
                         <label style={{display: 'flex', justifyContent: 'space-between'}}>
                             <div>{t('finance.Invoices.description')} <span className="text-danger">*</span></div>
-                            <small style={{marginTop: '5px', fontSize: '10px', color: 'rgba(0, 0, 0, 0.5)'}}>{descLength} / 150</small>
                         </label>
                         <Form.Item
                             name="description"
@@ -1632,7 +1599,7 @@ const onFinishEdit = (values) => {
                             ]}
                             className="custom-border"
                         >
-                            <Input.TextArea rows={3} className='form-control' onChange={(e) => setDescLength(e.target.value.length)} maxLength={150} readOnly={(role == "admin" || permissions.projectManagement) ? false : true} />
+                            <Input.TextArea rows={3} className='form-control' onChange={(e) => setDescLength(e.target.value.length)} readOnly={(role == "admin" || permissions.projectManagement) ? false : true} />
                         </Form.Item>
                         </div>
                     </div>
@@ -1654,13 +1621,14 @@ const onFinishEdit = (values) => {
             </div>
         </Modal>
 
-        {/* {viewModal && (
+        {viewModal && (
           <TaskModal
             data={selectedTask}
-            taskModal={viewModal}
-            closeTask={closeViewModal}
+            viewModal={viewModal}
+            closeViewModal={closeViewModal}
+            getAllTasks={getAllTasks}
           />
-        )} */}
+        )}
     </>
   );
 };

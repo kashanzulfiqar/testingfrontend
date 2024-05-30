@@ -12902,3 +12902,14 @@ padding-right: unset;
 [dir="rtl"] .custom-badgeclass{
   margin-right: auto !important; 
 } */
+
+.tag-container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.tag-item {
+  flex: 1 1 30%; /* Adjust the percentage based on the required number of tags per line */
+  margin-bottom: 4px;
+  margin-right: 4px;
+}
