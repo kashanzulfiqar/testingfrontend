@@ -399,7 +399,7 @@ const antIcon = (
                   <div className="card-body">
                     <span className="dash-widget-icon"><i className="fa fa-cubes" /></span>
                     <div className="dash-widget-info">
-                      <h3>{allData?.statistics?.onGoingProject}</h3>
+                      <h3>{allData?.statistics?.onGoingProject} / {allData?.projectsCount}</h3>
                       <span>On-going Projects</span>
                     </div>
                   </div>
@@ -565,7 +565,7 @@ const antIcon = (
                           <span className="d-block">{t('aDash.earnings')}</span>
                         </div>
                         <div>
-                          <span className="text-success" style={{unicodeBidi:'plaintext'}}>{allData?.earningPercentComparison}%</span>
+                          <span className={allData?.earningPercentComparison < 0 ? "text-danger" : "text-success"} style={{unicodeBidi:'plaintext'}}>{allData?.earningPercentComparison}%</span>
                         </div>
                       </div>
                       <h3 className="mb-3">{allData?.currentMonthEarning} {allData?.preferredCurrency}</h3>
@@ -582,7 +582,7 @@ const antIcon = (
                           <span className="d-block">{t('aDash.expenses')}</span>
                         </div>
                         <div>
-                          <span className="text-success" style={{unicodeBidi:'plaintext'}}>{allData?.expensePercentComparison}%</span>
+                          <span className={allData?.expensePercentComparison < 0 ? "text-danger" : "text-success"} style={{unicodeBidi:'plaintext'}}>{allData?.expensePercentComparison}%</span>
                         </div>
                       </div>
                       <h3 className="mb-3">{allData?.currentMonthExpense} {allData?.preferredCurrency}</h3>
@@ -599,7 +599,7 @@ const antIcon = (
                           <span className="d-block">{t('aDash.profit')}</span>
                         </div>
                         <div>
-                          <span className="text-success" style={{unicodeBidi:'plaintext'}}>{allData?.profitLossPercentComparison}%</span>
+                          <span className={allData?.profitLossPercentComparison < 0 ? "text-danger" : "text-success"} style={{unicodeBidi:'plaintext'}}>{allData?.profitLossPercentComparison}%</span>
                         </div>
                       </div>
                       <h3 className="mb-3">{allData?.currentMonthProfitLoss} {allData?.preferredCurrency}</h3>
@@ -673,19 +673,24 @@ const antIcon = (
                         </div>
                       </div>
                     </div>
-                    <div className="progress mb-4">
-                      <div className="progress-bar bg-purple" role="progressbar" style={{ width: `${allData?.statistics?.percentCompletedTasks}%` }} aria-valuenow={allData?.statistics?.percentCompletedTasks} aria-valuemin={0} aria-valuemax={100}>{allData?.statistics?.percentCompletedTasks}%</div>
-                      <div className="progress-bar bg-warning" role="progressbar" style={{ width: `${allData?.statistics?.percentInProgressTasks}%` }} aria-valuenow={allData?.statistics?.percentInProgressTasks} aria-valuemin={0} aria-valuemax={100}>{allData?.statistics?.percentInProgressTasks}%</div>
-                      <div className="progress-bar bg-success" role="progressbar" style={{ width: `${allData?.statistics?.percentToDoTasks}%` }} aria-valuenow={allData?.statistics?.percentToDoTasks} aria-valuemin={0} aria-valuemax={100}>{allData?.statistics?.percentToDoTasks}%</div>
-                      <div className="progress-bar bg-danger" role="progressbar" style={{ width: `${allData?.statistics?.percentBacklogTasks}%` }} aria-valuenow={allData?.statistics?.percentBacklogTasks} aria-valuemin={0} aria-valuemax={100}>{allData?.statistics?.percentBacklogTasks}%</div>
-                    </div>
-                    <div>
-                      <p><i className={`fa fa-dot-circle-o text-purple ${i18n.dir() === 'rtl' ? 'ms-2' : 'me-2'}`} />{t('aDash.completedTasks')} <span className={`${i18n.dir() === 'rtl' ? 'float-start' : 'float-end'}`}>{allData?.statistics?.completedTasks}</span></p>
-                      <p><i className={`fa fa-dot-circle-o text-warning ${i18n.dir() === 'rtl' ? 'ms-2' : 'me-2'}`} />{t('aDash.inprogressTasks')} <span className={`${i18n.dir() === 'rtl' ? 'float-start' : 'float-end'}`}>{allData?.statistics?.inProgressTasks}</span></p>
-                      <p><i className={`fa fa-dot-circle-o text-success ${i18n.dir() === 'rtl' ? 'ms-2' : 'me-2'}`} />Todo<span className={`${i18n.dir() === 'rtl' ? 'float-start' : 'float-end'}`}>{allData?.statistics?.toDoTasks}</span></p>
-                       <p><i className={`fa fa-dot-circle-o text-danger ${i18n.dir() === 'rtl' ? 'ms-2' : 'me-2'}`} />Backlog<span className={`${i18n.dir() === 'rtl' ? 'float-start' : 'float-end'}`}>{allData?.statistics?.backlogTasks}</span></p>
-                      {/*<p className="mb-0"><i className={`fa fa-dot-circle-o text-info ${i18n.dir() === 'rtl' ? 'ms-2' : 'me-2'}`} />{t('aDash.reviewTasks')} <span className={`${i18n.dir() === 'rtl' ? 'float-start' : 'float-end'}`}>5</span></p> */}
-                    </div>
+                    {
+                      loader ? <Spin style={{height: '300px', display: 'grid', placeItems: 'center'}} /> : 
+                      <>
+                        <div className="progress mb-4">
+                          <div className="progress-bar bg-purple" role="progressbar" style={{ width: `${allData?.statistics?.percentCompletedTasks}%` }} aria-valuenow={allData?.statistics?.percentCompletedTasks} aria-valuemin={0} aria-valuemax={100}>{allData?.statistics?.percentCompletedTasks}%</div>
+                          <div className="progress-bar bg-warning" role="progressbar" style={{ width: `${allData?.statistics?.percentInProgressTasks}%` }} aria-valuenow={allData?.statistics?.percentInProgressTasks} aria-valuemin={0} aria-valuemax={100}>{allData?.statistics?.percentInProgressTasks}%</div>
+                          <div className="progress-bar bg-success" role="progressbar" style={{ width: `${allData?.statistics?.percentToDoTasks}%` }} aria-valuenow={allData?.statistics?.percentToDoTasks} aria-valuemin={0} aria-valuemax={100}>{allData?.statistics?.percentToDoTasks}%</div>
+                          <div className="progress-bar bg-danger" role="progressbar" style={{ width: `${allData?.statistics?.percentBacklogTasks}%` }} aria-valuenow={allData?.statistics?.percentBacklogTasks} aria-valuemin={0} aria-valuemax={100}>{allData?.statistics?.percentBacklogTasks}%</div>
+                        </div>
+                        <div>
+                          <p><i className={`fa fa-dot-circle-o text-purple ${i18n.dir() === 'rtl' ? 'ms-2' : 'me-2'}`} />{t('aDash.completedTasks')} <span className={`${i18n.dir() === 'rtl' ? 'float-start' : 'float-end'}`}>{allData?.statistics?.completedTasks}</span></p>
+                          <p><i className={`fa fa-dot-circle-o text-warning ${i18n.dir() === 'rtl' ? 'ms-2' : 'me-2'}`} />{t('aDash.inprogressTasks')} <span className={`${i18n.dir() === 'rtl' ? 'float-start' : 'float-end'}`}>{allData?.statistics?.inProgressTasks}</span></p>
+                          <p><i className={`fa fa-dot-circle-o text-success ${i18n.dir() === 'rtl' ? 'ms-2' : 'me-2'}`} />Todo<span className={`${i18n.dir() === 'rtl' ? 'float-start' : 'float-end'}`}>{allData?.statistics?.toDoTasks}</span></p>
+                          <p><i className={`fa fa-dot-circle-o text-danger ${i18n.dir() === 'rtl' ? 'ms-2' : 'me-2'}`} />Backlog<span className={`${i18n.dir() === 'rtl' ? 'float-start' : 'float-end'}`}>{allData?.statistics?.backlogTasks}</span></p>
+                          {/*<p className="mb-0"><i className={`fa fa-dot-circle-o text-info ${i18n.dir() === 'rtl' ? 'ms-2' : 'me-2'}`} />{t('aDash.reviewTasks')} <span className={`${i18n.dir() === 'rtl' ? 'float-start' : 'float-end'}`}>5</span></p> */}
+                        </div>
+                      </>
+                    }
                   </div>
                 </div>
               </div>
