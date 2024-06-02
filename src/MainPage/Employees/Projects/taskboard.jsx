@@ -130,114 +130,155 @@ const TaskBoard = () => {
       return;
     }
     setDisableDrag(true);
-    const { source, destination } = result;
-    console.log(result)
+    const { source, destination, type } = result;
+    if (type === 'column') {
+      const newColumns = Array.from(columns);
+      const [movedColumn] = newColumns.splice(source.index, 1);
+      newColumns.splice(destination.index, 0, movedColumn);
 
-    const sourceColumn = columns.find((column) => column._id === source.droppableId);
-    const destinationColumn = columns.find((column) => column._id === destination.droppableId);
 
-    const draggedTask = sourceColumn.tasks.find((task) => task.taskId === result.draggableId);
+      let updated_data = {
+        _id: boardId,
+        columns:newColumns
+      };
+      apiServices("PUT", "taskBoard/add-taskBoard", updated_data, user_state)
+        .then((res) => {
+          if (res?.data?.success === true) {
+            //const sortedData = res?.data?.Task?.docs?.slice().sort((a, b) => a.title.localeCompare(b.title));
+            //setAllTasks(sortedData);
+            //setColumns(res?.data?.taskBoard?.columns);
+            //setIsLoading(false);
+            //setLoader(false);
+            //message.success('Task Moved successfully')
+            //closeTaskModal();
+            setDisableDrag(false);
+          }
+        })
+        .catch((err) => {
+          //setIsLoading(false);
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : "Error Moving Column"
+            }!`
+          );
+          setDisableDrag(false);
+          //setLoader(false);
+        });
 
-    if (source.droppableId === destination.droppableId) {
-      
-      const updatedTasks = Array.from(sourceColumn.tasks);
-      updatedTasks.splice(source.index, 1);
-      updatedTasks.splice(destination.index, 0, draggedTask);
   
-      const updatedColumn = { ...sourceColumn, tasks: updatedTasks };
-      console.log(updatedTasks);
-      let updated_data = {
-        _id: boardId,
-        columnId: destination.droppableId,
-        updatedTasks: updatedTasks,
-      };
-      apiServices("PUT", "taskBoard/add-taskBoard", updated_data, user_state)
-        .then((res) => {
-          if (res?.data?.success === true) {
-            //const sortedData = res?.data?.Task?.docs?.slice().sort((a, b) => a.title.localeCompare(b.title));
-            //setAllTasks(sortedData);
-            //setColumns(res?.data?.taskBoard?.columns);
-            //setIsLoading(false);
-            //setLoader(false);
-            //message.success('Task Moved successfully')
-            //closeTaskModal();
-            setDisableDrag(false);
-          }
-        })
-        .catch((err) => {
-          //setIsLoading(false);
-          message.error(
-            `${
-              err?.response?.data?.msg
-                ? err?.response?.data?.msg
-                : err?.response?.data?.validation?.body?.message
-                ? err?.response?.data?.validation?.body?.message
-                : "Error Moving task"
-            }!`
-          );
-          setDisableDrag(false);
-          //setLoader(false);
-        });
-      // Update the state with the updated column
-      setColumns((prevColumns) =>
-        prevColumns.map((column) => (column._id === updatedColumn._id ? updatedColumn : column))
-      );
+      setColumns(newColumns);
     }
-    else{
+    else {
+      const sourceColumn = columns.find((column) => column._id === source.droppableId);
+      const destinationColumn = columns.find((column) => column._id === destination.droppableId);
 
-      let updated_data = {
-        _id: boardId,
-        columnId: destination.droppableId,
-        prevColumn: source.droppableId,
-        taskId: result.draggableId
-      };
-      apiServices("PUT", "taskBoard/add-taskBoard", updated_data, user_state)
-        .then((res) => {
-          if (res?.data?.success === true) {
-            //const sortedData = res?.data?.Task?.docs?.slice().sort((a, b) => a.title.localeCompare(b.title));
-            //setAllTasks(sortedData);
-            //setColumns(res?.data?.taskBoard?.columns);
+      const draggedTask = sourceColumn.tasks.find((task) => task.taskId === result.draggableId);
+
+      if (source.droppableId === destination.droppableId) {
+        
+        const updatedTasks = Array.from(sourceColumn.tasks);
+        updatedTasks.splice(source.index, 1);
+        updatedTasks.splice(destination.index, 0, draggedTask);
+    
+        const updatedColumn = { ...sourceColumn, tasks: updatedTasks };
+        console.log(updatedTasks);
+        let updated_data = {
+          _id: boardId,
+          columnId: destination.droppableId,
+          updatedTasks: updatedTasks,
+        };
+        apiServices("PUT", "taskBoard/add-taskBoard", updated_data, user_state)
+          .then((res) => {
+            if (res?.data?.success === true) {
+              //const sortedData = res?.data?.Task?.docs?.slice().sort((a, b) => a.title.localeCompare(b.title));
+              //setAllTasks(sortedData);
+              //setColumns(res?.data?.taskBoard?.columns);
+              //setIsLoading(false);
+              //setLoader(false);
+              //message.success('Task Moved successfully')
+              //closeTaskModal();
+              setDisableDrag(false);
+            }
+          })
+          .catch((err) => {
             //setIsLoading(false);
-            //setLoader(false);
-            //message.success('Task Moved successfully')
-            //closeTaskModal();
+            message.error(
+              `${
+                err?.response?.data?.msg
+                  ? err?.response?.data?.msg
+                  : err?.response?.data?.validation?.body?.message
+                  ? err?.response?.data?.validation?.body?.message
+                  : "Error Moving task"
+              }!`
+            );
             setDisableDrag(false);
+            //setLoader(false);
+          });
+        // Update the state with the updated column
+        setColumns((prevColumns) =>
+          prevColumns.map((column) => (column._id === updatedColumn._id ? updatedColumn : column))
+        );
+      }
+      else{
+
+        let updated_data = {
+          _id: boardId,
+          columnId: destination.droppableId,
+          prevColumn: source.droppableId,
+          taskId: result.draggableId
+        };
+        apiServices("PUT", "taskBoard/add-taskBoard", updated_data, user_state)
+          .then((res) => {
+            if (res?.data?.success === true) {
+              //const sortedData = res?.data?.Task?.docs?.slice().sort((a, b) => a.title.localeCompare(b.title));
+              //setAllTasks(sortedData);
+              //setColumns(res?.data?.taskBoard?.columns);
+              //setIsLoading(false);
+              //setLoader(false);
+              //message.success('Task Moved successfully')
+              //closeTaskModal();
+              setDisableDrag(false);
+            }
+          })
+          .catch((err) => {
+            //setIsLoading(false);
+            message.error(
+              `${
+                err?.response?.data?.msg
+                  ? err?.response?.data?.msg
+                  : err?.response?.data?.validation?.body?.message
+                  ? err?.response?.data?.validation?.body?.message
+                  : "Error Moving task"
+              }!`
+            );
+            setDisableDrag(false);
+            //setLoader(false);
+          });
+
+      const updatedSourceTasks = sourceColumn.tasks.filter((task) => task.taskId !== result.draggableId);
+
+      const updatedSourceColumn = { ...sourceColumn, tasks: updatedSourceTasks };
+
+      const updatedDestinationTasks = [...destinationColumn.tasks, draggedTask];
+      const updatedDestinationColumn = { ...destinationColumn, tasks: updatedDestinationTasks };
+
+      setColumns((prevColumns) => {
+        const updatedColumns = prevColumns.map((column) => {
+          if (column._id === updatedSourceColumn._id) {
+            return updatedSourceColumn;
           }
-        })
-        .catch((err) => {
-          //setIsLoading(false);
-          message.error(
-            `${
-              err?.response?.data?.msg
-                ? err?.response?.data?.msg
-                : err?.response?.data?.validation?.body?.message
-                ? err?.response?.data?.validation?.body?.message
-                : "Error Moving task"
-            }!`
-          );
-          setDisableDrag(false);
-          //setLoader(false);
+          if (column._id === updatedDestinationColumn._id) {
+            return updatedDestinationColumn;
+          }
+          return column;
         });
-
-    const updatedSourceTasks = sourceColumn.tasks.filter((task) => task.taskId !== result.draggableId);
-
-    const updatedSourceColumn = { ...sourceColumn, tasks: updatedSourceTasks };
-
-    const updatedDestinationTasks = [...destinationColumn.tasks, draggedTask];
-    const updatedDestinationColumn = { ...destinationColumn, tasks: updatedDestinationTasks };
-
-    setColumns((prevColumns) => {
-      const updatedColumns = prevColumns.map((column) => {
-        if (column._id === updatedSourceColumn._id) {
-          return updatedSourceColumn;
-        }
-        if (column._id === updatedDestinationColumn._id) {
-          return updatedDestinationColumn;
-        }
-        return column;
+        return updatedColumns;
       });
-      return updatedColumns;
-    });
+    }
   }
   };
   
@@ -887,216 +928,222 @@ const onFinishEdit = (values) => {
           </div>
           {/* /Page Header */}
           <DragDropContext onDragEnd={onDragEnd}>
-            <div className="kanban-board card mb-0">
-              {isLoading ? (
-                <div className="col-md-12 text-center">
-                  <Spin size="large" tip="Loading..." />
-                </div>
-              ) :
-              columns?.length > 0 ? (
-                <div className="card-body">
-                  <div className="kanban-cont">
-                    {columns.map((column) => (
-                      <Droppable key={column._id} droppableId={column._id}>
-                        {(provided) => (
-                          <div
-                            className="kanban-list-container"
-                            ref={provided.innerRef}
-                            {...provided.droppableProps}
-                          >
-                            <div
-                              className={`kanban-list kanban-${
-                                column.color ? column.color : "primary"
-                              }`}
-                              style={{
-                                marginRight:'10px'
-                              }}
-                            >
-                              <div className="kanban-header">
-                                <span className="status-title">
-                                  {column.title}
-                                </span>
-                                <div className="dropdown kanban-action">
-                                  <a
-                                  data-bs-toggle={(role === "admin" || permissions.projectManagement) ? 'dropdown' : ''}
-                                  aria-expanded={(role === "admin" || permissions.projectManagement) ? 'true' : 'false'}
-                                  style={{ cursor: (role == "admin" || permissions.projectManagement) ? "pointer" : "not-allowed" }}>
-                                    <i className="fa fa-ellipsis-v " />
-                                  </a>
-                                  <div className="dropdown-menu dropdown-menu-right">
-                                    <a
-                                      className="dropdown-item"
-                                      onClick={() => {
-                                        setOpen({
-                                          isAddOpen: true,
-                                          data: column,
-                                        });
-                                        console.log(column);
-                                      }}
+            <Droppable droppableId="all-columns" direction="horizontal" type="column">
+              {(provided) => (
+                <div className="kanban-board card mb-0" {...provided.droppableProps} ref={provided.innerRef}>
+                  {isLoading ? (
+                    <div className="col-md-12 text-center">
+                      <Spin size="large" tip="Loading..." />
+                    </div>
+                  ) : 
+                  columns?.length > 0 ? (
+                    <div className="card-body">
+                      <div className="kanban-cont">
+                        {columns.map((column, index) => (
+                          <Draggable key={column._id} draggableId={column._id} index={index} type="column" isDragDisabled={disableDrag}>
+                            {(provided) => (
+                              <div
+                                className="kanban-list-container"
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                              >
+                                <div
+                                  className={`kanban-list kanban-${
+                                    column.color ? column.color : "primary"
+                                  }`}
+                                  style={{
+                                     marginRight:'10px'
+                                     }}
+                                >
+                                  <div className="kanban-header"
+                                   {...provided.dragHandleProps}>
+                                    <span className="status-title">
+                                      {column.title}
+                                      </span>
+                                    <div className="dropdown kanban-action">
+                                      <a
+                                        data-bs-toggle={(role === "admin" || permissions.projectManagement) ? 'dropdown' : ''}
+                                        aria-expanded={(role === "admin" || permissions.projectManagement) ? 'true' : 'false'}
+                                        style={{ cursor: (role === "admin" || permissions.projectManagement) ? "pointer" : "not-allowed" }}>
+                                        <i className="fa fa-ellipsis-v " />
+                                      </a>
+                                      <div className="dropdown-menu dropdown-menu-right">
+                                        <a
+                                          className="dropdown-item"
+                                          onClick={() => {
+                                            setOpen({
+                                              isAddOpen: true,
+                                              data: column,
+                                            });
+                                            console.log(column);
+                                          }}
+                                        >
+                                          Edit
+                                        </a>
+                                        <a
+                                          className="dropdown-item"
+                                          onClick={() => {
+                                            setOpen({
+                                              isAddOpen: false,
+                                              isDelOpen: true,
+                                              data: column,
+                                            });
+                                            console.log(column);
+                                          }}
+                                        >
+                                          Delete
+                                        </a>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <Droppable droppableId={column._id} type="task">
+                                    {(provided) => (
+                                      <div className="kanban-wrap" style={{ height: "365px", overflowY: "auto", padding: 5 }} ref={provided.innerRef} {...provided.droppableProps}>
+                                        {
+                                        column?.tasks?.length > 0 ? (
+                                          column.tasks.map((task, index) => (
+                                            <Draggable
+                                              key={task.taskId}
+                                              draggableId={task.taskId}
+                                              index={index} 
+                                              isDragDisabled={disableDrag}
+                                              >
+                                              {(provided) => (
+                                                <div
+                                                 {...provided.draggableProps} 
+                                                 {...provided.dragHandleProps} 
+                                                 ref={provided.innerRef}
+                                                 >
+                                                  <div className="card panel" 
+                                                  style={{ 
+                                                    marginBottom: '5px' 
+                                                    }}>
+                                                    <div className="kanban-box">
+                                                      <div className="task-board-header">
+                                                        <span className="status-title" 
+                                                        style={{ paddingRight: 'inherit' }}>
+                                                          <a 
+                                                          onClick={() => 
+                                                            {
+                                                            const title = getTaskTitle(task.taskId);
+                                                            const tags = getTaskTags(task.taskId);
+                                                            const description = getTaskDescription(task.taskId);
+                                                            const status = column.title;
+                                                            setSelectedTask({
+                                                              _id: task.taskId,
+                                                              title,
+                                                              tags,
+                                                              description,
+                                                              ProjectData,
+                                                              status
+                                                            });
+                                                            setViewModal(true);
+                                                          }}
+                                                          >
+                                                            {getTaskTitle(task.taskId)}
+                                                          </a>
+                                                        </span>
+                                                        <div className="dropdown kanban-task-action">
+                                                          <a 
+                                                          data-bs-toggle={(role === "admin" || permissions.projectManagement) ? 'dropdown' : ''} 
+                                                          aria-expanded={(role === "admin" || permissions.projectManagement) ? 'true' : 'false'} 
+                                                          style={{ cursor: (role === "admin" || permissions.projectManagement) ? "pointer" : "not-allowed" }}
+                                                          >
+                                                            <i className="fa fa-angle-down" />
+                                                          </a>
+                                                          <div className="dropdown-menu dropdown-menu-right">
+                                                            <a 
+                                                            className="dropdown-item" 
+                                                            onClick={() => 
+                                                              {
+                                                              const title = getTaskTitle(task.taskId);
+                                                              const tags = getTaskTags(task.taskId);
+                                                              const description = getTaskDescription(task.taskId);
+                                                              setAddTask({ isAddOpen: true, data: task });
+                                                              form2.setFieldsValue({ title, tags, description });
+                                                              setEditId(task.taskId);
+                                                            }}
+                                                            >
+                                                              Edit
+                                                            </a>
+                                                            <a 
+                                                            className="dropdown-item"
+                                                            onClick={() => 
+                                                              {
+                                                              const title = getTaskTitle(task.taskId);
+                                                              setAddTask({ isDelOpen: true, isAddOpen: false, data: task, title: title });
+                                                              setColumnId(column._id);
+                                                            }}
+                                                            >
+                                                              Remove
+                                                            </a>
+                                                          </div>
+                                                        </div>
+                                                      </div>
+                                                      <div className="task-board-body">
+                                                        <div className="kanban-footer">
+                                                          <span className="task-info-cont" style={{ maxHeight: "4em", overflow: "hidden" }}>
+                                                            <span className="task-date">
+                                                              {" "}
+                                                              {getTaskTags(
+                                                                task.taskId
+                                                              )?.map((tag) => (
+                                                                <Tag 
+                                                                key={tag}
+                                                                color={colorMapping[column.color]} 
+                                                                style={{ marginBottom: "4px" }}
+                                                                >
+                                                                  {tag}
+                                                                </Tag>
+                                                              ))}
+                                                            </span>
+                                                          </span>
+                                                        </div>
+                                                      </div>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              )}
+                                            </Draggable>
+                                          ))
+                                        ) : (
+                                          customEmptyText2
+                                        )}
+                                        {provided.placeholder}
+                                      </div>
+                                    )}
+                                  </Droppable>
+                                  <div className="add-new-task" style={{ padding: '5px', borderTop: '1px solid #ddd' }}>
+                                    <a 
+                                    style={{ cursor: (role === "admin" || permissions.projectManagement) ? "pointer" : "not-allowed" }} 
+                                    onClick={() => {
+                                      if ((role === "admin" || permissions.projectManagement)) {
+                                        getTasksOptions(ProjectData?._id);
+                                        setTaskModal(true);
+                                        setColumnId(column._id);
+                                      } 
+                                      else {
+                                        return;
+                                      }
+                                    }}
                                     >
-                                      Edit
-                                    </a>
-                                    <a
-                                      className="dropdown-item"
-                                      onClick={() => {
-                                        setOpen({
-                                          isAddOpen: false,
-                                          isDelOpen: true,
-                                          data: column,
-                                        });
-                                        console.log(column);
-                                      }}
-                                    >
-                                      Delete
+                                      Add New Task
                                     </a>
                                   </div>
                                 </div>
                               </div>
-                              <div className="kanban-wrap" style={{ height: "365px", overflowY: "auto", padding:5 }}>
-                                {
-                                column?.tasks?.length > 0 ? (
-                                column.tasks.map((task, index) => (
-                                  <Draggable
-                                    key={task.taskId}
-                                    draggableId={task.taskId}
-                                    index={index}
-                                    isDragDisabled={disableDrag}
-                                  >
-                                    {(provided) => (
-                                      <div
-                                        {...provided.draggableProps}
-                                        {...provided.dragHandleProps}
-                                        ref={provided.innerRef}
-                                      >
-                                        <div className="card panel"
-                                        style={{
-                                          marginBottom:'5px'
-                                        }}>
-                                          <div className="kanban-box">
-                                            <div className="task-board-header">
-                                              <span className="status-title"
-                                              style={{paddingRight:'inherit'}}>
-                                                <a
-                                                onClick={() => 
-                                                  { 
-                                                    const title = getTaskTitle(task.taskId);
-                                                    const tags = getTaskTags(task.taskId);
-                                                    const description = getTaskDescription(task.taskId);
-                                                    const status = column.title
-                                                    //setAddTask({ isAddOpen: true, data: task }); 
-                                                    //form2.setFieldsValue({ title, tags, description  }) 
-                                                    //setEditId(task.taskId);
-                                                    setSelectedTask({
-                                                      _id: task.taskId,
-                                                      title,
-                                                      tags,
-                                                      description,
-                                                      ProjectData,
-                                                      status
-                                                    })
-                                                    setViewModal(true)
-                                                  }}
-                                                  >                                              
-                                                  {getTaskTitle(task.taskId)}
-                                                </a>
-                                              </span>
-                                              <div className="dropdown kanban-task-action">
-                                                <a
-                                                  data-bs-toggle={(role === "admin" || permissions.projectManagement) ? 'dropdown' : ''}
-                                                  aria-expanded={(role === "admin" || permissions.projectManagement) ? 'true' : 'false'}
-                                                  style={{ cursor: (role == "admin" || permissions.projectManagement) ? "pointer" : "not-allowed" }}
-                                                >
-                                                  <i className="fa fa-angle-down" />
-                                                </a>
-                                                <div className="dropdown-menu dropdown-menu-right">
-                                                  <a
-                                                    className="dropdown-item"
-                                                    onClick={() => 
-                                                      { 
-                                                        const title = getTaskTitle(task.taskId);
-                                                        const tags = getTaskTags(task.taskId);
-                                                        const description = getTaskDescription(task.taskId);
-                                                        setAddTask({ isAddOpen: true, data: task }); 
-                                                        form2.setFieldsValue({ title, tags, description  }) 
-                                                        setEditId(task.taskId);
-                                                      }}
-                                                  >
-                                                    Edit
-                                                  </a>
-                                                  <a
-                                                    className="dropdown-item"
-                                                    onClick={() => 
-                                                      { 
-                                                        const title = getTaskTitle(task.taskId);
-                                                        setAddTask({ isDelOpen: true, isAddOpen: false, data: task, title: title }); 
-                                                        setColumnId(column._id);
-                                                      }}
-                                                  >
-                                                    Remove
-                                                  </a>
-                                                </div>
-                                              </div>
-                                            </div>
-                                            <div className="task-board-body">
-                                              <div className="kanban-footer">
-                                                <span className="task-info-cont" style={{maxHeight: "4em", overflow: "hidden",}}>
-                                                  <span className="task-date">
-                                                    {" "}
-                                                    {getTaskTags(
-                                                      task.taskId
-                                                    )?.map((tag) => (
-                                                      <Tag
-                                                        key={tag}
-                                                        color={colorMapping[column.color]}
-                                                        // color={`${column.color}`}
-                                                        style={{ marginBottom: "4px" }}
-                                                      >
-                                                        {tag}
-                                                      </Tag>
-                                                    ))}
-                                                  </span>
-                                                </span>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    )}
-                                  </Draggable>
-                                ))
-                              ):
-                              customEmptyText2
-                              }
-                              </div>
-                              <div className="add-new-task" style={{padding:'5px', borderTop: '1px solid #ddd'}}>
-                                <a
-                                  style={{ cursor: (role == "admin" || permissions.projectManagement) ? "pointer" : "not-allowed" }}
-                                  onClick={() => {
-                                    if ((role === "admin" || permissions.projectManagement)){
-                                      getTasksOptions(ProjectData?._id);
-                                      setTaskModal(true);
-                                      setColumnId(column._id);
-                                    }
-                                    else{
-                                      return
-                                    }
-                                  }}
-                                >
-                                  Add New Task
-                                </a>
-                              </div>
-                            </div>
-                            {provided.placeholder}
-                          </div>
-                        )}
-                      </Droppable>
-                    ))}
-                  </div>
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
+                      </div>
+                    </div>
+                  ) : (
+                    customEmptyText
+                  )}
                 </div>
-              ) : (
-                customEmptyText
               )}
-            </div>
+            </Droppable>
           </DragDropContext>
         </div>
         {/* /Page Content */}
