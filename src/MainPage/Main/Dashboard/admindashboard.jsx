@@ -548,7 +548,7 @@ const antIcon = (
                           <span className="d-block">{t('aDash.newEmployees')}</span>
                         </div>
                         <div>
-                          <span className="text-success" style={{unicodeBidi:'plaintext'}}>{allData?.employeeIncreaseRate}%</span>
+                          <span className="text-success" style={{unicodeBidi:'plaintext'}}>{allData?.employeeIncreaseRate !== undefined && allData?.employeeIncreaseRate !== null && (allData?.employeeIncreaseRate > 0 ? "+" : "")}{allData?.employeeIncreaseRate}%</span>
                         </div>
                       </div>
                       <h3 className="mb-3">{allData?.employeesAdded}</h3>
@@ -565,7 +565,7 @@ const antIcon = (
                           <span className="d-block">{t('aDash.earnings')}</span>
                         </div>
                         <div>
-                          <span className={allData?.earningPercentComparison < 0 ? "text-danger" : "text-success"} style={{unicodeBidi:'plaintext'}}>{allData?.earningPercentComparison}%</span>
+                          <span className={allData?.earningPercentComparison < 0 ? "text-danger" : "text-success"} style={{unicodeBidi:'plaintext'}}>{allData?.earningPercentComparison !== undefined && allData?.earningPercentComparison !== null && (allData?.earningPercentComparison > 0 ? "+" : "")}{allData?.earningPercentComparison}%</span>
                         </div>
                       </div>
                       <h3 className="mb-3">{allData?.currentMonthEarning} {allData?.preferredCurrency}</h3>
@@ -582,7 +582,7 @@ const antIcon = (
                           <span className="d-block">{t('aDash.expenses')}</span>
                         </div>
                         <div>
-                          <span className={allData?.expensePercentComparison < 0 ? "text-danger" : "text-success"} style={{unicodeBidi:'plaintext'}}>{allData?.expensePercentComparison}%</span>
+                          <span className={allData?.expensePercentComparison < 0 ? "text-success" : "text-danger"} style={{unicodeBidi:'plaintext'}}>{allData?.expensePercentComparison !== undefined && allData?.expensePercentComparison !== null && (allData?.expensePercentComparison > 0 ? "+" : "")}{allData?.expensePercentComparison}%</span>
                         </div>
                       </div>
                       <h3 className="mb-3">{allData?.currentMonthExpense} {allData?.preferredCurrency}</h3>
@@ -599,7 +599,7 @@ const antIcon = (
                           <span className="d-block">{t('aDash.profit')}</span>
                         </div>
                         <div>
-                          <span className={allData?.profitLossPercentComparison < 0 ? "text-danger" : "text-success"} style={{unicodeBidi:'plaintext'}}>{allData?.profitLossPercentComparison}%</span>
+                          <span className={allData?.profitLossPercentComparison < 0 ? "text-danger" : "text-success"} style={{unicodeBidi:'plaintext'}}>{allData?.profitLossPercentComparison !== undefined && allData?.profitLossPercentComparison !== null && (allData?.profitLossPercentComparison > 0 ? "+" : "")}{allData?.profitLossPercentComparison}%</span>
                         </div>
                       </div>
                       <h3 className="mb-3">{allData?.currentMonthProfitLoss} {allData?.preferredCurrency}</h3>
@@ -638,7 +638,7 @@ const antIcon = (
                         </div>
                       </div>
                       <div className="stats-info">
-                        <p>Archived/Paused Projects <strong style={{unicodeBidi:'plaintext'}}>{allData?.statistics ? (allData?.statistics?.pausedProject + allData?.statistics?.archivedProject) : ""} <small>/ {allData?.projectsCount}</small></strong></p>
+                        <p>Archived / Paused Projects <strong style={{unicodeBidi:'plaintext'}}>{allData?.statistics ? (allData?.statistics?.pausedProject + allData?.statistics?.archivedProject) : ""} <small>/ {allData?.projectsCount}</small></strong></p>
                         <div className="progress">
                           <div className="progress-bar bg-danger" role="progressbar" style={{ width: `${(allData?.statistics?.pausedProject + allData?.statistics?.archivedProject) / allData?.projectsCount * 100}%` }} aria-valuenow={(allData?.statistics?.pausedProject + allData?.statistics?.archivedProject) / allData?.projectsCount * 100} aria-valuemin={0} aria-valuemax={100} />
                         </div>
