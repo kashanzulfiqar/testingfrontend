@@ -399,8 +399,8 @@ const antIcon = (
                   <div className="card-body">
                     <span className="dash-widget-icon"><i className="fa fa-cubes" /></span>
                     <div className="dash-widget-info">
-                      <h3>{allData?.statistics?.onGoingProject} / {allData?.projectsCount}</h3>
-                      <span>On-going Projects</span>
+                      <h3>{allData?.statistics?.onGoingProject}</h3>
+                      <span>Active Projects</span>
                     </div>
                   </div>
                 </div>
@@ -638,15 +638,15 @@ const antIcon = (
                         </div>
                       </div>
                       <div className="stats-info">
-                        <p>{t('aDash.openTickets')} <strong style={{unicodeBidi:'plaintext'}}>190 <small>/ 212</small></strong></p>
+                        <p>Archived/Paused Projects <strong style={{unicodeBidi:'plaintext'}}>{allData?.statistics ? (allData?.statistics?.pausedProject + allData?.statistics?.archivedProject) : ""} <small>/ {allData?.projectsCount}</small></strong></p>
                         <div className="progress">
-                          <div className="progress-bar bg-danger" role="progressbar" style={{ width: '62%' }} aria-valuenow={62} aria-valuemin={0} aria-valuemax={100} />
+                          <div className="progress-bar bg-danger" role="progressbar" style={{ width: `${(allData?.statistics?.pausedProject + allData?.statistics?.archivedProject) / allData?.projectsCount * 100}%` }} aria-valuenow={(allData?.statistics?.pausedProject + allData?.statistics?.archivedProject) / allData?.projectsCount * 100} aria-valuemin={0} aria-valuemax={100} />
                         </div>
                       </div>
                       <div className="stats-info">
-                        <p>{t('aDash.closedTickets')} <strong style={{unicodeBidi:'plaintext'}}>22 <small>/ 212</small></strong></p>
+                        <p>Scheduled Projects <strong style={{unicodeBidi:'plaintext'}}>{allData?.statistics?.scheduledProject} <small>/ {allData?.projectsCount}</small></strong></p>
                         <div className="progress">
-                          <div className="progress-bar bg-info" role="progressbar" style={{ width: '22%' }} aria-valuenow={22} aria-valuemin={0} aria-valuemax={100} />
+                          <div className="progress-bar bg-info" role="progressbar" style={{ width: `${allData?.statistics?.scheduledProject / allData?.projectsCount * 100}%` }} aria-valuenow={allData?.statistics?.scheduledProject / allData?.projectsCount * 100} aria-valuemin={0} aria-valuemax={100} />
                         </div>
                       </div>
                     </div>
