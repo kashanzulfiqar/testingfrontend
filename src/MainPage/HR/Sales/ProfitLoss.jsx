@@ -375,7 +375,7 @@ const ProfitLoss = () => {
           parseFloat(record?.salaryTaxExpense);
         return (
           <span>
-            {salaryExpense?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}{" "}
+            {salaryExpense?.toFixed(2)?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}{" "}
             {record?.companyId?.preferredCurrency}
           </span>
         );
