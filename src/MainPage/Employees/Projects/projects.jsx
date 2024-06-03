@@ -2096,6 +2096,7 @@ const filteredColumns = columns.filter(column => {
                       <Input
                         className="form-control"
                         placeholder={t('projectScreen.Modal.enterprojectName')}
+                        maxLength={50}
                       />
                     </Form.Item>
                   </div>
@@ -2861,6 +2862,7 @@ const filteredColumns = columns.filter(column => {
                       <Input
                         className="form-control"
                         placeholder={t('projectScreen.Modal.enterprojectName')}
+                        maxLength={50}
                       />
                     </Form.Item>
                   </div>

@@ -872,6 +872,7 @@ const onFinishEdit = (values) => {
               autoFocus
               style={{width:'300px'}}
               required
+              maxLength={50}
             />
             <a
               className="btn btn-primary"
@@ -957,9 +958,9 @@ const onFinishEdit = (values) => {
                                 >
                                   <div className="kanban-header"
                                    {...provided.dragHandleProps}>
-                                    <span className="status-title">
+                                    <label className="status-title">
                                       {column.title}
-                                      </span>
+                                      </label>
                                     <div className="dropdown kanban-action">
                                       <a
                                         data-bs-toggle={(role === "admin" || permissions.projectManagement) ? 'dropdown' : ''}
@@ -1207,7 +1208,7 @@ const onFinishEdit = (values) => {
                     },
                   ]}
                   >
-                    <Input className="form-control" autoFocus />
+                    <Input className="form-control" autoFocus maxLength={30}/>
                   </Form.Item>
                 </div>
                 <div className="form-group task-board-color">
@@ -1578,7 +1579,7 @@ const onFinishEdit = (values) => {
                             },
                             ]}
                         >
-                            <Input className='form-control' readOnly={(role == "admin" || permissions.projectManagement) ? false : true}/>
+                            <Input className='form-control' readOnly={(role == "admin" || permissions.projectManagement) ? false : true} maxLength={50}/>
                         </Form.Item>
                         </div>
                     </div>
@@ -1646,7 +1647,7 @@ const onFinishEdit = (values) => {
                             ]}
                             className="custom-border"
                         >
-                            <Input.TextArea rows={3} className='form-control' onChange={(e) => setDescLength(e.target.value.length)} readOnly={(role == "admin" || permissions.projectManagement) ? false : true} />
+                            <Input.TextArea rows={3} className='form-control' readOnly={(role == "admin" || permissions.projectManagement) ? false : true} />
                         </Form.Item>
                         </div>
                     </div>

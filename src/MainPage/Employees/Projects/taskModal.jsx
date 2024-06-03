@@ -226,7 +226,7 @@ function TaskModal({data, viewModal, closeViewModal, getAllTasks}) {
                       }
                     ]}
                   >
-                    <Input className='form-control' placeholder={t('Tasks.title')} />
+                    <Input className='form-control' placeholder={t('Tasks.title')} maxLength={50}/>
                   </Form.Item>
               <div className="form-actions" style={{marginLeft:'2%', display:'flex', flexDirection:'row'}}>
                 <Button 

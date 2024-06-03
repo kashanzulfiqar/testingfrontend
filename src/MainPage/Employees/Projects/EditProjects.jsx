@@ -828,6 +828,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                         <Input
                           className="form-control"
                           placeholder={t('projectScreen.Modal.enterprojectName')}
+                          maxLength={50}
                         />
                       </Form.Item>
                     </div>
@@ -1594,6 +1595,7 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                         <Input
                           className="form-control"
                           placeholder={t('projectScreen.Modal.enterprojectName')}
+                          maxLength={50}
                         />
                       </Form.Item>
                     </div>
