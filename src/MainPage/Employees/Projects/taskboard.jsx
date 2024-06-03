@@ -1024,6 +1024,9 @@ const onFinishEdit = (values) => {
                                                         <span className="status-title" 
                                                         style={{ paddingRight: 'inherit' }}>
                                                           <a 
+                                                          style={{
+                                                            wordBreak:'break-word'
+                                                          }}
                                                           onClick={() => 
                                                             {
                                                             const title = getTaskTitle(task.taskId);
