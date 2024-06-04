@@ -917,7 +917,7 @@ const onFinishEdit = (values) => {
               </div>
               {(role === "admin" || permissions?.projectManagement) && (<div className="col-auto float-end ms-auto">
                 <a
-                  className="btn btn-white float-end ml-2"
+                  className="btn add-btn"
                   onClick={() => {
                     setOpen({ isAddOpen: true, isEditOpen: true, data: "" });
                   }}
