@@ -1920,17 +1920,7 @@ const filteredColumns = columns.filter(column => {
                         current={pagination.current}
                         showTotal={(total, range) =>
                           t('paginationShow', { range1: range[0], range2: range[1], total: total })}
-                        onChange={(page, pageSize) => {
-                          GetListProjects(page, pageSize)
-                          setPagination({
-                            ...pagination,
-                            current: page,
-                            pageSize: pageSize,
-                          });
-                          //console.log(page, size);
-                          //setPageSize(size); setCurrentPage(page);
-                          //getEmployeeSalary(filterValues, page, size)
-                        }}
+                        onChange={(page, pageSize) => setPagination({...pagination, current: page, pageSize: pageSize,})}
                         showSizeChanger={true}
                         pageSizeOptions={['20', '30', '40', '50']}
                         itemRender={(current, type, originalElement) =>
