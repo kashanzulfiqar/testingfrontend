@@ -958,7 +958,7 @@ const onFinishEdit = (values) => {
                                 >
                                   <div className="kanban-header"
                                    {...provided.dragHandleProps}>
-                                    <label className="status-title">
+                                    <label className="status-title longText3">
                                       {column.title}
                                       </label>
                                     <div className="dropdown kanban-action">

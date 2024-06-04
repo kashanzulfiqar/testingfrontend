@@ -12913,3 +12913,11 @@ padding-right: unset;
   margin-bottom: 4px;
   margin-right: 4px;
 }
+
+.longText3{
+  -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    display: -webkit-box;
+    max-width: 225px;
+    overflow: hidden;
+}

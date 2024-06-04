@@ -683,9 +683,9 @@ const antIcon = (
                           <div className="progress-bar bg-danger" role="progressbar" style={{ width: `${allData?.statistics?.percentBacklogTasks}%` }} aria-valuenow={allData?.statistics?.percentBacklogTasks} aria-valuemin={0} aria-valuemax={100}>{allData?.statistics?.percentBacklogTasks}%</div>
                         </div>
                         <div>
-                          <p><i className={`fa fa-dot-circle-o text-purple ${i18n.dir() === 'rtl' ? 'ms-2' : 'me-2'}`} />{t('aDash.completedTasks')} <span className={`${i18n.dir() === 'rtl' ? 'float-start' : 'float-end'}`}>{allData?.statistics?.completedTasks}</span></p>
+                          <p><i className={`fa fa-dot-circle-o text-success ${i18n.dir() === 'rtl' ? 'ms-2' : 'me-2'}`} />{t('aDash.completedTasks')} <span className={`${i18n.dir() === 'rtl' ? 'float-start' : 'float-end'}`}>{allData?.statistics?.completedTasks}</span></p>
                           <p><i className={`fa fa-dot-circle-o text-warning ${i18n.dir() === 'rtl' ? 'ms-2' : 'me-2'}`} />{t('aDash.inprogressTasks')} <span className={`${i18n.dir() === 'rtl' ? 'float-start' : 'float-end'}`}>{allData?.statistics?.inProgressTasks}</span></p>
-                          <p><i className={`fa fa-dot-circle-o text-success ${i18n.dir() === 'rtl' ? 'ms-2' : 'me-2'}`} />Todo<span className={`${i18n.dir() === 'rtl' ? 'float-start' : 'float-end'}`}>{allData?.statistics?.toDoTasks}</span></p>
+                          <p><i className={`fa fa-dot-circle-o text-purple ${i18n.dir() === 'rtl' ? 'ms-2' : 'me-2'}`} />Todo<span className={`${i18n.dir() === 'rtl' ? 'float-start' : 'float-end'}`}>{allData?.statistics?.toDoTasks}</span></p>
                           <p><i className={`fa fa-dot-circle-o text-danger ${i18n.dir() === 'rtl' ? 'ms-2' : 'me-2'}`} />Backlog<span className={`${i18n.dir() === 'rtl' ? 'float-start' : 'float-end'}`}>{allData?.statistics?.backlogTasks}</span></p>
                           {/*<p className="mb-0"><i className={`fa fa-dot-circle-o text-info ${i18n.dir() === 'rtl' ? 'ms-2' : 'me-2'}`} />{t('aDash.reviewTasks')} <span className={`${i18n.dir() === 'rtl' ? 'float-start' : 'float-end'}`}>5</span></p> */}
                         </div>
