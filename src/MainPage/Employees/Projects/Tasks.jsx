@@ -95,6 +95,42 @@ const Tasks = () => {
       });
   }
 
+  const handleUpdateStatus = (boardId, taskId, sourceId, destinationId ) => {
+
+    let updated_data = {
+      _id: boardId,
+      columnId: destinationId,
+      prevColumn: sourceId,
+      taskId: taskId
+    };
+    apiServices("PUT", "taskBoard/add-taskBoard", updated_data, user_state)
+      .then((res) => {
+        if (res?.data?.success === true) {
+          //const sortedData = res?.data?.Task?.docs?.slice().sort((a, b) => a.title.localeCompare(b.title));
+          //setAllTasks(sortedData);
+          //setColumns(res?.data?.taskBoard?.columns);
+          //setIsLoading(false);
+          //setLoader(false);
+          getAllTasks();
+          message.success('Task Moved successfully')
+          //closeTaskModal();
+        }
+      })
+      .catch((err) => {
+        //setIsLoading(false);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Error updating status"
+          }!`
+        );
+        //setLoader(false);
+      });
+  };
+
   const onFilterFinish = (values) => {
     let formatted_data = {
       projectId: values?.projectId ? values?.projectId : '',
@@ -252,7 +288,7 @@ const onFinishEdit = (values) => {
             </Link>
             // <strong>{record?.projectId?.projectName}</strong>
         ),
-      },        
+      },       
       {
         title: t('Tasks.tags'),
         dataIndex: 'tags',
@@ -269,6 +305,50 @@ const onFinishEdit = (values) => {
           <label className='taskLongDesc'>{text}</label>
             ),
       }, 
+      {
+        title: "Status",
+        dataIndex: 'lane',
+        render: (text, record) => (
+          <div>
+            <a
+              className="btn btn-white btn-sm btn-rounded dropdown-toggle"
+              href="javascript:void(0)"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+              onClick={(e) => e.preventDefault()}
+            >
+              <i
+                className={`fa fa-dot-circle-o text-${record?.columnColor}`}
+              />{" "}
+              {text ? text : "No status"}
+            </a>
+            <div
+              className="dropdown-menu dropdown-menu-right"
+            >
+              {(record.options && record.options.length) > 0 ? (
+              record?.options?.map(option => (
+                <a
+                  key={option.columnId}
+                  className={`dropdown-item`}
+                  // className={`dropdown-item ${text === option.title && "disabled"}`}
+                  href="javascript:void(0)"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleUpdateStatus(record?.boardId, record?._id, record?.columnId, option.columnId);
+                  }}
+                >
+                  <i className={`fa fa-dot-circle-o text-${option.color}`} /> {option.title}
+                </a>
+              )))
+              : (
+                <div className="dropdown-item disabled">
+                  Add columns in taskboard
+                </div>
+              )}
+            </div>
+          </div>
+        ),
+      },  
     //   {
     //     title: 'Status',
     //     dataIndex: 'status',
@@ -707,7 +787,7 @@ const onFinishEdit = (values) => {
                         <div className="form-group">
                         <label style={{display: 'flex', justifyContent: 'space-between'}}>
                             <div>{t('finance.Invoices.description')} <span className="text-danger">*</span></div>
-                            <small style={{marginTop: '5px', fontSize: '10px', color: 'rgba(0, 0, 0, 0.5)'}}>{descLength} / 150</small>
+                            {/* <small style={{marginTop: '5px', fontSize: '10px', color: 'rgba(0, 0, 0, 0.5)'}}>{descLength} / 150</small> */}
                         </label>
                         <Form.Item
                             name="description"
@@ -731,7 +811,7 @@ const onFinishEdit = (values) => {
                             ]}
                             className="custom-border"
                         >
-                            <Input.TextArea rows={3} className='form-control' onChange={(e) => setDescLength(e.target.value.length)} maxLength={150} />
+                            <Input.TextArea rows={3} className='form-control' />
                         </Form.Item>
                         </div>
                     </div>

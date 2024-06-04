@@ -225,14 +225,14 @@ const Projects = () => {
 
   const [filters, setFilters] = useState({
     projectName: "",
-    clientName: "",
+    status: "",
     projectDomain: "",
     costType: "",
   });
 
   const [selectedFilters, setSelectedFilters] = useState({
     projectName: "",
-    clientName: "",
+    status: "",
     projectDomain: "",
     costType: "",
   });
@@ -255,13 +255,13 @@ const Projects = () => {
   const handleReset = () => {
     setSelectedFilters({
       projectName: "",
-      clientName: "",
+      status: "",
       projectDomain: "",
       costType: "",
     });
     setFilters({
       projectName: "",
-      clientName: "",
+      status: "",
       projectDomain: "",
       costType: "",
     });
@@ -401,7 +401,7 @@ const Projects = () => {
     apiServices(
       "GET",
       // `project-management/?clientName=${filters.clientName}&projectName=${filters.projectName}&page=${params.page}&limit=${params.limit}`,
-      `project-management/?clientName=${filters.clientName}&projectName=${filters.projectName}&projectDomain=${filters.projectDomain}&costType=${filters.costType}&employeeId=${(role === '' && !permissions?.projectManagement) ? employee_id : ''}&page=${params.page}&limit=${params.limit}`,
+      `project-management/?status=${filters.status}&projectName=${filters.projectName}&projectDomain=${filters.projectDomain}&costType=${filters.costType}&employeeId=${(role === '' && !permissions?.projectManagement) ? employee_id : ''}&page=${params.page}&limit=${params.limit}`,
       null,
       user_state
     )
@@ -1304,25 +1304,6 @@ const Projects = () => {
     setAllCurrencies(sorted_data)
   };
 
-  const statusOrder = ['On-Going', 'Paused', 'Completed', 'Scheduled', 'Archived'];
-
-// Sort the 'tableData' array based on the status order
-const sortedTableData = tableData?.slice().sort((a, b) => {
-  // Get the index of 'a' and 'b' status in the 'statusOrder' array
-  const statusIndexA = statusOrder.indexOf(a.status);
-  const statusIndexB = statusOrder.indexOf(b.status);
-
-  // Compare the status indexes
-  if (statusIndexA === statusIndexB) {
-    // If the status indexes are equal, sort based on other criteria (if needed)
-    // For example, sort alphabetically by project name
-    return a.projectName.localeCompare(b.projectName);
-  } else {
-    // Sort based on the index in the 'statusOrder' array
-    return statusIndexA - statusIndexB;
-  }
-});
-
 
 const filteredColumns = columns.filter(column => {
   if (column.dataIndex === 'clientName' && (role === '' && !permissions?.projectManagement)) {
@@ -1518,7 +1499,7 @@ const filteredColumns = columns.filter(column => {
                   </div>
                   <div className={`col-sm-6 ${(role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) ? 'col-md-2' : 'col-md-3'}`}>
                     <div className="form-group">
-                      <Form.Item name="clientName" className="custom-border">
+                      <Form.Item name="status" className="custom-border">
                         {/* <Select
                           showSearch
                           onSearch={(val) => {
@@ -1549,15 +1530,23 @@ const filteredColumns = columns.filter(column => {
                             </Select.Option>
                           ))}
                         </Select> */}
-                        <Input
-                          className="form-control"
-                          allowClear={false}
-                          placeholder={t('projectScreen.clientName')}
-                          style={{height:'50px'}}
-                          onChange={(e) =>
-                            handleFilterChange(e.target.value, "clientName")
-                          }
-                        />
+                        <Select
+                            className="custom-select searchCenter"
+                            getPopupContainer={() =>
+                              document.getElementById("area1")
+                            }
+                            placeholder={t('projectScreen.Modal.projectStatus')}
+                            style={{height:'50px'}}
+                            onChange={(value) => {
+                              handleFilterChange(value, "status");
+                            }}
+                          >
+                            <Select.Option value="On-Going">{t('projectScreen.Modal.onGoing')}</Select.Option>
+                            <Select.Option value="Completed">{t('projectScreen.Modal.completed')}</Select.Option>
+                            <Select.Option value="Paused">{t('projectScreen.Modal.paused')}</Select.Option>
+                            <Select.Option value="Scheduled">{t('projectScreen.Modal.scheduled')}</Select.Option>
+                            <Select.Option value="Archived">{t('projectScreen.Modal.archived')}</Select.Option>
+                          </Select>
                       </Form.Item>
                     </div>
                   </div>
@@ -1671,7 +1660,7 @@ const filteredColumns = columns.filter(column => {
                 </div>
               ) : tableData?.length > 0 ? (
                 // Render grid items when data is available
-                sortedTableData?.map((project, index) => (
+                tableData?.map((project, index) => (
                   <div
                     className="col-lg-4 col-sm-6 col-md-4 col-xl-3"
                     key={index}
@@ -1931,17 +1920,7 @@ const filteredColumns = columns.filter(column => {
                         current={pagination.current}
                         showTotal={(total, range) =>
                           t('paginationShow', { range1: range[0], range2: range[1], total: total })}
-                        onChange={(page, pageSize) => {
-                          GetListProjects(page, pageSize)
-                          setPagination({
-                            ...pagination,
-                            current: page,
-                            pageSize: pageSize,
-                          });
-                          //console.log(page, size);
-                          //setPageSize(size); setCurrentPage(page);
-                          //getEmployeeSalary(filterValues, page, size)
-                        }}
+                        onChange={(page, pageSize) => setPagination({...pagination, current: page, pageSize: pageSize,})}
                         showSizeChanger={true}
                         pageSizeOptions={['20', '30', '40', '50']}
                         itemRender={(current, type, originalElement) =>
@@ -1967,7 +1946,7 @@ const filteredColumns = columns.filter(column => {
                     //style={{ height: "400px", background: "white" }}
                     columns={filteredColumns}
                     // bordered
-                    dataSource={sortedTableData}
+                    dataSource={tableData}
                     //rowKey={(record) => record?._id}
                     pagination={false}
                     // pagination={{
@@ -2096,6 +2075,7 @@ const filteredColumns = columns.filter(column => {
                       <Input
                         className="form-control"
                         placeholder={t('projectScreen.Modal.enterprojectName')}
+                        maxLength={50}
                       />
                     </Form.Item>
                   </div>
@@ -2861,6 +2841,7 @@ const filteredColumns = columns.filter(column => {
                       <Input
                         className="form-control"
                         placeholder={t('projectScreen.Modal.enterprojectName')}
+                        maxLength={50}
                       />
                     </Form.Item>
                   </div>
