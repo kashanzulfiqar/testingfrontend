@@ -569,7 +569,7 @@ let t_data = [
                 :
                 <div style={{background: '#fff',color: '#6C757D', border: '1px solid #DEE2E6', borderRadius: '7px', display: 'flex', placeContent: 'center', placeItems: 'center', fontSize: '17px', height: '200px'}}>
                     <label>
-                    {t('Timesheetemployee.emptytimesheet')} <label style={{color: '#FF9B44', textDecoration: 'underline', cursor: 'pointer', fontWeight: '700'}} onClick={() => { setOpen({ isAddOpen: true, data: '' }); form2.setFieldsValue({date: moment(selectedDate, 'YYYY-MM-DD')}); setShowCalendar(false) }}>{t('Timesheetemployee.addentry')}</label>
+                    {t('Timesheetemployee.emptytimesheet')} <label style={{color: '#FF9B44', textDecoration: 'underline', cursor: 'pointer', fontWeight: '700'}} onClick={() => { getAllProjects(); setOpen({ isAddOpen: true, data: '' }); form2.setFieldsValue({date: moment(selectedDate, 'YYYY-MM-DD')}); setShowCalendar(false) }}>{t('Timesheetemployee.addentry')}</label>
                     </label>
                 </div>
             }
