@@ -212,6 +212,8 @@ const TaskBoardList = () => {
             current : res.data.projects.page,
             total: res.data.projects.totalDocs,
           });
+          setPage(parseInt(res?.data?.projects?.page, 10));
+          setSize(parseInt(res?.data?.projects?.limit, 10));
       }
       })
       .catch((err) => {
