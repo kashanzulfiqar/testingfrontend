@@ -64,6 +64,7 @@ import AttendanceReport from '../MainPage/HR/Reports/attendancereport';
 import EmployeesReport from '../MainPage/HR/Reports/EmployeesReport';
 import TaskBoard from '../MainPage/Employees/Projects/taskboard';
 import TaskBoardList from '../MainPage/Employees/Projects/taskboardlist';
+import ResourceAllocation from '../MainPage/Employees/Employees/resourceAllocation';
 
 
 const App = () => {
@@ -165,6 +166,7 @@ const App = () => {
           <Route path={`admin-timesheet`} element={<AdminTimeSheet />} />
           <Route path={`admin-timesheet/details`} element={<ViewDetailTimesheet />} />
           <Route path={`employee-report`} element={<EmployeesReport />} />
+          <Route path={`employee/resource-allocation`} element={<ResourceAllocation />} />
 
           {/* Settings  */}
           <Route path="/settings" element={<Settings />} />
