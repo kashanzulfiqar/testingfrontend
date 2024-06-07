@@ -12921,3 +12921,39 @@ padding-right: unset;
     max-width: 225px;
     overflow: hidden;
 }
+
+
+.allocationTable th:nth-child(5) {
+  min-width: 300px !important; /* Adjust the width as needed */
+}
+
+.allocationTable th:nth-child(7) {
+  min-width: 150px !important; /* Adjust the width as needed */
+}
+.allocationTable th:nth-child(8) {
+  min-width: 150px !important; /* Adjust the width as needed */
+}
+.allocationTable th:nth-child(9) {
+  min-width: 150px !important; /* Adjust the width as needed */
+}
+.allocationTable th:nth-child(10) {
+  min-width: 150px !important; /* Adjust the width as needed */
+}
+.allocationTable th:nth-child(11) {
+  min-width: 150px !important; /* Adjust the width as needed */
+}
+.allocationTable th:nth-child(12) {
+  min-width: 150px !important; /* Adjust the width as needed */
+}
+
+.allocationTable td {
+  border-right: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.allocationTable td:last-child {
+  border-right: none;
+}
+
+.project-link:hover label {
+  text-decoration: underline;
+}
