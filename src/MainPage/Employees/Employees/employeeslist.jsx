@@ -43,12 +43,12 @@ const Employeeslist = () => {
   const [users, setUsers] = useState([])
 
   useEffect(() => {
-    if(role === 'admin' || permissions?.viewAllUsers) {
+    if(role === 'admin' || permissions?.viewAllUsers || permissions?.updateUser || permissions?.updateStatusOfEmployee || permissions?.addUser) {
       getEmployees();
       getAllDesignations();
       getAllRoles();
       getReportsTo();
-    }else if(role === 'admin' && permissions?.viewAllUsers && permissions?.updateUser && permissions?.updateStatusOfEmployee && permissions?.addUser){
+    }else{
       navigate('/restricted', { state: { unAuthorize: true}})
     }
   }, [])

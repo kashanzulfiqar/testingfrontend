@@ -679,6 +679,14 @@ const Sidebar = (props) => {
                       <Link to={user_state?.role === 'client' ? '/client/client-profile' : user_state?.role === 'focalperson' ? '/client/focal-profile' : "/clients"}><i className="la la-users" /> <span>{t('aDash.client')}</span> </Link>
                     </li>
                   }
+                  
+                  {
+                    (user_state?.role === 'admin' || permissions?.addUser || permissions?.viewAllUsers || permissions?.updateStatusOfEmployee) &&
+                    <li className={pathname.includes('resource-allocation') ? "active" : ""}>
+                      {/* <Link to="/clients"><i className="la la-users" /> <span>Client</span> </Link> */}
+                      <Link to="/employee/resource-allocation"><i className="la la-user" /> <span>Resouce Allocation</span> </Link>
+                    </li>
+                  }
 
                 {/* PROJECTS */}
                 <li className="submenu">
