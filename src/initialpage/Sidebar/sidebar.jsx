@@ -708,7 +708,7 @@ const Sidebar = (props) => {
                         (user_state?.role === 'admin' || permissions?.addUser || permissions?.viewAllUsers || permissions?.updateStatusOfEmployee) &&
                         <li className={pathname.includes('resource-allocation') ? "active" : ""}>
                           {/* <Link to="/clients"><i className="la la-users" /> <span>Client</span> </Link> */}
-                          <Link to="/employee/resource-allocation">Resouce Allocation</Link>
+                          <Link to="/employee/resource-allocation">Resource Allocation</Link>
                         </li>
                       }
                     </ul>
