@@ -108,13 +108,20 @@ const ResourceAllocation = () => {
   const getNextSixMonths = () => {
     const months = [];
     const currentMonth = moment().month();
+    const currentYear = moment().year();
     for (let i = 0; i < 6; i++) {
-      months.push(moment().month((currentMonth + i) % 12).format('MMMM'));
+      const date = moment().month(currentMonth + i).year(currentYear).startOf('month');
+      months.push({
+          name: date.format('MMMM'),
+          year: date.year(),
+          index: date.month()
+      });
     }
     return months;
-  };
+};
 
-  const monthNames = getNextSixMonths();
+const monthData = getNextSixMonths();
+
 
   const columns = [
     {
@@ -152,13 +159,17 @@ const ResourceAllocation = () => {
       title: 'Account Managers',
       key: 'accountManagers',
       render: (text, record) => {
-        return record?.accountManagers?.map(manager => (
-          <div key={manager._id} className="table-avatar" style={{ marginBottom: '10px' }}>
-          <label className="avatar"><img alt="" src={manager?.imageUrl || user_icon} /></label>
-          <label>{manager?.fullName}</label>
-          {/* <label>{text} <span>{record?.user?.role}</span></label> */}
-        </div>
-        )) || 'N/A';
+        return record?.accountManagers?.length > 0 ? (
+          record?.accountManagers?.map(manager => (
+            <div key={manager._id} className="table-avatar" style={{ marginBottom: '10px' }}>
+            <label className="avatar" style={{ cursor: 'pointer' }}><img alt="" src={manager?.imageUrl || user_icon} /></label>
+            <label style={{ cursor: 'pointer' }}>{manager?.fullName}</label>
+            {/* <label>{text} <span>{record?.user?.role}</span></label> */}
+          </div>
+          )) 
+        ) : (
+          "-"
+        );
       }
     },
     {
@@ -182,25 +193,39 @@ const ResourceAllocation = () => {
     //     )) || 'N/A';
     //   }
     // },
-    ...monthNames.map(month => ({
+    ...monthData.map(({ name: month, year: colYear, index }) => ({
       title: month,
       key: month,
       render: (text, record) => {
-        const matchingProjects = record?.projectsIn6Months?.filter(project => project?.monthName === month);
-      if (matchingProjects && matchingProjects.length > 0) {
-        return (
-          <div>
-            {matchingProjects.map(project => (
-              <Link to={`/projects/projects-view/${project?._id}`} className="project-link" style={{color: '#333333'}}>
-                <label key={project._id} style={{cursor: 'pointer'}} className="longText">{project.projectName}</label>
-              </Link>
-            ))}
-          </div>
-        );
-      } else {
-        return '-';
+          const matchingProjects = record?.projectsIn6Months?.filter(project => {
+              const projectStart = moment(`${project.startYear}-${project.startMonthName}`, 'YYYY-MMMM');
+              const projectEnd = moment(`${project.year}-${project.monthName}`, 'YYYY-MMMM');
+              const columnDate = moment().year(colYear).month(index);
+
+              return projectStart.isSameOrBefore(columnDate, 'month') && projectEnd.isSameOrAfter(columnDate, 'month');
+          }).sort((a, b) => a.projectName.localeCompare(b.projectName));
+
+          if (matchingProjects && matchingProjects.length > 0) {
+              return (
+                  <div>
+                      {matchingProjects.map(project => (
+                          <Link
+                              to={`/projects/projects-view/${project?._id}`}
+                              key={project?._id}
+                              className="project-link"
+                              style={{ color: '#333333', marginBottom: '10px', display: 'block' }}
+                          >
+                              <label className="longText" style={{ cursor: 'pointer' }}>
+                                  {project.projectName}
+                              </label>
+                          </Link>
+                      ))}
+                  </div>
+              );
+          } else {
+              return '-';
+          }
       }
-    }
   })),
   ];
 
@@ -350,7 +375,7 @@ const ResourceAllocation = () => {
                 null
                 }
                 onRow={(record, rowIndex) => ({
-                  onClick: () => console.log("hello"),
+                  onClick: () => navigate('/resource-allocation/details', { state: record}),
                   style: { cursor: 'pointer' },
                   ...(i18n.dir() === "rtl" && {
                     style: { textAlign: 'right' }, // Align table data to the right
