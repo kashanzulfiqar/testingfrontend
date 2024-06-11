@@ -292,7 +292,7 @@ const ResourceAllocationDetails = () => {
                     <div className="stats-info">
                     <label>Assigned Projects</label>
                     <div style={{ display: "flex", flexDirection:"row", alignItems: "baseline", justifyContent:"center"}}>
-                        <h4 style={{ marginRight: "5px" }}>{record?.totalAssignedProjects ? record?.totalAssignedProjects : "-"}</h4>
+                        <h4 style={{ marginRight: "5px" }}>{record?.totalAssignedProjects ? record?.totalAssignedProjects : "0"}</h4>
                     </div>
                     </div>
                 </div>
@@ -300,7 +300,7 @@ const ResourceAllocationDetails = () => {
                   <div className="stats-info">
                     <label>Billed Projects</label>
                     <div style={{ display: "flex", flexDirection:"row", alignItems: "baseline", justifyContent:"center"}}>
-                        <h4 style={{ marginRight: "5px" }}>{record?.billedProjects ? record?.billedProjects : "-"}</h4>
+                        <h4 style={{ marginRight: "5px" }}>{record?.billedProjects ? record?.billedProjects : "0"}</h4>
                     </div>
                   </div>
                 </div>
@@ -308,7 +308,7 @@ const ResourceAllocationDetails = () => {
                   <div className="stats-info">
                     <label>Non-Billed Projects</label>
                     <div style={{ display: "flex", flexDirection:"row", alignItems: "baseline", justifyContent:"center"}}>
-                    <h4 style={{ marginRight: "5px" }}>{record?.nonBilledProjects ? record?.nonBilledProjects : "-"}</h4>
+                    <h4 style={{ marginRight: "5px" }}>{record?.nonBilledProjects ? record?.nonBilledProjects : "0"}</h4>
                     </div>
                   </div>
                 </div>
