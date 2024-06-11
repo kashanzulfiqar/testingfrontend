@@ -214,6 +214,7 @@ const monthData = getNextSixMonths();
                               key={project?._id}
                               className="project-link"
                               style={{ color: '#333333', marginBottom: '10px', display: 'block' }}
+                              onClick={(e) => e.stopPropagation()}
                           >
                               <label className="longText" style={{ cursor: 'pointer' }}>
                                   {project.projectName}
