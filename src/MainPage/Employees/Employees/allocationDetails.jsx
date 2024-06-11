@@ -256,7 +256,7 @@ const ResourceAllocationDetails = () => {
         {/* <Sidebar />         */}
         <div className="page-wrapper">
           <Helmet>
-            <title>{t('finance.Profit&loss.profitAndloss')} - {t('header.daftarPro')}</title>
+            <title>Resource Allocation - DaftarPro</title>
             <meta name="description" content="Login page" />
           </Helmet>
           {/* Page Content */}
@@ -265,22 +265,29 @@ const ResourceAllocationDetails = () => {
             <div className="page-header">
               <div className="row align-items-center">
                 <div className="col">
-                  <h3 className="page-title">
-                  <label className="avatar" style={{width: '60px', height: '60px'}}><img alt="" src={record?.imageUrl || user_icon} /></label>
-                    {record ? record?.fullName : ""}</h3>
+                <h3 className="page-title" style={{display:'flex', flexDirection:'row', alignItems:'center'}}>
+                <label className="avatar" style={{ width: '60px', height: '60px' }}>
+                    <img alt="" src={record?.imageUrl || user_icon} />
+                </label>
+                <div style={{ display: 'flex', flexDirection: 'column', marginLeft: '5px' }}>
+                    <span style={{ marginBottom: '2px' }}>{record ? record?.fullName : ""}</span>
+                    {record?.designationId?.designationName && (
+                    <small style={{ color: '#6c757d', fontSize: '0.875rem' }}>
+                        {record.designationId.designationName}
+                    </small>
+                    )}
+                </div>
+                </h3>
+
                   <ul className="breadcrumb">
                     <li className="breadcrumb-item">
                       <Link
-                        to={
-                          role === "admin"
-                            ? "/main/dashboard"
-                            : "/employee/dashboard"
-                        }
+                        to="/employee/resource-allocation"
                       >
-                        {t('dashboard')}
+                        Resource Allocation
                       </Link>
                     </li>
-                    <li className="breadcrumb-item active">Resource Allocation</li>
+                    <li className="breadcrumb-item active">Details</li>
                   </ul>
                 </div>
               </div>
