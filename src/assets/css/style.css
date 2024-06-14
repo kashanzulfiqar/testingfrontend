@@ -12957,3 +12957,36 @@ padding-right: unset;
 .project-link:hover label {
   text-decoration: underline;
 }
+
+
+.LeadTable td {
+  border-right: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.LeadTable td:last-child {
+  border-right: none;
+}
+
+.LeadTable thead tr th:nth-child(2){
+  min-width: 181px !important;
+}
+.LeadTable thead tr th:nth-child(3){
+  min-width: 170px !important;
+}
+.LeadTable thead tr th:nth-child(4){
+  min-width: 170px !important;
+}
+.LeadTable thead tr th:nth-child(9){
+  min-width: 150px !important;
+}
+.LeadTable thead tr th:nth-child(10){
+  min-width: 150px !important;
+}
+
+.longText4{
+  -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    display: -webkit-box;
+    max-width: 225px;
+    overflow: hidden;
+}

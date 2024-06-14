@@ -720,7 +720,7 @@ const Sidebar = (props) => {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
                   <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-user-secret" /> <span>{t('sideBar.leads')}</span> </a>
                   :
-                  <Link to="/app/employees/leads"><i className="la la-user-secret" /> <span>{t('sideBar.leads')}</span> </Link>
+                  <Link to="/leads"><i className="la la-user-secret" /> <span>{t('sideBar.leads')}<span className="badge badge-pill bg-custom" style={{marginLeft:'50px'}}>ADMIN</span></span> </Link>
                 }
                   {/* <Link to="/app/employees/leads"><i className="la la-user-secret" /> <span>Leads</span> </Link> */}
                 </li>
