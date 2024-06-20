@@ -42,9 +42,7 @@ import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { apiServices } from "../../Services/apiServices";
 import moment from "moment";
-import { LoadingOutlined, MinusCircleFilled, PlusOutlined } from "@ant-design/icons";
-import AddSource from "./addSource";
-import AddMedium from "./addMedium";
+import { DeleteOutlined, LoadingOutlined, MinusCircleFilled, PlusOutlined } from "@ant-design/icons";
 import { getAllISOCodes } from "iso-country-currency";
 
 const Leads = () => {
@@ -79,6 +77,9 @@ const Leads = () => {
   const [sourceOptions, setSourceOptions] = useState([]);
   const [addMedium, setAddMedium] = useState(false);
   const [addSource, setAddSource] = useState(false);
+  const [open1, setOpen1] = useState(false);
+  const [open3, setOpen3] = useState(false);
+  const [previous, setPrevious] = useState(false);
 
   const [open, setOpen] = useState({
     isAddOpen: false,
@@ -94,6 +95,69 @@ const Leads = () => {
   const [tempName, setTempName] = useState("");
   const [tempImage, setTempImage] = useState("");
   const [tempSource, setTempSource] = useState("");
+
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedMedium, setSelectedMedium] = useState(null);
+  const [selectedSource, setSelectedSource] = useState(null);
+
+  const handleOk = () => {
+    setLoader(true);
+    if (selectedMedium) {
+      apiServices("DELETE", "leads/delete-medium", selectedMedium?._id, user_state)
+      .then((res) => {
+        // console.log(res?.data);
+        if (res?.data?.success === true) {
+          message.success('Option removed Successfully');
+          setMediumOptions(prevOptions => prevOptions.filter(proj=> proj._id !== selectedMedium?._id))
+          setLoader(false);
+        }
+      })
+      .catch((err) => {
+        setLoader(false);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : 'Error Deleting Option'
+          }!`
+        );
+        setLoader(false);
+      });
+    }
+    if (selectedSource) {
+      apiServices("DELETE", "leads/delete-source", selectedSource?._id, user_state)
+      .then((res) => {
+        // console.log(res?.data);
+        if (res?.data?.success === true) {
+          message.success('Option removed Successfully');
+          setSourceOptions(prevOptions => prevOptions.filter(proj=> proj._id !== selectedSource?._id))
+          setLoader(false);
+        }
+      })
+      .catch((err) => {
+        setLoader(false);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : 'Error Deleting Option'
+          }!`
+        );
+        setLoader(false);
+      });
+    }
+    handleCancel();
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+    setSelectedMedium(null);
+    setSelectedSource(null);
+  };
 
   useEffect(() => {
     setIsLoading(true);
@@ -285,6 +349,7 @@ const Leads = () => {
       comments: "",
     },
   ]);
+  const [reachOutValues, setReachOutValues] = useState([]);
 
   const addReachOuts = () => {
     setReachOuts([
@@ -621,6 +686,7 @@ const Leads = () => {
                   isDelOpen: false,
                   data: record,
                 });
+                setReachOutValues(record?.reachOuts)
                 form.setFieldsValue({
                   ...record,
                   reachOut: moment(record?.reachOut, "YYYY-MM-DD"),
@@ -831,47 +897,43 @@ const Leads = () => {
                     </Button>
                   </>
                 )}
-                {/* {
-                  <>
-                    <Divider
-                      style={{
-                        margin: "5px 0",
-                      }}
-                    />
-                    <Button
-                      type="button"
-                      icon={
-                        <PlusOutlined
-                          style={{ fontSize: "20px", marginRight: "5px" }}
-                        />
-                      }
-                      className="addButtonStyles"
-                      style={{
-                        width: "100%",
-                        height: "40px",
-                        background: "#efefef",
-                        borderColor: "#efefef",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                      }}
-                      onClick={() => setAddMedium(true)}
-                    >
-                      Add Medium
-                    </Button>
-                  </>
-                } */}
               </>
             )}
             style={{
               width: "100%",
             }}
             placeholder="Select a Medium"
+            onDropdownVisibleChange={(open) => setOpen1(open)}
+            // onChange={(value)=>
+            //   setReachOutValues((prev) => [...prev, { communicationMedium: value }])
+            // }
+            onChange={(value)=>{
+              setReachOutValues((prev) =>
+                prev.filter((reachOut) => reachOut.communicationMedium !== previous)
+              );
+              setReachOutValues((prev) => [...prev, { communicationMedium: value }])
+            }}
           >
-            {mediumOptions?.map((item, index) => {
+            {mediumOptions?.map((item) => {
+              setPrevious(form.getFieldValue(['reachOuts',index,'communicationMedium'],));
+              const isCommunicationMedium = reachOutValues.some(reachOut => reachOut.communicationMedium === item._id);
               return (
-                <Option key={index} value={item?._id}>
+                <Option key={item?._id} value={item?._id}>
                   {item?.title}
+                  {
+                  //open1 && item?._id !== form.getFieldValue(['reachOuts',index,'communicationMedium'],) && (
+                  open1 && !isCommunicationMedium && (
+                    <span style={{ float: "right" }}>
+                      <DeleteOutlined
+                        onClick={(e) => {
+                          console.log(item?._id, form.getFieldValue(['reachOuts',index,'communicationMedium'],))
+                          e.stopPropagation();
+                          setSelectedMedium(item);
+                          setIsModalVisible(true);
+                        }}
+                      />
+                    </span>
+                  )}
                 </Option>
               );
             })}
@@ -1496,11 +1558,23 @@ const Leads = () => {
                           onChange={(value, option) => {
                             setTempSource(option?.children || "");
                           }}
+                          onDropdownVisibleChange={(open) => setOpen3(open)}
                         >
                           {sourceOptions?.map((item, index) => {
                             return (
                               <Option key={index} value={item?._id}>
                                 {item?.title}
+                                {open3 && item?._id !== form.getFieldValue('source') && (
+                                    <span style={{ float: "right" }}>
+                                      <DeleteOutlined
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setSelectedSource(item);
+                                          setIsModalVisible(true);
+                                        }}
+                                      />
+                                    </span>
+                                  )}
                               </Option>
                             );
                           })}
@@ -1632,8 +1706,10 @@ const Leads = () => {
                     </div>
                   </div>
                 </div>
-
-                <div className="row">
+{
+!open?.data && 
+<>
+                <div className="row">                
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>First Reach Out</label>
@@ -1661,6 +1737,7 @@ const Leads = () => {
                       </div>
                     </div>
                   </div>
+                  
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>Communication Medium</label>
@@ -1759,11 +1836,23 @@ const Leads = () => {
                               width: "100%",
                             }}
                             placeholder="Select a medium"
+                            onDropdownVisibleChange={(open) => setOpen1(open)}
                           >
                             {mediumOptions?.map((item, index) => {
                               return (
                                 <Option key={index} value={item?._id}>
                                   {item?.title}
+                                  {open1 && item?._id !== form.getFieldValue('communicationMedium') && (
+                                    <span style={{ float: "right" }}>
+                                      <DeleteOutlined
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setSelectedMedium(item);
+                                          setIsModalVisible(true);
+                                        }}
+                                      />
+                                    </span>
+                                  )}
                                 </Option>
                               );
                             })}
@@ -1772,9 +1861,6 @@ const Leads = () => {
                       </div>
                     </div>
                   </div>
-                </div>
-
-                <div className="row">
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>Communicated By</label>
@@ -1805,6 +1891,8 @@ const Leads = () => {
                   </Form.Item>
                   {/* <textarea rows={4} className="form-control summernote" placeholder="Enter your message here" defaultValue={""} /> */}
                 </div>
+                </>
+              }
 
                 {open?.data && (
                   <>
@@ -1827,6 +1915,7 @@ const Leads = () => {
                         columns={reachOutColumns}
                         rowKey={(record, index) => index}
                         pagination={false}
+                        bordered
                         style={{ overflowX: "auto", height: "320px" }}
                         components={
                           i18n.dir() === "rtl"
@@ -2063,6 +2152,62 @@ const Leads = () => {
                   <div className="col-6">
                     <Button
                       onClick={handleClose}
+                      className="btn btn-primary submit-btn"
+                      style={{ width: "100%" }}
+                    >
+                      {t('cancel')}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        open={isModalVisible}
+        onClose={handleCancel}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+        disableRestoreFocus
+      >
+        <div className="modal-dialog modal-dialog-centered modal-md">
+          <div className="modal-content" style={{ height: "280px" }}>
+            <div
+              className="modal-body"
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+              }}
+            >
+              <div className="form-header">
+                <h3 style={{ marginBottom: "30px" }}>Delete Option</h3>
+                <p>
+                  <span dangerouslySetInnerHTML={{ __html: t('holiday.confirmDelete', { holiday: selectedMedium ? selectedMedium?.title : selectedSource ? selectedSource?.title : ""}) }} />
+                </p>
+              </div>
+              <div className="modal-btn delete-action">
+                <div className="row">
+                  <div className="col-6">
+                  <Button
+                      htmlType="submit"
+                      className="btn btn-primary continue-btn"
+                      onClick={handleOk}
+                      disabled={loader}
+                      style={{ width: "100%" }}
+                    >
+                      {loader ? (
+                        <Spin size="small" indicator={antIcon} />
+                      ) : (
+                        t('delete')
+                      )}
+                    </Button>
+                  </div>
+                  <div className="col-6">
+                    <Button
+                      onClick={handleCancel}
                       className="btn btn-primary submit-btn"
                       style={{ width: "100%" }}
                     >
