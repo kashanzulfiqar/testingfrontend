@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Avatar_11,
   Avatar_09,
@@ -53,6 +53,7 @@ const Leads = () => {
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
   //console.log(permissions)
   const role = user_state?.user?.role;
+  const nav = useNavigate();
 
   const [data, setData] = useState([]);
 
@@ -160,11 +161,15 @@ const Leads = () => {
   };
 
   useEffect(() => {
+    if ( role === 'admin' || permissions?.leadsManagement ) {
     setIsLoading(true);
     viewLeads();
     fetchEmployees();
     viewSources();
     viewMediums();
+    } else {
+      nav('/restricted', { state: { unAuthorize: true}})
+    }
   }, []);
 
   const getEmployeeImage = (employeeId) => {
