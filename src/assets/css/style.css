@@ -12976,6 +12976,9 @@ padding-right: unset;
 .LeadTable thead tr th:nth-child(4){
   min-width: 170px !important;
 }
+.LeadTable thead tr th:nth-child(5){
+  min-width: 225px !important;
+}
 .LeadTable thead tr th:nth-child(9){
   min-width: 150px !important;
 }
