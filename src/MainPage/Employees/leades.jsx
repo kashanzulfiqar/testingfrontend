@@ -1561,7 +1561,7 @@ const Leads = () => {
                           }}
                           placeholder="Select source option"
                           onChange={(value, option) => {
-                            setTempSource(option?.children || "");
+                            setTempSource(option?.children[0] || "");
                           }}
                           onDropdownVisibleChange={(open) => setOpen3(open)}
                         >
