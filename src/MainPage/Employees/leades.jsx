@@ -869,7 +869,7 @@ const Leads = () => {
               // onTeamChange(val)
             }}
             filterOption={(input, option) =>
-              option.children?.toLowerCase()?.indexOf(input?.toLowerCase()) >= 0
+              option.children[0]?.toLowerCase()?.indexOf(input?.toLowerCase()) >= 0
             }
             optionFilterProp="children"
             className="custom-select custom-normal"
@@ -1484,7 +1484,7 @@ const Leads = () => {
                             // onTeamChange(val)
                           }}
                           filterOption={(input, option) =>
-                            option.children
+                            option.children[0]
                               ?.toLowerCase()
                               ?.indexOf(input?.toLowerCase()) >= 0
                           }
@@ -1765,7 +1765,7 @@ const Leads = () => {
                               // onTeamChange(val)
                             }}
                             filterOption={(input, option) =>
-                              option.children
+                              option.children[0]
                                 ?.toLowerCase()
                                 ?.indexOf(input?.toLowerCase()) >= 0
                             }
