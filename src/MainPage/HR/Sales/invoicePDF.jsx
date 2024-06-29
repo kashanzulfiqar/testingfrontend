@@ -122,34 +122,40 @@ function invoicePDF(invoice_data) {
   const widthofDueDate3 = doc.getTextWidth("Bank Name:  ");
   // doc.setFont(undefined, "normal");
   doc.text(x + widthofDueDate3 + 120, 56, invoice_data?.bankDetail?.bankName);
+  
+  //------------------
+
+  doc.text(x + 120, 62, "Account #: ");
+  const widthofAccountNo = doc.getTextWidth("Account #:  ");
+  doc.text(x + widthofAccountNo + 120, 62, invoice_data?.bankDetail?.accountNo);
 
   //------------------
 
-  doc.text(x + 120, 62, "IBAN: ");
+  doc.text(x + 120, 68, "IBAN: ");
   const widthofDueDate4 = doc.getTextWidth("IBAN:  ");
-  doc.text(x + widthofDueDate4 + 120, 62, invoice_data?.bankDetail?.iban);
+  doc.text(x + widthofDueDate4 + 120, 68, invoice_data?.bankDetail?.iban);
 
   //------------------
 
-  doc.text(x + 120, 68, "SWIFT code: ");
+  doc.text(x + 120, 74, "SWIFT code: ");
   const widthofDueDate44 = doc.getTextWidth("SWIFT code:  ");
-  doc.text(x + widthofDueDate44 + 120, 68, invoice_data?.bankDetail?.swiftCode);
+  doc.text(x + widthofDueDate44 + 120, 74, invoice_data?.bankDetail?.swiftCode);
 
   //------------------
 
   // doc.setFont(undefined, "bold");
-  doc.text(x + 120, 74, "Country: ");
+  doc.text(x + 120, 80, "Country: ");
   const widthofDueDate5 = doc.getTextWidth("Country:  ");
   // doc.setFont(undefined, "normal");
-  doc.text(x + widthofDueDate5 + 120, 74, invoice_data?.bankDetail?.country);
+  doc.text(x + widthofDueDate5 + 120, 80, invoice_data?.bankDetail?.country);
 
   //------------------
 
   // doc.setFont(undefined, "bold");
-  doc.text(x + 120, 80, "City: ");
+  doc.text(x + 120, 86, "City: ");
   const widthofDueDate6 = doc.getTextWidth("City:  ");
   // doc.setFont(undefined, "normal");
-  doc.text(x + widthofDueDate6 + 120, 80, invoice_data?.bankDetail?.city);
+  doc.text(x + widthofDueDate6 + 120, 86, invoice_data?.bankDetail?.city);
 
   //------------------
 
@@ -160,7 +166,7 @@ function invoicePDF(invoice_data) {
   var leftMargin2 = 10;
   var rightMargin2 = 128;
   var contentWidth2 = doc.internal.pageSize.width - leftMargin2 - rightMargin2;
-  doc.text(invoice_data?.bankDetail?.address, x + 120, 86, { maxWidth: contentWidth2 });
+  doc.text(invoice_data?.bankDetail?.address, x + 120, 92, { maxWidth: contentWidth2 });
   // doc.text('Company address compan Company address compan Company address compan', x + widthofDueDate7 + 130, 80, { maxWidth: contentWidth2 });
   // doc.text(x + widthofDueDate7 + 130, 80, 'Address jkhjk kjkj 9898 7766 767 jkkj kj khkj');
   var currentYs1 = doc.getTextDimensions(invoice_data?.bankDetail?.address, { maxWidth: contentWidth2 }).h + 6 + 6;

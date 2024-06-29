@@ -1358,7 +1358,7 @@
       "pleaseEnterTheIBANnumber": "Please enter the IBAN number",
       "pleaseEnterTheBankSWIFTCode": "Please enter the bank SWIFT Code",
       "deleteBank": "Delete Bank",
-      "ibanLengthError": "IBAN must be at least 24 characters long",
+      "ibanLengthError": "IBAN must be at least 15 characters long",
       "ibanNoSpacesError": "IBAN should not contain spaces",
       "swiftCodeLengthError": "SWIFT code must be between 8-11 alphanumeric characters",
       "swiftCodeNoSpacesError": "SWIFT code should not contain spaces",
