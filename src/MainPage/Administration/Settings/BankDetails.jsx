@@ -6,6 +6,7 @@ import {
   Input,
   InputNumber,
   Pagination,
+  Select,
   Spin,
   Table,
   message,
@@ -17,6 +18,8 @@ import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { Modal } from "@mui/material";
 import { itemRender } from "../../paginationfunction";
 import { useTranslation } from "react-i18next";
+import { getCountryCode, countries } from 'countries-list'
+import { getCountrySpecifications } from 'ibantools';
 
 const BankDetails = () => {
   const { t, i18n } = useTranslation();
@@ -36,10 +39,21 @@ const BankDetails = () => {
     isDelOpen: false,
     data: "",
   });
+  const [countryOptions, setCountryOptions] = useState([]);
+  const [ibanLength, setIbanLength] = useState(0);
+  const [ibanList, setIBANList] = useState([]);
 
   useEffect(() => {
     getBankDetails();
-    // console.log('hello leaves');
+    const ibanSpecs = getCountrySpecifications()
+    const ibanSpecsArray = Object.entries(ibanSpecs).map(([countryCode, specs]) => ({
+      countryCode,
+      ...specs
+    }));
+    setIBANList(ibanSpecsArray);
+    console.log(ibanSpecsArray)
+    setCountryOptions(Object.values(countries)?.map(country => country.name));
+
   }, []);
 
   const getBankDetails = () => {
@@ -91,6 +105,20 @@ const BankDetails = () => {
   const handleClose = () => {
     setOpen({ isAddOpen: false, isDelOpen: false, data: "" });
     form.resetFields();
+    setIbanLength(0);
+  };
+
+  const handleIBANLength = (country) => {
+    const countryCode = getCountryCode(country);
+    const matchedSpec = ibanList.find(spec => spec?.countryCode === countryCode);
+    
+    if (matchedSpec && matchedSpec.chars) {
+      const length = matchedSpec.chars;
+      console.log(length)
+      setIbanLength(length);
+    } else {
+      setIbanLength(31);
+    }
   };
 
   const onHandleDelete = (id) => {
@@ -339,7 +367,8 @@ const BankDetails = () => {
                   isAddOpen: true,
                   isDelOpen: false,
                   data: record,
-                });
+                })
+                handleIBANLength(record?.country)
               }}
             >
               <i className="fa fa-pencil m-r-5" /> {t('edit')}
@@ -511,6 +540,7 @@ const BankDetails = () => {
         BackdropProps={{
           style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
         }}
+        sx={{ overflowY: "auto" }}
       >
         <div
           className="modal-dialog modal-dialog-centered modal-lg"
@@ -569,7 +599,7 @@ const BankDetails = () => {
                         validateTrigger="onSubmit"
                         className="custom-border"
                       >
-                        <Input className="form-control" />
+                        <Input className="form-control" placeholder="Enter a Bank Name"/>
                       </Form.Item>
                     </div>
                   </div>
@@ -589,7 +619,7 @@ const BankDetails = () => {
                         validateTrigger="onSubmit"
                         className="custom-border"
                       >
-                        <Input className="form-control" />
+                        <Input className="form-control" placeholder="Enter an Account Title"/>
                       </Form.Item>
                     </div>
                   </div>
@@ -619,7 +649,7 @@ const BankDetails = () => {
                           },
                         ]}
                       >
-                        <Input className='form-control' maxLength={17}
+                        <Input className='form-control' maxLength={25} placeholder="Enter Account Number"
                           // onKeyPress={(e) => {
                           //   if ((e.which >= 65 && e.which <= 90) || (e.which >= 97 && e.which <= 122) || (e.which >= 33 &&  e.which <= 47) || (e.which >= 58 && e.which <= 64) || (e.which >= 91 && e.which <= 96) || (e.which >= 123 && e.which <= 126) ) {
                           //     e.preventDefault();
@@ -634,32 +664,36 @@ const BankDetails = () => {
                       <label className="col-form-label">
                       {t('settings.BankDetails.country')} <span className="text-danger">*</span>
                       </label>
-                      <Form.Item
-                        name="country"
-                        rules={[
-                          {
-                            whitespace: true,
-                            required: true,
-                            validator: (_, value) => {
-                              if(value.trim() === ''){
-                                return Promise.reject(t('settings.companySettings.pleaseEnterCountryName'));
-                              }
-                              else if (/\s{2,}/.test(value)) {
-                                return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
-                              }
-                              return Promise.resolve();
+                      <div style={{ position: "relative" }} id="area">
+                        <Form.Item
+                          name="country"
+                          rules={[
+                            {
+                              required: true,
+                              message: 'Please select a country',
                             },
-                          },
-                          {
-                            min: 3,
-                            message: t('settings.minLength2', { name: t('settings.companySettings.country') }),
-                          },
-                        ]}
-                        validateTrigger="onSubmit"
-                        className="custom-border"
-                      >
-                        <Input className="form-control" maxLength={50} />
-                      </Form.Item>
+                          ]}
+                          className="custom-border"
+                        >
+                          <Select
+                            showSearch
+                            className="custom-select custom-normal"
+                            getPopupContainer={() =>
+                              document.getElementById("area")
+                            }
+                            placeholder="Select a Country"
+                            onChange={(value)=>{handleIBANLength(value)}}
+                          >
+                            {
+                              countryOptions?.map((country, index) => (
+                                <Select.Option key={index} value={country}>
+                                  {country}
+                                </Select.Option>
+                              ))
+                            }
+                          </Select>
+                        </Form.Item>
+                      </div>
                     </div>
                   </div>
                   <div className="col-sm-6">
@@ -691,7 +725,7 @@ const BankDetails = () => {
                         validateTrigger="onSubmit"
                         className="custom-border"
                       >
-                        <Input className="form-control" maxLength={50} />
+                        <Input className="form-control" placeholder="Enter a City Name" maxLength={50} />
                       </Form.Item>
                     </div>
                   </div>
@@ -724,7 +758,7 @@ const BankDetails = () => {
                         validateTrigger="onSubmit"
                         className="custom-border"
                       >
-                        <Input className="form-control" maxLength={150} />
+                        <Input className="form-control" placeholder="Enter the Bank Address" maxLength={150} />
                       </Form.Item>
                     </div>
                   </div>
@@ -741,7 +775,7 @@ const BankDetails = () => {
                             message: t('settings.BankDetails.pleaseEnterTheIBANnumber'),
                           },
                           {
-                            min: 24,
+                            min: 15,
                             message: t('settings.BankDetails.ibanLengthError'),
                           },
                           {
@@ -758,7 +792,7 @@ const BankDetails = () => {
                         validateTrigger="onSubmit"
                         className="custom-border"
                       >
-                        <Input className="form-control" maxLength={34} />
+                        <Input className="form-control" placeholder="Enter an IBAN" maxLength={ibanLength} />
                       </Form.Item>
                     </div>
                   </div>
@@ -795,7 +829,7 @@ const BankDetails = () => {
                         validateTrigger="onSubmit"
                         className="custom-border"
                       >
-                        <Input className="form-control" maxLength={11}/>
+                        <Input className="form-control" placeholder="Enter a SWIFT Code" maxLength={11}/>
                       </Form.Item>
                     </div>
                   </div>
