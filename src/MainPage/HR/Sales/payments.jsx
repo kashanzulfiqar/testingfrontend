@@ -303,7 +303,7 @@ const Payments = () => {
               {/* {
                 (role === 'admin' || permissions?.viewAllUsers) ? 'No Employee Record found!' : 'You are Restricted to View Employees'
               } */}
-              {t('finance.payments.noPaymentRecordFound')}
+              {t('finance.payments.noPaymentsRecordFound')}
             </div>
           </div>
         }
