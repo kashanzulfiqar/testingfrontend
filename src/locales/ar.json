@@ -1357,7 +1357,7 @@
       "pleaseEnterTheIBANnumber": "يرجى إدخال رقم الحساب البنكي الدولي (IBAN)",
       "pleaseEnterTheBankSWIFTCode": "يرجى إدخال رمز SWIFT للبنك",
       "deleteBank": "حذف البنك",
-      "ibanLengthError": "يجب أن يحتوي IBAN على ما لا يقل عن 24 حرفًا",
+      "ibanLengthError": "يجب أن يحتوي IBAN على ما لا يقل عن 15 حرفًا",
       "ibanNoSpacesError": "يجب ألا يحتوي IBAN على مسافات",
       "swiftCodeLengthError": "يجب أن يكون رمز SWIFT بين 8-11 حرفًا أبجديًا رقميًا",
       "swiftCodeNoSpacesError": "يجب ألا يحتوي رمز SWIFT على مسافات",
