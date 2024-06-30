@@ -12986,6 +12986,13 @@ padding-right: unset;
   min-width: 150px !important;
 }
 
+.WorkingDayTable thead tr th,
+.WorkingDayTable tbody tr td {
+  min-width: 100px !important;
+  text-align: center; /* Optional: To center the checkbox */
+}
+
+
 .longText4{
   -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;

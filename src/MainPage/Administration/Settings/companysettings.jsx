@@ -21,6 +21,7 @@ import InvoiceCounter from "./InvoiceCounter";
 import BankDetails from "./BankDetails";
 import ExpenseCategory from "./ExpenseCategory";
 import { useTranslation } from "react-i18next";
+import WokringDays from "./WorkingDays";
 
 const Settings = ({test}) => {
 
@@ -94,6 +95,8 @@ useEffect(() => {
           ? t('settings.invoiceCounter')
           : showComponent==="Expense Categories" 
           ? t('settings.expenseCategories')
+          : showComponent==="Working Days" 
+          ? 'Working Days'
           : showComponent
           } - {t('header.daftarPro')}</title>
           <meta name="description" content="Login page" />
@@ -155,6 +158,12 @@ useEffect(() => {
                       <a href="javascript:void(0)" onClick={() => {setShowComponent('Company Settings') }}>
                         <i className="fa fa-fw fa-info-circle" style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}></i>
                         {t('settings.companySettings.companySettings')}
+                      </a>
+                   </li>
+                   <li className={showComponent === 'Working Days' ? 'active' : ''}>
+                      <a href="javascript:void(0)" onClick={() => {setShowComponent('Working Days') }}>
+                        <i className="fa fa-fw fa-calendar" style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}></i>
+                        Working Days
                       </a>
                    </li>
                    <li className={showComponent === 'Leave Settings' ? 'active' : ''}>
@@ -275,7 +284,8 @@ useEffect(() => {
                 showComponent === 'Invoice Tags' ? <InvoiceTags /> : 
                 showComponent === 'Invoice Counter' ? <InvoiceCounter /> : 
                 showComponent === 'Bank Details' ? <BankDetails /> : 
-                <ExpenseCategory />
+                showComponent === 'Expense Categories' ? <ExpenseCategory /> : 
+                <WokringDays />
               }
              </div>
            </div>

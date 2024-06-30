@@ -44,6 +44,7 @@ const LeaveEmployee = () => {
   const [fromDate, setFromDate] = useState(null);
   const [compLeaves, setCompLeaves] = useState({});
   const [singleUser, setSingleUser] = useState();
+  const [workingDays, setWorkingDays] = useState([]);
 
   
     const [data, setData] = useState([]);
@@ -113,6 +114,7 @@ const LeaveEmployee = () => {
         .then((res) => {
           console.log(res?.data);
           if (res?.data?.success === true) {
+            setWorkingDays(res?.data?.workingDays)
             setData(res?.data?.SelfRequests?.docs);
           setPaginationDetail(res?.data?.SelfRequests?.total)
             setTableLoader(false);
@@ -317,7 +319,10 @@ const leaves = [
 
           while (currentDate.isSameOrBefore(endDate)) {
             // Check if the current day is not Saturday or Sunday
-            if (currentDate.day() !== 0 && currentDate.day() !== 6) {
+            // if (currentDate.day() !== 0 && currentDate.day() !== 6) {
+            //   totalDays++;
+            // }
+            if (workingDays?.includes(currentDate.format('dddd').toLowerCase())) {
               totalDays++;
             }
             currentDate.add(1, 'day');
