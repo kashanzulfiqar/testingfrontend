@@ -342,7 +342,7 @@ const onFinishEdit = (values) => {
               )))
               : (
                 <div className="dropdown-item disabled">
-                  Add columns in taskboard
+                  Task not added in Board
                 </div>
               )}
             </div>

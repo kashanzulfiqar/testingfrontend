@@ -31,6 +31,7 @@ import TaskModal from "./taskModal";
 const TaskBoard = () => {
   const [columns, setColumns] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isTaskLoading, setIsTaskLoading] = useState(false);
   const [viewModal, setViewModal] = useState(false);
   const [allTasks, setAllTasks] = useState([]);
   const [optTasks, setOptTasks] = useState([]);
@@ -369,10 +370,12 @@ const TaskBoard = () => {
             .sort((a, b) => a.title.localeCompare(b.title));
           setAllTasks(sortedData);
           setIsLoading(false);
+          setIsTaskLoading(false);
         }
       })
       .catch((err) => {
         setIsLoading(false);
+        setIsTaskLoading(false);
         message.error(
           `${
             err?.response?.data?.msg
@@ -450,6 +453,7 @@ const TaskBoard = () => {
 
   useEffect(() => {
     setIsLoading(true);
+    setIsTaskLoading(true);
     getAllTasks(ProjectData?._id);
     getTaskBoard(ProjectData?._id);
   }, []);
@@ -1001,118 +1005,126 @@ const onFinishEdit = (values) => {
                                     {(provided) => (
                                       <div className="kanban-wrap" style={{ height: "365px", overflowY: "auto", padding: 5 }} ref={provided.innerRef} {...provided.droppableProps}>
                                         {
-                                        column?.tasks?.length > 0 ? (
-                                          column.tasks.map((task, index) => (
-                                            <Draggable
-                                              key={task.taskId}
-                                              draggableId={task.taskId}
-                                              index={index} 
-                                              isDragDisabled={disableDrag}
-                                              >
-                                              {(provided) => (
-                                                <div
-                                                 {...provided.draggableProps} 
-                                                 {...provided.dragHandleProps} 
-                                                 ref={provided.innerRef}
-                                                 >
-                                                  <div className="card panel" 
-                                                  style={{ 
-                                                    marginBottom: '5px' 
-                                                    }}>
-                                                    <div className="kanban-box">
-                                                      <div className="task-board-header">
-                                                        <span className="status-title" 
-                                                        style={{ paddingRight: 'inherit' }}>
-                                                          <a 
-                                                          style={{
-                                                            wordBreak:'break-word'
-                                                          }}
-                                                          onClick={() => 
-                                                            {
-                                                            const title = getTaskTitle(task.taskId);
-                                                            const tags = getTaskTags(task.taskId);
-                                                            const description = getTaskDescription(task.taskId);
-                                                            const status = column.title;
-                                                            setSelectedTask({
-                                                              _id: task.taskId,
-                                                              title,
-                                                              tags,
-                                                              description,
-                                                              ProjectData,
-                                                              status
-                                                            });
-                                                            setViewModal(true);
-                                                          }}
-                                                          >
-                                                            {getTaskTitle(task.taskId)}
-                                                          </a>
-                                                        </span>
-                                                        <div className="dropdown kanban-task-action">
-                                                          <a 
-                                                          data-bs-toggle={(role === "admin" || permissions.projectManagement) ? 'dropdown' : ''} 
-                                                          aria-expanded={(role === "admin" || permissions.projectManagement) ? 'true' : 'false'} 
-                                                          style={{ cursor: (role === "admin" || permissions.projectManagement) ? "pointer" : "not-allowed" }}
-                                                          >
-                                                            <i className="fa fa-angle-down" />
-                                                          </a>
-                                                          <div className="dropdown-menu dropdown-menu-right">
+                                          isTaskLoading ? (
+                                            <div className="col-md-12 text-center">
+                                              <Spin size="medium" tip="Loading..." />
+                                            </div>
+                                          ) : 
+                                        (
+                                          column?.tasks?.length > 0 ? (
+                                            column.tasks.map((task, index) => (
+                                              <Draggable
+                                                key={task.taskId}
+                                                draggableId={task.taskId}
+                                                index={index} 
+                                                isDragDisabled={disableDrag}
+                                                >
+                                                {(provided) => (
+                                                  <div
+                                                  {...provided.draggableProps} 
+                                                  {...provided.dragHandleProps} 
+                                                  ref={provided.innerRef}
+                                                  >
+                                                    <div className="card panel" 
+                                                    style={{ 
+                                                      marginBottom: '5px' 
+                                                      }}>
+                                                      <div className="kanban-box">
+                                                        <div className="task-board-header">
+                                                          <span className="status-title" 
+                                                          style={{ paddingRight: 'inherit' }}>
                                                             <a 
-                                                            className="dropdown-item" 
+                                                            style={{
+                                                              wordBreak:'break-word'
+                                                            }}
                                                             onClick={() => 
                                                               {
                                                               const title = getTaskTitle(task.taskId);
                                                               const tags = getTaskTags(task.taskId);
                                                               const description = getTaskDescription(task.taskId);
-                                                              setAddTask({ isAddOpen: true, data: task });
-                                                              form2.setFieldsValue({ title, tags, description });
-                                                              setEditId(task.taskId);
+                                                              const status = column.title;
+                                                              setSelectedTask({
+                                                                _id: task.taskId,
+                                                                title,
+                                                                tags,
+                                                                description,
+                                                                ProjectData,
+                                                                status
+                                                              });
+                                                              setViewModal(true);
                                                             }}
                                                             >
-                                                              Edit
+                                                              {getTaskTitle(task.taskId)}
                                                             </a>
+                                                          </span>
+                                                          <div className="dropdown kanban-task-action">
                                                             <a 
-                                                            className="dropdown-item"
-                                                            onClick={() => 
-                                                              {
-                                                              const title = getTaskTitle(task.taskId);
-                                                              setAddTask({ isDelOpen: true, isAddOpen: false, data: task, title: title });
-                                                              setColumnId(column._id);
-                                                            }}
+                                                            data-bs-toggle={(role === "admin" || permissions.projectManagement) ? 'dropdown' : ''} 
+                                                            aria-expanded={(role === "admin" || permissions.projectManagement) ? 'true' : 'false'} 
+                                                            style={{ cursor: (role === "admin" || permissions.projectManagement) ? "pointer" : "not-allowed" }}
                                                             >
-                                                              Remove
+                                                              <i className="fa fa-angle-down" />
                                                             </a>
+                                                            <div className="dropdown-menu dropdown-menu-right">
+                                                              <a 
+                                                              className="dropdown-item" 
+                                                              onClick={() => 
+                                                                {
+                                                                const title = getTaskTitle(task.taskId);
+                                                                const tags = getTaskTags(task.taskId);
+                                                                const description = getTaskDescription(task.taskId);
+                                                                setAddTask({ isAddOpen: true, data: task });
+                                                                form2.setFieldsValue({ title, tags, description });
+                                                                setEditId(task.taskId);
+                                                              }}
+                                                              >
+                                                                Edit
+                                                              </a>
+                                                              <a 
+                                                              className="dropdown-item"
+                                                              onClick={() => 
+                                                                {
+                                                                const title = getTaskTitle(task.taskId);
+                                                                setAddTask({ isDelOpen: true, isAddOpen: false, data: task, title: title });
+                                                                setColumnId(column._id);
+                                                              }}
+                                                              >
+                                                                Remove
+                                                              </a>
+                                                            </div>
                                                           </div>
                                                         </div>
-                                                      </div>
-                                                      <div className="task-board-body">
-                                                        <div className="kanban-footer">
-                                                          <span className="task-info-cont" style={{ maxHeight: "4em", overflow: "hidden" }}>
-                                                            <span className="task-date">
-                                                              {" "}
-                                                              {getTaskTags(
-                                                                task.taskId
-                                                              )?.map((tag) => (
-                                                                <Tag 
-                                                                key={tag}
-                                                                color={colorMapping[column.color]} 
-                                                                style={{ marginBottom: "4px" }}
-                                                                >
-                                                                  {tag}
-                                                                </Tag>
-                                                              ))}
+                                                        <div className="task-board-body">
+                                                          <div className="kanban-footer">
+                                                            <span className="task-info-cont" style={{ maxHeight: "4em", overflow: "hidden" }}>
+                                                              <span className="task-date">
+                                                                {" "}
+                                                                {getTaskTags(
+                                                                  task.taskId
+                                                                )?.map((tag) => (
+                                                                  <Tag 
+                                                                  key={tag}
+                                                                  color={colorMapping[column.color]} 
+                                                                  style={{ marginBottom: "4px" }}
+                                                                  >
+                                                                    {tag}
+                                                                  </Tag>
+                                                                ))}
+                                                              </span>
                                                             </span>
-                                                          </span>
+                                                          </div>
                                                         </div>
                                                       </div>
                                                     </div>
                                                   </div>
-                                                </div>
-                                              )}
-                                            </Draggable>
-                                          ))
-                                        ) : (
-                                          customEmptyText2
-                                        )}
+                                                )}
+                                              </Draggable>
+                                            ))
+                                          ) : (
+                                            customEmptyText2
+                                          )
+                                        )
+                                        }
                                         {provided.placeholder}
                                       </div>
                                     )}
