@@ -309,7 +309,7 @@ const handleClose = () => {
 
   const onBankFinish = (values) => {
     let d1 = {
-      ...allData,
+      _id: allData?._id,
       ...values
     }
     Object.keys(d1).forEach((key) => {
@@ -346,7 +346,7 @@ const handleClose = () => {
   }
   const onEmergencyFinish = (values) => {
     let d1 = {
-      ...allData,
+      _id: allData?._id,
       emergencyContacts: [values]
     }
     Object.keys(d1).forEach((key) => {
@@ -383,7 +383,7 @@ const handleClose = () => {
   }
   const onEducationFinish = (values) => {
     let d1 = {
-      ...allData,
+      _id: allData?._id,
       education: values?.education
     }
     Object.keys(d1).forEach((key) => {
@@ -420,7 +420,7 @@ const handleClose = () => {
   }
   const onExperienceFinish = (values) => {
     let d1 = {
-      ...allData,
+      _id: allData?._id,
       experience: values?.experience
     }
     Object.keys(d1).forEach((key) => {
@@ -512,7 +512,7 @@ const allowedFileTypes = ['image/png', 'image/jpeg', 'image/jpg'];
         nav('/profile', {state: {updated_user: {imageUrl: res?.data?.result}}})
 
         let d1 = {
-          ...allData,
+          _id: allData?._id,
           imageUrl: res?.data?.result
         }
         Object.keys(d1).forEach((key) => {
@@ -567,7 +567,7 @@ const allowedFileTypes = ['image/png', 'image/jpeg', 'image/jpg'];
     setImageLoader(true)
 
     let d1 = {
-      ...allData,
+      _id: allData?._id,
       imageUrl: null
     }
     Object.keys(d1).forEach((key) => {
@@ -769,7 +769,7 @@ const antIcon = (
                   <li className="nav-item"><a href="javascript:void(0)"  className={`nav-link ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => { setActiveTab('profile') }}>{t('empProfile.profile')}</a></li>
                   {/* <li className="nav-item"><a href="#emp_projects" data-bs-toggle="tab" className="nav-link">Projects</a></li> */}
                   <li className="nav-item"><a href="javascript:void(0)"  className={`nav-link ${activeTab === 'projects' ? 'active' : ''}`} onClick={() => { setActiveTab('projects') }}>{t('projects')}</a></li>
-                  <li className="nav-item"><a href="javascript:void(0)"  className={`nav-link ${activeTab === 'bank' ? 'active' : ''}`} onClick={() => { setActiveTab('bank') }}>{t('empProfile.bankAndStatutory')} <small className="text-danger">{t('empProfile.AdminOnly')}</small></a></li>
+                  {/* <li className="nav-item"><a href="javascript:void(0)"  className={`nav-link ${activeTab === 'bank' ? 'active' : ''}`} onClick={() => { setActiveTab('bank') }}>{t('empProfile.bankAndStatutory')} <small className="text-danger">{t('empProfile.AdminOnly')}</small></a></li> */}
                   <li className="nav-item"><a href="javascript:void(0)"  className={`nav-link ${activeTab === 'assets' ? 'active' : ''}`} onClick={() => { setActiveTab('assets') }}>{t('empProfile.assets')}</a></li>
                 </ul>
               </div>
@@ -817,10 +817,10 @@ const antIcon = (
                               <div className="card profile-box flex-fill">
                                 <div className="card-body">
                                   <h3 className="card-title">{t('empProfile.emergencyContact')}
-                                  {
-                                    (role === 'admin' || permissions?.updateUser) &&
+                                  
+                                    {/* (role === 'admin' || permissions?.updateUser) && */}
                                     <a href="javascript:void(0)" className="edit-icon" style={{ float: i18n.dir() === 'rtl' ? 'left' : 'right' }} onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: true, isprofileInfoOpen: false, data: allData?.emergencyContacts?.length > 0 ? allData.emergencyContacts[0] : {} })}><i className="fa fa-pencil" /></a>
-                                  }
+                                  
                                   </h3>
                                   {/* <h5 className="section-title">Primary</h5> */}
                                   { allData?.emergencyContacts?.length > 0 ?
@@ -873,10 +873,10 @@ const antIcon = (
                               <div className="card profile-box flex-fill">
                                 <div className="card-body">
                                   <h3 className="card-title">{t('empProfile.educationInformations')}
-                                  {
-                                    (role === 'admin' || permissions?.updateUser) &&
+                                  
+                                    {/* (role === 'admin' || permissions?.updateUser) && */}
                                     <a href="javascript:void(0)" className="edit-icon" style={{ float: i18n.dir() === 'rtl' ? 'left' : 'right' }} onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: true, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a>
-                                  }
+                                  
                                   </h3>
                                   <div className="experience-box">
                                     { allData?.education?.length > 0 ?
@@ -908,10 +908,10 @@ const antIcon = (
                               <div className="card profile-box flex-fill">
                                 <div className="card-body">
                                   <h3 className="card-title">{t('empProfile.experience')}
-                                  {
-                                    (role === 'admin' || permissions?.updateUser) &&
+                                  
+                                    {/* (role === 'admin' || permissions?.updateUser) && */}
                                     <a href="javascript:void(0)" className="edit-icon" style={{ float: i18n.dir() === 'rtl' ? 'left' : 'right' }} onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: true, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a>
-                                  }
+                                  
                                   </h3>
                                   <div className="experience-box">
                                     {
