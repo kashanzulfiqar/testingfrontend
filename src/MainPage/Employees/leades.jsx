@@ -49,6 +49,7 @@ const Leads = () => {
   const { t, i18n } = useTranslation();
 
   const [form] = Form.useForm();
+  const [form2] = Form.useForm();
   const user_state = useSelector((state) => state.user.loginvalue);
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
   //console.log(permissions)
@@ -61,6 +62,7 @@ const Leads = () => {
   const [loader, setLoader] = useState(false);
 
   const [searchValue, setSearchValue] = useState("");
+  const [flag, setFlag] = useState(true);
 
   const [page, setPage] = useState(1);
   const [size, setSize] = useState(20);
@@ -69,10 +71,28 @@ const Leads = () => {
     pageSize: 20,
     total: 20,
   });
+  const [isStatLoading, setIsStatLoading] = useState(true);
+
+  const [filters, setFilters] = useState({
+    status: "",
+    startDate: "",
+    endDate: "",
+    accountManager: "",
+    projectType: "",
+  });
+
+  const [selectedFilters, setSelectedFilters] = useState({
+    status: "",
+    startDate: "",
+    endDate: "",
+    accountManager: "",
+    projectType: "",
+  });
 
   
   const [leadObj, setLeadObj] = useState();
   const [employees, setEmployees] = useState([]);
+  const [accountManagers, setAccountManagers] = useState([]);
   const [stats, setStats] = useState({});
   const [mediumOptions, setMediumOptions] = useState([]);
   const [sourceOptions, setSourceOptions] = useState([]);
@@ -164,6 +184,14 @@ const Leads = () => {
     if ( role === 'admin' || permissions?.leadsManagement ) {
     setIsLoading(true);
     viewLeads();
+    } else {
+      nav('/restricted', { state: { unAuthorize: true}})
+    }
+  }, [filters]);
+
+  useEffect(() => {
+    if ( role === 'admin' || permissions?.leadsManagement ) {
+    setIsStatLoading(true);
     fetchEmployees();
     viewSources();
     viewMediums();
@@ -199,6 +227,11 @@ const Leads = () => {
         dropdownValues.push(medium?.title?.toLowerCase());
       });
     }
+    else if (type === "accountManager") {
+      accountManagers.forEach((medium) => {
+        dropdownValues.push(medium?.fullName?.toLowerCase());
+      });
+    }
 
     if (val !== "") {
       dropdownValues.some((team) => {
@@ -227,15 +260,19 @@ const Leads = () => {
 
   const viewLeads = (page, pageSize) => {
     const params = {
+      ...filters,
       page: page || pagination.current,
       limit: pageSize || pagination.pageSize,
     };
 
-    apiServices("GET", `leads?page=${params.page}&limit=${params.limit}`, null, user_state)
+    apiServices("GET", `leads?status=${filters.status}&projectType=${filters.projectType}&accountManager=${filters.accountManager}&firstReachOut=${filters.startDate}&lastReachOut=${filters.endDate}&page=${params.page}&limit=${params.limit}`, null, user_state)
       .then((res) => {
         if (res.data.success === true) {
           const leads = res?.data?.Lead?.docs;
           setStats(res?.data?.stats);
+          if (flag) {
+            setAccountManagers(res?.data?.accountManagers);
+          }
           setLeadObj(res?.data?.Lead);
           setData(leads);
           // setPagination({
@@ -251,6 +288,7 @@ const Leads = () => {
           });
           setPage(parseInt(res?.data?.Lead?.page, 10));
           setSize(parseInt(res?.data?.Lead?.limit, 10));
+          setFlag(false);
         }
       })
       .catch((err) => {
@@ -260,11 +298,12 @@ const Leads = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Error getting Medium options"
+              : "Error getting leads"
           }`
         );
       }).then(()=>{
         setIsLoading(false);
+        setIsStatLoading(false);
         //setFlag(false);
       });
   };
@@ -302,6 +341,50 @@ const Leads = () => {
           }`
         );
       });
+  };
+
+  const handleFilterChange = (value, filterType) => {
+    setSelectedFilters({
+      ...selectedFilters,
+      [filterType]: value,
+    });
+  };
+
+  const handleSearch = () => {
+    if (!selectedFilters.accountManager && !selectedFilters.endDate && !selectedFilters.projectType && !selectedFilters.startDate && !selectedFilters.status){
+      message.warning('No Filter Selected')
+    }
+    else {
+    setFilters(selectedFilters);
+    setPagination({
+      ...pagination,
+      current: 1,
+    });
+  }
+  };
+
+  const handleReset = () => {
+    setSelectedFilters({
+      status: "",
+      startDate: "",
+      endDate: "",
+      projectType: "",
+      accountManager: "",
+    });
+    setFilters({
+      status: "",
+      startDate: "",
+      endDate: "",
+      projectType: "",
+      accountManager: "",
+    });
+
+    form2.resetFields();
+    setPagination({
+      current: 1,
+      pageSize: 20,
+      total: 0,
+    });
   };
 
   const viewSources = () => {
@@ -1226,51 +1309,231 @@ const Leads = () => {
           </div>
         </div>
 
+        {
+            isStatLoading ? 
+            <div className="row" style={{minHeight: '83px', display: 'grid', placeItems: 'center', background: '#ebebeb', borderRadius: '5px', marginBottom: '20px', marginInline: '0px'}}>
+              <Spin />
+            </div> :
         <div className="row" style={{marginBottom:"20px"}}>
-          <div className="col-md-3" style={{width:'20%'}}>
+          <div className="col-md-3 custom-col-md-3" >
               <div className="stats-info">
-              <label>Active Leads</label>
+              <label className="custom-label">Active Leads</label>
               <div style={{ display: "flex", flexDirection:"row", alignItems: "baseline", justifyContent:"center"}}>
                   <h4 style={{ marginRight: "5px" }}>{stats?.activeLeads ? stats?.activeLeads : "0"}</h4>
               </div>
               </div>
           </div>
-          <div className="col-md-3" style={{width:'20%'}}>
-            <div className="stats-info">
-              <label>Pending Leads</label>
+          <div className="col-md-3 custom-col-md-3">
+            <div className="stats-info" style={{paddingBottom:'20px'}}>
+              <label className="custom-label">Pending Leads</label>
               <div style={{ display: "flex", flexDirection:"row", alignItems: "baseline", justifyContent:"center"}}>
-                  <h4 style={{ marginRight: "5px" }}>{stats?.pendingPercentage ? `${stats?.pendingPercentage}%` : "0"}</h4>
+                  <h5 style={{ marginRight: "5px" }}>{stats?.pendingPercentage ? `${stats?.pendingPercentage}% (${stats?.pendingLeads ? stats?.pendingLeads : '0'})` : "0"}</h5>
               </div>
             </div>
           </div>
-          <div className="col-md-3" style={{width:'20%'}}>
-            <div className="stats-info">
-              <label>Converted Leads</label>
+          <div className="col-md-3 custom-col-md-3" >
+            <div className="stats-info" style={{paddingBottom:'20px'}}>
+              <label className="custom-label">Converted Leads</label>
               <div style={{ display: "flex", flexDirection:"row", alignItems: "baseline", justifyContent:"center"}}>
-              <h4 style={{ marginRight: "5px" }}>{stats?.convertedPercentage ? `${stats?.convertedPercentage}%` : "0"}</h4>
+              <h5 style={{ marginRight: "5px" }}>{stats?.convertedPercentage ? `${stats?.convertedPercentage}% (${stats?.convertedLeads ? stats?.convertedLeads : '0'})` : "0"}</h5>
               </div>
             </div>
           </div>
-          <div className="col-md-3" style={{width:'20%'}}>
-            <div className="stats-info">
-              <label>Not Converted Leads</label>
+          <div className="col-md-3 custom-col-md-3" >
+            <div className="stats-info" style={{paddingBottom:'20px'}}>
+              <label className="custom-label">Not Converted Leads</label>
               <div style={{ display: "flex", flexDirection:"row", alignItems: "baseline", justifyContent:"center"}}>
                   
-                  <h4 style={{ marginRight: "5px" }}>{stats?.notConvertedPercentage ? `${stats?.notConvertedPercentage}%` : "-"}</h4>
+                  <h5 style={{ marginRight: "5px" }}>{stats?.notConvertedPercentage ? `${stats?.notConvertedPercentage}% (${stats?.notConvertedLeads ? stats?.notConvertedLeads : '0'})` : "0"}</h5>
               </div>
             </div>
           </div>
-          <div className="col-md-3" style={{width:'20%'}}>
-            <div className="stats-info">
-              <label>On-Hold Leads</label>
+          <div className="col-md-3 custom-col-md-3" >
+            <div className="stats-info" style={{paddingBottom:'20px'}}>
+              <label className="custom-label">On-Hold Leads</label>
               <div style={{ display: "flex", flexDirection:"row", alignItems: "baseline", justifyContent:"center"}}>
                   
-                  <h4 style={{ marginRight: "5px" }}>{stats?.onHoldPercentage ? `${stats?.onHoldPercentage}%` : "-"}</h4>
+                  <h5 style={{ marginRight: "5px" }}>{stats?.onHoldPercentage ? `${stats?.onHoldPercentage}% (${stats?.onHoldLeads ? stats?.onHoldLeads : '0'})` : "0"}</h5>
               </div>
             </div>
           </div>
         </div>
+        }
         {/* /Page Header */}
+
+        <Form form={form2} onFinish={handleSearch}>
+          <div className="row filter-row">
+            <div className="col-sm-6 col-md-3 col-lg-2">
+              <div className="form-group">
+                <Form.Item name="accountManager" className="custom-border">
+                <Select
+                      showSearch
+                      onSearch={(val) => {
+                        showTeamSearch(val, "accountManager");
+                      }}
+                      filterOption={(input, option) =>
+                        option.children
+                          ?.toLowerCase()
+                          ?.indexOf(input?.toLowerCase()) >= 0
+                      }
+                      optionFilterProp="children"
+                      className="custom-select custom-normal"
+                      getPopupContainer={() =>
+                        document.getElementById("area1")
+                      }
+                      notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                      dropdownRender={(menu) => (
+                        <>
+                          {menu}
+                        </>
+                      )}
+                      style={{
+                        width: "100%",
+                      }}
+                      placeholder="Select Account Manager"
+                      onChange={(value) => {
+                        handleFilterChange(value, "accountManager");
+                      }}
+                    >
+                      {accountManagers?.map((item, index) => {
+                        return (
+                          <Option key={index} value={item?._id}>
+                            {item?.fullName}
+                          </Option>
+                        );
+                      })}
+                    </Select>
+                </Form.Item>
+              </div>
+            </div>
+            <div className="col-sm-6 col-md-3 col-lg-2">
+              <div className="form-group">
+                <div style={{ position: "relative" }} id="area1">
+                  <Form.Item
+                    name="status"
+                    className="custom-border"
+                  >
+                    <Select
+                          placeholder='Select Status'
+                          style={{ width: "100%" }}
+                          onChange={(value) =>
+                            handleFilterChange(value, "status")
+                          }
+                          className="custom-select custom-normal"
+                        >
+                          <Select.Option value="pending">Pending</Select.Option>
+                          <Select.Option value="onHold">On Hold</Select.Option>
+                          <Select.Option value="converted">Converted</Select.Option>
+                          <Select.Option value="notConverted">Not Converted</Select.Option>
+                        </Select>
+                  </Form.Item>
+                </div>
+              </div>
+            </div>
+            <div className="col-sm-6 col-md-3 col-lg-2">
+              <div className="form-group">
+                <div style={{ position: "relative" }} id="area1">
+                  <Form.Item
+                    name="projectType"
+                    className="custom-border"
+                  >
+                    <Select
+                      placeholder='Select Type'
+                      style={{ width: "100%" }}
+                      onChange={(value) =>
+                        handleFilterChange(value, "projectType")
+                      }
+                      className="custom-select custom-normal"
+                    >
+                      <Select.Option value="staffAugmentation">
+                        Staff Augmentation
+                      </Select.Option>
+                      <Select.Option value="endToEndProject">
+                        End to End Project
+                      </Select.Option>
+                      <Select.Option value="bugFixes">
+                        Bug Fixes
+                      </Select.Option>
+                    </Select>
+                  </Form.Item>
+                </div>
+              </div>
+            </div>
+            <div className="col-sm-6 col-md-3 col-lg-2">
+              <div className="form-group">
+                <Form.Item name="startDate" className="custom-border">
+                  <DatePicker
+                    className="form-control"
+                    style={{
+                      width: "100%",
+                    }}
+                    placeholder='First Reach-Out Date'
+                    size="large"
+                    //allowClear={false}
+                    onChange={(date, dateString) => {
+                      handleFilterChange(dateString, "startDate");
+                      //setSelectedMonthYear(dateString);
+                    }}
+                    allowClear={false}
+                  />
+                </Form.Item>
+              </div>
+            </div>
+            <div className="col-sm-6 col-md-3 col-lg-2">
+              <div className="form-group">
+                <Form.Item name="endDate" className="custom-border">
+                  <DatePicker
+                    className="form-control"
+                    style={{
+                      width: "100%",
+                    }}
+                    placeholder='Last Reach-Out Date'
+                    size="large"
+                    //allowClear={false}
+                    onChange={(date, dateString) => {
+                      handleFilterChange(dateString, "endDate");
+                      //setSelectedMonthYear(dateString);
+                    }}
+                    allowClear={false}
+                  />
+                </Form.Item>
+              </div>
+            </div>
+            <div className="col-sm-6 col-md-3 col-lg-2"
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                gap: "2px",
+              }}
+            >
+              <Button
+                type="primary"
+                htmlType="submit"
+                className="btn-success btn-block w-50"
+                style={{ borderRadius: "4px", display: "flex", justifyContent: "center", alignItems: "center" }}
+              >
+                {t('search')}
+              </Button>
+
+              <Button
+                htmlType="button"
+                className="btn-secondary btn-block w-50"
+                onClick={handleReset}
+                style={{
+                  backgroundColor: "#616161",
+                  borderColor: "#616161",
+                  borderRadius: "4px",
+                  display: "flex", 
+                  justifyContent: "center",
+                  alignItems: "center"
+                }}
+              >
+                {t('reset')}
+              </Button>
+            </div>
+          </div>
+        </Form>
+
         <div className="row">
           <div className="col-md-12">
             <div className="table-responsive LeadTable">
@@ -1463,7 +1726,46 @@ const Leads = () => {
                       </div>
                     </div>
                   </div>
+
                   <div className="col-sm-6">
+                    <div className="form-group">
+                      <label>Project Type</label>
+                      <div style={{ position: "relative" }} id="area">
+                        <Form.Item
+                          name="projectType"
+                          className="custom-border"
+                          rules={[
+                            {
+                              required: true,
+                              message: 'please choose a project type',
+                            },
+                          ]}
+                        >
+                          <Select
+                            className="custom-select custom-normal"
+                            getPopupContainer={() =>
+                              document.getElementById("area")
+                            }
+                            placeholder='Select a Project Type'
+                          >
+                            <Select.Option value="staffAugmentation">
+                              Staff Augmentation
+                            </Select.Option>
+                            <Select.Option value="endToEndProject">
+                              End to End Project
+                            </Select.Option>
+                            <Select.Option value="bugFixes">
+                              Bug Fixes
+                            </Select.Option>
+                          </Select>
+                        </Form.Item>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="row">
+                <div className="col-sm-6">
                     <div className="form-group">
                       <label>Source</label>
                       <Form.Item
@@ -1587,9 +1889,6 @@ const Leads = () => {
                       </Form.Item>
                     </div>
                   </div>
-                </div>
-
-                <div className="row">
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>Account Manager</label>
@@ -1644,7 +1943,10 @@ const Leads = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="col-sm-3">
+                </div>
+
+                <div className="row">     
+                <div className="col-sm-3">
                     <div className="form-group">
                       <label>Project Worth</label>
 
@@ -1709,12 +2011,11 @@ const Leads = () => {
                         </Form.Item>
                       </div>
                     </div>
-                  </div>
-                </div>
-{
-!open?.data && 
-<>
-                <div className="row">                
+                  </div>  
+
+                {
+                !open?.data && 
+                <>
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>First Reach Out</label>
@@ -1887,17 +2188,19 @@ const Leads = () => {
                       </Form.Item>
                     </div>
                   </div>
-                </div>
-
-                <div className="form-group">
-                  <label>Comments</label>
-                  <Form.Item name="comments">
-                    <Input.TextArea className="form-control" rows={5} />
-                  </Form.Item>
-                  {/* <textarea rows={4} className="form-control summernote" placeholder="Enter your message here" defaultValue={""} /> */}
-                </div>
                 </>
-              }
+                }
+                </div>
+                {
+                  !open?.data && 
+                  <div className="form-group">
+                    <label>Comments</label>
+                    <Form.Item name="comments">
+                      <Input.TextArea className="form-control" rows={5} />
+                    </Form.Item>
+                    {/* <textarea rows={4} className="form-control summernote" placeholder="Enter your message here" defaultValue={""} /> */}
+                  </div>
+                }
 
                 {open?.data && (
                   <>

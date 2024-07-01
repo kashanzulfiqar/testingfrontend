@@ -610,7 +610,7 @@ const ProjectView = () => {
               }
 
               {
-                (project?.taskBoard ? 
+                project?.taskBoard && role !== 'client' && role !== 'focalPerson' &&
                 <a
                 className="btn btn-white float-start m-r-10"
                 data-bs-toggle="tooltip"
@@ -619,8 +619,6 @@ const ProjectView = () => {
               >
                 <i className="fa fa-bars" />
               </a>
-              :
-              null)
               }
             </div>
           </div>

@@ -13000,3 +13000,26 @@ padding-right: unset;
     max-width: 225px;
     overflow: hidden;
 }
+
+.stats-info h5 {
+  font-size: 19px;
+  margin-bottom: 0;
+}
+
+[dir="rtl"] .stats-info h5 {
+  margin-left: 5px;
+}
+
+/* Add this to your CSS file */
+@media (min-width: 768px) {
+  .custom-col-md-3 {
+    width: 20%; /* Apply custom width only to this element */
+  }
+}
+
+.custom-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block; /* Ensure it's treated as a block-level element */
+}
