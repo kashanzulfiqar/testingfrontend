@@ -827,6 +827,7 @@
     "holiday": "عطلة",
     "deleteHoliday": "حذف العطلة",
     "confirmDelete": "هل أنت متأكد أنك تريد حذف <b>{{holiday}}</b>؟",
+    "confirmRemove": "هل أنت متأكد أنك تريد حذف <b>{{holiday}}</b>؟",
     "holidayExists": "توجد عطلة بهذا التاريخ بالفعل!",
     "holidayUpdatedSuccess": "تم تحديث العطلة بنجاح",
     "updateHolidayError": "خطأ في تحديث معلومات العطلة",

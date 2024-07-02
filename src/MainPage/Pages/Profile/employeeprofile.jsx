@@ -309,7 +309,7 @@ const handleClose = () => {
 
   const onBankFinish = (values) => {
     let d1 = {
-      ...allData,
+      _id: allData?._id,
       ...values
     }
     Object.keys(d1).forEach((key) => {
@@ -346,7 +346,7 @@ const handleClose = () => {
   }
   const onEmergencyFinish = (values) => {
     let d1 = {
-      ...allData,
+      _id: allData?._id,
       emergencyContacts: [values]
     }
     Object.keys(d1).forEach((key) => {
@@ -383,7 +383,7 @@ const handleClose = () => {
   }
   const onEducationFinish = (values) => {
     let d1 = {
-      ...allData,
+      _id: allData?._id,
       education: values?.education
     }
     Object.keys(d1).forEach((key) => {
@@ -420,7 +420,7 @@ const handleClose = () => {
   }
   const onExperienceFinish = (values) => {
     let d1 = {
-      ...allData,
+      _id: allData?._id,
       experience: values?.experience
     }
     Object.keys(d1).forEach((key) => {
@@ -512,7 +512,7 @@ const allowedFileTypes = ['image/png', 'image/jpeg', 'image/jpg'];
         nav('/profile', {state: {updated_user: {imageUrl: res?.data?.result}}})
 
         let d1 = {
-          ...allData,
+          _id: allData?._id,
           imageUrl: res?.data?.result
         }
         Object.keys(d1).forEach((key) => {
@@ -567,7 +567,7 @@ const allowedFileTypes = ['image/png', 'image/jpeg', 'image/jpg'];
     setImageLoader(true)
 
     let d1 = {
-      ...allData,
+      _id: allData?._id,
       imageUrl: null
     }
     Object.keys(d1).forEach((key) => {
@@ -769,7 +769,7 @@ const antIcon = (
                   <li className="nav-item"><a href="javascript:void(0)"  className={`nav-link ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => { setActiveTab('profile') }}>{t('empProfile.profile')}</a></li>
                   {/* <li className="nav-item"><a href="#emp_projects" data-bs-toggle="tab" className="nav-link">Projects</a></li> */}
                   <li className="nav-item"><a href="javascript:void(0)"  className={`nav-link ${activeTab === 'projects' ? 'active' : ''}`} onClick={() => { setActiveTab('projects') }}>{t('projects')}</a></li>
-                  <li className="nav-item"><a href="javascript:void(0)"  className={`nav-link ${activeTab === 'bank' ? 'active' : ''}`} onClick={() => { setActiveTab('bank') }}>{t('empProfile.bankAndStatutory')} <small className="text-danger">{t('empProfile.AdminOnly')}</small></a></li>
+                  {/* <li className="nav-item"><a href="javascript:void(0)"  className={`nav-link ${activeTab === 'bank' ? 'active' : ''}`} onClick={() => { setActiveTab('bank') }}>{t('empProfile.bankAndStatutory')} <small className="text-danger">{t('empProfile.AdminOnly')}</small></a></li> */}
                   <li className="nav-item"><a href="javascript:void(0)"  className={`nav-link ${activeTab === 'assets' ? 'active' : ''}`} onClick={() => { setActiveTab('assets') }}>{t('empProfile.assets')}</a></li>
                 </ul>
               </div>
@@ -817,10 +817,10 @@ const antIcon = (
                               <div className="card profile-box flex-fill">
                                 <div className="card-body">
                                   <h3 className="card-title">{t('empProfile.emergencyContact')}
-                                  {
-                                    (role === 'admin' || permissions?.updateUser) &&
+                                  
+                                    {/* (role === 'admin' || permissions?.updateUser) && */}
                                     <a href="javascript:void(0)" className="edit-icon" style={{ float: i18n.dir() === 'rtl' ? 'left' : 'right' }} onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: true, isprofileInfoOpen: false, data: allData?.emergencyContacts?.length > 0 ? allData.emergencyContacts[0] : {} })}><i className="fa fa-pencil" /></a>
-                                  }
+                                  
                                   </h3>
                                   {/* <h5 className="section-title">Primary</h5> */}
                                   { allData?.emergencyContacts?.length > 0 ?
@@ -873,10 +873,10 @@ const antIcon = (
                               <div className="card profile-box flex-fill">
                                 <div className="card-body">
                                   <h3 className="card-title">{t('empProfile.educationInformations')}
-                                  {
-                                    (role === 'admin' || permissions?.updateUser) &&
+                                  
+                                    {/* (role === 'admin' || permissions?.updateUser) && */}
                                     <a href="javascript:void(0)" className="edit-icon" style={{ float: i18n.dir() === 'rtl' ? 'left' : 'right' }} onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: true, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a>
-                                  }
+                                  
                                   </h3>
                                   <div className="experience-box">
                                     { allData?.education?.length > 0 ?
@@ -908,10 +908,10 @@ const antIcon = (
                               <div className="card profile-box flex-fill">
                                 <div className="card-body">
                                   <h3 className="card-title">{t('empProfile.experience')}
-                                  {
-                                    (role === 'admin' || permissions?.updateUser) &&
+                                  
+                                    {/* (role === 'admin' || permissions?.updateUser) && */}
                                     <a href="javascript:void(0)" className="edit-icon" style={{ float: i18n.dir() === 'rtl' ? 'left' : 'right' }} onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: true, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a>
-                                  }
+                                  
                                   </h3>
                                   <div className="experience-box">
                                     {
@@ -1424,9 +1424,9 @@ const antIcon = (
                     </div>
                 }
                 {
-                  (activeTab === 'assets' && allData?._id) &&
+                  (activeTab === 'assets' && allData?._id) && (
                     <div className="tab-pane fade show active" id="emp_assets">
-                      <div className="table-responsive table-newdatatable">
+                      {/* <div className="table-responsive table-newdatatable">
                         <table className="table table-new custom-table mb-0 datatable">
                           <thead>
                             <tr>
@@ -1440,172 +1440,23 @@ const antIcon = (
                           </thead>
                           <tbody>
                             <tr>
-                              <td>1</td>
-                              <td>
-                                <a href="assets-details.html" className="table-imgname">
-                                  <img src={laptop} className="me-2" alt="img" />
-                                  <span>Laptop</span>
-                                </a>
-                              </td>
-                              <td>AST - 001</td>
-                              <td>22 Nov, 2022    10:32AM</td>
-                              <td className="table-namesplit">
-                                <a href="javascript:void(0);" className="table-profileimage">
-                                  <img src={Avatar_02} className="me-2" alt="img" />
-                                </a>
-                                <a href="javascript:void(0);" className="table-name">
-                                  <span>John Paul Raj</span>
-                                  <p>john@dreamguystech.com</p>
-                                </a>
-                              </td>
-                              <td>
-                                <div className="table-actions d-flex">
-                                  <Link className="delete-table me-2" to="/app/profile/userassets">
-                                    <img src={eye} alt="svg" />
-                                  </Link>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>2</td>
-                              <td>
-                                <a href="assets-details.html" className="table-imgname">
-                                  <img src={laptop} className="me-2" alt="img" />
-                                  <span>Laptop</span>
-                                </a>
-                              </td>
-                              <td>AST - 002</td>
-                              <td>22 Nov, 2022    10:32AM</td>
-                              <td className="table-namesplit">
-                                <a href="javascript:void(0);" className="table-profileimage" data-bs-toggle="modal" data-bs-target="#edit-asset">
-                                  <img src={Avatar_05} className="me-2" alt="img" />
-                                </a>
-                                <a href="javascript:void(0);" className="table-name">
-                                  <span>Vinod Selvaraj</span>
-                                  <p>vinod.s@dreamguystech.com</p>
-                                </a>
-                              </td>
-                              <td>
-                                <div className="table-actions d-flex">
-                                  <a className="delete-table me-2" href="user-asset-details.html">
-                                    <img src={eye} alt="svg" />
-                                  </a>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>3</td>
-                              <td>
-                                <a href="assets-details.html" className="table-imgname">
-                                  <img src={keyboard} className="me-2" alt="img" />
-                                  <span>Dell Keyboard</span>
-                                </a>
-                              </td>
-                              <td>AST - 003</td>
-                              <td>22 Nov, 2022    10:32AM</td>
-                              <td className="table-namesplit">
-                                <a href="javascript:void(0);" className="table-profileimage" data-bs-toggle="modal" data-bs-target="#edit-asset">
-                                  <img src={Avatar_09} className="me-2" alt="img" />
-                                </a>
-                                <a href="javascript:void(0);" className="table-name">
-                                  <span>Harika </span>
-                                  <p>harika.v@dreamguystech.com</p>
-                                </a>
-                              </td>
-                              <td>
-                                <div className="table-actions d-flex">
-                                  <a className="delete-table me-2" href="user-asset-details.html">
-                                    <img src={eye} alt="svg" />
-                                  </a>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>4</td>
-                              <td>
-                                <a href="#" className="table-imgname">
-                                  <img src={mouse} className="me-2" alt="img" />
-                                  <span>Logitech Mouse</span>
-                                </a>
-                              </td>
-                              <td>AST - 0024</td>
-                              <td>22 Nov, 2022    10:32AM</td>
-                              <td className="table-namesplit">
-                                <a href="assets-details.html" className="table-profileimage">
-                                  <img src={Avatar_10} className="me-2" alt="img" />
-                                </a>
-                                <a href="assets-details.html" className="table-name">
-                                  <span>Mythili</span>
-                                  <p>mythili@dreamguystech.com</p>
-                                </a>
-                              </td>
-                              <td>
-                                <div className="table-actions d-flex">
-                                  <a className="delete-table me-2" href="user-asset-details.html">
-                                    <img src={eye} alt="svg" />
-                                  </a>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>5</td>
-                              <td>
-                                <a href="#" className="table-imgname">
-                                  <img src={laptop} className="me-2" alt="img" />
-                                  <span>Laptop</span>
-                                </a>
-                              </td>
-                              <td>AST - 005</td>
-                              <td>22 Nov, 2022    10:32AM</td>
-                              <td className="table-namesplit">
-                                <a href="assets-details.html" className="table-profileimage">
-                                  <img src={Avatar_16} className="me-2" alt="img" />
-                                </a>
-                                <a href="assets-details.html" className="table-name">
-                                  <span>John Paul Raj</span>
-                                  <p>john@dreamguystech.com</p>
-                                </a>
-                              </td>
-                              <td>
-                                <div className="table-actions d-flex">
-                                  <a className="delete-table me-2" href="user-asset-details.html">
-                                    <img src={eye} alt="svg" />
-                                  </a>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>6</td>
-                              <td>
-                                <a href="#" className="table-imgname">
-                                  <img src={laptop} className="me-2" alt="img" />
-                                  <span>Laptop</span>
-                                </a>
-                              </td>
-                              <td>AST - 006</td>
-                              <td>22 Nov, 2022    10:32AM</td>
-                              <td className="table-namesplit">
-                                <a href="javascript:void(0);" className="table-profileimage">
-                                  <img src={Avatar_02} className="me-2" alt="img" />
-                                </a>
-                                <a href="javascript:void(0);" className="table-name">
-                                  <span>Vinod Selvaraj</span>
-                                  <p>vinod.s@dreamguystech.com</p>
-                                </a>
-                              </td>
-                              <td>
-                                <div className="table-actions d-flex">
-                                  <a className="delete-table me-2" href="user-asset-details.html">
-                                    <img src={eye} alt="svg" />
-                                  </a>
-                                </div>
+                              <td colSpan="6">
+                                
                               </td>
                             </tr>
                           </tbody>
                         </table>
-                      </div>
+                      </div> */}
+                      <div className="error-box" style={{display:'flex', flexDirection:'column',alignItems:'center'}}>
+                                  <h1 style={{ fontSize: '29px', color: '#ff9b44' }}>
+                                    <i className="fa fa-warning" style={{ color: '#ff9b44' }} /> Under Construction
+                                  </h1>
+                                  <h3 className="mb-5 mt-3" style={{color:'#1F1F1F'}}> {t('visitLater')}</h3>
+                                </div>
                     </div>
+                  )
                 }
+
 
                 {/* /Bank Statutory Tab */}
               </div>

@@ -82,7 +82,7 @@ function TaskModal({data, viewModal, closeViewModal, getAllTasks}) {
               setLoader(false)
               setTitle(values?.title);
               handleCancelTitle();
-              getAllTasks();
+              getAllTasks(task?.ProjectData?._id);
               }
             })
             .catch((err) => {
@@ -127,7 +127,7 @@ function TaskModal({data, viewModal, closeViewModal, getAllTasks}) {
               setLoader2(false)
               setTags(values?.tags);
               handleCancelTag();
-              getAllTasks();
+              getAllTasks(task?.ProjectData?._id);
               }
             })
             .catch((err) => {
@@ -168,7 +168,7 @@ function TaskModal({data, viewModal, closeViewModal, getAllTasks}) {
             setLoader3(false)
             setDescription(values?.description);
             handleCancelClick();
-            getAllTasks();
+            getAllTasks(task?.ProjectData?._id);
             }
           })
           .catch((err) => {
@@ -251,7 +251,7 @@ function TaskModal({data, viewModal, closeViewModal, getAllTasks}) {
             }
 
             {!isEditingTitle && (<h3 style={{marginLeft:'1%'}}>
-              {(role === "admin" || permissions.projectManagement) && <a onClick={handleTitleClick}><i className="fa fa-pencil ml-2" /></a>}
+            <a onClick={handleTitleClick}><i className="fa fa-pencil ml-2" /></a>
             </h3>)}
 
             <button type="button" className="close" onClick={closeViewModal}>
@@ -266,9 +266,9 @@ function TaskModal({data, viewModal, closeViewModal, getAllTasks}) {
                 {!isEditing && (<div className="dropdown dropdown-action profile-action">
                   <a
                     className="action-icon dropdown-toggle"
-                    data-bs-toggle={(role === "admin" || permissions.projectManagement) ? 'dropdown' : ''}
-                    aria-expanded={(role === "admin" || permissions.projectManagement) ? 'true' : 'false'}
-                    style={{ cursor: (role == "admin" || permissions.projectManagement) ? "pointer" : "not-allowed" }}
+                    data-bs-toggle='dropdown'
+                    aria-expanded='true'
+                    style={{ cursor: "pointer" }}
                   >
                     <i className="material-icons">more_vert</i>
                   </a>
@@ -353,7 +353,7 @@ function TaskModal({data, viewModal, closeViewModal, getAllTasks}) {
                     </table>
                           <div style={{display:'flex', flexDirection:'row', justifyContent:'space-between', alignItems:'center'}}><h4>Tags</h4>
                             {!isEditingTag && (<h5>
-                              {(role === "admin" || permissions.projectManagement) && <a onClick={handleTagClick}><i className="fa fa-pencil ml-2" /></a>}
+                            <a onClick={handleTagClick}><i className="fa fa-pencil ml-2" /></a>
                             </h5>)}
                           </div>
                           {isEditingTag ? (
@@ -376,7 +376,6 @@ function TaskModal({data, viewModal, closeViewModal, getAllTasks}) {
                                     getPopupContainer={() =>
                                         document.getElementById("area22")
                                     }
-                                    disabled={(role === "admin" || permissions.projectManagement) ? false : true}
                                 />
                               </Form.Item>
                               <div className="form-actions">

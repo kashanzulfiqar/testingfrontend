@@ -12624,7 +12624,6 @@ styles by Qazi
   -webkit-line-clamp: 4;
     -webkit-box-orient: vertical;
     display: -webkit-box;
-    max-width: 190px;
     overflow: hidden;
 }
 .longText2{
@@ -12986,10 +12985,40 @@ padding-right: unset;
   min-width: 150px !important;
 }
 
+.WorkingDayTable thead tr th,
+.WorkingDayTable tbody tr td {
+  min-width: 100px !important;
+  text-align: center; /* Optional: To center the checkbox */
+}
+
+
 .longText4{
   -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     display: -webkit-box;
     max-width: 225px;
     overflow: hidden;
+}
+
+.stats-info h5 {
+  font-size: 19px;
+  margin-bottom: 0;
+}
+
+[dir="rtl"] .stats-info h5 {
+  margin-left: 5px;
+}
+
+/* Add this to your CSS file */
+@media (min-width: 768px) {
+  .custom-col-md-3 {
+    width: 20%; /* Apply custom width only to this element */
+  }
+}
+
+.custom-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block; /* Ensure it's treated as a block-level element */
 }
