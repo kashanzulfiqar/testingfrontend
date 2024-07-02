@@ -827,6 +827,7 @@
     "update": "Update",
     "holiday": "Holiday",
     "confirmDelete": "Are you sure you want to delete <b>{{holiday}}</b>?",
+    "confirmRemove": "Are you sure you want to remove <b>{{holiday}}</b>?",
     "deleteHoliday": "Delete Holiday",
     "holidayExists": "Holiday with this date already exists!",
     "holidayUpdatedSuccess": "Holiday Updated Successfully",

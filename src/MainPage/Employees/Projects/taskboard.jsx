@@ -919,7 +919,7 @@ const onFinishEdit = (values) => {
                   <li className="breadcrumb-item active">Task Board</li>
                 </ul>
               </div>
-              {(role === "admin" || permissions?.projectManagement) && (<div className="col-auto float-end ms-auto">
+              <div className="col-auto float-end ms-auto">
                 <a
                   className="btn add-btn"
                   onClick={() => {
@@ -928,7 +928,7 @@ const onFinishEdit = (values) => {
                 >
                   <i className="fa fa-plus" /> Add Column
                 </a>
-              </div>)}
+              </div>
             </div>
           </div>
           {/* /Page Header */}
@@ -967,9 +967,9 @@ const onFinishEdit = (values) => {
                                       </label>
                                     <div className="dropdown kanban-action">
                                       <a
-                                        data-bs-toggle={(role === "admin" || permissions.projectManagement) ? 'dropdown' : ''}
-                                        aria-expanded={(role === "admin" || permissions.projectManagement) ? 'true' : 'false'}
-                                        style={{ cursor: (role === "admin" || permissions.projectManagement) ? "pointer" : "not-allowed" }}>
+                                        data-bs-toggle='dropdown'
+                                        aria-expanded='true'
+                                        style={{ cursor: "pointer" }}>
                                         <i className="fa fa-ellipsis-v " />
                                       </a>
                                       <div className="dropdown-menu dropdown-menu-right">
@@ -1059,13 +1059,14 @@ const onFinishEdit = (values) => {
                                                           </span>
                                                           <div className="dropdown kanban-task-action">
                                                             <a 
-                                                            data-bs-toggle={(role === "admin" || permissions.projectManagement) ? 'dropdown' : ''} 
-                                                            aria-expanded={(role === "admin" || permissions.projectManagement) ? 'true' : 'false'} 
-                                                            style={{ cursor: (role === "admin" || permissions.projectManagement) ? "pointer" : "not-allowed" }}
+                                                            data-bs-toggle='dropdown'
+                                                            aria-expanded='true'
+                                                            style={{ cursor: "pointer" }}
                                                             >
                                                               <i className="fa fa-angle-down" />
                                                             </a>
                                                             <div className="dropdown-menu dropdown-menu-right">
+                                                            {(role === "admin" || permissions?.projectManagement) && (
                                                               <a 
                                                               className="dropdown-item" 
                                                               onClick={() => 
@@ -1080,6 +1081,7 @@ const onFinishEdit = (values) => {
                                                               >
                                                                 Edit
                                                               </a>
+                                                            )}
                                                               <a 
                                                               className="dropdown-item"
                                                               onClick={() => 
@@ -1131,16 +1133,22 @@ const onFinishEdit = (values) => {
                                   </Droppable>
                                   <div className="add-new-task" style={{ padding: '5px', borderTop: '1px solid #ddd' }}>
                                     <a 
-                                    style={{ cursor: (role === "admin" || permissions.projectManagement) ? "pointer" : "not-allowed" }} 
+                                    style={{ cursor: "pointer" }} 
+                                    // style={{ cursor: (role === "admin" || permissions.projectManagement) ? "pointer" : "not-allowed" }} 
+                                    // onClick={() => {
+                                    //   if ((role === "admin" || permissions.projectManagement)) {
+                                    //     getTasksOptions(ProjectData?._id);
+                                    //     setTaskModal(true);
+                                    //     setColumnId(column._id);
+                                    //   } 
+                                    //   else {
+                                    //     return;
+                                    //   }
+                                    // }}
                                     onClick={() => {
-                                      if ((role === "admin" || permissions.projectManagement)) {
-                                        getTasksOptions(ProjectData?._id);
-                                        setTaskModal(true);
-                                        setColumnId(column._id);
-                                      } 
-                                      else {
-                                        return;
-                                      }
+                                      getTasksOptions(ProjectData?._id);
+                                      setTaskModal(true);
+                                      setColumnId(column._id);
                                     }}
                                     >
                                       Add New Task
@@ -1363,7 +1371,7 @@ const onFinishEdit = (values) => {
                 <p>
                   <span
                     dangerouslySetInnerHTML={{
-                      __html: t("holiday.confirmDelete", {
+                      __html: t("holiday.confirmRemove", {
                         holiday: addTask?.title
                       }),
                     }}
@@ -1481,10 +1489,13 @@ const onFinishEdit = (values) => {
                             type="button"
                             icon={<PlusOutlined style={{ fontSize: '20px', marginRight: '5px' }} />}
                             className="addButtonStyles"
-                            style={{ width: '100%', height: '40px', background: '#efefef', borderColor: '#efefef', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+                            style={{ width: '100%', height: '40px', background: '#efefef', borderColor: '#efefef', display: 'flex', justifyContent: 'center', alignItems: 'center',
+                                    cursor: (role === "admin" || permissions.projectManagement) ? "pointer" : "not-allowed"
+                            }}
                             onClick={() => {
                               setAddTask({ isAddOpen: true, data: '' });
                             }}
+                            disabled={(role === "admin" || permissions.projectManagement) ? false : true}
                         >
                             Add New Task
                         </Button>
