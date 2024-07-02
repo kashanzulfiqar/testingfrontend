@@ -12991,6 +12991,13 @@ padding-right: unset;
   text-align: center; /* Optional: To center the checkbox */
 }
 
+.WorkingDayTable td {
+  border-right: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.WorkingDayTable td:last-child {
+  border-right: none;
+}
 
 .longText4{
   -webkit-line-clamp: 3;
