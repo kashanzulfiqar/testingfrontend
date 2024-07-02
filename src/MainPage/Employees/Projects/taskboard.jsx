@@ -1490,12 +1490,12 @@ const onFinishEdit = (values) => {
                             icon={<PlusOutlined style={{ fontSize: '20px', marginRight: '5px' }} />}
                             className="addButtonStyles"
                             style={{ width: '100%', height: '40px', background: '#efefef', borderColor: '#efefef', display: 'flex', justifyContent: 'center', alignItems: 'center',
-                                    cursor: (role === "admin" || permissions.projectManagement) ? "pointer" : "not-allowed"
+                                    cursor: "pointer"
                             }}
                             onClick={() => {
                               setAddTask({ isAddOpen: true, data: '' });
                             }}
-                            disabled={(role === "admin" || permissions.projectManagement) ? false : true}
+                            //disabled={(role === "admin" || permissions.projectManagement) ? false : true}
                         >
                             Add New Task
                         </Button>
@@ -1553,11 +1553,7 @@ const onFinishEdit = (values) => {
             <div className="modal-dialog modal-dialog-centered" role="document">
             <div className="modal-content">
                 <div className="modal-header">
-                {(role == "admin" || permissions.projectManagement) ?
                 <h5 className="modal-title">{addTask?.data ? t('edit') : t('holiday.add')} {t('Timesheetemployee.task')}</h5>
-                :
-                <h5 className="modal-title">View {t('Timesheetemployee.task')}</h5>
-                }
                 <button type="button" className="close" onClick={closeNewTask}>
                     <span aria-hidden="true">×</span>
                 </button>
@@ -1605,7 +1601,7 @@ const onFinishEdit = (values) => {
                             },
                             ]}
                         >
-                            <Input className='form-control' readOnly={(role == "admin" || permissions.projectManagement) ? false : true} maxLength={50}/>
+                            <Input className='form-control' maxLength={50}/>
                         </Form.Item>
                         </div>
                     </div>
@@ -1640,7 +1636,6 @@ const onFinishEdit = (values) => {
                                     getPopupContainer={() =>
                                         document.getElementById("area22")
                                     }
-                                    disabled={(role === "admin" || permissions.projectManagement) ? false : true}
                                 />
                         </Form.Item>
                         </div>
@@ -1673,12 +1668,11 @@ const onFinishEdit = (values) => {
                             ]}
                             className="custom-border"
                         >
-                            <Input.TextArea rows={3} className='form-control' readOnly={(role == "admin" || permissions.projectManagement) ? false : true} />
+                            <Input.TextArea rows={3} className='form-control' />
                         </Form.Item>
                         </div>
                     </div>
                 </div>
-                {(role == "admin" || permissions.projectManagement) && 
                 <div className="submit-section">
                   <button type='submit' className="btn btn-primary submit-btn" disabled={loader}>
                   {
@@ -1687,7 +1681,6 @@ const onFinishEdit = (values) => {
                   }
                   </button>
                 </div>
-                }
                 
                 </Form>
                 </div>

@@ -251,7 +251,7 @@ function TaskModal({data, viewModal, closeViewModal, getAllTasks}) {
             }
 
             {!isEditingTitle && (<h3 style={{marginLeft:'1%'}}>
-              {(role === "admin" || permissions.projectManagement) && <a onClick={handleTitleClick}><i className="fa fa-pencil ml-2" /></a>}
+            <a onClick={handleTitleClick}><i className="fa fa-pencil ml-2" /></a>
             </h3>)}
 
             <button type="button" className="close" onClick={closeViewModal}>
@@ -353,7 +353,7 @@ function TaskModal({data, viewModal, closeViewModal, getAllTasks}) {
                     </table>
                           <div style={{display:'flex', flexDirection:'row', justifyContent:'space-between', alignItems:'center'}}><h4>Tags</h4>
                             {!isEditingTag && (<h5>
-                              {(role === "admin" || permissions.projectManagement) && <a onClick={handleTagClick}><i className="fa fa-pencil ml-2" /></a>}
+                            <a onClick={handleTagClick}><i className="fa fa-pencil ml-2" /></a>
                             </h5>)}
                           </div>
                           {isEditingTag ? (
@@ -376,7 +376,6 @@ function TaskModal({data, viewModal, closeViewModal, getAllTasks}) {
                                     getPopupContainer={() =>
                                         document.getElementById("area22")
                                     }
-                                    disabled={(role === "admin" || permissions.projectManagement) ? false : true}
                                 />
                               </Form.Item>
                               <div className="form-actions">
