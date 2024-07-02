@@ -1424,9 +1424,9 @@ const antIcon = (
                     </div>
                 }
                 {
-                  (activeTab === 'assets' && allData?._id) &&
+                  (activeTab === 'assets' && allData?._id) && (
                     <div className="tab-pane fade show active" id="emp_assets">
-                      <div className="table-responsive table-newdatatable">
+                      {/* <div className="table-responsive table-newdatatable">
                         <table className="table table-new custom-table mb-0 datatable">
                           <thead>
                             <tr>
@@ -1440,172 +1440,23 @@ const antIcon = (
                           </thead>
                           <tbody>
                             <tr>
-                              <td>1</td>
-                              <td>
-                                <a href="assets-details.html" className="table-imgname">
-                                  <img src={laptop} className="me-2" alt="img" />
-                                  <span>Laptop</span>
-                                </a>
-                              </td>
-                              <td>AST - 001</td>
-                              <td>22 Nov, 2022    10:32AM</td>
-                              <td className="table-namesplit">
-                                <a href="javascript:void(0);" className="table-profileimage">
-                                  <img src={Avatar_02} className="me-2" alt="img" />
-                                </a>
-                                <a href="javascript:void(0);" className="table-name">
-                                  <span>John Paul Raj</span>
-                                  <p>john@dreamguystech.com</p>
-                                </a>
-                              </td>
-                              <td>
-                                <div className="table-actions d-flex">
-                                  <Link className="delete-table me-2" to="/app/profile/userassets">
-                                    <img src={eye} alt="svg" />
-                                  </Link>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>2</td>
-                              <td>
-                                <a href="assets-details.html" className="table-imgname">
-                                  <img src={laptop} className="me-2" alt="img" />
-                                  <span>Laptop</span>
-                                </a>
-                              </td>
-                              <td>AST - 002</td>
-                              <td>22 Nov, 2022    10:32AM</td>
-                              <td className="table-namesplit">
-                                <a href="javascript:void(0);" className="table-profileimage" data-bs-toggle="modal" data-bs-target="#edit-asset">
-                                  <img src={Avatar_05} className="me-2" alt="img" />
-                                </a>
-                                <a href="javascript:void(0);" className="table-name">
-                                  <span>Vinod Selvaraj</span>
-                                  <p>vinod.s@dreamguystech.com</p>
-                                </a>
-                              </td>
-                              <td>
-                                <div className="table-actions d-flex">
-                                  <a className="delete-table me-2" href="user-asset-details.html">
-                                    <img src={eye} alt="svg" />
-                                  </a>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>3</td>
-                              <td>
-                                <a href="assets-details.html" className="table-imgname">
-                                  <img src={keyboard} className="me-2" alt="img" />
-                                  <span>Dell Keyboard</span>
-                                </a>
-                              </td>
-                              <td>AST - 003</td>
-                              <td>22 Nov, 2022    10:32AM</td>
-                              <td className="table-namesplit">
-                                <a href="javascript:void(0);" className="table-profileimage" data-bs-toggle="modal" data-bs-target="#edit-asset">
-                                  <img src={Avatar_09} className="me-2" alt="img" />
-                                </a>
-                                <a href="javascript:void(0);" className="table-name">
-                                  <span>Harika </span>
-                                  <p>harika.v@dreamguystech.com</p>
-                                </a>
-                              </td>
-                              <td>
-                                <div className="table-actions d-flex">
-                                  <a className="delete-table me-2" href="user-asset-details.html">
-                                    <img src={eye} alt="svg" />
-                                  </a>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>4</td>
-                              <td>
-                                <a href="#" className="table-imgname">
-                                  <img src={mouse} className="me-2" alt="img" />
-                                  <span>Logitech Mouse</span>
-                                </a>
-                              </td>
-                              <td>AST - 0024</td>
-                              <td>22 Nov, 2022    10:32AM</td>
-                              <td className="table-namesplit">
-                                <a href="assets-details.html" className="table-profileimage">
-                                  <img src={Avatar_10} className="me-2" alt="img" />
-                                </a>
-                                <a href="assets-details.html" className="table-name">
-                                  <span>Mythili</span>
-                                  <p>mythili@dreamguystech.com</p>
-                                </a>
-                              </td>
-                              <td>
-                                <div className="table-actions d-flex">
-                                  <a className="delete-table me-2" href="user-asset-details.html">
-                                    <img src={eye} alt="svg" />
-                                  </a>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>5</td>
-                              <td>
-                                <a href="#" className="table-imgname">
-                                  <img src={laptop} className="me-2" alt="img" />
-                                  <span>Laptop</span>
-                                </a>
-                              </td>
-                              <td>AST - 005</td>
-                              <td>22 Nov, 2022    10:32AM</td>
-                              <td className="table-namesplit">
-                                <a href="assets-details.html" className="table-profileimage">
-                                  <img src={Avatar_16} className="me-2" alt="img" />
-                                </a>
-                                <a href="assets-details.html" className="table-name">
-                                  <span>John Paul Raj</span>
-                                  <p>john@dreamguystech.com</p>
-                                </a>
-                              </td>
-                              <td>
-                                <div className="table-actions d-flex">
-                                  <a className="delete-table me-2" href="user-asset-details.html">
-                                    <img src={eye} alt="svg" />
-                                  </a>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>6</td>
-                              <td>
-                                <a href="#" className="table-imgname">
-                                  <img src={laptop} className="me-2" alt="img" />
-                                  <span>Laptop</span>
-                                </a>
-                              </td>
-                              <td>AST - 006</td>
-                              <td>22 Nov, 2022    10:32AM</td>
-                              <td className="table-namesplit">
-                                <a href="javascript:void(0);" className="table-profileimage">
-                                  <img src={Avatar_02} className="me-2" alt="img" />
-                                </a>
-                                <a href="javascript:void(0);" className="table-name">
-                                  <span>Vinod Selvaraj</span>
-                                  <p>vinod.s@dreamguystech.com</p>
-                                </a>
-                              </td>
-                              <td>
-                                <div className="table-actions d-flex">
-                                  <a className="delete-table me-2" href="user-asset-details.html">
-                                    <img src={eye} alt="svg" />
-                                  </a>
-                                </div>
+                              <td colSpan="6">
+                                
                               </td>
                             </tr>
                           </tbody>
                         </table>
-                      </div>
+                      </div> */}
+                      <div className="error-box" style={{display:'flex', flexDirection:'column',alignItems:'center'}}>
+                                  <h1 style={{ fontSize: '29px', color: '#ff9b44' }}>
+                                    <i className="fa fa-warning" style={{ color: '#ff9b44' }} /> Under Construction
+                                  </h1>
+                                  <h3 className="mb-5 mt-3" style={{color:'#1F1F1F'}}> {t('visitLater')}</h3>
+                                </div>
                     </div>
+                  )
                 }
+
 
                 {/* /Bank Statutory Tab */}
               </div>
