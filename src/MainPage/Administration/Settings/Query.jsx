@@ -15,6 +15,8 @@ const Query = () => {
   const user_state = useSelector((state) => state.user.loginvalue);
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
 
+  const fullName = user_state?.user?.fullName;
+  const email = user_state?.user?.email;
   const role = user_state?.user?.role;
 
   const { t, i18n } = useTranslation();
@@ -118,6 +120,7 @@ const Query = () => {
             name="query-form"
             onFinish={onFinish}
             onFinishFailed={onFinishFailed}
+            initialValues={{ fullName, email }}
             autoComplete="off"
             layout="vertical"
           >
@@ -150,7 +153,7 @@ const Query = () => {
                     ]}
                     validateTrigger="onSubmit"
                   >
-                    <Input className='form-control' style={{height:'50px'}} placeholder='Enter your name' />
+                    <Input className='form-control' style={{height:'50px'}} placeholder='Enter your name' readOnly />
                   </Form.Item>
               </div>
             </div>
@@ -183,7 +186,7 @@ const Query = () => {
                     ]}
                     validateTrigger="onSubmit"
                   >
-                    <Input className='form-control' style={{height:'50px'}} placeholder='Enter your email' />
+                    <Input className='form-control' style={{height:'50px'}} placeholder='Enter your email' readOnly />
                   </Form.Item>
               </div>
             </div>
