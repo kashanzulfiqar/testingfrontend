@@ -67,6 +67,8 @@ import TaskBoardList from '../MainPage/Employees/Projects/taskboardlist';
 import ResourceAllocation from '../MainPage/Employees/Employees/resourceAllocation';
 import ResourceAllocationDetails from '../MainPage/Employees/Employees/allocationDetails';
 import Leads from '../MainPage/Employees/leades';
+import GitBook from '../MainPage/Administration/Settings/GitBook';
+import Query from '../MainPage/Administration/Settings/Query';
 
 
 const App = () => {
@@ -171,6 +173,8 @@ const App = () => {
           <Route path={`employee/resource-allocation`} element={<ResourceAllocation />} />
           <Route path={`/resource-allocation/details`} element={<ResourceAllocationDetails />} />
           <Route path={`/leads`} element={<Leads />} />
+          <Route path={`/documentation`} element={<GitBook />} />
+          <Route path={`/report-problem`} element={<Query />} />
 
           {/* Settings  */}
           <Route path="/settings" element={<Settings />} />
