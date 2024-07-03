@@ -750,12 +750,12 @@ const Sidebar = (props) => {
                       {
                         (user_state?.role === 'admin' || permissions?.managePayrolls) &&
                         <>
-                          <li><Link className={pathname.includes('estimates') ? "active" : ""} to="/app/sales/estimates">{t('sideBar.estimates')}</Link></li>
+                          {/* <li><Link className={pathname.includes('estimates') ? "active" : ""} to="/app/sales/estimates">{t('sideBar.estimates')}</Link></li> */}
                           <li><Link className={pathname.includes('invoices') ? "active" : ""} to="/invoices">{t('sideBar.invoices')}</Link></li>
                           <li><Link className={pathname.includes('payments') ? "active" : ""} to="/payments">{t('sideBar.payments')}</Link></li>
                           <li><Link className={pathname.includes('profit-loss') ? "active" : ""} to="/profit-loss">{t('sideBar.profitAndLoss')}</Link></li>
-                          <li><Link className={pathname.includes('provident-fund') ? "active" : ""} to="/app/sales/provident-fund">{t('sideBar.providentFund')}</Link></li>
-                          <li><Link className={pathname.includes('taxes') ? "active" : ""} to="/app/sales/taxes">{t('sideBar.taxes')}</Link></li>
+                          {/* <li><Link className={pathname.includes('provident-fund') ? "active" : ""} to="/app/sales/provident-fund">{t('sideBar.providentFund')}</Link></li>
+                          <li><Link className={pathname.includes('taxes') ? "active" : ""} to="/app/sales/taxes">{t('sideBar.taxes')}</Link></li> */}
                         </>
                       }
                       {
@@ -768,7 +768,7 @@ const Sidebar = (props) => {
                     : ""
                   }
                 </li>
-                <li className="submenu">
+                {/* <li className="submenu">
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
                   <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-files-o" /> <span> {t('sideBar.accounting')}</span> <span className="menu-arrow" /></a>
@@ -784,7 +784,7 @@ const Sidebar = (props) => {
                     </ul>
                     : ""
                   }
-                </li>
+                </li> */}
                 <li className="submenu">
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
@@ -842,7 +842,7 @@ const Sidebar = (props) => {
                     : ""
                   }
                 </li>
-                <li className="menu-title">
+                {/* <li className="menu-title">
                   <span>{t('sideBar.performance')}</span>
                 </li>
                 <li className="submenu">
@@ -860,8 +860,8 @@ const Sidebar = (props) => {
                     </ul>
                     : ""
                   }
-                </li>
-                <li className="submenu">
+                </li> */}
+                {/* <li className="submenu">
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
                   <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-crosshairs" /> <span> {t('sideBar.goals')}</span> <span className="menu-arrow" /></a>
@@ -915,71 +915,57 @@ const Sidebar = (props) => {
                   :
                   <Link to="/app/performance/termination"><i className="la la-times-circle" /> <span>{t('sideBar.termination')}</span> </Link>
                 }
-                </li>
+                </li> */}
                 <li className="menu-title">
                   <span>{t('sideBar.administration')}</span>
                 </li>
-                <li className={pathname.includes('assets') ? "active" : ""}>
+                {/* <li className={pathname.includes('assets') ? "active" : ""}>
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
                   <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-object-ungroup" /> <span>{t('sideBar.assets')}</span> </a>
                   :
                   <Link to="/app/administrator/assets"><i className="la la-object-ungroup" /> <span>{t('sideBar.assets')}</span> </Link>
                 }
-                </li>
+                </li> */}
                 <li className="submenu">
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
-                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-briefcase" /> <span> {t('sideBar.jobs')}</span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-question" /> <span> Help</span> <span className="menu-arrow" /></a>
                   :
-                  <a href="javascript:" className={isSideMenu == "jobs" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "jobs" ? "" : "jobs")}><i className="la la-briefcase" /> <span> {t('sideBar.jobs')} </span> <span className="menu-arrow" /></a>
+                  <a href="javascript:" className={isSideMenu == "Help" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "Help" ? "" : "Help")}><i className="la la-question" /> <span> Help </span> <span className="menu-arrow" /></a>
                 }
-                  {isSideMenu == "jobs" ?
+                  {isSideMenu == "Help" ?
                     <ul>
-                      <li><Link className={pathname.includes('user-dashboard') || pathname.includes('user-all-jobs') || pathname.includes('saved-jobs')
-                        || pathname.includes('applied-jobs') || pathname.includes('interviewing') || pathname.includes('offered-jobs') ||
-                        pathname.includes('visited-jobs') || pathname.includes('archived-jobs')
-                        || pathname.includes('job-aptitude') || pathname.includes('questions') ? "active" : ""}
-                        to="/app/administrator/user-dashboard"> {t('sideBar.userDashboard')} </Link></li>
-                      <li><Link className={pathname.includes('jobs-dashboard') ? "active" : ""} to="/app/administrator/jobs-dashboard"> {t('sideBar.jobsDashboard')} </Link></li>
-                      <li><Link className={pathname === ('/app/administrator/jobs') ? "active" : ""} to="/app/administrator/jobs"> {t('sideBar.manageJobs')} </Link></li>
-                      <li><Link className={pathname.includes('manage-resumes') ? "active" : ""} to="/app/administrator/manage-resumes"> {t('sideBar.manageResumes')} </Link></li>
-                      <li><Link className={pathname.includes('shortlist-candidates') ? "active" : ""} to="/app/administrator/shortlist-candidates"> {t('sideBar.shortlistCandidates')} </Link></li>
-                      <li><Link className={pathname === ('/app/administrator/interview-questions') ? "active" : ""} to="/app/administrator/interview-questions"> {t('sideBar.interviewQuestions')} </Link></li>
-                      <li><Link className={pathname.includes('offer_approvals') ? "active" : ""} to="/app/administrator/offer_approvals"> {t('sideBar.offerApprovals')} </Link></li>
-                      <li><Link className={pathname.includes('experiance-level') ? "active" : ""} to="/app/administrator/experiance-level"> {t('sideBar.experienceLevel')} </Link></li>
-                      <li><Link className={pathname === ('/app/administrator/candidates') ? "active" : ""} to="/app/administrator/candidates"> {t('sideBar.candidatesList')} </Link></li>
-                      <li><Link className={pathname.includes('schedule-timing') ? "active" : ""} to="/app/administrator/schedule-timing"> {t('sideBar.scheduleTiming')} </Link></li>
-                      <li><Link className={pathname.includes('apptitude-result') ? "active" : ""} to="/app/administrator/apptitude-result"> {t('sideBar.aptitudeResults')} </Link></li>
-
+                      <li><Link className={pathname === ('/documentation') ? "active" : ""} to="/documentation"> Documentation </Link></li>
+                      <li><Link className={pathname === ('/report-problem') ? "active" : ""} to="/report-problem"> Report a Problem </Link></li>
                     </ul>
                     : ""
                   }
                 </li>
-                <li className={pathname.includes('knowledgebase') ? "active" : ""}>
+                {/* <li className={pathname.includes('knowledgebase') ? "active" : ""}>
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
                   <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-question" /> <span>{t('sideBar.knowledgebase')}</span> </a>
                   :
-                  <Link to="/app/administrator/knowledgebase"><i className="la la-question" /> <span>{t('sideBar.knowledgebase')}</span> </Link>
+                  <Link to="/help"><i className="la la-question" /> <span>Help</span> </Link>
                 }
-                </li>
-                <li className={pathname.includes('activities') ? "active" : ""}>
+                </li> */}
+                {/* <li className={pathname.includes('activities') ? "active" : ""}>
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
                   <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-bell" /> <span>{t('sideBar.activities')}</span> </a>
                   :
                   <Link to="/app/administrator/activities"><i className="la la-bell" /> <span>{t('sideBar.activities')}</span> </Link>
                 }
-                </li>
-                <li className={pathname.includes('administrator/users') ? "active" : ""}>
+                </li> */}
+                {/* <li className={pathname.includes('administrator/users') ? "active" : ""}>
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
                   <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-user-plus" /> <span>{t('sideBar.users')}</span> </a>
                   :
                   <Link to="/app/administrator/users"><i className="la la-user-plus" /> <span>{t('sideBar.users')}</span> </Link>
                 }
-                </li>
+                </li> */}
                 {(user_state?.role === 'admin' || permissions?.companyManagement) &&
                   <li className={pathname.includes('/settings') ? "active" : ""}>
                     <Link to="/settings"><i className="la la-cog" /> <span>{t('sideBar.settings')}</span></Link>
