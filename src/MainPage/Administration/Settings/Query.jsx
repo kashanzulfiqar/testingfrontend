@@ -9,6 +9,7 @@ import { useSelector } from "react-redux";
 import { Form, Input, Button, message, Spin } from 'antd';
 import { LoadingOutlined } from "@ant-design/icons";
 import { apiServices } from "../../../Services/apiServices";
+import ReCAPTCHA from "react-google-recaptcha";
 
 const Query = () => {
 
@@ -24,8 +25,16 @@ const Query = () => {
   const [form] = Form.useForm();
   const [loader, setLoader] = useState(false);
 
+  const [captchaToken, setCaptchaToken] = useState(null);
+
   const onFinish = (values) => {
+    if (!captchaToken) {
+      message.error("Please complete the CAPTCHA");
+      return;
+    }
+
     setLoader(true);
+    //values['captcha'] = captchaToken;
     // Handle form submission
     apiServices("POST", "send-query", values, user_state)
         .then((res) => {
@@ -225,6 +234,12 @@ const Query = () => {
                 {t('submit')}
               </Button>
             </Form.Item> */}
+
+            <ReCAPTCHA
+                sitekey="6LfKiQcqAAAAAHwvgAjF_O3jV1_J1ky6xWIEjhZ6" // replace with your site key
+                onChange={(token) => setCaptchaToken(token)}
+                onExpired={() => setCaptchaToken(null)}
+            />
             <div className="submit-section">
                   <Form.Item>
                     <Button
