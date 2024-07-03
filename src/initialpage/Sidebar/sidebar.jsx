@@ -725,14 +725,14 @@ const Sidebar = (props) => {
                 }
                   {/* <Link to="/app/employees/leads"><i className="la la-user-secret" /> <span>Leads</span> </Link> */}
                 </li>
-                <li className={pathname.includes('tickets') ? "active" : pathname.includes('ticket-view') ? "active" : ""}>
+                {/* <li className={pathname.includes('tickets') ? "active" : pathname.includes('ticket-view') ? "active" : ""}>
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
                   <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-ticket" /> <span>{t('sideBar.tickets')}</span> </a>
                   :
                   <Link to="/app/employees/tickets"><i className="la la-ticket" /> <span>{t('sideBar.tickets')}</span> </Link>
                 }
-                </li>
+                </li> */}
                 <li className="menu-title">
                   <span>HR</span>
                 </li>
