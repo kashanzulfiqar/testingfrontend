@@ -43,6 +43,7 @@ const Query = () => {
             message.success('Problem reported successfully');
             setLoader(false);
             form.resetFields();
+            setCaptchaToken(null);
           }
         })
         .catch((err) => {
