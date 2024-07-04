@@ -6887,7 +6887,7 @@ textarea.form-control {
   background-color: #ffffff;
   border-bottom: 1px solid #ededed;
   position: relative;
-  margin: -30px -30px 30px;
+  margin: -30px -15px 30px;
   padding: 20px;
 }
 .welcome-box .welcome-img {
@@ -13028,4 +13028,23 @@ padding-right: unset;
   overflow: hidden;
   text-overflow: ellipsis;
   display: block; /* Ensure it's treated as a block-level element */
+}
+
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.sidebar-horizantal {
+  flex-grow: 1;
+}
+
+.sidebar-vertical {
+  flex-grow: 1;
+}
+
+.brandStyle {
+  margin-top: auto; /* Pushes the brandStyle to the bottom */
+  text-align: center;
 }
