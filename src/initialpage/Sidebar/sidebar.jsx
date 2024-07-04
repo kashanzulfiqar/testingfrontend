@@ -975,7 +975,7 @@ const Sidebar = (props) => {
               </ul>
               {/* <label className='brandStyle'><a target='_blank' href='https://devgate.ca'>Powered By Devgate</a></label> */}
               <ul>
-              <li className='brandStyle'>
+              <li className='brandStyle' style={{marginBottom:'5%'}}>
                   <Link to="javascript:void(0)" style={{cursor: 'default', padding: '0px'}}>
                     <span style={{marginLeft: '0px'}}>
                       <a 
