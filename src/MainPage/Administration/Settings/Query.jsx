@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Helmet } from "react-helmet";
 import Offcanvas from "../../../Entryfile/offcanvance";
 import favicon from "../../../files/Icons/DaftarProIcon.svg";
@@ -26,6 +26,7 @@ const Query = () => {
   const [loader, setLoader] = useState(false);
 
   const [captchaToken, setCaptchaToken] = useState(null);
+  const captchaRef = useRef(null);
 
   const onFinish = (values) => {
     if (!captchaToken) {
@@ -44,6 +45,7 @@ const Query = () => {
             setLoader(false);
             form.resetFields();
             setCaptchaToken(null);
+            captchaRef.current.reset();
           }
         })
         .catch((err) => {
@@ -240,6 +242,7 @@ const Query = () => {
                 sitekey="6LfKiQcqAAAAAHwvgAjF_O3jV1_J1ky6xWIEjhZ6" // replace with your site key
                 onChange={(token) => setCaptchaToken(token)}
                 onExpired={() => setCaptchaToken(null)}
+                ref={captchaRef}
             />
             <div className="submit-section">
                   <Form.Item>
