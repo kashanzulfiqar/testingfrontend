@@ -144,9 +144,9 @@ const Tasks = () => {
     }
   }
 
-  const onHandleDelete = (id) => {
+  const onHandleDelete = (data) => {
     setLoader(true);
-    apiServices("DELETE", "tasks", id, user_state)
+    apiServices("DELETE", "tasks", data, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
           getAllTasks(filterValues,currentPage, pageSize);
@@ -864,7 +864,7 @@ const onFinishEdit = (values) => {
                       <Button
                         htmlType="submit"
                         className="btn btn-primary continue-btn"
-                        onClick={() => onHandleDelete(open?.data?._id)}
+                        onClick={() => onHandleDelete(open?.data)}
                         disabled={loader}
                         style={{width: '100%'}}
                       >
