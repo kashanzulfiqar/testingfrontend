@@ -199,6 +199,9 @@ const Projects = () => {
     setSelectedFiles2([]);
     setUploadFiles([]);
     setUploadFiles2([]);
+    setNewAdminFiles([]);
+    setNewFiles([]);
+    setToDelete([]);
     setLoader(false);
     //GetCardProjects();
     //GetListProjects();
