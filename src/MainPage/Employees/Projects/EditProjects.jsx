@@ -57,8 +57,13 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
   const [selectedClient, setSelectedClient] = useState(null);
   const [selectedLeader, setSelectedLeader] = useState(null);
   const [selectedDevelopers, setSelectedDevelopers] = useState([]);
+  const [filesToDelete, setFilesToDelete] = useState([]);
   const [uploadFiles, setUploadFiles] = useState([]);
+  const [uploadFiles2, setUploadFiles2] = useState([]);
   const [selectedFiles, setSelectedFiles] = useState([]);
+  const [selectedFiles2, setSelectedFiles2] = useState([]);
+  const [newFiles, setNewFiles] = useState([]);
+  const [newAdminFiles, setNewAdminFiles] = useState([]);
   const [loader, setLoader] = useState(false);
   const [projectType, setProjectType] = useState("");
   const [projectCost, setProjectCost] = useState(0);
@@ -100,7 +105,9 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
     setSelectedData(data);
     fetchFocalPersons(data?.clientId);
     setSelectedFiles(data?.docs);
+    setSelectedFiles2(data?.adminDocs ? data?.adminDocs : []);
     setUploadFiles(data?.docs);
+    setUploadFiles2(data?.adminDocs ? data?.adminDocs : []);
     setProjectType(data?.projectType)
     setProjectCost(data?.cost)
     // Count the number of payment schedules in the response
@@ -270,7 +277,53 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
       });
   };
 
-  const UpdateProject = (values) => {
+  const DeleteFiles = async (files) => {
+    // Create an array of promises for deleting each file
+    const deletionPromises = files?.map(file => {
+        let data = {
+          resource_type: file?.resource_type,
+        };
+
+        if (file?.public_id) {
+          data.public_id = file.public_id;
+        } 
+        else if (file?.imageUrl) {
+          data.secure_url = file.imageUrl;
+        }
+        return apiServices("DELETE", `user/deletefile`, data, user_state)
+            .then(res => {
+                if (res.data.success) {
+                    console.log(`Deleted: ${file.public_id}`);
+                    return { success: true, public_id: file.public_id };
+                } else {
+                    throw new Error(`Failed to delete: ${file.public_id}`);
+                }
+            })
+            .catch(err => {
+                console.error(`Error deleting ${file.public_id}:`, err);
+                // Return an error object instead of throwing to handle it gracefully in Promise.all
+                return { success: false, public_id: file.public_id, error: err };
+            });
+    });
+
+    // Wait for all deletion promises to resolve
+    try {
+        const results = await Promise.all(deletionPromises);
+        // Filter out successful deletions
+        const successfulDeletes = results.filter(result => result.success);
+        const failedDeletes = results.filter(result => !result.success);
+        
+        console.log(`Successfully deleted ${successfulDeletes.length} files.`);
+        if (failedDeletes.length > 0) {
+            console.error(`Failed to delete ${failedDeletes.length} files.`);
+            message.error('Some files could not be deleted.');
+        }
+    } catch (error) {
+        message.error('An error occurred while deleting files.');
+    }
+};
+
+  const UpdateProject = async (values) => {
     setLoader(true);
     //setIsLoading(true);
     const { paymentSchedule, cost } = values;
@@ -301,6 +354,24 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
       return; // Prevent submission if total exceeds cost
     } 
 
+    let docs = [...uploadFiles], admin = [...uploadFiles2];
+
+    let temp1, temp2 = []
+
+    if (newFiles?.length > 0) {
+      temp1 = await uploadFunction(newFiles);
+      docs = [...docs, ...temp1]
+    }
+    if (newAdminFiles?.length > 0) {
+      temp2 = await uploadFunction(newAdminFiles);
+      admin = [...admin, ...temp2]
+    }
+
+    if (filesToDelete?.length > 0) {
+      await DeleteFiles(filesToDelete);
+      console.log('All files deleted successfully');
+    }
+
     let data = {
       _id: selectedData._id,
       projectName: values.projectName,
@@ -318,7 +389,8 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
       projectLead: values.projectLead,
       assignedDevelopers: values.assignedDevelopers,
       status: values.status,
-      docs: uploadFiles,
+      docs: docs,
+      adminDocs: admin,
       paymentSchedule: projectType === "Billed" ? values?.paymentSchedule : [],
       deleted: false,
       companyId: selectedData.companyId,
@@ -350,135 +422,198 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
       });
   };
 
+  const uploadFunction = async (files) => {
+    const uploadPromises = files?.map(file => {
+      return apiUploadToS3(file)
+        .then(res => ({
+          asset_id: res?.data?.result?.asset_id,
+          public_id: res?.data?.result?.public_id,
+          fileName: file?.name,
+          imageUrl: res?.data?.result?.secure_url,
+          resource_type: res?.data?.result?.resource_type,
+        }))
+        .catch(err => {
+          message.error(
+            err?.response?.data?.msg
+              ? err.response.data.msg
+              : err.response.data.validation?.body?.message
+              ? err.response.data.validation.body.message
+              : t('projectScreen.errors.fileUploadError', { file: file?.name })
+          );
+          throw err; 
+        });
+    });
+  
+    try {
+      return await Promise.all(uploadPromises);
+    } catch (error) {
+      console.error("File upload error:", error);
+    }
+  };
+  
   const acceptableFormats = ["pdf", "doc", "docx", "jpg", "jpeg", "png", "gif", "xls", "xlsx"];
 
-  
-  const onFileUpload = async (files) => {
-    setLoader(true);
-    const uploadPromises = [];
-    const validFiles = []; // To store valid files
-    const existingFileNames = selectedFiles.map((file) => file?.name);
-  
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      //console.log("File: ", file);
-  
-      // Check file format (extension)
-      const fileExtension = file?.name?.split(".").pop().toLowerCase();
-      if (!acceptableFormats.includes(fileExtension)) {
-        message.error(t('projectScreen.errors.fileFormatNotSupported', { file: file?.name }));
-        setLoader(false);
-        continue; // Skip this file and continue with the next one
-      }
-  
-      // Check file size
-      if (file?.size > 10485760) {
-        message.error(t('projectScreen.errors.fileSizeExceedsLimit', { file: file?.name }));
-        setLoader(false);
-        continue; // Skip this file and continue with the next one
-      }
-
-      if (existingFileNames.includes(file?.name)) {
-        message.error(t('projectScreen.errors.fileAlreadySelected', { file: file?.name }));
-        setLoader(false);
-        continue; // Skip this file and continue with the next one
-      }
-   // Add valid files to the array
-  
-      const uploadPromise = apiUploadToS3(file)
-        .then((res) => {
-          //console.log(res?.data?.result);
-          setLoader(false);
-          message.success(t('projectScreen.errors.fileReadyToUpload', { file: file?.name }))
-          validFiles.push(file);
-          setSelectedFiles((prevSelectedFiles) => {
-            const uniqueValidFiles = validFiles.filter((newFile) => {
-              // Check if a file with the same name already exists in the selectedFiles
-              return !prevSelectedFiles.some((existingFile) => existingFile?.name === newFile?.name);
-            });
-            return [...prevSelectedFiles, ...uniqueValidFiles];
-          });
-          
-          return res?.data?.result;
-        })
-        .catch((err) => {
-          message.error(
-            `${
-              err?.response?.data?.msg
-                ? err?.response?.data?.msg
-                : err?.response?.data?.validation?.body?.message
-                ? err?.response?.data?.validation?.body?.message
-                : t('projectScreen.errors.fileUploadError', { file: file?.name })
-            }`
-          );
-          setLoader(false);
-        });
-      uploadPromises.push(uploadPromise);
-    }
-    // Add valid files to selectedFiles
-    //setLoader(false);
+  const onFileUpload = async (files, type) => {
+    if (type === 'normal') {
+      const uploadPromises = [];
+      const validFiles = []; // To store valid files
+      const existingFileNames = selectedFiles?.map((file) => file?.fileName);
     
-    try {
-      // Wait for all upload promises to resolve
-      const urls = await Promise.all(uploadPromises);
-      //console.log("these are ",urls)
-      // Add the uploaded URLs to the uploadFiles state array
-      setUploadFiles((prevUploadFiles) => [...prevUploadFiles, ...urls]);
-      //e.target.files = null;
-      setLoader(false);
-    } catch (error) {
-      // Handle any errors that occurred during file uploads
-      console.error("File upload error:", error);
-      setLoader(false);
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        //console.log("File: ", file);
+    
+        // Check file format (extension)
+        const fileExtension = file?.name?.split(".").pop().toLowerCase();
+        if (!acceptableFormats.includes(fileExtension)) {
+          message.error(t('projectScreen.errors.fileFormatNotSupported', { file: file?.name }));
+          continue; // Skip this file and continue with the next one
+        }
+    
+        // Check file size
+        if (file?.size > 10485760) {
+          message.error(t('projectScreen.errors.fileSizeExceedsLimit', { file: file?.name }));
+          continue; // Skip this file and continue with the next one
+        }
+  
+        if (existingFileNames?.includes(file?.name)) {
+          message.error(t('projectScreen.errors.fileAlreadySelected', { file: file?.name }));
+          continue; // Skip this file and continue with the next one
+        }
+        let fileData = {
+          fileName: file?.name,
+        }
+        validFiles.push(fileData);
+        setSelectedFiles((prevSelectedFiles) => {
+          const uniqueValidFiles = validFiles.filter((newFile) => {
+            // Check if a file with the same name already exists in the selectedFiles
+            return !prevSelectedFiles?.some((existingFile) => 
+              existingFile?.fileName === newFile?.fileName 
+            );
+          });
+          return [...prevSelectedFiles, ...uniqueValidFiles];
+        });
+        
+      setNewFiles((prev)=> [...prev, file]);
+      }
+    }
+    else if ( type === 'admin') {
+      const uploadPromises = [];
+      const validFiles = []; // To store valid files
+      const existingFileNames = selectedFiles2?.map((file) => file?.fileName);
+    
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        //console.log("File: ", file);
+    
+        // Check file format (extension)
+        const fileExtension = file?.name?.split(".").pop().toLowerCase();
+        if (!acceptableFormats.includes(fileExtension)) {
+          message.error(t('projectScreen.errors.fileFormatNotSupported', { file: file?.name }));
+          continue; // Skip this file and continue with the next one
+        }
+    
+        // Check file size
+        if (file?.size > 10485760) {
+          message.error(t('projectScreen.errors.fileSizeExceedsLimit', { file: file?.name }));
+          continue; // Skip this file and continue with the next one
+        }
+  
+        if (existingFileNames?.includes(file?.name)) {
+          message.error(t('projectScreen.errors.fileAlreadySelected', { file: file?.name }));
+          continue; // Skip this file and continue with the next one
+        }
+        let fileData = {
+          fileName: file?.name,
+        }
+        validFiles.push(fileData);
+        setSelectedFiles2((prevSelectedFiles) => {
+          const uniqueValidFiles = validFiles.filter((newFile) => {
+            // Check if a file with the same name already exists in the selectedFiles
+            return !prevSelectedFiles?.some((existingFile) => 
+              existingFile?.fileName === newFile?.fileName
+            );
+          });
+          return [...prevSelectedFiles, ...uniqueValidFiles];
+        });
+        setNewAdminFiles((prev)=> [...prev, file]);
+      }
+      console.log(validFiles)
     }
   };
 
-  const removeSelectedFile = (index) => {
-    const updatedSelectedFiles = [...selectedFiles];
-    updatedSelectedFiles.splice(index, 1);
-    setSelectedFiles(updatedSelectedFiles);
+  const removeSelectedFile = (index, type) => {
+    if (type === 'normal') {
+      const updatedSelectedFiles = [...selectedFiles];
+      const fileToRemove = updatedSelectedFiles[index];
+      console.log(fileToRemove);
+      updatedSelectedFiles.splice(index, 1);
+      setSelectedFiles(updatedSelectedFiles);
+  
+      // Remove the corresponding file from the uploadFiles state array
+      const updatedUploadFiles = [...uploadFiles];
+      updatedUploadFiles.splice(index, 1);
+      setUploadFiles(updatedUploadFiles);
 
-    // Remove the corresponding file from the uploadFiles state array
-    const updatedUploadFiles = [...uploadFiles];
-    updatedUploadFiles.splice(index, 1);
-    setUploadFiles(updatedUploadFiles);
+      const updatedNewFiles = newFiles?.filter(file => file.name !== fileToRemove?.fileName);
+      setNewFiles(updatedNewFiles);
+
+      if (fileToRemove?.imageUrl) {
+        setFilesToDelete(prev => [...prev, fileToRemove]);
+      }
+      console.log('file',filesToDelete)
+      //DeleteFiles(fileToRemove?.public_id)
+    }
+    else if (type === 'admin') {
+      const updatedSelectedFiles = [...selectedFiles2];
+      const fileToRemove = updatedSelectedFiles[index];
+      updatedSelectedFiles.splice(index, 1);
+      setSelectedFiles2(updatedSelectedFiles);
+  
+      // Remove the corresponding file from the uploadFiles state array
+      const updatedUploadFiles = [...uploadFiles2];
+      updatedUploadFiles.splice(index, 1);
+      setUploadFiles2(updatedUploadFiles);
+
+      const updatedNewAdminFiles = newAdminFiles?.filter(file => file.name !== fileToRemove?.fileName);
+      setNewAdminFiles(updatedNewAdminFiles);
+
+      if (fileToRemove?.imageUrl) {
+        setFilesToDelete(prev => [...prev, fileToRemove]);
+      }
+      console.log('file',filesToDelete)
+    }
   };
 
-  const openCloudinaryLink = (url) => {
-    // Open the Cloudinary link in a new tab
-    window.open(url, "_blank");
-  };
-
-  const generateCustomFileName = (fileUrl, index) => {
-    // Extract the file extension from the URL
-    const fileExtension = fileUrl?.split(".").pop();
-    return `File ${index + 1}.${fileExtension}`;
-  };
-
-  //   const displaySelectedFiles = () => {
-  //     return selectedFiles.map((file, index) => (
-  //       <div key={index} className="selected-file">
-  //         <span>{file.name || generateCustomFileName(file, index)}</span>
-  //         <button type="button" onClick={() => removeSelectedFile(index)}>
-  //           &times;
-  //         </button>
-  //       </div>
-  //     ));
-  //   };
-
-  const displaySelectedFiles = () => {
-    return selectedFiles?.map((file, index) => (
-      <Space key={index}>
-        <Tag
-          closable
-          onClose={() => removeSelectedFile(index)}
-          color="blue" // You can customize the color as needed
-          className="custom-tag"
-        >
-          {file?.name || generateCustomFileName(file, index)}
-        </Tag>
-      </Space>
-    ));
+  const displaySelectedFiles = (type) => {
+    if (type === 'normal') {
+      return selectedFiles?.map((file, index) => (
+        <Space key={index}>
+          <Tag
+            closable
+            onClose={() => removeSelectedFile(index, 'normal')}
+            color="blue" // You can customize the color as needed
+            className="custom-tag"
+          >
+            {file?.fileName || file?.name} 
+          </Tag>
+        </Space>
+      ));
+    }
+    else if (type === 'admin') {
+      return selectedFiles2?.map((file, index) => (
+        <Space key={index}>
+          <Tag
+            closable
+            onClose={() => removeSelectedFile(index, 'admin')}
+            color="blue" // You can customize the color as needed
+            className="custom-tag"
+          >
+            {file?.fileName || file.name}
+          </Tag>
+        </Space>
+      ));
+    }
   };
 
   const handlePaymentRow = (value) => {
@@ -505,28 +640,6 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
       paymentSchedule: updatedPaymentSchedules,
     });
   }
-
-  //   const onFileUpload = (file) =>{
-  //     console.log("hello",file)
-  //     apiUploadToS3(imagedata).then((res) => {
-  //         console.log(res?.data?.result);
-  //         form.setFieldsValue({imageUrl: res?.data?.result})
-  //         setImage(res?.data?.result)
-  //         setImageLoader(false)
-  //       }
-  //       ).catch((err)=>{
-  //         setImageLoader(false)
-  //         message.error(
-  //             `${
-  //               err?.response?.data?.msg
-  //                 ? err?.response?.data?.msg
-  //                 : err?.response?.data?.validation?.body?.message
-  //                 ? err?.response?.data?.validation?.body?.message
-  //                 : "upload image Error"
-  //             }!`
-  //           );
-  //       })
-  //   }
 
   const antIcon = (
     <LoadingOutlined
@@ -1475,12 +1588,12 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                     className="form-control"
                     multiple
                     onChange={(e) => {
-                      onFileUpload(e.target.files);
+                      onFileUpload(e.target.files, 'normal');
                     }}
                     type="file"
                   />
                 </div>
-                <div className="selected-files">{displaySelectedFiles()}</div>
+                <div className="selected-files">{displaySelectedFiles('normal')}</div>
                 <hr
                   className="developer-divider"
                   style={{ opacity: "0", marginTop: "0px" }}
@@ -1489,6 +1602,35 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                   className="developer-divider"
                   style={{ opacity: "0", marginTop: "0px" }}
                 />
+              {(role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) &&
+                <>
+                  <div className="form-group">
+                    <label>Admin Files{" "}
+                      <small style={{ color: 'grey', fontSize: 'small' }}>
+                        ({t('projectScreen.Modal.allowedFormats')})
+                      </small>
+                      <span className="badge badge-pill bg-custom float-end" style={{marginLeft:'10px'}}>ADMIN</span>
+                    </label>
+                    <input
+                      className="form-control"
+                      multiple
+                      onChange={(e) => {
+                        onFileUpload(e.target.files, 'admin');
+                      }}
+                      type="file"
+                    />
+                  </div>
+                  <div className="selected-files">{displaySelectedFiles('admin')}</div>
+                  <hr
+                    className="developer-divider"
+                    style={{ opacity: "0", marginTop: "0px" }}
+                  />
+                  <hr
+                    className="developer-divider"
+                    style={{ opacity: "0", marginTop: "0px" }}
+                  />
+                </>
+              }
               {projectType === 'Billed' && (
                 <>
                 <h4
@@ -2112,12 +2254,12 @@ function EditProjects({ data, editModal, closeEditModal, getprojects, getlistpro
                     className="form-control"
                     multiple
                     onChange={(e) => {
-                      onFileUpload(e.target.files);
+                      onFileUpload(e.target.files, 'normal');
                     }}
                     type="file"
                   />
                 </div>
-                <div className="selected-files">{displaySelectedFiles()}</div>
+                <div className="selected-files">{displaySelectedFiles('normal')}</div>
 
                 <div className="submit-section">
                   <Form.Item>

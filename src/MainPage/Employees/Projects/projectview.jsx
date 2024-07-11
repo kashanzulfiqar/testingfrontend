@@ -658,127 +658,261 @@ const ProjectView = () => {
 
               <div className="card">
                 <div className="card-body">
-                  <h5 className="card-title m-b-20">{t('viewProject.uploadedImageFiles')}</h5>
+                  <h5 className="card-title m-b-20">Project Files</h5>
+                  {project?.docs?.length > 0 ? 
+                    <>
+                      <div className="row">
+                        {
+                          project?.docs?.some((doc) => {
+                            if (!doc) {
+                              console.log("NULL file detected");
+                              return null;
+                            } else {
+                              const parts = doc?.fileName?.split(".");
+                              const format = parts[parts.length - 1];
+                              return (
+                                doc?.imageUrl?.includes("res.cloudinary.com") &&
+                                format.match(/^(jpg|jpeg|png|gif)$/i)
+                              );
+                            }
+                          }) ? (
+                            project?.docs?.map((doc, index) => {
+                              if (!doc) {
+                                console.log("NULL file detected");
+                                return null;
+                              }
+                              // Split the link to check for the file format
+                              const parts = doc?.fileName?.split(".");
+                              const format = parts[parts.length - 1];
+
+                              // Check if it's a cloudinary link and the format is an image
+                              if (
+                                doc?.imageUrl?.includes("res.cloudinary.com") &&
+                                format.match(/^(jpg|jpeg|png|gif)$/i)
+                              ) {
+                                // Extract the image ID from the Cloudinary URL
+                                const imageId = doc?.imageUrl?.match(/v\d+\/(.+?)\./)[1];
+                                // Construct the thumbnail URL
+                                const thumbnailUrl = `https://res.cloudinary.com/dcxpovyr9/image/upload/c_thumb,w_200,h_200/${imageId}.png`;
+
+                                const fullImageUrl = `https://res.cloudinary.com/dcxpovyr9/image/upload/${imageId}.${format}`;
+
+                                const downloadLink = `${doc?.imageUrl?.replace(
+                                  "/upload/",
+                                  "/upload/fl_attachment/"
+                                )}`;
+
+                                return (
+                                  <div
+                                    key={index}
+                                    className="col-md-3 col-sm-4 col-lg-4 col-xl-3"
+                                  >
+                                    <div className="uploaded-box">
+                                      <a>
+                                        <div
+                                          className="uploaded-img"
+                                          style={{
+                                            display: "flex",
+                                            flexDirection: "column",
+                                            maxHeight: "200px",
+                                            maxWidth: "200px",
+                                          }}
+                                        >
+                                          <img
+                                            src={thumbnailUrl}
+                                            className="img-fluid"
+                                            alt={`Image ${index + 1}`}
+                                            style={{ borderRadius: "10px" }}
+                                            onClick={() =>
+                                              window.open(fullImageUrl, "_blank")
+                                            }
+                                          />
+                                          <div className="download-icon hidden">
+                                            <a href={downloadLink} download>
+                                              <i className="fa fa-download" />
+                                            </a>
+                                          </div>
+                                        </div>
+                                      </a>
+                                      <div className="uploaded-img-name">{doc?.fileName}</div>
+                                    </div>
+                                  </div>
+                                );
+                              } else if (format.match(/^(jpg|jpeg|png|gif)$/i)) {
+                                // Check if it's an image based on the file format
+                                return (
+                                  <div
+                                    key={index}
+                                    className="col-md-3 col-sm-4 col-lg-4 col-xl-3"
+                                  >
+                                    <div className="uploaded-box">
+                                      <div className="uploaded-img">
+                                        <img
+                                          src={doc?.imageUrl}
+                                          className="img-fluid"
+                                          alt={`Image ${index + 1}`}
+                                        />
+                                        <div className="download-icon">
+                                          <a href={fullImageUrl} download>
+                                            <i className="fa fa-download" />
+                                          </a>
+                                        </div>
+                                      </div>
+                                      <div className="uploaded-img-name">{`File ${
+                                        index + 1
+                                      }`}</div>
+                                    </div>
+                                  </div>
+                                );
+                              }
+                              // If it's not an image, return null to ignore it
+                              return null;
+                            })
+                          ) : null
+                        }
+                      </div>
+                      <ul className="files-list">
+                        {
+                          project?.docs?.every((doc) => {
+                            if (!doc) {
+                              console.log("NULL file detected");
+                              return null;
+                            } else {
+                              // Split the link to get the file format
+                              const parts = doc?.fileName?.split(".");
+                              const format = parts[parts.length - 1];
+
+                              // Check if it's an image format (jpg, jpeg, png, gif)
+                              return format.match(/^(jpg|jpeg|png|gif)$/i);
+                            }
+                          }) ? (
+                            // Render "No files uploaded" message if all files are images
+                            null
+                          ) : (
+                            // Render files
+                            project?.docs.map((doc, index) => {
+                              if (!doc) {
+                                console.log("NULL file detected");
+                                return null;
+                              }
+                              // Split the link to get the file format
+                              const parts = doc?.fileName?.split(".");
+                              const format = parts[parts.length - 1];
+
+                              // Check if it's an image format (jpg, jpeg, png, gif)
+                              if (format.match(/^(jpg|jpeg|png|gif)$/i)) {
+                                // Ignore image files
+                                return null;
+                              }
+
+                              // Construct the thumbnail URL based on file format
+                              let thumbnailUrl = "";
+                              if (format.toLowerCase() === "pdf") {
+                                thumbnailUrl = "/path-to-pdf-icon.png"; // Replace with the path to your PDF icon
+                              } else {
+                                thumbnailUrl = "/path-to-generic-file-icon.png"; // Replace with the path to your generic file icon
+                              }
+
+                              const downloadLink = `${doc?.imageUrl?.replace(
+                                "/upload/",
+                                "/upload/fl_attachment/"
+                              )}`;
+
+                              return (
+                                <li key={index}>
+                                  <div
+                                    className="files-cont"
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      paddingTop: "inherit",
+                                    }}
+                                  >
+                                    <div className="file-type">
+                                      <span className="files-icon">
+                                        <i
+                                          className={`fa fa-file-${format.toLowerCase()}-o`}
+                                        />
+                                      </span>
+                                    </div>
+                                    <div className="files-info">
+                                      <span className="file-name text-ellipsis">
+                                        <a
+                                          href={doc?.imageUrl}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                        >
+                                          {doc?.fileName}
+                                        </a>
+                                      </span>
+                                    </div>
+                                    <ul className="files-action">
+                                      <li className="dropdown dropdown-action">
+                                        <a
+                                          href={downloadLink}
+                                          className="dropdown-toggle btn btn-link"
+                                          download
+                                        >
+                                          <i className="fa fa-download" />{" "}
+                                          {/* Download icon */}
+                                        </a>
+                                      </li>
+                                    </ul>
+                                  </div>
+                                </li>
+                              );
+                            })
+                          )
+                          }
+                      </ul>
+                    </>
+                    :
+                  <label>{t('viewProject.noFilesUploaded')}</label>
+                  }
+                </div>
+              </div>
+
+            {(role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) &&
+              <div className="card">
+                <div className="card-body">
+                  <div style={{display:'flex', flexDirection: 'row', alignItems: 'center'}}><h5 className="card-title m-b-20">Confidential Files</h5> <span className="badge badge-pill bg-custom float-end" style={{marginLeft:'10px', marginBottom: 'auto'}}>ADMIN</span></div>
                   <div className="row">
-                    {project?.docs?.length > 0 ? (
-                      // project?.docs?.map((doc, index) => {
-                      //   // Split the link to check for the file format
-                      //   const parts = doc.split(".");
-                      //   const format = parts[parts.length - 1];
-
-                      //   // Check if it's a cloudinary link and the format is an image
-                      //   if (
-                      //     doc.includes("res.cloudinary.com") &&
-                      //     format.match(/^(jpg|jpeg|png|gif)$/i)
-                      //   ) {
-                      //     // Extract the image ID from the Cloudinary URL
-                      //     const imageId = doc.match(/v\d+\/(.+?)\./)[1];
-                      //     // Construct the thumbnail URL
-                      //     const thumbnailUrl = `https://res.cloudinary.com/dcxpovyr9/image/upload/c_thumb,w_200,h_200/${imageId}.png`;
-
-                      //     const fullImageUrl = `https://res.cloudinary.com/dcxpovyr9/image/upload/${imageId}.${format}`;
-
-                      //     const downloadLink = `${doc.replace(
-                      //       "/upload/",
-                      //       "/upload/fl_attachment/"
-                      //     )}`;
-
-                      //     return (
-                      //       <div
-                      //         key={index}
-                      //         className="col-md-3 col-sm-4 col-lg-4 col-xl-3"
-                      //       >
-                      //         <div className="uploaded-box">
-                      //           <a
-                      //             href={fullImageUrl}
-                      //             target="_blank"
-                      //             rel="noopener noreferrer"
-                      //           >
-                      //             <div className="uploaded-img">
-                      //               <img
-                      //                 src={thumbnailUrl}
-                      //                 className="img-fluid"
-                      //                 alt={`Image ${index + 1}`}
-                      //                 style={{ borderRadius: "10px" }}
-                      //               />
-                      //               <div className="download-icon hidden">
-                      //                 <a href={downloadLink} download>
-                      //                   <i className="fa fa-download" />
-                      //                 </a>
-                      //               </div>
-                      //             </div>
-                      //           </a>
-                      //           <div className="uploaded-img-name">{`File ${
-                      //             index + 1
-                      //           }`}</div>
-                      //         </div>
-                      //       </div>
-                      //     );
-                      //   } else if (format.match(/^(jpg|jpeg|png|gif)$/i)) {
-                      //     // Check if it's an image based on the file format
-                      //     return (
-                      //       <div
-                      //         key={index}
-                      //         className="col-md-3 col-sm-4 col-lg-4 col-xl-3"
-                      //       >
-                      //         <div className="uploaded-box">
-                      //           <div className="uploaded-img">
-                      //             <img
-                      //               src={doc}
-                      //               className="img-fluid"
-                      //               alt={`Image ${index + 1}`}
-                      //             />
-                      //             <div className="download-icon">
-                      //               <a href={fullImageUrl} download>
-                      //                 <i className="fa fa-download" />
-                      //               </a>
-                      //             </div>
-                      //           </div>
-                      //           <div className="uploaded-img-name">{`File ${
-                      //             index + 1
-                      //           }`}</div>
-                      //         </div>
-                      //       </div>
-                      //     );
-                      //   }
-                      //   // If it's not an image, return null to ignore it
-                      //   return null;
-                      // })
-                      project?.docs?.some((doc) => {
+                    {project?.adminDocs?.length > 0 ? (
+                      project?.adminDocs?.some((doc) => {
                         if (!doc) {
                           console.log("NULL file detected");
                           return null;
                         } else {
-                          const parts = doc?.split(".");
+                          const parts = doc?.fileName?.split(".");
                           const format = parts[parts.length - 1];
                           return (
-                            doc.includes("res.cloudinary.com") &&
+                            doc?.imageUrl?.includes("res.cloudinary.com") &&
                             format.match(/^(jpg|jpeg|png|gif)$/i)
                           );
                         }
                       }) ? (
-                        project?.docs?.map((doc, index) => {
+                        project?.adminDocs?.map((doc, index) => {
                           if (!doc) {
                             console.log("NULL file detected");
                             return null;
                           }
                           // Split the link to check for the file format
-                          const parts = doc?.split(".");
+                          const parts = doc?.fileName?.split(".");
                           const format = parts[parts.length - 1];
 
                           // Check if it's a cloudinary link and the format is an image
                           if (
-                            doc.includes("res.cloudinary.com") &&
+                            doc?.imageUrl?.includes("res.cloudinary.com") &&
                             format.match(/^(jpg|jpeg|png|gif)$/i)
                           ) {
                             // Extract the image ID from the Cloudinary URL
-                            const imageId = doc.match(/v\d+\/(.+?)\./)[1];
+                            const imageId = doc?.imageUrl?.match(/v\d+\/(.+?)\./)[1];
                             // Construct the thumbnail URL
                             const thumbnailUrl = `https://res.cloudinary.com/dcxpovyr9/image/upload/c_thumb,w_200,h_200/${imageId}.png`;
 
                             const fullImageUrl = `https://res.cloudinary.com/dcxpovyr9/image/upload/${imageId}.${format}`;
 
-                            const downloadLink = `${doc.replace(
+                            const downloadLink = `${doc?.imageUrl?.replace(
                               "/upload/",
                               "/upload/fl_attachment/"
                             )}`;
@@ -815,9 +949,7 @@ const ProjectView = () => {
                                       </div>
                                     </div>
                                   </a>
-                                  <div className="uploaded-img-name">{`File ${
-                                    index + 1
-                                  }`}</div>
+                                  <div className="uploaded-img-name">{doc?.fileName}</div>
                                 </div>
                               </div>
                             );
@@ -831,7 +963,7 @@ const ProjectView = () => {
                                 <div className="uploaded-box">
                                   <div className="uploaded-img">
                                     <img
-                                      src={doc}
+                                      src={doc?.imageUrl}
                                       className="img-fluid"
                                       alt={`Image ${index + 1}`}
                                     />
@@ -852,95 +984,21 @@ const ProjectView = () => {
                           return null;
                         })
                       ) : (
-                        <label>{t('viewProject.noImagesUploaded')}</label>
+                        null
                       )
                     ) : (
-                      <label>{t('viewProject.noImagesUploaded')}</label>
+                      null
                     )}
                   </div>
-                </div>
-              </div>
-
-              <div className="card">
-                <div className="card-body">
-                  <h5 className="card-title m-b-20">{t('viewProject.uploadedFiles')}</h5>
                   <ul className="files-list">
-                    {project?.docs.length > 0 ? (
-                      // project?.docs.map((doc, index) => {
-                      //   // Split the link to get the file format
-                      //   const parts = doc.split(".");
-                      //   const format = parts[parts.length - 1];
-
-                      //   // Check if it's an image format (jpg, jpeg, png, gif)
-                      //   if (format.match(/^(jpg|jpeg|png|gif)$/i)) {
-                      //     // Ignore image files
-                      //     return null;
-                      //   }
-
-                      //   // Construct the thumbnail URL based on file format
-                      //   let thumbnailUrl = "";
-                      //   if (format.toLowerCase() === "pdf") {
-                      //     thumbnailUrl = "/path-to-pdf-icon.png"; // Replace with the path to your PDF icon
-                      //   } else {
-                      //     thumbnailUrl = "/path-to-generic-file-icon.png"; // Replace with the path to your generic file icon
-                      //   }
-
-                      //   const downloadLink = `${doc.replace(
-                      //     "/upload/",
-                      //     "/upload/fl_attachment/"
-                      //   )}`;
-
-                      //   return (
-                      //     <li key={index}>
-                      //       <div
-                      //         className="files-cont"
-                      //         style={{
-                      //           display: "flex",
-                      //           alignItems: "center",
-                      //           paddingTop: "inherit",
-                      //         }}
-                      //       >
-                      //         <div className="file-type">
-                      //           <span className="files-icon">
-                      //             <i
-                      //               className={`fa fa-file-${format.toLowerCase()}-o`}
-                      //             />
-                      //           </span>
-                      //         </div>
-                      //         <div className="files-info">
-                      //           <span className="file-name text-ellipsis">
-                      //             <a
-                      //               href={doc}
-                      //               target="_blank"
-                      //               rel="noopener noreferrer"
-                      //             >
-                      //               {`File ${index + 1}.${format}`}
-                      //             </a>
-                      //           </span>
-                      //         </div>
-                      //         <ul className="files-action">
-                      //           <li className="dropdown dropdown-action">
-                      //             <a
-                      //               href={downloadLink}
-                      //               className="dropdown-toggle btn btn-link"
-                      //               download
-                      //             >
-                      //               <i className="fa fa-download" />{" "}
-                      //               {/* Download icon */}
-                      //             </a>
-                      //           </li>
-                      //         </ul>
-                      //       </div>
-                      //     </li>
-                      //   );
-                      // })
-                      project?.docs?.every((doc) => {
+                    {project?.adminDocs.length > 0 ? (
+                      project?.adminDocs?.every((doc) => {
                         if (!doc) {
                           console.log("NULL file detected");
                           return null;
                         } else {
                           // Split the link to get the file format
-                          const parts = doc?.split(".");
+                          const parts = doc?.fileName?.split(".");
                           const format = parts[parts.length - 1];
 
                           // Check if it's an image format (jpg, jpeg, png, gif)
@@ -948,16 +1006,16 @@ const ProjectView = () => {
                         }
                       }) ? (
                         // Render "No files uploaded" message if all files are images
-                        <label>{t('viewProject.noFilesUploaded')}</label>
+                        null
                       ) : (
                         // Render files
-                        project?.docs.map((doc, index) => {
+                        project?.adminDocs.map((doc, index) => {
                           if (!doc) {
                             console.log("NULL file detected");
                             return null;
                           }
                           // Split the link to get the file format
-                          const parts = doc?.split(".");
+                          const parts = doc?.fileName?.split(".");
                           const format = parts[parts.length - 1];
 
                           // Check if it's an image format (jpg, jpeg, png, gif)
@@ -974,7 +1032,7 @@ const ProjectView = () => {
                             thumbnailUrl = "/path-to-generic-file-icon.png"; // Replace with the path to your generic file icon
                           }
 
-                          const downloadLink = `${doc.replace(
+                          const downloadLink = `${doc?.imageUrl?.replace(
                             "/upload/",
                             "/upload/fl_attachment/"
                           )}`;
@@ -992,18 +1050,18 @@ const ProjectView = () => {
                                 <div className="file-type">
                                   <span className="files-icon">
                                     <i
-                                      className={`fa fa-file-${format.toLowerCase()}-o`}
+                                      className={`fa fa-file-${format.toLowerCase() === 'xls' ? 'excel' : format.toLowerCase() === 'xlsx' ? 'excel' : format.toLowerCase() === 'doc' ? 'word' : format.toLowerCase() === 'docx' ? 'word' : format.toLowerCase()}-o`}
                                     />
                                   </span>
                                 </div>
                                 <div className="files-info">
                                   <span className="file-name text-ellipsis">
                                     <a
-                                      href={doc}
+                                      href={doc?.imageUrl}
                                       target="_blank"
                                       rel="noopener noreferrer"
                                     >
-                                      {`File ${index + 1}.${format}`}
+                                      {doc?.fileName}
                                     </a>
                                   </span>
                                 </div>
@@ -1025,11 +1083,12 @@ const ProjectView = () => {
                         })
                       )
                     ) : (
-                      <label>{t('viewProject.noFilesUploaded')}</label>
+                      null
                     )}
                   </ul>
                 </div>
               </div>
+            }
 
               {(role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) ? 
               (
