@@ -831,7 +831,7 @@ const ProjectView = () => {
                                     <div className="file-type">
                                       <span className="files-icon">
                                         <i
-                                          className={`fa fa-file-${format.toLowerCase()}-o`}
+                                          className={`fa fa-file-${format.toLowerCase() === 'xls' ? 'excel' : format.toLowerCase() === 'xlsx' ? 'excel' : format.toLowerCase() === 'doc' ? 'word' : format.toLowerCase() === 'docx' ? 'word' : format.toLowerCase()}-o`}
                                         />
                                       </span>
                                     </div>
