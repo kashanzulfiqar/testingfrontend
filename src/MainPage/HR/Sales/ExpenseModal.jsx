@@ -157,7 +157,7 @@ const onFileUpload = async (files) => {
       const uploadPromise = apiUploadToS3(file)
         .then((res) => {
         //   console.log(res?.data?.result);
-          return res?.data?.result;
+          return res?.data?.result?.secure_url;
         })
         .catch((err) => {
             t('projectScreen.errors.fileUploadError', { file: file?.name })
