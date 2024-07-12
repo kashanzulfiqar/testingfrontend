@@ -507,13 +507,13 @@ const allowedFileTypes = ['image/png', 'image/jpeg', 'image/jpg'];
     setImageLoader(true)
     apiUploadToS3(imagedata).then((res) => {
         // console.log(res?.data?.result);
-        setImage(res?.data?.result)
-        localStorage.setItem('updated_user', JSON.stringify({imageUrl: res?.data?.result}))
-        nav('/profile', {state: {updated_user: {imageUrl: res?.data?.result}}})
+        setImage(res?.data?.result?.secure_url)
+        localStorage.setItem('updated_user', JSON.stringify({imageUrl: res?.data?.result?.secure_url}))
+        nav('/profile', {state: {updated_user: {imageUrl: res?.data?.result?.secure_url}}})
 
         let d1 = {
           _id: allData?._id,
-          imageUrl: res?.data?.result
+          imageUrl: res?.data?.result?.secure_url
         }
         Object.keys(d1).forEach((key) => {
           if (key === 'password') {

@@ -130,9 +130,9 @@ const onFinishEdit = (values) => {
 const onImageUpload = (imagedata) => {
     setImageLoader(true)
     apiUploadToS3(imagedata).then((res) => {
-        console.log(res?.data?.result);
-        form.setFieldsValue({logo: res?.data?.result})
-        setImage(res?.data?.result)
+        console.log(res?.data?.result?.secure_url);
+        form.setFieldsValue({logo: res?.data?.result?.secure_url})
+        setImage(res?.data?.result?.secure_url)
         setImageLoader(false)
       }
       ).catch((err)=>{
