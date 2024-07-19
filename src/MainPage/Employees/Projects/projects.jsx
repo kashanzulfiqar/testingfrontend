@@ -377,27 +377,27 @@ const Projects = () => {
       });
   };
 
-  const fetchFocalPersons = (clientId) => {
-    apiServices(
-      "GET",
-      `focal-person/view-focal-person?deleted=false&clientId=${clientId}`,
-      null,
-      user_state
-    )
-      .then((res) => {
-        if (res.data.success === true) {
-          const focalperson = res?.data?.focalPersons.docs;
-          const sortedData = focalperson.slice().sort((a, b) => a.focalPersonName.localeCompare(b.focalPersonName));
-          setFocalPersons(sortedData);
-        }
-      })
-      .catch((err) => {
-        // message.error(
-        //   `Get Focal Person Error`
-        // );
-        console.log("error");
-      });
-  };
+  // const fetchFocalPersons = (clientId) => {
+  //   apiServices(
+  //     "GET",
+  //     `focal-person/view-focal-person?deleted=false&clientId=${clientId}`,
+  //     null,
+  //     user_state
+  //   )
+  //     .then((res) => {
+  //       if (res.data.success === true) {
+  //         const focalperson = res?.data?.focalPersons.docs;
+  //         const sortedData = focalperson.slice().sort((a, b) => a.focalPersonName.localeCompare(b.focalPersonName));
+  //         setFocalPersons(sortedData);
+  //       }
+  //     })
+  //     .catch((err) => {
+  //       // message.error(
+  //       //   `Get Focal Person Error`
+  //       // );
+  //       console.log("error");
+  //     });
+  // };
 
   const GetListProjects = (page, pageSize) => {
     //setLoader(true);
@@ -449,190 +449,157 @@ const Projects = () => {
       });
   };
 
-  const GetCardProjects = () => {
-    apiServices(
-      "GET",
-      // `project-management/?clientName=${filters.clientName}&projectName=${filters.projectName}&page=1&limit=99999`,
-      `project-management/?clientName=${filters.clientName}&projectName=${filters.projectName}&projectDomain=${filters.projectDomain}&projectType=${filters.projectType}&page=1&limit=99999`,
-      null,
-      user_state
-    )
-      .then((res) => {
-        if (res.data.success === true) {
-          setData(res?.data?.projects?.docs);
-          //setData(newProjects);
-          setIsLoading(false);
-        }
-      })
-      .catch((err) => {
-        message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
-              ? err?.response?.data?.validation?.body?.message
-              : t('projectScreen.errors.getEmployeeProjectsError')
-          }`
-        );
-        setIsLoading(false);
-      });
-  };
+//   const DeleteFiles = async (files) => {
+//     // Create an array of promises for deleting each file
+//     const deletionPromises = files?.map(file => {
+//         let data = {
+//           resource_type: file?.resource_type,
+//         };
 
-  const DeleteFiles = async (files) => {
-    // Create an array of promises for deleting each file
-    const deletionPromises = files?.map(file => {
-        let data = {
-          resource_type: file?.resource_type,
-        };
+//         if (file?.public_id) {
+//           data.public_id = file.public_id;
+//         } 
+//         else if (file?.imageUrl) {
+//           data.secure_url = file.imageUrl;
+//         }
+//         return apiServices("DELETE", `user/deletefile`, data, user_state)
+//             .then(res => {
+//                 if (res.data.success) {
+//                     console.log(`Deleted: ${file.public_id}`);
+//                     return { success: true, public_id: file.public_id };
+//                 } else {
+//                     throw new Error(`Failed to delete: ${file.public_id}`);
+//                 }
+//             })
+//             .catch(err => {
+//                 console.error(`Error deleting ${file.public_id}:`, err);
+//                 // Return an error object instead of throwing to handle it gracefully in Promise.all
+//                 return { success: false, public_id: file.public_id, error: err };
+//             });
+//     });
 
-        if (file?.public_id) {
-          data.public_id = file.public_id;
-        } 
-        else if (file?.imageUrl) {
-          data.secure_url = file.imageUrl;
-        }
-        return apiServices("DELETE", `user/deletefile`, data, user_state)
-            .then(res => {
-                if (res.data.success) {
-                    console.log(`Deleted: ${file.public_id}`);
-                    return { success: true, public_id: file.public_id };
-                } else {
-                    throw new Error(`Failed to delete: ${file.public_id}`);
-                }
-            })
-            .catch(err => {
-                console.error(`Error deleting ${file.public_id}:`, err);
-                // Return an error object instead of throwing to handle it gracefully in Promise.all
-                return { success: false, public_id: file.public_id, error: err };
-            });
-    });
-
-    // Wait for all deletion promises to resolve
-    try {
-        const results = await Promise.all(deletionPromises);
-        // Filter out successful deletions
-        const successfulDeletes = results.filter(result => result.success);
-        const failedDeletes = results.filter(result => !result.success);
+//     // Wait for all deletion promises to resolve
+//     try {
+//         const results = await Promise.all(deletionPromises);
+//         // Filter out successful deletions
+//         const successfulDeletes = results.filter(result => result.success);
+//         const failedDeletes = results.filter(result => !result.success);
         
-        console.log(`Successfully deleted ${successfulDeletes.length} files.`);
-        if (failedDeletes.length > 0) {
-            console.error(`Failed to delete ${failedDeletes.length} files.`);
-            message.error('Some files could not be deleted.');
-        }
-    } catch (error) {
-        message.error('An error occurred while deleting files.');
-    }
-};
+//         console.log(`Successfully deleted ${successfulDeletes.length} files.`);
+//         if (failedDeletes.length > 0) {
+//             console.error(`Failed to delete ${failedDeletes.length} files.`);
+//             message.error('Some files could not be deleted.');
+//         }
+//     } catch (error) {
+//         message.error('An error occurred while deleting files.');
+//     }
+// };
 
-  const AddProject = async (values) => {
-    setLoader(true);
-    setIsLoading(true);
+  // const AddProject = async (values) => {
+  //   setLoader(true);
+  //   setIsLoading(true);
 
-    const { paymentSchedule, cost } = values;
+  //   const { paymentSchedule, cost } = values;
 
-    // Calculate total amount from payment schedule
-    const totalAmountInFigure = paymentSchedule?.reduce(
-      (total, schedule) => total + parseFloat(schedule.amountInFigure || 0),
-      0
-    );
+  //   // Calculate total amount from payment schedule
+  //   const totalAmountInFigure = paymentSchedule?.reduce(
+  //     (total, schedule) => total + parseFloat(schedule.amountInFigure || 0),
+  //     0
+  //   );
   
-    if (totalAmountInFigure > cost) {
-      const errorMessage = 'Total amount exceeds the project cost.';
-      const errorFields = [];
+  //   if (totalAmountInFigure > cost) {
+  //     const errorMessage = 'Total amount exceeds the project cost.';
+  //     const errorFields = [];
 
-      paymentSchedule.forEach((schedule, index) => {
-        const scheduleAmount = parseFloat(schedule.amountInFigure || 0);
+  //     paymentSchedule.forEach((schedule, index) => {
+  //       const scheduleAmount = parseFloat(schedule.amountInFigure || 0);
   
-        if (scheduleAmount + totalAmountInFigure - scheduleAmount > cost) {
-          errorFields.push({
-            name: ['paymentSchedule', index, 'amountInFigure'],
-            errors: [errorMessage],
-          });
-        }
-      });
+  //       if (scheduleAmount + totalAmountInFigure - scheduleAmount > cost) {
+  //         errorFields.push({
+  //           name: ['paymentSchedule', index, 'amountInFigure'],
+  //           errors: [errorMessage],
+  //         });
+  //       }
+  //     });
 
-      form.setFields(errorFields);
-      setLoader(false);
-      return; // Prevent submission if total exceeds cost
-    }
+  //     form.setFields(errorFields);
+  //     setLoader(false);
+  //     return; // Prevent submission if total exceeds cost
+  //   }
 
-    let docs = [...uploadFiles], admin = [...uploadFiles2];
+  //   let docs = [...uploadFiles], admin = [...uploadFiles2];
 
-    let temp1, temp2 = []
+  //   let temp1, temp2 = []
 
-    if (newFiles?.length > 0) {
-      temp1 = await uploadFunction(newFiles);
-      docs = [...docs, ...temp1]
-    }
-    if (newAdminFiles?.length > 0) {
-      temp2 = await uploadFunction(newAdminFiles);
-      admin = [...admin, ...temp2]
-    }
+  //   if (newFiles?.length > 0) {
+  //     temp1 = await uploadFunction(newFiles);
+  //     docs = [...docs, ...temp1]
+  //   }
+  //   if (newAdminFiles?.length > 0) {
+  //     temp2 = await uploadFunction(newAdminFiles);
+  //     admin = [...admin, ...temp2]
+  //   }
 
-    if (filesToDelete?.length > 0) {
-      await DeleteFiles(filesToDelete);
-      console.log('All files deleted successfully');
-    }
+  //   if (filesToDelete?.length > 0) {
+  //     await DeleteFiles(filesToDelete);
+  //     console.log('All files deleted successfully');
+  //   }
 
-    let data = {
-      projectName: values.projectName,
-      projectDescription: values.projectDescription,
-      clientId: values.clientId,
-      focalPersonId: values.focalPersonId,
-      startDate: moment(values.startDate).format("YYYY-MM-DD"),
-      endDate: moment(values.endDate).format("YYYY-MM-DD"),
-      projectDomain: values.projectDomain,
-      projectType: values.projectType,
-      currency: values.currency,
-      cost: values.cost,
-      costType: values.costType,
-      priority: values.priority,
-      projectLead: values.projectLead,
-      assignedDevelopers: values.assignedDevelopers,
-      status: values.status,
-      docs: docs,
-      adminDocs: admin,
-      paymentSchedule: values?.paymentSchedule,
-    };
+  //   let data = {
+  //     projectName: values.projectName,
+  //     projectDescription: values.projectDescription,
+  //     clientId: values.clientId,
+  //     focalPersonId: values.focalPersonId,
+  //     startDate: moment(values.startDate).format("YYYY-MM-DD"),
+  //     endDate: moment(values.endDate).format("YYYY-MM-DD"),
+  //     projectDomain: values.projectDomain,
+  //     projectType: values.projectType,
+  //     currency: values.currency,
+  //     cost: values.cost,
+  //     costType: values.costType,
+  //     priority: values.priority,
+  //     projectLead: values.projectLead,
+  //     assignedDevelopers: values.assignedDevelopers,
+  //     status: values.status,
+  //     docs: docs,
+  //     adminDocs: admin,
+  //     paymentSchedule: values?.paymentSchedule,
+  //   };
 
-    apiServices("POST", `project-management/`, data, user_state)
-      .then((res) => {
-        if (res.data.success === true) {
-          //const payrolls=res?.data?.payrolls;
-          //console.log(payrolls)
-          //setData((prevData) => [...prevData, ...payrolls]);
-          //setFilters(selectedPayFilters);
-          //GetGenPayrolls();
-          message.success(t('projectScreen.errors.projectAdded'));
-          setIsLoading(false);
-          GetListProjects();
-          closeCreateModal();
-          setLoader(false);
-        }
-      })
-      .catch((err) => {
-        message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
-              ? err?.response?.data?.validation?.body?.message
-              : t('projectScreen.errors.addProjectError')
-          }`
-        );
-        closeCreateModal();
-        setIsLoading(false);
-        setLoader(false);
-      });
-  };
+  //   apiServices("POST", `project-management/`, data, user_state)
+  //     .then((res) => {
+  //       if (res.data.success === true) {
+  //         //const payrolls=res?.data?.payrolls;
+  //         //console.log(payrolls)
+  //         //setData((prevData) => [...prevData, ...payrolls]);
+  //         //setFilters(selectedPayFilters);
+  //         //GetGenPayrolls();
+  //         message.success(t('projectScreen.errors.projectAdded'));
+  //         setIsLoading(false);
+  //         GetListProjects();
+  //         closeCreateModal();
+  //         setLoader(false);
+  //       }
+  //     })
+  //     .catch((err) => {
+  //       message.error(
+  //         `${
+  //           err?.response?.data?.msg
+  //             ? err?.response?.data?.msg
+  //             : err?.response?.data?.validation?.body?.message
+  //             ? err?.response?.data?.validation?.body?.message
+  //             : t('projectScreen.errors.addProjectError')
+  //         }`
+  //       );
+  //       closeCreateModal();
+  //       setIsLoading(false);
+  //       setLoader(false);
+  //     });
+  // };
 
   const handleViewToggle = (newView) => {
     setView(newView);
   };
-
-  const emptyfunction = () =>{
-    return null
-  }
 
   function onChange(e) {
     setHtml(e.target.value);
@@ -997,412 +964,412 @@ const Projects = () => {
   };
 
 
-  const uploadFunction = async (files) => {
-    const uploadPromises = files?.map(file => {
-      return apiUploadToS3(file)
-        .then(res => ({
-          asset_id: res?.data?.result?.asset_id,
-          public_id: res?.data?.result?.public_id,
-          fileName: file?.name,
-          imageUrl: res?.data?.result?.secure_url,
-          resource_type: res?.data?.result?.resource_type,
-        }))
-        .catch(err => {
-          message.error(
-            err?.response?.data?.msg
-              ? err.response.data.msg
-              : err.response.data.validation?.body?.message
-              ? err.response.data.validation.body.message
-              : t('projectScreen.errors.fileUploadError', { file: file?.name })
-          );
-          throw err; 
-        });
-    });
+  // const uploadFunction = async (files) => {
+  //   const uploadPromises = files?.map(file => {
+  //     return apiUploadToS3(file)
+  //       .then(res => ({
+  //         asset_id: res?.data?.result?.asset_id,
+  //         public_id: res?.data?.result?.public_id,
+  //         fileName: file?.name,
+  //         imageUrl: res?.data?.result?.secure_url,
+  //         resource_type: res?.data?.result?.resource_type,
+  //       }))
+  //       .catch(err => {
+  //         message.error(
+  //           err?.response?.data?.msg
+  //             ? err.response.data.msg
+  //             : err.response.data.validation?.body?.message
+  //             ? err.response.data.validation.body.message
+  //             : t('projectScreen.errors.fileUploadError', { file: file?.name })
+  //         );
+  //         throw err; 
+  //       });
+  //   });
   
-    try {
-      return await Promise.all(uploadPromises);
-    } catch (error) {
-      console.error("File upload error:", error);
-    }
-  };
+  //   try {
+  //     return await Promise.all(uploadPromises);
+  //   } catch (error) {
+  //     console.error("File upload error:", error);
+  //   }
+  // };
   
-  const acceptableFormats = ["pdf", "doc", "docx", "jpg", "jpeg", "png", "gif", "xls", "xlsx"];
+  // const acceptableFormats = ["pdf", "doc", "docx", "jpg", "jpeg", "png", "gif", "xls", "xlsx"];
 
-  const onFileUpload = async (files, type) => {
-    if (type === 'normal') {
-      const uploadPromises = [];
-      const validFiles = []; // To store valid files
-      const existingFileNames = selectedFiles?.map((file) => file?.fileName);
+  // const onFileUpload = async (files, type) => {
+  //   if (type === 'normal') {
+  //     const uploadPromises = [];
+  //     const validFiles = []; // To store valid files
+  //     const existingFileNames = selectedFiles?.map((file) => file?.fileName);
     
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        //console.log("File: ", file);
+  //     for (let i = 0; i < files.length; i++) {
+  //       const file = files[i];
+  //       //console.log("File: ", file);
     
-        // Check file format (extension)
-        const fileExtension = file?.name?.split(".").pop().toLowerCase();
-        if (!acceptableFormats.includes(fileExtension)) {
-          message.error(t('projectScreen.errors.fileFormatNotSupported', { file: file?.name }));
-          continue; // Skip this file and continue with the next one
-        }
+  //       // Check file format (extension)
+  //       const fileExtension = file?.name?.split(".").pop().toLowerCase();
+  //       if (!acceptableFormats.includes(fileExtension)) {
+  //         message.error(t('projectScreen.errors.fileFormatNotSupported', { file: file?.name }));
+  //         continue; // Skip this file and continue with the next one
+  //       }
     
-        // Check file size
-        if (file?.size > 10485760) {
-          message.error(t('projectScreen.errors.fileSizeExceedsLimit', { file: file?.name }));
-          continue; // Skip this file and continue with the next one
-        }
+  //       // Check file size
+  //       if (file?.size > 10485760) {
+  //         message.error(t('projectScreen.errors.fileSizeExceedsLimit', { file: file?.name }));
+  //         continue; // Skip this file and continue with the next one
+  //       }
   
-        if (existingFileNames?.includes(file?.name)) {
-          message.error(t('projectScreen.errors.fileAlreadySelected', { file: file?.name }));
-          continue; // Skip this file and continue with the next one
-        }
-        let fileData = {
-          fileName: file?.name,
-        }
-        validFiles.push(fileData);
-        setSelectedFiles((prevSelectedFiles) => {
-          const uniqueValidFiles = validFiles.filter((newFile) => {
-            // Check if a file with the same name already exists in the selectedFiles
-            return !prevSelectedFiles?.some((existingFile) => 
-              existingFile?.fileName === newFile?.fileName 
-            );
-          });
-          return [...prevSelectedFiles, ...uniqueValidFiles];
-        });
+  //       if (existingFileNames?.includes(file?.name)) {
+  //         message.error(t('projectScreen.errors.fileAlreadySelected', { file: file?.name }));
+  //         continue; // Skip this file and continue with the next one
+  //       }
+  //       let fileData = {
+  //         fileName: file?.name,
+  //       }
+  //       validFiles.push(fileData);
+  //       setSelectedFiles((prevSelectedFiles) => {
+  //         const uniqueValidFiles = validFiles.filter((newFile) => {
+  //           // Check if a file with the same name already exists in the selectedFiles
+  //           return !prevSelectedFiles?.some((existingFile) => 
+  //             existingFile?.fileName === newFile?.fileName 
+  //           );
+  //         });
+  //         return [...prevSelectedFiles, ...uniqueValidFiles];
+  //       });
         
-      setNewFiles((prev)=> [...prev, file]);
-      }
-    }
-    else if ( type === 'admin') {
-      const uploadPromises = [];
-      const validFiles = []; // To store valid files
-      const existingFileNames = selectedFiles2?.map((file) => file?.fileName);
+  //     setNewFiles((prev)=> [...prev, file]);
+  //     }
+  //   }
+  //   else if ( type === 'admin') {
+  //     const uploadPromises = [];
+  //     const validFiles = []; // To store valid files
+  //     const existingFileNames = selectedFiles2?.map((file) => file?.fileName);
     
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        //console.log("File: ", file);
+  //     for (let i = 0; i < files.length; i++) {
+  //       const file = files[i];
+  //       //console.log("File: ", file);
     
-        // Check file format (extension)
-        const fileExtension = file?.name?.split(".").pop().toLowerCase();
-        if (!acceptableFormats.includes(fileExtension)) {
-          message.error(t('projectScreen.errors.fileFormatNotSupported', { file: file?.name }));
-          continue; // Skip this file and continue with the next one
-        }
+  //       // Check file format (extension)
+  //       const fileExtension = file?.name?.split(".").pop().toLowerCase();
+  //       if (!acceptableFormats.includes(fileExtension)) {
+  //         message.error(t('projectScreen.errors.fileFormatNotSupported', { file: file?.name }));
+  //         continue; // Skip this file and continue with the next one
+  //       }
     
-        // Check file size
-        if (file?.size > 10485760) {
-          message.error(t('projectScreen.errors.fileSizeExceedsLimit', { file: file?.name }));
-          continue; // Skip this file and continue with the next one
-        }
+  //       // Check file size
+  //       if (file?.size > 10485760) {
+  //         message.error(t('projectScreen.errors.fileSizeExceedsLimit', { file: file?.name }));
+  //         continue; // Skip this file and continue with the next one
+  //       }
   
-        if (existingFileNames?.includes(file?.name)) {
-          message.error(t('projectScreen.errors.fileAlreadySelected', { file: file?.name }));
-          continue; // Skip this file and continue with the next one
-        }
-        let fileData = {
-          fileName: file?.name,
-        }
-        validFiles.push(fileData);
-        setSelectedFiles2((prevSelectedFiles) => {
-          const uniqueValidFiles = validFiles.filter((newFile) => {
-            // Check if a file with the same name already exists in the selectedFiles
-            return !prevSelectedFiles?.some((existingFile) => 
-              existingFile?.fileName === newFile?.fileName
-            );
-          });
-          return [...prevSelectedFiles, ...uniqueValidFiles];
-        });
-        setNewAdminFiles((prev)=> [...prev, file]);
-      }
-      console.log(validFiles)
-    }
-  };
+  //       if (existingFileNames?.includes(file?.name)) {
+  //         message.error(t('projectScreen.errors.fileAlreadySelected', { file: file?.name }));
+  //         continue; // Skip this file and continue with the next one
+  //       }
+  //       let fileData = {
+  //         fileName: file?.name,
+  //       }
+  //       validFiles.push(fileData);
+  //       setSelectedFiles2((prevSelectedFiles) => {
+  //         const uniqueValidFiles = validFiles.filter((newFile) => {
+  //           // Check if a file with the same name already exists in the selectedFiles
+  //           return !prevSelectedFiles?.some((existingFile) => 
+  //             existingFile?.fileName === newFile?.fileName
+  //           );
+  //         });
+  //         return [...prevSelectedFiles, ...uniqueValidFiles];
+  //       });
+  //       setNewAdminFiles((prev)=> [...prev, file]);
+  //     }
+  //     console.log(validFiles)
+  //   }
+  // };
 
-  const removeSelectedFile = (index, type) => {
-    if (type === 'normal') {
-      const updatedSelectedFiles = [...selectedFiles];
-      const fileToRemove = updatedSelectedFiles[index];
-      console.log(fileToRemove);
-      updatedSelectedFiles.splice(index, 1);
-      setSelectedFiles(updatedSelectedFiles);
+  // const removeSelectedFile = (index, type) => {
+  //   if (type === 'normal') {
+  //     const updatedSelectedFiles = [...selectedFiles];
+  //     const fileToRemove = updatedSelectedFiles[index];
+  //     console.log(fileToRemove);
+  //     updatedSelectedFiles.splice(index, 1);
+  //     setSelectedFiles(updatedSelectedFiles);
   
-      // Remove the corresponding file from the uploadFiles state array
-      const updatedUploadFiles = [...uploadFiles];
-      updatedUploadFiles.splice(index, 1);
-      setUploadFiles(updatedUploadFiles);
+  //     // Remove the corresponding file from the uploadFiles state array
+  //     const updatedUploadFiles = [...uploadFiles];
+  //     updatedUploadFiles.splice(index, 1);
+  //     setUploadFiles(updatedUploadFiles);
 
-      const updatedNewFiles = newFiles?.filter(file => file.name !== fileToRemove?.fileName);
-      setNewFiles(updatedNewFiles);
+  //     const updatedNewFiles = newFiles?.filter(file => file.name !== fileToRemove?.fileName);
+  //     setNewFiles(updatedNewFiles);
 
-      if (fileToRemove?.imageUrl) {
-        setFilesToDelete(prev => [...prev, fileToRemove]);
-      }
-      console.log('file',filesToDelete)
-      //DeleteFiles(fileToRemove?.public_id)
-    }
-    else if (type === 'admin') {
-      const updatedSelectedFiles = [...selectedFiles2];
-      const fileToRemove = updatedSelectedFiles[index];
-      updatedSelectedFiles.splice(index, 1);
-      setSelectedFiles2(updatedSelectedFiles);
+  //     if (fileToRemove?.imageUrl) {
+  //       setFilesToDelete(prev => [...prev, fileToRemove]);
+  //     }
+  //     console.log('file',filesToDelete)
+  //     //DeleteFiles(fileToRemove?.public_id)
+  //   }
+  //   else if (type === 'admin') {
+  //     const updatedSelectedFiles = [...selectedFiles2];
+  //     const fileToRemove = updatedSelectedFiles[index];
+  //     updatedSelectedFiles.splice(index, 1);
+  //     setSelectedFiles2(updatedSelectedFiles);
   
-      // Remove the corresponding file from the uploadFiles state array
-      const updatedUploadFiles = [...uploadFiles2];
-      updatedUploadFiles.splice(index, 1);
-      setUploadFiles2(updatedUploadFiles);
+  //     // Remove the corresponding file from the uploadFiles state array
+  //     const updatedUploadFiles = [...uploadFiles2];
+  //     updatedUploadFiles.splice(index, 1);
+  //     setUploadFiles2(updatedUploadFiles);
 
-      const updatedNewAdminFiles = newAdminFiles?.filter(file => file.name !== fileToRemove?.fileName);
-      setNewAdminFiles(updatedNewAdminFiles);
+  //     const updatedNewAdminFiles = newAdminFiles?.filter(file => file.name !== fileToRemove?.fileName);
+  //     setNewAdminFiles(updatedNewAdminFiles);
 
-      if (fileToRemove?.imageUrl) {
-        setFilesToDelete(prev => [...prev, fileToRemove]);
-      }
-      console.log('file',filesToDelete)
-    }
-  };
+  //     if (fileToRemove?.imageUrl) {
+  //       setFilesToDelete(prev => [...prev, fileToRemove]);
+  //     }
+  //     console.log('file',filesToDelete)
+  //   }
+  // };
 
-  const displaySelectedFiles = (type) => {
-    if (type === 'normal') {
-      return selectedFiles?.map((file, index) => (
-        <Space key={index}>
-          <Tag
-            closable
-            onClose={() => removeSelectedFile(index, 'normal')}
-            color="blue" // You can customize the color as needed
-            className="custom-tag"
-          >
-            {file?.fileName || file?.name} 
-          </Tag>
-        </Space>
-      ));
-    }
-    else if (type === 'admin') {
-      return selectedFiles2?.map((file, index) => (
-        <Space key={index}>
-          <Tag
-            closable
-            onClose={() => removeSelectedFile(index, 'admin')}
-            color="blue" // You can customize the color as needed
-            className="custom-tag"
-          >
-            {file?.fileName || file.name}
-          </Tag>
-        </Space>
-      ));
-    }
-  };
+  // const displaySelectedFiles = (type) => {
+  //   if (type === 'normal') {
+  //     return selectedFiles?.map((file, index) => (
+  //       <Space key={index}>
+  //         <Tag
+  //           closable
+  //           onClose={() => removeSelectedFile(index, 'normal')}
+  //           color="blue" // You can customize the color as needed
+  //           className="custom-tag"
+  //         >
+  //           {file?.fileName || file?.name} 
+  //         </Tag>
+  //       </Space>
+  //     ));
+  //   }
+  //   else if (type === 'admin') {
+  //     return selectedFiles2?.map((file, index) => (
+  //       <Space key={index}>
+  //         <Tag
+  //           closable
+  //           onClose={() => removeSelectedFile(index, 'admin')}
+  //           color="blue" // You can customize the color as needed
+  //           className="custom-tag"
+  //         >
+  //           {file?.fileName || file.name}
+  //         </Tag>
+  //       </Space>
+  //     ));
+  //   }
+  // };
 
-  const handleCostChange = (value) => {
-    setProjectCost(value);
-    const paymentSchedules = form.getFieldValue('paymentSchedule');
+  // const handleCostChange = (value) => {
+  //   setProjectCost(value);
+  //   const paymentSchedules = form.getFieldValue('paymentSchedule');
 
-    const updatedPaymentSchedules = paymentSchedules?.map((schedule) => {
-      const { amountInFigure } = schedule;
-      const percentage = ((amountInFigure / value) * 100).toFixed(2);
-      return {
-        ...schedule,
-        amountInPercent: parseFloat(percentage),
-      };
-    });
+  //   const updatedPaymentSchedules = paymentSchedules?.map((schedule) => {
+  //     const { amountInFigure } = schedule;
+  //     const percentage = ((amountInFigure / value) * 100).toFixed(2);
+  //     return {
+  //       ...schedule,
+  //       amountInPercent: parseFloat(percentage),
+  //     };
+  //   });
 
-    form.setFieldsValue({
-      paymentSchedule: updatedPaymentSchedules,
-    });
-  }
+  //   form.setFieldsValue({
+  //     paymentSchedule: updatedPaymentSchedules,
+  //   });
+  // }
 
-  const handleAmountInFigureChange = (value, index) => {
-    const newPaymentSchedules = form.getFieldValue('paymentSchedule') 
-    newPaymentSchedules[index].amountInFigure = value;
+  // const handleAmountInFigureChange = (value, index) => {
+  //   const newPaymentSchedules = form.getFieldValue('paymentSchedule') 
+  //   newPaymentSchedules[index].amountInFigure = value;
 
-    const percentage = ((value / projectCost) * 100).toFixed(2); 
-    newPaymentSchedules[index].amountInPercent = parseFloat(percentage);
+  //   const percentage = ((value / projectCost) * 100).toFixed(2); 
+  //   newPaymentSchedules[index].amountInPercent = parseFloat(percentage);
 
-    setPaymentSchedules(newPaymentSchedules); 
+  //   setPaymentSchedules(newPaymentSchedules); 
     
-    form.setFieldsValue({
-      paymentSchedule: newPaymentSchedules,
-    });
-  };
+  //   form.setFieldsValue({
+  //     paymentSchedule: newPaymentSchedules,
+  //   });
+  // };
 
-  const handleAmountInPercentChange = (value, index) => {
-    const newPaymentSchedules = form.getFieldValue('paymentSchedule')
-    newPaymentSchedules[index].amountInPercent = value; 
+  // const handleAmountInPercentChange = (value, index) => {
+  //   const newPaymentSchedules = form.getFieldValue('paymentSchedule')
+  //   newPaymentSchedules[index].amountInPercent = value; 
 
-    const amount = Math.round((value * projectCost) / 100); 
-    newPaymentSchedules[index].amountInFigure = amount;
+  //   const amount = Math.round((value * projectCost) / 100); 
+  //   newPaymentSchedules[index].amountInFigure = amount;
 
-    setPaymentSchedules(newPaymentSchedules); 
+  //   setPaymentSchedules(newPaymentSchedules); 
     
-    form.setFieldsValue({
-      paymentSchedule: newPaymentSchedules,
-    });
-  };
+  //   form.setFieldsValue({
+  //     paymentSchedule: newPaymentSchedules,
+  //   });
+  // };
 
 
-  const paymentColumns = [
-    {
-      title: t('projectScreen.Modal.paymentTitle'),
-      dataIndex: "paymentTitle",
-      key: "paymentTitle",
-      render: (text, record, index) => (
-        <Form.Item
-          name={["paymentSchedule", index, "paymentTitle"]}
-          className="custom-border"
-          rules={[
-            {
-              required: true,
-              message: t('projectScreen.Modal.enterPaymentTitle'),
-            },
-          ]}
-        >
-          <Input className="form-control"
-          placeholder={t('projectScreen.Modal.enterTitle')} />
-        </Form.Item>
-      ),
-    },
-    {
-      title: t('projectScreen.Modal.amountInFigure'),
-      dataIndex: "amountInFigure",
-      key: "amountInFigure",
-      render: (text, record, index) => (
-        <Form.Item
-          name={["paymentSchedule", index, "amountInFigure"]}
-          className="custom-border"
-          rules={[
-            {
-              required: true,
-              message: t('projectScreen.Modal.pleaseEnterAmountInFigure'),
-            },
-          ]}
-        >
-          {/* <Input type="number" className="form-control" /> */}
-          <InputNumber
-            className="form-control"
-            placeholder={t('projectScreen.Modal.enterAmount')}
-            formatter={(value) => {
-              return `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-            }}
-            parser={(value) => {
-              return value.replace(/\$\s?|(,*)/g, '');
-            }}
-            onChange={(value) => handleAmountInFigureChange(value, index)}
-          />
-        </Form.Item>
-      ),
-    },
-    {
-      title: t('projectScreen.Modal.amountInPercent'),
-      dataIndex: "amountInPercent",
-      key: "amountInPercent",
-      render: (text, record, index) => (
-        <Form.Item
-          name={["paymentSchedule", index, "amountInPercent"]}
-          className="custom-border"
-          rules={[
-            {
-              required: true,
-              message: t('projectScreen.Modal.pleaseEnterAmountInPercentage'),
-            },
-          ]}
-        >
-          {/* <Input type="number" className="form-control" /> */}
-          <InputNumber
-            className="form-control"
-            placeholder={t('projectScreen.Modal.enterPercentage')}
-            max={100}
-            min={0}
-            maxLength={5}
-            onChange={(value) => handleAmountInPercentChange(value, index)}
-          />
-        </Form.Item>
-      ),
-    },
-    {
-      title: t('projectScreen.Modal.dueDate'),
-      dataIndex: "dueDate",
-      key: "dueDate",
-      render: (text, record, index) => (
-        <div style={{ position: "relative" }} id={`dueDate-${index}`}>
-          <Form.Item
-            name={["paymentSchedule", index, "dueDate"]}
-            rules={[
-              {
-                required: true,
-                message: t('projectScreen.Modal.selectDueDate'),
-              },
-            ]}
-            className="custom-border"
-            style={{ width: "max-content" }}
-          >
-            <DatePicker
-              suffixIcon={null}
-              getPopupContainer={() =>
-                document.getElementById(`dueDate-${index}`)
-              }
-              placeholder={t('requests.addModal.selectDate')}
-              className="form-control"
-              size="large"
-            />
-          </Form.Item>
-        </div>
-      ),
-    },
-    {
-      title: t('projectScreen.Modal.paid'),
-      dataIndex: "paid",
-      key: "paid",
-      render: (text, record, index) => (
-        <Form.Item
-          name={["paymentSchedule", index, "paid"]}
-          valuePropName="checked"
-        >
-          <Checkbox />
-        </Form.Item>
-      ),
-    },
-    // {
-    //   title: "Action",
-    //   key: "action",
-    //   render: (text, record, index) => (
-    //     <MinusCircleFilled
-    //       style={{ color: "red", cursor: "pointer" }}
-    //       //disabled={record?.paid}
-    //       onClick={() => {
-    //         removePaymentSchedule(index);
-    //         console.log(record?.paid);
-    //       }}
-    //     />
-    //   ),
-    // },
-    {
-      title: t('projectScreen.Modal.action'),
-      key: "action",
-      render: (text, record, index) => (
-        <span
-          style={{
-            color:
-              paymentSchedules.length > 1
-                ? index === paymentSchedules.length - 1
-                  ? "red"
-                  : "#ccc"
-                : "#ccc",
-            cursor: "pointer",
-          }}
-        >
-          {/* <span style={{ color: index === paymentSchedules?.length - 1 ? 'red' : '#ccc', cursor: 'pointer' }}> */}
-          <MinusCircleFilled
-            onClick={() => {
-              if (
-                paymentSchedules.length > 1 &&
-                index === paymentSchedules?.length - 1
-              ) {
-                removePaymentSchedule(index);
-              }
-            }}
-          />
-        </span>
-      ),
-    },
-  ];
+  // const paymentColumns = [
+  //   {
+  //     title: t('projectScreen.Modal.paymentTitle'),
+  //     dataIndex: "paymentTitle",
+  //     key: "paymentTitle",
+  //     render: (text, record, index) => (
+  //       <Form.Item
+  //         name={["paymentSchedule", index, "paymentTitle"]}
+  //         className="custom-border"
+  //         rules={[
+  //           {
+  //             required: true,
+  //             message: t('projectScreen.Modal.enterPaymentTitle'),
+  //           },
+  //         ]}
+  //       >
+  //         <Input className="form-control"
+  //         placeholder={t('projectScreen.Modal.enterTitle')} />
+  //       </Form.Item>
+  //     ),
+  //   },
+  //   {
+  //     title: t('projectScreen.Modal.amountInFigure'),
+  //     dataIndex: "amountInFigure",
+  //     key: "amountInFigure",
+  //     render: (text, record, index) => (
+  //       <Form.Item
+  //         name={["paymentSchedule", index, "amountInFigure"]}
+  //         className="custom-border"
+  //         rules={[
+  //           {
+  //             required: true,
+  //             message: t('projectScreen.Modal.pleaseEnterAmountInFigure'),
+  //           },
+  //         ]}
+  //       >
+  //         {/* <Input type="number" className="form-control" /> */}
+  //         <InputNumber
+  //           className="form-control"
+  //           placeholder={t('projectScreen.Modal.enterAmount')}
+  //           formatter={(value) => {
+  //             return `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  //           }}
+  //           parser={(value) => {
+  //             return value.replace(/\$\s?|(,*)/g, '');
+  //           }}
+  //           onChange={(value) => handleAmountInFigureChange(value, index)}
+  //         />
+  //       </Form.Item>
+  //     ),
+  //   },
+  //   {
+  //     title: t('projectScreen.Modal.amountInPercent'),
+  //     dataIndex: "amountInPercent",
+  //     key: "amountInPercent",
+  //     render: (text, record, index) => (
+  //       <Form.Item
+  //         name={["paymentSchedule", index, "amountInPercent"]}
+  //         className="custom-border"
+  //         rules={[
+  //           {
+  //             required: true,
+  //             message: t('projectScreen.Modal.pleaseEnterAmountInPercentage'),
+  //           },
+  //         ]}
+  //       >
+  //         {/* <Input type="number" className="form-control" /> */}
+  //         <InputNumber
+  //           className="form-control"
+  //           placeholder={t('projectScreen.Modal.enterPercentage')}
+  //           max={100}
+  //           min={0}
+  //           maxLength={5}
+  //           onChange={(value) => handleAmountInPercentChange(value, index)}
+  //         />
+  //       </Form.Item>
+  //     ),
+  //   },
+  //   {
+  //     title: t('projectScreen.Modal.dueDate'),
+  //     dataIndex: "dueDate",
+  //     key: "dueDate",
+  //     render: (text, record, index) => (
+  //       <div style={{ position: "relative" }} id={`dueDate-${index}`}>
+  //         <Form.Item
+  //           name={["paymentSchedule", index, "dueDate"]}
+  //           rules={[
+  //             {
+  //               required: true,
+  //               message: t('projectScreen.Modal.selectDueDate'),
+  //             },
+  //           ]}
+  //           className="custom-border"
+  //           style={{ width: "max-content" }}
+  //         >
+  //           <DatePicker
+  //             suffixIcon={null}
+  //             getPopupContainer={() =>
+  //               document.getElementById(`dueDate-${index}`)
+  //             }
+  //             placeholder={t('requests.addModal.selectDate')}
+  //             className="form-control"
+  //             size="large"
+  //           />
+  //         </Form.Item>
+  //       </div>
+  //     ),
+  //   },
+  //   {
+  //     title: t('projectScreen.Modal.paid'),
+  //     dataIndex: "paid",
+  //     key: "paid",
+  //     render: (text, record, index) => (
+  //       <Form.Item
+  //         name={["paymentSchedule", index, "paid"]}
+  //         valuePropName="checked"
+  //       >
+  //         <Checkbox />
+  //       </Form.Item>
+  //     ),
+  //   },
+  //   // {
+  //   //   title: "Action",
+  //   //   key: "action",
+  //   //   render: (text, record, index) => (
+  //   //     <MinusCircleFilled
+  //   //       style={{ color: "red", cursor: "pointer" }}
+  //   //       //disabled={record?.paid}
+  //   //       onClick={() => {
+  //   //         removePaymentSchedule(index);
+  //   //         console.log(record?.paid);
+  //   //       }}
+  //   //     />
+  //   //   ),
+  //   // },
+  //   {
+  //     title: t('projectScreen.Modal.action'),
+  //     key: "action",
+  //     render: (text, record, index) => (
+  //       <span
+  //         style={{
+  //           color:
+  //             paymentSchedules.length > 1
+  //               ? index === paymentSchedules.length - 1
+  //                 ? "red"
+  //                 : "#ccc"
+  //               : "#ccc",
+  //           cursor: "pointer",
+  //         }}
+  //       >
+  //         {/* <span style={{ color: index === paymentSchedules?.length - 1 ? 'red' : '#ccc', cursor: 'pointer' }}> */}
+  //         <MinusCircleFilled
+  //           onClick={() => {
+  //             if (
+  //               paymentSchedules.length > 1 &&
+  //               index === paymentSchedules?.length - 1
+  //             ) {
+  //               removePaymentSchedule(index);
+  //             }
+  //           }}
+  //         />
+  //       </span>
+  //     ),
+  //   },
+  // ];
  
   const showTeamSearch = (val, type) => {
     let dropdownValues = []
@@ -1498,7 +1465,7 @@ const filteredColumns = columns.filter(column => {
                 { (role === "admin" || permissions?.projectManagement) &&
                 <button
                   className="btn add-btn"
-                  onClick={() => { openCreateModal(); getAllCurrencies(); ViewClients(); fetchEmployees(); }}
+                  onClick={() => { openCreateModal(); getAllCurrencies(); }}
                   disabled={
                     role === "admin" 
                       ? false
@@ -2165,8 +2132,8 @@ const filteredColumns = columns.filter(column => {
         {/* /Page Content */}
 
         {/* /Create Project Modal */}
-        <Modal
-          open={createModal}
+        {/* <Modal
+          open={null}
           onClose={closeCreateModal}
           aria-labelledby="modal-modal-title"
           className="modalScroll"
@@ -2329,7 +2296,6 @@ const filteredColumns = columns.filter(column => {
                               value={focalPerson._id}
                             >
                               {focalPerson?.focalPersonName}{" "}
-                              {/* Adjust the field name as needed */}
                             </Select.Option>
                           ))}
                         </Select>
@@ -2410,25 +2376,6 @@ const filteredColumns = columns.filter(column => {
                   <div className="form-group">
                     <label>{t('projectScreen.Modal.endDate')}</label>
                     <div style={{ position: "relative" }} id="area">
-                      {/* <Form.Item
-                        name="endDate"
-                        className="custom-border"
-                        rules={[
-                          {
-                            required: true,
-                            message: "Enter an end date",
-                          },
-                        ]}
-                      >
-                        <DatePicker
-                          getPopupContainer={() =>
-                            document.getElementById("area")
-                          }
-                          style={{ width: "100%" }}
-                          className="form-control"
-                          size="large"
-                        />
-                      </Form.Item> */}
 
                       <Form.Item
                         name="endDate"
@@ -2603,7 +2550,6 @@ const filteredColumns = columns.filter(column => {
                         },
                       ]}
                     >
-                      {/* <Input type="number" className="form-control" /> */}
                       <InputNumber
                         className="form-control"
                         formatter={(value) => {
@@ -2820,7 +2766,6 @@ const filteredColumns = columns.filter(column => {
             >
               +{selectedTeamMembers?.length - 4}
             </Link>
-            {/* Dropdown menu for additional team members */}
             <div className="dropdown-menu dropdown-menu-right">
               <div className="avatar-group">
                 {selectedTeamMembers?.slice(4).map((teamMember, index) => (
@@ -2860,7 +2805,6 @@ const filteredColumns = columns.filter(column => {
                 >
                   <Input.TextArea className="form-control" rows={5} />
                 </Form.Item>
-                {/* <textarea rows={4} className="form-control summernote" placeholder="Enter your message here" defaultValue={""} /> */}
               </div>
 
               <div className="form-group">
@@ -3125,7 +3069,6 @@ const filteredColumns = columns.filter(column => {
                               value={focalPerson._id}
                             >
                               {focalPerson?.focalPersonName}{" "}
-                              {/* Adjust the field name as needed */}
                             </Select.Option>
                           ))}
                         </Select>
@@ -3206,25 +3149,6 @@ const filteredColumns = columns.filter(column => {
                   <div className="form-group">
                     <label>{t('projectScreen.Modal.endDate')}</label>
                     <div style={{ position: "relative" }} id="area">
-                      {/* <Form.Item
-                        name="endDate"
-                        className="custom-border"
-                        rules={[
-                          {
-                            required: true,
-                            message: "Enter an end date",
-                          },
-                        ]}
-                      >
-                        <DatePicker
-                          getPopupContainer={() =>
-                            document.getElementById("area")
-                          }
-                          style={{ width: "100%" }}
-                          className="form-control"
-                          size="large"
-                        />
-                      </Form.Item> */}
 
                       <Form.Item
                         name="endDate"
@@ -3487,7 +3411,6 @@ const filteredColumns = columns.filter(column => {
             >
               +{selectedTeamMembers?.length - 4}
             </Link>
-            {/* Dropdown menu for additional team members */}
             <div className="dropdown-menu dropdown-menu-right">
               <div className="avatar-group">
                 {selectedTeamMembers?.slice(4).map((teamMember, index) => (
@@ -3527,7 +3450,6 @@ const filteredColumns = columns.filter(column => {
                 >
                   <Input.TextArea className="form-control" rows={5} />
                 </Form.Item>
-                {/* <textarea rows={4} className="form-control summernote" placeholder="Enter your message here" defaultValue={""} /> */}
               </div>
 
               <div className="form-group">
@@ -3569,7 +3491,7 @@ const filteredColumns = columns.filter(column => {
               }
             </div>
           </div>
-        </Modal>
+        </Modal> */}
 
         {/* Edit Project Modal */}
 
@@ -3578,7 +3500,17 @@ const filteredColumns = columns.filter(column => {
             data={selectedData}
             editModal={editModal}
             closeEditModal={closeEditModal}
-            getprojects={emptyfunction}
+            getlistprojects={GetListProjects}
+            allCurrencies={allCurrencies}
+            allDomain={allDomain}
+          />
+        )}
+        
+        {createModal && (
+          <EditProjects
+            data={null}
+            editModal={createModal}
+            closeEditModal={closeCreateModal}
             getlistprojects={GetListProjects}
             allCurrencies={allCurrencies}
             allDomain={allDomain}
