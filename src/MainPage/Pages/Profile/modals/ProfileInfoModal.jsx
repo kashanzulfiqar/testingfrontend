@@ -1212,6 +1212,7 @@ const getTaxSlab = () => {
                         </div>
                     </div>
                     </div>
+                    {salaryType === 'Monthly' ? 
                     <div className="col-md-6">
                     <div className="form-group">
                         <label>
@@ -1269,6 +1270,9 @@ const getTaxSlab = () => {
                         </div>
                     </div>
                     </div>
+                    :
+                    null
+                    }
                     <div className="col-md-6">
                     <div className="form-group">
                         <label>

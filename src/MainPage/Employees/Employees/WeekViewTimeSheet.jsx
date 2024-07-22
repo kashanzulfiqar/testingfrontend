@@ -988,8 +988,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
                             style={{margin: '0px'}}
                           >
                             <div>
-                              <small style={{ fontSize: '10px', color: 'rgba(0, 0, 0, 0.5)', display: 'flex', justifyContent: 'flex-end'}}>{descLength} / 150</small>
-                              <Input.TextArea rows={2} defaultValue={showCard?.data?.notes} value={cardReason} style={{resize: 'none'}} className='form-control' onChange={(e) => { setCardReason(e.target.value); setDescLength(e.target.value.length); setSaveButton(false)}} maxLength={150} />
+                              <Input.TextArea rows={2} defaultValue={showCard?.data?.notes} value={cardReason} style={{resize: 'none'}} className='form-control' onChange={(e) => { setCardReason(e.target.value); setSaveButton(false)}}/>
                             </div>
                           </Form.Item>
                         </Form>
