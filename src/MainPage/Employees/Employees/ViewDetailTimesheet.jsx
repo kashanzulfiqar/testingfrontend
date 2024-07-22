@@ -1195,7 +1195,6 @@ const ViewDetailTimesheet = () => {
                 <div className="form-group">
                 <label style={{display: 'flex', justifyContent: 'space-between'}}>
                     <div>{t('Timesheetadmin.reason')} <span className="text-danger">*</span></div>
-                    <small style={{marginTop: '5px', fontSize: '10px', color: 'rgba(0, 0, 0, 0.5)'}}>{reasonLength} / 150</small>
                   </label>
                   <Form.Item
                     name="reason"
@@ -1219,7 +1218,7 @@ const ViewDetailTimesheet = () => {
                     ]}
                     className="custom-border"
                   >
-                    <Input.TextArea rows={3} className={'form-control'} onChange={(e) => setReasonLength(e.target.value.length)} maxLength={150} />
+                    <Input.TextArea rows={3} className={'form-control'} />
                   </Form.Item>
                 </div>
                 <div className="submit-section">
