@@ -76,7 +76,7 @@ const Invoices = () => {
   }
 
   const getAllProjects = () => {
-    apiServices("GET", `project-management?status=On-Going&page=${1}&limit=${99999}` , null, user_state)
+    apiServices("GET", `project-management?status=On-Going&costTypeInvoice=Both&page=${1}&limit=${99999}` , null, user_state)
       .then((res) => {
           if (res?.data?.success === true) {
                 const sortedData = res?.data?.projects?.docs?.slice().sort((a, b) => a.projectName.localeCompare(b.projectName));
@@ -194,6 +194,7 @@ const onFinish = (values) => {
   const project = allProjects?.find(proj => proj._id === values?.projectId);
     //setSelectedProject(project);
     console.log('Selected Project:', project);
+    nav('/invoices/create-invoice', { state: { project_data: project } });
 };
   
     const columns = [
@@ -220,9 +221,23 @@ const onFinish = (values) => {
           ),
       },
 
+      // {
+      //   title: t('finance.Invoices.invoicedate'),
+      //   dataIndex: 'invoiceDate',
+      //   render: (text, record) => (
+      //     <label>{formatDate(text || '')}</label>
+      //     ),
+      // },
       {
-        title: t('finance.Invoices.invoicedate'),
-        dataIndex: 'invoiceDate',
+        title: "Invoice Start Date",
+        dataIndex: 'invoiceStartDate',
+        render: (text, record) => (
+          <label>{formatDate(text || '')}</label>
+          ),
+      },
+      {
+        title: 'Invoice End Date',
+        dataIndex: 'invoiceEndDate',
         render: (text, record) => (
           <label>{formatDate(text || '')}</label>
           ),
