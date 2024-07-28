@@ -460,15 +460,33 @@ const Invoicecreate = () => {
 
       console.log(taxes);
 
-      const teamDetails = teamArray?.map((member, index) => ({
-        userId: member.userId,
-        userName: member.userName,
-        cost: member.cost,
-        hoursWorked: member.hoursWorked,
-        total: member.total,
-        taxSlabIds: taxes[index]?.map(tax => tax),
-        totalAmount: calculateTotalAmount(member.total, taxes[index] || [])
-      }));
+      let teamDetails = [];
+      let monthlyTeamDetails = [];
+
+      if (projectData?.costType === 'Monthly') {
+        monthlyTeamDetails = teamArray?.map((member, index) => ({
+          userId: member.userId,
+          userName: member.userName,
+          cost: member.cost,
+          perDayCost: member.perDayCost,
+          daysWorked: member.daysWorked,
+          total: member.total,
+          taxSlabIds: taxes[index]?.map(tax => tax),
+          totalAmount: calculateTotalAmount(member.total, taxes[index] || [])
+        }));
+      }
+
+      if (projectData?.costType === 'Hourly') {
+        teamDetails = teamArray?.map((member, index) => ({
+          userId: member.userId,
+          userName: member.userName,
+          cost: member.cost,
+          hoursWorked: member.hoursWorked,
+          total: member.total,
+          taxSlabIds: taxes[index]?.map(tax => tax),
+          totalAmount: calculateTotalAmount(member.total, taxes[index] || [])
+        }));
+      }
 
       if (actionType === "send") {
         const new_data = {
@@ -476,6 +494,7 @@ const Invoicecreate = () => {
           clientId: clientId,
           projectId: projectId,
           teamDetails,
+          monthlyTeamDetails,
           sendInvoice: true,
           paidAmount: '0',
           remainingAmount: `${d?.totalAmount}`
@@ -508,6 +527,7 @@ const Invoicecreate = () => {
           clientId: clientId,
           projectId: projectId,
           teamDetails,
+          monthlyTeamDetails,
           sendInvoice: false,
           paidAmount: '0',
           remainingAmount: `${d?.totalAmount}`
