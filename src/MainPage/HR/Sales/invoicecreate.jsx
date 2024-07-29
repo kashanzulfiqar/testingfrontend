@@ -172,6 +172,7 @@ const Invoicecreate = () => {
     setTaxes(prev => {
       const updatedTaxes = { ...prev, [index]: value };
       calculateTotal(updatedTaxes);
+      console.log(updatedTaxes)
       return updatedTaxes;
     });
     setTimeout(() => {
@@ -1156,7 +1157,7 @@ const Invoicecreate = () => {
                           <td>
                             <Form.Item //name={`totalTaxPercent-${index}`} 
                             style={{ marginBottom: '0px' }}>
-                              {calculateTotalTaxPercent(taxes[index] || [])} %
+                              {calculateTotalTaxPercent(taxes[index] || [])}
                             </Form.Item>
                           </td>
                           <td>
@@ -1393,7 +1394,7 @@ const Invoicecreate = () => {
                           <td>
                             <Form.Item //name={`totalTaxPercent-${index}`} 
                             style={{ marginBottom: '0px' }}>
-                              {calculateTotalTaxPercent(taxes[index] || [])} %
+                              {calculateTotalTaxPercent(taxes[index] || [])} 
                             </Form.Item>
                           </td>
                           <td>
