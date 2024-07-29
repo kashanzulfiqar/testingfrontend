@@ -174,6 +174,23 @@ const Invoicecreate = () => {
       calculateTotal(updatedTaxes);
       return updatedTaxes;
     });
+    setTimeout(() => {
+      if (!projectData) {
+        const serviceDetails = form.getFieldsValue().servicesDetails;
+        const item = serviceDetails[index];
+        const updatedTaxes = form.getFieldsValue().servicesDetails[index].invoiceTax || [];
+        
+        // Calculate the tax percent based on the latest taxes value
+        const taxPercent = calculateTotalTaxPercent(updatedTaxes);
+        item.taxPercent = taxPercent;
+  
+        // Update the serviceDetails array with the new taxPercent
+        serviceDetails[index] = item;
+  
+        // Set the updated serviceDetails back to the form
+        form.setFieldsValue({ servicesDetails: serviceDetails });
+      }
+    }, 0);
   };
 
   const calculateTotalAmount = (total, selectedTaxes) => {
@@ -483,6 +500,7 @@ const Invoicecreate = () => {
           daysWorked: member.daysWorked,
           total: member.total,
           taxSlabIds: taxes[index]?.map(tax => tax),
+          taxPercent: calculateTotalTaxPercent(taxes[index] || []),
           totalAmount: calculateTotalAmount(member.total, taxes[index] || [])
         }));
       }
@@ -495,6 +513,7 @@ const Invoicecreate = () => {
           hoursWorked: member.hoursWorked,
           total: member.total,
           taxSlabIds: taxes[index]?.map(tax => tax),
+          taxPercent: calculateTotalTaxPercent(taxes[index] || []),
           totalAmount: calculateTotalAmount(member.total, taxes[index] || [])
         }));
       }
@@ -1548,6 +1567,7 @@ const Invoicecreate = () => {
                             <th style={{minWidth: '162px'}}>{t('finance.Invoices.quantity')}</th>
                             <th>{t('finance.Invoices.amount')}</th>
                             <th>Tax</th>
+                            <th>Tax %</th>
                             <th>Total Amount</th>
                             <th> </th>
                           </tr>
@@ -1712,8 +1732,8 @@ const Invoicecreate = () => {
                                       {...field}
                                       name={[field.name, 'invoiceTax']}
                                       className="addTeamHeight"
-                                      style={{ width: '120px', marginTop: '19px', marginBottom: '22px'}}
-                                      fieldKey={[field.fieldKey, 'amount']}
+                                      style={{ width: '140px', marginTop: '19px', marginBottom: '22px'}}
+                                      fieldKey={[field.fieldKey, 'invoiceTax']}
                                     >
                                       <Select
                                         showSearch
@@ -1729,7 +1749,10 @@ const Invoicecreate = () => {
                                             {menu}
                                           </>
                                         )}
-                                        onChange={(e) => calculateAmount(e, index, 'invoiceTax')}
+                                        onChange={(e) => {
+                                          calculateAmount(e, index, 'invoiceTax')
+                                          handleTaxChange(e, index)
+                                        }}
                                       >
                                         {allTaxSlabs?.map((tax) => (
                                           <Option key={tax._id} value={tax._id}>
@@ -1740,13 +1763,35 @@ const Invoicecreate = () => {
                                     </Form.Item>
                                   </td>
                                   <td>
+                                    <Form.Item
+                                      {...field}
+                                      name={[field.name, 'taxPercent']}
+                                      className='custom-border'
+                                      style={{ marginTop: '19px', marginBottom: '22px'}}
+                                      fieldKey={[field.fieldKey, 'taxPercent']}
+                                    >
+                                      <InputNumber
+                                        className='form-control hideHandlerIcon'
+                                        disabled
+                                        style={{width: '120px', color: 'black', background: '#E9ECEF'}}
+                                        formatter={(value) => {
+                                          return `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                                        }}
+                                        parser={(value) => {
+                                          return value.replace(/\$\s?|(,*)/g, '');
+                                        }}
+                                      />
+                                      {/* {calculateTotalTaxPercent(taxes[index] || [])} % */}
+                                    </Form.Item>
+                                  </td>
+                                  <td>
                                     {/* <input className="form-control" readOnly style={{width: '120px'}} type="text" /> */}
                                     <Form.Item
                                       {...field}
                                       name={[field.name, 'totalAmount']}
                                       className='custom-border'
                                       style={{ marginTop: '19px', marginBottom: '22px'}}
-                                      fieldKey={[field.fieldKey, 'amount']}
+                                      fieldKey={[field.fieldKey, 'totalAmount']}
                                     >
                                       <InputNumber
                                         className='form-control hideHandlerIcon'
