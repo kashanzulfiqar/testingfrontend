@@ -1054,7 +1054,7 @@ const Invoicecreate = () => {
                           <th>Tax</th>
                           <th>Tax %</th>
                           <th>Total Amount</th>
-                          <th>Action</th>
+                          <th> </th>
                         </tr>
                       </thead>
                         <tbody>
@@ -1099,10 +1099,21 @@ const Invoicecreate = () => {
                             >
                               <Select
                                 showSearch
+                                onSearch={(val) => {
+                                  searchHandler(val, 'tax')
+                                }}
                                 onChange={(value) => handleTaxChange(value, index)}
                                 className="customselect-height custom-select"
                                 mode='multiple'
                                 placeholder="Select Tax"
+                                filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                                optionFilterProp="children"
+                                notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                                dropdownRender={(menu) => (
+                                  <>
+                                    {menu}
+                                  </>
+                                )}
                               >
                                 {allTaxSlabs?.map((tax) => (
                                   <Option key={tax._id} value={tax._id}>
@@ -1295,7 +1306,7 @@ const Invoicecreate = () => {
                           <th>Tax</th>
                           <th>Tax %</th>
                           <th>Total Amount</th>
-                          <th>Action</th>
+                          <th> </th>
                         </tr>
                       </thead>
                         <tbody>
@@ -1338,6 +1349,14 @@ const Invoicecreate = () => {
                                 className="customselect-height custom-select"
                                 mode='multiple'
                                 placeholder="Select Tax"
+                                filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                                optionFilterProp="children"
+                                notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                                dropdownRender={(menu) => (
+                                  <>
+                                    {menu}
+                                  </>
+                                )}
                               >
                                 {allTaxSlabs?.map((tax) => (
                                   <Option key={tax._id} value={tax._id}>
