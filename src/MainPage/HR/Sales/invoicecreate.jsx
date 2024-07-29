@@ -316,10 +316,18 @@ const Invoicecreate = () => {
       item.amount =   `${t_amount?.toFixed(2)}`;
     }
     
-    calculateTotal()
+    const selectedTaxes = item.invoiceTax || [];
+    console.log("TAXES", item.invoiceTax)
+    const taxAmounts = selectedTaxes.map(taxId => {
+      const tax = allTaxSlabs.find(t => t._id === taxId);
+      return tax ? (parseFloat(tax.taxPercent) / 100) * parseFloat(item.amount) : 0;
+    });
+    const totalTax = taxAmounts.reduce((acc, val) => acc + val, 0);
+    item.totalAmount = (parseFloat(item.amount) + totalTax).toFixed(2);
     
     updatedData[index] = item;
     form.setFieldsValue({ servicesDetails: updatedData });
+    calculateTotal()
   };
 
   const calculateTotal = () => {
@@ -358,22 +366,25 @@ const Invoicecreate = () => {
     else {
       const updatedData = form.getFieldsValue().servicesDetails;
       let sub_total = 0;
+      let total = 0;
       let grand_total = 0;
     
       updatedData?.forEach((item) => {
         sub_total += parseFloat(item?.amount) || 0;
+        total += parseFloat(item?.totalAmount) || 0;
       });
 
       // sub total
+      setSubTotalEx(total?.toFixed(2))
       setSubTotal(sub_total?.toFixed(2))
 
       // grand total
       const discout_value = form.getFieldsValue().discount;
       const invoice_tax = form.getFieldsValue().invoiceTax;
       if(invoice_tax){
-        grand_total = ( sub_total + ( (+invoice_tax/100)*sub_total ) );
+        grand_total = ( total + ( (+invoice_tax/100)*total ) );
       }else {
-        grand_total = sub_total;
+        grand_total = total;
       }
       if(discout_value){
         // grand_total = discout_value ? ( grand_total - ( (+discout_value/100)*grand_total ) ) : grand_total;
@@ -1712,20 +1723,32 @@ const Invoicecreate = () => {
                                     <Form.Item
                                       {...field}
                                       name={[field.name, 'invoiceTax']}
-                                      className='custom-border'
-                                      style={{ marginTop: '19px', marginBottom: '22px'}}
+                                      className="addTeamHeight"
+                                      style={{ width: '120px', marginTop: '19px', marginBottom: '22px'}}
                                       fieldKey={[field.fieldKey, 'amount']}
                                     >
-                                      <InputNumber
-                                        className='form-control hideHandlerIcon'
-                                        style={{width: '120px'}}
-                                        formatter={(value) => {
-                                          return `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-                                        }}
-                                        parser={(value) => {
-                                          return value.replace(/\$\s?|(,*)/g, '');
-                                        }}
-                                      />
+                                      <Select
+                                        showSearch
+                                        //onChange={(value) => handleTaxChange(value, index)}
+                                        className="customselect-height custom-select"
+                                        mode='multiple'
+                                        placeholder="Select Tax"
+                                        filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                                        optionFilterProp="children"
+                                        notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                                        dropdownRender={(menu) => (
+                                          <>
+                                            {menu}
+                                          </>
+                                        )}
+                                        onChange={(e) => calculateAmount(e, index, 'invoiceTax')}
+                                      >
+                                        {allTaxSlabs?.map((tax) => (
+                                          <Option key={tax._id} value={tax._id}>
+                                            {tax.title}
+                                          </Option>
+                                        ))}
+                                      </Select>
                                     </Form.Item>
                                   </td>
                                   <td>
@@ -1809,9 +1832,15 @@ const Invoicecreate = () => {
                       <table className="table table-hover table-white">
                         <tbody>
                           <tr>
-                            <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>{t('finance.Invoices.total')}</td>
+                            <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>Total (Tax exclusive)</td>
                             <td style={{textAlign: 'right', paddingRight: '30px', width: '230px'}}>
                               {subTotal?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {currencyIs}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>Total (Tax inclusive)</td>
+                            <td style={{textAlign: 'right', paddingRight: '30px', width: '230px'}}>
+                              {subTotalEx?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {currencyIs}
                             </td>
                           </tr>
                           <tr>
@@ -1822,12 +1851,6 @@ const Invoicecreate = () => {
                                 className="addTeamHeight"
                                 style={{marginBottom: '0px'}}
                                 // className="custom-border"
-                                rules={[
-                                  {
-                                    required: true,
-                                    message: t('finance.Invoices.pleaseselecttax'),
-                                  },
-                                ]}
                               >
                                 <Select
                                   showSearch
