@@ -1185,12 +1185,6 @@ const Invoicecreate = () => {
                                 className="addTeamHeight"
                                 style={{marginBottom: '0px'}}
                                 // className="custom-border"
-                                rules={[
-                                  {
-                                    required: true,
-                                    message: t('finance.Invoices.pleaseselecttax'),
-                                  },
-                                ]}
                               >
                                 <Select
                                   showSearch
@@ -1428,12 +1422,6 @@ const Invoicecreate = () => {
                                 className="addTeamHeight"
                                 style={{marginBottom: '0px'}}
                                 // className="custom-border"
-                                rules={[
-                                  {
-                                    required: true,
-                                    message: t('finance.Invoices.pleaseselecttax'),
-                                  },
-                                ]}
                               >
                                 <Select
                                   showSearch
