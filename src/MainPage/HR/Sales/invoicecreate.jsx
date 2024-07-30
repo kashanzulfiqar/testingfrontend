@@ -9,7 +9,7 @@ import { getAllISOCodes } from 'iso-country-currency';
 import moment from 'moment';
 import { LoadingOutlined } from "@ant-design/icons";
 import { useTranslation } from 'react-i18next';
-
+import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 
 const Invoicecreate = () => {
   const [form] = Form.useForm();
@@ -51,6 +51,7 @@ const Invoicecreate = () => {
   const [sendLoader, setSendLoader] = useState(false);
   const [saveLoader, setSaveLoader] = useState(false);
   const [taxes, setTaxes] = useState({});
+  const [tableLoader, setTableLoader] = useState(false);
 
   useEffect(() => {
     if((role === 'admin' || permissions?.managePayrolls) && projectData) {
@@ -232,12 +233,14 @@ const Invoicecreate = () => {
   };
 
   const getProjectInvoice = (id, invoiceStartDate, invoiceEndDate) => {
+    setTableLoader(true);
     apiServices("GET", `project-management/projectInvoice?projectId=${id}&invoiceStartDate=${invoiceStartDate}&invoiceEndDate=${invoiceEndDate}`, null, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
           console.log("success")
           setTeamLoader(true);
           setTeamArray(res?.data?.teamCost);
+          setTableLoader(false);
         }
       })
       .catch((err) => {
@@ -250,10 +253,12 @@ const Invoicecreate = () => {
               : 'Error getting project details'
           }!`
         );
+        setTableLoader(false);
       });
   }
 
   const getMonthlyProjectInvoice = (id, invoiceStartDate, invoiceEndDate) => {
+    setTableLoader(true);
     console.log("Monthly")
     apiServices("GET", `project-management/monthlyProjectInvoice?projectId=${id}&invoiceStartDate=${invoiceStartDate}&invoiceEndDate=${invoiceEndDate}`, null, user_state)
       .then((res) => {
@@ -261,6 +266,7 @@ const Invoicecreate = () => {
           console.log("success")
           setMonthlyLoader(true);
           setTeamArray(res?.data?.teamCost);
+          setTableLoader(false);
         }
       })
       .catch((err) => {
@@ -273,6 +279,7 @@ const Invoicecreate = () => {
               : 'Error getting project details'
           }!`
         );
+        setTableLoader(false);
       });
   }
 
@@ -438,6 +445,44 @@ const Invoicecreate = () => {
 
     calculateTotal();
   };
+
+  const customEmptyText = (
+    <Empty
+      image={<img src={EmptyTable} />}
+      // image={<InboxOutlined />}
+      imageStyle={
+        {
+          // fontSize: 48,
+          // color: '#1890ff',
+        }
+      }
+      style={{
+        height: "300px",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+      }}
+      description={
+        <div style={{ display: "" }}>
+          <div
+            style={{
+              color: "#34343F",
+              fontWeight: "500",
+              fontSize: "14px",
+              margin: "7px 0px 4px 0px",
+            }}
+          >
+            No Data
+          </div>
+          {/* <div
+            style={{ color: "#464665", fontWeight: "300", fontSize: "13px" }}
+          >
+            Click 'Add Department' Button To Create <br /> A New Department{" "}
+          </div> */}
+        </div>
+      }
+    />
+  );
 
   const searchHandler = (val, type) => {
     let dropdownValues = []
@@ -1070,490 +1115,517 @@ const Invoicecreate = () => {
               <div className="row">
                 <div className="col-md-12 col-sm-12">
                   {projectData ?
+                  
                   (
-                    teamLoader ? 
-                    <>
-                    <div className="table-responsive">
-                      <table className="table table-hover table-white">
-                      <thead>
-                        <tr>
-                          <th>#</th>
-                          <th>Resource Name</th>
-                          <th>Hourly Rate</th>
-                          <th>Hours Worked</th>
-                          <th>Total</th>
-                          <th>Tax</th>
-                          <th>Tax %</th>
-                          <th>Total Amount</th>
-                          <th> </th>
-                        </tr>
-                      </thead>
-                        <tbody>
+                    tableLoader ?
+                      <div className="col-md-12 text-center">
+                        <Spin size="large" tip="Loading..." />
+                      </div> :
+                    (
+                      teamLoader ? 
+                      <>
+                      <div className="table-responsive">
+                        <table className="table table-hover table-white">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>Resource Name</th>
+                            <th>Hourly Rate</th>
+                            <th>Hours Worked</th>
+                            <th>Total</th>
+                            <th>Tax</th>
+                            <th>Tax %</th>
+                            <th>Total Amount</th>
+                            <th> </th>
+                          </tr>
+                        </thead>
+                          <tbody>
 
-                        {teamArray.map((member, index) => (
-                          <tr key={member.userId}>
-                            <td>{index + 1}</td>
-                            <td>{member.userName}</td>
-                            <td>{member.cost} {currencyIs}</td>
-                            <td>
-                              {/* {member.hoursWorked} */}
-                              <Form.Item
-                              //name={`tax-${index}`}
-                              className="addTeamHeight"
-                              style={{marginBottom: '0px', width: '120px' }}
-                            >
-                              <Input
-                                className="form-control text-end"
-                                value={member.hoursWorked}
-                                onChange={(e) => handleHoursWorkedChange(e, index)}
-                                onKeyPress={(e) => {
-                                  if (
-                                    e.key !== '.' &&
-                                    (e.which < 48 || e.which > 57) &&
-                                    e.which !== 8 // Allow backspace
-                                  ) {
-                                    e.preventDefault();
-                                  }
-                                  if (e.key === '.' && e.target.value.includes('.')) {
-                                    e.preventDefault();
-                                  }
-                                }}
-                              />
-                            </Form.Item>
-                            </td>
-                            <td>{member.total} {currencyIs}</td>
-                            <td>
-                            <Form.Item
-                              //name={`tax-${index}`}
-                              className="addTeamHeight"
-                              style={{marginBottom: '0px', width: '194px' }}
-                            >
-                              <Select
-                                showSearch
-                                onSearch={(val) => {
-                                  searchHandler(val, 'tax')
-                                }}
-                                onChange={(value) => handleTaxChange(value, index)}
-                                className="customselect-height custom-select"
-                                mode='multiple'
-                                placeholder="Select Tax"
-                                filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                                optionFilterProp="children"
-                                notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
-                                dropdownRender={(menu) => (
-                                  <>
-                                    {menu}
-                                  </>
-                                )}
-                              >
-                                {allTaxSlabs?.map((tax) => (
-                                  <Option key={tax._id} value={tax._id}>
-                                    {tax.title}
-                                  </Option>
-                                ))}
-                              </Select>
-                            </Form.Item>
-                          </td>
-                          <td>
-                            <Form.Item //name={`totalTaxPercent-${index}`} 
-                            style={{ marginBottom: '0px' }}>
-                              {calculateTotalTaxPercent(taxes[index] || [])}
-                            </Form.Item>
-                          </td>
-                          <td>
-                            <Form.Item //name={`totalAmount-${index}`} 
-                            style={{ marginBottom: '0px' }}>
-                              {calculateTotalAmount(member.total, taxes[index] || [])} {currencyIs}
-                            </Form.Item>
-                          </td>
-                          <td>
-                            {teamArray.length > 1 ? (
-                              <a href="javascript:void(0)" className="text-danger font-18" onClick={() => {removeRow(index); calculateTotal();}} title="Remove">
-                                <i className="fa fa-trash-o" />
-                              </a>
-                            ) : (
-                              <a href="javascript:void(0)" className="text-muted font-18" style={{ cursor: 'not-allowed' }} title="Cannot remove">
-                                <i className="fa fa-trash-o" />
-                              </a>
-                            )}
-                          </td>
-                          </tr>
-                        ))}
-                        </tbody>
-                      </table>
-                    </div>
-                    <div className="table-responsive">
-                      <table className="table table-hover table-white">
-                        <tbody>
-                          <tr>
-                            <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>Total (Tax exclusive)</td>
-                            <td style={{textAlign: 'right', paddingRight: '30px', width: '230px'}}>
-                              {subTotalEx?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {currencyIs}
-                            </td>
-                          </tr>
-                          <tr>
-                            <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>Total (Tax inclusive)</td>
-                            <td style={{textAlign: 'right', paddingRight: '30px', width: '230px'}}>
-                              {subTotal?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {currencyIs}
-                            </td>
-                          </tr>
-                          <tr>
-                            <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>{t('finance.Invoices.tax')}</td>
-                            <td style={{textAlign: 'right', paddingRight: '30px', width: '230px'}}>
-                              <Form.Item
-                                name="invoiceTaxSlabId"
-                                className="addTeamHeight"
-                                style={{marginBottom: '0px'}}
-                                // className="custom-border"
-                              >
-                                <Select
-                                  showSearch
-                                  onSearch={(val) => {
-                                    searchHandler(val, 'tax')
-                                  }}
-                                  className="customselect-height custom-select"
-                                  mode='multiple'
-                                  filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                                  optionFilterProp="children"
-                                  notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
-                                  dropdownRender={(menu) => (
-                                    <>
-                                      {menu}
-                                    </>
-                                  )}
-                                  getPopupContainer={() =>
-                                    document.getElementById("area")
-                                  }
-                                  placeholder={t('finance.Invoices.selectTax')}
-                                  onChange={(value) => {
-                                    const totalTaxPercent = allTaxSlabs
-                                    .filter(item => value.includes(item._id))
-                                    .reduce((total, item) => total + parseFloat(item.taxPercent), 0);
-                                    form.setFieldsValue({ invoiceTax: `${totalTaxPercent}` });
-                                    calculateTotal();
-                                  }}
-                                >
-                                  {allTaxSlabs?.map((tax) => (
-                                    <Select.Option
-                                      key={tax._id}
-                                      value={tax._id}
+                          {
+                            teamArray?.length > 0 
+                            ?
+                              teamArray.map((member, index) => (
+                                <tr key={member.userId}>
+                                  <td>{index + 1}</td>
+                                  <td>{member.userName}</td>
+                                  <td>{member.cost} {currencyIs}</td>
+                                  <td>
+                                    {/* {member.hoursWorked} */}
+                                    <Form.Item
+                                    //name={`tax-${index}`}
+                                    className="addTeamHeight"
+                                    style={{marginBottom: '0px', width: '120px' }}
+                                  >
+                                    <Input
+                                      className="form-control text-end"
+                                      value={member.hoursWorked}
+                                      onChange={(e) => handleHoursWorkedChange(e, index)}
+                                      onKeyPress={(e) => {
+                                        if (
+                                          e.key !== '.' &&
+                                          (e.which < 48 || e.which > 57) &&
+                                          e.which !== 8 // Allow backspace
+                                        ) {
+                                          e.preventDefault();
+                                        }
+                                        if (e.key === '.' && e.target.value.includes('.')) {
+                                          e.preventDefault();
+                                        }
+                                      }}
+                                    />
+                                  </Form.Item>
+                                  </td>
+                                  <td>{member.total} {currencyIs}</td>
+                                  <td>
+                                  <Form.Item
+                                    //name={`tax-${index}`}
+                                    className="addTeamHeight"
+                                    style={{marginBottom: '0px', width: '194px' }}
+                                  >
+                                    <Select
+                                      showSearch
+                                      onSearch={(val) => {
+                                        searchHandler(val, 'tax')
+                                      }}
+                                      onChange={(value) => handleTaxChange(value, index)}
+                                      className="customselect-height custom-select"
+                                      mode='multiple'
+                                      placeholder="Select Tax"
+                                      filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                                      optionFilterProp="children"
+                                      notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                                      dropdownRender={(menu) => (
+                                        <>
+                                          {menu}
+                                        </>
+                                      )}
                                     >
-                                      {tax.title}
-                                    </Select.Option>
-                                  ))}
-                                </Select>
-                              </Form.Item>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>{t('finance.Invoices.tax')} %</td>
-                            <td style={{textAlign: 'right', paddingRight: '30px', width: '230px'}}>
-                            <Form.Item
-                              name='invoiceTax'
-                              className='custom-border'
-                              style={{marginBottom: '0px'}}
-                            >
-                                <Input className="form-control text-end" readOnly />
-                            </Form.Item>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>
-                            {t('finance.Invoices.discount')} %
-                            </td>
-                            <td style={{textAlign: 'right', paddingRight: '30px', width: '230px'}}>
-                            <Form.Item
-                              name="discount"
-                              className='custom-border'
-                              style={{marginBottom: '0px', width: '194px'}}
-                              rules={[
-                                {
-                                  validator: (_, value) => {
-                                    if (value > 100) {
-                                      return Promise.reject(t('finance.Invoices.valueMustBeBetweenZeroAndHundred'));
+                                      {allTaxSlabs?.map((tax) => (
+                                        <Option key={tax._id} value={tax._id}>
+                                          {tax.title}
+                                        </Option>
+                                      ))}
+                                    </Select>
+                                  </Form.Item>
+                                </td>
+                                <td>
+                                  <Form.Item //name={`totalTaxPercent-${index}`} 
+                                  style={{ marginBottom: '0px' }}>
+                                    {calculateTotalTaxPercent(taxes[index] || [])}
+                                  </Form.Item>
+                                </td>
+                                <td>
+                                  <Form.Item //name={`totalAmount-${index}`} 
+                                  style={{ marginBottom: '0px' }}>
+                                    {calculateTotalAmount(member.total, taxes[index] || [])} {currencyIs}
+                                  </Form.Item>
+                                </td>
+                                <td>
+                                  {teamArray.length > 1 ? (
+                                    <a href="javascript:void(0)" className="text-danger font-18" onClick={() => {removeRow(index); calculateTotal();}} title="Remove">
+                                      <i className="fa fa-trash-o" />
+                                    </a>
+                                  ) : (
+                                    <a href="javascript:void(0)" className="text-muted font-18" style={{ cursor: 'not-allowed' }} title="Cannot remove">
+                                      <i className="fa fa-trash-o" />
+                                    </a>
+                                  )}
+                                </td>
+                                </tr>
+                              ))
+                            :
+                            <tr>
+                              <td colSpan="9" className="text-center">
+                                {customEmptyText}
+                              </td>
+                            </tr>
+                          }
+                          </tbody>
+                        </table>
+                      </div>
+                      <div className="table-responsive">
+                        <table className="table table-hover table-white">
+                          <tbody>
+                            <tr>
+                              <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>Total (Tax exclusive)</td>
+                              <td style={{textAlign: 'right', paddingRight: '30px', width: '230px'}}>
+                                {subTotalEx?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {currencyIs}
+                              </td>
+                            </tr>
+                            <tr>
+                              <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>Total (Tax inclusive)</td>
+                              <td style={{textAlign: 'right', paddingRight: '30px', width: '230px'}}>
+                                {subTotal?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {currencyIs}
+                              </td>
+                            </tr>
+                            <tr>
+                              <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>{t('finance.Invoices.tax')}</td>
+                              <td style={{textAlign: 'right', paddingRight: '30px', width: '230px'}}>
+                                <Form.Item
+                                  name="invoiceTaxSlabId"
+                                  className="addTeamHeight"
+                                  style={{marginBottom: '0px'}}
+                                  // className="custom-border"
+                                >
+                                  <Select
+                                    showSearch
+                                    onSearch={(val) => {
+                                      searchHandler(val, 'tax')
+                                    }}
+                                    className="customselect-height custom-select"
+                                    mode='multiple'
+                                    filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                                    optionFilterProp="children"
+                                    notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                                    dropdownRender={(menu) => (
+                                      <>
+                                        {menu}
+                                      </>
+                                    )}
+                                    getPopupContainer={() =>
+                                      document.getElementById("area")
                                     }
-                                    return Promise.resolve();
+                                    placeholder={t('finance.Invoices.selectTax')}
+                                    onChange={(value) => {
+                                      const totalTaxPercent = allTaxSlabs
+                                      .filter(item => value.includes(item._id))
+                                      .reduce((total, item) => total + parseFloat(item.taxPercent), 0);
+                                      form.setFieldsValue({ invoiceTax: `${totalTaxPercent}` });
+                                      calculateTotal();
+                                    }}
+                                  >
+                                    {allTaxSlabs?.map((tax) => (
+                                      <Select.Option
+                                        key={tax._id}
+                                        value={tax._id}
+                                      >
+                                        {tax.title}
+                                      </Select.Option>
+                                    ))}
+                                  </Select>
+                                </Form.Item>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>{t('finance.Invoices.tax')} %</td>
+                              <td style={{textAlign: 'right', paddingRight: '30px', width: '230px'}}>
+                              <Form.Item
+                                name='invoiceTax'
+                                className='custom-border'
+                                style={{marginBottom: '0px'}}
+                              >
+                                  <Input className="form-control text-end" readOnly />
+                              </Form.Item>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>
+                              {t('finance.Invoices.discount')} %
+                              </td>
+                              <td style={{textAlign: 'right', paddingRight: '30px', width: '230px'}}>
+                              <Form.Item
+                                name="discount"
+                                className='custom-border'
+                                style={{marginBottom: '0px', width: '194px'}}
+                                rules={[
+                                  {
+                                    validator: (_, value) => {
+                                      if (value > 100) {
+                                        return Promise.reject(t('finance.Invoices.valueMustBeBetweenZeroAndHundred'));
+                                      }
+                                      return Promise.resolve();
+                                    },
                                   },
-                                },
-                              ]}
-                            >
-                              <Input
-                                className="form-control text-end"
-                                onChange={(e) => {
-                                  if(e.target.value <= 100){
-                                    calculateTotal();
-                                  }
-                                }}
-                                onKeyPress={(e) => {
-                                  if (
-                                  e.key === '.' &&
-                                  e.target.value.includes('.')
-                                  ) {
-                                  e.preventDefault();
-                                  } else if (
-                                  e.which !== 46 &&
-                                  (e.which < 48 || e.which > 57)
-                                  ) {
-                                  e.preventDefault();
-                                  }
-                                }}
-                              />
-                            </Form.Item>
-                            </td>
-                          </tr>
+                                ]}
+                              >
+                                <Input
+                                  className="form-control text-end"
+                                  onChange={(e) => {
+                                    if(e.target.value <= 100){
+                                      calculateTotal();
+                                    }
+                                  }}
+                                  onKeyPress={(e) => {
+                                    if (
+                                    e.key === '.' &&
+                                    e.target.value.includes('.')
+                                    ) {
+                                    e.preventDefault();
+                                    } else if (
+                                    e.which !== 46 &&
+                                    (e.which < 48 || e.which > 57)
+                                    ) {
+                                    e.preventDefault();
+                                    }
+                                  }}
+                                />
+                              </Form.Item>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td colSpan={5} style={{textAlign: 'right', fontWeight: 'bold', fontSize: '15px', fontWeight: '700'}}>
+                              {t('finance.Invoices.grandtotal')}
+                              </td>
+                              <td style={{textAlign: 'right', paddingRight: '30px', fontWeight: 'bold', fontSize: '16px', width: '230px'}}>
+                              <Form.Item name="totalAmount" style={{marginBottom: '0px'}}>
+                                {grandTotal?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {currencyIs}
+                              </Form.Item>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>                               
+                      </div>
+                    </>
+                      :
+                      monthlyLoader ?
+                      <>
+                      <div className="table-responsive">
+                        <table className="table table-hover table-white">
+                        <thead>
                           <tr>
-                            <td colSpan={5} style={{textAlign: 'right', fontWeight: 'bold', fontSize: '15px', fontWeight: '700'}}>
-                            {t('finance.Invoices.grandtotal')}
-                            </td>
-                            <td style={{textAlign: 'right', paddingRight: '30px', fontWeight: 'bold', fontSize: '16px', width: '230px'}}>
-                            <Form.Item name="totalAmount" style={{marginBottom: '0px'}}>
-                              {grandTotal?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {currencyIs}
-                            </Form.Item>
-                            </td>
+                            <th>#</th>
+                            <th>Resource Name</th>
+                            <th>Monthly Rate</th>
+                            <th>Per Day Cost</th>
+                            <th>Days Worked</th>
+                            <th>Total</th>
+                            <th>Tax</th>
+                            <th>Tax %</th>
+                            <th>Total Amount</th>
+                            <th> </th>
                           </tr>
-                        </tbody>
-                      </table>                               
-                    </div>
-                  </>
-                    :
-                    monthlyLoader ?
-                    <>
-                    <div className="table-responsive">
-                      <table className="table table-hover table-white">
-                      <thead>
-                        <tr>
-                          <th>#</th>
-                          <th>Resource Name</th>
-                          <th>Monthly Rate</th>
-                          <th>Per Day Cost</th>
-                          <th>Days Worked</th>
-                          <th>Total</th>
-                          <th>Tax</th>
-                          <th>Tax %</th>
-                          <th>Total Amount</th>
-                          <th> </th>
-                        </tr>
-                      </thead>
-                        <tbody>
+                        </thead>
+                          <tbody>
 
-                        {teamArray.map((member, index) => (
-                          <tr key={member.userId}>
-                            <td>{index + 1}</td>
-                            <td>{member.userName}</td>
-                            <td>{member.cost} {currencyIs}</td>
-                            <td>{member.perDayCost} {currencyIs}</td>
-                            <td>
-                              {/* {member.daysWorked} */}
-                              <Form.Item
-                              //name={`tax-${index}`}
-                              className="addTeamHeight"
-                              style={{marginBottom: '0px', width: '120px' }}
-                            >
-                              <Input
-                                className="form-control text-end"
-                                value={member.daysWorked}
-                                onChange={(e) => handleDaysWorkedChange(e, index)}
-                                onKeyPress={(e) => {
-                                  if (e.which < 48 || e.which > 57) {
-                                    e.preventDefault();
-                                  }
-                                }}
-                              />
-                            </Form.Item>
-                            </td>
-                            <td>{member.total} {currencyIs}</td>
-                            <td>
-                            <Form.Item
-                              //name={`tax-${index}`}
-                              className="addTeamHeight"
-                              style={{marginBottom: '0px', width: '194px' }}
-                            >
-                              <Select
-                                showSearch
-                                onChange={(value) => handleTaxChange(value, index)}
-                                className="customselect-height custom-select"
-                                mode='multiple'
-                                placeholder="Select Tax"
-                                filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                                optionFilterProp="children"
-                                notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
-                                dropdownRender={(menu) => (
-                                  <>
-                                    {menu}
-                                  </>
-                                )}
-                              >
-                                {allTaxSlabs?.map((tax) => (
-                                  <Option key={tax._id} value={tax._id}>
-                                    {tax.title}
-                                  </Option>
-                                ))}
-                              </Select>
-                            </Form.Item>
-                          </td>
-                          <td>
-                            <Form.Item //name={`totalTaxPercent-${index}`} 
-                            style={{ marginBottom: '0px' }}>
-                              {calculateTotalTaxPercent(taxes[index] || [])} 
-                            </Form.Item>
-                          </td>
-                          <td>
-                            <Form.Item //name={`totalAmount-${index}`} 
-                            style={{ marginBottom: '0px' }}>
-                              {calculateTotalAmount(member.total, taxes[index] || [])} {currencyIs}
-                            </Form.Item>
-                          </td>
-                          <td>
-                            {teamArray.length > 1 ? (
-                              <a href="javascript:void(0)" className="text-danger font-18" onClick={() => {removeRow(index); calculateTotal();}} title="Remove">
-                                <i className="fa fa-trash-o" />
-                              </a>
-                            ) : (
-                              <a href="javascript:void(0)" className="text-muted font-18" style={{ cursor: 'not-allowed' }} title="Cannot remove">
-                                <i className="fa fa-trash-o" />
-                              </a>
-                            )}
-                          </td>
-                          </tr>
-                        ))}
-                        </tbody>
-                      </table>
-                    </div>
-                    <div className="table-responsive">
-                      <table className="table table-hover table-white">
-                        <tbody>
-                          <tr>
-                            <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>Total (Tax exclusive)</td>
-                            <td style={{textAlign: 'right', paddingRight: '30px', width: '230px'}}>
-                              {subTotalEx?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {currencyIs}
-                            </td>
-                          </tr>
-                          <tr>
-                            <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>Total (Tax inclusive)</td>
-                            <td style={{textAlign: 'right', paddingRight: '30px', width: '230px'}}>
-                              {subTotal?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {currencyIs}
-                            </td>
-                          </tr>
-                          <tr>
-                            <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>{t('finance.Invoices.tax')}</td>
-                            <td style={{textAlign: 'right', paddingRight: '30px', width: '230px'}}>
-                              <Form.Item
-                                name="invoiceTaxSlabId"
-                                className="addTeamHeight"
-                                style={{marginBottom: '0px'}}
-                                // className="custom-border"
-                              >
-                                <Select
-                                  showSearch
-                                  onSearch={(val) => {
-                                    searchHandler(val, 'tax')
-                                  }}
-                                  className="customselect-height custom-select"
-                                  mode='multiple'
-                                  filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                                  optionFilterProp="children"
-                                  notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
-                                  dropdownRender={(menu) => (
-                                    <>
-                                      {menu}
-                                    </>
-                                  )}
-                                  getPopupContainer={() =>
-                                    document.getElementById("area")
-                                  }
-                                  placeholder={t('finance.Invoices.selectTax')}
-                                  onChange={(value) => {
-                                    const totalTaxPercent = allTaxSlabs
-                                    .filter(item => value.includes(item._id))
-                                    .reduce((total, item) => total + parseFloat(item.taxPercent), 0);
-                                    form.setFieldsValue({ invoiceTax: `${totalTaxPercent}` });
-                                    calculateTotal();
-                                  }}
-                                >
-                                  {allTaxSlabs?.map((tax) => (
-                                    <Select.Option
-                                      key={tax._id}
-                                      value={tax._id}
+                          {
+                            teamArray?.length > 0 
+                            ?
+                              teamArray.map((member, index) => (
+                                <tr key={member.userId}>
+                                  <td>{index + 1}</td>
+                                  <td>{member.userName}</td>
+                                  <td>{member.cost} {currencyIs}</td>
+                                  <td>{member.perDayCost} {currencyIs}</td>
+                                  <td>
+                                    {/* {member.daysWorked} */}
+                                    <Form.Item
+                                    //name={`tax-${index}`}
+                                    className="addTeamHeight"
+                                    style={{marginBottom: '0px', width: '120px' }}
+                                  >
+                                    <Input
+                                      className="form-control text-end"
+                                      value={member.daysWorked}
+                                      onChange={(e) => handleDaysWorkedChange(e, index)}
+                                      onKeyPress={(e) => {
+                                        if (e.which < 48 || e.which > 57) {
+                                          e.preventDefault();
+                                        }
+                                      }}
+                                    />
+                                  </Form.Item>
+                                  </td>
+                                  <td>{member.total} {currencyIs}</td>
+                                  <td>
+                                  <Form.Item
+                                    //name={`tax-${index}`}
+                                    className="addTeamHeight"
+                                    style={{marginBottom: '0px', width: '194px' }}
+                                  >
+                                    <Select
+                                      showSearch
+                                      onChange={(value) => handleTaxChange(value, index)}
+                                      className="customselect-height custom-select"
+                                      mode='multiple'
+                                      placeholder="Select Tax"
+                                      filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                                      optionFilterProp="children"
+                                      notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                                      dropdownRender={(menu) => (
+                                        <>
+                                          {menu}
+                                        </>
+                                      )}
                                     >
-                                      {tax.title}
-                                    </Select.Option>
-                                  ))}
-                                </Select>
-                              </Form.Item>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>{t('finance.Invoices.tax')} %</td>
-                            <td style={{textAlign: 'right', paddingRight: '30px', width: '230px'}}>
-                            <Form.Item
-                              name='invoiceTax'
-                              className='custom-border'
-                              style={{marginBottom: '0px'}}
-                            >
-                                <Input className="form-control text-end" readOnly />
-                            </Form.Item>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>
-                            {t('finance.Invoices.discount')} %
-                            </td>
-                            <td style={{textAlign: 'right', paddingRight: '30px', width: '230px'}}>
-                            <Form.Item
-                              name="discount"
-                              className='custom-border'
-                              style={{marginBottom: '0px', width: '194px'}}
-                              rules={[
-                                {
-                                  validator: (_, value) => {
-                                    if (value > 100) {
-                                      return Promise.reject(t('finance.Invoices.valueMustBeBetweenZeroAndHundred'));
+                                      {allTaxSlabs?.map((tax) => (
+                                        <Option key={tax._id} value={tax._id}>
+                                          {tax.title}
+                                        </Option>
+                                      ))}
+                                    </Select>
+                                  </Form.Item>
+                                </td>
+                                <td>
+                                  <Form.Item //name={`totalTaxPercent-${index}`} 
+                                  style={{ marginBottom: '0px' }}>
+                                    {calculateTotalTaxPercent(taxes[index] || [])} 
+                                  </Form.Item>
+                                </td>
+                                <td>
+                                  <Form.Item //name={`totalAmount-${index}`} 
+                                  style={{ marginBottom: '0px' }}>
+                                    {calculateTotalAmount(member.total, taxes[index] || [])} {currencyIs}
+                                  </Form.Item>
+                                </td>
+                                <td>
+                                  {teamArray.length > 1 ? (
+                                    <a href="javascript:void(0)" className="text-danger font-18" onClick={() => {removeRow(index); calculateTotal();}} title="Remove">
+                                      <i className="fa fa-trash-o" />
+                                    </a>
+                                  ) : (
+                                    <a href="javascript:void(0)" className="text-muted font-18" style={{ cursor: 'not-allowed' }} title="Cannot remove">
+                                      <i className="fa fa-trash-o" />
+                                    </a>
+                                  )}
+                                </td>
+                                </tr>
+                              ))
+                            :
+                              <tr>
+                                <td colSpan="9" className="text-center">
+                                  {customEmptyText}
+                                </td>
+                              </tr>
+                          }
+                          </tbody>
+                        </table>
+                      </div>
+                      <div className="table-responsive">
+                        <table className="table table-hover table-white">
+                          <tbody>
+                            <tr>
+                              <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>Total (Tax exclusive)</td>
+                              <td style={{textAlign: 'right', paddingRight: '30px', width: '230px'}}>
+                                {subTotalEx?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {currencyIs}
+                              </td>
+                            </tr>
+                            <tr>
+                              <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>Total (Tax inclusive)</td>
+                              <td style={{textAlign: 'right', paddingRight: '30px', width: '230px'}}>
+                                {subTotal?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {currencyIs}
+                              </td>
+                            </tr>
+                            <tr>
+                              <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>{t('finance.Invoices.tax')}</td>
+                              <td style={{textAlign: 'right', paddingRight: '30px', width: '230px'}}>
+                                <Form.Item
+                                  name="invoiceTaxSlabId"
+                                  className="addTeamHeight"
+                                  style={{marginBottom: '0px'}}
+                                  // className="custom-border"
+                                >
+                                  <Select
+                                    showSearch
+                                    onSearch={(val) => {
+                                      searchHandler(val, 'tax')
+                                    }}
+                                    className="customselect-height custom-select"
+                                    mode='multiple'
+                                    filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                                    optionFilterProp="children"
+                                    notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                                    dropdownRender={(menu) => (
+                                      <>
+                                        {menu}
+                                      </>
+                                    )}
+                                    getPopupContainer={() =>
+                                      document.getElementById("area")
                                     }
-                                    return Promise.resolve();
+                                    placeholder={t('finance.Invoices.selectTax')}
+                                    onChange={(value) => {
+                                      const totalTaxPercent = allTaxSlabs
+                                      .filter(item => value.includes(item._id))
+                                      .reduce((total, item) => total + parseFloat(item.taxPercent), 0);
+                                      form.setFieldsValue({ invoiceTax: `${totalTaxPercent}` });
+                                      calculateTotal();
+                                    }}
+                                  >
+                                    {allTaxSlabs?.map((tax) => (
+                                      <Select.Option
+                                        key={tax._id}
+                                        value={tax._id}
+                                      >
+                                        {tax.title}
+                                      </Select.Option>
+                                    ))}
+                                  </Select>
+                                </Form.Item>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>{t('finance.Invoices.tax')} %</td>
+                              <td style={{textAlign: 'right', paddingRight: '30px', width: '230px'}}>
+                              <Form.Item
+                                name='invoiceTax'
+                                className='custom-border'
+                                style={{marginBottom: '0px'}}
+                              >
+                                  <Input className="form-control text-end" readOnly />
+                              </Form.Item>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>
+                              {t('finance.Invoices.discount')} %
+                              </td>
+                              <td style={{textAlign: 'right', paddingRight: '30px', width: '230px'}}>
+                              <Form.Item
+                                name="discount"
+                                className='custom-border'
+                                style={{marginBottom: '0px', width: '194px'}}
+                                rules={[
+                                  {
+                                    validator: (_, value) => {
+                                      if (value > 100) {
+                                        return Promise.reject(t('finance.Invoices.valueMustBeBetweenZeroAndHundred'));
+                                      }
+                                      return Promise.resolve();
+                                    },
                                   },
-                                },
-                              ]}
-                            >
-                              <Input
-                                className="form-control text-end"
-                                onChange={(e) => {
-                                  if(e.target.value <= 100){
-                                    calculateTotal();
-                                  }
-                                }}
-                                onKeyPress={(e) => {
-                                  if (
-                                  e.key === '.' &&
-                                  e.target.value.includes('.')
-                                  ) {
-                                  e.preventDefault();
-                                  } else if (
-                                  e.which !== 46 &&
-                                  (e.which < 48 || e.which > 57)
-                                  ) {
-                                  e.preventDefault();
-                                  }
-                                }}
-                              />
-                            </Form.Item>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td colSpan={5} style={{textAlign: 'right', fontWeight: 'bold', fontSize: '15px', fontWeight: '700'}}>
-                            {t('finance.Invoices.grandtotal')}
-                            </td>
-                            <td style={{textAlign: 'right', paddingRight: '30px', fontWeight: 'bold', fontSize: '16px', width: '230px'}}>
-                            <Form.Item name="totalAmount" style={{marginBottom: '0px'}}>
-                              {grandTotal?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {currencyIs}
-                            </Form.Item>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>                               
-                    </div>
-                  </>
-                    :
-                    null
+                                ]}
+                              >
+                                <Input
+                                  className="form-control text-end"
+                                  onChange={(e) => {
+                                    if(e.target.value <= 100){
+                                      calculateTotal();
+                                    }
+                                  }}
+                                  onKeyPress={(e) => {
+                                    if (
+                                    e.key === '.' &&
+                                    e.target.value.includes('.')
+                                    ) {
+                                    e.preventDefault();
+                                    } else if (
+                                    e.which !== 46 &&
+                                    (e.which < 48 || e.which > 57)
+                                    ) {
+                                    e.preventDefault();
+                                    }
+                                  }}
+                                />
+                              </Form.Item>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td colSpan={5} style={{textAlign: 'right', fontWeight: 'bold', fontSize: '15px', fontWeight: '700'}}>
+                              {t('finance.Invoices.grandtotal')}
+                              </td>
+                              <td style={{textAlign: 'right', paddingRight: '30px', fontWeight: 'bold', fontSize: '16px', width: '230px'}}>
+                              <Form.Item name="totalAmount" style={{marginBottom: '0px'}}>
+                                {grandTotal?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {currencyIs}
+                              </Form.Item>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>                               
+                      </div>
+                    </>
+                      :
+                      null
+                    )
                   )
                   :
                   <>
