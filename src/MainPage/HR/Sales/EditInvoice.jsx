@@ -794,6 +794,7 @@ const EditInvoice = () => {
                         ]}
                       >
                         <Select
+                          disabled
                           showSearch
                           onSearch={(val) => {
                             searchHandler(val, 'client')
@@ -812,11 +813,11 @@ const EditInvoice = () => {
                             document.getElementById("area")
                           }
                           placeholder={t('finance.Invoices.selectClient')}
-                          onChange={(value) => {
-                            getAllProjects(value);
-                            getClientInfo(value);
-                            form.setFieldsValue({ projectId: null })
-                          }}
+                          // onChange={(value) => {
+                          //   getAllProjects(value);
+                          //   getClientInfo(value);
+                          //   form.setFieldsValue({ projectId: null })
+                          // }}
                         >
                           {allClients?.map((client) => (
                             <Select.Option
@@ -846,6 +847,7 @@ const EditInvoice = () => {
                         ]}
                       >
                         <Select
+                          disabled
                           showSearch
                           onSearch={(val) => {
                             searchHandler(val, 'project')
@@ -867,7 +869,7 @@ const EditInvoice = () => {
                             document.getElementById("area")
                           }
                           placeholder={t('Tasks.selectproject')}
-                          onChange={handleProjectChange}
+                          //onChange={handleProjectChange}
                         >
                           {allProjects?.map((project) => (
                             <Select.Option
