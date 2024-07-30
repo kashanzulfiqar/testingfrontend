@@ -1105,7 +1105,7 @@ const EditInvoice = () => {
                                 <tr key={member.userId}>
                                   <td>{index + 1}</td>
                                   <td>{member.userName}</td>
-                                  <td>{member.cost} {currencyIs}</td>
+                                  <td>{member.cost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {currencyIs}</td>
                                   <td>
                                     {/* {member.hoursWorked} */}
                                     <Form.Item
@@ -1132,7 +1132,7 @@ const EditInvoice = () => {
                                     />
                                   </Form.Item>
                                   </td>
-                                  <td>{member.total} {currencyIs}</td>
+                                  <td>{member.total?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {currencyIs}</td>
                                   <td>
                                   <Form.Item
                                     //name={`tax-${index}`}
@@ -1175,7 +1175,7 @@ const EditInvoice = () => {
                                 <td>
                                   <Form.Item //name={`totalAmount-${index}`} 
                                   style={{ marginBottom: '0px' }}>
-                                    {calculateTotalAmount(member.total, taxes[index] || [])} {currencyIs}
+                                    {calculateTotalAmount(member.total, taxes[index] || [])?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {currencyIs}
                                   </Form.Item>
                                 </td>
                                 <td>
@@ -1228,8 +1228,8 @@ const EditInvoice = () => {
                                 <tr key={member.userId}>
                                   <td>{index + 1}</td>
                                   <td>{member.userName}</td>
-                                  <td>{member.cost} {currencyIs}</td>
-                                  <td>{member.perDayCost} {currencyIs}</td>
+                                  <td>{member.cost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {currencyIs}</td>
+                                  <td>{member.perDayCost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {currencyIs}</td>
                                   <td>
                                     {/* {member.daysWorked} */}
                                     <Form.Item
@@ -1249,7 +1249,7 @@ const EditInvoice = () => {
                                     />
                                   </Form.Item>
                                   </td>
-                                  <td>{member.total} {currencyIs}</td>
+                                  <td>{member.total?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {currencyIs}</td>
                                   <td>
                                   <Form.Item
                                     //name={`tax-${index}`}
@@ -1292,7 +1292,7 @@ const EditInvoice = () => {
                                 <td>
                                   <Form.Item //name={`totalAmount-${index}`} 
                                   style={{ marginBottom: '0px' }}>
-                                    {calculateTotalAmount(member.total, taxes[index] || [])} {currencyIs}
+                                    {calculateTotalAmount(member.total, taxes[index] || [])?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {currencyIs}
                                   </Form.Item>
                                 </td>
                                 <td>
