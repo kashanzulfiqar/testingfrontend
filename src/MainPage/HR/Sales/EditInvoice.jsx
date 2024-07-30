@@ -46,6 +46,18 @@ const EditInvoice = () => {
   const [hourlyTeam, setHourlyTeam] = useState(false);
   const [teamArray, setTeamArray] = useState([])
   const [taxes, setTaxes] = useState({});
+  const [serviceDetailsList, setServiceDetailsList] = useState([
+    {
+      amount: '',
+      description: '',
+      invoiceTax: [],
+      item: '',
+      quantity: '',
+      taxPercent: '',
+      totalAmount: '',
+      unitCost: '',
+    }
+  ]);
 
   useEffect(() => {
     if((role === 'admin' || permissions?.managePayrolls) && edit_invoice_data) {
@@ -316,6 +328,12 @@ const EditInvoice = () => {
       } else if (costType === 'Monthly' && invoiceStartDate && invoiceEndDate) {
         getMonthlyProjectInvoice(value, invoiceStartDate, invoiceEndDate)
         //console.log('ABC type project with start and end dates:', invoiceStartDate, invoiceEndDate);
+      } else {
+        setHourlyTeam(false);
+        setMonthlyTeam(false);
+        setTeamArray([]);
+        setTaxes({});
+        form.setFieldsValue({ servicesDetails: serviceDetailsList });
       }
     }
   };
