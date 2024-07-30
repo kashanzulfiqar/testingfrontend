@@ -236,6 +236,7 @@ const EditInvoice = () => {
       .then((res) => {
         if (res?.data?.success === true) {
           console.log("success")
+          setMonthlyTeam(false);
           setHourlyTeam(true);
           setTeamArray(res?.data?.teamCost);
           setTaxes({});
@@ -263,6 +264,7 @@ const EditInvoice = () => {
       .then((res) => {
         if (res?.data?.success === true) {
           console.log("success")
+          setHourlyTeam(false);
           setMonthlyTeam(true);
           setTeamArray(res?.data?.teamCost);
           setTaxes({});
@@ -305,6 +307,8 @@ const EditInvoice = () => {
     if (selectedProject) {
       const { costType } = selectedProject;
       const { invoiceStartDate, invoiceEndDate } = form.getFieldsValue(['invoiceStartDate', 'invoiceEndDate']);
+      setCurrencyIs(selectedProject?.currency)
+      form.setFieldsValue({ currency: selectedProject?.currency });
 
       if (costType === 'Hourly' && invoiceStartDate && invoiceEndDate) {
         getProjectInvoice(value, invoiceStartDate, invoiceEndDate);
@@ -528,7 +532,7 @@ const EditInvoice = () => {
   const handleDaysWorkedChange = (e, index) => {
     const updatedTeamArray = [...teamArray];
     updatedTeamArray[index].daysWorked = e.target.value;
-    updatedTeamArray[index].total = (e.target.value * updatedTeamArray[index].cost).toFixed(2);
+    updatedTeamArray[index].total = (e.target.value * updatedTeamArray[index]?.perDayCost).toFixed(2);
     setTeamArray(updatedTeamArray);
 
     calculateTotal();
@@ -723,6 +727,7 @@ const EditInvoice = () => {
                 } 
               }}
               initialValues={{
+                invoiceTaxSlabId: [],
                 // itemsTable: allData?.education?.length > 0 ? allData?.education : [{}],
                 servicesDetails: [{}],
                 // invoiceTax: '0',

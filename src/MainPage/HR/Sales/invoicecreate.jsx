@@ -440,7 +440,7 @@ const Invoicecreate = () => {
   const handleDaysWorkedChange = (e, index) => {
     const updatedTeamArray = [...teamArray];
     updatedTeamArray[index].daysWorked = e.target.value;
-    updatedTeamArray[index].total = (e.target.value * updatedTeamArray[index].cost).toFixed(2);
+    updatedTeamArray[index].total = (e.target.value * updatedTeamArray[index]?.perDayCost).toFixed(2);
     setTeamArray(updatedTeamArray);
 
     calculateTotal();
@@ -752,6 +752,7 @@ const Invoicecreate = () => {
                 } 
               }}
               initialValues={{
+                invoiceTaxSlabId: [],
                 // itemsTable: allData?.education?.length > 0 ? allData?.education : [{}],
                 servicesDetails: [{}],
                 invoiceTax: '0',
