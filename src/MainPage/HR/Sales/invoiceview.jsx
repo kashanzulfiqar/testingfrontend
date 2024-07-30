@@ -22,6 +22,7 @@ const Invoiceview = () => {
   useEffect(() => {
     if((role === 'admin' || role === 'client' || permissions?.managePayrolls) && invoice_data) {
       setInvoiceInfo(invoice_data)
+      console.log(invoice_data);
     }else{
       nav(`${role === 'client' ? '/client/client-profile' : role === 'focalperson' ? `/client/focal-profile` : role === 'admin' ? `/main/dashboard` : `/employee/dashboard`}`)
     }
@@ -50,11 +51,46 @@ const Invoiceview = () => {
     }
 }
 
+const calculateTotal = () => {
+  let sub_total = 0;
+
+  if (invoiceInfo?.teamDetails?.length > 0) {
+    invoiceInfo?.teamDetails?.forEach((item) => {
+      sub_total += parseFloat(item?.totalAmount) || 0;
+    });
+  }
+  else if (invoiceInfo?.monthlyTeamDetails?.length > 0) {
+    invoiceInfo?.monthlyTeamDetails?.forEach((item) => {
+      sub_total += parseFloat(item?.totalAmount) || 0;
+    });
+  }
+  else if (invoiceInfo?.servicesDetails?.length > 0) {
+    invoiceInfo?.servicesDetails?.forEach((item) => {
+      sub_total += parseFloat(item?.totalAmount) || 0;
+    });
+  }
+
+  return sub_total?.toFixed(2);
+}
+
 const calculateSubTotal = () => {
   let sub_total = 0;
-  invoiceInfo?.servicesDetails?.forEach((item) => {
-    sub_total += parseFloat(item?.amount) || 0;
-  });
+
+  if (invoiceInfo?.teamDetails?.length > 0) {
+    invoiceInfo?.teamDetails?.forEach((item) => {
+      sub_total += parseFloat(item?.total) || 0;
+    });
+  }
+  else if (invoiceInfo?.monthlyTeamDetails?.length > 0) {
+    invoiceInfo?.monthlyTeamDetails?.forEach((item) => {
+      sub_total += parseFloat(item?.total) || 0;
+    });
+  }
+  else if (invoiceInfo?.servicesDetails?.length > 0) {
+    invoiceInfo?.servicesDetails?.forEach((item) => {
+      sub_total += parseFloat(item?.amount) || 0;
+    });
+  }
 
   return sub_total?.toFixed(2);
 }
@@ -135,7 +171,8 @@ const calculateDiscountAmount = () => {
                             <div className="invoice-details">
                               <h3 className="text-uppercase">Invoice# {invoiceInfo?.invoiceNo}</h3>
                               <ul className="list-unstyled">
-                                <li>Invoice Date: <label>{formatDate(invoiceInfo?.invoiceDate)}</label></li>
+                                <li>Start Date: <label>{formatDate(invoiceInfo?.invoiceStartDate)}</label></li>
+                                <li>End Date: <label>{formatDate(invoiceInfo?.invoiceEndDate)}</label></li>
                                 <li>Due Date: <label>{formatDate(invoiceInfo?.dueDate)}</label></li>
                               </ul>
                             </div>
@@ -182,40 +219,130 @@ const calculateDiscountAmount = () => {
                             </ul>
                           </div>
                         </div>
-                        <div className="table-responsive">
-                          <table className="table table-striped table-hover">
-                            <thead>
-                              <tr>
-                                <th>#</th>
-                                <th>ITEM</th>
-                                <th className="d-none d-sm-table-cell">DESCRIPTION</th>
-                                <th>UNIT COST</th>
-                                <th>QUANTITY</th>
-                                <th className="text-end">TOTAL</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                            {invoiceInfo?.servicesDetails?.map((item, index) => (
-                              <tr key={item._id}>
-                                <td>{index + 1}</td>
-                                <td>{item.item}</td>
-                                <td className="d-none d-sm-table-cell">{item.description}</td>
-                                <td>{item.unitCost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoiceInfo?.currency}</td>
-                                <td>{item.quantity}</td>
-                                <td className="text-end">{item.amount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoiceInfo?.currency}</td>
-                              </tr>
-                            ))}
-                              {/* <tr>
-                                <td>1</td>
-                                <td>Android Application</td>
-                                <td className="d-none d-sm-table-cell">Lorem ipsum dolor sit amet, consectetur adipiscing elit</td>
-                                <td>$1000</td>
-                                <td>2</td>
-                                <td className="text-end">$2000</td>
-                              </tr> */}
-                            </tbody>
-                          </table>
-                        </div>
+                        {
+                          invoiceInfo?.teamDetails?.length > 0 
+                          ?
+                          <div className="table-responsive">
+                            <table className="table table-striped table-hover">
+                              <thead>
+                                <tr>
+                                  <th>#</th>
+                                  <th>Resource Name</th>
+                                  <th>Hourly Rate</th>
+                                  <th>Hours Worked</th>
+                                  <th>Amount</th>
+                                  <th>Tax %</th>
+                                  <th className="text-end">TOTAL</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                              {invoiceInfo?.teamDetails?.map((item, index) => (
+                                <tr key={item._id}>
+                                  <td>{index + 1}</td>
+                                  <td>{item.userName}</td>
+                                  <td>{item.cost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoiceInfo?.currency}</td>
+                                  <td>{item.hoursWorked}</td>
+                                  <td>{item.total?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoiceInfo?.currency}</td>
+                                  <td>{item.taxPercent}</td>
+                                  <td className="text-end">{item.totalAmount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoiceInfo?.currency}</td>
+                                </tr>
+                              ))}
+                                {/* <tr>
+                                  <td>1</td>
+                                  <td>Android Application</td>
+                                  <td className="d-none d-sm-table-cell">Lorem ipsum dolor sit amet, consectetur adipiscing elit</td>
+                                  <td>$1000</td>
+                                  <td>2</td>
+                                  <td className="text-end">$2000</td>
+                                </tr> */}
+                              </tbody>
+                            </table>
+                          </div>
+                          :
+                          invoiceInfo?.monthlyTeamDetails?.length > 0 
+                          ?
+                          <div className="table-responsive">
+                            <table className="table table-striped table-hover">
+                              <thead>
+                                <tr>
+                                  <th>#</th>
+                                  <th>Resource Name</th>
+                                  <th>Monthly Rate</th>
+                                  <th>Per Day Cost</th>
+                                  <th>Days Worked</th>
+                                  <th>Amount</th>
+                                  <th>Tax %</th>
+                                  <th className="text-end">TOTAL</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                              {invoiceInfo?.monthlyTeamDetails?.map((item, index) => (
+                                <tr key={item._id}>
+                                  <td>{index + 1}</td>
+                                  <td>{item.userName}</td>
+                                  <td>{item.cost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoiceInfo?.currency}</td>
+                                  <td>{item.perDayCost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoiceInfo?.currency}</td>
+                                  <td>{item.daysWorked}</td>
+                                  <td>{item.total?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoiceInfo?.currency}</td>
+                                  <td>{item.taxPercent}</td>
+                                  <td className="text-end">{item.totalAmount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoiceInfo?.currency}</td>
+                                </tr>
+                              ))}
+                                {/* <tr>
+                                  <td>1</td>
+                                  <td>Android Application</td>
+                                  <td className="d-none d-sm-table-cell">Lorem ipsum dolor sit amet, consectetur adipiscing elit</td>
+                                  <td>$1000</td>
+                                  <td>2</td>
+                                  <td className="text-end">$2000</td>
+                                </tr> */}
+                              </tbody>
+                            </table>
+                          </div>
+                          :
+                          invoiceInfo?.servicesDetails?.length > 0 
+                          ?
+                          <div className="table-responsive">
+                            <table className="table table-striped table-hover">
+                              <thead>
+                                <tr>
+                                  <th>#</th>
+                                  <th>ITEM</th>
+                                  <th className="d-none d-sm-table-cell">DESCRIPTION</th>
+                                  <th>UNIT COST</th>
+                                  <th>QUANTITY</th>
+                                  <th>Amount</th>
+                                  <th>Tax %</th>
+                                  <th className="text-end">TOTAL</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                              {invoiceInfo?.servicesDetails?.map((item, index) => (
+                                <tr key={item._id}>
+                                  <td>{index + 1}</td>
+                                  <td>{item.item}</td>
+                                  <td className="d-none d-sm-table-cell">{item.description}</td>
+                                  <td>{item.unitCost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoiceInfo?.currency}</td>
+                                  <td>{item.quantity}</td>
+                                  <td>{item.amount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoiceInfo?.currency}</td>
+                                  <td>{item.taxPercent}</td>
+                                  <td className="text-end">{item.totalAmount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoiceInfo?.currency}</td>
+                                </tr>
+                              ))}
+                                {/* <tr>
+                                  <td>1</td>
+                                  <td>Android Application</td>
+                                  <td className="d-none d-sm-table-cell">Lorem ipsum dolor sit amet, consectetur adipiscing elit</td>
+                                  <td>$1000</td>
+                                  <td>2</td>
+                                  <td className="text-end">$2000</td>
+                                </tr> */}
+                              </tbody>
+                            </table>
+                          </div>
+                          :
+                          null
+                        }
                         <div>
                           <div className="row invoice-payment">
                             <div className="col-sm-7">
@@ -226,8 +353,12 @@ const calculateDiscountAmount = () => {
                                   <table className="table mb-0">
                                     <tbody>
                                       <tr>
-                                        <th>Subtotal:</th>
+                                        <th>Total (Tax exclusive):</th>
                                         <td className="text-end">{calculateSubTotal()?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoiceInfo?.currency}</td>
+                                      </tr>
+                                      <tr>
+                                        <th>Total (Tax inclusive):</th>
+                                        <td className="text-end">{calculateTotal()?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoiceInfo?.currency}</td>
                                       </tr>
                                       <tr>
                                         <th>Tax: <span className="text-regular">({invoiceInfo?.invoiceTax}%)</span></th>
@@ -238,7 +369,7 @@ const calculateDiscountAmount = () => {
                                         <td className="text-end">{calculateDiscountAmount()?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoiceInfo?.currency}</td>
                                       </tr>
                                       <tr>
-                                        <th>Total:</th>
+                                        <th>Grand Total:</th>
                                         <td className="text-end text-primary">
                                           {invoiceInfo?.totalAmount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoiceInfo?.currency}
                                         </td>
