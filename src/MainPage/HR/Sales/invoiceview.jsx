@@ -96,13 +96,13 @@ const calculateSubTotal = () => {
 }
 const calculateTaxAmount = () => {
   let tax_amount = 0;
-  tax_amount = ((+invoiceInfo?.invoiceTax/100)*calculateSubTotal())
+  tax_amount = ((+invoiceInfo?.invoiceTax/100)*calculateTotal())
 
   return tax_amount?.toFixed(2);
 }
 const calculateDiscountAmount = () => {
   let disc_amount = 0;
-  let total = +calculateSubTotal() + +calculateTaxAmount();
+  let total = +calculateTotal() + +calculateTaxAmount();
   disc_amount = ((+invoiceInfo?.discount/100)*total)
 
   return disc_amount?.toFixed(2);
@@ -268,7 +268,6 @@ const calculateDiscountAmount = () => {
                                   <th>#</th>
                                   <th>Resource Name</th>
                                   <th>Monthly Rate</th>
-                                  <th>Per Day Cost</th>
                                   <th>Days Worked</th>
                                   <th>Amount</th>
                                   <th>Tax %</th>
@@ -281,7 +280,6 @@ const calculateDiscountAmount = () => {
                                   <td>{index + 1}</td>
                                   <td>{item.userName}</td>
                                   <td>{item.cost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoiceInfo?.currency}</td>
-                                  <td>{item.perDayCost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoiceInfo?.currency}</td>
                                   <td>{item.daysWorked}</td>
                                   <td>{item.total?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoiceInfo?.currency}</td>
                                   <td>{item.taxPercent}</td>

@@ -15,23 +15,57 @@ function invoicePDF(invoice_data) {
       const formattedDate = `${month} ${day}, ${year}`;
       return formattedDate;
   }
+  const calculateTotal = () => {
+    let sub_total = 0;
+
+    if (invoice_data?.servicesDetails?.length > 0) {
+      invoice_data?.servicesDetails?.forEach((item) => {
+        sub_total += parseFloat(item?.totalAmount) || 0;
+      });
+    }
+    else if (invoice_data?.monthlyTeamDetails?.length > 0) {
+      invoice_data?.monthlyTeamDetails?.forEach((item) => {
+        sub_total += parseFloat(item?.totalAmount) || 0;
+      });
+    }
+    else if (invoice_data?.teamDetails?.length > 0) {
+      invoice_data?.teamDetails?.forEach((item) => {
+        sub_total += parseFloat(item?.totalAmount) || 0;
+      });
+    }
+  
+    return sub_total?.toFixed(2);
+  }
   const calculateSubTotal = () => {
     let sub_total = 0;
-    invoice_data?.servicesDetails?.forEach((item) => {
-      sub_total += parseFloat(item?.amount) || 0;
-    });
+
+    if (invoice_data?.servicesDetails?.length > 0) {
+      invoice_data?.servicesDetails?.forEach((item) => {
+        sub_total += parseFloat(item?.amount) || 0;
+      });
+    }
+    else if (invoice_data?.monthlyTeamDetails?.length > 0) {
+      invoice_data?.monthlyTeamDetails?.forEach((item) => {
+        sub_total += parseFloat(item?.total) || 0;
+      });
+    }
+    else if (invoice_data?.teamDetails?.length > 0) {
+      invoice_data?.teamDetails?.forEach((item) => {
+        sub_total += parseFloat(item?.total) || 0;
+      });
+    }
   
     return sub_total?.toFixed(2);
   }
   const calculateTaxAmount = () => {
     let tax_amount = 0;
-    tax_amount = ((+invoice_data?.invoiceTax/100)*calculateSubTotal())
+    tax_amount = ((+invoice_data?.invoiceTax/100)*calculateTotal())
   
     return tax_amount?.toFixed(2);
   }
   const calculateDiscountAmount = () => {
     let disc_amount = 0;
-    let total = +calculateSubTotal() + +calculateTaxAmount();
+    let total = +calculateTotal() + +calculateTaxAmount();
     disc_amount = ((+invoice_data?.discount/100)*total)
   
     return disc_amount?.toFixed(2);
@@ -39,14 +73,43 @@ function invoicePDF(invoice_data) {
 
 //   const d1 = Array.isArray(invoice_data) ? invoice_data : [invoice_data];
 
-  const columnsForPDF = [
-    { title: "#", dataIndex: "number" },
-    { title: "Item", dataIndex: "item" },
-    { title: "Description", dataIndex: "description" },
-    { title: "Unit Cost", dataIndex: "unitCost" },
-    { title: "Quantity", dataIndex: "quantity" },
-    { title: "Total", dataIndex: "amount" },
-  ];
+  const columnsForPDF = () => {
+    if (invoice_data?.servicesDetails?.length > 0) {
+      return [
+        { title: "#", dataIndex: "number" },
+        { title: "Item", dataIndex: "item" },
+        { title: "Description", dataIndex: "description" },
+        { title: "Unit Cost", dataIndex: "unitCost" },
+        { title: "Quantity", dataIndex: "quantity" },
+        { title: "Amount", dataIndex: "amount" },
+        { title: "Tax %", dataIndex: "taxPercent" },
+        { title: "Total", dataIndex: "totalAmount" },
+      ]
+    }
+    else if (invoice_data?.monthlyTeamDetails?.length > 0) {
+      return [
+        { title: "#", dataIndex: "number" },
+        { title: "Resource Name", dataIndex: "userName" },
+        { title: "Monthly Rate", dataIndex: "cost" },
+        { title: "Days Worked", dataIndex: "daysWorked" },
+        { title: "Amount", dataIndex: "total" },
+        { title: "Tax %", dataIndex: "taxPercent" },
+        { title: "Total", dataIndex: "totalAmount" },
+      ]
+    }
+    else if (invoice_data?.teamDetails?.length > 0) {
+      return [
+        { title: "#", dataIndex: "number" },
+        { title: "Resource Name", dataIndex: "userName" },
+        { title: "Hourly Rate", dataIndex: "cost" },
+        { title: "Hours Worked", dataIndex: "hoursWorked" },
+        { title: "Amount", dataIndex: "total" },
+        { title: "Tax %", dataIndex: "taxPercent" },
+        { title: "Total", dataIndex: "totalAmount" },
+      ]
+    }
+  };
+  
 
   const doc = new jsPDF();
 
@@ -68,14 +131,46 @@ function invoicePDF(invoice_data) {
     fontSize: 10,
   };
 
-  const dataForPDF = invoice_data?.servicesDetails.map((record, index) => [
-    `${index + 1}`,
-    record?.item,
-    record?.description,
-    `${record?.unitCost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`,
-    record?.quantity,
-    `${record?.amount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`,
-  ]);
+  const dataForPDF = () => {
+    if (invoice_data?.servicesDetails?.length > 0) {
+      return invoice_data?.servicesDetails?.map((record, index) => [
+        `${index + 1}`,
+        record?.item,
+        record?.description,
+        `${record?.unitCost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`,
+        record?.quantity,
+        `${record?.amount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`,
+        record?.taxPercent,
+        `${record?.totalAmount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`,
+      ])
+    }
+    else if (invoice_data?.monthlyTeamDetails?.length > 0) {
+      return invoice_data?.monthlyTeamDetails?.map((record, index) => [
+        `${index + 1}`,
+        record?.userName,
+        `${record?.cost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`,
+        record?.daysWorked,
+        `${record?.total?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`,
+        record?.taxPercent,
+        `${record?.totalAmount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`,
+      ])
+    }
+    else if (invoice_data?.teamDetails?.length > 0) {
+      return invoice_data?.teamDetails?.map((record, index) => [
+        `${index + 1}`,
+        record?.userName,
+        `${record?.cost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`,
+        record?.hoursWorked,
+        `${record?.total?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`,
+        record?.taxPercent,
+        `${record?.totalAmount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`,
+      ])
+    }
+  }
+
+  const columnStyles = invoice_data?.servicesDetails?.length > 0
+  ? { 2: { cellWidth: 75 } }
+  : {};
 
   doc.setFontSize(11);
 
@@ -90,41 +185,47 @@ function invoicePDF(invoice_data) {
   doc.text(x + widthofDate + 120, 20, invoice_data?.invoiceNo);
 
   doc.setFont(undefined, "bold");
-  doc.text(x + 120, 26, "Invoice Date: ");
-  const widthofInvoiceDate = doc.getTextWidth("Invoice Date:  ");
+  doc.text(x + 120, 26, "Start Date: ");
+  const widthofInvoiceDate = doc.getTextWidth("Start Date:  ");
   doc.setFont(undefined, "normal");
-  doc.text(x + widthofInvoiceDate + 120, 26, getFormattedDate(invoice_data?.invoiceDate));
+  doc.text(x + widthofInvoiceDate + 120, 26, getFormattedDate(invoice_data?.invoiceStartDate));
   
   doc.setFont(undefined, "bold");
-  doc.text(x + 120, 32, "Due Date: ");
+  doc.text(x + 120, 32, "End Date: ");
+  const widthofInvoiceEndDate = doc.getTextWidth("End Date:  ");
+  doc.setFont(undefined, "normal");
+  doc.text(x + widthofInvoiceEndDate + 120, 32, getFormattedDate(invoice_data?.invoiceEndDate));
+  
+  doc.setFont(undefined, "bold");
+  doc.text(x + 120, 38, "Due Date: ");
   const widthofDueDate = doc.getTextWidth("Due Date:  ");
   doc.setFont(undefined, "normal");
-  doc.text(x + widthofDueDate + 120, 32, getFormattedDate(invoice_data?.dueDate));
+  doc.text(x + widthofDueDate + 120, 38, getFormattedDate(invoice_data?.dueDate));
 
   doc.setFont(undefined, "bold");
   doc.setTextColor(142, 142, 142);
-  doc.text(x + 120, 44, "Payment Details:");
+  doc.text(x + 120, 48, "Payment Details:");
   doc.setFont(undefined, "normal");
   doc.setTextColor(50, 50, 50);
 
   //------------------
 
   // doc.setFont(undefined, "bold");
-  doc.text(x + 120, 50, "Total Due: ");
+  doc.text(x + 120, 56, "Total Due: ");
   const widthofTotalDue = doc.getTextWidth("Total Due:  ");
   // doc.setFont(undefined, "normal");
-  doc.text(x + widthofTotalDue + 120, 50, `${invoice_data?.remainingAmount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${invoice_data?.currency}`);
+  doc.text(x + widthofTotalDue + 120, 56, `${invoice_data?.remainingAmount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${invoice_data?.currency}`);
 
   //------------------
 
   // doc.setFont(undefined, "bold");
-  doc.text(x + 120, 56, "Bank Name: ");
+  doc.text(x + 120, 62, "Bank Name: ");
   const widthofDueDate3 = doc.getTextWidth("Bank Name:  ");
   // doc.setFont(undefined, "normal");
-  doc.text(x + widthofDueDate3 + 120, 56, invoice_data?.bankDetail?.bankName);
+  doc.text(x + widthofDueDate3 + 120, 62, invoice_data?.bankDetail?.bankName);
   
   //------------------
-  var yPosition = 62;
+  var yPosition = 68;
   // doc.text(x + 120, 62, "Account Title: ");
   // const widthofAccountTitle = doc.getTextWidth("Account Title:  ");
   // doc.text(x + widthofAccountTitle + 120, 62, invoice_data?.bankDetail?.accountTitle);
@@ -235,10 +336,10 @@ doc.text(x, currentY2 + 11, invoice_data?.client?.invoiceEmail);
 // doc.setTextColor(50, 50, 50);
 
   doc.autoTable({
-    margin: { top: currentY2 + currentYs1 + 11 + 10, right: 10, left: 10 },
+    margin: { top: currentY2 + currentYs1 + 11 + 10 + 6, right: 10, left: 10 },
     headStyles: headerStyles,
-    head: [columnsForPDF.map((rec) => rec?.title)],
-    body: dataForPDF,
+    head: [columnsForPDF()?.map((rec) => rec?.title)],
+    body: dataForPDF(),
     styles: {
       lineColor: [65, 65, 65], // Border color
       lineWidth: 0.1, // Border width
@@ -247,11 +348,7 @@ doc.text(x, currentY2 + 11, invoice_data?.client?.invoiceEmail);
       cellPadding: 2,
       fontSize: 11,
     },
-    columnStyles: {
-        2: { 
-          cellWidth: 75,
-        },
-    },
+    columnStyles: columnStyles,
     alternateRowStyles: { fillColor: [255, 255, 255] },
   });
 
@@ -259,7 +356,8 @@ doc.text(x, currentY2 + 11, invoice_data?.client?.invoiceEmail);
     doc.autoTable({
         margin: { top: currentYT, right: 8, left: 120 },
         body: [
-            ["Sub Total:", `${calculateSubTotal()?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${invoice_data?.currency}`],
+            ["Total (Tax exclusive):", `${calculateSubTotal()?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${invoice_data?.currency}`],
+            ["Total (Tax inclusive):", `${calculateTotal()?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${invoice_data?.currency}`],
             [`Tax: (${invoice_data?.invoiceTax}%)`, `${calculateTaxAmount()?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${invoice_data?.currency}`],
             [`Disscount: (${invoice_data?.discount}%)`, `${calculateDiscountAmount()?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${invoice_data?.currency}`],
             [
