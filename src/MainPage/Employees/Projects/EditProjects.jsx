@@ -76,6 +76,7 @@ function EditProjects({
   const [projectType, setProjectType] = useState("");
   const [costType, setCostType] = useState(0);
   const [projectCost, setProjectCost] = useState(0);
+  const [currencyIs, setCurrencyIs] = useState('');
 
   const [paymentSchedules, setPaymentSchedules] = useState([
     // Initial payment schedule
@@ -113,6 +114,7 @@ function EditProjects({
     if (data) {
       setSelectedLeader(data?.projectLead);
       setSelectedTeamMembers(data?.assignedDevelopers);
+      setCurrencyIs(data?.currency);
 
       //const initialTeamCost = data?.teamCost?.length > 0
       //   ? data.teamCost
@@ -903,7 +905,7 @@ function EditProjects({
     ),
     },
     {
-      title: `${costType === 'Hourly' ? 'Hourly Rate' : costType === 'Monthly' ? 'Monthly Rate' : 'Salary'}`,
+      title: `${costType === 'Hourly' ? 'Hourly Rate' : costType === 'Monthly' ? 'Monthly Rate' : 'Salary'} (${currencyIs})`,
       dataIndex: 'cost',
       key: 'cost',
       render: (text, record, index) => (
@@ -1575,6 +1577,9 @@ function EditProjects({
                             placeholder={t(
                               "projectScreen.Modal.selectCurrency"
                             )}
+                            onChange={(value)=> {
+                              setCurrencyIs(value);
+                            }}
                           >
                             {allCurrencies.map((currency, index) => (
                               <Select.Option
@@ -1917,7 +1922,7 @@ function EditProjects({
                   {/* <textarea rows={4} className="form-control summernote" placeholder="Enter your message here" defaultValue={""} /> */}
                 </div>
 
-                {(costType === 'Hourly' || costType === 'Monthly') && (
+                {(costType === 'Hourly' || costType === 'Monthly') && projectType === "Billed" && (
                 <>
                 <hr
                   className="developer-dividerdddd"
@@ -2021,7 +2026,7 @@ function EditProjects({
                     />
                   </>
                 )}
-                {projectType === "Billed" && (
+                {projectType === "Billed" && costType === "Fixed" && (
                   <>
                     <h4
                       style={{

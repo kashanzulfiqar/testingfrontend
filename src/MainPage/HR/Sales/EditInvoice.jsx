@@ -392,13 +392,13 @@ const EditInvoice = () => {
       const invoiceTax = form.getFieldsValue().invoiceTax;
   
       grandTotal = subTotal;
+
+      if (discountValue) {
+        grandTotal -= (discountValue / 100) * subTotal;
+      }
   
       if (invoiceTax) {
         grandTotal += (invoiceTax / 100) * subTotal;
-      }
-  
-      if (discountValue) {
-        grandTotal -= (discountValue / 100) * grandTotal;
       }
   
       setGrandTotal(grandTotal.toFixed(2));
@@ -424,14 +424,15 @@ const EditInvoice = () => {
       // grand total
       const discout_value = form.getFieldsValue().discount;
       const invoice_tax = form.getFieldsValue().invoiceTax;
-      if(invoice_tax){
-        grand_total = ( sub_total + ( (+invoice_tax/100)*sub_total ) );
-      }else {
-        grand_total = sub_total;
-      }
+
+      grand_total = total;
+      
       if(discout_value){
         // grand_total = discout_value ? ( grand_total - ( (+discout_value/100)*grand_total ) ) : grand_total;
-        grand_total = ( grand_total - ( (+discout_value/100)*grand_total ) );
+        grand_total = ( grand_total - ( (+discout_value/100)*total ) );
+      }
+      if(invoice_tax){
+        grand_total = ( grand_total + ( (+invoice_tax/100)*total ) );
       }
 
       setGrandTotal(grand_total?.toFixed(2))
@@ -510,14 +511,16 @@ const EditInvoice = () => {
 
   const calculateTotalAmount = (total, selectedTaxes) => {
     let totalAmount = parseFloat(total);
+    let taxValue = 0;
     console.log("selected ",selectedTaxes)
     selectedTaxes.forEach(taxId => {
       const tax = allTaxSlabs.find(t => t._id === taxId);
       if (tax) {
         console.log(tax.taxPercent)
-        totalAmount += (totalAmount * parseFloat(tax.taxPercent)) / 100;
+        taxValue += totalAmount * (parseFloat(tax.taxPercent) / 100);
       }
     });
+    totalAmount += taxValue;
     console.log("calculateTotalAmount",totalAmount)
     return totalAmount.toFixed(2);
   };
