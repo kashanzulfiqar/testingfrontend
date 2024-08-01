@@ -197,12 +197,15 @@ const Invoicecreate = () => {
 
   const calculateTotalAmount = (total, selectedTaxes) => {
     let totalAmount = parseFloat(total);
+    let taxValue = 0;
     selectedTaxes.forEach(taxId => {
       const tax = allTaxSlabs.find(t => t._id === taxId);
       if (tax) {
-        totalAmount += (totalAmount * parseFloat(tax.taxPercent)) / 100;
+        //totalAmount += (totalAmount * parseFloat(tax.taxPercent)) / 100;
+        taxValue += totalAmount * (parseFloat(tax.taxPercent) / 100);
       }
     });
+    totalAmount += taxValue;
     return totalAmount.toFixed(2);
   };
 
@@ -377,12 +380,12 @@ const Invoicecreate = () => {
   
       grandTotal = subTotal;
   
+      if (discountValue) {
+        grandTotal -= (discountValue / 100) * subTotal;
+      }
+
       if (invoiceTax) {
         grandTotal += (invoiceTax / 100) * subTotal;
-      }
-  
-      if (discountValue) {
-        grandTotal -= (discountValue / 100) * grandTotal;
       }
   
       setGrandTotal(grandTotal.toFixed(2));
@@ -406,14 +409,16 @@ const Invoicecreate = () => {
       // grand total
       const discout_value = form.getFieldsValue().discount;
       const invoice_tax = form.getFieldsValue().invoiceTax;
-      if(invoice_tax){
-        grand_total = ( total + ( (+invoice_tax/100)*total ) );
-      }else {
-        grand_total = total;
-      }
+
+      grand_total = total;
+
       if(discout_value){
         // grand_total = discout_value ? ( grand_total - ( (+discout_value/100)*grand_total ) ) : grand_total;
-        grand_total = ( grand_total - ( (+discout_value/100)*grand_total ) );
+        grand_total = ( grand_total - ( (+discout_value/100)*total ) );
+      }
+
+      if(invoice_tax){
+        grand_total = ( grand_total + ( (+invoice_tax/100)*total ) );
       }
 
       setGrandTotal(grand_total?.toFixed(2))
