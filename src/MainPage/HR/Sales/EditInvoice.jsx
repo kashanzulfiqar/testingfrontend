@@ -654,7 +654,8 @@ const EditInvoice = () => {
         }
       })
       .catch((err) => {
-        setSaveLoader(false)
+        //setSaveLoader(false)
+        setSendLoader(false)
         // console.log(err);
         message.error(
           `${
