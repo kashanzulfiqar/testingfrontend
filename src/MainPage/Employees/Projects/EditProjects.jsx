@@ -818,7 +818,7 @@ function EditProjects({
 
   const handlePaymentRow = (value) => {
     setProjectType(value);
-    if (value === "Billed" && paymentSchedules?.length === 0) {
+    if (value === "Billed" && costType === "Fixed" && paymentSchedules?.length === 0) {
       addPaymentSchedule();
     }
   };
@@ -905,7 +905,7 @@ function EditProjects({
     ),
     },
     {
-      title: `${costType === 'Hourly' ? 'Hourly Rate' : costType === 'Monthly' ? 'Monthly Rate' : 'Salary'} (${currencyIs})`,
+      title: `${costType === 'Hourly' ? 'Hourly Rate' : costType === 'Monthly' ? 'Monthly Rate' : 'Salary'} ${currencyIs ? `(${currencyIs})` : ''}`,
       dataIndex: 'cost',
       key: 'cost',
       render: (text, record, index) => (
@@ -1594,44 +1594,50 @@ function EditProjects({
                       </div>
                     </div>
                   </div>
-                  <div className="col-sm-6">
-                    <div className="form-group">
-                      <label>{t("projectScreen.Modal.costType")}</label>
-                      <div style={{ position: "relative" }} id="area">
-                        <Form.Item
-                          name="costType"
-                          className="custom-border"
-                          rules={[
-                            {
-                              required: true,
-                              message: t("projectScreen.Modal.chooseCostType"),
-                            },
-                          ]}
-                        >
-                          <Select
-                            className="custom-select custom-normal"
-                            getPopupContainer={() =>
-                              document.getElementById("area")
-                            }
-                            placeholder={t(
-                              "projectScreen.Modal.selectCostType"
-                            )}
-                            onChange={(value) => setCostType(value)}
+                  
+                  {
+                    projectType === "Billed" && (
+                    <div className="col-sm-6">
+                      <div className="form-group">
+                        <label>{t("projectScreen.Modal.costType")}</label>
+                        <div style={{ position: "relative" }} id="area">
+                          <Form.Item
+                            name="costType"
+                            className="custom-border"
+                            rules={[
+                              {
+                                required: true,
+                                message: t("projectScreen.Modal.chooseCostType"),
+                              },
+                            ]}
                           >
-                            <Select.Option value="Hourly">
-                              {t("projectScreen.Modal.hourly")}
-                            </Select.Option>
-                            <Select.Option value="Monthly">
-                              {t("projectScreen.Modal.monthly")}
-                            </Select.Option>
-                            <Select.Option value="Fixed">
-                              {t("projectScreen.Modal.fixed")}
-                            </Select.Option>
-                          </Select>
-                        </Form.Item>
+                            <Select
+                              className="custom-select custom-normal"
+                              getPopupContainer={() =>
+                                document.getElementById("area")
+                              }
+                              placeholder={t(
+                                "projectScreen.Modal.selectCostType"
+                              )}
+                              onChange={(value) => setCostType(value)}
+                            >
+                              <Select.Option value="Hourly">
+                                {t("projectScreen.Modal.hourly")}
+                              </Select.Option>
+                              <Select.Option value="Monthly">
+                                {t("projectScreen.Modal.monthly")}
+                              </Select.Option>
+                              <Select.Option value="Fixed">
+                                {t("projectScreen.Modal.fixed")}
+                              </Select.Option>
+                            </Select>
+                          </Form.Item>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                    )
+                  }
+
                   {costType === 'Fixed' && (
                   <div className="col-sm-6">
                     <div className="form-group">
