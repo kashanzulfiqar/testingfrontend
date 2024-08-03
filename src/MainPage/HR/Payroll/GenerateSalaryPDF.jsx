@@ -29,9 +29,9 @@ function GenerateSalaryPDF(row, view, screen, print) {
   // doc.setFont(undefined,'normal');
   //doc.text(startX, 25, text1);
 
-  if (row.companyId && row.companyId.companyName && row.companyId.imageUrl) {
+  if ((row?.companyId && row?.companyId?.companyName && row?.companyId?.imageUrl) || (row?.companyName && row?.imageUrl)) {
     const img = new Image();
-    img.src = row.companyId.imageUrl;
+    img.src = row?.companyId?.imageUrl || row?.imageUrl;
     doc.addImage(img, 'JPEG', x, 10, 35, 35);
   }
   // ========= line 2 ============
@@ -52,7 +52,7 @@ function GenerateSalaryPDF(row, view, screen, print) {
   doc.text(x, 72, 'Id: ');
   const widthofEmployeeId = doc.getTextWidth('Id: ');
   doc.setFont(undefined, 'bold')
-  doc.text(x + widthofEmployeeId, 72, `${row?.userId?.employeeId}`);
+  doc.text(x + widthofEmployeeId, 72, `${row?.userId?.employeeId || row?.user?.employeeId}`);
 
   doc.setFont(undefined,'normal');
   doc.text(x, 77, 'Name: ');
@@ -64,7 +64,7 @@ function GenerateSalaryPDF(row, view, screen, print) {
   doc.text(x, 82, 'Designation: ');
   const widthofDesignation = doc.getTextWidth('Designation: ');
   doc.setFont(undefined, 'bold');
-  doc.text(x + widthofDesignation, 82, `${row?.userId?.designationId?.designationName}`);
+  doc.text(x + widthofDesignation, 82, `${row?.userId?.designationId?.designationName || row?.user?.designationName}`);
 
   // ========= line 4 ============
   doc.setFont(undefined, 'normal')
@@ -83,7 +83,18 @@ function GenerateSalaryPDF(row, view, screen, print) {
 
 
   const earningsTableData = [
-    ['Basic Salary', `${screen === 'slip' ? (row?.basicSalary ? row?.basicSalary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : row?.userId?.salary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")) : (row?.basicSalary ? row?.basicSalary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : row?.userId?.salary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","))}`],
+    ['Basic Salary', `${screen === 'slip' 
+      ? (row?.basicSalary 
+        ? row?.basicSalary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") 
+        : row?.userId?.salary 
+        ? row?.userId?.salary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+        : row?.user?.salary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")) 
+      : (row?.basicSalary 
+        ? row?.basicSalary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") 
+        : row?.userId?.salary 
+        ? row?.userId?.salary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+        : row?.user?.salary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","))
+      }`],
     ['Bonus', `${row?.bonus?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`], // Added comma here
     ['Extra Payment', `${row?.extraPayment?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`], // Added comma here
   ];
@@ -127,7 +138,7 @@ function GenerateSalaryPDF(row, view, screen, print) {
   doc.text(x + 110, 166, 'Gross Pay: ');
   const widthofgrossPay = doc.getTextWidth('Gross Pay: ');
   doc.setFont(undefined, 'bold')
-  doc.text(x + widthofgrossPay + 110, 166, `${(+row?.totalAddition + +(row?.basicSalary ? row?.basicSalary : row?.userId?.salary))?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`);
+  doc.text(x + widthofgrossPay + 110, 166, `${(+row?.totalAddition + +(row?.basicSalary ? row?.basicSalary : row?.userId?.salary ? row?.userId?.salary : row?.user?.salary))?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`);
   
   // Define the table data
   const tableData = [
