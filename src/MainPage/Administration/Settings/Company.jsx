@@ -761,7 +761,7 @@ const Company = () => {
                     onInput={(e) => {
                       onHandleChange("companyEmail", e.target.value);
                     }}
-                    maxLength={50}
+                    maxLength={60}
                   />
                 </Form.Item>
               </div>
