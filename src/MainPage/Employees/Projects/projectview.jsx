@@ -69,6 +69,7 @@ const ProjectView = () => {
   const [selectedClient, setSelectedClient] = useState(null);
   const [selectedLeader, setSelectedLeader] = useState(null);
   const [selectedDevelopers, setSelectedDevelopers] = useState([]);
+  const [teamCost, setTeamCost] = useState([]);
 
   const getEmployeeImage = (employeeId) => {
     const employee = employees.find((emp) => emp._id === employeeId);
@@ -117,6 +118,7 @@ const ProjectView = () => {
 
   const openUserModal = () => {
     setOpenUser(true);
+    setTeamCost(project?.teamCost);
   };
 
   const closeUser = () => {
@@ -307,6 +309,19 @@ const ProjectView = () => {
     setLoader(true);
     //setIsLoading(true);
 
+    const updatedTeamCost = (() => {
+        const filteredArray = teamCost?.filter((item) => selectedDevelopers?.includes(item?.userId));
+
+        const newDevelopers = selectedDevelopers?.filter(
+            (userId) => !teamCost?.some((item) => item?.userId === userId)
+        )?.map((userId) => ({
+            userId,
+            cost: '0'
+        }));
+
+        return [...filteredArray, ...newDevelopers];
+    })();
+
     let data = {
       _id: project?._id,
       startDate: moment(project?.startDate).format("YYYY-MM-DD"),
@@ -314,6 +329,10 @@ const ProjectView = () => {
       deleted: false,
       companyId: project?.companyId,
     };
+
+    if (openUser) {
+      data.teamCost = updatedTeamCost
+    }
 
     if (selectedLeader !== null) {
       data.projectLead = selectedLeader;
