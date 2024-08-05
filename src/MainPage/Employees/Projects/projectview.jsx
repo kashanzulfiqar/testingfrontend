@@ -1988,8 +1988,7 @@ const ProjectView = () => {
           data={project}
           editModal={editModal}
           closeEditModal={closeEditModal}
-          getprojects={GetProjects}
-          getlistprojects={emptyfunction}
+          getlistprojects={GetProjects}
           allCurrencies={allCurrencies}
           allDomain={allDomain}
         />

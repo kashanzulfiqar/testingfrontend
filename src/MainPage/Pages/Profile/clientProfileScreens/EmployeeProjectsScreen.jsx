@@ -293,7 +293,7 @@ const EmployeeProjectsScreen = ({ employeeId }) => {
                   className="card-body"
                   style={{ display: "flex", flexDirection: "column" }}
                 >
-                  {
+                  {/* {
                     (role === 'admin' || permissions?.projectManagement) &&
                     <div className="dropdown profile-action">
                       <a
@@ -335,7 +335,7 @@ const EmployeeProjectsScreen = ({ employeeId }) => {
                         </a>
                       </div>
                     </div>
-                  }
+                  } */}
                   <h4 className="project-title" style={{ width: "190px" }}>
                     <Link to={`/projects/projects-view/${project?._id}`}>
                       {project?.projectName}
@@ -938,8 +938,7 @@ const EmployeeProjectsScreen = ({ employeeId }) => {
             data={open?.data}
             editModal={open?.editOpen}
             closeEditModal={closeModal}
-            getprojects={getAllProjectsOnEdit}
-            getlistprojects={() => { }}
+            getlistprojects={getAllProjectsOnEdit}
             allCurrencies={allCurrencies}
             allDomain={allDomain}
           />
