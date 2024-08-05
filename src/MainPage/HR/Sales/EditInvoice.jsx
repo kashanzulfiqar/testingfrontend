@@ -1095,7 +1095,7 @@ const EditInvoice = () => {
                             <th>Resource Name</th>
                             <th>Hourly Rate</th>
                             <th>Hours Worked</th>
-                            <th>Total</th>
+                            <th>Amount</th>
                             <th>Tax</th>
                             <th>Tax %</th>
                             <th>Total Amount</th>
@@ -1218,7 +1218,7 @@ const EditInvoice = () => {
                             <th>Monthly Rate</th>
                             <th>Per Day Cost</th>
                             <th>Days Worked</th>
-                            <th>Total</th>
+                            <th>Amount</th>
                             <th>Tax</th>
                             <th>Tax %</th>
                             <th>Total Amount</th>
@@ -1640,7 +1640,7 @@ const EditInvoice = () => {
                           <tr>
                             <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>
                               <Tooltip className="custom-tooltip" placement="rightBottom" title={(
-                                <label>This amount is the sum of 'Total' columns of all the above rows before adding the Tax</label>
+                                <label>This amount is the sum of 'Amount' column of all the above rows before adding the Tax</label>
                               )}>
                                 <span style={{border: '1px solid grey', color: 'grey', fontSize: '12px', borderRadius: '50%', padding: '1.5px 4px 1px', margin: '5px', cursor: 'pointer'}}>
                                 {t('Tasks.Qmark')}
@@ -1654,7 +1654,7 @@ const EditInvoice = () => {
                           <tr>
                           <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>
                             <Tooltip className="custom-tooltip" placement="rightBottom" title={(
-                              <label>This amount is the sum of 'Total Amount' columns of all the above rows after adding the Tax</label>
+                              <label>This amount is the sum of 'Total Amount' column of all the above rows after adding the Tax</label>
                             )}>
                               <span style={{border: '1px solid grey', color: 'grey', fontSize: '12px', borderRadius: '50%', padding: '1.5px 4px 1px', margin: '5px', cursor: 'pointer'}}>
                               {t('Tasks.Qmark')}
@@ -1666,7 +1666,7 @@ const EditInvoice = () => {
                             </td>
                           </tr>
                           <tr>
-                            <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>{t('finance.Invoices.tax')}</td>
+                            <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>Sales Tax</td>
                             <td style={{textAlign: 'right', paddingRight: '30px', width: '230px'}}>
                               <Form.Item
                                 name="invoiceTaxSlabId"
@@ -1714,7 +1714,7 @@ const EditInvoice = () => {
                             </td>
                           </tr>
                           <tr>
-                            <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>{t('finance.Invoices.tax')} %</td>
+                            <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>Sales Tax %</td>
                             <td style={{textAlign: 'right', paddingRight: '30px', width: '230px'}}>
                             <Form.Item
                               name='invoiceTax'

@@ -358,7 +358,7 @@ doc.text(x, currentY2 + 11, invoice_data?.client?.invoiceEmail);
         body: [
             ["Total (Tax exclusive):", `${calculateSubTotal()?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${invoice_data?.currency}`],
             ["Total (Tax inclusive):", `${calculateTotal()?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${invoice_data?.currency}`],
-            [`Tax: (${invoice_data?.invoiceTax}%)`, `${calculateTaxAmount()?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${invoice_data?.currency}`],
+            [`Sales Tax: (${invoice_data?.invoiceTax}%)`, `${calculateTaxAmount()?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${invoice_data?.currency}`],
             [`Discount: (${invoice_data?.discount}%)`, `${calculateDiscountAmount()?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${invoice_data?.currency}`],
             [
               { content: "Grand Total:", styles: { fontStyle: 'bold' }, colSpan: 1 },
