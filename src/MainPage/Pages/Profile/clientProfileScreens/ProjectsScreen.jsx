@@ -895,8 +895,7 @@ const ProjectsScreen = ({ isID, isRole }) => {
             data={open?.data}
             editModal={open?.editOpen}
             closeEditModal={closeModal}
-            getprojects={getAllProjectsOnEdit}
-            getlistprojects={() => { }}
+            getlistprojects={getAllProjectsOnEdit}
           />
         )}
         {/* Delete Modal */}

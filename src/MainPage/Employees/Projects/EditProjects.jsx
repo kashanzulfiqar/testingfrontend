@@ -1638,7 +1638,7 @@ function EditProjects({
                     )
                   }
 
-                  {costType === 'Fixed' && (
+                  {costType === 'Fixed' && projectType === 'Billed' &&  (
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>{t("projectScreen.Modal.cost")}</label>
