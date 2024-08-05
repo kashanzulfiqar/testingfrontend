@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Helmet } from "react-helmet";
 import { useSelector } from 'react-redux';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { DatePicker, Form, Input, InputNumber, Select, message, Empty, Spin } from 'antd';
+import { DatePicker, Form, Input, InputNumber, Select, message, Empty, Spin, Tooltip } from 'antd';
 import { apiServices } from '../../../Services/apiServices';
 import { getAllISOCodes } from 'iso-country-currency';
 import moment from 'moment';
@@ -1638,13 +1638,29 @@ const EditInvoice = () => {
                       <table className="table table-hover table-white">
                         <tbody>
                           <tr>
-                            <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>Total (Tax exclusive)</td>
+                            <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>
+                              <Tooltip className="custom-tooltip" placement="rightBottom" title={(
+                                <label>This amount is the sum of 'Total' columns of all the above rows before adding the Tax</label>
+                              )}>
+                                <span style={{border: '1px solid grey', color: 'grey', fontSize: '12px', borderRadius: '50%', padding: '1.5px 4px 1px', margin: '5px', cursor: 'pointer'}}>
+                                {t('Tasks.Qmark')}
+                                </span>
+                              </Tooltip>
+                              Total (Tax exclusive)</td>
                             <td style={{textAlign: 'right', paddingRight: '30px', width: '230px'}}>
                               {subTotalEx?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {currencyIs}
                             </td>
                           </tr>
                           <tr>
-                            <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>Total (Tax inclusive)</td>
+                          <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>
+                            <Tooltip className="custom-tooltip" placement="rightBottom" title={(
+                              <label>This amount is the sum of 'Total Amount' columns of all the above rows after adding the Tax</label>
+                            )}>
+                              <span style={{border: '1px solid grey', color: 'grey', fontSize: '12px', borderRadius: '50%', padding: '1.5px 4px 1px', margin: '5px', cursor: 'pointer'}}>
+                              {t('Tasks.Qmark')}
+                              </span>
+                            </Tooltip>
+                            Total (Tax inclusive)</td>
                             <td style={{textAlign: 'right', paddingRight: '30px', width: '230px'}}>
                               {subTotal?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {currencyIs}
                             </td>
