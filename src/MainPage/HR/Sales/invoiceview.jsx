@@ -359,11 +359,11 @@ const calculateDiscountAmount = () => {
                                         <td className="text-end">{calculateTotal()?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoiceInfo?.currency}</td>
                                       </tr>
                                       <tr>
-                                        <th>Tax: <span className="text-regular">({invoiceInfo?.invoiceTax}%)</span></th>
+                                        <th>Sales Tax: <span className="text-regular">({invoiceInfo?.invoiceTax}%)</span></th>
                                         <td className="text-end">{calculateTaxAmount()?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoiceInfo?.currency}</td>
                                       </tr>
                                       <tr>
-                                        <th>Disscount: <span className="text-regular">({invoiceInfo?.discount}%)</span></th>
+                                        <th>Discount: <span className="text-regular">({invoiceInfo?.discount}%)</span></th>
                                         <td className="text-end">{calculateDiscountAmount()?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoiceInfo?.currency}</td>
                                       </tr>
                                       <tr>
