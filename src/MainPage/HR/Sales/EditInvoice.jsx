@@ -415,7 +415,7 @@ const EditInvoice = () => {
     
       updatedData?.forEach((item) => {
         sub_total += parseFloat(item?.amount) || 0;
-        total += parseFloat(item?.totalAmount) || 0;
+        total += parseFloat(item?.totalAmount ? item?.totalAmount : item?.amount) || 0;
       });
 
       // sub total

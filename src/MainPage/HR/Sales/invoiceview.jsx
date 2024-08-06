@@ -66,7 +66,7 @@ const calculateTotal = () => {
   }
   else if (invoiceInfo?.servicesDetails?.length > 0) {
     invoiceInfo?.servicesDetails?.forEach((item) => {
-      sub_total += parseFloat(item?.totalAmount) || 0;
+      sub_total += parseFloat(item?.totalAmount ? item?.totalAmount : item?.amount) || 0;
     });
   }
 
@@ -324,8 +324,8 @@ const calculateDiscountAmount = () => {
                                   <td>{item.unitCost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoiceInfo?.currency}</td>
                                   <td>{item.quantity}</td>
                                   <td>{item.amount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoiceInfo?.currency}</td>
-                                  <td>{item.taxPercent}</td>
-                                  <td className="text-end">{item.totalAmount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoiceInfo?.currency}</td>
+                                  <td>{item.taxPercent ? item.taxPercent : '0'}</td>
+                                  <td className="text-end">{(item?.totalAmount ? item?.totalAmount : item?.amount)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoiceInfo?.currency}</td>
                                 </tr>
                               ))}
                                 {/* <tr>
