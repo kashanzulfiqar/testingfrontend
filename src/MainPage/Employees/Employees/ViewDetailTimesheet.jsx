@@ -59,7 +59,12 @@ const ViewDetailTimesheet = () => {
     const [allData3, setAllData3] = useState([])
     const [allData4, setAllData4] = useState([])
     const [allData5, setAllData5] = useState([])
+    const [declineLoader, setDeclineLoader] = useState(false);
     const [loader, setLoader] = useState(false);
+    const [loader2, setLoader2] = useState(false);
+    const [loader3, setLoader3] = useState(false);
+    const [loader4, setLoader4] = useState(false);
+    const [loader5, setLoader5] = useState(false);
     const [open, setOpen] = useState({
       isOpen: false,
       isViewOpen: false
@@ -166,13 +171,12 @@ const ViewDetailTimesheet = () => {
         approved: false,
         ...val
       }
-
-      setLoader(true);
+      setDeclineLoader(true);
       apiServices("PUT", 'timesheet', data, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
             message.success(t('Timesheetadmin.timesheetDeclinedSuccessfully'));
-            setLoader(false);
+            setDeclineLoader(false);
             handleClose();
             setAllData({
               ...allData,
@@ -191,7 +195,7 @@ const ViewDetailTimesheet = () => {
             localStorage.setItem(`allDataLocalStorage`, JSON.stringify(d));
         }})
         .catch((err) => {
-        setLoader(false);
+        setDeclineLoader(false);
         message.error(
           `${
             err?.response?.data?.msg
@@ -214,12 +218,12 @@ const ViewDetailTimesheet = () => {
         approved: true,
       }
 
-      setLoader(true);
+      week_no == 0 ? setLoader(true) : week_no == 1 ? setLoader2(true) : week_no == 2 ? setLoader3(true) : week_no == 3 ? setLoader4(true) : week_no == 4 ? setLoader5(true) : null;
       apiServices("PUT", 'timesheet', data, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
             message.success(t('Timesheetadmin.timesheetApprovedSuccessfully'));
-            setLoader(false);
+            week_no == 0 ? setLoader(false) : week_no == 1 ? setLoader2(false) : week_no == 2 ? setLoader3(false) : week_no == 3 ? setLoader4(false) : week_no == 4 ? setLoader5(false) : null;
             setAllData({
               ...allData,
               [week_no]: {
@@ -237,7 +241,7 @@ const ViewDetailTimesheet = () => {
             localStorage.setItem(`allDataLocalStorage`, JSON.stringify(d));
         }})
         .catch((err) => {
-        setLoader(false);
+        week_no == 0 ? setLoader(false) : week_no == 1 ? setLoader2(false) : week_no == 2 ? setLoader3(false) : week_no == 3 ? setLoader4(false) : week_no == 4 ? setLoader5(false) : null;
         message.error(
           `${
             err?.response?.data?.msg
@@ -812,11 +816,11 @@ const ViewDetailTimesheet = () => {
                             onHandleApprove(allData[1]?.data, 1);
                           }}
                           className={login_user_id !== allData?._id && `NextPrevButtons2`}
-                          disabled={loader || login_user_id === allData?._id}
+                          disabled={loader2 || login_user_id === allData?._id}
                           style={{border: `${login_user_id === allData?._id ? '1px solid #7bd485' : '1px solid #55CE63'}`, borderRadius: '8px', background: `${login_user_id === allData?._id ? '#7bd485' : '#55CE63'}`, color: '#fff', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
                         >
                           {
-                            loader ? <Spin size="small" indicator={antIcon} />
+                            loader2 ? <Spin size="small" indicator={antIcon} />
                             : <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetadmin.approve')}</span>
                           }
                         </Button>
@@ -918,11 +922,11 @@ const ViewDetailTimesheet = () => {
                             onHandleApprove(allData[2]?.data, 2);
                           }}
                           className={login_user_id !== allData?._id && `NextPrevButtons2`}
-                          disabled={loader || login_user_id === allData?._id}
+                          disabled={loader3 || login_user_id === allData?._id}
                           style={{border: `${login_user_id === allData?._id ? '1px solid #7bd485' : '1px solid #55CE63'}`, borderRadius: '8px', background: `${login_user_id === allData?._id ? '#7bd485' : '#55CE63'}`, color: '#fff', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
                         >
                           {
-                            loader ? <Spin size="small" indicator={antIcon} />
+                            loader3 ? <Spin size="small" indicator={antIcon} />
                             : <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetadmin.approve')}</span>
                           }
                         </Button>
@@ -1023,11 +1027,11 @@ const ViewDetailTimesheet = () => {
                             onHandleApprove(allData[3]?.data, 3);
                           }}
                           className={login_user_id !== allData?._id && `NextPrevButtons2`}
-                          disabled={loader || login_user_id === allData?._id}
+                          disabled={loader4 || login_user_id === allData?._id}
                           style={{border: `${login_user_id === allData?._id ? '1px solid #7bd485' : '1px solid #55CE63'}`, borderRadius: '8px', background: `${login_user_id === allData?._id ? '#7bd485' : '#55CE63'}`, color: '#fff', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
                         >
                           {
-                            loader ? <Spin size="small" indicator={antIcon} />
+                            loader4 ? <Spin size="small" indicator={antIcon} />
                             : <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetadmin.approve')}</span>
                           }
                         </Button>
@@ -1128,11 +1132,11 @@ const ViewDetailTimesheet = () => {
                             onHandleApprove(allData[4]?.data, 4);
                           }}
                           className={login_user_id !== allData?._id && `NextPrevButtons2`}
-                          disabled={loader || login_user_id === allData?._id}
+                          disabled={loader5 || login_user_id === allData?._id}
                           style={{border: `${login_user_id === allData?._id ? '1px solid #7bd485' : '1px solid #55CE63'}`, borderRadius: '8px', background: `${login_user_id === allData?._id ? '#7bd485' : '#55CE63'}`, color: '#fff', minWidth: '180px', height: '50px', paddingTop: '3px', margin: '0px 0px 25px 0px'}}
                         >
                           {
-                            loader ? <Spin size="small" indicator={antIcon} />
+                            loader5 ? <Spin size="small" indicator={antIcon} />
                             : <span style={{fontSize: '16px', fontWeight: '500'}}>{t('Timesheetadmin.approve')}</span>
                           }
                         </Button>
@@ -1226,10 +1230,10 @@ const ViewDetailTimesheet = () => {
                     <Button
                       htmlType="submit"
                       className="btn btn-primary submit-btn"
-                      disabled={loader}
+                      disabled={declineLoader}
                     >
                       {
-                        loader ? <Spin size="small" indicator={antIcon} />
+                        declineLoader ? <Spin size="small" indicator={antIcon} />
                           : t('submit')
                       }
                     </Button>
