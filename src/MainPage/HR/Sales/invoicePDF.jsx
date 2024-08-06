@@ -26,7 +26,7 @@ function invoicePDF(invoice_data) {
 
     if (invoice_data?.servicesDetails?.length > 0) {
       invoice_data?.servicesDetails?.forEach((item) => {
-        sub_total += parseFloat(item?.totalAmount) || 0;
+        sub_total += parseFloat(item?.totalAmount ? item?.totalAmount : item?.amount) || 0;
       });
     }
     else if (invoice_data?.monthlyTeamDetails?.length > 0) {
@@ -146,8 +146,8 @@ function invoicePDF(invoice_data) {
         `${record?.unitCost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`,
         record?.quantity,
         `${record?.amount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`,
-        record?.taxPercent,
-        `${record?.totalAmount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`,
+        record?.taxPercent ? record?.taxPercent : '0',
+        `${(record?.totalAmount ? record?.totalAmount : record?.amount)?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`,
       ])
     }
     else if (invoice_data?.monthlyTeamDetails?.length > 0) {
