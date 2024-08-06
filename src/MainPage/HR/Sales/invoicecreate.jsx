@@ -530,7 +530,7 @@ const Invoicecreate = () => {
         if(value === undefined){
           return ''
         }
-        else if (key === 'dueDate' || key === 'invoiceStartDate' || key === 'invoiceEndDate') {
+        else if (key === 'dueDate' || key === 'invoiceStartDate' || key === 'invoiceEndDate' || key === 'invoiceDate') {
           return moment(value).format('YYYY-MM-DD');
         }
         return value;
@@ -1011,7 +1011,7 @@ const Invoicecreate = () => {
                     </div>
                   </div>
                 </div>
-                {/* <div className="col-sm-6 col-md-3">
+                <div className="col-sm-6 col-md-3">
                     <div className="form-group">
                       <label>
                       {t('finance.Invoices.invoicedate')} <span className="text-danger">*</span>
@@ -1031,7 +1031,7 @@ const Invoicecreate = () => {
                           </Form.Item>
                       </div>
                     </div>
-                </div> */}
+                </div>
                 <div className="col-sm-6 col-md-3">
                   {/* <div className="form-group">
                     <label>Invoice date <span className="text-danger">*</span></label>
@@ -1262,6 +1262,9 @@ const Invoicecreate = () => {
                                   </span>
                                 </Tooltip>
                                 Total (Tax exclusive)</td>
+                                <td style={{textAlign: 'right', paddingRight: '30px', width: '230px'}}>
+                                  {subTotalEx?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {currencyIs}
+                                </td>
                             </tr>
                             <tr>
                               <td colSpan={5} className="text-end" style={{fontSize: '15px', fontWeight: '400'}}>
