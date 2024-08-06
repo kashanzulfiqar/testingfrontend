@@ -7,13 +7,19 @@ import "jspdf-autotable";
 function invoicePDF(invoice_data) {
 
   function getFormattedDate(inputDate) {
-    const date = new Date(inputDate);
+    if (inputDate) {
+      const date = new Date(inputDate);
       const day = date.getDate();
       const month = date.toLocaleString('default', { month: 'short' });
       const year = date.getFullYear();
 
       const formattedDate = `${month} ${day}, ${year}`;
       return formattedDate;
+    }
+    else {
+      const formattedDate = 'N/A';
+      return formattedDate;
+    }
   }
   const calculateTotal = () => {
     let sub_total = 0;
@@ -185,47 +191,53 @@ function invoicePDF(invoice_data) {
   doc.text(x + widthofDate + 120, 20, invoice_data?.invoiceNo);
 
   doc.setFont(undefined, "bold");
-  doc.text(x + 120, 26, "Start Date: ");
-  const widthofInvoiceDate = doc.getTextWidth("Start Date:  ");
+  doc.text(x + 120, 26, "Invoice Date: ");
+  const widthofInvoiceDate = doc.getTextWidth("Invoice Date:  ");
   doc.setFont(undefined, "normal");
-  doc.text(x + widthofInvoiceDate + 120, 26, getFormattedDate(invoice_data?.invoiceStartDate));
-  
+  doc.text(x + widthofInvoiceDate + 120, 26, getFormattedDate(invoice_data?.invoiceDate));
+
   doc.setFont(undefined, "bold");
-  doc.text(x + 120, 32, "End Date: ");
-  const widthofInvoiceEndDate = doc.getTextWidth("End Date:  ");
-  doc.setFont(undefined, "normal");
-  doc.text(x + widthofInvoiceEndDate + 120, 32, getFormattedDate(invoice_data?.invoiceEndDate));
-  
-  doc.setFont(undefined, "bold");
-  doc.text(x + 120, 38, "Due Date: ");
+  doc.text(x + 120, 32, "Due Date: ");
   const widthofDueDate = doc.getTextWidth("Due Date:  ");
   doc.setFont(undefined, "normal");
-  doc.text(x + widthofDueDate + 120, 38, getFormattedDate(invoice_data?.dueDate));
+  doc.text(x + widthofDueDate + 120, 32, getFormattedDate(invoice_data?.dueDate));
+
+  doc.setFont(undefined, "bold");
+  doc.text(x + 120, 38, "Start Date: ");
+  const widthofInvoiceStartDate = doc.getTextWidth("Start Date:  ");
+  doc.setFont(undefined, "normal");
+  doc.text(x + widthofInvoiceStartDate + 120, 38, getFormattedDate(invoice_data?.invoiceStartDate));
+  
+  doc.setFont(undefined, "bold");
+  doc.text(x + 120, 44, "End Date: ");
+  const widthofInvoiceEndDate = doc.getTextWidth("End Date:  ");
+  doc.setFont(undefined, "normal");
+  doc.text(x + widthofInvoiceEndDate + 120, 44, getFormattedDate(invoice_data?.invoiceEndDate));
 
   doc.setFont(undefined, "bold");
   doc.setTextColor(142, 142, 142);
-  doc.text(x + 120, 48, "Payment Details:");
+  doc.text(x + 120, 54, "Payment Details:");
   doc.setFont(undefined, "normal");
   doc.setTextColor(50, 50, 50);
 
   //------------------
 
   // doc.setFont(undefined, "bold");
-  doc.text(x + 120, 56, "Total Due: ");
+  doc.text(x + 120, 62, "Total Due: ");
   const widthofTotalDue = doc.getTextWidth("Total Due:  ");
   // doc.setFont(undefined, "normal");
-  doc.text(x + widthofTotalDue + 120, 56, `${invoice_data?.remainingAmount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${invoice_data?.currency}`);
+  doc.text(x + widthofTotalDue + 120, 62, `${invoice_data?.remainingAmount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${invoice_data?.currency}`);
 
   //------------------
 
   // doc.setFont(undefined, "bold");
-  doc.text(x + 120, 62, "Bank Name: ");
+  doc.text(x + 120, 68, "Bank Name: ");
   const widthofDueDate3 = doc.getTextWidth("Bank Name:  ");
   // doc.setFont(undefined, "normal");
-  doc.text(x + widthofDueDate3 + 120, 62, invoice_data?.bankDetail?.bankName);
+  doc.text(x + widthofDueDate3 + 120, 68, invoice_data?.bankDetail?.bankName);
   
   //------------------
-  var yPosition = 68;
+  var yPosition = 74;
   // doc.text(x + 120, 62, "Account Title: ");
   // const widthofAccountTitle = doc.getTextWidth("Account Title:  ");
   // doc.text(x + widthofAccountTitle + 120, 62, invoice_data?.bankDetail?.accountTitle);

@@ -221,27 +221,27 @@ const onFinish = (values) => {
           ),
       },
 
+      {
+        title: t('finance.Invoices.invoicedate'),
+        dataIndex: 'invoiceDate',
+        render: (text, record) => (
+          <label>{formatDate(text || '')}</label>
+          ),
+      },
       // {
-      //   title: t('finance.Invoices.invoicedate'),
-      //   dataIndex: 'invoiceDate',
+      //   title: "Invoice Start Date",
+      //   dataIndex: 'invoiceStartDate',
       //   render: (text, record) => (
       //     <label>{formatDate(text || '')}</label>
       //     ),
       // },
-      {
-        title: "Invoice Start Date",
-        dataIndex: 'invoiceStartDate',
-        render: (text, record) => (
-          <label>{formatDate(text || '')}</label>
-          ),
-      },
-      {
-        title: 'Invoice End Date',
-        dataIndex: 'invoiceEndDate',
-        render: (text, record) => (
-          <label>{formatDate(text || '')}</label>
-          ),
-      },
+      // {
+      //   title: 'Invoice End Date',
+      //   dataIndex: 'invoiceEndDate',
+      //   render: (text, record) => (
+      //     <label>{formatDate(text || '')}</label>
+      //     ),
+      // },
       {
         title: t('finance.Invoices.duedate'),
         dataIndex: 'dueDate',

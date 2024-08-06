@@ -171,8 +171,9 @@ const calculateDiscountAmount = () => {
                             <div className="invoice-details">
                               <h3 className="text-uppercase">Invoice# {invoiceInfo?.invoiceNo}</h3>
                               <ul className="list-unstyled">
-                                <li>Start Date: <label>{formatDate(invoiceInfo?.invoiceStartDate)}</label></li>
-                                <li>End Date: <label>{formatDate(invoiceInfo?.invoiceEndDate)}</label></li>
+                                <li>Invoice Date: <label>{formatDate(invoiceInfo?.invoiceDate)}</label></li>
+                                {invoiceInfo?.invoiceStartDate ? <li>Start Date: <label>{formatDate(invoiceInfo?.invoiceStartDate)}</label></li> : null}
+                                {invoiceInfo?.invoiceEndDate ? <li>End Date: <label>{formatDate(invoiceInfo?.invoiceEndDate)}</label></li> : null}
                                 <li>Due Date: <label>{formatDate(invoiceInfo?.dueDate)}</label></li>
                               </ul>
                             </div>

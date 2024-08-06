@@ -99,9 +99,10 @@ const EditInvoice = () => {
             clientId: edit_invoice_data?.client?._id,
             // clientId: edit_invoice_data?.clientId?._id,
             // invoiceTaxSlabId: edit_invoice_data?.invoiceTaxSlabId.map(item => item._id),
-            invoiceStartDate: moment(edit_invoice_data?.invoiceStartDate, 'YYYY-MM-DD'),
-            invoiceEndDate: moment(edit_invoice_data?.invoiceEndDate, 'YYYY-MM-DD'),
-            dueDate: moment(edit_invoice_data?.dueDate, 'YYYY-MM-DD'),
+            invoiceDate: edit_invoice_data?.invoiceDate ? moment(edit_invoice_data?.invoiceDate, 'YYYY-MM-DD') : '',
+            invoiceStartDate: edit_invoice_data?.invoiceStartDate ? moment(edit_invoice_data?.invoiceStartDate, 'YYYY-MM-DD') : '',
+            invoiceEndDate: edit_invoice_data?.invoiceEndDate ? moment(edit_invoice_data?.invoiceEndDate, 'YYYY-MM-DD') : '',
+            dueDate: edit_invoice_data?.dueDate ? moment(edit_invoice_data?.dueDate, 'YYYY-MM-DD') : '',
         }
         form.setFieldsValue(data);
         calculateTotal();
@@ -598,7 +599,7 @@ const EditInvoice = () => {
       if(value === undefined){
         return ''
       }
-      else if (key === 'dueDate' || key === 'invoiceDate') {
+      else if (key === 'dueDate' || key === 'invoiceStartDate' || key === 'invoiceEndDate' || key === 'invoiceDate') {
         return moment(value).format('YYYY-MM-DD');
       }
       return value;
@@ -992,6 +993,27 @@ const EditInvoice = () => {
                       </Form.Item>
                     </div>
                   </div>
+                </div>
+                <div className="col-sm-6 col-md-3">
+                    <div className="form-group">
+                      <label>
+                      {t('finance.Invoices.invoicedate')} <span className="text-danger">*</span>
+                      </label>
+                      <div style={{ position: 'relative' }} id='area'>
+                          <Form.Item
+                          name='invoiceDate'
+                          className='custom-border'
+                          rules={[
+                              {
+                                required: true,
+                                message: t('finance.Invoices.pleaseenterinvoicedate'),
+                              },
+                            ]}
+                          >
+                            <DatePicker placeholder={t('requests.addModal.selectDate')} className='form-control' getPopupContainer={() => document.getElementById('area')} />
+                          </Form.Item>
+                      </div>
+                    </div>
                 </div>
                 <div className="col-sm-6 col-md-3">
                   {/* <div className="form-group">
