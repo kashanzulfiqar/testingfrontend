@@ -669,7 +669,7 @@ const EmployeeSalary = () => {
       dataIndex: "absentFine",
       render: (text, record) => (
         <span>
-          {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+          {text ? text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '0.00'}
         </span>
       ),
     },
@@ -858,7 +858,7 @@ const EmployeeSalary = () => {
       dataIndex: "absentFine",
       render: (text, record) => (
         <span>
-          {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+          {text ? text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '0.00'}
         </span>
       ),
     },
