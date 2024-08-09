@@ -1554,47 +1554,49 @@ function EditProjects({
                       </div>
                     </div>
                   </div>
-                  <div className="col-sm-6">
-                    <div className="form-group">
-                      <label>{t("projectScreen.Modal.currency")}</label>
-                      <div style={{ position: "relative" }} id="area">
-                        <Form.Item
-                          name="currency"
-                          className="custom-border"
-                          rules={[
-                            {
-                              required: true,
-                              message: t("projectScreen.Modal.chooseCurrency"),
-                            },
-                          ]}
-                        >
-                          <Select
-                            showSearch
-                            className="custom-select custom-normal"
-                            getPopupContainer={() =>
-                              document.getElementById("area")
-                            }
-                            placeholder={t(
-                              "projectScreen.Modal.selectCurrency"
-                            )}
-                            onChange={(value)=> {
-                              setCurrencyIs(value);
-                            }}
+                  { projectType === 'Billed' && (
+                    <div className="col-sm-6">
+                      <div className="form-group">
+                        <label>{t("projectScreen.Modal.currency")}</label>
+                        <div style={{ position: "relative" }} id="area">
+                          <Form.Item
+                            name="currency"
+                            className="custom-border"
+                            rules={[
+                              {
+                                required: true,
+                                message: t("projectScreen.Modal.chooseCurrency"),
+                              },
+                            ]}
                           >
-                            {allCurrencies.map((currency, index) => (
-                              <Select.Option
-                                key={index}
-                                value={currency?.currency}
-                              >
-                                {currency?.currency}
-                              </Select.Option>
-                            ))}
-                          </Select>
-                        </Form.Item>
+                            <Select
+                              showSearch
+                              className="custom-select custom-normal"
+                              getPopupContainer={() =>
+                                document.getElementById("area")
+                              }
+                              placeholder={t(
+                                "projectScreen.Modal.selectCurrency"
+                              )}
+                              onChange={(value)=> {
+                                setCurrencyIs(value);
+                              }}
+                            >
+                              {allCurrencies.map((currency, index) => (
+                                <Select.Option
+                                  key={index}
+                                  value={currency?.currency}
+                                >
+                                  {currency?.currency}
+                                </Select.Option>
+                              ))}
+                            </Select>
+                          </Form.Item>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  
+                    )
+                  }
                   {
                     projectType === "Billed" && (
                     <div className="col-sm-6">
