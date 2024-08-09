@@ -89,7 +89,7 @@ function GenerateSalaryPDF(row, view, screen, print) {
     doc.text(x, 95 + newHeight, 'Hourly Rate: ');
     const widthofHourlyRate = doc.getTextWidth('Hourly Rate:  ');
     doc.setFont(undefined, 'bold')
-    doc.text(x + widthofHourlyRate, 95 + newHeight, `${row?.userId?.salary ? row?.userId?.salary : row?.user?.salary } ${row?.preferredCurrency ? row?.preferredCurrency : row?.companyId?.preferredCurrency ? row?.companyId?.preferredCurrency : null}`);
+    doc.text(x + widthofHourlyRate, 95 + newHeight, `${row?.userId?.salary ? row?.userId?.salary : row?.user?.salary } ${row?.preferredCurrency ? row?.preferredCurrency : row?.companyId?.preferredCurrency ? row?.companyId?.preferredCurrency : ''}`);
     //----
     doc.setFont(undefined, 'normal')
     doc.setFontSize(12)
@@ -213,7 +213,7 @@ function GenerateSalaryPDF(row, view, screen, print) {
   doc.text(x + 110, 246 + newHeight, 'Net Pay: ');
   const widthofCredit = doc.getTextWidth('Net Pay: ');
   doc.setFont(undefined, 'bold')
-  doc.text(x + widthofCredit + 110, 246 + newHeight, `${row?.creditSalary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${row?.preferredCurrency ? row?.preferredCurrency : row?.companyId?.preferredCurrency ? row?.companyId?.preferredCurrency : null}`);
+  doc.text(x + widthofCredit + 110, 246 + newHeight, `${row?.creditSalary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${row?.preferredCurrency ? row?.preferredCurrency : row?.companyId?.preferredCurrency ? row?.companyId?.preferredCurrency : ''}`);
 
   // line 4
   doc.setFontSize(11);
