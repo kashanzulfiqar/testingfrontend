@@ -304,6 +304,10 @@ const EditInvoice = () => {
     const invoiceStartDate = formValues.invoiceStartDate ? formValues.invoiceStartDate.format('YYYY-MM-DD') : null;
     const invoiceEndDate = formValues.invoiceEndDate ? formValues.invoiceEndDate.format('YYYY-MM-DD') : null;
 
+    if (invoiceStartDate && invoiceEndDate && invoiceEndDate < invoiceStartDate) {
+      return;
+    }
+  
     if (invoiceStartDate && invoiceEndDate) {
       hourlyTeam ? getProjectInvoice(projectId, invoiceStartDate, invoiceEndDate) 
       :
@@ -1033,12 +1037,40 @@ const EditInvoice = () => {
                           rules={[
                               {
                                 required: true,
-                                message: t('finance.Invoices.pleaseenterinvoicedate'),
+                                message: 'please enter invoice start date',
                               },
+                              // ({ getFieldValue }) => ({
+                              //   validator(_, value) {
+                              //     const endDate = getFieldValue('invoiceEndDate');
+                              //     if (!value || !endDate || value.isSameOrBefore(endDate)) {
+                              //       return Promise.resolve();
+                              //     }
+                              //     return Promise.reject(new Error('Invoice Start Date cannot be before End Date'));
+                              //   },
+                              // }),
                             ]}
                           >
                             <DatePicker placeholder={t('requests.addModal.selectDate')} className='form-control' getPopupContainer={() => document.getElementById('area')}
-                            onChange={(date) => handleDateChange('invoiceStartDate', date)}
+                            onChange={(date) => {
+                              const endDate = form.getFieldValue('invoiceEndDate');
+                              if (endDate && date.isAfter(endDate)) {
+                                form.setFields([
+                                  {
+                                    name: 'invoiceEndDate',
+                                    errors: ['Invoice End Date cannot be before Start Date'],
+                                  },
+                                ]);
+                              } else {
+                                form.setFields([
+                                  {
+                                    name: 'invoiceEndDate',
+                                    errors: [],
+                                  },
+                                ]);
+                              }
+                              //form.validateFields(['invoiceEndDate']);
+                              handleDateChange('invoiceStartDate', date)
+                            }}
                             />
                           </Form.Item>
                       </div>
@@ -1062,12 +1094,24 @@ const EditInvoice = () => {
                           rules={[
                               {
                                 required: true,
-                                message: t('finance.Invoices.pleaseenterinvoicedate'),
+                                message: 'please enter invoice end date',
                               },
+                              ({ getFieldValue }) => ({
+                                validator(_, value) {
+                                  const startDate = getFieldValue('invoiceStartDate');
+                                  if (!value || !startDate || value.isSameOrAfter(startDate)) {
+                                    return Promise.resolve();
+                                  }
+                                  return Promise.reject(new Error('Invoice End Date cannot be before Start Date'));
+                                },
+                              }),
                             ]}
                           >
                             <DatePicker placeholder={t('requests.addModal.selectDate')} className='form-control' getPopupContainer={() => document.getElementById('area')}
-                            onChange={(date) => handleDateChange('invoiceEndDate', date)}
+                            onChange={(date) => {
+                              //form.validateFields(['invoiceStartDate']);
+                              handleDateChange('invoiceEndDate', date)
+                            }}
                             />
                           </Form.Item>
                       </div>
@@ -1093,9 +1137,21 @@ const EditInvoice = () => {
                               required: true,
                               message: t('finance.Invoices.pleaseenterduedate'),
                             },
+                            ({ getFieldValue }) => ({
+                              validator(_, value) {
+                                const invoiceDate = getFieldValue('invoiceDate');
+                                if (!value || !invoiceDate || value.isSameOrAfter(invoiceDate)) {
+                                  return Promise.resolve();
+                                }
+                                return Promise.reject(new Error('Invoice Due Date cannot be before Invoice Date'));
+                              },
+                            }),
                           ]}
                         >
-                            <DatePicker placeholder={t('requests.addModal.selectDate')} className='form-control' getPopupContainer={() => document.getElementById('area')} />
+                            <DatePicker placeholder={t('requests.addModal.selectDate')} className='form-control' getPopupContainer={() => document.getElementById('area')}
+                            onChange={()=>
+                              form.validateFields(['dueDate'])} 
+                            />
                         </Form.Item>
                     </div>
                   </div>
