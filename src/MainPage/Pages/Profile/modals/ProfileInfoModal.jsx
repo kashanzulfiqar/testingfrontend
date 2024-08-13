@@ -21,7 +21,7 @@ import { useTranslation } from 'react-i18next';
 
 
 
-const ProfileInfoModal = ({ open, handleClose, user_data, onFinishAdd, onFinishEdit, onFinish, loader, numFlag }) => {
+const ProfileInfoModal = ({ open, handleClose, user_data, onFinishAdd, onFinishEdit, onFinish, loader, numFlag, currency }) => {
   const { t, i18n } = useTranslation();
   const [form] = Form.useForm();
   
@@ -949,7 +949,7 @@ const getTaxSlab = () => {
                     <div className="col-md-6">
                     <div className="form-group">
                       <label>
-                      {t('allEmp.Modal.salary')} <span className="text-danger">*</span>
+                      {t('allEmp.Modal.salary')}{` (${currency})`} <span className="text-danger">*</span>
                       </label>
                       <Form.Item
                         name='salary'
@@ -996,7 +996,7 @@ const getTaxSlab = () => {
                     <div className="col-md-6">
                     <div className="form-group">
                       <label>
-                      Hourly Rate <span className="text-danger">*</span>
+                      {`Hourly Rate (${currency})`}<span className="text-danger">*</span>
                       </label>
                       <Form.Item
                         name='salary'

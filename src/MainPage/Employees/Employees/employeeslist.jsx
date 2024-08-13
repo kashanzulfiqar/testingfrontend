@@ -41,6 +41,7 @@ const Employeeslist = () => {
 
   const [open, setOpen] = useState({ isAddOpen: false, isEditOpen: false, data: '' })
   const [users, setUsers] = useState([])
+  const [currency, setCurrency] = useState('');
 
   useEffect(() => {
     if(role === 'admin' || permissions?.viewAllUsers || permissions?.updateUser || permissions?.updateStatusOfEmployee || permissions?.addUser) {
@@ -86,6 +87,7 @@ const Employeeslist = () => {
           setUsers(res?.data?.users?.docs);
           setPaginationDetail(res?.data?.users)
           setTableLoader(false);
+          setCurrency(res?.data?.currency);
         }
       })
       .catch((err) => {
@@ -724,6 +726,7 @@ const Employeeslist = () => {
                 handleClose={handleClose}
                 onFinishAdd={onFinishAdd}
                 loader={loader}
+                currency= {currency}
               />
             }
            {/* /Add Employee Modal */}
@@ -736,6 +739,7 @@ const Employeeslist = () => {
                 user_data={open?.data}
                 onFinishEdit={onFinishEdit}
                 loader={loader}
+                currency= {currency}
               />
             }
            {/* /Edit Employee Modal */}
