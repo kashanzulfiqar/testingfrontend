@@ -148,7 +148,7 @@ const Invoicecreate = () => {
   };
 
   const getAllTaxSlabs = () => {
-    apiServices("GET", `invoices-tax-slab`, null, user_state)
+    apiServices("GET", `invoices-tax-slab?status=Active`, null, user_state)
     .then((res) => {
       if (res?.data?.success === true) {
         const taxes = res?.data?.invoicesTaxSlab;
