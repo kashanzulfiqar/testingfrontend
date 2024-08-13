@@ -38,6 +38,7 @@ const AllEmployees = () => {
   const [paginationDetail, setPaginationDetail] = useState();
   const [filterValues, setFilterValues] = useState();
   const [users, setUsers] = useState([])
+  const [currency, setCurrency] = useState('');
 
   useEffect(() => {
     if(role === 'admin' || permissions?.viewAllUsers || permissions?.updateUser || permissions?.updateStatusOfEmployee || permissions?.addUser) {
@@ -57,6 +58,7 @@ const AllEmployees = () => {
           setUsers(res?.data?.users?.docs);
           setPaginationDetail(res?.data?.users)
           setTableLoader(false);
+          setCurrency(res?.data?.currency);
         }
       })
       .catch((err) => {
@@ -589,6 +591,7 @@ const AllEmployees = () => {
           onFinishAdd={onFinishAdd}
           loader={loader}
           numFlag={numFlag}
+          currency= {currency}
         />
       }
       {/* /Add Employee Modal */}
@@ -603,6 +606,7 @@ const AllEmployees = () => {
             onFinishEdit={onFinishEdit}
             loader={loader}
             numFlag={numFlag}
+            currency= {currency}
           />
         }
       {/* /Edit Employee Modal */}
