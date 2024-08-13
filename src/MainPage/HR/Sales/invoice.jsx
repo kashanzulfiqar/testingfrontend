@@ -3,7 +3,7 @@ import React, { useState,useEffect } from 'react';
 import { Helmet } from "react-helmet";
 import { Link, useNavigate } from 'react-router-dom';
 
-import { DatePicker, Empty, Select, Table, Form, Pagination, Button, message, Spin, Input } from 'antd';
+import { DatePicker, Empty, Select, Table, Form, Pagination, Button, message, Spin, Input, Tag } from 'antd';
 import 'antd/dist/antd.css';
 import {itemRender,onShowSizeChange} from "../../paginationfunction"
 import "../../antdstyle.css"
@@ -20,6 +20,7 @@ const Invoices = () => {
   const moment = require('moment');
 
   const [form] = Form.useForm();
+  const [form2] = Form.useForm();
   const nav = useNavigate();
 
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
@@ -188,6 +189,7 @@ const handleClose = () => {
     isDelOpen: false,
     data: ''
   });
+  form2.resetFields();
 };
 
 const onFinish = (values) => {
@@ -656,7 +658,7 @@ const onFinish = (values) => {
             </div>
             <div className="modal-body">
               <Form
-                // form={form}
+                form={form2}
                 name="control-hooks"
                 onFinish={(val) => onFinish(val)}
                 onFinishFailed={({errorFields}) => {
@@ -686,6 +688,8 @@ const onFinish = (values) => {
                     className="custom-border"
                   >
                     <Select
+                    labelInValue
+                    optionLabelProp="label"
                     showSearch
                     onSearch={(val) => {
                       searchHandler(val, 'project')
@@ -705,11 +709,24 @@ const onFinish = (values) => {
                     placeholder={t('Tasks.selectproject')}
                     size='large'
                     getPopupContainer={() => document.getElementById('area')}
+                    onChange={(value, option) => {
+                      //console.log(value.value)
+                      form2.setFieldsValue({
+                        projectId: value.value,
+                      });
+                    }}
                   >
                     {
                       allProjects?.map((proj, index) => {
                       return (
-                          <Option key={index} value={proj._id}>{proj?.projectName}</Option>
+                          <Option key={index} value={proj._id} label={proj?.projectName}>
+                            {proj?.projectName}
+                            {
+                            <Tag color={proj?.costType === "Monthly" ? "blue" : "purple"} style={{ float: "right" }}>
+                              {proj?.costType}
+                            </Tag>
+                            }
+                            </Option>
                       )
                       })
                     }
