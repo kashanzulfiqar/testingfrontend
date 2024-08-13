@@ -1472,6 +1472,7 @@ const antIcon = (
             user_data={allData}
             onFinish={onFinish}
             loader={loader}
+            currency={user_data?.currency}
           />
           // <ProfileInfoModal
           //   open={open}
