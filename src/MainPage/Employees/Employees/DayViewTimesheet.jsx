@@ -921,7 +921,6 @@ let t_data = [
                         <div className="form-group">
                         <label style={{display: 'flex', justifyContent: 'space-between'}}>
                             <div>{t('Timesheetemployee.notes')}</div>
-                            <small style={{marginTop: '5px', fontSize: '10px', color: 'rgba(0, 0, 0, 0.5)'}}>{descLength} / 150</small>
                         </label>
                         <Form.Item
                             name="notes"
@@ -946,7 +945,7 @@ let t_data = [
                             ]}
                             className="custom-border"
                         >
-                            <Input.TextArea rows={3} className='form-control' onChange={(e) => setDescLength(e.target.value.length)} maxLength={150} />
+                            <Input.TextArea rows={3} className='form-control' />
                         </Form.Item>
                         </div>
                     </div>

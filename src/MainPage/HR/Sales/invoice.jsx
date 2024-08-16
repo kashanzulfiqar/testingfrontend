@@ -3,7 +3,7 @@ import React, { useState,useEffect } from 'react';
 import { Helmet } from "react-helmet";
 import { Link, useNavigate } from 'react-router-dom';
 
-import { DatePicker, Empty, Select, Table, Form, Pagination, Button, message, Spin, Input } from 'antd';
+import { DatePicker, Empty, Select, Table, Form, Pagination, Button, message, Spin, Input, Tag } from 'antd';
 import 'antd/dist/antd.css';
 import {itemRender,onShowSizeChange} from "../../paginationfunction"
 import "../../antdstyle.css"
@@ -20,6 +20,7 @@ const Invoices = () => {
   const moment = require('moment');
 
   const [form] = Form.useForm();
+  const [form2] = Form.useForm();
   const nav = useNavigate();
 
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
@@ -36,7 +37,9 @@ const Invoices = () => {
   const [paginationDetail, setPaginationDetail] = useState();
   const [filterValues, setFilterValues] = useState();
   const [fromInvoiceDate, setFromInvoiceDate] = useState('');
+  const [allProjects, setAllProjects] = useState([]);
   const [open, setOpen] = useState({
+    isAddOpen: false,
     isDelOpen: false,
     data: ''
   });
@@ -68,6 +71,27 @@ const Invoices = () => {
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
               : t('aDash.errors.getAllInvoicesError')
+          }!`
+        );
+      });
+  }
+
+  const getAllProjects = () => {
+    apiServices("GET", `project-management?status=On-Going&costTypeInvoice=Both&page=${1}&limit=${99999}` , null, user_state)
+      .then((res) => {
+          if (res?.data?.success === true) {
+                const sortedData = res?.data?.projects?.docs?.slice().sort((a, b) => a.projectName.localeCompare(b.projectName));
+              setAllProjects(sortedData);
+            }
+          })
+          .catch((err) => {
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : t('projectScreen.errors.getEmployeeProjectsError')
           }!`
         );
       });
@@ -137,11 +161,42 @@ const Invoices = () => {
     }
 }
 
+const searchHandler = (val, type) => {
+  let dropdownValues = []
+  if (type === 'project'){
+    allProjects.forEach((proj)=>{
+      dropdownValues.push(proj.projectName.toLowerCase())
+   })
+  }
+
+  if(val !== ''){
+    dropdownValues.some((team) => {
+      if(team.includes(val.toLowerCase())){
+        // setNoData(false);
+        return true
+      }else{
+        // setNoData(true);
+      }
+    })
+  }else{
+    // setNoData(false)
+  }
+}
+
 const handleClose = () => {
   setOpen({
+    isAddOpen: false,
     isDelOpen: false,
     data: ''
   });
+  form2.resetFields();
+};
+
+const onFinish = (values) => {
+  const project = allProjects?.find(proj => proj._id === values?.projectId);
+    //setSelectedProject(project);
+    console.log('Selected Project:', project);
+    nav('/invoices/create-invoice', { state: { project_data: project } });
 };
   
     const columns = [
@@ -175,6 +230,20 @@ const handleClose = () => {
           <label>{formatDate(text || '')}</label>
           ),
       },
+      // {
+      //   title: "Invoice Start Date",
+      //   dataIndex: 'invoiceStartDate',
+      //   render: (text, record) => (
+      //     <label>{formatDate(text || '')}</label>
+      //     ),
+      // },
+      // {
+      //   title: 'Invoice End Date',
+      //   dataIndex: 'invoiceEndDate',
+      //   render: (text, record) => (
+      //     <label>{formatDate(text || '')}</label>
+      //     ),
+      // },
       {
         title: t('finance.Invoices.duedate'),
         dataIndex: 'dueDate',
@@ -298,6 +367,7 @@ const handleClose = () => {
             </div>
             <div className="col-auto float-end ms-auto">
               <Link to="/invoices/create-invoice" className="btn add-btn"><i className="fa fa-plus" /> {t('finance.Invoices.createinvoice')}</Link>
+              <a className="btn add-btn" style={{marginRight:'5px'}} onClick={()=>{ getAllProjects(); setOpen({ isAddOpen: true, data: '' }) }}><i className="fa fa-file-text" /> Generate Invoice</a>
             </div>
           </div>
         </div>
@@ -564,6 +634,124 @@ const handleClose = () => {
       </div>
       {/* /Page Content */}
     </div>
+
+    <Modal
+        open={open.isAddOpen}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        // className="modal custom-modal fade"
+        aria-describedby="modal-modal-description"
+        disableRestoreFocus
+        BackdropProps={{
+          style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
+        }}
+      >
+        <div className="modal-dialog modal-dialog-centered" role="document">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">
+                Select Project
+              </h5>
+              <button type="button" className="close" onClick={handleClose}>
+                <span aria-hidden="true">×</span>
+              </button>
+            </div>
+            <div className="modal-body">
+              <Form
+                form={form2}
+                name="control-hooks"
+                onFinish={(val) => onFinish(val)}
+                onFinishFailed={({errorFields}) => {
+                  console.log(errorFields.map(field => field.errors.toString().includes('consecutive')));
+                  console.log(errorFields);
+                  const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
+                  if(consecutiveSpacesError){
+                    message.error(t('allEmp.errors.removeConsecutiveSpaces'))
+                 }else{
+                    message.error(t('allEmp.errors.fillRequiredFields'))
+                  } 
+                }}
+              >
+                <div className="form-group">
+                  <label>
+                  Project <span className="text-danger">*</span>
+                  </label>
+                  <Form.Item
+                    name="projectId"
+                    rules={[
+                      {
+                        whitespace: true,
+                        required: true,
+                        message: t('Tasks.pleaseselectproject'),
+                    },
+                    ]}
+                    className="custom-border"
+                  >
+                    <Select
+                    labelInValue
+                    optionLabelProp="label"
+                    showSearch
+                    onSearch={(val) => {
+                      searchHandler(val, 'project')
+                    }}
+                    filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                    optionFilterProp="children"
+                    notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                    dropdownRender={(menu) => (
+                      <>
+                        {menu}
+                      </>
+                    )}
+                    className="custom-select searchCenter"
+                    style={{
+                      width: '100%',
+                    }}
+                    placeholder={t('Tasks.selectproject')}
+                    size='large'
+                    getPopupContainer={() => document.getElementById('area')}
+                    onChange={(value, option) => {
+                      //console.log(value.value)
+                      form2.setFieldsValue({
+                        projectId: value.value,
+                      });
+                    }}
+                  >
+                    {
+                      allProjects?.map((proj, index) => {
+                      return (
+                          <Option key={index} value={proj._id} label={proj?.projectName}>
+                            {proj?.projectName}
+                            {
+                            <Tag color={proj?.costType === "Monthly" ? "blue" : "purple"} style={{ float: "right" }}>
+                              {proj?.costType}
+                            </Tag>
+                            }
+                            </Option>
+                      )
+                      })
+                    }
+                  </Select>
+                  </Form.Item>
+                </div>
+                <div className="submit-section">
+                  <Form.Item>
+                    <Button
+                      htmlType="submit"
+                      className="btn btn-primary submit-btn"
+                      disabled={loader}
+                    >
+                      {
+                        loader ? <Spin size="small" indicator={antIcon} />
+                          : 'Proceed'
+                      }
+                    </Button>
+                  </Form.Item>
+                </div>
+              </Form>
+            </div>
+          </div>
+        </div>
+      </Modal>
 
           {/* delete modall */}
           <Modal

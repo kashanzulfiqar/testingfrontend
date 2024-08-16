@@ -217,7 +217,7 @@ const PayrollHistory = () => {
                 dataIndex: 'absentFine',
                 render: (text,record) => (
                   <>
-                    {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || '0'}
+                    {text ? parseFloat(text)?.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '0.00'}
                   </>
                 )
             },
@@ -281,7 +281,8 @@ const PayrollHistory = () => {
                             setOpenDetail({ open: true, data: record });
                             let d = {
                               ...record,
-                              salary: record?.user?.salary,
+                              absentFine: record?.absentFine ? parseFloat(record?.absentFine)?.toFixed(2) : '0', 
+                              salary: record?.basicSalary ? record?.basicSalary : record?.user?.salary,
                               employeeId: record?.user?.employeeId,
                               payMonth: moment(record?.payMonth, 'MMMM'),
                               payYear: moment(record?.payYear, 'YYYY'),

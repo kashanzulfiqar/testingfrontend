@@ -316,18 +316,26 @@ const EmployeeSalary = () => {
           }
         })
         .catch((err) => {
-          message.error(
-            `${
-              err?.response?.data?.msg
-                ? err?.response?.data?.msg
-                : err?.response?.data?.validation?.body?.message
-                ? err?.response?.data?.validation?.body?.message
-                : t('payroll.currentPayroll.generatePayrollError')
-            }`
-          );
-          setIsLoading(false);
-          setLoader(false);
-          PayFilterReset();
+          if (err?.response?.data?.msg == 'Some payrolls were not generated due to no applicable tax slabs') {
+            message.error(err?.response?.data?.msg);
+            setLoader(false);
+            GetGenPayrolls();
+            handleCloseModal();
+          }
+          else {
+            message.error(
+              `${
+                err?.response?.data?.msg
+                  ? err?.response?.data?.msg
+                  : err?.response?.data?.validation?.body?.message
+                  ? err?.response?.data?.validation?.body?.message
+                  : t('payroll.currentPayroll.generatePayrollError')
+              }`
+            );
+            setIsLoading(false);
+            setLoader(false);
+            PayFilterReset();
+          }
         });
     } else {
       message.warning(t('payroll.currentPayroll.bothMonthAndYearRequired'));
@@ -661,7 +669,7 @@ const EmployeeSalary = () => {
       dataIndex: "absentFine",
       render: (text, record) => (
         <span>
-          {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+          {text ? text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '0.00'}
         </span>
       ),
     },
@@ -850,7 +858,7 @@ const EmployeeSalary = () => {
       dataIndex: "absentFine",
       render: (text, record) => (
         <span>
-          {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+          {text ? text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '0.00'}
         </span>
       ),
     },
@@ -954,7 +962,7 @@ const EmployeeSalary = () => {
 
     apiServices(
       "GET",
-      `payrolls/view-payrolls??payrollMonth=${selectedPayFilters.month}&payrollYear=${selectedPayFilters.year}&employeeName=${filters.name}&processed=false&page=${params.page}&limit=${params.limit}`,
+      `payrolls/view-payrolls?payMonth=${selectedPayFilters.month}&payYear=${selectedPayFilters.year}&employeeName=${filters.name}&processed=false&page=${params.page}&limit=${params.limit}`,
       null,
       user_state
     )
@@ -969,7 +977,7 @@ const EmployeeSalary = () => {
               )
           );
           // Update the data state with unique payroll records
-          setData((prevData) => [...prevData, ...uniquePayrolls]);
+          setData((prevData) => [ ...uniquePayrolls, ...prevData]);
           //handleReset();
           setPagination({
             ...pagination,

@@ -21,7 +21,7 @@ import { useTranslation } from 'react-i18next';
 
 
 
-const ProfileInfoModal = ({ open, handleClose, user_data, onFinishAdd, onFinishEdit, onFinish, loader, numFlag }) => {
+const ProfileInfoModal = ({ open, handleClose, user_data, onFinishAdd, onFinishEdit, onFinish, loader, numFlag, currency }) => {
   const { t, i18n } = useTranslation();
   const [form] = Form.useForm();
   
@@ -42,6 +42,7 @@ const [phoneLengthError, setPhoneLengthError] = useState(false);
 const [emergValue, setEmergValue] = useState(null)
 const [imageLoader, setImageLoader] = useState(false)
 const [image, setImage] = useState('')
+const [salaryType, setSalaryType] = useState('')
 const [addDeptOpen, setAddDeptOpen] = useState(false)
 const [addDesigOpen, setAddDesigOpen] = useState(false)
 const [addShiftOpen, setAddShiftOpen] = useState(false)
@@ -67,6 +68,7 @@ const [addRoleOpen, setAddRoleOpen] = useState(false)
         }
         form.setFieldsValue(data)
         setImage(user_data?.imageUrl);
+        setSalaryType(user_data?.salaryType)
         getRolePermissions(user_data?.roleId)
     }
   }, [])
@@ -901,8 +903,53 @@ const getTaxSlab = () => {
                     </div>
                     <div className="col-md-6">
                     <div className="form-group">
+                        <label>
+                        Salary Type <span className="text-danger">*</span>
+                        </label>
+                        <div style={{ position: 'relative' }} id='area'>
+                            <Form.Item
+                            name='salaryType'
+                            className='custom-border'
+                            rules={[
+                                {
+                                  whitespace: true,
+                                  required: true,
+                                  message: "Please select salary type",
+                                },
+                              ]}
+                            >
+                                <Select
+                                    className="custom-select custom-normal"
+                                    getPopupContainer={() => document.getElementById('area')}
+                                    style={{
+                                    width: '100%',
+                                    }}
+                                    placeholder='Select Salary Type'
+                                    onChange={(value) => setSalaryType(value)}
+                                    options={[
+                                    {
+                                        value: 'Monthly',
+                                        label: "Monthly",
+                                    },
+                                    {
+                                        value: 'Hourly',
+                                        label: "Hourly",
+                                    },
+                                    {
+                                        value: 'Unpaid',
+                                        label: "Unpaid",
+                                    },
+                                    ]}
+                                />
+                            </Form.Item>
+                        </div>
+                    </div>
+                    </div>
+                    {salaryType === 'Monthly' ? 
+                    <div className="col-md-6">
+                    <div className="form-group">
                       <label>
-                      {t('allEmp.Modal.salary')} <span className="text-danger">*</span>
+                      {t('allEmp.Modal.salary')}{` (${currency})`} <span className="text-danger">*</span>
                       </label>
                       <Form.Item
                         name='salary'
@@ -944,6 +991,56 @@ const getTaxSlab = () => {
                       </Form.Item>
                     </div>
                     </div>
+                  :
+                  salaryType === 'Hourly' ? 
+                    <div className="col-md-6">
+                    <div className="form-group">
+                      <label>
+                      {`Hourly Rate (${currency})`}<span className="text-danger">*</span>
+                      </label>
+                      <Form.Item
+                        name='salary'
+                        className='custom-border'
+                        rules={[
+                          {
+                            whitespace: true,
+                            required: true,
+                            message: 'Please enter hourly rate'
+                            // validator: (_, value) => {
+                            //   if (!value || value.trim() === '') {
+                            //     return Promise.reject('please enter salary');
+                            //   } else if (/\s{2,}/.test(value)) {
+                            //     return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
+                            //   } else if (value.length < 3) {
+                            //     return Promise.reject('length must be at least 3 characters long');
+                            //   }
+                            //   return Promise.resolve();
+                            // },
+                          },
+                        ]}
+                      >
+                        <Input className='form-control' maxLength={50}
+                          // onKeyPress={(e) => {
+                          //   if ((e.which >= 65 && e.which <= 90) || (e.which >= 97 && e.which <= 122) || (e.which >= 33 &&  e.which <= 47) || (e.which >= 58 && e.which <= 64) || (e.which >= 91 && e.which <= 96) || (e.which >= 123 && e.which <= 126) ) {
+                          //     e.preventDefault();
+                          //   }
+                          // }}
+                          onKeyPress={(e) => {
+                            if (
+                                (e.which >= 48 && e.which <= 57) ||
+                                e.which === 45
+                            ) {
+                                return
+                            }
+                            e.preventDefault();
+                            }}
+                        />
+                      </Form.Item>
+                    </div>
+                    </div>
+                    :
+                    null
+                  }
                     <div className="col-md-6">
                     <div className="form-group">
                         <label>
@@ -1115,6 +1212,7 @@ const getTaxSlab = () => {
                         </div>
                     </div>
                     </div>
+                    {salaryType === 'Monthly' ? 
                     <div className="col-md-6">
                     <div className="form-group">
                         <label>
@@ -1172,6 +1270,9 @@ const getTaxSlab = () => {
                         </div>
                     </div>
                     </div>
+                    :
+                    null
+                    }
                     <div className="col-md-6">
                     <div className="form-group">
                         <label>

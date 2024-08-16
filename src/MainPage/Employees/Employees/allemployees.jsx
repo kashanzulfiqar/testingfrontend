@@ -27,6 +27,7 @@ const AllEmployees = () => {
   const role = user_state?.user?.role
 
   const [allDesignations, setAllDesignations] = useState([])
+  const [allRoles, setAllRoles] = useState([])
   const [desigInfo, setDesigInfo] = useState({})
 
   const [open, setOpen] = useState({ isAddOpen: false, isEditOpen: false, data: '' })
@@ -38,11 +39,14 @@ const AllEmployees = () => {
   const [paginationDetail, setPaginationDetail] = useState();
   const [filterValues, setFilterValues] = useState();
   const [users, setUsers] = useState([])
+  const [currency, setCurrency] = useState('');
 
   useEffect(() => {
     if(role === 'admin' || permissions?.viewAllUsers || permissions?.updateUser || permissions?.updateStatusOfEmployee || permissions?.addUser) {
       getEmployees();
       getAllDesignations();
+      getAllRoles();
+
     }else{
       navigate('/restricted', { state: { unAuthorize: true}})
     }
@@ -51,12 +55,13 @@ const AllEmployees = () => {
 
   const getEmployees = (values, current_page, page_size) => {
     setTableLoader(true);
-    apiServices("GET", `user/view-user?deleted=false${values === '' ? '' : values?.employeeName === '' ? '' : values?.employeeName ? `&employeeName=${values?.employeeName}` : filterValues?.employeeName ? `&employeeName=${filterValues?.employeeName}` : ''}${values === '' ? '' : values?.employeeId === '' ? '' : values?.employeeId ? `&employeeId=${encodeURIComponent(values?.employeeId)}` : filterValues?.employeeId ? `&employeeId=${encodeURIComponent(filterValues?.employeeId)}` : ''}${values === '' ? '' : values?.designation === '' ? '' : values?.designation ? `&designation=${values?.designation}` : filterValues?.designation ? `&designation=${filterValues?.designation}` : ''}${values === '' ? '' : values?.status === '' ? '' : values?.status ? `&userStatus=${values?.status}` : filterValues?.status ? `&userStatus=${filterValues?.status}` : ''}&page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}`, null, user_state)
+    apiServices("GET", `user/view-user?deleted=false${values === '' ? '' : values?.employeeName === '' ? '' : values?.employeeName ? `&employeeName=${values?.employeeName}` : filterValues?.employeeName ? `&employeeName=${filterValues?.employeeName}` : ''}${values === '' ? '' : values?.employeeId === '' ? '' : values?.employeeId ? `&employeeId=${encodeURIComponent(values?.employeeId)}` : filterValues?.employeeId ? `&employeeId=${encodeURIComponent(filterValues?.employeeId)}` : ''}${values === '' ? '' : values?.designation === '' ? '' : values?.designation ? `&designation=${values?.designation}` : filterValues?.designation ? `&designation=${filterValues?.designation}` : ''}${values === '' ? '' : values?.userRole === '' ? '' : values?.userRole ? `&userRole=${values?.userRole}` : filterValues?.userRole ? `&userRole=${filterValues?.userRole}` : ''}${values === '' ? '' : values?.status === '' ? '' : values?.status ? `&userStatus=${values?.status}` : filterValues?.status ? `&userStatus=${filterValues?.status}` : ''}&page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}`, null, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
           setUsers(res?.data?.users?.docs);
           setPaginationDetail(res?.data?.users)
           setTableLoader(false);
+          setCurrency(res?.data?.currency);
         }
       })
       .catch((err) => {
@@ -93,6 +98,26 @@ const AllEmployees = () => {
             : err?.response?.data?.validation?.body?.message
             ? err?.response?.data?.validation?.body?.message
             : t('allEmp.errors.getDesignationInfoError')
+        }`
+      );
+    });
+  }
+
+  const getAllRoles = () => {
+    apiServices("GET", "role/view-role", null, user_state)
+    .then((res) => {
+      if (res?.data?.success === true) {
+        setAllRoles(res?.data?.Role);
+      }
+    })
+    .catch((err) => {
+      message.error(
+        `${
+          err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
+            ? err?.response?.data?.validation?.body?.message
+            : 'Error getting roles'
         }`
       );
     });
@@ -427,7 +452,7 @@ const AllEmployees = () => {
           onFinish={onFilterFinish}
         >
         <div className="row filter-row">
-          <div className="col-sm-6 col-md-2">  
+          <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">  
             <div className="form-group">
             <Form.Item
                 name="employeeId"
@@ -441,7 +466,7 @@ const AllEmployees = () => {
               </Form.Item>
             </div>
           </div>
-          <div className="col-sm-6 col-md-2">  
+          <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">  
             <div className="form-group">
             <Form.Item
                 name="employeeName"
@@ -455,7 +480,7 @@ const AllEmployees = () => {
               </Form.Item>
             </div>
           </div>
-          <div className="col-sm-6 col-md-2">
+          <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
           <div style={{ position: 'relative' }} id='area1'>
               <Form.Item
                 name="designation"
@@ -479,7 +504,31 @@ const AllEmployees = () => {
               </Form.Item>
             </div>
           </div>
-          <div className="col-sm-6 col-md-2">
+          <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
+          <div style={{ position: 'relative' }} id='area1'>
+              <Form.Item
+                name="userRole"
+                className="custom-border"
+              >
+                <Select
+                  className="custom-select"
+                  style={{
+                    width: '100%',
+                  }}
+                  placeholder='Role'
+                  size='large'
+                  getPopupContainer={() => document.getElementById('area1')}
+                >
+                  {allRoles?.map((item, index) => {
+                  return (
+                      <Option key={index} value={item?._id}>{item?.roleName}</Option>
+                  )
+                  })}
+                </Select>
+              </Form.Item>
+            </div>
+          </div>
+          <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
           <div style={{ position: 'relative' }} id='area1'>
               <Form.Item
                 name="status"
@@ -507,13 +556,25 @@ const AllEmployees = () => {
               </Form.Item>
             </div>
           </div>
-          {/* <div className="col-sm-6 col-md-4" style={{display: 'flex', alignItems: 'flex-start', gap: '13px'}}>   */}
-          <div className="col-sm-6 col-md-2">  
+          <div
+            className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12"
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              justifyContent: "center",
+              gap: "2px",
+            }}
+          >
             <button href="javascript:void(0)" type="submit" className="btn btn-success btn-block w-100" disabled={role === 'admin' ? false : permissions?.viewAllUsers ? false : true}> {t('search')} </button> 
-          </div>
-          <div className="col-sm-6 col-md-2">
             <button href="javascript:void(0)" type="reset" onClick={() => { form.resetFields(); getEmployees('', 1, pageSize); setFilterValues(null); setCurrentPage(1)}} className="btn btn-success btn-block w-100 resetButton" style={{backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}} disabled={role === 'admin' ? false : permissions?.viewAllUsers ? false : true}> {t('reset')} </button>  
           </div>
+          {/* <div className="col-sm-6 col-md-4" style={{display: 'flex', alignItems: 'flex-start', gap: '13px'}}>   */}
+          {/* <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">  
+            <button href="javascript:void(0)" type="submit" className="btn btn-success btn-block w-100" disabled={role === 'admin' ? false : permissions?.viewAllUsers ? false : true}> {t('search')} </button> 
+          </div>
+          <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
+            <button href="javascript:void(0)" type="reset" onClick={() => { form.resetFields(); getEmployees('', 1, pageSize); setFilterValues(null); setCurrentPage(1)}} className="btn btn-success btn-block w-100 resetButton" style={{backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}} disabled={role === 'admin' ? false : permissions?.viewAllUsers ? false : true}> {t('reset')} </button>  
+          </div> */}
         </div>
         </Form>
         {/* Search Filter */}
@@ -589,6 +650,7 @@ const AllEmployees = () => {
           onFinishAdd={onFinishAdd}
           loader={loader}
           numFlag={numFlag}
+          currency= {currency}
         />
       }
       {/* /Add Employee Modal */}
@@ -603,6 +665,7 @@ const AllEmployees = () => {
             onFinishEdit={onFinishEdit}
             loader={loader}
             numFlag={numFlag}
+            currency= {currency}
           />
         }
       {/* /Edit Employee Modal */}
