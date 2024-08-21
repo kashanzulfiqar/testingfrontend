@@ -17,6 +17,7 @@ import ProfileInfoModal from '../../Pages/Profile/modals/ProfileInfoModal';
 import { LoadingOutlined } from '@ant-design/icons';
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { useTranslation } from 'react-i18next';
+import { excelImport } from '../../../Services/uploadImage';
 
 const Employeeslist = () => {
   const { t, i18n } = useTranslation();
@@ -26,11 +27,14 @@ const Employeeslist = () => {
   const user_state = useSelector((state) => state.user.loginvalue);
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
   const company_id = user_state?.user?.companyId
+  const user_email = user_state?.user?.email
   const role = user_state?.user?.role
 
   const [allRoles, setAllRoles] = useState([])
   const [allDesignations, setAllDesignations] = useState([])
   const [desigInfo, setDesigInfo] = useState({})
+  const [upload, setUpload] = useState(false)
+  const [uploadFile, setUploadFile] = useState(false)
   const [roleInfo, setRoleInfo] = useState({})
   const [loader, setLoader] = useState(false)
   const [tableLoader, setTableLoader] = useState(false);
@@ -161,6 +165,11 @@ const Employeeslist = () => {
     setOpen({ isAddOpen: false, isEditOpen: false, data: '' });
   };
 
+  const closeUpload = () => {
+    setUpload(false);
+    setUploadFile();
+  };
+
   const onFinishAdd = (values) => {
 
     const replacer = (key, value) => {
@@ -284,6 +293,30 @@ const Employeeslist = () => {
           );
         });
   }
+
+  const onFileUpload = async () => {
+    setLoader(true);
+    console.log("function called", uploadFile);
+
+    excelImport(uploadFile, company_id, user_email)
+    .then((res) => {
+      if (res?.data?.success == true){
+        setLoader(false);
+        message.success("Importing employee data. You'll be notified by email when done.")
+        closeUpload();
+      }
+      })
+    .catch((err) => {
+      message.error(
+        err?.response?.data?.msg
+          ? err?.response?.data?.msg
+          : err?.response?.data?.validation?.body?.message
+          ? err?.response?.data?.validation?.body?.message
+          : t("projectScreen.errors.fileUploadError", { file: uploadFile?.name })
+      );
+      setLoader(false);
+    });
+  };
 
   const [menu, setMenu] = useState(false)
 
@@ -535,8 +568,12 @@ const Employeeslist = () => {
                  <div className="col-auto float-end ms-auto">
                  {
                   (role === 'admin' || permissions?.addUser) &&
-                    <a href="javascript:void(0)" className="btn add-btn" onClick={() => setOpen({ isAddOpen: true, isEditOpen: false, data: '' })}><i className="fa fa-plus" /> {t('allEmp.addEmployee')}</a>
-                 }
+                  <a href="javascript:void(0)" className="btn add-btn" style={{marginLeft:'5px'}} onClick={() => setOpen({ isAddOpen: true, isEditOpen: false, data: '' })}><i className="fa fa-plus" /> {t('allEmp.addEmployee')}</a>
+                }
+                {
+                  (role === 'admin' || permissions?.addUser) &&
+                  <a href="javascript:void(0)" className="btn add-btn" onClick={() => setUpload(true)}><i className="la la-file-excel" />Import Data</a>
+                }
                    <div className="view-icons">
                      <Link to="/employee/allemployees" className="grid-view btn btn-link"><i className="fa fa-th" /></Link>
                      <Link to="/employee/employees-list" className="list-view btn btn-link active"><i className="fa fa-bars" /></Link>
@@ -923,6 +960,85 @@ const Employeeslist = () => {
                       </div>
                     </div>
                   }
+                </div>
+              </div>
+            </Modal>
+
+            <Modal
+              open={upload}
+              onClose={closeUpload}
+              aria-labelledby="modal-modal-title"
+              // className="modal custom-modal fade"
+              aria-describedby="modal-modal-description"
+              disableRestoreFocus
+              BackdropProps={{
+                style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
+              }}
+            >
+              <div className="modal-dialog modal-dialog-centered" role="document">
+                <div className="modal-content">
+                  <div className="modal-header">
+                    <h5 className="modal-title">
+                      Import Excel File
+                    </h5>
+                    <button type="button" className="close" onClick={closeUpload}>
+                      <span aria-hidden="true">×</span>
+                    </button>
+                  </div>
+                  <div className="modal-body">
+                    <Form
+                      // form={form}
+                      name="control-hooks"
+                      //onFinish={(val) => onFileUpload(val)}
+                      onFinish={onFileUpload}
+                    >
+                      <div className="form-group">
+                        <label>
+                          Excel File <span className="text-danger">*</span>
+                        </label>
+                        <Form.Item
+                          name="excelFile"
+                          rules={[
+                            {
+                              required: true,
+                              message: 'please choose a file to upload',
+                          },
+                          ]}
+                          className="custom-border"
+                        >
+                          <input
+                            className="form-control"
+                            onChange={(e) => {
+                              const file = e.target.files[0];
+                              if (file && (file.name.endsWith(".xls") || file.name.endsWith(".xlsx"))) {
+                                console.log(file);
+                                setUploadFile(file);
+                                //onFileUpload(file, "normal");
+                              } else {
+                                message.error("Please select a .xls or .xlsx file.");
+                              }
+                            }}
+                            type="file"
+                            accept=".xls,.xlsx"
+                          />
+                        </Form.Item>
+                      </div>
+                      <div className="submit-section">
+                        <Form.Item>
+                          <Button
+                            htmlType="submit"
+                            className="btn btn-primary submit-btn"
+                            disabled={loader}
+                          >
+                            {
+                              loader ? <Spin size="small" indicator={antIcon} />
+                                : 'Upload'
+                            }
+                          </Button>
+                        </Form.Item>
+                      </div>
+                    </Form>
+                  </div>
                 </div>
               </div>
             </Modal>
