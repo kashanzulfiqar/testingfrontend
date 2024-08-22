@@ -57,7 +57,7 @@ const AllEmployees = () => {
   }, [])
 
   const handleDownloadSample = () => {
-    window.location.href = "/sample.xlsx";
+    window.location.href = "%PUBLIC_URL%/sample.xlsx";
   };
 
   const getEmployees = (values, current_page, page_size) => {
