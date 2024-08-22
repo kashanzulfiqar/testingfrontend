@@ -84,24 +84,26 @@ const Employeeslist = () => {
     });
   }
 
-  const handleDownloadSample = () => {
-    apiServices("GET", `user/downloadSample`, null, user_state)
-      .then((res) => {
-        if (res?.data?.success === true) {
-          message.success('Sample file downloaded')
-        }
-      })
-      .catch((err) => {
-        message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
-              ? err?.response?.data?.validation?.body?.message
-              : 'Error downloading sample'
-          }!`
-        );
-      });
+  const handleDownloadSample = async () => {
+    const url = "https://res.cloudinary.com/dcxpovyr9/raw/upload/v1724347619/wepcu6b2mkmn0tfw1vwo";
+    
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+  
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = "sample.xlsx";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+  
+      // Clean up the object URL
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error("Failed to download file:", error);
+    }
   };
 
   const getEmployees = (values, current_page, page_size) => {
