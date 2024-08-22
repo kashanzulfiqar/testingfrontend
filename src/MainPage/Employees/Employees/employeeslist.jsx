@@ -85,7 +85,23 @@ const Employeeslist = () => {
   }
 
   const handleDownloadSample = () => {
-    window.location.href = "/sample.xlsx";
+    apiServices("GET", `user/downloadSample`, null, user_state)
+      .then((res) => {
+        if (res?.data?.success === true) {
+          message.success('Sample file downloaded')
+        }
+      })
+      .catch((err) => {
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : 'Error downloading sample'
+          }!`
+        );
+      });
   };
 
   const getEmployees = (values, current_page, page_size) => {
