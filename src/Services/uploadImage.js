@@ -44,8 +44,8 @@ export const excelImport = (imagedata, companyId, user_email) => {
 
     let location = window.location.origin
 
-    //const DEV_BASE_URL =" https://daftar-pro-stage.herokuapp.com"
-    const DEV_BASE_URL ="http://localhost:3000"
+    const DEV_BASE_URL =" https://daftar-pro-stage.herokuapp.com"
+    //const DEV_BASE_URL ="http://localhost:3000"
     const PRD_BASE_URL = "https://daftarpro-prd.herokuapp.com";
 
     // const PRD_BASE_URL = "https://hrms.herokuapp.com";
