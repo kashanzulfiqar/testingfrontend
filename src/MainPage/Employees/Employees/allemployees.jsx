@@ -57,7 +57,7 @@ const AllEmployees = () => {
   }, [])
 
   const handleDownloadSample = async () => {
-    const url = "https://res.cloudinary.com/dcxpovyr9/raw/upload/v1724347619/wepcu6b2mkmn0tfw1vwo";
+    const url = "https://res.cloudinary.com/dcxpovyr9/raw/upload/v1724350346/lpcngzkiaekqzzwfpe20";
     
     try {
       const response = await fetch(url);
