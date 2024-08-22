@@ -56,6 +56,9 @@ const AllEmployees = () => {
     }
   }, [])
 
+  const handleDownloadSample = () => {
+    window.location.href = "/sample.xlsx";
+  };
 
   const getEmployees = (values, current_page, page_size) => {
     setTableLoader(true);
@@ -869,6 +872,13 @@ const AllEmployees = () => {
               <h5 className="modal-title">
                 Import Excel File
               </h5>
+              <Button
+                type="link"
+                onClick={handleDownloadSample}
+                className="ml-3"
+              >
+                Download Sample
+              </Button>
               <button type="button" className="close" onClick={closeUpload}>
                 <span aria-hidden="true">×</span>
               </button>

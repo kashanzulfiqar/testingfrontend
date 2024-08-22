@@ -84,6 +84,10 @@ const Employeeslist = () => {
     });
   }
 
+  const handleDownloadSample = () => {
+    window.location.href = "/sample.xlsx";
+  };
+
   const getEmployees = (values, current_page, page_size) => {
     setTableLoader(true);
     apiServices("GET", `user/view-user?deleted=false${values === '' ? '' : values?.employeeName === '' ? '' : values?.employeeName ? `&employeeName=${values?.employeeName}` : filterValues?.employeeName ? `&employeeName=${filterValues?.employeeName}` : ''}${values === '' ? '' : values?.employeeId === '' ? '' : values?.employeeId ? `&employeeId=${encodeURIComponent(values?.employeeId)}` : filterValues?.employeeId ? `&employeeId=${encodeURIComponent(filterValues?.employeeId)}` : ''}${values === '' ? '' : values?.designation === '' ? '' : values?.designation ? `&designation=${values?.designation}` : filterValues?.designation ? `&designation=${filterValues?.designation}` : ''}${values === '' ? '' : values?.userRole === '' ? '' : values?.userRole ? `&userRole=${values?.userRole}` : filterValues?.userRole ? `&userRole=${filterValues?.userRole}` : ''}${values === '' ? '' : values?.status === '' ? '' : values?.status ? `&userStatus=${values?.status}` : filterValues?.status ? `&userStatus=${filterValues?.status}` : ''}&page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}`, null, user_state)
@@ -981,6 +985,13 @@ const Employeeslist = () => {
                     <h5 className="modal-title">
                       Import Excel File
                     </h5>
+                    <Button
+                      type="link"
+                      onClick={handleDownloadSample}
+                      className="ml-3"
+                    >
+                      Download Sample
+                    </Button>
                     <button type="button" className="close" onClick={closeUpload}>
                       <span aria-hidden="true">×</span>
                     </button>
