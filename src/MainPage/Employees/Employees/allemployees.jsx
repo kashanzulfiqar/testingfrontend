@@ -888,9 +888,13 @@ const AllEmployees = () => {
               <h5 className="modal-title">
                 Import Excel File
               </h5>
-              <a href="/sample.xlsx" download="sample.xlsx">
-                Download File
-              </a>      
+              <Button
+                type="link"
+                onClick={handleDownloadSample}
+                className="ml-3"
+              >
+                Download Sample
+              </Button>     
               <button type="button" className="close" onClick={closeUpload}>
                 <span aria-hidden="true">×</span>
               </button>
