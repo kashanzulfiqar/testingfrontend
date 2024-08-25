@@ -14,10 +14,11 @@ import favicon from '../../../files/Icons/DaftarProIcon.svg';
 import { useSelector } from 'react-redux';
 import { apiServices } from '../../../Services/apiServices';
 import ProfileInfoModal from '../../Pages/Profile/modals/ProfileInfoModal';
-import { LoadingOutlined } from '@ant-design/icons';
+import { FileExcelOutlined, LoadingOutlined } from '@ant-design/icons';
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { useTranslation } from 'react-i18next';
 import { excelImport } from '../../../Services/uploadImage';
+import { FileDownloadSharp } from '@mui/icons-material';
 
 const Employeeslist = () => {
   const { t, i18n } = useTranslation();
@@ -94,7 +95,7 @@ const Employeeslist = () => {
   
       const link = document.createElement("a");
       link.href = blobUrl;
-      link.download = "sample.xlsx";
+      link.download = "Employee Data Sample.xlsx";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -1003,13 +1004,6 @@ const Employeeslist = () => {
                     <h5 className="modal-title">
                       Import Excel File
                     </h5>
-                    <Button
-                      type="link"
-                      onClick={handleDownloadSample}
-                      className="ml-3"
-                    >
-                      Download Sample
-                    </Button>
                     <button type="button" className="close" onClick={closeUpload}>
                       <span aria-hidden="true">×</span>
                     </button>
@@ -1021,6 +1015,38 @@ const Employeeslist = () => {
                       //onFinish={(val) => onFileUpload(val)}
                       onFinish={onFileUpload}
                     >
+                      <div className="form-group">
+                      <label>
+                        Sample File <span className="text-danger">*</span>
+                      </label>
+                      <Button
+                        onClick={handleDownloadSample}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          width: "100%",
+                          border: "1px solid #ced4da",
+                          borderRadius: "8px", // Rounded corners
+                          padding: "0.375rem 0.75rem",
+                          backgroundColor: "#f8f9fa", // Light background for better contrast
+                        }}
+                      >
+                        <span style={{ display: "flex", alignItems: "center" }}>
+                          {/* <i
+                            className="la la-file-excel" // Ensure this icon class is correct
+                            style={{ marginRight: "8px", color: "#28a745", fontSize: "1.2rem" }}
+                          /> */}
+                          <FileExcelOutlined
+                            style={{ marginRight: "8px", color: "#28a745", fontSize: "1.2rem" }}
+                          />
+                          Employee Data Sample.xlsx
+                        </span>
+                        <FileDownloadSharp
+                          style={{ color: "#007bff", fontSize: "1.2rem" }} 
+                        />
+                      </Button>
+                    </div>
                       <div className="form-group">
                         <label>
                           Excel File <span className="text-danger">*</span>
