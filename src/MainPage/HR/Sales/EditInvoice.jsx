@@ -1581,6 +1581,7 @@ const EditInvoice = () => {
                                       className="addTeamHeight"
                                       style={{ width: '140px', marginTop: '19px', marginBottom: '22px'}}
                                       fieldKey={[field.fieldKey, 'invoiceTax']}
+                                      initialValue={[]} 
                                     >
                                       <Select
                                         showSearch
