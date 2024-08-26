@@ -229,15 +229,22 @@ function invoicePDF(invoice_data) {
   doc.text(x + widthofTotalDue + 120, 62, `${invoice_data?.remainingAmount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${invoice_data?.currency}`);
 
   //------------------
-
+  var yPosition = 68;
   // doc.setFont(undefined, "bold");
   doc.text(x + 120, 68, "Bank Name: ");
   const widthofDueDate3 = doc.getTextWidth("Bank Name:  ");
   // doc.setFont(undefined, "normal");
-  doc.text(x + widthofDueDate3 + 120, 68, invoice_data?.bankDetail?.bankName);
+  var leftMarginBN = x + 120 + widthofDueDate3;
+  var rightMarginBN = 10; // Assuming you want at least 10 units free on the right side
+  var contentWidthBN = doc.internal.pageSize.width - leftMarginBN - rightMarginBN;
+  // Print the account title with wrapping if necessary
+  doc.text(invoice_data?.bankDetail?.bankName, leftMarginBN, yPosition, { maxWidth: contentWidthBN });
+  var bankNameHeight = doc.getTextDimensions(invoice_data?.bankDetail?.bankName, { maxWidth: contentWidthBN }).h;
+  //doc.text(x + widthofDueDate3 + 120, 68, invoice_data?.bankDetail?.bankName);
+  yPosition += (bankNameHeight + 6) - 3.88;
+  console.log(bankNameHeight)
   
   //------------------
-  var yPosition = 74;
   // doc.text(x + 120, 62, "Account Title: ");
   // const widthofAccountTitle = doc.getTextWidth("Account Title:  ");
   // doc.text(x + widthofAccountTitle + 120, 62, invoice_data?.bankDetail?.accountTitle);
@@ -301,7 +308,7 @@ function invoicePDF(invoice_data) {
   // doc.text('Company address compan Company address compan Company address compan', x + widthofDueDate7 + 130, 80, { maxWidth: contentWidth2 });
   // doc.text(x + widthofDueDate7 + 130, 80, 'Address jkhjk kjkj 9898 7766 767 jkkj kj khkj');
   var currentYs1 = doc.getTextDimensions(invoice_data?.bankDetail?.address, { maxWidth: contentWidth2 }).h + 6 + 6;
-
+  currentYs1 += ((accountTitleHeight + 6) - 3.88) + ((bankNameHeight) - 3.88)
 
 
 
