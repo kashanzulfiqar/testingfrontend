@@ -405,7 +405,9 @@ doc.text(x, currentY2 + 11, invoice_data?.client?.invoiceEmail);
     alternateRowStyles: { fillColor: [255, 255, 255] },
   });
 
-    const currentYT = doc.autoTable.previous.finalY || 0;
+    const lineYT = doc.autoTable.previous.finalY || 0;
+    const currentYT = 0;
+    const startPage = doc.internal.getCurrentPageInfo().pageNumber;
     doc.autoTable({
         margin: { top: currentYT, right: 8, left: 120 },
         body: [
@@ -438,12 +440,31 @@ doc.text(x, currentY2 + 11, invoice_data?.client?.invoiceEmail);
         // },
       });
 
+      if (doc.internal.getCurrentPageInfo().pageNumber == startPage) {
+        console.log("In if")
+        console.log(doc.internal.getCurrentPageInfo().pageNumber, startPage)
+        // Draw the lines at the calculated position on the same page
+        doc.setDrawColor(226, 229, 232);
+        doc.line(112 + 10, lineYT + 17, 190 + 10, lineYT + 17);
+        doc.line(112 + 10, lineYT + 28, 190 + 10, lineYT + 28);
+        doc.line(112 + 10, lineYT + 38, 190 + 10, lineYT + 38);
+    } else {
+      console.log("in else")
+      doc.setPage(startPage);
       doc.setDrawColor(226, 229, 232);
-      doc.line(112 + 10, currentYT + 17, 190 + 10, currentYT+ 17);
-      doc.line(112 + 10, currentYT + 28, 190 + 10, currentYT+ 28);
-      doc.line(112 + 10, currentYT + 38, 190 + 10, currentYT+ 38);
+        doc.line(112 + 10, lineYT + 17, 190 + 10, lineYT + 17);
+        doc.line(112 + 10, lineYT + 28, 190 + 10, lineYT + 28);
+        doc.line(112 + 10, lineYT + 38, 190 + 10, lineYT + 38);
+        console.log(doc.internal.getCurrentPageInfo().pageNumber, startPage)
+        // Handle the case where the table overflows to the next page
+        // You can choose to draw the lines on the new page or take another action
+        // For now, let's log a message (you can replace this with other logic if needed)
+        console.log("Table overflowed to the next page; lines are not drawn.");
+        doc.setPage(startPage + 1);
+    }
 
     const currentYL = doc.autoTable.previous.finalY || 0;
+    console.log("currentYL",currentYL)
 
     const pageHeight = doc.internal.pageSize.height; // Page height
     const marginBottom = 20; // Space to leave at the bottom of the page
