@@ -773,7 +773,7 @@ const Invoicecreate = () => {
                 invoiceTax: '0',
                 discount: '0',
               }}
-              onKeyDown={handleKeyDown}
+              //onKeyDown={handleKeyDown}
             >
               <div className="row">
                 <div className="col-sm-6 col-md-3">
