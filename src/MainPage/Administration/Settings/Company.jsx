@@ -457,6 +457,45 @@ const Company = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
+                STRN/TRN
+                </label>
+                <Form.Item
+                  name="taxRegNo"
+                  rules={[
+                    {
+                      whitespace: false,
+                      required: false,
+                      validator: (_, value) => {
+                        if (/\s{2,}/.test(value)) {
+                          return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
+                        }
+                        return Promise.resolve();
+                      },
+                    },
+                    {
+                      min: 2,
+                      message: 'STRN/TRN must be atleast 2 characters long',
+                    },
+                  ]}
+                >
+                  <Input
+                    style={{ display: "none" }}
+                    value={allValues?.taxRegNo}
+                  />
+                  <input
+                    className="form-control inputWordSpacing"
+                    defaultValue={data ? data?.taxRegNo : ""}
+                    onInput={(e) => {
+                      onHandleChange("taxRegNo", e.target.value);
+                    }}
+                    maxLength={20}
+                  />
+                </Form.Item>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
                 {t('settings.companySettings.address')} <span className="text-danger">*</span>
                 </label>
                 <Form.Item
@@ -761,7 +800,7 @@ const Company = () => {
                     onInput={(e) => {
                       onHandleChange("companyEmail", e.target.value);
                     }}
-                    maxLength={50}
+                    maxLength={60}
                   />
                 </Form.Item>
               </div>

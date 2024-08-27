@@ -589,7 +589,7 @@ const Invoicecreate = () => {
         .then((res) => {
           if (res?.data?.success === true) {
             nav('/invoices')
-            message.success(t('finance.Invoices.invoiceCreatedSuccessfully'));
+            message.success('Invoice created and sent to client email');
             setSendLoader(false)
           }
         })
@@ -665,7 +665,7 @@ const Invoicecreate = () => {
         .then((res) => {
           if (res?.data?.success === true) {
             nav('/invoices')
-            message.success(t('finance.Invoices.invoiceCreatedSuccessfully'));
+            message.success('Invoice created and sent to client email');
             setSendLoader(false)
           }
         })
@@ -724,6 +724,12 @@ const Invoicecreate = () => {
       spin
     />
   );
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault(); // Prevent the default form submission
+    }
+  };
   
       return ( 
         
@@ -767,6 +773,7 @@ const Invoicecreate = () => {
                 invoiceTax: '0',
                 discount: '0',
               }}
+              onKeyDown={handleKeyDown}
             >
               <div className="row">
                 <div className="col-sm-6 col-md-3">
