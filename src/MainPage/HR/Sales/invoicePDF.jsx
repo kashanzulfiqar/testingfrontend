@@ -175,8 +175,33 @@ function invoicePDF(invoice_data) {
   }
 
   const columnStyles = invoice_data?.servicesDetails?.length > 0
-  ? { 2: { cellWidth: 75 } }
-  : {};
+  ? { 
+      0: { cellWidth: "auto" },
+      1: { cellWidth: "auto" },
+      2: { cellWidth: "auto" },
+      3: { cellWidth: "auto" },
+      4: { cellWidth: "auto" },
+      5: { cellWidth: "auto" },
+      6: { cellWidth: "auto", minCellWidth:15 },
+      7: { cellWidth: "auto" },
+    }
+  : {
+      0: { cellWidth: "auto" },
+      1: { cellWidth: "auto" },
+      2: { cellWidth: "auto" },
+      3: { cellWidth: "auto" },
+      4: { cellWidth: "auto" },
+      5: { cellWidth: "auto", minCellWidth:15 },
+      6: { cellWidth: "auto" },
+  };
+
+  // const columns = columnsForPDF();
+  // const columnStyles = {};
+
+  // // Iterate over all columns and set cellWidth to 'auto' for each
+  // columns?.forEach((col, index) => {
+  //   columnStyles[index] = { cellWidth: "auto" };
+  // });
 
   doc.setFontSize(11);
 
@@ -281,6 +306,13 @@ function invoicePDF(invoice_data) {
   yPosition += 6;
   //------------------
 
+  const taxRegNo = invoice_data?.company?.taxRegNo || 'N/A'; 
+  doc.text(x + 120, yPosition, "STRN/TRN: ");
+  const widthofSTRN = doc.getTextWidth("STRN/TRN:  ");
+  doc.text(x + widthofSTRN + 120, yPosition, taxRegNo);
+  yPosition += 6;
+  //------------------
+
   // doc.setFont(undefined, "bold");
   doc.text(x + 120, yPosition, "Country: ");
   const widthofDueDate5 = doc.getTextWidth("Country:  ");
@@ -308,7 +340,7 @@ function invoicePDF(invoice_data) {
   // doc.text('Company address compan Company address compan Company address compan', x + widthofDueDate7 + 130, 80, { maxWidth: contentWidth2 });
   // doc.text(x + widthofDueDate7 + 130, 80, 'Address jkhjk kjkj 9898 7766 767 jkkj kj khkj');
   var currentYs1 = doc.getTextDimensions(invoice_data?.bankDetail?.address, { maxWidth: contentWidth2 }).h + 6 + 6;
-  currentYs1 += ((accountTitleHeight + 6) - 3.88) + ((bankNameHeight) - 3.88)
+  currentYs1 += ((accountTitleHeight + 6) - 3.88) + ((bankNameHeight + 6) - 3.88)
 
 
 
@@ -366,6 +398,8 @@ doc.text(x, currentY2 + 11, invoice_data?.client?.invoiceEmail);
       textColor: [65, 65, 65],
       cellPadding: 2,
       fontSize: 11,
+      overflow: 'linebreak', 
+      whiteSpace: 'normal', 
     },
     columnStyles: columnStyles,
     alternateRowStyles: { fillColor: [255, 255, 255] },
@@ -393,10 +427,15 @@ doc.text(x, currentY2 + 11, invoice_data?.client?.invoiceEmail);
           fontSize: 11,
         },
         alternateRowStyles: { fillColor: [255, 255, 255] },
+        tableWidth: 'wrap',
         columnStyles: {
             0: { halign: 'left' },
-            1: { halign: 'right' }
+            1: { halign: 'right', minCellWidth: 40 }
           },
+        // columnStyles: {
+        //   0: { halign: 'left' },
+        //   1: { halign: 'right' }
+        // },
       });
 
       doc.setDrawColor(226, 229, 232);
@@ -406,11 +445,21 @@ doc.text(x, currentY2 + 11, invoice_data?.client?.invoiceEmail);
 
     const currentYL = doc.autoTable.previous.finalY || 0;
 
-    doc.text(x, currentYL + 8, "Other Information:");
+    const pageHeight = doc.internal.pageSize.height; // Page height
+    const marginBottom = 20; // Space to leave at the bottom of the page
+    let finalY = currentYL + 8;
+    // If current Y position is too close to the bottom of the page, add a new page
+    if (currentYL + 20 > pageHeight - marginBottom) {
+      doc.addPage();
+      finalY = 20
+    }
+
+    // Add "Other Information" after checking or adding the new page
+    doc.text(x, finalY, "Other Information:");
     var leftMargin = 10;
     var rightMargin = 10;
     var contentWidthInfo = doc.internal.pageSize.width - leftMargin - rightMargin;
-    doc.text(x, currentYL + 14, invoice_data?.otherInformation, {maxWidth: contentWidthInfo});
+    doc.text(x, finalY + 6, invoice_data?.otherInformation, { maxWidth: contentWidthInfo });
 
 
   doc.save(`${invoice_data?.invoiceNo}.pdf`);

@@ -654,7 +654,7 @@ const EditInvoice = () => {
       .then((res) => {
         if (res?.data?.success === true) {
           nav('/invoices')
-          message.success(t('finance.Invoices.invoiceUpdatedSuccessfully'));
+          message.success('Invoice updated and sent to client email');
           setSendLoader(false)
         }
       })
@@ -717,6 +717,12 @@ const EditInvoice = () => {
       spin
     />
   );
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault(); // Prevent the default form submission
+    }
+  };
   
       return ( 
         
@@ -760,6 +766,7 @@ const EditInvoice = () => {
                 // invoiceTax: '0',
                 // discount: '0',
               }}
+              onKeyDown={handleKeyDown}
             >
               <div className="row">
                 {/* <div className="col-sm-6 col-md-3">
