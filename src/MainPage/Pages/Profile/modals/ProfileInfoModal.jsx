@@ -880,22 +880,22 @@ const getTaxSlab = () => {
                         <Form.Item
                         name='level'
                         className='custom-border'
-                        rules={[
-                            {
-                            whitespace: true,
-                            required: true,
-                            validator: (_, value) => {
-                                if (!value || value.trim() === '') {
-                                return Promise.reject(t('allEmp.errors.enterLevel'));
-                                } else if (/\s{2,}/.test(value)) {
-                                return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
-                                } else if (value.length < 3) {
-                                return Promise.reject(t('allEmp.errors.levelMinLength'));
-                                }
-                                return Promise.resolve();
-                            },
-                            },
-                        ]}
+                        // rules={[
+                        //     {
+                        //     whitespace: true,
+                        //     required: true,
+                        //     validator: (_, value) => {
+                        //         if (!value || value.trim() === '') {
+                        //         return Promise.reject(t('allEmp.errors.enterLevel'));
+                        //         } else if (/\s{2,}/.test(value)) {
+                        //         return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
+                        //         } else if (value.length < 3) {
+                        //         return Promise.reject(t('allEmp.errors.levelMinLength'));
+                        //         }
+                        //         return Promise.resolve();
+                        //     },
+                        //     },
+                        // ]}
                         >
                         <Input className='form-control' maxLength={50} />
                         </Form.Item>

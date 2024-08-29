@@ -23,6 +23,7 @@ const Tasks = () => {
 
   const user_state = useSelector((state) => state?.user?.loginvalue);
   const role = user_state?.user?.role
+  const employee_id = user_state?.user?._id;
 
   const [allTasks, setAllTasks] = useState([]);
   const [allProjects, setAllProjects] = useState([]);
@@ -40,7 +41,8 @@ const Tasks = () => {
   });
 
   useEffect(() => {
-    if(role === 'admin' || permissions?.projectManagement) {
+    if(role !== 'client' && role !== 'focalperson') {
+      console.log("here")
       getAllTasks();
       getAllProjects()
     }else{
@@ -74,7 +76,7 @@ const Tasks = () => {
 
   const getAllProjects = () => {
     setTableLoader(true);
-    apiServices("GET", `project-management?page=${1}&limit=${99999}` , null, user_state)
+    apiServices("GET", `project-management?employeeId=${(role === '' && !permissions?.projectManagement) ? employee_id : ''}&page=${1}&limit=${99999}` , null, user_state)
       .then((res) => {
           if (res?.data?.success === true) {
                 const sortedData = res?.data?.projects?.docs?.slice().sort((a, b) => a.projectName.localeCompare(b.projectName));

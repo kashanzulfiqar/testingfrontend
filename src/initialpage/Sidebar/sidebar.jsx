@@ -700,7 +700,7 @@ const Sidebar = (props) => {
                       {/* <li><Link onClick={() => localStorage.setItem("minheight", "true")} to="/tasks/tasks">Tasks</Link></li> */}
                       {/* <li><Link onClick={() => localStorage.setItem("minheight", "true")} to="/projects/tasks">Tasks</Link></li> */}
                       { 
-                        (user_state?.role === 'admin' || permissions?.projectManagement) &&
+                        (user_state?.role !== 'client' || user_state?.role !== 'focalperson') &&
                         <li><Link onClick={() => localStorage.setItem("minheight", "true")} className={pathname.includes('/projects/tasks') ? "active" : ""} to="/projects/tasks">{t('Tasks.tasks')}</Link></li>
                       }
                       <li><Link className={pathname.includes('task-board') ? "active" : ""} to="/task-board">{t('sideBar.taskBoard')}</Link></li>
