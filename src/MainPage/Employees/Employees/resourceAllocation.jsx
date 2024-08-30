@@ -107,18 +107,27 @@ const ResourceAllocation = () => {
 
   const getNextSixMonths = () => {
     const months = [];
-    const currentMonth = moment().month();
-    const currentYear = moment().year();
+    let currentMonth = moment().month();
+    let currentYear = moment().year();
+    
     for (let i = 0; i < 6; i++) {
-      const date = moment().month(currentMonth + i).year(currentYear).startOf('month');
+      const date = moment().month(currentMonth).year(currentYear).startOf('month');
       months.push({
-          name: date.format('MMMM'),
-          year: date.year(),
-          index: date.month()
+        name: date.format('MMMM'),
+        year: date.year(),
+        index: date.month(),
       });
+
+      currentMonth += 1;
+
+      if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear += 1;
+      }
     }
+    
     return months;
-};
+  };
 
 const monthData = getNextSixMonths();
 
