@@ -7678,7 +7678,7 @@ textarea.form-control {
 }
 
 /* invoice table style */
-.invoiceTable thead tr th:not(:nth-child(1), :nth-child(9)) {
+.invoiceTable thead tr th:not(:nth-child(1), :nth-child(10)) {
   min-width: 130px !important;
 }
 .invoiceTable tbody > tr > td{

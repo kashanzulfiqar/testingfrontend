@@ -54,7 +54,7 @@ const Invoices = () => {
 
   const getAllInvoices = (values, current_page, page_size) => {
     setTableLoader(true);
-    apiServices("GET", `invoices?${values === '' ? '' : values?.clientName === '' ? '' : values?.clientName ? `clientName=${values?.clientName}` : filterValues?.clientName ? `clientName=${filterValues?.clientName}` : ''}${values === '' ? '' : values?.fromDate === '' ? '' : values?.fromDate ? `&invoiceFrom=${values?.fromDate}` : filterValues?.fromDate ? `&invoiceFrom=${filterValues?.fromDate}` : ''}${values === '' ? '' : values?.toDate === '' ? '' : values?.toDate ? `&invoiceTo=${values?.toDate}` : filterValues?.toDate ? `&invoiceTo=${filterValues?.toDate}` : ''}${values === '' ? '' : values?.status === '' ? '' : values?.status ? `&status=${values?.status}` : filterValues?.status ? `&status=${filterValues?.status}` : ''}&page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}`, null, user_state)
+    apiServices("GET", `invoices?${values === '' ? '' : values?.clientName === '' ? '' : values?.clientName ? `clientName=${values?.clientName}` : filterValues?.clientName ? `clientName=${filterValues?.clientName}` : ''}${values === '' ? '' : values?.fromDate === '' ? '' : values?.fromDate ? `&invoiceFrom=${values?.fromDate}` : filterValues?.fromDate ? `&invoiceFrom=${filterValues?.fromDate}` : ''}${values === '' ? '' : values?.toDate === '' ? '' : values?.toDate ? `&invoiceTo=${values?.toDate}` : filterValues?.toDate ? `&invoiceTo=${filterValues?.toDate}` : ''}${values === '' ? '' : values?.invoiceMonth === '' ? '' : values?.invoiceMonth ? `&invoiceMonth=${values?.invoiceMonth}` : filterValues?.invoiceMonth ? `&invoiceMonth=${filterValues?.invoiceMonth}` : ''}${values === '' ? '' : values?.status === '' ? '' : values?.status ? `&status=${values?.status}` : filterValues?.status ? `&status=${filterValues?.status}` : ''}&page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}`, null, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
           setAllInvoices(res?.data?.Invoices?.docs);
@@ -98,13 +98,15 @@ const Invoices = () => {
   }
   
   const onFilterFinish = (values) => {
+    console.log(values)
     let formatted_data = {
       clientName: values?.clientName ? values?.clientName : '',
       fromDate: values?.fromDate ? moment(values?.fromDate).format('YYYY-MM-DD') : '',
       toDate: values?.toDate ? moment(values?.toDate).format('YYYY-MM-DD') : '',
+      invoiceMonth: values?.invoiceMonth ? moment(values?.invoiceMonth).format('YYYY-MM') : '',
       status: values?.status ? values?.status : ''
     }
-    if(formatted_data?.clientName || formatted_data?.fromDate || formatted_data?.status){
+    if(formatted_data?.clientName || formatted_data?.fromDate || formatted_data?.invoiceMonth ||formatted_data?.status){
       // getAllInvoices(formatted_data, currentPage, pageSize);
       getAllInvoices(formatted_data, 1, pageSize);
       setFilterValues(formatted_data);
@@ -229,6 +231,27 @@ const onFinish = (values) => {
         render: (text, record) => (
           <label>{formatDate(text || '')}</label>
           ),
+      },
+      {
+        title: 'Invoice Month',
+        dataIndex: 'invoiceMonth',
+        render: (text, record) => {
+          if (record?.invoiceMonth) {
+          // Split the 'YYYY-MM' string into year and month
+          const [year, month] = text.split('-');
+
+          // Create a new Date object for the first day of the given month
+          const date = new Date(`${year}-${month}-01`);
+
+          // Format the date to 'Month Year' (e.g., 'July 2024')
+          const formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+
+          return formattedDate;
+          }
+          else{
+            return 'N/A'
+          }
+        },
       },
       // {
       //   title: "Invoice Start Date",
@@ -411,7 +434,7 @@ const onFinish = (values) => {
           autoComplete='off'
         >
         <div className="row filter-row">
-          <div className="col-sm-6 col-md-2">  
+          <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">    
             <div className=' form-groupfilterDateMonth' style={{ position: 'relative' }} id='area'>
                 <Form.Item
                   name="clientName"
@@ -431,7 +454,7 @@ const onFinish = (values) => {
                 </Form.Item>
             </div>
           </div>
-          <div className="col-sm-6 col-md-2">  
+          <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">    
             <div className=' form-groupfilterDateMonth' style={{ position: 'relative' }} id='area'>
                 <Form.Item
                   name="fromDate"
@@ -465,7 +488,7 @@ const onFinish = (values) => {
                 </Form.Item>
             </div>
           </div>
-          <div className="col-sm-6 col-md-2">
+          <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">  
             <Form.Item
               name="toDate"
               className="custom-border"
@@ -493,7 +516,23 @@ const onFinish = (values) => {
               />
             </Form.Item>
           </div>
-          <div className="col-sm-6 col-md-2">  
+          <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">    
+            <Form.Item 
+              name="invoiceMonth"
+              className="custom-border"
+            >
+              <DatePicker.MonthPicker
+                style={{minHeight: '50px', display: 'flex'}} 
+                className="form-control filterDate"
+                placeholder={t('aAttend.selectMonth')}
+                size="large"
+                allowClear={false}
+                format="YYYY-MM"
+                getPopupContainer={() => document.getElementById('area')}
+              />
+            </Form.Item>
+          </div>
+          <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">    
             <div style={{ position: 'relative' }} id='area1'>
               <Form.Item
                 name="status"
@@ -537,18 +576,23 @@ const onFinish = (values) => {
               </Form.Item>
             </div>
           </div>
-          <div className="col-sm-6 col-md-2">  
+          <div className="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12"
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              justifyContent: "center",
+              gap: "2px",
+            }}
+          > 
             <button 
-              href="javascript:void(0)"
-              type="submit"
-              className="btn btn-success btn-block w-50"
-              // disabled={role === 'admin' ? false : permissions?.viewAllUsers ? false : true}
-              style={{minWidth: '100%', marginBottom: '24px'}}
-            > 
+                href="javascript:void(0)"
+                type="submit"
+                className="btn btn-success btn-block w-100"
+                // disabled={role === 'admin' ? false : permissions?.viewAllUsers ? false : true}
+                style={{marginBottom: '24px'}}
+              > 
               {t('search')} 
-            </button>
-          </div>
-          <div className="col-sm-6 col-md-2">  
+            </button>   
             <button
               href="javascript:void(0)" type="reset"
               onClick={() => {
@@ -558,7 +602,7 @@ const onFinish = (values) => {
                 setCurrentPage(1)
                 setFromInvoiceDate('')
               }}
-              className="btn btn-success btn-block w-50 resetButton" style={{minWidth: '100%', marginBottom: '24px', backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}} 
+              className="btn btn-success btn-block w-50 resetButton" style={{marginBottom: '24px', backgroundColor: '#616161', color: 'white', borderColor: '#aeaeae'}} 
               // disabled={role === 'admin' ? false : permissions?.viewAllUsers ? false : true}
             >
               {t('reset')} 
