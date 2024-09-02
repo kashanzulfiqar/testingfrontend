@@ -1112,7 +1112,7 @@ const ProjectView = () => {
               </div>
             }
 
-              {(role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) ? 
+              {((role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) && project?.costType === "Fixed") ? 
               (
                 <div className="card">
                   <div className="card-body">
@@ -1415,10 +1415,19 @@ const ProjectView = () => {
                         <tr>
                           <td>{t('viewProject.cost')}:</td>
                           <td className="text-end">
-                            {project?.cost
+                          {
+                            project?.costType === 'Monthly'
+                            ? 'Monthly' 
+                            : 
+                            project?.costType === 'Hourly' 
+                            ? 'Hourly' 
+                            : 
+                            `${project?.cost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}  ${project?.currency}`
+                          }
+                            {/* {project?.cost
                               ?.toString()
                               .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}{" "}
-                            {project?.currency}
+                            {project?.currency} */}
                           </td>
                         </tr>
                         )
