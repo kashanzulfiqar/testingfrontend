@@ -1415,19 +1415,10 @@ const ProjectView = () => {
                         <tr>
                           <td>{t('viewProject.cost')}:</td>
                           <td className="text-end">
-                          {
-                            project?.costType === 'Monthly'
-                            ? 'Monthly' 
-                            : 
-                            project?.costType === 'Hourly' 
-                            ? 'Hourly' 
-                            : 
-                            `${project?.cost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}  ${project?.currency}`
-                          }
-                            {/* {project?.cost
+                            {project?.cost
                               ?.toString()
                               .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}{" "}
-                            {project?.currency} */}
+                            {project?.currency}
                           </td>
                         </tr>
                         )
