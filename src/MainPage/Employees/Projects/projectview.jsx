@@ -115,6 +115,7 @@ const ProjectView = () => {
 
   const project = data?.find((p) => p?._id === _id);
   //console.log("this is project :", project);
+  const totalCost = project?.teamCost?.reduce((sum, item) => sum + parseFloat(item.cost), 0);
 
   const openUserModal = () => {
     setOpenUser(true);
@@ -525,6 +526,35 @@ const ProjectView = () => {
     //     />
     //   ),
     // },
+  ];
+
+  const teamCostColumn = [
+    {
+      title: '#',
+      key: 'index',
+      render: (text, record, index) => index + 1,
+    },
+    {
+      title: 'Employee Name',
+      dataIndex: 'userId',
+      key: 'userId',
+      render: (text) => (
+      <h2 className="table-avatar">
+        <label className="avatar"><img alt="" src={getEmployeeImage(text) || user_icon} /></label>
+        <label>{getEmployeeFullName(text)}</label>
+      </h2>
+    ),
+    },
+    {
+      title: `${project?.costType === 'Hourly' ? 'Hourly Rate' : project?.costType === 'Monthly' ? 'Monthly Rate' : 'Salary'} ${project?.currency ? `(${project?.currency})` : ''}`,
+      dataIndex: 'cost',
+      key: 'cost',
+      render: (text, record) => (
+        <span>
+          {`${text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`}
+        </span>
+      ),
+    },
   ];
 
   const emptyfunction = () => {
@@ -1112,11 +1142,11 @@ const ProjectView = () => {
               </div>
             }
 
-              {((role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) && project?.costType === "Fixed") ? 
+              {((role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) && project?.projectType === "Billed") ? 
               (
                 <div className="card">
                   <div className="card-body">
-                    <h5 className="card-title m-b-20">{t('viewProject.payments')}</h5>
+                    <h5 className="card-title m-b-20">{project?.costType === "Fixed" ? t('viewProject.payments') : 'Cost Details'}</h5>
                     <div className="table-responsive">
                       <Table
                         locale={{
@@ -1127,8 +1157,8 @@ const ProjectView = () => {
                           ),
                         }}
                         loading={TableLoad}
-                        dataSource={project?.paymentSchedule}
-                        columns={paymentColumns}
+                        dataSource={project?.costType === "Fixed" ? project?.paymentSchedule : project?.teamCost}
+                        columns={project?.costType === "Fixed" ? paymentColumns : teamCostColumn}
                         rowKey={(record, index) => index}
                         pagination={false}
                         style={{ overflowX: "auto" }}
@@ -1410,15 +1440,22 @@ const ProjectView = () => {
                   <div className="table-responsive">
                     <table className="table table-striped table-border">
                       <tbody>
-                        {(role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) ? 
+                        {((role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) && project?.projectType === 'Billed') ? 
                         (
                         <tr>
                           <td>{t('viewProject.cost')}:</td>
                           <td className="text-end">
-                            {project?.cost
+                          {
+                            (project?.costType === 'Monthly' || project?.costType === 'Hourly' )
+                            ? 
+                            `${totalCost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${project?.currency}` 
+                            : 
+                            `${project?.cost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}  ${project?.currency}`
+                          }
+                            {/* {project?.cost
                               ?.toString()
                               .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}{" "}
-                            {project?.currency}
+                            {project?.currency} */}
                           </td>
                         </tr>
                         )
