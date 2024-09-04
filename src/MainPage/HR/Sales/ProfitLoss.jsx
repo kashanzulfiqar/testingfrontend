@@ -359,6 +359,7 @@ const ProfitLoss = () => {
         const year = record?.year;
         return <label>{moment(`${year}-${text}-01`, "YYYY-MM-DD").format("MMMM")}</label>;
       },
+      sorter: (a, b) => parseFloat(a.month) - parseFloat(b.month),
     },
     {
       title: t('finance.Profit&loss.year'),
@@ -378,6 +379,7 @@ const ProfitLoss = () => {
           </span>
         );
       },
+      sorter: (a, b) => parseFloat(a.creditedSalaryExpense) - parseFloat(b.creditedSalaryExpense),
     },
 
     {
@@ -389,6 +391,7 @@ const ProfitLoss = () => {
           {record?.companyId?.preferredCurrency}
         </span>
       ),
+      sorter: (a, b) => parseFloat(a.generalExpense) - parseFloat(b.generalExpense),
     },
     {
       title: t('finance.Profit&loss.totalRevenue'),
@@ -399,6 +402,7 @@ const ProfitLoss = () => {
           {record?.companyId?.preferredCurrency}
         </span>
       ),
+      sorter: (a, b) => parseFloat(a.totalRevenue) - parseFloat(b.totalRevenue),
     },
     {
       title: t('finance.Profit&loss.profitLoss'),
@@ -414,6 +418,7 @@ const ProfitLoss = () => {
           {record?.companyId?.preferredCurrency}
         </label>
       ),
+      sorter: (a, b) => parseFloat(a.profitLoss) - parseFloat(b.profitLoss),
     },
     {
       title: t('holiday.actions'),
