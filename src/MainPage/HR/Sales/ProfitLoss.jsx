@@ -84,8 +84,9 @@ const ProfitLoss = () => {
 
   useEffect(() => {
     if (role === "admin" || permissions?.managePayrolls) {
-      getAllProfitLoss();
-      getAllGraphData();
+      getAllProfitLoss().then(() => {
+        getAllGraphData();
+      });
       setAllYears(getYearsTillNow(2000));
       
     } else {
