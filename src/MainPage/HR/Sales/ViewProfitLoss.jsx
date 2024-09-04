@@ -24,15 +24,19 @@ import moment from "moment";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { user_icon } from "../../../Entryfile/imagepath";
 import { useTranslation } from "react-i18next";
+import { itemRender } from "../../paginationfunction";
+import DetailsModal from "../Payroll/DetailsModal";
+import GenerateSalaryPDF from "../Payroll/GenerateSalaryPDF";
 
 const { Option } = Select;
 
 const ViewPL = () => {
+  const [Detailform] = Form.useForm();
   const { t, i18n } = useTranslation();
   const location = useLocation();
   const nav = useNavigate();
 
-  const record = location?.state?.record;
+  const record = location?.state?.record ? location?.state?.record : location?.state;
 
   const PCurrency = record?.companyId?.preferredCurrency;
 
@@ -60,6 +64,7 @@ const ViewPL = () => {
   const { startDate, endDate } = getMonthStartEndDate((record?.month), (record?.year));
   console.log("Start Date:", startDate);
   console.log("End Date:", endDate);
+  const formattedDate = new Date(startDate)?.toLocaleDateString('en-CA', { year: 'numeric', month: '2-digit' });
 
   var moment = require('moment');
 
@@ -84,12 +89,21 @@ const ViewPL = () => {
   const [allExpenses, setAllExpenses] = useState([]);
   const [allInvoices, setAllInvoices] = useState([]);
   const [tableLoader, setTableLoader] = useState(true);
+  const [tableLoader1, setTableLoader1] = useState(true);
 
   const [pageSize, setPageSize] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize2, setPageSize2] = useState(20);
   const [currentPage2, setCurrentPage2] = useState(1);
-  const [tableData, setTableData] = useState([]);
+  const [pageSize3, setPageSize3] = useState(20);
+  const [currentPage3, setCurrentPage3] = useState(1);
+  const [tableData, setTableData] = useState([]);  
+  const [data, setData] = useState();
+  const [paginationDetail, setPaginationDetail] = useState();
+  const [openDetail, setOpenDetail] = useState({
+    open: false,
+    data: ''
+  });
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -118,6 +132,7 @@ const ViewPL = () => {
       //setIsLoading(true);
       getAllExpenses();
       getAllInvoices();
+      getEmployeeSalary();
       //console.log("helloooooooooo")
     } else {
       nav("/restricted", { state: { unAuthorize: true } });
@@ -151,7 +166,7 @@ const ViewPL = () => {
 
   const getAllInvoices = () => {
     setTableLoader(true);
-    apiServices("GET", `invoices?invoiceFrom=${startDate}&invoiceTo=${endDate}&limit=99999&page=1`, null, user_state)
+    apiServices("GET", `invoices?invoiceMonth=${formattedDate}&both=true&limit=99999&page=1`, null, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
           setAllInvoices(res?.data?.Invoices?.docs);
@@ -173,6 +188,31 @@ const ViewPL = () => {
       });
   }
 
+  const getEmployeeSalary = (current_page, page_size) => {
+    setTableLoader1(true);
+    apiServices("GET", `payrolls/view-payrolls?payMonth=${monthName}&payYear=${record?.year}&page=${current_page ? current_page : currentPage3 ? currentPage3 : 1}&limit=${page_size ? page_size : pageSize3 ? pageSize3 : 20}&processed=${true}`, null, user_state)
+      .then((res) => {
+        if (res?.data?.success === true) {
+          // console.log(res?.data?.payrolls);
+          setData(res?.data?.payrolls)
+          setPaginationDetail(res?.data)
+          setTableLoader1(false);
+        }
+      })
+      .catch((err) => {
+        setTableLoader1(false);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : t('payroll.currentPayroll.getPayrollsHistoryError')
+          }!`
+        );
+      });
+  }
+
   const customEmptyText = (
     <Empty
       image={<img src={EmptyTable} />}
@@ -184,7 +224,45 @@ const ViewPL = () => {
         }
       }
       style={{
-        height: "300px",
+        height: "332px",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+      }}
+      description={
+        <div style={{ display: "" }}>
+          <div
+            style={{
+              color: "#34343F",
+              fontWeight: "500",
+              fontSize: "14px",
+              margin: "7px 0px 4px 0px",
+            }}
+          >
+            {t('aRequests.errors.noRecordFound')}
+          </div>
+          {/* <div
+                  style={{ color: "#464665", fontWeight: "300", fontSize: "13px" }}
+                >
+                  Click 'Add Department' Button To Create <br /> A New Department{" "}
+                </div> */}
+        </div>
+      } 
+    />
+  );
+
+  const customEmptyText2 = (
+    <Empty
+      image={<img src={EmptyTable} />}
+      // image={<InboxOutlined />}
+      imageStyle={
+        {
+          // fontSize: 48,
+          // color: '#1890ff',
+        }
+      }
+      style={{
+        height: "357px",
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
@@ -281,6 +359,211 @@ const ViewPL = () => {
       },
   ];
 
+  const payRollColumns = [
+    {
+      title: t('payroll.currentPayroll.employeeName'),
+      dataIndex: 'name',
+      fixed: 'left',
+      render: (text, record) => (            
+          <h2 className="table-avatar">
+            <label className="avatar"><img alt="" src={record?.user?.imageUrl || user_icon} /></label>
+            <label>{record?.user?.fullName}</label>
+            {/* <label>{text} <span>{record?.user?.role}</span></label> */}
+          </h2>
+        ),
+    },
+    {
+      title: t('payroll.currentPayroll.employeeID'),
+      dataIndex: 'employeeId',
+      render: (text,record) => (
+        <>
+          {record?.user?.employeeId}
+        </>
+      )
+    },
+    {
+      title: t('finance.Profit&loss.month'),
+      dataIndex: 'payMonth',
+    },
+    {
+      title: t('finance.Profit&loss.year'),
+      dataIndex: 'payYear',
+    },
+    {
+        title: t('payroll.currentPayroll.salary'),
+        dataIndex: 'salary',
+        render: (text, record) => (
+        <span>{record?.user?.salary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
+            ),
+    },
+    {
+        title: t('payroll.currentPayroll.tax'),
+        dataIndex: 'tax',
+        render: (text,record) => (
+          <>
+            {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || '0'}
+          </>
+        )
+    },
+    {
+        title: t('payroll.currentPayroll.deduction'),
+        dataIndex: 'deduction',
+        render: (text,record) => (
+          <>
+            {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || '0'}
+          </>
+        )
+    },
+    {
+        title: t('payroll.currentPayroll.totalDeduction'),
+        dataIndex: 'totalDeduction',
+        render: (text,record) => (
+          <>
+            {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || '0'}
+          </>
+        )
+    },
+    {
+        title: t('payroll.currentPayroll.deductionReason'),
+        dataIndex: 'deductionReason',
+        render: (text,record) => (
+            <label className='longText'>
+              {text || '-'}
+            </label>
+          )
+    },
+    {
+        title: t('payroll.currentPayroll.bonus'),
+        dataIndex: 'bonus',
+        render: (text,record) => (
+          <>
+            {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || '0'}
+          </>
+        )
+    },
+    {
+        title: t('payroll.currentPayroll.bonusReason'),
+        dataIndex: 'bonusReason',
+        render: (text,record) => (
+            <label className='longText'>
+              {text || '-'}
+            </label>
+          )
+    },
+    {
+        title: t('payroll.currentPayroll.totalAddition'),
+        dataIndex: 'totalAddition',
+        render: (text,record) => (
+          <>
+            {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || '0'}
+          </>
+        )
+    },
+    {
+        title: t('payroll.currentPayroll.extraPayment'),
+        dataIndex: 'extraPayment',
+        render: (text,record) => (
+          <>
+            {text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || '0'}
+          </>
+        )
+    },
+    {
+        title: t('payroll.currentPayroll.extraPaymentReason'),
+        dataIndex: 'extraPaymentReason',
+        render: (text,record) => (
+            <label className='longText'>
+              {text || '-'}
+            </label>
+          )
+    },
+    {
+        title: t('payroll.currentPayroll.absentFine'),
+        dataIndex: 'absentFine',
+        render: (text,record) => (
+          <>
+            {text ? parseFloat(text)?.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '0.00'}
+          </>
+        )
+    },
+    {
+        title: t('payroll.currentPayroll.creditSalary'),
+        dataIndex: 'creditSalary',
+        render: (text,record) => (
+        <span>{text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
+        )
+    },
+    {
+        title: t('payroll.currentPayroll.modeOfPayment'),
+        dataIndex: 'modeOfPayment',
+        render: (text,record) => (
+          <>
+            {record?.modeOfPayment==="Cash" ? t('cash') : record?.modeOfPayment==="Cheque" ? t('cheque') : record?.modeOfPayment==="Bank Transfer" ? t('bankTransfer') : '-'}
+          </>
+        )
+    },
+    {
+        title: t('payroll.currentPayroll.transactionID'),
+        dataIndex: 'transactionId',
+        render: (text,record) => (
+          <>
+            {text || '-'}
+          </>
+        )
+    },
+    {
+        title: t('payroll.currentPayroll.payrollProcessingDate'),
+        dataIndex: 'createdAt',
+        render: (text,record) => {
+          const date = new Date(text);
+          const day = date.getDate();
+          const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+          const month = monthNames[date.getMonth()];
+          const year = date.getFullYear();
+          const formattedDate = `${day} ${month}, ${year}`;
+          return (
+            <>
+              {formattedDate}
+            </>
+          )
+        }
+    },
+    {
+        title: t('status'),
+        dataIndex: 'status',
+        render: (text) => (
+          <label>{text==="Paid" ? t('payroll.currentPayroll.paid') : "-"}</label>
+        ),
+    },
+    {
+      title: t('allEmp.action'),
+      render: (text, record) => (
+          <div className="dropdown dropdown-action text-end">
+            <a href="javascript:void(0)" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
+              <div className="dropdown-menu dropdown-menu-right">
+                <a className="dropdown-item" href="javascript:void(0)"
+                  onClick={() => {
+                    setOpenDetail({ open: true, data: record });
+                    let d = {
+                      ...record,
+                      absentFine: record?.absentFine ? parseFloat(record?.absentFine)?.toFixed(2) : '0', 
+                      salary: record?.basicSalary ? record?.basicSalary : record?.user?.salary,
+                      employeeId: record?.user?.employeeId,
+                      payMonth: moment(record?.payMonth, 'MMMM'),
+                      payYear: moment(record?.payYear, 'YYYY'),
+                      payrollCreationDate: moment(record?.createdAt, 'YYYY-MM-DD'),
+                    }
+                    Detailform.setFieldsValue(d);
+                    console.log(record);
+                  }}><i className="fa fa-eye m-r-5" /> {t('view')}</a>
+                {/* <a className="dropdown-item" href="javascript:void(0)" onClick={()=> downloadPDF(record)}><i className="fa fa-download m-r-5" /> Export to PDF</a> */}
+                <a className="dropdown-item" href="javascript:void(0)" onClick={()=> GenerateSalaryPDF(record, false, 'history', false)}><i className="fa fa-download m-r-5" /> {t('payroll.currentPayroll.exportPayslip')}</a>
+              </div>
+          </div>
+        ),
+    },        
+  ]
+
   return (
     <>
       <div className={`main-wrapper ${menu ? "slide-nav" : ""}`}>
@@ -297,7 +580,7 @@ const ViewPL = () => {
             <div className="page-header">
               <div className="row align-items-center">
                 <div className="col">
-                  <h3 className="page-title">{t('finance.Profit&loss.expensesYear', {year:`${record?.month ? monthName : ""} ${record?.year ? record?.year : ""}`})}</h3>
+                  <h3 className="page-title">Profit & Loss - {record?.month ? monthName : ""} {record?.year ? record?.year : ""}</h3>
                   <ul className="breadcrumb">
                     <li className="breadcrumb-item">
                       <Link
@@ -391,8 +674,8 @@ const ViewPL = () => {
                 }}
                 loading={tableLoader}
                 pagination={false}
-                bordered
-                style={{ height:"400px" }}
+                //bordered
+                style={{ height:"400px", backgroundColor:'white' }}
                 columns={columns1} // Use columns1 for the first table
                 dataSource={allExpenses} // Define your data source for the first table
                 rowKey={(record) => record?._id}
@@ -432,7 +715,7 @@ const ViewPL = () => {
                 loading={tableLoader}
                 pagination={false}
                 bordered
-                style={{ height:"400px"}}
+                style={{ height:"400px", backgroundColor:'white'}}
                 columns={columns2} // Use columns2 for the second table
                 dataSource={allInvoices} // Define your data source for the second table
                 rowKey={(record) => record?._id}
@@ -455,10 +738,76 @@ const ViewPL = () => {
               />
             </div>
           </div>
+          <div className="col-md-12" style={{marginTop:'20px'}}>
+          <div className="table-heading">
+            <div className="table-heading-text" style={{marginBottom:"15px"}}>Payroll History</div>
+          </div>
+            <div className="table-responsive payrollHistoryTable">
+              <Table
+                loading={tableLoader1}
+                className={data?.length > 0 ? "table-striped" : ""}
+                locale={{
+                  emptyText: tableLoader1 ? null : customEmptyText2,
+                }}
+                // style = {{overflowX : 'auto'}}
+                style = {{overflowX : 'auto', height: '440px'}}
+                columns={payRollColumns}
+                dataSource={data}
+                pagination={false}
+                components={i18n.dir()==="rtl" ?
+                  {
+                  header: {
+                    cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                  },
+                } :
+                null
+                }
+                onRow={ i18n.dir()==="rtl" ?
+                  (record, rowIndex) => {
+                  return {
+                    style: { textAlign: 'right' }, // Align table data to the right
+                  };
+                } :
+                null
+                }
+              />
+              {
+                data?.length > 0 &&
+                <div>
+                  <Pagination
+                    style={{display: 'flex', float: 'right'}}
+                    total={paginationDetail?.totalCount}
+                    pageSize={pageSize3}
+                    defaultCurrent={1}
+                    current={currentPage3}
+                    showTotal={(total, range) =>
+                      t('paginationShow', { range1: range[0], range2: range[1], total: total })}
+                    onChange={(page, size) => {
+                      console.log(page, size);
+                      setPageSize3(size); setCurrentPage3(page);
+                      getEmployeeSalary(page, size)
+                    }}
+                    showSizeChanger={true}
+                    pageSizeOptions={['20', '30', '40', '50']}
+                    itemRender={(current, type, originalElement) =>
+                      itemRender(current, type, originalElement, t)
+                    }
+                  />
+                </div>
+            }
+            </div>
+          </div>
             </div>
           </div>
         </div>
       </div>
+
+      <DetailsModal
+        Detailform={Detailform}
+        openDetail={openDetail}
+        setOpenDetail={setOpenDetail}
+      />
+
       <Offcanvas />
     </>
   );

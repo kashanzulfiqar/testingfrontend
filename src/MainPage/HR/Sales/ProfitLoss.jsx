@@ -73,10 +73,21 @@ const ProfitLoss = () => {
     data: "",
   });
 
+  const getYearsTillNow = (startYear) => {
+    const currentYear = new Date().getFullYear();
+    const years = [];
+    for (let year = currentYear; year >= startYear; year--) {
+      years.push(year);
+    }
+    return years;
+  };
+
   useEffect(() => {
     if (role === "admin" || permissions?.managePayrolls) {
       getAllProfitLoss();
       getAllGraphData();
+      setAllYears(getYearsTillNow(2000));
+      
     } else {
       nav(
         `${
@@ -93,30 +104,12 @@ const ProfitLoss = () => {
   }, []);
 
   const getAllProfitLoss = (values, current_page, page_size) => {
+    const currentYear = new Date().getFullYear();
+    console.log("values",values)
     setTableLoader(true);
-    apiServices(
+    return apiServices(
       "GET",
-      `profit-loss?${
-        values === ""
-          ? ""
-          : values?.month === ""
-          ? ""
-          : values?.month
-          ? `month=${values?.month}`
-          : filterValues?.month
-          ? `month=${filterValues?.month}`
-          : ""
-      }${
-        values === ""
-          ? ""
-          : values?.year === ""
-          ? ""
-          : values?.year
-          ? `&year=${values?.year}`
-          : filterValues?.year
-          ? `&year=${filterValues?.year}`
-          : ""
-      }&page=${
+      `profit-loss?year=${values ? values.year : currentYear}&page=${
         current_page ? current_page : currentPage ? currentPage : 1
       }&limit=${page_size ? page_size : pageSize ? pageSize : 20}`,
       null,
@@ -124,7 +117,11 @@ const ProfitLoss = () => {
     )
       .then((res) => {
         if (res?.data?.success === true) {
-          setAllProfitLoss(res?.data?.profitLoss?.docs);
+          const sortedDocs = res?.data?.profitLoss?.docs.sort((a, b) => {
+            return b.month - a.month;
+          });
+  
+          setAllProfitLoss(sortedDocs);
           setPaginationDetail(res?.data?.profitLoss);
           setTableLoader(false);
         }
@@ -144,8 +141,9 @@ const ProfitLoss = () => {
   };
 
   const getAllGraphData = (year) => {
+    const currentYear = new Date().getFullYear();
     setGraphLoader(true);
-    apiServices("GET", "profit-loss/graph", null, user_state)
+    apiServices("GET", `profit-loss/graph?year=${year ? year : currentYear}`, null, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
           const all_years = res?.data?.profitLoss
@@ -162,7 +160,7 @@ const ProfitLoss = () => {
                     )
                 : {};
             setGraphData(recent_year);
-            formyear.setFieldsValue({ years: recent_year?.year });
+            formyear.setFieldsValue({ years: year ? year : currentYear });
           } else {
             const recent_year =
               res?.data?.profitLoss?.length > 0
@@ -171,10 +169,10 @@ const ProfitLoss = () => {
                   )
                 : {};
             setGraphData(recent_year);
-            formyear.setFieldsValue({ years: recent_year?.year });
+            formyear.setFieldsValue({ years: year ? year : currentYear });
           }
           setAllGraphsData(res?.data?.profitLoss);
-          setAllYears(all_years);
+          //setAllYears(all_years);
           setGraphLoader(false);
 
           // const all_years = res?.data?.profitLoss?.map((item => item?.year)).sort((a, b) => b.localeCompare(a));
@@ -325,7 +323,7 @@ const ProfitLoss = () => {
           let sel_year = graphData?.year;
           getAllGraphData(sel_year);
           handleClose();
-          message.success("Record Deleted Successfully!");
+          message.success("Refreshing profit/loss data");
           setDeleteLoader(false);
         }
       })
@@ -426,6 +424,7 @@ const ProfitLoss = () => {
             className="action-icon dropdown-toggle"
             data-bs-toggle="dropdown"
             aria-expanded="false"
+            onClick={(e) => e.stopPropagation()}
           >
             <i className="material-icons">more_vert</i>
           </a>
@@ -433,7 +432,10 @@ const ProfitLoss = () => {
             <Link
               to="/profit-loss/view"
               className="dropdown-item"
-              onClick={() => sessionStorage.setItem(`profit_loss`, "record")}
+              onClick={(e) => {
+                e.stopPropagation()
+                sessionStorage.setItem(`profit_loss`, "record")
+              }}
               state={{ record: record }}
             >
               <i className="fa fa-eye m-r-5" /> {t('view')}
@@ -445,11 +447,12 @@ const ProfitLoss = () => {
             <a
               className="dropdown-item"
               href="javascript:void(0)"
-              onClick={() => {
-                setOpen({ isEditOpen: false, isDelOpen: true, data: record });
+              onClick={(e) => {
+                e.stopPropagation()
+                onHandleDelete(record?._id);
               }}
             >
-              <i className="fa fa-trash-o m-r-5" /> {t('delete')}
+              <i className="fa fa-refresh m-r-5" /> Refresh
             </a>
           </div>
         </div>
@@ -542,6 +545,12 @@ const ProfitLoss = () => {
     return false;
 };
 
+const handleYearChange = (year) => {
+  setGraphLoader(true);
+  getAllProfitLoss({ year }, 1, 20).then(() => {
+    getAllGraphData(year);
+  });
+};
 
   return (
     <>
@@ -573,7 +582,7 @@ const ProfitLoss = () => {
                 </ul>
               </div>
               <div className="col-auto float-end ms-auto">
-                <a
+                {/* <a
                   href="javascript:void(0)"
                   className="btn add-btn"
                   onClick={() => {
@@ -581,7 +590,34 @@ const ProfitLoss = () => {
                   }}
                 >
                   <i className="fa fa-plus" /> {t('finance.Profit&loss.generateProfit&Loss')}
-                </a>
+                </a> */}
+                <Form form={formyear}>
+                  <div style={{ position: "relative", display:'flex', flexDirection:'row', alignItems:'baseline' }} id="area4">
+                    <label style={{fontSize:'large', marginRight:'5px', fontWeight:'bold'}}>Selected Year: </label>
+                    <Form.Item name="years" className="custom-border">
+                      <Select
+                        showSearch
+                        className="custom-select custom-normal"
+                        style={{
+                          width: "100%",
+                        }}
+                        size="large"
+                        getPopupContainer={() =>
+                          document.getElementById("area4")
+                        }
+                        onChange={handleYearChange} 
+                      >
+                        {allYears?.map((item, index) => {
+                          return (
+                            <Option key={index} value={item}>
+                              {item}
+                            </Option>
+                          );
+                        })}
+                      </Select>
+                    </Form.Item>
+                  </div>
+                </Form>
               </div>
             </div>
           </div>
@@ -608,7 +644,7 @@ const ProfitLoss = () => {
                       style={{
                         display: "flex",
                         flexDirection: `${i18n.dir()==="rtl" ? "row-reverse" : "row"}`,
-                        justifyContent: "space-between",
+                        justifyContent: "center",
                         padding: "0px 20px",
                       }}
                     >
@@ -616,37 +652,7 @@ const ProfitLoss = () => {
                       <h3 className="card-title">
                         {t('finance.Profit&loss.overview', {year: graphData?.year})}
                       </h3>
-                      <Form form={formyear}>
-                        <div style={{ position: "relative" }} id="area4">
-                          <Form.Item name="years" className="custom-border">
-                            <Select
-                              showSearch
-                              className="custom-select custom-normal"
-                              style={{
-                                width: "100%",
-                              }}
-                              size="small"
-                              getPopupContainer={() =>
-                                document.getElementById("area4")
-                              }
-                              onChange={(val) => {
-                                const data = allGraphsData?.filter(
-                                  (item) => item?.year === val
-                                );
-                                setGraphData(...data);
-                              }}
-                            >
-                              {allYears?.map((item, index) => {
-                                return (
-                                  <Option key={index} value={item}>
-                                    {item}
-                                  </Option>
-                                );
-                              })}
-                            </Select>
-                          </Form.Item>
-                        </div>
-                      </Form>
+                      
                     </div>
 
                     {
@@ -779,22 +785,8 @@ const ProfitLoss = () => {
           {/* /Graphs */}
 
           {/* /Search Filter */}
-          <Form form={form} onFinish={onFilterFinish}>
+          {/* <Form form={form} onFinish={onFilterFinish}>
             <div className="row filter-row">
-              {/* <div className="col-sm-6 col-md-3">  
-            <div className="form-group">
-            <Form.Item
-                name="employeeName"
-                className="custom-border"
-            >
-            <Input
-                className="form-control"
-                style={{height:'50px'}}
-                placeholder='Employee Name'
-            />
-            </Form.Item>
-            </div>
-        </div> */}
               <div className="col-sm-6 col-md-4">
                 <div
                   className="filterDateMonth"
@@ -886,7 +878,7 @@ const ProfitLoss = () => {
                 </button>
               </div>
             </div>
-          </Form>
+          </Form> */}
           {/* /Search Filter */}
           <div className="row">
             <div className="col-md-12">
@@ -912,17 +904,20 @@ const ProfitLoss = () => {
                     } :
                     null
                     }
-                    onRow={ i18n.dir()==="rtl" ?
-                      (record, rowIndex) => {
-                      return {
+                    onRow={(record, rowIndex) => ({
+                      onClick: () => {
+                        console.log("first",record)
+                        sessionStorage.setItem(`profit_loss`, "record")
+                        nav('/profit-loss/view', { state: record })
+                      },
+                      style: { cursor: 'pointer' },
+                      ...(i18n.dir() === "rtl" && {
                         style: { textAlign: 'right' }, // Align table data to the right
-                      };
-                    } :
-                    null
-                    }
+                      }),
+                    })}
                 />
 
-                {allProfitLoss?.length > 0 && (
+                {/* {allProfitLoss?.length > 0 && (
                   <div>
                     <Pagination
                       style={{ display: "flex", float: "right" }}
@@ -945,7 +940,7 @@ const ProfitLoss = () => {
                       }
                     />
                   </div>
-                )}
+                )} */}
               </div>
             </div>
           </div>
