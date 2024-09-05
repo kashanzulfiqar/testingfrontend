@@ -2192,29 +2192,28 @@ const Invoicecreate = () => {
                       </div> */}
                       <div className="form-group">
                         <label>
-                        {t('finance.Invoices.otherinformation')} <span className="text-danger">{'* '}</span>
-                          <span className="time" style={{fontSize: '12px', color: '#9e9e9e'}}>( {wordCount?.length} / 150 ) </span>
+                        {t('finance.Invoices.otherinformation')}
                         </label>
                         <Form.Item
                           name='otherInformation'
                           className='custom-border'
-                          rules={[
-                            {
-                              whitespace: true,
-                              required: true,
-                              validator: (_, value) => {
-                                if(!value || value.trim() === ''){
-                                  return Promise.reject(t('finance.Invoices.pleaseenterotherinformation'));
-                                }
-                                else if (/\s{2,}/.test(value)) {
-                                  return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
-                                }
-                                return Promise.resolve();
-                              },
-                            },
-                            ]}
+                          // rules={[
+                          //   {
+                          //     whitespace: true,
+                          //     required: true,
+                          //     validator: (_, value) => {
+                          //       if(!value || value.trim() === ''){
+                          //         return Promise.reject(t('finance.Invoices.pleaseenterotherinformation'));
+                          //       }
+                          //       else if (/\s{2,}/.test(value)) {
+                          //         return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
+                          //       }
+                          //       return Promise.resolve();
+                          //     },
+                          //   },
+                          //   ]}
                         >
-                          <Input.TextArea className="form-control" maxLength={150} onChange={(e) => setWordCount(e.target.value)} />
+                          <Input.TextArea className="form-control" />
                         </Form.Item>
                       </div>
                     </div>
