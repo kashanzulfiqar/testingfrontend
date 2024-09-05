@@ -4,6 +4,8 @@ import jsPDF from "jspdf";
 
 import "jspdf-autotable";
 
+import logo from './Icon Daftarpro 1.png'
+
 function invoicePDF(invoice_data) {
 
   function getFormattedDate(inputDate) {
@@ -21,6 +23,25 @@ function invoicePDF(invoice_data) {
       return formattedDate;
     }
   }
+
+  function formatDate(inputDate) {
+    if (inputDate) {
+        const date = new Date(inputDate);
+
+        // Extract day, month, and year
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+        const year = date.getFullYear();
+
+        // Format the date as "DD-MM-YYYY"
+        const formattedDate = `${day}-${month}-${year}`;
+        return formattedDate;
+    } else {
+        // Return 'N/A' if inputDate is falsy
+        return 'N/A';
+    }
+  }
+
   const calculateTotal = () => {
     let sub_total = 0;
 
@@ -177,13 +198,13 @@ function invoicePDF(invoice_data) {
   const columnStyles = invoice_data?.servicesDetails?.length > 0
   ? { 
       0: { cellWidth: "auto" },
-      1: { cellWidth: "auto" },
-      2: { cellWidth: "auto" },
-      3: { cellWidth: "auto" },
-      4: { cellWidth: "auto" },
-      5: { cellWidth: "auto" },
+      1: { cellWidth: 30 },
+      2: { cellWidth: 50 },
+      // 3: { cellWidth: "auto" },
+      // 4: { cellWidth: "auto" },
+      // 5: { cellWidth: "auto" },
       6: { cellWidth: "auto", minCellWidth:15 },
-      7: { cellWidth: "auto" },
+      //7: { cellWidth: "auto" },
     }
   : {
       0: { cellWidth: "auto" },
@@ -203,6 +224,55 @@ function invoicePDF(invoice_data) {
   //   columnStyles[index] = { cellWidth: "auto" };
   // });
 
+  function calculateTextHeight(doc, text, maxWidth) {
+    return doc.getTextDimensions(text, { maxWidth }).h;
+  }
+  
+
+  function addLabelAndText(doc, label, text, x, y, labelOffset, rightMargin) {
+    // Print the label at the given position
+    //doc.text(x, y, label);
+
+    // Calculate the width of the label
+    const labelWidth = doc.getTextWidth(label);
+    
+    // Set margins for first and subsequent lines
+    const leftMargin = x + labelOffset + labelWidth;
+    const leftMargin2 = x + labelOffset;
+
+    // Calculate content width for the first line
+    const contentWidth = doc.internal.pageSize.width - leftMargin - rightMargin;
+
+    const contentWidth2 = doc.internal.pageSize.width - leftMargin2 - rightMargin;
+
+    // Split the text into lines
+    const lines = doc.splitTextToSize(text, contentWidth);
+    const firstLineText = doc.splitTextToSize(text, contentWidth)[0];
+
+    // Print the first line with leftMargin
+    doc.text(lines[0], leftMargin, y);
+
+    const remainingText = text.substring(firstLineText.length).trim(); // Get remaining text
+    const subsequentLines = doc.splitTextToSize(remainingText, contentWidth2);
+    
+    // Calculate height based on the text dimensions
+    const lineHeight = 6; // Define line height for spacing
+
+    // Check if there are additional lines
+    if (lines.length > 1) {
+        y += lineHeight; // Move down after the first line
+        // Print remaining lines with leftMargin2
+        for (let i = 0; i < subsequentLines.length; i++) {
+            doc.text(subsequentLines[i], leftMargin2, y);
+            y += lineHeight; // Move down for each subsequent line
+        }
+    } else {
+        y += lineHeight; // Only move down if there are multiple lines
+    }
+
+    return y; // Return the updated y position for further text
+}
+
   doc.setFontSize(11);
 
   doc.setFont(undefined, "bold");
@@ -210,98 +280,53 @@ function invoicePDF(invoice_data) {
   // doc.text(x, 20, invoice_data?.company?.companyName); // 8 diff
 
   doc.setFont(undefined, "bold");
-  doc.text(x + 120, 20, "INVOICE#: ");
-  const widthofDate = doc.getTextWidth("INVOICE#:  ");
-  doc.setFont(undefined, "normal");
-  doc.text(x + widthofDate + 120, 20, invoice_data?.invoiceNo);
-
-  doc.setFont(undefined, "bold");
-  doc.text(x + 120, 26, "Invoice Date: ");
-  const widthofInvoiceDate = doc.getTextWidth("Invoice Date:  ");
-  doc.setFont(undefined, "normal");
-  doc.text(x + widthofInvoiceDate + 120, 26, getFormattedDate(invoice_data?.invoiceDate));
-
-  doc.setFont(undefined, "bold");
-  doc.text(x + 120, 32, "Due Date: ");
-  const widthofDueDate = doc.getTextWidth("Due Date:  ");
-  doc.setFont(undefined, "normal");
-  doc.text(x + widthofDueDate + 120, 32, getFormattedDate(invoice_data?.dueDate));
-
-  doc.setFont(undefined, "bold");
-  doc.text(x + 120, 38, "Start Date: ");
-  const widthofInvoiceStartDate = doc.getTextWidth("Start Date:  ");
-  doc.setFont(undefined, "normal");
-  doc.text(x + widthofInvoiceStartDate + 120, 38, getFormattedDate(invoice_data?.invoiceStartDate));
-  
-  doc.setFont(undefined, "bold");
-  doc.text(x + 120, 44, "End Date: ");
-  const widthofInvoiceEndDate = doc.getTextWidth("End Date:  ");
-  doc.setFont(undefined, "normal");
-  doc.text(x + widthofInvoiceEndDate + 120, 44, getFormattedDate(invoice_data?.invoiceEndDate));
-
-  doc.setFont(undefined, "bold");
   doc.setTextColor(142, 142, 142);
-  doc.text(x + 120, 54, "Payment Details:");
+  doc.text(x + 120, 26, "Bank Account Details:");
   doc.setFont(undefined, "normal");
   doc.setTextColor(50, 50, 50);
 
   //------------------
-
+  var yPosition = 32;
   // doc.setFont(undefined, "bold");
-  doc.text(x + 120, 62, "Total Due: ");
-  const widthofTotalDue = doc.getTextWidth("Total Due:  ");
-  // doc.setFont(undefined, "normal");
-  doc.text(x + widthofTotalDue + 120, 62, `${invoice_data?.remainingAmount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${invoice_data?.currency}`);
-
-  //------------------
-  var yPosition = 68;
-  // doc.setFont(undefined, "bold");
-  doc.text(x + 120, 68, "Bank Name: ");
-  const widthofDueDate3 = doc.getTextWidth("Bank Name:  ");
-  // doc.setFont(undefined, "normal");
-  var leftMarginBN = x + 120 + widthofDueDate3;
-  var rightMarginBN = 10; // Assuming you want at least 10 units free on the right side
-  var contentWidthBN = doc.internal.pageSize.width - leftMarginBN - rightMarginBN;
-  // Print the account title with wrapping if necessary
-  doc.text(invoice_data?.bankDetail?.bankName, leftMarginBN, yPosition, { maxWidth: contentWidthBN });
-  var bankNameHeight = doc.getTextDimensions(invoice_data?.bankDetail?.bankName, { maxWidth: contentWidthBN }).h;
-  //doc.text(x + widthofDueDate3 + 120, 68, invoice_data?.bankDetail?.bankName);
-  yPosition += (bankNameHeight + 6) - 3.88;
-  console.log(bankNameHeight)
+  doc.text(x + 120, yPosition, "Bank Name: ");
+  yPosition = addLabelAndText(doc, "Bank Name: ", invoice_data?.bankDetail?.bankName, x, yPosition, 120, 10);
+  //yPosition += 6 - 3.88;
+  //console.log(bankNameHeight)
   
   //------------------
   // doc.text(x + 120, 62, "Account Title: ");
   // const widthofAccountTitle = doc.getTextWidth("Account Title:  ");
   // doc.text(x + widthofAccountTitle + 120, 62, invoice_data?.bankDetail?.accountTitle);
 
-  doc.text(x + 120, yPosition, "Account Title: ");
-  const widthofAccountTitle = doc.getTextWidth("Account Title:  ");
+  doc.text(x + 120, yPosition, "A/C Title: ");
+  yPosition = addLabelAndText(doc, "A/C Title: ", invoice_data?.bankDetail?.accountTitle, x, yPosition, 120, 10);
+  // const widthofAccountTitle = doc.getTextWidth("A/C Title:  ");
 
-  // Calculate the available width for the account title text
-  var leftMarginAT = x + 120 + widthofAccountTitle;
-  var rightMarginAT = 10; // Assuming you want at least 10 units free on the right side
-  var contentWidthAT = doc.internal.pageSize.width - leftMarginAT - rightMarginAT;
-  var accountTitleHeight = doc.getTextDimensions(invoice_data?.bankDetail?.accountTitle, { maxWidth: contentWidthAT }).h;
-  // Print the account title with wrapping if necessary
-  doc.text(invoice_data?.bankDetail?.accountTitle, leftMarginAT, yPosition, { maxWidth: contentWidthAT });
-  yPosition += (accountTitleHeight + 6) - 3.88;
-  console.log(accountTitleHeight)
+  // // Calculate the available width for the account title text
+  // var leftMarginAT = x + 120 + widthofAccountTitle;
+  // var rightMarginAT = 10; // Assuming you want at least 10 units free on the right side
+  // var contentWidthAT = doc.internal.pageSize.width - leftMarginAT - rightMarginAT;
+  // var accountTitleHeight = doc.getTextDimensions(invoice_data?.bankDetail?.accountTitle, { maxWidth: contentWidthAT }).h;
+  // // Print the account title with wrapping if necessary
+  // doc.text(invoice_data?.bankDetail?.accountTitle, leftMarginAT, yPosition, { maxWidth: contentWidthAT });
+  //yPosition += 6 - 3.88;
+  //console.log(accountTitleHeight)
   //------------------
 
-  doc.text(x + 120, yPosition, "Account #: ");
-  const widthofAccountNo = doc.getTextWidth("Account #:  ");
+  doc.text(x + 120, yPosition, "A/C No: ");
+  const widthofAccountNo = doc.getTextWidth("A/C No:  ");
   doc.text(x + widthofAccountNo + 120, yPosition, invoice_data?.bankDetail?.accountNo);
   yPosition += 6;
   //------------------
 
-  doc.text(x + 120, yPosition, "IBAN: ");
-  const widthofDueDate4 = doc.getTextWidth("IBAN:  ");
+  doc.text(x + 120, yPosition, "IBAN No: ");
+  const widthofDueDate4 = doc.getTextWidth("IBAN No:  ");
   doc.text(x + widthofDueDate4 + 120, yPosition, invoice_data?.bankDetail?.iban);
   yPosition += 6;
   //------------------
 
-  doc.text(x + 120, yPosition, "SWIFT code: ");
-  const widthofDueDate44 = doc.getTextWidth("SWIFT code:  ");
+  doc.text(x + 120, yPosition, "SWIFT: ");
+  const widthofDueDate44 = doc.getTextWidth("SWIFT:  ");
   doc.text(x + widthofDueDate44 + 120, yPosition, invoice_data?.bankDetail?.swiftCode);
   yPosition += 6;
   //------------------
@@ -313,34 +338,39 @@ function invoicePDF(invoice_data) {
   yPosition += 6;
   //------------------
 
-  // doc.setFont(undefined, "bold");
-  doc.text(x + 120, yPosition, "Country: ");
-  const widthofDueDate5 = doc.getTextWidth("Country:  ");
-  // doc.setFont(undefined, "normal");
-  doc.text(x + widthofDueDate5 + 120, yPosition, invoice_data?.bankDetail?.country);
-  yPosition += 6;
-  //------------------
+  // // doc.setFont(undefined, "bold");
+  // doc.text(x + 120, yPosition, "Country: ");
+  // const widthofDueDate5 = doc.getTextWidth("Country:  ");
+  // // doc.setFont(undefined, "normal");
+  // doc.text(x + widthofDueDate5 + 120, yPosition, invoice_data?.bankDetail?.country);
+  // yPosition += 6;
+  // //------------------
 
-  // doc.setFont(undefined, "bold");
-  doc.text(x + 120, yPosition, "City: ");
-  const widthofDueDate6 = doc.getTextWidth("City:  ");
-  // doc.setFont(undefined, "normal");
-  doc.text(x + widthofDueDate6 + 120, yPosition, invoice_data?.bankDetail?.city);
-  yPosition += 6;
+  // // doc.setFont(undefined, "bold");
+  // doc.text(x + 120, yPosition, "City: ");
+  // const widthofDueDate6 = doc.getTextWidth("City:  ");
+  // // doc.setFont(undefined, "normal");
+  // doc.text(x + widthofDueDate6 + 120, yPosition, invoice_data?.bankDetail?.city);
+  // yPosition += 6;
   //------------------
 
   // doc.setFont(undefined, "bold");
   // doc.text(x + 130, 80, "Address: ");
   // const widthofDueDate7 = doc.getTextWidth("Address:  ");
   // doc.setFont(undefined, "normal");
-  var leftMargin2 = 10;
-  var rightMargin2 = 128;
-  var contentWidth2 = doc.internal.pageSize.width - leftMargin2 - rightMargin2;
-  doc.text(invoice_data?.bankDetail?.address, x + 120, yPosition, { maxWidth: contentWidth2 });
+  doc.text(x + 120, yPosition, "Bank Address: ");
+  yPosition = addLabelAndText(doc, "Bank Address: ", invoice_data?.bankDetail?.address, x, yPosition, 120, 10);
+  //const widthofBankAdd = doc.getTextWidth("Bank Address:  ");
+
+  yPosition+=5;
+  // var leftMargin2 = x + 120 + widthofBankAdd;
+  // var rightMargin2 = 10;
+  // var contentWidth2 = doc.internal.pageSize.width - leftMargin2 - rightMargin2;
+  // doc.text(invoice_data?.bankDetail?.address, leftMargin2, yPosition, { maxWidth: contentWidth2 });
   // doc.text('Company address compan Company address compan Company address compan', x + widthofDueDate7 + 130, 80, { maxWidth: contentWidth2 });
   // doc.text(x + widthofDueDate7 + 130, 80, 'Address jkhjk kjkj 9898 7766 767 jkkj kj khkj');
-  var currentYs1 = doc.getTextDimensions(invoice_data?.bankDetail?.address, { maxWidth: contentWidth2 }).h + 6 + 6;
-  currentYs1 += ((accountTitleHeight + 6) - 3.88) + ((bankNameHeight + 6) - 3.88)
+  // var currentYs1 = doc.getTextDimensions(invoice_data?.bankDetail?.address, { maxWidth: contentWidth2 }).h + 6 + 6;
+  // currentYs1 += ((accountTitleHeight + 6) - 3.88) + ((bankNameHeight + 6) - 3.88)
 
 
 
@@ -351,7 +381,7 @@ if(invoice_data?.company?.imageUrl){
   doc.setFont(undefined, "normal");
   var currentY = 42;
   var leftMargin = 10;
-  var rightMargin = 130;
+  var rightMargin = 120;
   var contentWidth = doc.internal.pageSize.width - leftMargin - rightMargin;
   doc.text(invoice_data?.company?.companyAddress, x, currentY, { maxWidth: contentWidth });
 
@@ -361,33 +391,68 @@ if(invoice_data?.company?.imageUrl){
   doc.setFont(undefined, "normal");
   var currentY = 26;
   var leftMargin = 10;
-  var rightMargin = 130;
+  var rightMargin = 120;
   var contentWidth = doc.internal.pageSize.width - leftMargin - rightMargin;
   doc.text(invoice_data?.company?.companyAddress, x, currentY, { maxWidth: contentWidth });
 }
 
 
-currentY += doc.getTextDimensions(invoice_data?.company?.companyAddress, { maxWidth: contentWidth }).h + 6;
-doc.text(x, currentY, "Invoice to:");
+currentY += doc.getTextDimensions(invoice_data?.company?.companyAddress, { maxWidth: contentWidth }).h + 10;
+let compY = doc.getTextDimensions(invoice_data?.company?.companyAddress, { maxWidth: contentWidth }).h;
 doc.setFont(undefined, "bold");
-doc.text(x, currentY + 7, invoice_data?.client?.clientName);
+doc.text(x, currentY, "Invoice to: ");
+const widthofProject = doc.getTextWidth("Project Title:    ");
 doc.setFont(undefined, "normal");
+doc.text(x + widthofProject + 0.7, currentY, invoice_data?.client?.clientName);
 
-var currentY2 = currentY + 7 + 6;
-var leftMargin = 10;
-var rightMargin = 130;
-var contentWidth = doc.internal.pageSize.width - leftMargin - rightMargin;
-doc.text(invoice_data?.client?.headOfficeAddress, x, currentY2, { maxWidth: contentWidth });
+currentY+= 6
 
-currentY2 += doc.getTextDimensions(invoice_data?.client?.headOfficeAddress, { maxWidth: contentWidth }).h + 2;
-doc.text(x, currentY2, invoice_data?.client?.country);
-doc.text(x, currentY2 + 6, invoice_data?.client?.clientPhoneNo);
-// doc.setTextColor(13, 110, 253);
-doc.text(x, currentY2 + 11, invoice_data?.client?.invoiceEmail);
-// doc.setTextColor(50, 50, 50);
+doc.setFont(undefined, "bold");
+doc.text(x, currentY, "Project Title: ");
+doc.setFont(undefined, "normal");
+currentY = addLabelAndText(doc, "Project Title:      ", (invoice_data?.project?.projectName || invoice_data?.projectId?.projectName), x, currentY, 0, 100);
+var projWidth = doc.internal.pageSize.width - 100 - 10;
+let projY = doc.getTextDimensions((invoice_data?.project?.projectName || invoice_data?.projectId?.projectName), { maxWidth: projWidth }).h;
+//doc.text(x + widthofProject, currentY, invoice_data?.project?.projectName || invoice_data?.projectId?.projectName);
+doc.setFont(undefined, "bold");
+doc.text(x, currentY, "Billing Period: ");
+const widthofInvoiceStartDate = doc.getTextWidth("Billing Period:  ");
+doc.setFont(undefined, "normal");
+doc.text(x + widthofInvoiceStartDate, currentY, `${formatDate(invoice_data?.invoiceStartDate)} to ${formatDate(invoice_data?.invoiceEndDate)}`);
+currentY += 6
+
+var currentY2 = currentY;
+
+currentY2 += 25
+
+const commonStyles = {
+  fontSize: 10,               // Font size for body
+  textColor: [0, 0, 0],       // Black text color
+  fillColor: [220, 220, 220]  // Grey background for rows
+};
+
+doc.autoTable({
+  margin: { top: compY + yPosition + projY, right: 10, left: 10 },
+  headStyles: {...commonStyles, fontSize: 16 },
+  bodyStyles: { ...commonStyles,},
+  head: [
+    [{ content: `INVOICE # ${invoice_data.invoiceNo}`, colSpan: 1, styles: { halign: 'left' } }]
+  ],
+  body: [
+    [`Invoice Date: ${getFormattedDate(invoice_data.invoiceDate)}`],
+    [`Due Date: ${getFormattedDate(invoice_data.dueDate)}`]
+  ],
+  styles: {
+    lineColor: [65, 65, 65], // Border color
+    lineWidth: 0.1, // Border width
+    fontFamily: "Helvetica",
+    textColor: [65, 65, 65],
+  },
+  theme: 'plain'
+});
 
   doc.autoTable({
-    margin: { top: currentY2 + currentYs1 + 11 + 10 + 6, right: 10, left: 10 },
+    margin: { startY: currentY2, right: 10, left: 10 },
     headStyles: headerStyles,
     head: [columnsForPDF()?.map((rec) => rec?.title)],
     body: dataForPDF(),
@@ -409,7 +474,7 @@ doc.text(x, currentY2 + 11, invoice_data?.client?.invoiceEmail);
     const currentYT = 0;
     const startPage = doc.internal.getCurrentPageInfo().pageNumber;
     doc.autoTable({
-        margin: { top: currentYT, right: 8, left: 120 },
+        margin: { startY : currentYT, right: 8, left: 120 },
         body: [
             ["Total (Tax exclusive):", `${calculateSubTotal()?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${invoice_data?.currency}`],
             ["Total (Tax inclusive):", `${calculateTotal()?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${invoice_data?.currency}`],
@@ -440,28 +505,23 @@ doc.text(x, currentY2 + 11, invoice_data?.client?.invoiceEmail);
         // },
       });
 
-      if (doc.internal.getCurrentPageInfo().pageNumber == startPage) {
-        console.log("In if")
-        console.log(doc.internal.getCurrentPageInfo().pageNumber, startPage)
-        // Draw the lines at the calculated position on the same page
-        doc.setDrawColor(226, 229, 232);
-        doc.line(112 + 10, lineYT + 17, 190 + 10, lineYT + 17);
-        doc.line(112 + 10, lineYT + 28, 190 + 10, lineYT + 28);
-        doc.line(112 + 10, lineYT + 38, 190 + 10, lineYT + 38);
-    } else {
-      console.log("in else")
-      doc.setPage(startPage);
-      doc.setDrawColor(226, 229, 232);
-        doc.line(112 + 10, lineYT + 17, 190 + 10, lineYT + 17);
-        doc.line(112 + 10, lineYT + 28, 190 + 10, lineYT + 28);
-        doc.line(112 + 10, lineYT + 38, 190 + 10, lineYT + 38);
-        console.log(doc.internal.getCurrentPageInfo().pageNumber, startPage)
-        // Handle the case where the table overflows to the next page
-        // You can choose to draw the lines on the new page or take another action
-        // For now, let's log a message (you can replace this with other logic if needed)
-        console.log("Table overflowed to the next page; lines are not drawn.");
-        doc.setPage(startPage + 1);
-    }
+      const currentPage = doc.internal.getCurrentPageInfo().pageNumber;
+const secondTableEndY = doc.autoTable.previous.finalY || 0;
+
+if (currentPage === startPage) {
+  // Same page: draw the lines based on lineYT
+  doc.setDrawColor(226, 229, 232);
+  doc.line(112 + 10, lineYT + 17, 190 + 10, lineYT + 17);
+  doc.line(112 + 10, lineYT + 28, 190 + 10, lineYT + 28);
+  doc.line(112 + 10, lineYT + 38, 190 + 10, lineYT + 38);
+} else {
+  // New page: draw the lines starting from a default position (e.g., 26)
+  const newStartY = 10; // Adjust this as necessary
+  doc.setDrawColor(226, 229, 232);
+  doc.line(112 + 10, newStartY +13 , 190 + 10, newStartY+13  );
+  doc.line(112 + 10, newStartY +23, 190 + 10, newStartY+23 );
+  doc.line(112 + 10, newStartY +33, 190 + 10, newStartY+33  );
+}
 
     const currentYL = doc.autoTable.previous.finalY || 0;
     console.log("currentYL",currentYL)
@@ -469,18 +529,64 @@ doc.text(x, currentY2 + 11, invoice_data?.client?.invoiceEmail);
     const pageHeight = doc.internal.pageSize.height; // Page height
     const marginBottom = 20; // Space to leave at the bottom of the page
     let finalY = currentYL + 8;
+    const lineHeight = 4.5; // Height of each line of text
     // If current Y position is too close to the bottom of the page, add a new page
     if (currentYL + 20 > pageHeight - marginBottom) {
       doc.addPage();
       finalY = 20
     }
 
-    // Add "Other Information" after checking or adding the new page
     doc.text(x, finalY, "Other Information:");
+    finalY+=1.5
+    // Split the other information text into lines based on available width
     var leftMargin = 10;
     var rightMargin = 10;
     var contentWidthInfo = doc.internal.pageSize.width - leftMargin - rightMargin;
-    doc.text(x, finalY + 6, invoice_data?.otherInformation, { maxWidth: contentWidthInfo });
+    const otherInfoLines = doc.splitTextToSize(invoice_data?.otherInformation, contentWidthInfo);
+
+    // Render each line, and check for page overflow
+    for (let i = 0; i < otherInfoLines.length; i++) {
+      finalY += lineHeight;
+
+      // If the Y position goes beyond the page height, add a new page
+      if (finalY > pageHeight - marginBottom) {
+        doc.addPage();
+        finalY = 20; // Reset Y position for the new page
+      }
+
+      // Print the current line of text
+      doc.text(leftMargin, finalY, otherInfoLines[i]);
+    }
+
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+    
+      // Set watermark text and image alignment
+      const pageWidth = doc.internal.pageSize.width;
+      const pageHeight = doc.internal.pageSize.height;
+    
+      // Define the dimensions for the logo
+      const logoWidth = 7; // Adjust this to make the logo smaller/larger
+      const logoHeight = 7; // Adjust this to maintain aspect ratio
+    
+      // Calculate positions
+      const padding = 9; // Distance from the page edges
+      const rightOffset = 20; // Shift content to the right by adjusting this value
+      const logoX = pageWidth - logoWidth - 60 + rightOffset - 7; // Logo's X coordinate with extra rightOffset
+      const logoY = pageHeight - logoHeight - padding + 2; // Logo's Y coordinate
+      const textX = logoX + logoWidth + 2; // Text starts right after the logo
+      const textY = logoY + logoHeight - 2; // Align text with the logo
+    
+      // Add logo
+      doc.addImage(logo, "PNG", logoX, logoY, logoWidth, logoHeight);
+    
+      // Add watermark text
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100, 0.2); // Semi-transparent text
+      doc.text("Generated by DaftarPro", textX, textY);
+    }
+    
 
 
   doc.save(`${invoice_data?.invoiceNo}.pdf`);
