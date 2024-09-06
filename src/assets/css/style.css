@@ -13048,3 +13048,12 @@ padding-right: unset;
   margin-top: auto; /* Pushes the brandStyle to the bottom */
   text-align: center;
 }
+
+.truncate-ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 250px; /* Adjust this value to fit your design */
+  display: inline-block;
+  vertical-align: middle; /* Align the text with the icon */
+}
