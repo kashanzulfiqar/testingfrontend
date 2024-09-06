@@ -252,7 +252,7 @@ function invoicePDF(invoice_data) {
     // Print the first line with leftMargin
     doc.text(lines[0], leftMargin, y);
 
-    const remainingText = text.substring(firstLineText.length).trim(); // Get remaining text
+    const remainingText = text?.substring(firstLineText.length)?.trim(); // Get remaining text
     const subsequentLines = doc.splitTextToSize(remainingText, contentWidth2);
     
     // Calculate height based on the text dimensions
@@ -410,9 +410,9 @@ currentY+= 6
 doc.setFont(undefined, "bold");
 doc.text(x, currentY, "Project Title: ");
 doc.setFont(undefined, "normal");
-currentY = addLabelAndText(doc, "Project Title:      ", (invoice_data?.project?.projectName || invoice_data?.projectId?.projectName), x, currentY, 0, 100);
+currentY = addLabelAndText(doc, "Project Title:      ", (invoice_data?.project?.projectName ? invoice_data?.project?.projectName : invoice_data?.projectId?.projectName), x, currentY, 0, 100);
 var projWidth = doc.internal.pageSize.width - 100 - 10;
-let projY = doc.getTextDimensions((invoice_data?.project?.projectName || invoice_data?.projectId?.projectName), { maxWidth: projWidth }).h;
+let projY = doc.getTextDimensions((invoice_data?.project?.projectName ? invoice_data?.project?.projectName : invoice_data?.projectId?.projectName), { maxWidth: projWidth }).h;
 //doc.text(x + widthofProject, currentY, invoice_data?.project?.projectName || invoice_data?.projectId?.projectName);
 doc.setFont(undefined, "bold");
 doc.text(x, currentY, "Billing Period: ");
