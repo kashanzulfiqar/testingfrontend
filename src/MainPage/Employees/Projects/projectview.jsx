@@ -1442,22 +1442,30 @@ const ProjectView = () => {
                       <tbody>
                         {((role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) && project?.projectType === 'Billed') ? 
                         (
-                        <tr>
-                          <td>{t('viewProject.cost')}:</td>
-                          <td className="text-end">
-                          {
-                            (project?.costType === 'Monthly' || project?.costType === 'Hourly' )
-                            ? 
-                            `${totalCost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${project?.currency}` 
-                            : 
-                            `${project?.cost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}  ${project?.currency}`
-                          }
-                            {/* {project?.cost
-                              ?.toString()
-                              .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}{" "}
-                            {project?.currency} */}
-                          </td>
-                        </tr>
+                        <>
+                          <tr>
+                            <td>{t('viewProject.cost')}:</td>
+                            <td className="text-end">
+                            {
+                              (project?.costType === 'Monthly' || project?.costType === 'Hourly' )
+                              ? 
+                              `${totalCost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${project?.currency}` 
+                              : 
+                              `${project?.cost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}  ${project?.currency}`
+                            }
+                              {/* {project?.cost
+                                ?.toString()
+                                .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}{" "}
+                              {project?.currency} */}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>Cost Type:</td>
+                            <td className="text-end">
+                            {project?.costType}
+                            </td>
+                          </tr>
+                        </>
                         )
                         : 
                         null
