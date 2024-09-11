@@ -218,7 +218,7 @@ const Designation = () => {
                 });
               }}
             >
-              <i className="fa fa-trash-o m-r-5" /> {t('edit')}
+              <i className="fa fa-trash-o m-r-5" /> {t('delete')}
             </a>
           </div>
         </div>
