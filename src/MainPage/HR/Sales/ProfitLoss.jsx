@@ -446,20 +446,6 @@ const ProfitLoss = () => {
             >
               <i className="fa fa-eye m-r-5" /> {t('view')}
             </Link>
-            {/* <a className="dropdown-item" href="javascript:void(0)"
-              onClick={() => {
-                console.log(record);
-              }}><i className="fa fa-eye m-r-5" /> View</a> */}
-            <a
-              className="dropdown-item"
-              href="javascript:void(0)"
-              onClick={(e) => {
-                e.stopPropagation()
-                onHandleDelete(record?._id);
-              }}
-            >
-              <i className="fa fa-refresh m-r-5" /> Refresh
-            </a>
           </div>
         </div>
       ),
@@ -650,7 +636,7 @@ const handleYearChange = (year) => {
                       style={{
                         display: "flex",
                         flexDirection: `${i18n.dir()==="rtl" ? "row-reverse" : "row"}`,
-                        justifyContent: "center",
+                        justifyContent: "space-between",
                         padding: "0px 20px",
                       }}
                     >
@@ -658,7 +644,18 @@ const handleYearChange = (year) => {
                       <h3 className="card-title">
                         {t('finance.Profit&loss.overview', {year: graphData?.year})}
                       </h3>
-                      
+                      <div style={{ position: "relative" }} id="area4">
+                        <a
+                          href="javascript:void(0)"
+                          onClick={() => {
+                            getAllProfitLoss().then(() => {
+                              getAllGraphData();
+                            });
+                          }}
+                        >
+                          <i className="fa fa-refresh m-r-5" /> Refresh
+                        </a>
+                      </div>
                     </div>
 
                     {
