@@ -1252,7 +1252,7 @@
     "minLength2": "{{name}} length must be at least 3 characters long",
     "minLength3": "{{name}} length must be at least 5 characters long",
     "digitLength": "{{name}} must be at least 3 digits long",
-    "phonelength": "{{name}} must be at least 5 digits long",
+    "phoneLength": "{{name}} must be at least 5 digits long",
     "saveChanges": "Save Changes",
     "departmentType": "Department Type",
     "PselectDepartmentType": "Please select department type",
