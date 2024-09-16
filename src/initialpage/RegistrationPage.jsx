@@ -678,7 +678,7 @@ const Registrationpage = (props) => {
                     onInput={(e) => {
                       onHandleRegChange("companyEmail", e.target.value);
                     }}
-                    maxLength={50}
+                    maxLength={60}
                   />
                 </Form.Item>
               </div>
