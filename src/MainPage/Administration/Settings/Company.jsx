@@ -21,6 +21,7 @@ const Company = () => {
   const [image, setImage] = useState('')
   const [allCurrencies, setAllCurrencies] = useState([]);
   const [employees, setEmployees] = useState([]);
+  const [absentDeduction, setAbsentDeduction] = useState();
 
   useEffect(() => {
     getCompanyData();
@@ -34,6 +35,10 @@ const Company = () => {
         if (res?.data?.success === true) {
           form.setFieldsValue(res?.data?.companyInfo);
           setData(res?.data?.companyInfo);
+          setAbsentDeduction(
+            res?.data?.companyInfo?.absentDeduction === true ? true : false
+          );
+          //setAbsentDeduction(res?.data?.companyInfo?.absentDeduction && res?.data?.companyInfo?.absentDeduction == true ? true : false)
         }
       })
       .catch((err) => {
@@ -112,6 +117,7 @@ const Company = () => {
       ...values,
       _id: data?._id,
       agreeTermsAndConditions: true,
+      absentDeduction : absentDeduction
     };
 
     apiServices("PUT", "company/updatecompany", new_data, user_state)
@@ -973,6 +979,33 @@ const Company = () => {
                     }}
                     phone={data ? data?.fax : ""}
                   />
+                </Form.Item>
+              </div>
+            </div>
+            <div
+              className="col-sm-12"
+            >
+              <div
+                className="form-group"
+                style={{ marginBottom: "6px", marginTop: "0px" }}
+              >
+                <Form.Item name="absentDeduction">
+                  <div style={{ display: "flex", height: "25px" }}>
+                    <Input style={{ display: "none" }} value={absentDeduction} />
+                    <input
+                      className="form-check-input customCheckbox"
+                      type="checkbox"
+                      checked={absentDeduction} // Control the checkbox using state
+                      onChange={(e) => {
+                        setAbsentDeduction(e.target.checked); // Update the state when the checkbox is checked/unchecked
+                      }}
+                      id="flexCheckChecked"
+                      style={{ width: "23px", height: "23px" }}
+                    />
+                    <label style={{ marginTop: "5px", marginLeft: "15px", fontSize: "15px" }}>
+                      Absent Fine Deduction Policy
+                    </label>
+                  </div>
                 </Form.Item>
               </div>
             </div>

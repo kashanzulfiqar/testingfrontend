@@ -7678,7 +7678,7 @@ textarea.form-control {
 }
 
 /* invoice table style */
-.invoiceTable thead tr th:not(:nth-child(1), :nth-child(9)) {
+.invoiceTable thead tr th:not(:nth-child(1), :nth-child(10)) {
   min-width: 130px !important;
 }
 .invoiceTable tbody > tr > td{
@@ -13047,4 +13047,13 @@ padding-right: unset;
 .brandStyle {
   margin-top: auto; /* Pushes the brandStyle to the bottom */
   text-align: center;
+}
+
+.truncate-ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 250px; /* Adjust this value to fit your design */
+  display: inline-block;
+  vertical-align: middle; /* Align the text with the icon */
 }

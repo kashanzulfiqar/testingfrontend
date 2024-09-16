@@ -51,6 +51,24 @@ const Invoiceview = () => {
     }
 }
 
+const BillingDate = (inputDate) => {
+  if (inputDate) {
+      const date = new Date(inputDate);
+
+      // Extract day, month, and year
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+      const year = date.getFullYear();
+
+      // Format the date as "DD-MM-YYYY"
+      const formattedDate = `${day}-${month}-${year}`;
+      return formattedDate;
+  } else {
+      // Return 'N/A' if inputDate is falsy
+      return 'N/A';
+  }
+}
+
 const calculateTotal = () => {
   let sub_total = 0;
 
@@ -149,78 +167,51 @@ const calculateDiscountAmount = () => {
                       <div className="card-body">
                         <div className="row">
                           {/* <div className="col-sm-6 m-b-20 d-grid"> */}
-                          <div className="col-sm-6 m-b-20">
+                          <div className="col-sm-6  col-lg-7 col-xl-8 m-b-20">
                             <img src={invoiceInfo?.company?.imageUrl} className="inv-logo" alt="" />
                             {/* <img src={invoiceInfo?.clientId?.logo} className="inv-logo" alt="" /> */}
                             <h5><strong>{invoiceInfo?.company?.companyName}</strong></h5>
                             <ul className="list-unstyled">
                               <li>
-                              <label style={{maxWidth: '200px'}}>
+                              <label>
                                 {invoiceInfo?.company?.companyAddress}
                               </label>
                               </li>
-                            </ul>
-                            {/* <ul className="list-unstyled">
-                              <li>Dreamguy's Technologies</li>
-                              <li>3864 Quiet Valley Lane,</li>
-                              <li>Sherman Oaks, CA, 91403</li>
-                              <li>GST No:</li>
-                            </ul> */}
-                          </div>
-                          <div className="col-sm-6 m-b-20">
-                            <div className="invoice-details">
-                              <h3 className="text-uppercase">Invoice# {invoiceInfo?.invoiceNo}</h3>
-                              <ul className="list-unstyled">
-                                <li>Invoice Date: <label>{formatDate(invoiceInfo?.invoiceDate)}</label></li>
-                                {invoiceInfo?.invoiceStartDate ? <li>Start Date: <label>{formatDate(invoiceInfo?.invoiceStartDate)}</label></li> : null}
-                                {invoiceInfo?.invoiceEndDate ? <li>End Date: <label>{formatDate(invoiceInfo?.invoiceEndDate)}</label></li> : null}
-                                <li>Due Date: <label>{formatDate(invoiceInfo?.dueDate)}</label></li>
-                              </ul>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="row">
-                          <div className="col-sm-6 col-lg-7 col-xl-8 m-b-20">
-                            <label style={{fontWeight: '500', fontSize: '14px', lineHeight: '35px'}}>Invoice to:</label>
-                            <ul className="list-unstyled">
-                              <li><h5><strong>{invoiceInfo?.client?.clientName}</strong></h5></li>
-                              {/* <li><h5><strong>{invoiceInfo?.clientId?.clientName}</strong></h5></li> */}
-                              {/* <li><span>Global Technologies</span></li>
-                              <li>5754 Airport Rd</li>
-                              <li>Coosada, AL, 36020</li>
-                              <li>United States</li>
-                              <li>888-777-6655</li>
-                              <li><a href="#">barrycuda@example.com</a></li> */}
-                            </ul>
-                            <label style={{maxWidth: '200px'}}>
-                             {invoiceInfo?.client?.headOfficeAddress}
-                             {/* {invoiceInfo?.clientId?.headOfficeAddress} */}
-                            </label>
-                            <ul className="list-unstyled">
-                              <li>{invoiceInfo?.client?.country}</li>
-                              <li>{invoiceInfo?.client?.clientPhoneNo}</li>
-                              <li><a href="javascript:void(0)">{invoiceInfo?.client?.invoiceEmail}</a></li>
-                              {/* <li>{invoiceInfo?.clientId?.country}</li>
-                              <li>{invoiceInfo?.clientId?.clientPhoneNo}</li>
-                              <li><a href="javascript:void(0)">{invoiceInfo?.clientId?.clientEmail}</a></li> */}
+                              
+                              <li style={{marginTop:'5%'}}><h5><strong>Invoice To: </strong><label>{invoiceInfo?.client?.clientName}</label></h5></li>
+                              <li><h5><strong>Project Name: </strong><label>{invoiceInfo?.project?.projectName ? invoiceInfo?.project?.projectName : invoiceInfo?.projectId?.projectName}</label></h5></li>
+                              <li><h5><strong>Billing Period: </strong><label>{`${BillingDate(invoiceInfo?.invoiceStartDate)} to ${BillingDate(invoiceInfo?.invoiceEndDate)}`}</label></h5></li>
                             </ul>
                           </div>
-                          <div className="col-sm-6 col-lg-5 col-xl-4 m-b-20">
-                            <span className="text-muted">Payment Details:</span>
+                          <div className="col-sm-6 col-lg-6 col-xl-4 m-b-20">
+                            <span className="text-muted">Bank Account Details:</span>
                             <ul className="list-unstyled invoice-payment-details">
-                              <li>Total Due: <span className="text-end">{invoiceInfo?.remainingAmount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {invoiceInfo?.currency}</span></li>
-                              <li>Bank name: <label>{invoiceInfo?.bankDetail?.bankName}</label></li>
-                              <li>Country: <label>{invoiceInfo?.bankDetail?.country}</label></li>
-                              <li>City: <label>{invoiceInfo?.bankDetail?.city}</label></li>
-                              <li>Address: <label>{invoiceInfo?.bankDetail?.address}</label></li>
-                              <li>Account Title: <label>{invoiceInfo?.bankDetail?.accountTitle}</label></li>
-                              <li>Account #: <label>{invoiceInfo?.bankDetail?.accountNo}</label></li>
-                              <li>IBAN: <label>{invoiceInfo?.bankDetail?.iban}</label></li>
-                              <li>SWIFT code: <label>{invoiceInfo?.bankDetail?.swiftCode}</label></li>
+                              <li>Bank Name: <label>{invoiceInfo?.bankDetail?.bankName}</label></li>
+                              <li>A/C Title: <label>{invoiceInfo?.bankDetail?.accountTitle}</label></li>
+                              <li>A/C No: <label>{invoiceInfo?.bankDetail?.accountNo}</label></li>
+                              <li>IBAN No: <label>{invoiceInfo?.bankDetail?.iban}</label></li>
+                              <li>SWIFT: <label>{invoiceInfo?.bankDetail?.swiftCode}</label></li>
                               <li>STRN/TRN: <label>{invoiceInfo?.company?.taxRegNo ? invoiceInfo?.company?.taxRegNo : 'N/A'}</label></li>
+                              <li>Bank Address: <label>{invoiceInfo?.bankDetail?.address}</label></li>
                             </ul>
                           </div>
+                          <div className="table-responsive" style={{marginTop:'3%', marginBottom:'2%'}}>
+                            <table className="table table-striped table-hover" style={{ backgroundColor: 'rgb(220, 220, 220)' }}>
+                              <thead>
+                                <tr>
+                                  <th colSpan="2" style={{ fontSize: '1.5rem', borderBottom: '1px solid black', padding: '5px'}}>INVOICE # {invoiceInfo?.invoiceNo}</th>
+                                </tr>
+                                <tr> 
+                                  <th style={{ borderBottom: '1px solid black', padding: '5px'}}>Invoice Date: <label>{formatDate(invoiceInfo?.invoiceDate)}</label></th>
+                                </tr>
+                                <tr>
+                                  <th style={{ borderBottom: '1px solid black', padding: '5px'}}>Due Date: <label>{formatDate(invoiceInfo?.dueDate)}</label></th>
+                                </tr>
+                              </thead>
+                            </table>
+                          </div>
                         </div>
+
                         {
                           invoiceInfo?.teamDetails?.length > 0 
                           ?

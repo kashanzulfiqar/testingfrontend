@@ -52,6 +52,8 @@ const Invoicecreate = () => {
   const [saveLoader, setSaveLoader] = useState(false);
   const [taxes, setTaxes] = useState({});
   const [tableLoader, setTableLoader] = useState(false);
+  const [editIndex, setEditIndex] = useState(null); 
+  const [resourceName, setResourceName] = useState("");
 
   useEffect(() => {
     if((role === 'admin' || permissions?.managePayrolls) && projectData) {
@@ -493,6 +495,28 @@ const Invoicecreate = () => {
     />
   );
 
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleNameChange(resourceName ? resourceName : teamArray[editIndex].userName , editIndex);
+    } else if (e.key === "Escape") {
+      setEditIndex(null)
+      setResourceName('');
+    }
+  };
+
+  const handleEdit = (index) => {
+    setEditIndex(index);
+    setResourceName(teamArray[index].userName);
+  };
+
+  const handleNameChange = (e, index) => {
+    const updatedTeamArray = [...teamArray];
+    updatedTeamArray[index].userName = e;
+    setTeamArray(updatedTeamArray);
+    setResourceName('')
+    setEditIndex(null);
+  };
+
   const searchHandler = (val, type) => {
     let dropdownValues = []
     if (type === 'client'){
@@ -724,12 +748,6 @@ const Invoicecreate = () => {
       spin
     />
   );
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault(); // Prevent the default form submission
-    }
-  };
   
       return ( 
         
@@ -1213,7 +1231,50 @@ const Invoicecreate = () => {
                               teamArray.map((member, index) => (
                                 <tr key={member.userId}>
                                   <td>{index + 1}</td>
-                                  <td>{member.userName}</td>
+                                  <td>
+                                    {/* {member.userName} */}
+                                    
+                                  {(editIndex != null) && editIndex === index ? (
+                                  <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                                    <Form.Item
+                                    //name={`tax-${index}`}
+                                    className="addTeamHeight"
+                                    style={{marginBottom: '0px', minWidth: '150px' }}
+                                  >
+                                    <Input
+                                      className="form-control"
+                                      value={resourceName ? resourceName : member.userName}
+                                      onChange={(e) => setResourceName(e.target.value)}
+                                      onKeyDown={handleKeyDown}
+                                      onBlur={()=>{
+                                        setEditIndex(null)
+                                        setResourceName('');
+                                      }}
+                                      autoFocus
+                                    />
+                                  </Form.Item>
+                                  <button 
+                                    onMouseDown={(e) => e.preventDefault()}
+                                    onClick={() => handleNameChange(resourceName ? resourceName : member.userName, index)}
+                                    className="btn btn-primary" 
+                                    style={{ marginLeft: '10px', height:'42px', textAlign:'center' }}
+                                  >
+                                    Save
+                                  </button>
+                                  </div>
+                                  )
+                                  :
+                                  (
+                                  <>
+                                      <span className="truncate-ellipsis" title={member.userName}>
+                                        {member.userName}
+                                      </span>
+                                      <a href="javascript:void(0)" onClick={() => handleEdit(index)} title="Edit">
+                                        <i className="fa fa-pencil" style={{ marginLeft: '8px' }} />
+                                      </a>
+                                    </>
+                                  )}
+                                  </td>
                                   <td>{member.cost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {currencyIs}</td>
                                   <td>
                                     {/* {member.hoursWorked} */}
@@ -1485,7 +1546,50 @@ const Invoicecreate = () => {
                               teamArray.map((member, index) => (
                                 <tr key={member.userId}>
                                   <td>{index + 1}</td>
-                                  <td>{member.userName}</td>
+                                  <td>
+                                    {/* {member.userName} */}
+                                    
+                                  {(editIndex != null) && editIndex === index ? (
+                                  <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                                    <Form.Item
+                                    //name={`tax-${index}`}
+                                    className="addTeamHeight"
+                                    style={{marginBottom: '0px', minWidth: '150px' }}
+                                  >
+                                    <Input
+                                      className="form-control"
+                                      value={resourceName ? resourceName : member.userName}
+                                      onChange={(e) => setResourceName(e.target.value)}
+                                      onKeyDown={handleKeyDown}
+                                      onBlur={()=>{
+                                        setEditIndex(null)
+                                        setResourceName('');
+                                      }}
+                                      autoFocus
+                                    />
+                                  </Form.Item>
+                                  <button 
+                                    onMouseDown={(e) => e.preventDefault()}
+                                    onClick={() => handleNameChange(resourceName ? resourceName : member.userName, index)}
+                                    className="btn btn-primary" 
+                                    style={{ marginLeft: '10px', height:'42px', textAlign:'center' }}
+                                  >
+                                    Save
+                                  </button>
+                                  </div>
+                                  )
+                                  :
+                                  (
+                                  <>
+                                      <span className="truncate-ellipsis" title={member.userName}>
+                                        {member.userName}
+                                      </span>
+                                      <a href="javascript:void(0)" onClick={() => handleEdit(index)} title="Edit">
+                                        <i className="fa fa-pencil" style={{ marginLeft: '8px' }} />
+                                      </a>
+                                    </>
+                                  )}
+                                  </td>
                                   <td>{member?.cost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {currencyIs}</td>
                                   <td>{member?.perDayCost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} {currencyIs}</td>
                                   <td>
@@ -2192,29 +2296,28 @@ const Invoicecreate = () => {
                       </div> */}
                       <div className="form-group">
                         <label>
-                        {t('finance.Invoices.otherinformation')} <span className="text-danger">{'* '}</span>
-                          <span className="time" style={{fontSize: '12px', color: '#9e9e9e'}}>( {wordCount?.length} / 150 ) </span>
+                        {t('finance.Invoices.otherinformation')}
                         </label>
                         <Form.Item
                           name='otherInformation'
                           className='custom-border'
-                          rules={[
-                            {
-                              whitespace: true,
-                              required: true,
-                              validator: (_, value) => {
-                                if(!value || value.trim() === ''){
-                                  return Promise.reject(t('finance.Invoices.pleaseenterotherinformation'));
-                                }
-                                else if (/\s{2,}/.test(value)) {
-                                  return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
-                                }
-                                return Promise.resolve();
-                              },
-                            },
-                            ]}
+                          // rules={[
+                          //   {
+                          //     whitespace: true,
+                          //     required: true,
+                          //     validator: (_, value) => {
+                          //       if(!value || value.trim() === ''){
+                          //         return Promise.reject(t('finance.Invoices.pleaseenterotherinformation'));
+                          //       }
+                          //       else if (/\s{2,}/.test(value)) {
+                          //         return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
+                          //       }
+                          //       return Promise.resolve();
+                          //     },
+                          //   },
+                          //   ]}
                         >
-                          <Input.TextArea className="form-control" maxLength={150} onChange={(e) => setWordCount(e.target.value)} />
+                          <Input.TextArea className="form-control" />
                         </Form.Item>
                       </div>
                     </div>

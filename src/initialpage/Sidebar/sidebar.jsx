@@ -753,7 +753,6 @@ const Sidebar = (props) => {
                           {/* <li><Link className={pathname.includes('estimates') ? "active" : ""} to="/app/sales/estimates">{t('sideBar.estimates')}</Link></li> */}
                           <li><Link className={pathname.includes('invoices') ? "active" : ""} to="/invoices">{t('sideBar.invoices')}</Link></li>
                           <li><Link className={pathname.includes('payments') ? "active" : ""} to="/payments">{t('sideBar.payments')}</Link></li>
-                          <li><Link className={pathname.includes('profit-loss') ? "active" : ""} to="/profit-loss">{t('sideBar.profitAndLoss')}</Link></li>
                           {/* <li><Link className={pathname.includes('provident-fund') ? "active" : ""} to="/app/sales/provident-fund">{t('sideBar.providentFund')}</Link></li>
                           <li><Link className={pathname.includes('taxes') ? "active" : ""} to="/app/sales/taxes">{t('sideBar.taxes')}</Link></li> */}
                         </>
@@ -836,6 +835,7 @@ const Sidebar = (props) => {
                       <li><Link className={pathname.includes('employee-report') ? "active" : ""} to="/employee-report"> {t('sideBar.employeeReport')} </Link></li>
                       {/* <li><Link className={pathname.includes('payslip-') ? "active" : ""} to="/app/reports/payslip-reports"> Payslip Report </Link></li> */}
                       <li><Link className={pathname.includes('attendance-report') ? "active" : ""} to="/attendance-report"> {t('sideBar.attendanceReport')} </Link></li>
+                      {(user_state?.role === 'admin' || permissions?.managePayrolls) && <li><Link className={pathname.includes('profit-loss') ? "active" : ""} to="/profit-loss">{t('sideBar.profitAndLoss')}</Link></li>}
                       {/* <li><Link className={pathname.includes('leave-') ? "active" : ""} to="/app/reports/leave-reports"> Leave Report </Link></li>
                       <li><Link className={pathname.includes('daily-') ? "active" : ""} to="/app/reports/daily-reports"> Daily Report </Link></li> */}
                     </ul>
