@@ -962,11 +962,6 @@ const Company = () => {
                   name="fax"
                   rules={[
                     {
-                      whitespace: true,
-                      required: true,
-                      message: t('settings.companySettings.pleaseEnterFax'),
-                    },
-                    {
                       min: 5,
                       message: t('settings.phoneLength', { name: t('settings.companySettings.fax') }),
                     },
@@ -1003,7 +998,7 @@ const Company = () => {
                       style={{ width: "23px", height: "23px" }}
                     />
                     <label style={{ marginTop: "5px", marginLeft: "15px", fontSize: "15px" }}>
-                      Absent Fine Deduction Policy
+                      Absent Fine Deduction
                     </label>
                   </div>
                 </Form.Item>
