@@ -69,6 +69,8 @@ import ResourceAllocationDetails from '../MainPage/Employees/Employees/allocatio
 import Leads from '../MainPage/Employees/leades';
 import GitBook from '../MainPage/Administration/Settings/GitBook';
 import Query from '../MainPage/Administration/Settings/Query';
+import AdminLogin from './AdminLogin';
+import SuperAdminMain from '../MainPage/Main/Dashboard/superadminMain';
 
 
 const App = () => {
@@ -121,6 +123,7 @@ const App = () => {
     <div>
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/client/login" element={<ClientLogin />} />
         <Route path="/login/:email/:token" element={<LoginPage />} />
@@ -135,6 +138,7 @@ const App = () => {
           {/* <Route> */}
           {/* dashboard */}
           <Route path={`/restricted`} element={<Navigate to={login?.user?.role === 'admin' ? `/main/dashboard` : `/employee/dashboard`} />} />
+          <Route path={`super-admin/dashboard`} element={<SuperAdminMain />} />
           <Route path={`main/dashboard`} element={<AdminDashboard />} />
           <Route path={`employee/dashboard`} element={<EmployeeDashboard />} />
 
