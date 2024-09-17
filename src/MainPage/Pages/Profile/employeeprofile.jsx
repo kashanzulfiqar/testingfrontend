@@ -40,6 +40,7 @@ const EmployeeProfile = () => {
   const role = user_state?.user?.role
   const company_id = user_state?.user?.companyId
   const [form] = Form.useForm();
+  const superAdmin = useSelector((state) => state.superAdmin);
 
   const UserName = loginvalue?.email?.split('@')[0];
   const ProfileName = UserName?.charAt(0).toUpperCase() + UserName?.slice(1)
@@ -635,7 +636,7 @@ const antIcon = (
               <div className="col-sm-12">
                 <h3 className="page-title">{t('empProfile.profile')}</h3>
                 <ul className="breadcrumb">
-                  <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>{t('dashboard')}</Link></li>
+                  <li className="breadcrumb-item"><Link to={superAdmin == true ? '/super-admin/dashboard' : (role === 'admin' ? '/main/dashboard' : '/employee/dashboard')}>{t('dashboard')}</Link></li>
                   <li className="breadcrumb-item active">{t('empProfile.profile')}</li>
                 </ul>
               </div>
