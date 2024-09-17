@@ -14,6 +14,7 @@ const RequireAuth = ({Role}) => {
     const firstTimeLogin = localStorage.getItem("firstTimeLogin");
     const { auth } = useAuth();
     const location = useLocation();
+    const superAdmin = useSelector((state) => state.superAdmin);
     // const res =JSON.parse(localStorage.getItem("AuthObj"))
     console.log(auth, 'aut=====');
     let AuthRole = value ? true : false
@@ -60,7 +61,7 @@ const RequireAuth = ({Role}) => {
         AuthRole
             ?
             <div className={`main-wrapper ${menu ? 'slide-nav' : ''}`}> 
-                <Header onMenuClick={toggleMobileMenu} onBarToggle={toggleBar} /> 
+                <Header onMenuClick={toggleMobileMenu} onBarToggle={toggleBar} AdminLogin={superAdmin} /> 
                 <Sidebar barMenu={barMenu} /> 
                 <Outlet />
             </div>

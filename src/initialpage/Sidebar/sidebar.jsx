@@ -17,6 +17,7 @@ const Sidebar = (props) => {
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
   const pending_counter = useSelector((state) => state?.counter?.counter?.payload);
   const user_state = useSelector((state) => state.user.loginvalue?.user);
+  const superAdmin = useSelector((state) => state.superAdmin);
 
   useEffect(() => {
     if(location?.pathname !== '/settings'){
@@ -483,6 +484,7 @@ const Sidebar = (props) => {
                   </li>
                 </ul>
               </nav>
+              {!superAdmin && 
               <ul className="sidebar-vertical" id='veritical-sidebar'>
                 <li className="menu-title">
                   <span>{t('main')}</span>
@@ -972,7 +974,25 @@ const Sidebar = (props) => {
                   </li>
                 }
                 
+            
               </ul>
+              }
+
+              {superAdmin && 
+                <ul className="sidebar-vertical" id='veritical-sidebar'>
+                <li className="menu-title">
+                  <span>{t('main')}</span>
+                </li>
+
+                <li className={pathname.includes('super-admin/dashboard') ? "active" : ""}>
+                  <Link to="/super-admin/dashboard"><i className="la la-dashboard" /> <span>Admin Dashboard</span> </Link>
+                </li>
+                
+                <li className="menu-title">
+                  <span>{t('sideBar.administration')}</span>
+                </li>
+                </ul>
+                }
               {/* <label className='brandStyle'><a target='_blank' href='https://devgate.ca'>Powered By Devgate</a></label> */}
               <ul>
               <li className='brandStyle' style={{marginBottom:'5%'}}>

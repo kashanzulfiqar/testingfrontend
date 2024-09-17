@@ -19,6 +19,7 @@ import { DownOutlined, GlobalOutlined } from '@ant-design/icons';
 const Header = (props) => {
   const { t, i18n } = useTranslation(); 
 
+  const superAdmin = useSelector((state) => state.superAdmin);
   // const firstchange = (lng) =>{
   //   i18n.changeLanguage(lng);
   //   localStorage.setItem('lang', lng);
@@ -33,16 +34,11 @@ const Header = (props) => {
     'ar': 'Arabic'
   };
 
-  // useEffect(() => {
-  //   let languageCode = "";
-  //   for (const code in languageNames) {
-  //     if (languageNames[code] === userLang) {
-  //       languageCode = code;
-  //       break;
-  //     }
-  //   }
-  //   firstchange(languageCode)
-  // }, [])
+  useEffect(() => {
+    if (props.AdminLogin) {
+      nav('super-admin/dashboard')
+    }
+  }, [])
 
 
   const changeLanguage = (lng) => {
@@ -143,7 +139,7 @@ const Header = (props) => {
     <div className="header" style={{ right: "0px" }}>
       {/* Logo */}
       <div className="header-left" style={{ float: i18n.dir() === 'rtl' ? 'right' : 'left' }}>
-        <Link to="/main/dashboard" className="logo">
+        <Link to={superAdmin == true ? "/super-admin/dashboard" : "/main/dashboard"}className="logo">
           <img src={DaftarProWhiteIcon} width={40} height={40} alt="" />
           {/* <img src={headerlogo} width={40} height={40} alt="" /> */}
         </Link>
@@ -218,7 +214,7 @@ const Header = (props) => {
 
                 // window.location.href = `${window?.location?.origin}/login`
                 // window.location.href = `${window?.location?.origin}${(user_state?.user?.role === 'client' || user_state?.user?.role === 'focalperson') ? '/client/login' : '/login'}`
-                window.history.replaceState(null, null, `${window?.location?.origin}${(user_state?.user?.role === 'client' || user_state?.user?.role === 'focalperson') ? '/client/login' : '/login'}`);
+                window.history.replaceState(null, null, `${window?.location?.origin}${superAdmin ? '/admin-login' : ((user_state?.user?.role === 'client' || user_state?.user?.role === 'focalperson') ? '/client/login' : '/login')}`);
                 // window.history.back();
                 window.location.reload();
               }, 800);
@@ -255,7 +251,7 @@ const Header = (props) => {
                 sessionStorage.clear();
 
                 // window.location.href = `${window?.location?.origin}${(user_state?.user?.role === 'client' || user_state?.user?.role === 'focalperson') ? '/client/login' : '/login'}`
-                window.history.replaceState(null, null, `${window?.location?.origin}${(user_state?.user?.role === 'client' || user_state?.user?.role === 'focalperson') ? '/client/login' : '/login'}`);
+                window.history.replaceState(null, null, `${window?.location?.origin}${superAdmin ? '/admin-login' : ((user_state?.user?.role === 'client' || user_state?.user?.role === 'focalperson') ? '/client/login' : '/login')}`);
                 // window.history.back();
                 window.location.reload();
               }, 800);
