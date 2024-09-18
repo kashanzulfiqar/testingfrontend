@@ -148,7 +148,7 @@ const SuperAdminMain = () => {
     };
     apiServices(
       "GET",
-      `user/superadmin-overview?companyName=${params.companyName}&filter=${params.dataType}&sortType=${params.sortType}&page=${params.page}&limit=${params.limit}`,
+      `newApi/overview?companyName=${params.companyName}&filter=${params.dataType}&sortType=${params.sortType}&page=${params.page}&limit=${params.limit}`,
       null,
       user_state
     )
@@ -435,7 +435,7 @@ const SuperAdminMain = () => {
     let payload = {
       id: id,
     }
-    const url = data?.disabled == false ? 'user/disable-company' : 'user/enable-company'
+    const url = data?.disabled == false ? 'newApi/disable' : 'newApi/enable'
     const method = data?.disabled == false ? 'DELETE' : 'PUT'
     setLoader(true);
     apiServices(method, url, data?.disabled == false ? id : payload, user_state)

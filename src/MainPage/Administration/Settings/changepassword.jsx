@@ -24,6 +24,8 @@ const ChangePassword = () => {
   const [eye, setEye] = useState(true);
   const [loader, setLoader] = useState(false);
   const [strength, setStrength] = useState(0);
+  
+  const superAdmin = useSelector((state) => state.superAdmin);
 
   const onEyeClick1 = () => {
     setEye1(!eye1);
@@ -69,13 +71,14 @@ const ChangePassword = () => {
       password: values?.oldPassword,
       newPassword: values?.newPassword
     }
-    apiServices("PUT", `user/change-password`, data, user_state)
+    let url = superAdmin == true ? 'newApi/change' : 'user/change-password'
+    apiServices("PUT", url, data, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
           setLoader(false);
           localStorage.removeItem("firstTimeLogin");
           // nav(`${user_state?.user?.role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}`);
-          nav(`${user_state?.user?.role === 'admin' ? '/main/dashboard' : user_state?.user?.role === 'client' ? '/client/client-profile' : user_state?.user?.role === 'focalperson' ? '/client/focal-profile' : '/employee/dashboard'}`);
+          nav(`${superAdmin == true ? '/super-admin/dashboard' : (user_state?.user?.role === 'admin' ? '/main/dashboard' : user_state?.user?.role === 'client' ? '/client/client-profile' : user_state?.user?.role === 'focalperson' ? '/client/focal-profile' : '/employee/dashboard')}`);
           message.success(t('password.passwordUpdated'));
         }
       })
