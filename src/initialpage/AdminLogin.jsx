@@ -96,7 +96,7 @@ const AdminLogin = (props) => {
     };
     setLoginData(data);
 
-    apiLoginEmployee('user/login-admin' , data).then((res) => {
+    apiLoginEmployee('newApi/newRoute' , data).then((res) => {
       if (res?.data?.success === true) {
         setOpen(true);
         //const userData = res?.data?.result?.user;

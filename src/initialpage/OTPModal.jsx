@@ -14,7 +14,6 @@ import { apiServices } from "../Services/apiServices";
 import { useDispatch, useSelector } from 'react-redux';
 import { superAdmin } from "../Redux/Reducer/permissions/superAdminSlice";
 import { login } from "../Entryfile/features/users";
-import { getPermissionList } from "../Redux/Reducer/permissions/actions";
 
 const OtpModal = ({ data, open, handleClose }) => {
 
@@ -108,13 +107,13 @@ const OtpModal = ({ data, open, handleClose }) => {
     setLoader(true)
     const otpValue = otp.join("");
     data.token = otpValue;
-    apiServices("POST", "user/login-admin", data)
+    apiServices("POST", "newApi/newRoute", data)
       .then((res) => {
         if (res?.data?.success) {
             const userData = res?.data?.result?.user;
             console.log('admin',userData.superAdmin)
             console.log(res?.data?.result);
-            dispatch(getPermissionList({ roleId: res?.data?.result?.user?.roleId, athtoken: res?.data?.result?.access_token?.accessToken }))
+            //dispatch(getPermissionList({ roleId: res?.data?.result?.user?.roleId, athtoken: res?.data?.result?.access_token?.accessToken }))
             dispatch(login(res?.data?.result));
             dispatch(superAdmin(res?.data?.result?.user?.superAdmin))
             setOtp(["", "", "", "", "", ""]);
