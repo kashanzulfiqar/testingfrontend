@@ -360,6 +360,32 @@ const SuperAdminMain = () => {
       //sorter: (a, b) => moment(a.latestActivity).unix() - moment(b.latestActivity).unix(),
     },
     {
+      title: 'Status',
+      dataIndex: "disabled",
+      key: "disabled",
+      render: (record) => (
+        <div className="action-label">
+          <label
+            className="btn btn-white btn-sm btn-rounded"
+            style={{ pointerEvents: "none" }}
+          >
+            {record == true && (
+              <i className="fa fa-dot-circle-o text-danger" />
+            )}
+            {record == false && (
+              <i className="fa fa-dot-circle-o text-success" />
+            )}
+            {record == true
+              ? ` Disabled`
+              : record == false
+              ? ` Active`
+              : ""
+            }
+          </label>
+        </div>
+      ),
+    },
+    {
       title: t('holiday.actions'),
       render: (record, row) => (
         <div className="dropdown dropdown-action text-end">
@@ -368,10 +394,10 @@ const SuperAdminMain = () => {
             // className="action-icon dropdown-toggle"
             // data-bs-toggle="dropdown"
             // aria-expanded="false"
-            className={`action-icon dropdown-toggle ${role === "admin" || permissions.companyManagement ? '' : 'disabled'}`}
-            style={{ cursor: role == "admin" || permissions.companyManagement ? "pointer" : "not-allowed" }}
-            data-bs-toggle={role === "admin" || permissions.companyManagement ? 'dropdown' : ''}
-            aria-expanded={role === "admin" || permissions.companyManagement ? 'true' : 'false'}
+            className='action-icon dropdown-toggle'
+            style={{ cursor: "pointer" }}
+            data-bs-toggle='dropdown'
+            aria-expanded='true'
           >
             <i className="material-icons">more_vert</i>
           </a>
@@ -379,16 +405,15 @@ const SuperAdminMain = () => {
             <a
               className="dropdown-item"
               href="javascript:void(0)"
-              // onClick={() => {
-              //   setOpen({
-              //     isAddOpen: false,
-              //     isDelOpen: true,
-              //     data: row,
-              //   });
-              // }}
+              onClick={() => {
+                setOpen({
+                  isAddOpen: false,
+                  isDelOpen: true,
+                  data: row,
+                });
+              }}
             >
-              <i className="fa fa-trash-o m-r-5" /> Disable
-            </a>
+              <i className={record?.disabled == false ? `fa fa-user-times m-r-5` : `fa fa-check m-r-5`} /> {record?.disabled == false ? t('disable') : t('enable')}</a>
           </div>
         </div>
       ),
@@ -403,6 +428,45 @@ const SuperAdminMain = () => {
     });
     console.log("Sorting by:", filter, "in", sortType, "order");
     // Implement your logic here to fetch/sort data based on filter and sortType
+  };
+
+  const onHandleDelete = (data) => {
+    let id = data?._id
+    let payload = {
+      id: id,
+    }
+    const url = data?.disabled == false ? 'user/disable-company' : 'user/enable-company'
+    const method = data?.disabled == false ? 'DELETE' : 'PUT'
+    setLoader(true);
+    apiServices(method, url, data?.disabled == false ? id : payload, user_state)
+      .then((res) => {
+        // console.log(res?.data);
+        if (res?.data?.success === true) {
+          setCompanies((prevCompanies) => 
+            prevCompanies?.map((company) => 
+              company._id === id ? { ...company, disabled: !company.disabled } : company
+            )
+          );
+          //getCompanies();
+          handleClose();
+          message.success(data?.disabled == false ? 'Company disabled successfully' : 'Company enabled successfully');
+          //viewCategory();
+          setLoader(false);
+        }
+      })
+      .catch((err) => {
+        setLoader(false);
+        // console.log(err);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : data?.disabled == false ? 'Error disabling the company' : 'Error enabling the company'
+          }!`
+        );
+      });
   };
 
   const antIconDownload = (
@@ -659,6 +723,66 @@ const SuperAdminMain = () => {
         </div>
       </div>
       <Offcanvas />
+
+      <Modal
+        open={open.isDelOpen}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+        disableRestoreFocus
+        BackdropProps={{
+          style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
+        }}
+      >
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content" style={{ height: "280px" }}>
+            <div
+              className="modal-body"
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+              }}
+            >
+              <div className="form-header">
+                <h3 style={{ marginBottom: "30px" }}>{open?.data?.disabled == false ? t('disable') : t('enable')} Company</h3>
+                <p>
+                {`Are you sure you want to ${open?.data?.disabled == false ? 'disable' : 'enable'}${" "}`}
+                <strong>{open?.data?.companyName}</strong>
+                </p>
+              </div>
+              <div className="modal-btn delete-action">
+                <div className="row">
+                  <div className="col-6">
+                  <Button
+                      htmlType="submit"
+                      className="btn btn-primary continue-btn"
+                      onClick={() => onHandleDelete(open?.data)}
+                      disabled={loader}
+                      style={{ width: "100%" }}
+                    >
+                      {loader ? (
+                        <Spin size="small" indicator={antIcon} />
+                      ) : (
+                        `${open?.data?.disabled == false ? 'Disable' : 'Enable'}`
+                      )}
+                    </Button>
+                  </div>
+                  <div className="col-6">
+                    <Button
+                      onClick={handleClose}
+                      className="btn btn-primary submit-btn"
+                      style={{ width: "100%" }}
+                    >
+                      {t('cancel')}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Modal>
     </>
   );
 };
