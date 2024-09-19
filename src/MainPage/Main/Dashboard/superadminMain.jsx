@@ -606,13 +606,6 @@ const SuperAdminMain = () => {
                     type="primary"
                     htmlType="submit"
                     className="btn-success btn-block w-50"
-                    disabled={
-                      role === "admin"
-                        ? false
-                        : permissions?.attendanceManagement
-                        ? false
-                        : true
-                    }
                     style={{ borderRadius: "4px", display: "flex", justifyContent: "center", alignItems: "center" }}
                   >
                     {t('search')}
@@ -622,13 +615,6 @@ const SuperAdminMain = () => {
                     htmlType="button"
                     className="btn-secondary btn-block w-50"
                     onClick={handleReset}
-                    disabled={
-                      role === "admin"
-                        ? false
-                        : permissions?.attendanceManagement
-                        ? false
-                        : true
-                    }
                     style={{
                       backgroundColor: "#616161",
                       borderColor: "#616161",
