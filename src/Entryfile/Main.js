@@ -53,6 +53,7 @@ import {  persistStore,
 import { getDefaultMiddleware } from '@reduxjs/toolkit';
 import permissionsSlice from '../Redux/Reducer/permissions/permissionSlice';
 import pendingCounterSlice from '../Redux/Reducer/permissions/pendingCounterSlice';
+import superAdminSlice from '../Redux/Reducer/permissions/superAdminSlice.js';
 
 
 // const store =configureStore({
@@ -69,7 +70,8 @@ const persistConfig = {
  const rootReducer = combineReducers({
   user: userReducer,
   permissionsSlice: permissionsSlice,
-  counter: pendingCounterSlice
+  counter: pendingCounterSlice,
+  superAdmin: superAdminSlice
 });
  
  const persistedReducer = persistReducer(persistConfig, rootReducer);

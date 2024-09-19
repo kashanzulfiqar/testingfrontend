@@ -19,6 +19,7 @@ import { DownOutlined, GlobalOutlined } from '@ant-design/icons';
 const Header = (props) => {
   const { t, i18n } = useTranslation(); 
 
+  const superAdmin = useSelector((state) => state.superAdmin);
   // const firstchange = (lng) =>{
   //   i18n.changeLanguage(lng);
   //   localStorage.setItem('lang', lng);
@@ -33,16 +34,11 @@ const Header = (props) => {
     'ar': 'Arabic'
   };
 
-  // useEffect(() => {
-  //   let languageCode = "";
-  //   for (const code in languageNames) {
-  //     if (languageNames[code] === userLang) {
-  //       languageCode = code;
-  //       break;
-  //     }
-  //   }
-  //   firstchange(languageCode)
-  // }, [])
+  useEffect(() => {
+    if (props.AdminLogin) {
+      nav('super-admin/dashboard')
+    }
+  }, [])
 
 
   const changeLanguage = (lng) => {
@@ -143,7 +139,7 @@ const Header = (props) => {
     <div className="header" style={{ right: "0px" }}>
       {/* Logo */}
       <div className="header-left" style={{ float: i18n.dir() === 'rtl' ? 'right' : 'left' }}>
-        <Link to="/main/dashboard" className="logo">
+        <Link to={superAdmin == true ? "/super-admin/dashboard" : "/main/dashboard"}className="logo">
           <img src={DaftarProWhiteIcon} width={40} height={40} alt="" />
           {/* <img src={headerlogo} width={40} height={40} alt="" /> */}
         </Link>
@@ -205,7 +201,10 @@ const Header = (props) => {
             <label style={{marginInline: '5px', cursor: 'pointer'}}>{location?.state?.updated_user?.fullName ? ` ${location?.state?.updated_user?.fullName} ` : updated_user?.fullName ? ` ${updated_user?.fullName} ` : ProfileName ? ` ${ProfileName} ` : "Admin"}</label>
           </a>
           <div className="dropdown-menu dropdown-menu-end" style={{marginLeft: '50px !important'}}>
-          <Link to={user_state?.user?.role === 'client' ? '/client/client-profile' : user_state?.user?.role === 'focalperson' ? '/client/focal-profile' : "/profile"} onClick={() => (user_state?.user?.role === 'client' || user_state?.user?.role === 'focalperson') ? '' : sessionStorage.setItem(`employee_tab`, 'profile')} className="dropdown-item">{t('header.myProfile')}</Link>
+          {
+            !superAdmin &&  
+            <Link to={user_state?.user?.role === 'client' ? '/client/client-profile' : user_state?.user?.role === 'focalperson' ? '/client/focal-profile' : "/profile"} onClick={() => (user_state?.user?.role === 'client' || user_state?.user?.role === 'focalperson') ? '' : sessionStorage.setItem(`employee_tab`, 'profile')} className="dropdown-item">{t('header.myProfile')}</Link>
+          }
             <Link className="dropdown-item" to="/change-password">{t('header.changePassword')}</Link>
             {/* <Link className="dropdown-item" to="/login">Logout</Link> */}
             <a className="dropdown-item" onClick={() => {
@@ -218,7 +217,7 @@ const Header = (props) => {
 
                 // window.location.href = `${window?.location?.origin}/login`
                 // window.location.href = `${window?.location?.origin}${(user_state?.user?.role === 'client' || user_state?.user?.role === 'focalperson') ? '/client/login' : '/login'}`
-                window.history.replaceState(null, null, `${window?.location?.origin}${(user_state?.user?.role === 'client' || user_state?.user?.role === 'focalperson') ? '/client/login' : '/login'}`);
+                window.history.replaceState(null, null, `${window?.location?.origin}${superAdmin ? '/admin-login' : ((user_state?.user?.role === 'client' || user_state?.user?.role === 'focalperson') ? '/client/login' : '/login')}`);
                 // window.history.back();
                 window.location.reload();
               }, 800);
@@ -232,7 +231,10 @@ const Header = (props) => {
         <a href="javascript:void(0)" className="nav-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="fa fa-ellipsis-v" /></a>
         <div className="dropdown-menu dropdown-menu-start dropdown-menu-left">
         {/* <Link to="/profile" className="dropdown-item">My Profile</Link> */}
-        <Link to={user_state?.user?.role === 'client' ? '/client/client-profile' : user_state?.user?.role === 'focalperson' ? '/client/focal-profile' : "/profile"} onClick={() => (user_state?.user?.role === 'client' || user_state?.user?.role === 'focalperson') ? '' : sessionStorage.setItem(`employee_tab`, 'profile')} className="dropdown-item">{t('header.myProfile')}</Link>
+        {
+          !superAdmin &&  
+          <Link to={user_state?.user?.role === 'client' ? '/client/client-profile' : user_state?.user?.role === 'focalperson' ? '/client/focal-profile' : "/profile"} onClick={() => (user_state?.user?.role === 'client' || user_state?.user?.role === 'focalperson') ? '' : sessionStorage.setItem(`employee_tab`, 'profile')} className="dropdown-item">{t('header.myProfile')}</Link>
+        }
           <Link className="dropdown-item" to="/change-password">{t('header.changePassword')}</Link>
           {/* <Link className="dropdown-item" to="/login">Logout</Link> */}
           {/* <a
@@ -255,7 +257,7 @@ const Header = (props) => {
                 sessionStorage.clear();
 
                 // window.location.href = `${window?.location?.origin}${(user_state?.user?.role === 'client' || user_state?.user?.role === 'focalperson') ? '/client/login' : '/login'}`
-                window.history.replaceState(null, null, `${window?.location?.origin}${(user_state?.user?.role === 'client' || user_state?.user?.role === 'focalperson') ? '/client/login' : '/login'}`);
+                window.history.replaceState(null, null, `${window?.location?.origin}${superAdmin ? '/admin-login' : ((user_state?.user?.role === 'client' || user_state?.user?.role === 'focalperson') ? '/client/login' : '/login')}`);
                 // window.history.back();
                 window.location.reload();
               }, 800);
