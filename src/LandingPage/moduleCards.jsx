@@ -120,7 +120,7 @@ const ModuleCards = () => {
         >
           <h2 className="WorkFlow">All your HR processes in a single place</h2>
           <h5 className="WorkFlow2" style={{ marginTop: "1%" }}>
-            <label style={{ fontWeight: "400", fontSize: "medium" }}>
+            <label style={{ fontWeight: "400" }}>
               Unlock amazing possibilities with DaftarPro!
             </label>
           </h5>

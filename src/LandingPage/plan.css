@@ -4,12 +4,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@100;300;400;700;900&family=Montserrat:wght@500&display=swap');
 
 @body{
-    font-family: 'Lato', sans-serif;
+    font-family: 'Poppins', sans-serif;
 
 }
 
 h4,h5 {
-  word-spacing: -3.5px !important;
+  word-spacing: normal !important;
 }
 
 .PlanSection {
@@ -91,7 +91,7 @@ h4,h5 {
   }
   
   .plan-card ul li {
-    margin-bottom: 6%;
+    margin-bottom: 10%;
     color: #333;
   }
   
