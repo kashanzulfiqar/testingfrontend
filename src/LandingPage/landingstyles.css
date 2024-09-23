@@ -9,9 +9,7 @@
 }
 
 .top-container{
-    background: url("./assets/DaftarProBanner.svg");
-    /* height: 826px; */
-    margin-top: 87px;
+    background: url("./assets/heroSectionDeskTop.svg");
     background-repeat: no-repeat;
     background-position: bottom;
     background-size: cover;
@@ -26,6 +24,65 @@
     font-size: 46px;
     font-weight: 700;
 }
+
+.freeTrial {
+    height: auto;
+    width: 22%;
+    margin-left: 18%;
+}
+
+.ButtonAndTrial {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+@media screen and (max-width: 431px) {
+
+    .top-container{
+        background: url("./assets/heroSectionMobile.svg");
+        background-repeat: no-repeat;
+        background-position: bottom;
+        background-size: cover;
+    }
+
+    .landing-heading2 {
+      font-size: 22px !important;
+    }
+
+    .landing-header-text-container{
+        text-align: center;
+            color: #fff;
+            padding: 33px !important;
+    }
+
+    .primary-landing-button2{
+        font-family: 'Montserrat', sans-serif;
+        font-size: 15px !important;
+        font-weight: 500;
+        width: 57% !important;
+        height: auto
+    }
+    .freeTrial {
+        height: auto;
+        width: 50%;
+        margin-top: 4%;
+        margin-bottom: 4%;
+        margin-left: 0;
+    }
+    .ButtonAndTrial {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+  }
+  
+.Landing {
+    padding: 0px !important;
+}
+
 .landing-description2{
     font-family: 'Lato', sans-serif;
     font-size: 22px;
@@ -37,16 +94,10 @@
     font-weight: 500;
 }
 
-
-
-
-
-
 .landing-page{
         padding-bottom: 70px;
         overflow-x: hidden;
 }
-
 
 .landing-top-nav{
     position: fixed;
@@ -90,7 +141,7 @@
         border-radius: 32px;
             padding: 5px 15px 5px 15px;
     border: 1px solid #FFFFFF;
-    width: 108px;
+    /* width: 108px; */
     height: 38px;
     font-family: 'Open Sans';
 }
@@ -126,8 +177,99 @@
 .landing-header-text-container{
     text-align: center;
         color: #fff;
-        padding: 102px;
+        padding: 4% !important;
+        padding-top: 6% !important;
 }
+
+@media screen and (max-width: 431px) {
+    .landing-header-text-container{
+        text-align: center;
+        color: #fff;
+        padding: 4% !important;
+        padding-top: 10% !important;
+    }
+    .landing-description2{
+        font-family: 'Lato', sans-serif;
+        font-size: 12px !important;
+        font-weight: 400;
+    }
+    .FeatureSection {
+        margin-top: 7% !important;
+        padding: 4%;
+    }
+    /* .WorkFlow2 {
+        margin-top: 7% !important;
+        padding: 4%;
+    }
+    .WorkFlow {
+        margin-top: 7% !important;
+        padding: 4%;
+    } */
+}
+
+.FeatureSection {
+    margin-top: 4%;
+    padding: 4%;
+}
+
+.ModuleSection {
+    padding-right: 4%;
+    padding-left: 4%;
+}
+
+.thumbnail {
+    position: relative;
+    height: auto; /* Adjust height automatically based on image aspect ratio */
+  }
+  
+  .thumbnail img {
+    display: block;
+  }
+  
+  /* The base image (full size) */
+  .thumbnail-base {
+    width: 100%;
+    height: auto; /* Adjust height to preserve the aspect ratio */
+    z-index: 1;
+  }
+  
+  /* The second image (slightly smaller and centered on top of the base) */
+  .thumbnail-overlay {
+    position: absolute;
+    top: 50%; /* Center the second image */
+    left: 52%;
+    transform: translate(-50%, -50%); /* Center it perfectly */
+    width: 96%; /* Adjust the size of the second image */
+    height: auto; /* Preserve aspect ratio */
+    z-index: 2;
+  }
+  
+  /* The play icon (smallest and centered on top of everything) */
+  .thumbnail-play-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30%; /* Adjust size for the play icon */
+    height: auto; 
+    z-index: 3;
+    cursor: pointer; /* Shows a pointer cursor */
+    transition: transform 0.3s ease, opacity 0.3s ease; /* Smooth transition on hover */
+  }
+  
+  /* Hover effect for clickable look */
+  .thumbnail-play-icon:hover {
+    transform: translate(-50%, -50%) scale(1.1); /* Slightly increase the size on hover */
+    opacity: 0.8; /* Decrease opacity to give a feedback effect */
+  }
+  
+  /* Optionally add a slight shadow to make it feel clickable */
+  .thumbnail-play-icon:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    border-radius: 50%;
+  }
+  
+  
 .landing-heading{
         /* font-weight: 650; */
         font-size: 50px;

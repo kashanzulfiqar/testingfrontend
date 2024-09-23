@@ -1,0 +1,186 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@100;300;400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@100;300;400;700;900&family=Montserrat:wght@500&display=swap');
+
+@body{
+    font-family: 'Lato', sans-serif;
+
+}
+
+h4,h5 {
+  word-spacing: -3.5px !important;
+}
+
+.PlanSection {
+    margin-top: 4%;
+    padding-right: 4%;
+    padding-left: 4%;
+    padding-bottom: 5%;
+}
+  
+  .plan-row {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  
+  .plan-card-wrapper {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .plan-card {
+    background-color: #F5F5F5;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    width: 100%;
+  }
+  
+  .plan-card h4 {
+    color: #2B1400;
+    font-size: 18px;
+    margin-bottom: 10px;
+    font-weight: 700;
+    text-align: left;
+  }
+
+  .plan-card h5 {
+    color: #2B1400;
+    font-size: 15px;
+    margin-bottom: 10px;
+    font-weight: 700;
+    text-align: left;
+  }
+
+  @media screen and (min-width: 769px) and (max-width: 1023px) {
+    .plan-card h4 {
+        font-size: 12px;
+      }
+    
+      .plan-card h5 {
+        font-size: 10px;
+      }
+      .plan-card p {
+        font-size: x-small !important;
+      }
+  }
+
+  @media screen and (max-width: 431px) {
+    .plan-card h4 {
+        font-size: 15px;
+      }
+    
+      .plan-card h5 {
+        font-size: 13px;
+      }
+      .plan-card p {
+        font-size: small !important;
+      }
+  }
+  
+  .plan-card p {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+  }
+  
+  .plan-card ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .plan-card ul li {
+    margin-bottom: 6%;
+    color: #333;
+  }
+  
+  /* Larger middle plan */
+  .plan-card-wrapper.larger .plan-card {
+    transform: scale(1.1); /* Makes the middle card appear larger */
+  }
+  
+  .highlighted {
+    background-color: #FF9B44;
+    color: white;
+  }
+  
+  .highlighted h4,
+  .highlighted p,
+  .highlighted ul li {
+    color: white;
+  }
+  
+  .highlighted button {
+    background-color: white;
+    color: #ff914d;
+  }
+  
+
+  .check-icon1 {
+    width: 19px; /* Adjust size */
+    height: 19px; /* Adjust size */
+    border-radius: 50%; /* Makes it round */
+    background-color: white; /* White border/background */
+    padding: 4px;
+    margin-right: 5%;
+    box-shadow: 0 0 0 2px white; /* White border */
+  }
+
+  .check-icon2 {
+    width: 18px; /* Adjust size */
+    height: 18px; /* Adjust size */
+    border-radius: 50%; /* Makes it round */
+    background-color: #FF9B44; /* White border/background */
+    padding: 4px;
+    margin-right: 5%;
+    box-shadow: 0 0 0 2px #FF9B44; /* White border */
+  }
+  
+  .check-icon2::before {
+    content: '\2713'; /* Unicode checkmark */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white; /* Orange check mark */
+    font-size: 16px;
+    font-weight: bold;
+    width: 100%;
+    height: 100%;
+  }
+
+  .check-icon1::before {
+    content: '\2713'; /* Unicode checkmark */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: orange; /* Orange check mark */
+    font-size: 16px;
+    font-weight: bold;
+    width: 100%;
+    height: 100%;
+  }
+
+  @media screen and (min-width: 300px) and (max-width: 575px) {
+    .plan-card-wrapper {
+        width: 73% !important;
+      }
+  }
+
+  @media screen and (min-width: 576px) and (max-width: 800px) {
+    .plan-card-wrapper {
+        width: 50% !important;
+      }
+  }
+
+  @media screen and (min-width: 801px) and (max-width: 900px) {
+    .plan-card-wrapper {
+        width: 38% !important;
+      }
+  }
+
+  @media screen and (min-width: 900px) and (max-width: 1192px) {
+    .plan-card-wrapper {
+        width: 33% !important;
+      }
+  }

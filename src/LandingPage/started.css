@@ -1,0 +1,106 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@100;300;400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@100;300;400;700;900&family=Montserrat:wght@500&display=swap');
+
+body {
+  font-family: 'Lato', sans-serif;
+}
+
+.GetStartedSection {
+    margin-top: 5%;
+    padding-right: 4%;
+    padding-left: 4%;
+    margin-bottom: 5%;
+}
+
+p,h2 {
+    word-spacing: -3.5px !important;
+  }
+
+.GetStarted {
+  background: url(./assets/GetStarted.svg);
+  border-radius: 12px;
+  padding: 40px 20px;
+  text-align: center;
+  color: white;
+  margin: 0 auto;
+  position: relative;
+}
+
+.banner-content h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 2%;
+}
+
+@media screen and (min-width:1024px) {
+    .banner-content h2 {
+        padding-left: 25%;
+        padding-right: 25%;
+      }
+}
+
+@media screen and (max-width:431px) {
+    .GetStarted {
+        background: url(./assets/Frame\ 1171276172.svg);
+        border-radius: 12px;
+        padding: 40px 20px;
+        text-align: center;
+        color: white;
+        margin: 0 auto;
+        position: relative;
+      }
+
+      .banner-content h2 {
+        font-size: large;
+        font-weight: 400;
+        margin-bottom: 7%;
+      }
+
+      .banner-content p {
+        font-size: smaller !important;
+      }
+}
+
+
+.banner-content p {
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+  color: #FFFFFF;
+}
+
+.get-started-btn {
+  background-color: white;
+  color: #2A1400;
+  padding: 10px 25px;
+  border: none;
+  border-radius: 20px;
+  font-size: 1rem;
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* .get-started-btn:hover {
+  color: white;
+} */
+
+.GetStarted::before {
+  content: "";
+  background-image: url(./assets/GetStarted.svg);
+  background-size: cover;
+  background-position: center;
+  position: absolute;
+  border-radius: 12px;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0.1;
+  z-index: 0;
+}
+
+.banner-content {
+  position: relative;
+  z-index: 1;
+}
