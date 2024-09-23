@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./plan.css";
 import checkMark from "./assets/checkMark.svg";
+import Inventory from "./assets/Inventory Management.svg";
 import whiteCheck from "./assets/Vector 17.svg";
 
 const PlanCards = () => {
@@ -76,6 +77,7 @@ const PlanCards = () => {
             width: "88% !important",
             padding: "14px, 28px, 14px, 28px",
             color: "#FFFFFF",
+            marginTop:'3%'
           }}
         >
           Contact Us
@@ -130,6 +132,7 @@ const PlanCards = () => {
             width: "88% !important",
             padding: "14px, 28px, 14px, 28px",
             color: "#FF9B44",
+            marginTop:'3%'
           }}
         >
           Contact Us
@@ -185,6 +188,7 @@ const PlanCards = () => {
             width: "88% !important",
             padding: "14px, 28px, 14px, 28px",
             color: "#FFFFFF",
+            marginTop:'3%'
           }}
         >
           Contact Us
@@ -331,6 +335,7 @@ const PlanCards = () => {
                   width: "88%",
                   padding: "14px, 28px, 14px, 28px",
                   color: "#FFFFFF",
+            marginTop:'3%'
                 }}
               >
                 Contact Us
@@ -407,6 +412,7 @@ const PlanCards = () => {
                   width: "88%",
                   padding: "14px, 28px, 14px, 28px",
                   color: "#FF9B44",
+            marginTop:'3%'
                 }}
               >
                 Contact Us
@@ -483,6 +489,7 @@ const PlanCards = () => {
                   width: "88%",
                   padding: "14px, 28px, 14px, 28px",
                   color: "#FFFFFF",
+            marginTop:'3%'
                 }}
               >
                 Contact Us

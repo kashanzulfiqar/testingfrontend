@@ -13112,6 +13112,7 @@ padding-right: unset;
 .image-gallery-bullets .image-gallery-bullet {
   background-color: #D9D9D9;
   border-color: #D9D9D9;
+  box-shadow: none;
 }
 
 .image-gallery-bullets {

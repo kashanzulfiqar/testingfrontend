@@ -1,12 +1,18 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Lato:wght@100;300;400;700;900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Lato:wght@100;300;400;700;900&family=Montserrat:wght@500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;300;400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;300;400;700;900&family=Poppins:wght@500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap');
 
 @body{
-    font-family: 'Lato', sans-serif;
+    font-family: 'Poppins', sans-serif;
 
 }
+
+* {
+    font-family: 'Poppins', sans-serif !important;    
+    word-spacing: normal !important;
+  }
 
 .top-container{
     background: url("./assets/heroSectionDeskTop.svg");
@@ -15,14 +21,14 @@
     background-size: cover;
 }
 .topnav2{
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'Poppins', sans-serif;
     font-size: 17px;
     font-weight: 400;
 }
 .landing-heading2{
-    font-family: 'Lato', sans-serif;
+    font-family: 'Poppins', sans-serif;
     font-size: 46px;
-    font-weight: 700;
+    font-weight: 500;
 }
 
 .freeTrial {
@@ -58,7 +64,7 @@
     }
 
     .primary-landing-button2{
-        font-family: 'Montserrat', sans-serif;
+        font-family: 'Poppins', sans-serif;
         font-size: 15px !important;
         font-weight: 500;
         width: 57% !important;
@@ -84,12 +90,11 @@
 }
 
 .landing-description2{
-    font-family: 'Lato', sans-serif;
-    font-size: 22px;
+    font-family: 'Poppins', sans-serif;
     font-weight: 400;
 }
 .primary-landing-button2{
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'Poppins', sans-serif;
     font-size: 24px;
     font-weight: 500;
 }
@@ -106,7 +111,7 @@
         background: #4652b1;
         display: flex;
         justify-content: space-around;
-        font-family: 'Open Sans';
+        font-family: 'Poppins';
         z-index: 1;
         align-items: center;
 }
@@ -119,7 +124,7 @@
         font-weight: 400;
         line-height: 19px;
         margin-right: 20px;
-        font-family: 'Open Sans';
+        font-family: 'Poppins';
 
 }
 
@@ -143,7 +148,7 @@
     border: 1px solid #FFFFFF;
     /* width: 108px; */
     height: 38px;
-    font-family: 'Open Sans';
+    font-family: 'Poppins';
 }
 
 .nav-actions{
@@ -168,7 +173,7 @@
         font-weight: 400;
         letter-spacing: 0.2px;
         margin-right: 20px;
-        font-family: 'Open Sans';
+        font-family: 'Poppins';
 
         
 
@@ -181,6 +186,14 @@
         padding-top: 6% !important;
 }
 
+    .WorkFlow2 {
+        font-family: 'Poppins', sans-serif;
+    }
+    .WorkFlow {
+        font-weight: 600;
+        font-family: 'Poppins', sans-serif;
+    }
+
 @media screen and (max-width: 431px) {
     .landing-header-text-container{
         text-align: center;
@@ -189,22 +202,26 @@
         padding-top: 10% !important;
     }
     .landing-description2{
-        font-family: 'Lato', sans-serif;
+        font-family: 'Poppins', sans-serif;
         font-size: 12px !important;
         font-weight: 400;
     }
     .FeatureSection {
+        font-family: 'Poppins', sans-serif;
         margin-top: 7% !important;
         padding: 4%;
     }
-    /* .WorkFlow2 {
-        margin-top: 7% !important;
-        padding: 4%;
+    .WorkFlow2 {
+        text-align: center;
+    }
+    .WorkFlow2 label {
+        font-size: smaller !important;
+        text-align: center;
     }
     .WorkFlow {
-        margin-top: 7% !important;
-        padding: 4%;
-    } */
+        text-align: center;
+        font-size: 22px;
+    }
 }
 
 .FeatureSection {
@@ -285,7 +302,7 @@
 
 .landing-description{
         font-size: 16px;
-        font-family: 'Open Sans';
+        font-family: 'Poppins';
 
 }
 
@@ -329,7 +346,7 @@
     text-transform: capitalize;
     color: #5F5F5F;
     width: auto;
-    font-family: 'Open Sans';
+    font-family: 'Poppins';
     margin-top: 18px;
 
 }
@@ -366,7 +383,7 @@ border: none;
         letter-spacing: 0.2px;
         text-transform: capitalize;
         color: #616161;
-        font-family: 'Open Sans';
+        font-family: 'Poppins';
         width: 80%;
         margin-left: 10%;
         /* text-align: center; */
@@ -421,7 +438,7 @@ border: none;
             padding: 20px;
             border: 1px solid #D1DBE3;
             border-radius: 2px;
-            font-family: 'Open Sans';
+            font-family: 'Poppins';
             margin: 0 10%;
             border-radius: 5px;
             /* font-size: 14px; */
@@ -438,7 +455,7 @@ border: none;
         background: #0098C9;
         box-shadow: 0px 20px 40px rgb(0 0 0 / 10%);
         border-radius: 5px;
-        font-family: 'Open Sans';
+        font-family: 'Poppins';
         /* font-size: 14px; */
 }
 .pricing-card-title{
@@ -457,7 +474,7 @@ border: none;
     font-weight: 700;
     font-size: 14px;
     color: #9DAFBD;
-    font-family: 'Open Sans';
+    font-family: 'Poppins';
 }
 
 .pricing-card-secondary > .secondary-landing-button{
@@ -577,11 +594,11 @@ border: none;
 }
 .faqs-list > div > div > div:nth-child(1) > span {
     font-size: 16px;
-    font-family: 'Open Sans';
+    font-family: 'Poppins';
 }
 .faqs-list > div > div > div:nth-child(2) > div > p {
     font-size: 14px;
-    font-family: 'Open Sans';
+    font-family: 'Poppins';
     color: #757575;
     box-shadow: inset 2px 0px 0px #3563E9;
 }
@@ -627,7 +644,7 @@ border: none;
         line-height: 24px;
         letter-spacing: 0.2px;
         text-transform: capitalize;
-        font-family: 'Open Sans';
+        font-family: 'Poppins';
 }
 
 .whats-going-container-description{
@@ -692,7 +709,7 @@ border: none;
     text-decoration: none;
     font-weight: 400;
     font-size: 14px;
-    font-family: 'Open Sans';
+    font-family: 'Poppins';
     margin-bottom: 14px;
 }
 .footer-bottom{

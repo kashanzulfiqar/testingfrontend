@@ -1,9 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@100;300;400;700;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@100;300;400;700;900&family=Montserrat:wght@500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap');
 
 body {
-  font-family: 'Lato', sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 
 .GetStartedSection {
@@ -14,7 +15,7 @@ body {
 }
 
 p,h2 {
-    word-spacing: -3.5px !important;
+    word-spacing: -3.5px ;
   }
 
 .GetStarted {
@@ -29,7 +30,7 @@ p,h2 {
 
 .banner-content h2 {
   font-size: 1.8rem;
-  font-weight: 700;
+  font-weight: 600;
   margin-bottom: 2%;
 }
 

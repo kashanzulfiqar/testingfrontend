@@ -21,6 +21,7 @@ import Features from "./features";
 import ModuleCards from "./moduleCards";
 import PlanCards from "./planCards";
 import GetStarted from "./getStarted";
+import BottomPortion from "./bottomPortion";
 
 const LandingPage = () => {
   const nav = useNavigate();
@@ -165,6 +166,8 @@ const LandingPage = () => {
             <PlanCards />
 
             <GetStarted />
+
+            <BottomPortion />
 
           </div>
         </div>

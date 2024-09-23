@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./landingstyles.css";
 import hrIcon from "./assets/icon HR.svg";
+import Inventory from "./assets/Inventory Management.svg";
 import project from "./assets/project.svg";
 import client from "./assets/client.svg";
 import finance from "./assets/finance.svg";
@@ -17,7 +18,7 @@ const Features = () => {
           className="col-sm-6 col-lg-6 col-xl-8 m-b-20"
           style={{ marginTop: "3%" }}
         >
-          <h2 className="WorkFlow">Watch Our Real-Time Work Flow</h2>
+          <h2 className="WorkFlow" style={{ fontWeight: "600" }}>Watch our real-time work flow</h2>
           <h5 className="WorkFlow2" style={{ marginTop: "2%" }}>
             <label style={{ fontWeight: "400", fontSize: "medium" }}>
               Manage a wealth of people data securely in one place
@@ -68,7 +69,7 @@ const Features = () => {
             </div>
             <div className="btn add-btn  landingBubble">
               <img
-                src={hrIcon} // Replace with the correct path to your image
+                src={Inventory} // Replace with the correct path to your image
                 alt="Icon"
                 style={{ width: "20px", marginRight: "8px" }} // Adjust size and spacing as needed
               />

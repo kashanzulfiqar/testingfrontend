@@ -1,0 +1,128 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@100;300;400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@100;300;400;700;900&family=Montserrat:wght@500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+body {
+  font-family: 'Poppins', sans-serif;
+}
+
+.BottomSection {
+    margin-top: 4%;
+    padding-right: 4%;
+    padding-left: 4%;
+    margin-bottom: 1%;
+}
+
+.bottomRow {
+display: flex;
+flex-direction: row;
+justify-content: flex-end;
+column-gap: 4%;
+row-gap: 23px;
+  }
+
+  @media screen and (max-width: 1000px) {
+    .bottomRow {
+    justify-content: flex-start;
+    }
+  }
+
+  @media screen and (max-width: 431px) {
+
+    .emailButton {
+        font-size: smaller;
+    }
+
+    .BottomSection {
+        margin-top: 13%;
+    }
+
+    .feature {
+        width: 47% !important;
+    }
+    .information {
+        width: 47% !important;
+    }
+    .company {
+        width: 38% !important;
+    }
+    .emailbar {
+        width: 58% !important;
+    }
+
+    .bottomRow h4 {
+        font-size: 19px;
+      }
+    
+    .bottomRow p {
+        font-size: smaller !important;
+      }
+
+      .bottomRow ul li {
+        font-size: smaller !important;
+      }
+  }
+
+  @media screen and (max-width: 400px) {
+    .BottomSection {
+        margin-top: 13%;
+    }
+
+    .bottomRow h4 {
+        font-size: 14px;
+      }
+    
+    .bottomRow p {
+        font-size: x-small !important;
+      }
+
+      .bottomRow ul li {
+        font-size: x-small !important;
+      }
+
+      .emailButton {
+        font-size: x-small;
+    }
+  }
+
+  @media screen and (min-width: 431px) and (max-width: 768px) {
+    .feature {
+        width: 47% !important;
+    }
+    .information {
+        width: 47% !important;
+    }
+    .company {
+        width: 38% !important;
+    }
+    .emailbar {
+        width: 58% !important;
+    }
+  }
+
+  @media screen and (min-width: 800px) and (max-width: 992px) {
+    .bottomRow {
+        justify-content: center;
+        }
+  }
+
+.bottomRow h4 {
+    color: #2B1400;
+  }
+
+.bottomRow p {
+    margin-top: 3% !important;
+    color: #000000;
+    font-size: medium;
+  }
+
+.bottomRow ul {
+    margin-top: 11%;
+  }
+
+.bottomRow ul li {
+    margin-bottom: 7%;
+    color: #464646 !important;
+    font-size: medium;
+  }
