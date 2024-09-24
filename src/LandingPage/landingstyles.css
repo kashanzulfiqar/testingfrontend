@@ -9,10 +9,14 @@
 
 }
 
-* {
-    font-family: 'Poppins', sans-serif !important;    
+.my-scope {
+    font-family: 'Poppins', sans-serif;
+}
+
+.my-scope * {
+    font-family: 'Poppins', sans-serif !important;
     word-spacing: normal !important;
-  }
+}
 
 .top-container{
     background: url("./assets/heroSectionDeskTop.svg");
