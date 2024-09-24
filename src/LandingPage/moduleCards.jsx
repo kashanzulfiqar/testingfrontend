@@ -10,65 +10,76 @@ import Inventory from "./assets/Inventory Management.svg";
 import { LeftCircleFilled, RightCircleFilled } from "@ant-design/icons";
 
 const ModuleCards = () => {
-  const [currentIndex, setCurrentIndex] = useState(0); 
-  const [cardsToShow, setCardsToShow] = useState(3); 
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [cardsToShow, setCardsToShow] = useState(3);
 
   useEffect(() => {
     const updateCardsToShow = () => {
       if (window.innerWidth <= 575) {
-        setCardsToShow(1); 
-      } 
-      else if (window.innerWidth >= 576 && window.innerWidth <= 1199) {
-        setCardsToShow(2); 
-      } 
-      else {
-        setCardsToShow(3); 
+        setCardsToShow(1);
+      } else if (window.innerWidth >= 576 && window.innerWidth <= 1199) {
+        setCardsToShow(2);
+      } else {
+        setCardsToShow(3);
       }
     };
 
     window.addEventListener("resize", updateCardsToShow);
-    updateCardsToShow(); 
+    updateCardsToShow();
 
     return () => {
-      window.removeEventListener("resize", updateCardsToShow); 
+      window.removeEventListener("resize", updateCardsToShow);
     };
   }, []);
   const modules = [
     {
       title: "HR Operations",
       icon: hrIcon,
-      features: ["Attendance", "Employee Management", "Leave Request", "Shift Management", "Analytics"]
-    },
-    {
-      title: "Client Management",
-      icon: client,
-      features: ["Client Profiles", "Client Communication", "Billing", "Contracts", "Analytics"]
+      features: [
+        "Attendance",
+        "Employee Management",
+        "Leave Request",
+        "Shift Management",
+        " ",
+      ],
     },
     {
       title: "Finance Management",
       icon: finance,
-      features: ["Payroll", "Invoices", "Expenes", "Profit & Loss",]
+      features: ["Payroll", "Invoices", "Expenes", "Profit & Loss", " "],
     },
     {
       title: "Leads Management",
       icon: leads,
-      features: ["Leads Listing & Tracking", "Project Proposals", "Project Quotation", "Account Management", "Analytics"]
+      features: [
+        "Leads Listing & Tracking",
+        "Project Proposals",
+        "Project Quotation",
+        "Account Management",
+        "Analytics",
+      ],
     },
     {
       title: "Project Management",
       icon: project,
-      features: ["Project Listing", "Task Boards", "Expenses", ]
+      features: ["Project Listing", "Task Boards", "Expenses", " ", " "],
     },
     {
       title: "Inventory Management",
       icon: Inventory,
-      features: ["Asset Records", "Equipment Allocation", "Expenses", "Profit & Loss",]
-    }
+      features: [
+        "Asset Records",
+        "Equipment Allocation",
+        "Expenses",
+        "Profit & Loss",
+        " ",
+      ],
+    },
   ];
 
   const handleNext = () => {
     // Check if we can move forward (e.g., if the current index + 3 is within the modules array)
-    if (currentIndex + 3 < modules.length) {
+    if (currentIndex + cardsToShow  < modules.length) {
       setCurrentIndex(currentIndex + 1);
     }
   };
@@ -82,30 +93,46 @@ const ModuleCards = () => {
 
   const renderModules = () => {
     // Only render 3 modules based on the current index
-    return modules.slice(currentIndex, currentIndex + cardsToShow).map((module, index) => (
-      <div className="col-sm-4 col-lg-4 col-xl-3 m-b-20" style={window.innerWidth <= 575 ? {width:'72%'} : {}} key={index}>
-        <div className="module-card">
-          <div className="icon-container">
-            <img
-              src={module.icon}
-              alt={`${module.title} Icon`}
-              className="module-icon"
-            />
+    return modules
+      .slice(currentIndex, currentIndex + cardsToShow)
+      .map((module, index) => (
+        <div
+          className="col-sm-4 col-lg-4 col-xl-3 m-b-20"
+          style={window.innerWidth <= 575 ? { width: "72%" } : {}}
+          key={index}
+        >
+          <div className="module-card">
+            <div className="icon-container">
+              <img
+                src={module.icon}
+                alt={`${module.title} Icon`}
+                className="module-icon"
+              />
+            </div>
+            <h3 className="module-title">
+              <span>{module.title}</span>
+            </h3>
+            <ul className="module-list">
+              {module.features.map((feature, idx) => (
+                <li key={idx}>
+                  {feature?.trim() ? (
+                    <>
+                      <img
+                        src={checkMark}
+                        alt="Check Mark"
+                        className="check-icon"
+                      />
+                      <span>{feature}</span>
+                    </>
+                  ) : (
+                    <span>&nbsp;</span> // Render an empty space to occupy the li element
+                  )}
+                </li>
+              ))}
+            </ul>
           </div>
-          <h3 className="module-title">
-            <span>{module.title}</span>
-          </h3>
-          <ul className="module-list">
-            {module.features.map((feature, idx) => (
-              <li key={idx}>
-                <img src={checkMark} alt="Check Mark" className="check-icon" />
-                <span>{feature}</span>
-              </li>
-            ))}
-          </ul>
         </div>
-      </div>
-    ));
+      ));
   };
 
   return (
@@ -129,14 +156,22 @@ const ModuleCards = () => {
       </div>
 
       <div className="row ModuleSlider">
-      <button className="custom-arrow-btn" onClick={handlePrev} disabled={currentIndex === 0}>
-        <span className="arrow left-arrow"></span>
-      </button>
-      {renderModules()}
-      <button className="custom-arrow-btn" onClick={handleNext} disabled={currentIndex + cardsToShow >= modules.length}>
-        <span className="arrow right-arrow"></span>
-      </button>
-    </div>
+        <button
+          className="custom-arrow-btn"
+          onClick={handlePrev}
+          disabled={currentIndex === 0}
+        >
+          <span className="arrow left-arrow"></span>
+        </button>
+        {renderModules()}
+        <button
+          className="custom-arrow-btn"
+          onClick={handleNext}
+          disabled={currentIndex + cardsToShow >= modules.length}
+        >
+          <span className="arrow right-arrow"></span>
+        </button>
+      </div>
     </div>
   );
 };
