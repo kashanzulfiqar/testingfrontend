@@ -6,6 +6,7 @@ import client from "./assets/client.svg";
 import finance from "./assets/finance.svg";
 import project from "./assets/project.svg";
 import leads from "./assets/leads.svg";
+import Inventory from "./assets/Inventory Management.svg";
 import { LeftCircleFilled, RightCircleFilled } from "@ant-design/icons";
 
 const ModuleCards = () => {
@@ -49,19 +50,19 @@ const ModuleCards = () => {
       features: ["Payroll", "Invoices", "Expenes", "Profit & Loss",]
     },
     {
-      title: "Leads",
+      title: "Leads Management",
       icon: leads,
-      features: ["Lead Tracking", "Sales Pipeline", "Lead Scoring", "Reports", "Analytics"]
+      features: ["Leads Listing & Tracking", "Project Proposals", "Project Quotation", "Account Management", "Analytics"]
     },
     {
       title: "Project Management",
       icon: project,
-      features: ["Project Listing", "Task Board", "Performance Metrics", "Custom Reports", "Data Visualization"]
+      features: ["Project Listing", "Task Boards", "Expenses", ]
     },
     {
-      title: "Analytics",
-      icon: hrIcon,
-      features: ["Dashboard", "Data Export", "Performance Metrics", "Custom Reports", "Data Visualization"]
+      title: "Inventory Management",
+      icon: Inventory,
+      features: ["Asset Records", "Equipment Allocation", "Expenses", "Profit & Loss",]
     }
   ];
 

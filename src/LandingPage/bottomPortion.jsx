@@ -4,9 +4,9 @@ import { Button, Input } from "antd";
 import { RightOutlined } from "@ant-design/icons";
 import DPIcon from "./assets/Icon (4).svg";
 import DaftarPro from "./assets/DaftarPro.svg";
-import Facebook from './assets/Facebook.svg';
-import LinkedIn from './assets/LinkedIn.svg';
-import Instagram from './assets/Instagram.svg';
+import Facebook from "./assets/Facebook.svg";
+import LinkedIn from "./assets/LinkedIn.svg";
+import Instagram from "./assets/Instagram.svg";
 
 const BottomPortion = () => {
   const [viewChange, setViewChange] = useState(false);
@@ -172,87 +172,87 @@ const BottomPortion = () => {
                 flexDirection: "row",
                 justifyContent: "flex-end",
                 width: "41%",
-                columnGap:'3%'
+                columnGap: "3%",
               }}
             >
-            <a
-              style={{
-                width: "35px",
-                height: "35px",
-                flexShrink: 0,
-                strokeWidth: "1.5px",
-                stroke: "#1B1B1B",
-                borderRadius:'50%',
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-              href='https://www.facebook.com/'
-            >
-              <img
-                src={LinkedIn}
-                alt="Description of the image"
+              <a
                 style={{
-                //   width: "20px",
-                //   height: "20px",
+                  width: "35px",
+                  height: "35px",
                   flexShrink: 0,
+                  strokeWidth: "1.5px",
+                  stroke: "#1B1B1B",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
-              />
-            </a>
-            <a
-              style={{
-                width: "35px",
-                height: "35px",
-                flexShrink: 0,
-                strokeWidth: "1.5px",
-                stroke: "#1B1B1B",
-                borderRadius:'50%',
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-              href='https://www.facebook.com/'
-            >
-              <img
-                src={Facebook}
-                alt="Description of the image"
-                // style={{
-                //   width: "20px",
-                //   height: "20px",
-                //   flexShrink: 0,
-                // }}
-              />
-            </a>
-            <a
-              style={{
-                width: "35px",
-                height: "35px",
-                flexShrink: 0,
-                strokeWidth: "1.5px",
-                stroke: "#1B1B1B",
-                borderRadius:'50%',
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-              href='https://www.instagram.com/'
-            >
-              <img
-                src={Instagram}
-                alt="Description of the image"
+                href="https://www.facebook.com/"
+              >
+                <img
+                  src={LinkedIn}
+                  alt="LinkedIn"
+                  style={{
+                    //   width: "20px",
+                    //   height: "20px",
+                    flexShrink: 0,
+                  }}
+                />
+              </a>
+              <a
                 style={{
-                //   width: "20px",
-                //   height: "20px",
+                  width: "35px",
+                  height: "35px",
                   flexShrink: 0,
+                  strokeWidth: "1.5px",
+                  stroke: "#1B1B1B",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
-              />
-            </a>
+                href="https://www.facebook.com/"
+              >
+                <img
+                  src={Facebook}
+                  alt="Facebook"
+                  // style={{
+                  //   width: "20px",
+                  //   height: "20px",
+                  //   flexShrink: 0,
+                  // }}
+                />
+              </a>
+              <a
+                style={{
+                  width: "35px",
+                  height: "35px",
+                  flexShrink: 0,
+                  strokeWidth: "1.5px",
+                  stroke: "#1B1B1B",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+                href="https://www.instagram.com/"
+              >
+                <img
+                  src={Instagram}
+                  alt="Instagram"
+                  style={{
+                    //   width: "20px",
+                    //   height: "20px",
+                    flexShrink: 0,
+                  }}
+                />
+              </a>
             </div>
           </div>
         ) : (
           <div className="row">
             <div className="col-sm-12 col-md-4">
-              <div style={{ display: "flex", alignItems: "center" }}>
+              <a href='https://www.daftarpro.com/' style={{ display: "flex", alignItems: "center" }}>
                 <img
                   src={DPIcon}
                   alt="DaftarPro Logo"
@@ -263,7 +263,7 @@ const BottomPortion = () => {
                   alt="DaftarPro Logo"
                   style={{ width: "30%", marginLeft: "1%" }}
                 />
-              </div>
+              </a>
             </div>
 
             <div className="col-sm-12 col-md-4">
@@ -271,7 +271,19 @@ const BottomPortion = () => {
                 DaftarPro 2023 All Rights Reserved
               </p>
               <p style={{ color: "#727272" }}>
-                Powered by <strong>DEVGATE</strong>
+                Powered by{" "}
+                <a
+                  href="https://www.devgate.ca/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: "#727272",
+                    textDecoration: "none",
+                    fontWeight: "bold",
+                  }}
+                >
+                  DEVGATE
+                </a>
               </p>
             </div>
 
@@ -281,81 +293,81 @@ const BottomPortion = () => {
                 display: "flex",
                 flexDirection: "row",
                 justifyContent: "flex-end",
-                columnGap:'3%'
+                columnGap: "3%",
               }}
             >
-            <a
-              style={{
-                width: "35px",
-                height: "35px",
-                flexShrink: 0,
-                strokeWidth: "1.5px",
-                stroke: "#1B1B1B",
-                borderRadius:'50%',
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-              href='https://www.facebook.com/'
-            >
-              <img
-                src={LinkedIn}
-                alt="Description of the image"
+              <a
                 style={{
-                //   width: "20px",
-                //   height: "20px",
+                  width: "35px",
+                  height: "35px",
                   flexShrink: 0,
+                  strokeWidth: "1.5px",
+                  stroke: "#1B1B1B",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
-              />
-            </a>
-            <a
-              style={{
-                width: "35px",
-                height: "35px",
-                flexShrink: 0,
-                strokeWidth: "1.5px",
-                stroke: "#1B1B1B",
-                borderRadius:'50%',
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-              href='https://www.facebook.com/'
-            >
-              <img
-                src={Facebook}
-                alt="Description of the image"
-                // style={{
-                //   width: "20px",
-                //   height: "20px",
-                //   flexShrink: 0,
-                // }}
-              />
-            </a>
-            <a
-              style={{
-                width: "35px",
-                height: "35px",
-                flexShrink: 0,
-                strokeWidth: "1.5px",
-                stroke: "#1B1B1B",
-                borderRadius:'50%',
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-              href='https://www.instagram.com/'
-            >
-              <img
-                src={Instagram}
-                alt="Description of the image"
+                href="https://www.linkedin.com/company/daftarpro/"
+              >
+                <img
+                  src={LinkedIn}
+                  alt="LinkedIn"
+                  style={{
+                    //   width: "20px",
+                    //   height: "20px",
+                    flexShrink: 0,
+                  }}
+                />
+              </a>
+              <a
                 style={{
-                //   width: "20px",
-                //   height: "20px",
+                  width: "35px",
+                  height: "35px",
                   flexShrink: 0,
+                  strokeWidth: "1.5px",
+                  stroke: "#1B1B1B",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
-              />
-            </a>
+                href="https://www.facebook.com/profile.php?id=61565481458730&mibextid=ZbWKwL"
+              >
+                <img
+                  src={Facebook}
+                  alt="Facebook"
+                  // style={{
+                  //   width: "20px",
+                  //   height: "20px",
+                  //   flexShrink: 0,
+                  // }}
+                />
+              </a>
+              <a
+                style={{
+                  width: "35px",
+                  height: "35px",
+                  flexShrink: 0,
+                  strokeWidth: "1.5px",
+                  stroke: "#1B1B1B",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+                href="https://www.instagram.com/daftarpro?igsh=OXZmZmE5N3NidXJy"
+              >
+                <img
+                  src={Instagram}
+                  alt="Instagram"
+                  style={{
+                    //   width: "20px",
+                    //   height: "20px",
+                    flexShrink: 0,
+                  }}
+                />
+              </a>
             </div>
           </div>
         )}

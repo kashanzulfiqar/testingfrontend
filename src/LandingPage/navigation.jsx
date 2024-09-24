@@ -92,7 +92,7 @@ const NavigationBar = (props) => {
 
         {!viewChange && (
           <li className="nav-item landingItem">
-            <a href="#" className="nav-link LandingLink">
+            <a href="javascript:void(0)" className="nav-link LandingLink">
               Live Demo
             </a>
           </li>
@@ -188,7 +188,8 @@ const NavigationBar = (props) => {
             </Link>
           </li>
           <li className="drawer-item">
-            <a href="#" onClick={onClose}>
+            <a 
+              href="javascript:void(0)" onClick={onClose}>
               Live Demo
             </a>
           </li>
