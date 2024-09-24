@@ -2015,6 +2015,13 @@ input[type=file].form-control {
     width: 100%;
   }
 }
+@media (max-width: 991px) {
+  .header .LandingHeaderLeft {
+    position: absolute;
+    width: unset !important;
+  padding: 0 !important;
+  }
+}
 @media (min-width: 991px) {
   .header #toggle_btn {
     color: #999;
@@ -13146,4 +13153,46 @@ padding-right: unset;
   flex-direction: row;
   align-items: center;
   cursor: auto;
+}
+
+.LandingLink {
+  font-family: 'Poppins', sans-serif !important;
+  padding: 10px 15px;
+  color: white;
+}
+
+.login-button {
+  border: 1px solid white;
+  padding: 8px 16px;
+  border-radius: 20px;
+}
+
+.register-button {
+  background-color: white;
+  color: #FF8500;
+  padding: 8px 16px;
+  border-radius: 20px;
+  margin-left: 10px;
+}
+
+ul.nav.landingNav {
+  list-style-type: none;
+  display: flex;
+  align-items: center;
+}
+
+ul.nav.landingNav li.nav-item {
+  margin-left: 16px;
+}
+
+/* @media screen and (max-width: 880px) {
+  .landingItem {
+    margin-top: 7%;
+  }
+} */
+
+@media screen and (max-width: 431px) {
+  .topnav2 {
+    padding: 1px 18px !important;
+  }
 }

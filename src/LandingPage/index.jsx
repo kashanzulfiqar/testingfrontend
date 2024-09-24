@@ -104,11 +104,14 @@ const LandingPage = () => {
   };
 
   return (
-    <div>
+    <div className="my-scope">
       <NavigationBar />
       <div className="main-wrapper">
         <div className="page-wrapper landingClass">
-          <div className="content container-fluid Landing" style={{backgroundColor:'white'}}>
+          <div
+            className="content container-fluid Landing"
+            style={{ backgroundColor: "white" }}
+          >
             <div className="top-container">
               <Element name="home" className="landing-header-text-container">
                 <p className="landing-heading2">
@@ -159,16 +162,19 @@ const LandingPage = () => {
               />
             </div>
 
-            <Features />
+            <Element name="features">
+              <Features />
+            </Element>
 
             <ModuleCards />
 
-            <PlanCards />
+            <Element name="pricing">
+              <PlanCards />
+            </Element>
 
             <GetStarted />
 
             <BottomPortion />
-
           </div>
         </div>
       </div>

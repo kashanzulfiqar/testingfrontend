@@ -1,0 +1,70 @@
+/* General Drawer Styling */
+.drawer-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .drawer-item {
+    padding: 20px;
+    font-size: 16px;
+    color: #333;
+    text-align: left;
+    border-bottom: 1px solid #E5E5E5;
+  }
+  
+  .drawer-item a,
+  .drawer-item button {
+    color: #333;
+    text-decoration: none;
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    display: block;
+    width: 100%;
+  }
+  
+  .drawer-item.register {
+    padding: 20px 0;
+    margin-top: 20px;
+    border-bottom: none;
+  }
+  
+  .drawer-register-btn {
+    padding: 10px 0;
+    border-radius: 31px;
+    border: 2px solid #FF9B44;
+    background-color: #FF9B44;
+    color: white;
+    width: 100%;
+    text-align: center;
+  }
+  
+  .drawer-register-btn:hover {
+    background-color: #E0883C;
+  }
+  
+  /* Menu Icon Style */
+  .menu-icon {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 20px;
+    cursor: pointer;
+  }
+  
+  /* Adjust spacing for individual items */
+  .drawer-item:first-child {
+    padding-top: 20px;
+  }
+  
+  .drawer-item:last-child {
+    border-bottom: none;
+  }
+  
+  /* Close icon for the drawer */
+  .ant-drawer-close {
+    padding-right: 15px;
+  }
+  
