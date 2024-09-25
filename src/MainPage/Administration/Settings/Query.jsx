@@ -37,7 +37,7 @@ const Query = () => {
     setLoader(true);
     //values['captcha'] = captchaToken;
     // Handle form submission
-    apiServices("POST", "send-query", values, user_state)
+    apiServices("POST", "queries/send-query", values, user_state)
         .then((res) => {
           if (res?.data?.success === true) {
 

@@ -98,7 +98,7 @@ const Features = () => {
               className="thumbnail-overlay" // The second smaller overlay
             />
             <a
-              href="https://www.youtube.com/watch?v=8LGn2Car9IQ"
+              href="https://www.youtube.com/watch?v=dDTmpuBoJ5Y"
               target="_blank"
               rel="noopener noreferrer"
             >

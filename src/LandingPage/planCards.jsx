@@ -3,8 +3,10 @@ import "./plan.css";
 import checkMark from "./assets/checkMark.svg";
 import Inventory from "./assets/Inventory Management.svg";
 import whiteCheck from "./assets/Vector 17.svg";
+import { useNavigate } from "react-router-dom";
 
 const PlanCards = () => {
+  const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [cardsToShow, setCardsToShow] = useState(3);
   const [viewChange, setViewChange] = useState(false);
@@ -25,6 +27,10 @@ const PlanCards = () => {
       window.removeEventListener("resize", updateCardsToShow);
     };
   }, []);
+
+  const handleClick = () => {
+    navigate("/contact-us"); 
+  };
 
   const planArray = [
     <div key="1" className="col-sm-3 col-lg-3 col-xl-3 plan-card-wrapper">
@@ -66,7 +72,7 @@ const PlanCards = () => {
           </li>
         </ul>
         <button
-          onClick={() => {}}
+          onClick={handleClick}
           className="primary-landing-button primary-landing-button2 mb-2"
           style={{
             backgroundColor: "#FF9B44",
@@ -122,7 +128,7 @@ const PlanCards = () => {
           </li>
         </ul>
         <button
-          onClick={() => {}}
+           onClick={handleClick}
           className="primary-landing-button primary-landing-button2 mb-2"
           style={{
             fontFamily: "Montserrat",
@@ -177,7 +183,7 @@ const PlanCards = () => {
           </li>
         </ul>
         <button
-          onClick={() => {}}
+           onClick={handleClick}
           className="primary-landing-button primary-landing-button2 mb-2"
           style={{
             backgroundColor: "#FF9B44",
@@ -324,7 +330,7 @@ const PlanCards = () => {
                 </li>
               </ul>
               <button
-                onClick={() => {}}
+                 onClick={handleClick}
                 className="primary-landing-button primary-landing-button2 mb-2"
                 style={{
                   backgroundColor: "#FF9B44",
@@ -402,7 +408,7 @@ const PlanCards = () => {
                 </li>
               </ul>
               <button
-                onClick={() => {}}
+                 onClick={handleClick}
                 className="primary-landing-button primary-landing-button2 mb-2"
                 style={{
                   fontFamily: "Montserrat",
@@ -478,7 +484,7 @@ const PlanCards = () => {
                 </li>
               </ul>
               <button
-                onClick={() => {}}
+                 onClick={handleClick}
                 className="primary-landing-button primary-landing-button2 mb-2"
                 style={{
                   backgroundColor: "#FF9B44",
