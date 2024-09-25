@@ -45,6 +45,13 @@ const Registrationpage = (props) => {
   const [allCurrencies, setAllCurrencies] = useState([]);
 
   useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, []);
+  
+  useEffect(() => {
     getAllCurrencies();
   }, [])
 

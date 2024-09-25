@@ -8,10 +8,10 @@ import im1 from "./assets/im1.png";
 import im2 from "./assets/im2.png";
 import im3 from "./assets/im3.png";
 import im4 from "./assets/im4.png";
-import { Link, Element } from "react-scroll";
+import { Link, Element, scroller } from "react-scroll";
 import { RightOutlined } from "@ant-design/icons";
 import { Carousel, Modal } from "antd";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import ImageGallery from "react-image-gallery";
 import "react-image-gallery/styles/css/image-gallery.css";
 import { useSelector } from "react-redux";
@@ -28,6 +28,38 @@ const LandingPage = () => {
 
   const isLogin = useSelector((state) => state.user.loginvalue);
   const role = isLogin?.user?.role;
+  const location = useLocation();
+
+  useEffect(() => {
+    console.log(location.state)
+    if (!location.state) {
+      return; // If there's no state, do nothing
+    }
+
+    if (location.state?.scrollToHome) {
+      console.log("In homes")
+      // Scroll to Contact Us section when navigation state is set
+      scroller.scrollTo("home", {
+        //smooth: true,
+        duration: 500,
+      });
+    }
+    else if (location.state?.scrollToFeatures) {
+      // Scroll to Contact Us section when navigation state is set
+      scroller.scrollTo("features", {
+        //smooth: true,
+        duration: 500,
+      });
+    }
+    else if (location.state?.scrollToPricing) {
+      // Scroll to Contact Us section when navigation state is set
+      scroller.scrollTo("pricing", {
+        //smooth: true,
+        duration: 500,
+      });
+    }
+
+  }, [location]);
 
   const images = [
     {
@@ -115,13 +147,11 @@ const LandingPage = () => {
             <div className="top-container">
               <Element name="home" className="landing-header-text-container">
                 <p className="landing-heading2">
-                  Deliver Exceptional Employee Experiences
+                  Your All-in-One Business Management Platform
                 </p>
                 <p className="landing-description2 mt-2">
-                  Experience seamless employee management with DaftarPro, our
-                  advanced HRMS software. <br />
-                  Elevate your HR processes with the expertise of HR
-                  professionals{" "}
+                Manage your entire business in one place! <br />
+                Streamline projects, HR, finances, and more with DaftarPro - the ultimate solution for businesses of all sizes.{" "}
                 </p>
                 <div className="ButtonAndTrial">
                   <button
