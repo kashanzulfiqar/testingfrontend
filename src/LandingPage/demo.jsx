@@ -60,7 +60,7 @@ const Demo = () => {
           >
             <div className="cards-page">
               <div className="card-head">
-                <h2 className="page-title">Live Demo</h2>
+                <h2 className="demo-title">Live Demo</h2>
                 <h5 className="page-description" style={{ marginTop: "1%" }}>
                   <label>
                     Unlock the power of our live demo and discover how DafterPro
