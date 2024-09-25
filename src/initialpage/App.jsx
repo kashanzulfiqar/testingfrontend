@@ -71,6 +71,8 @@ import GitBook from '../MainPage/Administration/Settings/GitBook';
 import Query from '../MainPage/Administration/Settings/Query';
 import AdminLogin from './AdminLogin';
 import SuperAdminMain from '../MainPage/Main/Dashboard/superadminMain';
+import ContactUs from '../LandingPage/contactForm';
+import Demo from '../LandingPage/demo';
 
 
 const App = () => {
@@ -123,6 +125,8 @@ const App = () => {
     <div>
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/contact-us" element={<ContactUs />} />
+        <Route path="/live-demo" element={<Demo />} />
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/client/login" element={<ClientLogin />} />

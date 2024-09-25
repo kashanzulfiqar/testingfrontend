@@ -1,0 +1,105 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@100;300;400;700;900&display=swap');
+
+body {
+    font-family: 'Lato', sans-serif;
+}
+
+.cards-page {
+    text-align: center;
+    padding-top: 6%;
+}
+
+.card-head{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.page-title {
+    font-weight: 600 !important;
+    line-height: 40px;
+    font-size: 30px !important;
+    margin-bottom: 10px !important;
+}
+
+.page-description {
+    color: #828282;
+    font-size: 18px;
+    line-height: 1.6;
+    font-weight: 400;
+    margin-bottom: 20px;
+    max-width: 50%;
+}
+
+.card-slider {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 5%;
+    padding-top: 30px;
+    padding-bottom: 30px;
+}
+
+.demo-card {
+    border: 1px solid #e5e7f2 !important;
+    border-radius: 2%;
+    padding: 20px 30px;
+    text-align: center;
+    transition: transform 0.3s ease;
+    height: 100% !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+  
+.demo-card:hover {
+    transform: translateY(-5px); /* Small lift effect on hover */
+  }
+
+.icon {
+    width: 50px;
+    height: 30px;
+    margin: 10px 0px 30px;
+}
+
+.card-title {
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 25px;
+}
+
+.card-credentials{
+    margin-top: 15px;
+}
+.username, .password {
+    font-size: 14px;
+    margin: 5px;
+}
+
+.click-here {
+    background-color: transparent;
+    color: #ff9b44;
+    border: none;
+    margin-top: 20px;
+    padding: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.click-here:hover {
+    color: black;
+}
+
+@media (max-width: 640px) {
+    .card-slider{
+        flex-direction: column;
+        align-items: center;
+    }
+    .page-description{
+        font-size: 14px;
+        max-width: 70%;
+    }
+}

@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from "react";
 import "./BottomSection.css";
-import { Button, Input } from "antd";
-import { RightOutlined } from "@ant-design/icons";
+import { Button, Input, message, Spin } from "antd";
+import { LoadingOutlined, RightOutlined } from "@ant-design/icons";
 import DPIcon from "./assets/Icon (4).svg";
 import DaftarPro from "./assets/DaftarPro.svg";
 import Facebook from "./assets/Facebook.svg";
 import LinkedIn from "./assets/LinkedIn.svg";
 import Instagram from "./assets/Instagram.svg";
+import { apiServices } from "../Services/apiServices";
 
 const BottomPortion = () => {
   const [viewChange, setViewChange] = useState(false);
+  const [email, setEmail] = useState("");
+  const [loader, setLoader] = useState(false);
 
   useEffect(() => {
     const updateCardsToShow = () => {
@@ -27,6 +30,61 @@ const BottomPortion = () => {
       window.removeEventListener("resize", updateCardsToShow);
     };
   }, []);
+
+  const isValidEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
+  const handleEmailSubmit = () => {
+    if (email) {
+      setLoader(true);
+      if (!isValidEmail(email)){
+        message.error('Invalid email address');
+        setLoader(false);
+        return
+      }
+      let data = {
+        email : email
+      }
+      apiServices("POST", "queries/subscribe-letter", data, null)
+      .then((res) => {
+        if (res?.data?.success === true) {
+          //setCaptchaToken(null);
+          //captchaRef.current.reset();
+          setEmail("");    
+          setLoader(false);
+          message.success("You have subscribed to our news letter");
+        }
+      })
+      .catch((err) => {
+        setLoader(false);
+        // console.log(err);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Error subscribing to news letter"
+          }!`
+        );
+        setLoader(false);
+      });
+    } else {
+      message.error("Please enter an email address.");
+    }
+  };
+
+  const antIcon = (
+    <LoadingOutlined
+      style={{
+        fontSize: 24,
+        color: "#fff",
+      }}
+      spin
+    />
+  );
 
   return (
     <div className="BottomSection">
@@ -80,6 +138,8 @@ const BottomPortion = () => {
               }}
               className="emailButton"
               placeholder="Email address"
+              value={email} // Bind input value to email state
+              onChange={(e) => setEmail(e.target.value)}
             />
             <Button
               style={{
@@ -91,8 +151,14 @@ const BottomPortion = () => {
                 borderTopRightRadius: "6px",
                 borderBottomRightRadius: "6px",
               }}
+              onClick={handleEmailSubmit}
+              disabled={loader}
             >
+              {loader ? (
+              <Spin size="small" indicator={antIcon} />
+            ) : (
               <RightOutlined style={{ marginRight: "8px" }} />
+            )}
             </Button>
           </div>
           <p>
@@ -252,7 +318,10 @@ const BottomPortion = () => {
         ) : (
           <div className="row">
             <div className="col-sm-12 col-md-4">
-              <a href='https://www.daftarpro.com/' style={{ display: "flex", alignItems: "center" }}>
+              <a
+                href="https://www.daftarpro.com/"
+                style={{ display: "flex", alignItems: "center" }}
+              >
                 <img
                   src={DPIcon}
                   alt="DaftarPro Logo"

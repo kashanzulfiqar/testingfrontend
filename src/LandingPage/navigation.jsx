@@ -9,9 +9,25 @@ import "./drawer.css";
 
 const NavigationBar = (props) => {
   const { t, i18n } = useTranslation();
+  const location = useLocation();
+  const nav = useNavigate();
 
   const [viewChange, setViewChange] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
+
+  const [isContactUs, setIsContactUs] = useState(false);
+
+  useEffect(() => {
+    console.log("location", location);
+    if (
+      location.pathname === "/contact-us" ||
+      location.pathname === "/live-demo"
+    ) {
+      setIsContactUs(true);
+    } else if (location.pathname === "/") {
+      setIsContactUs(false);
+    }
+  }, [location]);
 
   useEffect(() => {
     const updateCardsToShow = () => {
@@ -42,9 +58,6 @@ const NavigationBar = (props) => {
     setDrawerVisible(false);
   };
 
-  const location = useLocation();
-  const nav = useNavigate();
-
   return (
     <div className="header LandingHeader" style={{ right: "0px" }}>
       {/* Logo */}
@@ -68,31 +81,62 @@ const NavigationBar = (props) => {
       >
         {!viewChange && (
           <li className="nav-item landingItem">
-            <Link smooth spy to="home" duration={500}>
-              Home
-            </Link>
+            {isContactUs ? (
+              <a
+                onClick={() => nav("/", { state: { scrollToHome: true } })}
+                style={{ cursor: "pointer" }}
+              >
+                Home
+              </a>
+            ) : (
+              <Link smooth spy to="home" duration={500}>
+                Home
+              </Link>
+            )}
           </li>
         )}
 
         {!viewChange && (
           <li className="nav-item landingItem">
-            <Link smooth spy to="features" duration={500}>
-              Features
-            </Link>
+            {isContactUs ? (
+              <a
+                onClick={() => nav("/", { state: { scrollToFeatures: true } })}
+                style={{ cursor: "pointer" }}
+              >
+                Features
+              </a>
+            ) : (
+              <Link smooth spy to="features" duration={500}>
+                Features
+              </Link>
+            )}
           </li>
         )}
 
         {!viewChange && (
           <li className="nav-item landingItem">
-            <Link smooth spy to="pricing" duration={500}>
-              Pricing
-            </Link>
+            {isContactUs ? (
+              <a
+                onClick={() => nav("/", { state: { scrollToPricing: true } })}
+                style={{ cursor: "pointer" }}
+              >
+                Pricing
+              </a>
+            ) : (
+              <Link smooth spy to="pricing" duration={500}>
+                Pricing
+              </Link>
+            )}
           </li>
         )}
 
         {!viewChange && (
           <li className="nav-item landingItem">
-            <a href="javascript:void(0)" className="nav-link LandingLink">
+            <a
+              href="javascript:void(0)"
+              className="nav-link LandingLink"
+              onClick={() => nav("/live-demo")}
+            >
               Live Demo
             </a>
           </li>
@@ -173,23 +217,55 @@ const NavigationBar = (props) => {
       >
         <ul className="drawer-menu">
           <li className="drawer-item">
-            <Link smooth spy to="home" duration={500} onClick={onClose}>
-              Home
-            </Link>
+            {isContactUs ? (
+              <a
+                onClick={() => nav("/", { state: { scrollToHome: true } })}
+                style={{ cursor: "pointer" }}
+              >
+                Home
+              </a>
+            ) : (
+              <Link smooth spy to="home" duration={500} onClick={onClose}>
+                Home
+              </Link>
+            )}
           </li>
           <li className="drawer-item">
-            <Link smooth spy to="features" duration={500} onClick={onClose}>
-              Features
-            </Link>
+            {isContactUs ? (
+              <a
+                onClick={() => nav("/", { state: { scrollToFeatures: true } })}
+                style={{ cursor: "pointer" }}
+              >
+                Features
+              </a>
+            ) : (
+              <Link smooth spy to="features" duration={500} onClick={onClose}>
+                Features
+              </Link>
+            )}
           </li>
           <li className="drawer-item">
-            <Link smooth spy to="pricing" duration={500} onClick={onClose}>
-              Pricing
-            </Link>
+            {isContactUs ? (
+              <a
+                onClick={() => nav("/", { state: { scrollToPricing: true } })}
+                style={{ cursor: "pointer" }}
+              >
+                Pricing
+              </a>
+            ) : (
+              <Link smooth spy to="pricing" duration={500} onClick={onClose}>
+                Pricing
+              </Link>
+            )}
           </li>
           <li className="drawer-item">
-            <a 
-              href="javascript:void(0)" onClick={onClose}>
+            <a
+              href="javascript:void(0)"
+              onClick={() => {
+                onClose();
+                nav("/live-demo");
+              }}
+            >
               Live Demo
             </a>
           </li>
