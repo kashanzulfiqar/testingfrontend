@@ -33,7 +33,7 @@ const Demo = () => {
 
   const renderCards = () => {
     return cards.map((card, index) => (
-      <div className="col-sm-6 col-lg-4 col-xl-3 m-b-20" key={index}>
+      <div className="col-12 col-md-6 col-lg-4 col-xl-3 m-b-20" key={index}>
         <div className="demo-card">
           <FontAwesomeIcon icon={card.icon} className="icon" />
           <h3 className="card-title">{card.title}</h3>
@@ -63,7 +63,7 @@ const Demo = () => {
                 <h2 className="demo-title">Live Demo</h2>
                 <h5 className="page-description" style={{ marginTop: "1%" }}>
                   <label>
-                    Unlock the power of our live demo and discover how DafterPro
+                    Unlock the power of our live demo and discover how DaftarPro
                     revolutionizes your business solutions for seamless admin
                     and employee management!
                   </label>
