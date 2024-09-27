@@ -1,7 +1,7 @@
 import { faUsers, faUserTie } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./demo.css";
 import NavigationBar from "./navigation";
 import BottomPortion from "./bottomPortion";
@@ -41,9 +41,9 @@ const Demo = () => {
             <p className="username">Username: {card.username}</p>
             <p className="password">Password: {card.password}</p>
           </div>
-          <button className="click-here" onClick={() => nav("/login")}>
+          <Link to='/login' className="click-here" target="_blank">
             Click Here
-          </button>
+          </Link>
         </div>
       </div>
     ));
