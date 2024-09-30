@@ -15,7 +15,7 @@ import { apiServices } from "../Services/apiServices.js";
 import favicon from '../files/Icons/DaftarProIcon.svg';
 
 
-const ResetPassword = () => {
+const AdminResetPassword = () => {
   const [form] = Form.useForm();
   const { token } = useParams();
 
@@ -74,7 +74,7 @@ const ResetPassword = () => {
       password: values?.confirmPassword,
     };
 
-    apiServices("PUT", `user/reset-password?token=${token}`, data)
+    apiServices("PUT", `newApi/reset?token=${token}`, data)
       .then((res) => {
         // console.log(res);
         if (res?.data?.msg === 'Link have been expired') {
@@ -325,7 +325,7 @@ const ResetPassword = () => {
                 </div>
 
                 <div className="form-group text-center">
-                  <Link to="/admin-login">
+                  <Link to="/login">
                     <span className="account-btn" style={{ color: "white" }}>
                       Login Now
                     </span>
@@ -340,4 +340,4 @@ const ResetPassword = () => {
   );
 };
 
-export default ResetPassword;
+export default AdminResetPassword;

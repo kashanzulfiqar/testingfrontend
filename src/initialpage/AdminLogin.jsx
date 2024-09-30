@@ -56,7 +56,7 @@ const AdminLogin = (props) => {
 
   useEffect(() => {
     if(isLogin && admin){
-      nav(`/employee/dashboard`)
+      nav(`/super-admin/dashboard`)
     }
   }, [])
 
@@ -262,7 +262,7 @@ const AdminLogin = (props) => {
                         <label>Password</label>
                         </div>
                         <div className="col-auto">
-                        <Link className="text-muted" to="/forget-password">
+                        <Link className="text-muted" to="/forget">
                             Forgot password?
                         </Link>
                         </div>

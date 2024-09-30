@@ -73,6 +73,9 @@ import AdminLogin from './AdminLogin';
 import SuperAdminMain from '../MainPage/Main/Dashboard/superadminMain';
 import ContactUs from '../LandingPage/contactForm';
 import Demo from '../LandingPage/demo';
+import AdminResetPassword from './AdminReset';
+import AdminForgot from './Forgot-Admin';
+import DisabledCompanies from '../MainPage/SuperAdmin/disbaledCompanies';
 
 
 const App = () => {
@@ -131,8 +134,10 @@ const App = () => {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/client/login" element={<ClientLogin />} />
         <Route path="/login/:email/:token" element={<LoginPage />} />
+        <Route path="/forget" element={<AdminForgot />} />
         <Route path="/forget-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/reset/:token" element={<AdminResetPassword />} />
         <Route path="/register" element={<RegistrationPage />} />
 
         {/* <Route path="/app/*" element={<DefaultLayout />} /> */}
@@ -143,6 +148,7 @@ const App = () => {
           {/* dashboard */}
           <Route path={`/restricted`} element={<Navigate to={login?.user?.role === 'admin' ? `/main/dashboard` : `/employee/dashboard`} />} />
           <Route path={`super-admin/dashboard`} element={<SuperAdminMain />} />
+          <Route path={`super-admin/disabled-companies`} element={<DisabledCompanies />} />
           <Route path={`main/dashboard`} element={<AdminDashboard />} />
           <Route path={`employee/dashboard`} element={<EmployeeDashboard />} />
 

@@ -13068,10 +13068,10 @@ padding-right: unset;
 .AdminTable thead tr th:nth-child(2){
   min-width: 181px !important;
 }
-.AdminTable thead tr th:nth-child(4){
+.AdminTable thead tr th:nth-child(5){
   min-width: 181px !important;
 }
-.AdminTable thead tr th:nth-child(7){
+.AdminTable thead tr th:nth-child(8){
   min-width: 250px !important;
 }
 

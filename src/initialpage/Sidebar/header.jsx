@@ -34,13 +34,6 @@ const Header = (props) => {
     'ar': 'Arabic'
   };
 
-  useEffect(() => {
-    if (props.AdminLogin) {
-      nav('super-admin/dashboard')
-    }
-  }, [])
-
-
   const changeLanguage = (lng) => {
     i18n.changeLanguage(lng);
     localStorage.setItem('lang', lng);
@@ -107,7 +100,7 @@ const Header = (props) => {
   }, [i18n.language]);
 
   useEffect(() => {
-    if(user_state?.user?.role === 'admin' || permissions?.viewAllRequest || permissions?.teamRequest)
+    if(!user_state?.user?.superAdmin && (user_state?.user?.role === 'admin' || permissions?.viewAllRequest || permissions?.teamRequest))
     getCounter()
       }, [location])
     

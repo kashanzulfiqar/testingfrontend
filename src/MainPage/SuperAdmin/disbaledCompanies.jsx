@@ -12,12 +12,12 @@ import {
   Avatar_13,
   Avatar_16,
   user_icon,
-} from "../../../Entryfile/imagepath";
-import Tableavatar from "../../../_components/tableavatar/tableavatar";
-import Sidebar from "../../../initialpage/Sidebar/sidebar";
-import Header from "../../../initialpage/Sidebar/header";
-import Offcanvas from "../../../Entryfile/offcanvance";
-import { apiServices } from "../../../Services/apiServices";
+} from "../../Entryfile/imagepath";
+import Tableavatar from "../../_components/tableavatar/tableavatar";
+import Sidebar from "../../initialpage/Sidebar/sidebar";
+import Header from "../../initialpage/Sidebar/header";
+import Offcanvas from "../../Entryfile/offcanvance";
+import { apiServices } from "../../Services/apiServices";
 import { useSelector } from "react-redux";
 import {
   Table,
@@ -33,23 +33,25 @@ import {
   Pagination,
 } from "antd";
 import moment from "moment";
-import EmptyTable from "../../../files/Icons/EmptyTable.svg";
+import EmptyTable from "../../files/Icons/EmptyTable.svg";
 import Modal from "@mui/material/Modal";
 import { EditOutlined } from "@mui/icons-material";
 import { LoadingOutlined } from "@ant-design/icons";
-import { itemRender } from "../../paginationfunction";
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
-import { CSVLink } from 'react-csv';
+import { itemRender } from "../paginationfunction";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import { CSVLink } from "react-csv";
 import { useTranslation } from "react-i18next";
 
 const { Option } = Select;
 
-const SuperAdminMain = () => {
+const DisabledCompanies = () => {
   const { t, i18n } = useTranslation();
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
-  const user_name = useSelector((state) => state?.user?.loginvalue?.user?.fullName);
-  console.log("permissions", permissions)
+  const user_name = useSelector(
+    (state) => state?.user?.loginvalue?.user?.fullName
+  );
+  console.log("permissions", permissions);
   const navigate = useNavigate();
   const csvLinkEl = useRef();
   const superAdmin = useSelector((state) => state.superAdmin);
@@ -60,7 +62,7 @@ const SuperAdminMain = () => {
   const [isStatLoading, setIsStatLoading] = useState(false);
   const [selectedMonthYear, setSelectedMonthYear] = useState("");
   const [statdata, setStatdata] = useState(null);
-  const [specific, setSpecific] = useState(null);  
+  const [specific, setSpecific] = useState(null);
   const [page, setPage] = useState(1);
   const [size, setSize] = useState(20);
 
@@ -122,7 +124,7 @@ const SuperAdminMain = () => {
   const [selectedFilters, setSelectedFilters] = useState({
     companyName: "",
     dateFrom: "",
-    dateTo: "",    
+    dateTo: "",
     dataType: "",
     sortType: "",
   });
@@ -148,7 +150,7 @@ const SuperAdminMain = () => {
     };
     apiServices(
       "GET",
-      `newApi/overview?companyName=${params.companyName}&status=active&filter=${params.dataType}&sortType=${params.sortType}&page=${params.page}&limit=${params.limit}`,
+      `newApi/overview?companyName=${params.companyName}&status=inActive&filter=${params.dataType}&sortType=${params.sortType}&page=${params.page}&limit=${params.limit}`,
       null,
       user_state
     )
@@ -173,7 +175,7 @@ const SuperAdminMain = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : 'Error getting data'
+              : "Error getting data"
           }`
         );
       })
@@ -200,14 +202,13 @@ const SuperAdminMain = () => {
     });
   };
 
-
   const handleSearch = () => {
     const { companyName, dateFrom, dateTo } = selectedFilters;
 
     if ((!dateFrom && dateTo) || (dateFrom && !dateTo)) {
-      message.error(t('aRequests.errors.bothStartEndDateRequired'));
+      message.error(t("aRequests.errors.bothStartEndDateRequired"));
     } else if (!companyName && !dateFrom && !dateTo) {
-      message.error(t('Timesheetadmin.noFiltersSelected'));
+      message.error(t("Timesheetadmin.noFiltersSelected"));
     } else {
       setFilters(selectedFilters);
       setPagination({
@@ -243,7 +244,6 @@ const SuperAdminMain = () => {
       total: 0,
     });
   };
-
 
   const customEmptyText = (
     <Empty
@@ -288,11 +288,10 @@ const SuperAdminMain = () => {
       title: "#",
       dataIndex: "index",
       key: "index",
-      render: (text, record, index) =>
-        (page - 1) * size + index + 1,
+      render: (text, record, index) => (page - 1) * size + index + 1,
     },
     {
-      title: 'Company Name',
+      title: "Company Name",
       dataIndex: "companyName",
       key: "companyName",
       render: (text, record) => (
@@ -312,55 +311,55 @@ const SuperAdminMain = () => {
       ),
     },
     {
-      title: 'Email',
+      title: "Email",
       dataIndex: "companyEmail",
       key: "companyEmail",
     },
     {
-      title: 'Latest Activity',
+      title: "Latest Activity",
       dataIndex: "latestActivity",
       key: "latestActivity",
       render: (text) => moment(text).format("D MMM YYYY"),
-      sorter: true, 
+      sorter: true,
       //sorter: (a, b) => moment(a.latestActivity).unix() - moment(b.latestActivity).unix(),
     },
     {
-      title: 'Contact Person',
+      title: "Contact Person",
       dataIndex: "contactPerson",
       key: "contactPerson",
     },
     {
-      title: 'Phone Number',
+      title: "Phone Number",
       dataIndex: "companyPhoneNo",
       key: "companyPhoneNo",
     },
     {
-      title: 'Mobile Number',
+      title: "Mobile Number",
       dataIndex: "mobileNumber",
       key: "mobileNumber",
     },
     {
-      title: 'Address',
+      title: "Address",
       dataIndex: "companyAddress",
       key: "companyAddress",
     },
     {
-      title: 'Employee Count',
+      title: "Employee Count",
       dataIndex: "employeeCount",
       key: "employeeCount",
-      sorter: true, 
+      sorter: true,
       //sorter: (a, b) => parseFloat(a.employeeCount) - parseFloat(b.employeeCount),
     },
     {
-      title: 'Creation Date',
+      title: "Creation Date",
       dataIndex: "createdAt",
       key: "createdAt",
       render: (text) => moment(text).format("D MMM YYYY"),
-      sorter: true, 
+      sorter: true,
       //sorter: (a, b) => moment(a.createdAt).unix() - moment(b.createdAt).unix(),
     },
     {
-      title: 'Status',
+      title: "Status",
       dataIndex: "disabled",
       key: "disabled",
       render: (record) => (
@@ -369,24 +368,17 @@ const SuperAdminMain = () => {
             className="btn btn-white btn-sm btn-rounded"
             style={{ pointerEvents: "none" }}
           >
-            {record == true && (
-              <i className="fa fa-dot-circle-o text-danger" />
-            )}
+            {record == true && <i className="fa fa-dot-circle-o text-danger" />}
             {record == false && (
               <i className="fa fa-dot-circle-o text-success" />
             )}
-            {record == true
-              ? ` Disabled`
-              : record == false
-              ? ` Active`
-              : ""
-            }
+            {record == true ? ` Disabled` : record == false ? ` Active` : ""}
           </label>
         </div>
       ),
     },
     {
-      title: t('holiday.actions'),
+      title: t("holiday.actions"),
       render: (record, row) => (
         <div className="dropdown dropdown-action text-end">
           <a
@@ -394,10 +386,10 @@ const SuperAdminMain = () => {
             // className="action-icon dropdown-toggle"
             // data-bs-toggle="dropdown"
             // aria-expanded="false"
-            className='action-icon dropdown-toggle'
+            className="action-icon dropdown-toggle"
             style={{ cursor: "pointer" }}
-            data-bs-toggle='dropdown'
-            aria-expanded='true'
+            data-bs-toggle="dropdown"
+            aria-expanded="true"
           >
             <i className="material-icons">more_vert</i>
           </a>
@@ -413,7 +405,15 @@ const SuperAdminMain = () => {
                 });
               }}
             >
-              <i className={record?.disabled == false ? `fa fa-user-times m-r-5` : `fa fa-check m-r-5`} /> {record?.disabled == false ? t('disable') : t('enable')}</a>
+              <i
+                className={
+                  record?.disabled == false
+                    ? `fa fa-user-times m-r-5`
+                    : `fa fa-check m-r-5`
+                }
+              />{" "}
+              {record?.disabled == false ? t("disable") : t("enable")}
+            </a>
           </div>
         </div>
       ),
@@ -431,28 +431,34 @@ const SuperAdminMain = () => {
   };
 
   const onHandleDelete = (data) => {
-    let id = data?._id
+    let id = data?._id;
     let payload = {
       id: id,
-    }
-    const url = data?.disabled == false ? 'newApi/disable' : 'newApi/enable'
-    const method = data?.disabled == false ? 'DELETE' : 'PUT'
+    };
+    const url = data?.disabled == false ? "newApi/disable" : "newApi/enable";
+    const method = data?.disabled == false ? "DELETE" : "PUT";
     setLoader(true);
     apiServices(method, url, data?.disabled == false ? id : payload, user_state)
       .then((res) => {
         // console.log(res?.data);
         if (res?.data?.success === true) {
-          // setCompanies((prevCompanies) => 
-          //   prevCompanies?.map((company) => 
-          //     company._id === id ? { ...company, disabled: !company.disabled } : company
-          //   )
-          // );
-          // setCompanies((prevCompanies) => 
-          //   prevCompanies.filter((company) => company._id !== id)
-          // );
+        //   setCompanies((prevCompanies) =>
+        //     prevCompanies?.map((company) =>
+        //       company._id === id
+        //         ? { ...company, disabled: !company.disabled }
+        //         : company
+        //     )
+        //   );
+        //   setCompanies((prevCompanies) => 
+        //     prevCompanies.filter((company) => company._id !== id)
+        //   );
           getCompanies();
           handleClose();
-          message.success(data?.disabled == false ? 'Company disabled successfully' : 'Company enabled successfully');
+          message.success(
+            data?.disabled == false
+              ? "Company disabled successfully"
+              : "Company enabled successfully"
+          );
           //viewCategory();
           setLoader(false);
         }
@@ -466,7 +472,9 @@ const SuperAdminMain = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : data?.disabled == false ? 'Error disabling the company' : 'Error enabling the company'
+              : data?.disabled == false
+              ? "Error disabling the company"
+              : "Error enabling the company"
           }!`
         );
       });
@@ -477,12 +485,11 @@ const SuperAdminMain = () => {
       style={{
         fontSize: 17,
         color: "#1f1f20",
-        marginTop: '3px'
+        marginTop: "3px",
       }}
       spin
     />
   );
-
 
   return (
     <>
@@ -491,65 +498,41 @@ const SuperAdminMain = () => {
         {/* <Sidebar /> */}
         <div className="page-wrapper">
           <Helmet>
-            <title>Admin Panel - {t('header.daftarPro')}</title>
+            <title>Admin Panel - {t("header.daftarPro")}</title>
             <meta name="description" content="Login page" />
           </Helmet>
           <div className="content container-fluid">
             {/* Page Header */}
-            {/* STATS */}
-            {isStatLoading ? 
-            <div className="row" style={{minHeight: '83px', display: 'grid', placeItems: 'center', background: '#ebebeb', borderRadius: '5px', marginBottom: '20px', marginInline: '0px'}}>
-              <Spin />
-            </div> :
-            <div className="row">
-            <div className="col-md-6 col-sm-6 col-lg-6 col-xl-4">
-              <div className="card dash-widget">
-                <div className="card-body">
-                  <span className="dash-widget-icon"><i className="fa fa-user" /></span>
-                  <div className="dash-widget-info">
-                    <h3>{statdata?.totalEmployees}</h3>
-                    <label>Total Employees</label>
-                  </div>
-                </div>
-              </div>
-            </div>              
-            <div className="col-md-6 col-sm-6 col-lg-6 col-xl-4">
-              <div className="card dash-widget">
-                <div className="card-body">
-                  <span className="dash-widget-icon"><i className="fa fa-briefcase" /></span>
-                  <div className="dash-widget-info">
-                    <h3>{statdata?.totalCompanies}</h3>
-                    <label>Total Companies</label>
-                  </div>
+            <div className="page-header">
+              <div className="row align-items-center">
+                <div className="col">
+                  <h3 className="page-title">Disabled Companies</h3>
+                  <ul className="breadcrumb">
+                    <li className="breadcrumb-item">
+                      <Link
+                        to="/super-admin/dashboard"
+                      >
+                        {t("dashboard")}
+                      </Link>
+                    </li>
+                    <li className="breadcrumb-item active">
+                      Disabled Companies
+                    </li>
+                  </ul>
                 </div>
               </div>
             </div>
-            <div className="col-md-6 col-sm-6 col-lg-6 col-xl-4">
-              <div className="card dash-widget">
-                <div className="card-body">
-                  <span className="dash-widget-icon"><i className="fa fa-credit-card" /></span>
-                  <div className="dash-widget-info">
-                    <h3>0</h3>
-                    {/* <h3>{statdata?.totalCompanies}</h3> */}
-                    <label>Payment Plans</label>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-            }
             {/* Search Filter */}
 
             <Form form={form} onFinish={handleSearch}>
               <div className="row filter-row">
-
                 <div className="col-sm-6 col-md-3">
                   <div className="form-group">
                     <Form.Item name="name" className="custom-border">
                       <Input
                         className="form-control"
                         allowClear={false}
-                        placeholder='Company Name'
+                        placeholder="Company Name"
                         onChange={(e) =>
                           handleFilterChange(e.target.value, "companyName")
                         }
@@ -609,9 +592,14 @@ const SuperAdminMain = () => {
                     type="primary"
                     htmlType="submit"
                     className="btn-success btn-block w-50"
-                    style={{ borderRadius: "4px", display: "flex", justifyContent: "center", alignItems: "center" }}
+                    style={{
+                      borderRadius: "4px",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
                   >
-                    {t('search')}
+                    {t("search")}
                   </Button>
 
                   <Button
@@ -622,12 +610,12 @@ const SuperAdminMain = () => {
                       backgroundColor: "#616161",
                       borderColor: "#616161",
                       borderRadius: "4px",
-                      display: "flex", 
+                      display: "flex",
                       justifyContent: "center",
-                      alignItems: "center"
+                      alignItems: "center",
                     }}
                   >
-                    {t('reset')}
+                    {t("reset")}
                   </Button>
                 </div>
               </div>
@@ -636,14 +624,12 @@ const SuperAdminMain = () => {
             {/* /Search Filter */}
             <div className="row">
               <div className="col-lg-12">
-                <div
-                  className="table-responsive AdminTable"
-                >
+                <div className="table-responsive AdminTable">
                   <Table
                     className="fixedTableHeader"
                     // locale={{ emptyText: customEmptyText }}
                     locale={{
-                      emptyText: isLoading ? null : customEmptyText
+                      emptyText: isLoading ? null : customEmptyText,
                     }}
                     style={{ height: "430px", background: "white" }}
                     loading={isLoading}
@@ -651,18 +637,23 @@ const SuperAdminMain = () => {
                     dataSource={companies}
                     bordered
                     pagination={false}
-                    components={i18n.dir()==="rtl" ?
-                      {
-                      header: {
-                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
-                      },
-                    } :
-                    null
+                    components={
+                      i18n.dir() === "rtl"
+                        ? {
+                            header: {
+                              cell: ({ children }) => (
+                                <th style={{ textAlign: "right" }}>
+                                  {children}
+                                </th>
+                              ),
+                            },
+                          }
+                        : null
                     }
                     onChange={(pagination, filters, sorter) => {
                       const filter = sorter.field; // Get the column being sorted
                       let sortType = null;
-                  
+
                       // Determine the sort type
                       if (sorter.order === "ascend") {
                         sortType = "ascending";
@@ -671,41 +662,52 @@ const SuperAdminMain = () => {
                       } else {
                         sortType = "cancel"; // If no sorting is applied
                       }
-                  
+
                       // Call the custom sorting function
                       handleSortChange(filter, sortType);
                     }}
-                    onRow={ i18n.dir()==="rtl" ?
-                      (record, rowIndex) => {
-                      return {
-                        style: { textAlign: 'right' }, // Align table data to the right
-                      };
-                    } :
-                    null
+                    onRow={
+                      i18n.dir() === "rtl"
+                        ? (record, rowIndex) => {
+                            return {
+                              style: { textAlign: "right" }, // Align table data to the right
+                            };
+                          }
+                        : null
                     }
                   />
                 </div>
 
-                {
-                    companies?.length > 0 &&
-                    <div>
-                      <Pagination
-                        style={{display: 'flex', float: 'right'}}
-                        current={pagination.current}
-                        pageSize={pagination.pageSize}
-                        total={pagination.total}
-                        showTotal={(total, range) =>
-                          t('paginationShow', { range1: range[0], range2: range[1], total: total })}
-                        pageSizeOptions={["20", "30", "40", "50"]}
-                        showSizeChanger={true}
-                        onChange={(page, pageSize) => setPagination({...pagination, current: page, pageSize: pageSize,})}
-                        itemRender={(current, type, originalElement) =>
-                          itemRender(current, type, originalElement, t)
-                        }
-                        disabled={isLoading}
-                      />
-                    </div>
-                  }
+                {companies?.length > 0 && (
+                  <div>
+                    <Pagination
+                      style={{ display: "flex", float: "right" }}
+                      current={pagination.current}
+                      pageSize={pagination.pageSize}
+                      total={pagination.total}
+                      showTotal={(total, range) =>
+                        t("paginationShow", {
+                          range1: range[0],
+                          range2: range[1],
+                          total: total,
+                        })
+                      }
+                      pageSizeOptions={["20", "30", "40", "50"]}
+                      showSizeChanger={true}
+                      onChange={(page, pageSize) =>
+                        setPagination({
+                          ...pagination,
+                          current: page,
+                          pageSize: pageSize,
+                        })
+                      }
+                      itemRender={(current, type, originalElement) =>
+                        itemRender(current, type, originalElement, t)
+                      }
+                      disabled={isLoading}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -734,16 +736,21 @@ const SuperAdminMain = () => {
               }}
             >
               <div className="form-header">
-                <h3 style={{ marginBottom: "30px" }}>{open?.data?.disabled == false ? t('disable') : t('enable')} Company</h3>
+                <h3 style={{ marginBottom: "30px" }}>
+                  {open?.data?.disabled == false ? t("disable") : t("enable")}{" "}
+                  Company
+                </h3>
                 <p>
-                {`Are you sure you want to ${open?.data?.disabled == false ? 'disable' : 'enable'}${" "}`}
-                <strong>{open?.data?.companyName}</strong>
+                  {`Are you sure you want to ${
+                    open?.data?.disabled == false ? "disable" : "enable"
+                  }${" "}`}
+                  <strong>{open?.data?.companyName}</strong>
                 </p>
               </div>
               <div className="modal-btn delete-action">
                 <div className="row">
                   <div className="col-6">
-                  <Button
+                    <Button
                       htmlType="submit"
                       className="btn btn-primary continue-btn"
                       onClick={() => onHandleDelete(open?.data)}
@@ -753,7 +760,9 @@ const SuperAdminMain = () => {
                       {loader ? (
                         <Spin size="small" indicator={antIcon} />
                       ) : (
-                        `${open?.data?.disabled == false ? 'Disable' : 'Enable'}`
+                        `${
+                          open?.data?.disabled == false ? "Disable" : "Enable"
+                        }`
                       )}
                     </Button>
                   </div>
@@ -763,7 +772,7 @@ const SuperAdminMain = () => {
                       className="btn btn-primary submit-btn"
                       style={{ width: "100%" }}
                     >
-                      {t('cancel')}
+                      {t("cancel")}
                     </Button>
                   </div>
                 </div>
@@ -776,4 +785,4 @@ const SuperAdminMain = () => {
   );
 };
 
-export default SuperAdminMain;
+export default DisabledCompanies;
