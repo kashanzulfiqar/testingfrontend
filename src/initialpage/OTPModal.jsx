@@ -109,7 +109,9 @@ const OtpModal = ({ data, open, handleClose }) => {
     data.token = otpValue;
     apiServices("POST", "newApi/newRoute", data)
       .then((res) => {
-        if (res?.data?.success) {
+        if (res?.data?.success) {                    
+            localStorage.clear();
+            sessionStorage.clear()
             const userData = res?.data?.result?.user;
             console.log('admin',userData.superAdmin)
             console.log(res?.data?.result);

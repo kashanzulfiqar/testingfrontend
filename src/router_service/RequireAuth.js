@@ -52,6 +52,13 @@ const RequireAuth = ({Role}) => {
     }, [location])
 
     useEffect(() => {
+      // Check if the current path is already a super admin path
+      if (superAdmin && !location.pathname.startsWith('/super-admin')) {
+        nav('/super-admin/dashboard');
+      }
+    }, [superAdmin, location.pathname, nav]);
+
+    useEffect(() => {
       setMenu(false);
       window.scrollTo(0, 0);
     }, [location])
