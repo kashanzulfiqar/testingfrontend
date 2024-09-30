@@ -991,6 +991,12 @@ const Sidebar = (props) => {
                 <li className="menu-title">
                   <span>{t('sideBar.administration')}</span>
                 </li>
+                <li className={pathname.includes('disabled-companies') ? "active" : ""}>
+
+                  <Link to="super-admin/disabled-companies"><i className="la la-briefcase" /> <span>Disabled Companies</span> </Link>
+                
+                  {/* <Link to="/app/employees/leads"><i className="la la-user-secret" /> <span>Leads</span> </Link> */}
+                </li>
                 </ul>
                 }
               {/* <label className='brandStyle'><a target='_blank' href='https://devgate.ca'>Powered By Devgate</a></label> */}
