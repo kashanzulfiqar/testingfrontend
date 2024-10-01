@@ -56,7 +56,7 @@ const RequireAuth = ({Role}) => {
       if (superAdmin && !location.pathname.startsWith('/super-admin')) {
         nav('/super-admin/dashboard');
       }
-    }, [superAdmin, location.pathname, nav]);
+    }, []);
 
     useEffect(() => {
       setMenu(false);

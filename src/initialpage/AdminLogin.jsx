@@ -55,6 +55,7 @@ const AdminLogin = (props) => {
   });
 
   useEffect(() => {
+    console.log("admin" ,admin)
     if(isLogin && admin){
       nav(`/super-admin/dashboard`)
     }
