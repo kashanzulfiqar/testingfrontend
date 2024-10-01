@@ -288,10 +288,11 @@ const DisabledCompanies = () => {
       title: "#",
       dataIndex: "index",
       key: "index",
-      render: (text, record, index) => (page - 1) * size + index + 1,
+      render: (text, record, index) =>
+        (page - 1) * size + index + 1,
     },
     {
-      title: "Company Name",
+      title: 'Company Name',
       dataIndex: "companyName",
       key: "companyName",
       render: (text, record) => (
@@ -311,55 +312,55 @@ const DisabledCompanies = () => {
       ),
     },
     {
-      title: "Email",
-      dataIndex: "companyEmail",
-      key: "companyEmail",
+      title: 'Employee Count',
+      dataIndex: "employeeCount",
+      key: "employeeCount",
+      sorter: true, 
+      //sorter: (a, b) => parseFloat(a.employeeCount) - parseFloat(b.employeeCount),
     },
     {
-      title: "Latest Activity",
+      title: 'Latest Activity',
       dataIndex: "latestActivity",
       key: "latestActivity",
-      render: (text) => moment(text).format("D MMM YYYY"),
-      sorter: true,
+      render: (text) => text ? moment(text).format("D MMM YYYY") : '-',
+      sorter: true, 
       //sorter: (a, b) => moment(a.latestActivity).unix() - moment(b.latestActivity).unix(),
     },
     {
-      title: "Contact Person",
+      title: 'Creation Date',
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (text) => moment(text).format("D MMM YYYY"),
+      sorter: true, 
+      //sorter: (a, b) => moment(a.createdAt).unix() - moment(b.createdAt).unix(),
+    },
+    {
+      title: 'Contact Person',
       dataIndex: "contactPerson",
       key: "contactPerson",
     },
     {
-      title: "Phone Number",
+      title: 'Email',
+      dataIndex: "companyEmail",
+      key: "companyEmail",
+    },
+    {
+      title: 'Phone Number',
       dataIndex: "companyPhoneNo",
       key: "companyPhoneNo",
     },
     {
-      title: "Mobile Number",
+      title: 'Mobile Number',
       dataIndex: "mobileNumber",
       key: "mobileNumber",
     },
     {
-      title: "Address",
+      title: 'Address',
       dataIndex: "companyAddress",
       key: "companyAddress",
     },
     {
-      title: "Employee Count",
-      dataIndex: "employeeCount",
-      key: "employeeCount",
-      sorter: true,
-      //sorter: (a, b) => parseFloat(a.employeeCount) - parseFloat(b.employeeCount),
-    },
-    {
-      title: "Creation Date",
-      dataIndex: "createdAt",
-      key: "createdAt",
-      render: (text) => moment(text).format("D MMM YYYY"),
-      sorter: true,
-      //sorter: (a, b) => moment(a.createdAt).unix() - moment(b.createdAt).unix(),
-    },
-    {
-      title: "Status",
+      title: 'Status',
       dataIndex: "disabled",
       key: "disabled",
       render: (record) => (
@@ -368,17 +369,24 @@ const DisabledCompanies = () => {
             className="btn btn-white btn-sm btn-rounded"
             style={{ pointerEvents: "none" }}
           >
-            {record == true && <i className="fa fa-dot-circle-o text-danger" />}
+            {record == true && (
+              <i className="fa fa-dot-circle-o text-danger" />
+            )}
             {record == false && (
               <i className="fa fa-dot-circle-o text-success" />
             )}
-            {record == true ? ` Disabled` : record == false ? ` Active` : ""}
+            {record == true
+              ? ` Disabled`
+              : record == false
+              ? ` Active`
+              : ""
+            }
           </label>
         </div>
       ),
     },
     {
-      title: t("holiday.actions"),
+      title: t('holiday.actions'),
       render: (record, row) => (
         <div className="dropdown dropdown-action text-end">
           <a
@@ -386,10 +394,10 @@ const DisabledCompanies = () => {
             // className="action-icon dropdown-toggle"
             // data-bs-toggle="dropdown"
             // aria-expanded="false"
-            className="action-icon dropdown-toggle"
+            className='action-icon dropdown-toggle'
             style={{ cursor: "pointer" }}
-            data-bs-toggle="dropdown"
-            aria-expanded="true"
+            data-bs-toggle='dropdown'
+            aria-expanded='true'
           >
             <i className="material-icons">more_vert</i>
           </a>
@@ -405,15 +413,7 @@ const DisabledCompanies = () => {
                 });
               }}
             >
-              <i
-                className={
-                  record?.disabled == false
-                    ? `fa fa-user-times m-r-5`
-                    : `fa fa-check m-r-5`
-                }
-              />{" "}
-              {record?.disabled == false ? t("disable") : t("enable")}
-            </a>
+              <i className={record?.disabled == false ? `fa fa-user-times m-r-5` : `fa fa-check m-r-5`} /> {record?.disabled == false ? t('disable') : t('enable')}</a>
           </div>
         </div>
       ),
