@@ -1,4 +1,7 @@
 import axios from "axios";
+import {store} from '../Entryfile/Main.js';
+import { login } from "../Entryfile/features/users.jsx";
+import { superAdmin } from "../Redux/Reducer/permissions/superAdminSlice.js";
 
 let location = window.location.origin
 // https://daftar-pro-stage.herokuapp.com/
@@ -28,12 +31,25 @@ export const apiServices = async (type, endpoint, data, state) => {
                 },
                 responseType: `${endpoint.includes('payrolls/download-payroll') ? 'blob' : ''}`,
             }).then((res) => res).catch(err => {
-                if(err?.response?.data?.err?.message === "jwt expired"){
-                    console.log('access token expired====', err?.response?.data?.err?.message);
+                console.log("err",err)
+                if(err?.response?.data?.error?.message === "jwt expired"){
+                    console.log('access token expired====', err?.response?.data?.error?.message);
                     localStorage.clear();
                     sessionStorage.clear()
                     setTimeout(() => {
                         window.location.href = `${location}/login`
+                        store.dispatch(login(null));
+                      }, 500);
+                    // window.location.href = `${location}/login`
+                }
+                else if(err?.response?.data?.err?.message === "jwt expired"){
+                    console.log('access token expired====', err?.response?.data?.err?.message);
+                    localStorage.clear();
+                    sessionStorage.clear()
+                    setTimeout(() => {
+                        window.location.href = `${location}/admin-login`
+                        store.dispatch(login(null));
+                        store.dispatch(superAdmin(false));
                       }, 500);
                     // window.location.href = `${location}/login`
                 }

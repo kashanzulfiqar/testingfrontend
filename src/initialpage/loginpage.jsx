@@ -59,7 +59,7 @@ const Loginpage = (props) => {
   }, []);
 
   useEffect(() => {
-    if(isLogin && !Admin){
+    if(isLogin){
       nav(role === 'client' ? `/client/client-profile` : role === 'focalperson' ? `/client/focal-profile` : role === 'admin' ? `/main/dashboard` : `/employee/dashboard`)
     }
   }, [])

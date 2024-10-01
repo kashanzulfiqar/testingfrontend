@@ -153,8 +153,8 @@ const SuperAdminMain = () => {
       user_state
     )
       .then((res) => {
-        if (res.data.success === true) {
-          const statData = res?.data.stats;
+        if (res?.data?.success === true) {
+          const statData = res?.data?.stats;
           setCompanies(res?.data?.Companies);
           setPagination({
             ...pagination,
