@@ -312,9 +312,11 @@ const SuperAdminMain = () => {
       ),
     },
     {
-      title: 'Email',
-      dataIndex: "companyEmail",
-      key: "companyEmail",
+      title: 'Employee Count',
+      dataIndex: "employeeCount",
+      key: "employeeCount",
+      sorter: true, 
+      //sorter: (a, b) => parseFloat(a.employeeCount) - parseFloat(b.employeeCount),
     },
     {
       title: 'Latest Activity',
@@ -325,9 +327,22 @@ const SuperAdminMain = () => {
       //sorter: (a, b) => moment(a.latestActivity).unix() - moment(b.latestActivity).unix(),
     },
     {
+      title: 'Creation Date',
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (text) => moment(text).format("D MMM YYYY"),
+      sorter: true, 
+      //sorter: (a, b) => moment(a.createdAt).unix() - moment(b.createdAt).unix(),
+    },
+    {
       title: 'Contact Person',
       dataIndex: "contactPerson",
       key: "contactPerson",
+    },
+    {
+      title: 'Email',
+      dataIndex: "companyEmail",
+      key: "companyEmail",
     },
     {
       title: 'Phone Number',
@@ -343,21 +358,6 @@ const SuperAdminMain = () => {
       title: 'Address',
       dataIndex: "companyAddress",
       key: "companyAddress",
-    },
-    {
-      title: 'Employee Count',
-      dataIndex: "employeeCount",
-      key: "employeeCount",
-      sorter: true, 
-      //sorter: (a, b) => parseFloat(a.employeeCount) - parseFloat(b.employeeCount),
-    },
-    {
-      title: 'Creation Date',
-      dataIndex: "createdAt",
-      key: "createdAt",
-      render: (text) => moment(text).format("D MMM YYYY"),
-      sorter: true, 
-      //sorter: (a, b) => moment(a.createdAt).unix() - moment(b.createdAt).unix(),
     },
     {
       title: 'Status',
