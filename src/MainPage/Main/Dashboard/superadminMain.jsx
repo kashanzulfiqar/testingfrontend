@@ -320,7 +320,7 @@ const SuperAdminMain = () => {
       title: 'Latest Activity',
       dataIndex: "latestActivity",
       key: "latestActivity",
-      render: (text) => moment(text).format("D MMM YYYY"),
+      render: (text) => text ? moment(text).format("D MMM YYYY") : '-',
       sorter: true, 
       //sorter: (a, b) => moment(a.latestActivity).unix() - moment(b.latestActivity).unix(),
     },
