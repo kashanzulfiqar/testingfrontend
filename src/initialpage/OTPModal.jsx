@@ -152,7 +152,7 @@ const OtpModal = ({ data, open, handleClose }) => {
   };
 
   const handleResendOtp = () => {
-    apiServices("POST", "user/resend-otp", { email })
+    apiServices("POST", "newApi/resend-otp", { email })
       .then((res) => {
         if (res?.data?.success) {
           message.success("OTP has been sent to your email");

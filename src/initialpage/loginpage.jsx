@@ -20,6 +20,7 @@ import { LoadingOutlined } from '@ant-design/icons';
 import { apiServices } from '../Services/apiServices';
 import { getPermissionList } from '../Redux/Reducer/permissions/actions';
 import { useTranslation } from 'react-i18next';
+import { superAdmin } from '../Redux/Reducer/permissions/superAdminSlice.js';
 
 const Loginpage = (props) => {
   const { t, i18n } = useTranslation(); 
@@ -29,6 +30,8 @@ const Loginpage = (props) => {
   const nav = useNavigate();
   const location = useLocation();
   const param = useParams();
+  
+  const Admin = useSelector((state) => state.superAdmin);
 
   // let verificationToken = location.pathname.split('/')[2]?.split('&token=')[1]
   // let verificationEmail = location.pathname.split('/')[2]?.split('&token=')[0]
@@ -56,7 +59,7 @@ const Loginpage = (props) => {
   }, []);
 
   useEffect(() => {
-    if(isLogin){
+    if(isLogin && !Admin){
       nav(role === 'client' ? `/client/client-profile` : role === 'focalperson' ? `/client/focal-profile` : role === 'admin' ? `/main/dashboard` : `/employee/dashboard`)
     }
   }, [])
@@ -102,6 +105,7 @@ const Loginpage = (props) => {
         // console.log(res?.data?.result);
         dispatch(getPermissionList({ roleId: res?.data?.result?.user?.roleId, athtoken: res?.data?.result?.access_token?.accessToken }))
         dispatch(login(res?.data?.result));
+        dispatch(superAdmin(false));
         if(!res?.data?.result?.user?.role && res?.data?.result?.user?.firstTimeLogin){
           // nav('/change-password');
           setTimeout(() => {
