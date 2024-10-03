@@ -173,6 +173,30 @@ const OtpModal = ({ data, open, handleClose }) => {
       })
   };
 
+  const handlePaste = (e) => {
+    // Prevent the default paste behavior
+    e.preventDefault();
+  
+    // Get the pasted content
+    const pastedData = e?.clipboardData?.getData('Text')?.trim();
+  
+    // Ensure the pasted content is numeric and matches the expected length
+    if (pastedData?.match(/^[0-9]+$/) && pastedData?.length === otp?.length) {
+      // Split the pasted data into individual digits
+      const otpDigits = pastedData?.split('');
+  
+      // Update the state with each digit for the respective input field
+      const newOtp = [...otp];
+      otpDigits?.forEach((digit, index) => {
+        newOtp[index] = digit;
+      });
+  
+      // Set the new OTP values and check if complete
+      setOtp(newOtp);
+      setIsOtpComplete(newOtp?.every((digit) => digit !== ""));
+    }
+  };
+  
   return (
     <Modal
       open={open}
@@ -231,6 +255,8 @@ const OtpModal = ({ data, open, handleClose }) => {
                     // Ensure only numeric input
                     e.target.value = e.target.value.replace(/[^0-9]/g, '');
                     }}
+                    // Add paste handling to the first input field
+                    onPaste={(e) => handlePaste(e)}
                   />
                 ))}
               </div>
