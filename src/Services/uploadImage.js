@@ -11,7 +11,7 @@ export const apiUploadToS3 = (imagedata) => {
 
     // const PRD_BASE_URL = "https://hrms.herokuapp.com";
 
-    let BASE_URL = (location === "https://www.daftarpro.com" || "www.daftarpro.com" || location === "https://daftarpro.com" || location === "http://daftarpro.com" || location === "http://daftarpro.com") ? PRD_BASE_URL : DEV_BASE_URL
+    let BASE_URL = (location === "https://www.daftarpro.com" || location ===  "www.daftarpro.com" || location === "https://daftarpro.com" || location === "http://daftarpro.com" || location === "http://daftarpro.com") ? PRD_BASE_URL : DEV_BASE_URL
     // let BASE_URL = PRD_BASE_URL
     
     
@@ -44,13 +44,12 @@ export const excelImport = (imagedata, companyId, user_email) => {
 
     let location = window.location.origin
 
-    //const DEV_BASE_URL =" https://daftar-pro-stage.herokuapp.com"
-    const DEV_BASE_URL ="http://localhost:3000"
+    const DEV_BASE_URL =" https://daftar-pro-stage.herokuapp.com"
     const PRD_BASE_URL = "https://daftarpro-prd.herokuapp.com";
 
     // const PRD_BASE_URL = "https://hrms.herokuapp.com";
 
-    let BASE_URL = (location === "https://www.daftarpro.com" || location === "https://daftarpro.com" || location === "http://daftarpro.com" || location === "http://daftarpro.com") ? PRD_BASE_URL : DEV_BASE_URL
+    let BASE_URL = (location === "https://www.daftarpro.com" || location ===  "www.daftarpro.com" || location === "https://daftarpro.com" || location === "http://daftarpro.com" || location === "http://daftarpro.com") ? PRD_BASE_URL : DEV_BASE_URL
     // let BASE_URL = PRD_BASE_URL
     
     
