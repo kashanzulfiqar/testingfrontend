@@ -100,7 +100,7 @@ html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockq
   border: 0;
   font-size: 100%;
   vertical-align: baseline;
-  word-spacing: -3.5px;
+  word-spacing: var(--word-spacing);
 }
 
 /* HTML5 display-role reset for older browsers */
@@ -109,16 +109,19 @@ html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockq
   /* word-spacing: -3px; */
 }
 h1, h2, h3, h4, h5, h6 {
-  word-spacing: -7px;
+  /* word-spacing: -7px; */
+  word-spacing: var(--heading-spacing);
 }
 div {
-  word-spacing: -2px;
+  /* word-spacing: -2px; */
+  word-spacing: var(--div-spacing);
 }
 span, p {
   word-spacing: 0px;
 }
 a{
-  word-spacing: -4px;
+  /* word-spacing: -4px; */
+  word-spacing: var(--a-spacing);
 }
 input{
   /* word-spacing: -3.5px; */
@@ -13068,10 +13071,10 @@ padding-right: unset;
 .AdminTable thead tr th:nth-child(2){
   min-width: 181px !important;
 }
-.AdminTable thead tr th:nth-child(6){
+.AdminTable thead tr th:nth-child(5){
   min-width: 181px !important;
 }
-.AdminTable thead tr th:nth-child(10){
+.AdminTable thead tr th:nth-child(8){
   min-width: 250px !important;
 }
 
