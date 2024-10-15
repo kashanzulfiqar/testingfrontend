@@ -37,32 +37,6 @@ const OtpModal = ({ data, open, handleClose }) => {
     />
   );  
   
-  const languageNames = {
-    'en': 'English',
-    'ar': 'Arabic'
-  };
-
-  const langChange = (userLang) => {
-    let languageCode = "";
-    if (userLang) {
-      for (const code in languageNames) {
-        if (languageNames[code] === userLang) {
-          languageCode = code;
-          break;
-        }
-      }
-      i18n.changeLanguage(languageCode);
-      localStorage.setItem('lang', languageCode);
-      document.querySelector('html').setAttribute('lang', languageCode);
-    }
-    else {
-      languageCode = 'en'
-      i18n.changeLanguage(languageCode);
-      localStorage.setItem('lang', languageCode);
-      document.querySelector('html').setAttribute('lang', languageCode);
-    }
-  }
-
   useEffect(() => {
     // Detect Safari using more robust feature detection (for both mobile and desktop)
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || 
@@ -141,9 +115,6 @@ const OtpModal = ({ data, open, handleClose }) => {
             dispatch(superAdmin(res?.data?.result?.user?.superAdmin))
             setOtp(["", "", "", "", "", ""]);
             handleClose();
-
-            localStorage.setItem("languagePreference", JSON.stringify(res?.data?.result?.user?.languagePreference));
-            langChange(res?.data?.result?.user?.languagePreference);
             // nav(`${res?.data?.result?.user?.role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}`);
             setTimeout(() => {
                 setLoader(false)
