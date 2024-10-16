@@ -19,7 +19,6 @@ const EmployeeDashboard = () => {
   let nowdate = new Date(Date.now());
   const todayDate = moment(nowdate).format("dddd, DD MMM YYYY");
   const firstDate = moment(nowdate).format("YYYY-MM-DD");
-  const [month, setMonth] = useState(moment().format("YYYY-MM"));
 
   const { t, i18n } = useTranslation();
   const user_state = useSelector((state) => state.user.loginvalue);
@@ -30,7 +29,9 @@ const EmployeeDashboard = () => {
   const [userData, setUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [daysLoading, setDaysLoading] = useState(true);
   const [requestData, setRequestData] = useState([]);
+  const [sevenDays, setSevenDays] = useState([]);
   const [tableData, setTableData] = useState([]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -82,13 +83,13 @@ const EmployeeDashboard = () => {
     document.documentElement.dir = i18n.dir();
   }, [i18n.language]);
 
-  useEffect(() => {
-    if (!disableAttend) {
-      // setTableLoader(true);
+  // useEffect(() => {
+  //   if (!disableAttend) {
+  //     // setTableLoader(true);
 
-      fetchattendance();
-    }
-  }, [checkIn, checkOut]);
+  //     fetchattendance();
+  //   }
+  // }, [checkIn, checkOut]);
 
   useEffect(() => {
     // setTableLoader(true);
@@ -378,6 +379,7 @@ const EmployeeDashboard = () => {
           setdisableAttend(false);
           setIsCheckedIn(true);
           setIsCheckedOut(false);
+          fetchDays();
         })
         .catch((err) => {
           message.error(
@@ -430,6 +432,7 @@ const EmployeeDashboard = () => {
               overTime: res?.data?.Attendance?.overTime,
             });
             setdisableAttend(false);
+            fetchDays();
           }
         })
         .catch((err) => {
@@ -455,44 +458,44 @@ const EmployeeDashboard = () => {
   };
 
   const currentDate = moment(nowdate).format("DD MMM YYYY");
-  const fetchattendance = () => {
-    apiServices("GET", `attendance/`, null, user_state)
-      .then((res) => {
-        if (res.data.success === true) {
-          const attendanceData = res.data.Attendance.docs;
-          //console.log(attendanceData);
-          setStats({
-            lastWeek: res.data.lastWeek,
-            lastMonth: res.data.lastMonth,
-            endTime: res.data.user.shiftId.endTime,
-          });
+  // const fetchattendance = () => {
+  //   apiServices("GET", `attendance/`, null, user_state)
+  //     .then((res) => {
+  //       if (res.data.success === true) {
+  //         const attendanceData = res.data.Attendance.docs;
+  //         //console.log(attendanceData);
+  //         setStats({
+  //           lastWeek: res.data.lastWeek,
+  //           lastMonth: res.data.lastMonth,
+  //           endTime: res.data.user.shiftId.endTime,
+  //         });
 
-          const timeParts = res?.data?.user?.shiftId?.endTime?.split(":");
-          const hours = parseInt(timeParts[0], 10);
-          const minutes = parseInt(timeParts[1], 10);
-          const seconds = parseInt(timeParts[2], 10);
+  //         const timeParts = res?.data?.user?.shiftId?.endTime?.split(":");
+  //         const hours = parseInt(timeParts[0], 10);
+  //         const minutes = parseInt(timeParts[1], 10);
+  //         const seconds = parseInt(timeParts[2], 10);
 
-          // Calculate total milliseconds
-          const milliseconds =
-            (hours * 60 * 60 + minutes * 60 + seconds) * 1000;
-          setShiftEndTime(milliseconds);
+  //         // Calculate total milliseconds
+  //         const milliseconds =
+  //           (hours * 60 * 60 + minutes * 60 + seconds) * 1000;
+  //         setShiftEndTime(milliseconds);
 
-          if (!firstload) {
-            setFetchattend6(attendanceData);
-          }
-          setFetchattend(attendanceData);
-          setFirstLoad(true);
-        }
-      })
-      .catch((error) => {
-        console.log("error", error);
-      })
-      .finally(() => {
-        setIsLoading(false);
-        // setTableLoader(false);
-        setstatDisable(false);
-      });
-  };
+  //         if (!firstload) {
+  //           setFetchattend6(attendanceData);
+  //         }
+  //         setFetchattend(attendanceData);
+  //         setFirstLoad(true);
+  //       }
+  //     })
+  //     .catch((error) => {
+  //       console.log("error", error);
+  //     })
+  //     .finally(() => {
+  //       setIsLoading(false);
+  //       // setTableLoader(false);
+  //       setstatDisable(false);
+  //     });
+  // };
   const formatTodayTime = (milliseconds) => {
     if (!milliseconds) return t("none");
 
@@ -887,19 +890,17 @@ const EmployeeDashboard = () => {
   };
 
   useEffect(() => {
+    fetchEmployees();
     GetListProjects();
     getSelfRequests();
-    fetchEmployees();
+    fetchDays();
+    fetchdata();
     // if (permissions?.viewSelfRequest) {
 
     // } else {
     //   nav("/restricted", { state: { unAuthorize: true } });
     // }
   }, []);
-
-  useEffect(() => {
-    fetchdata();
-  }, [month]);
 
   const fetchdata = async () => {
     setLoading(true);
@@ -914,6 +915,22 @@ const EmployeeDashboard = () => {
       })
       .catch((error) => {
         console.log("error", error);
+      });
+  };
+
+  const fetchDays = async () => {
+    setDaysLoading(true);
+    apiServices("GET", `user/getSevenDays`, null, user_state)
+      .then((res) => {
+        if (res.data.success === true) {
+          const daysWorked = res?.data;
+          setSevenDays(daysWorked);
+          setDaysLoading(false);
+        }
+      })
+      .catch((error) => {
+        console.log("error", error);
+        setDaysLoading(false);
       });
   };
 
@@ -935,94 +952,105 @@ const EmployeeDashboard = () => {
       });
   };
 
-  const getLastSevenDays = () => {
-    const days = ["S", "M", "T", "W", "T", "F", "S"];
-    const today = new Date();
-    const lastSevenDays = [];
+// Step 1: Convert the `lastFiveDays` data into x-axis categories and hours worked arrays
+const processLastFiveDays = (lastFiveDays) => {
+  const categories = [];
+  const hoursWorkedInHours = [];
 
-    for (let i = 0; i < 7; i++) {
-      const date = new Date();
-      date.setDate(today.getDate() - i);
-      lastSevenDays.unshift(days[date.getDay()]);
-    }
+  lastFiveDays.forEach((dayObj) => {
+    const day = Object.keys(dayObj)[0]; // Get the day label, e.g., "M", "T", "W"
+    const minutes = dayObj[day]; // Get the hours worked in minutes
+    const hours = (Math.ceil(minutes) / 60).toFixed(2); // Convert minutes to hours and format to 2 decimal places
 
-    return lastSevenDays;
-  };
+    categories.push(day); // Add day label to x-axis categories
+    hoursWorkedInHours.push(hours); // Add hours to the series data
+  });
 
-  const pastSevenDaysWorkingHours = userData?.hoursWorked?.lastFiveDays;
-  const pastSevenDaysWorkingHoursInHours = pastSevenDaysWorkingHours?.map(
-    (minutes) => {
-      return (minutes / 60).toFixed(2);
-    }
-  );
+  return { categories, hoursWorkedInHours };
+};
 
-  const [chartOptions, setChartOptions] = useState({
+// Step 2: Process the `lastFiveDays` data
+const pastSevenDaysData = processLastFiveDays(sevenDays?.hoursWorked || []);
+
+// Step 3: Use the processed data to update the chart options
+const [chartOptions, setChartOptions] = useState({
+  series: [
+    {
+      name: "Hours",
+      data: pastSevenDaysData.hoursWorkedInHours, // Set initial series data
+    },
+  ],
+  colors: ["#55CE63"],
+  chart: {
+    type: "bar",
+    height: 210,
+    stacked: true,
+    zoom: {
+      enabled: true,
+    },
+  },
+  responsive: [
+    {
+      breakpoint: 280,
+      options: {
+        legend: {
+          position: "bottom",
+          offsetY: 0,
+        },
+      },
+    },
+  ],
+  plotOptions: {
+    bar: {
+      horizontal: false,
+      borderRadius: 6,
+      borderRadiusApplication: "end",
+      borderRadiusWhenStacked: "all",
+      columnWidth: "30%",
+      endingShape: "rounded",
+    },
+  },
+  dataLabels: {
+    enabled: false,
+  },
+  yaxis: {
+    min: 0,
+    max: 10,
+    tickAmount: 5,
+  },
+  xaxis: {
+    categories: pastSevenDaysData.categories, // Set x-axis categories
+  },
+  tooltip: {
+    y: {
+      formatter: function (minutes) {
+        const totalMinutes = (minutes * 60); // Convert hours back to minutes
+        const displayHours = Math.round(totalMinutes / 60); // Get whole hours
+        const remainingMinutes = Math.round(totalMinutes % 60); // Get remaining minutes
+        return `${displayHours}h ${remainingMinutes}m`; // Format tooltip as "Xh Ym"
+      },
+    },
+  },
+  legend: { show: false },
+  fill: {
+    opacity: 1,
+  },
+});
+
+// Step 4: Update chart options when data changes
+useEffect(() => {
+  setChartOptions((prevOptions) => ({
+    ...prevOptions,
+    xaxis: { categories: pastSevenDaysData.categories }, // Update x-axis categories
     series: [
       {
         name: "Hours",
-        data: pastSevenDaysWorkingHoursInHours,
+        data: pastSevenDaysData.hoursWorkedInHours, // Update series data
       },
     ],
-    colors: ["#55CE63"],
-    chart: {
-      type: "bar",
-      height: 210,
-      stacked: true,
+  }));
+}, [sevenDays?.hoursWorked]); // Listen for changes in `lastFiveDays`
 
-      zoom: {
-        enabled: true,
-      },
-    },
-    responsive: [
-      {
-        breakpoint: 280,
-        options: {
-          legend: {
-            position: "bottom",
-            offsetY: 0,
-          },
-        },
-      },
-    ],
-    plotOptions: {
-      bar: {
-        horizontal: false,
-        borderRadius: 6,
-        borderRadiusApplication: "end", // "around" / "end"
-        borderRadiusWhenStacked: "all", // "all"/"last"
-        columnWidth: "30%",
-        endingShape: "rounded",
-      },
-    },
-    dataLabels: {
-      enabled: false,
-    },
-    yaxis: {
-      min: 0,
-      max: 10,
-      tickAmount: 9,
-    },
-    xaxis: {
-      categories: getLastSevenDays(),
-    },
-    legend: { show: false },
-    fill: {
-      opacity: 1,
-    },
-  });
-
-  useEffect(() => {
-    // Update chart series when data changes
-    setChartOptions((prevOptions) => ({
-      ...prevOptions,
-      series: [
-        {
-          name: "Hours",
-          data: pastSevenDaysWorkingHoursInHours ? pastSevenDaysWorkingHoursInHours : [],
-        },
-      ],
-    }));
-  }, [pastSevenDaysWorkingHoursInHours]);
 
   const settings = {
     dots: false,
@@ -1247,6 +1275,7 @@ const EmployeeDashboard = () => {
                         <div className="clock-in-content">
                           <p>Work Time</p>
                           <h5>
+                            <label>
                             {isDisabled ? (
                               <Spin size="large" />
                             ) : isCheckedOut ? (
@@ -1254,6 +1283,7 @@ const EmployeeDashboard = () => {
                             ) : (
                               formatElapsedTime(elapsedTime) // Create a function to format elapsed time
                             )}
+                            </label>
                           </h5>
                         </div>
                         <div className="clock-in-btn">
@@ -1550,7 +1580,7 @@ const EmployeeDashboard = () => {
                       </div>
                       <div className="working-hour-info">
                         <div id="working_chart" />
-                        {loading ? (
+                        {daysLoading ? (
                           <Spin
                             style={{
                               height: "38px",
@@ -1631,7 +1661,7 @@ const EmployeeDashboard = () => {
                                       <label>
                                         {`Your ${formatLeaveType(
                                         requests.requestType
-                                      )}request is ${requests.status}`}
+                                      )} request is ${requests.status}`}
                                       </label>
                                       
                                     </h6>
