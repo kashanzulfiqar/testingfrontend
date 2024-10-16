@@ -95,10 +95,10 @@ const ClientProfile = () => {
                <div className="row">
                  <div className="col-sm-12">
                    <h3 className="page-title">{t('empProfile.profile')}</h3>
-                   <ul className="breadcrumb">
+                   {/* <ul className="breadcrumb">
                      <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>{t('dashboard')}</Link></li>
                      <li className="breadcrumb-item active">{t('empProfile.profile')}</li>
-                   </ul>
+                   </ul> */}
                  </div>
                </div>
              </div>
