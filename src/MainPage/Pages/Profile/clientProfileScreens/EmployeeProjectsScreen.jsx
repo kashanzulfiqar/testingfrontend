@@ -50,7 +50,7 @@ const EmployeeProjectsScreen = ({ employeeId }) => {
 
   useEffect(() => {
     getAllProjects();
-    getEmployees();
+    //getEmployees();
   }, []);
 
   const getEmployees = () => {
@@ -268,7 +268,7 @@ const EmployeeProjectsScreen = ({ employeeId }) => {
   return (
     <>
       <div className="row">
-        {tableLoader || empLoader ? (
+        {tableLoader ? (
           <div
             style={{
               display: "flex",
@@ -390,14 +390,14 @@ const EmployeeProjectsScreen = ({ employeeId }) => {
                       <div>{t('projectScreen.projectLeader')}:</div>
                       <ul className="team-members">
                         <li>
-                          <Tooltip title={empInfo[project.projectLead]?.fullName}>
+                          <Tooltip title={project?.projectLead?.fullName}>
                           <a
                             href="javascript:void(0)"
                           >
                             <img
                               alt=""
                               src={
-                                empInfo[project.projectLead]?.image || user_icon
+                                project?.projectLead?.imageUrl || user_icon
                               }
                             />
                           </a>
@@ -415,14 +415,14 @@ const EmployeeProjectsScreen = ({ employeeId }) => {
                           <>
                             {index < 4 && (
                               <li>
-                                <Tooltip title={empInfo[dev]?.fullName} >
+                                <Tooltip title={dev?.fullName} >
                                   <a
                                     href="javascript:void(0)"
                                     className="projectTeamMember"
                                   >
                                     <img
                                       alt=""
-                                      src={empInfo[dev]?.image || user_icon}
+                                      src={dev?.imageUrl || user_icon}
                                     />
                                   </a>
                                 </Tooltip>
@@ -494,13 +494,13 @@ const EmployeeProjectsScreen = ({ employeeId }) => {
                                   {
                                     project?.assignedDevelopers?.slice(4)
                                     .map((dev, index) => (
-                                      <Tooltip title={empInfo[dev]?.fullName}>
+                                      <Tooltip title={dev?.fullName}>
                                         <a
                                           key={index}
                                           className="avatar avatar-xs projectTeamMember"
                                           href="javascript:void(0)"
                                         >
-                                          <img alt="" src={empInfo[dev]?.image || user_icon} />
+                                          <img alt="" src={dev?.imageUrl || user_icon} />
                                         </a>
                                       </Tooltip>
                                     ))}

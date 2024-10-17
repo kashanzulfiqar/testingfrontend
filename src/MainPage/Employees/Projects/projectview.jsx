@@ -78,13 +78,14 @@ const ProjectView = () => {
 
   const handleRemoveDeveloper = (developerId) => {
     const updatedSelectedDevelopers = selectedDevelopers.filter(
-      (id) => id !== developerId
+      (obj) => obj?._id !== developerId
     );
     setSelectedDevelopers(updatedSelectedDevelopers);
   };
 
   const handleSelectDeveloper = (value) => {
-    setSelectedDevelopers([...selectedDevelopers, value]);
+    const selectedEmployee = employees.find(employee => employee._id === value);
+    setSelectedDevelopers([...selectedDevelopers, selectedEmployee]);
     form.resetFields(); // Clear the selection in the form
   };
 
@@ -99,7 +100,7 @@ const ProjectView = () => {
     const selectedEmployeeIds = [...selectedDevelopers];
 
     return employees
-      .filter((employee) => !selectedEmployeeIds.includes(employee._id))
+      .filter((employee) => !selectedEmployeeIds.some((selected) => selected._id === employee._id))
       .map((employee) => (
         <Select.Option key={employee._id} value={employee._id}>
           {employee.fullName}
@@ -163,7 +164,7 @@ const ProjectView = () => {
     // if(role === 'admin' || role === 'client' || role === 'focalperson' || permissions?.projectManagement || permissions?.clientManagement ) {
     setIsLoading(true);
     GetProjects();
-    fetchEmployees();
+    //fetchEmployees();
     getAllDomain();
     // ViewClients();
     // }else{
@@ -311,12 +312,14 @@ const ProjectView = () => {
     //setIsLoading(true);
 
     const updatedTeamCost = (() => {
-        const filteredArray = teamCost?.filter((item) => selectedDevelopers?.includes(item?.userId));
+        const filteredArray = teamCost?.filter((item) => selectedDevelopers?.some((selected) => selected._id === item.userId));
 
         const newDevelopers = selectedDevelopers?.filter(
-            (userId) => !teamCost?.some((item) => item?.userId === userId)
+            (userId) => !teamCost?.some((item) => item?.userId === userId?._id)
         )?.map((userId) => ({
-            userId,
+            userId: userId?._id,
+            fullName: userId?.fullName,
+            imageUrl: userId?.imageUrl,
             cost: '0'
         }));
 
@@ -336,12 +339,12 @@ const ProjectView = () => {
     }
 
     if (selectedLeader !== null) {
-      data.projectLead = selectedLeader;
+      data.projectLead = selectedLeader?._id;
       setLoadLeader(true);
     }
 
     if (selectedDevelopers.length > 0) {
-      data.assignedDevelopers = selectedDevelopers;
+      data.assignedDevelopers = selectedDevelopers?.map((dev) => dev?._id);
       setLoadTeam(true);
     }
 
@@ -538,10 +541,10 @@ const ProjectView = () => {
       title: 'Employee Name',
       dataIndex: 'userId',
       key: 'userId',
-      render: (text) => (
+      render: (text, record) => (
       <h2 className="table-avatar">
-        <label className="avatar"><img alt="" src={getEmployeeImage(text) || user_icon} /></label>
-        <label>{getEmployeeFullName(text)}</label>
+        <label className="avatar"><img alt="" src={record?.imageUrl || user_icon} /></label>
+        <label>{record?.fullName}</label>
       </h2>
     ),
     },
@@ -1552,6 +1555,7 @@ const ProjectView = () => {
                       // data-bs-toggle="modal"
                       // data-bs-target="#assign_leader"
                       onClick={() => {
+                        fetchEmployees();
                         openLeaderModal();
                         setSelectedLeader(project?.projectLead);
                       }}
@@ -1579,12 +1583,12 @@ const ProjectView = () => {
                               alt=""
                               className="avatar"
                               src={
-                                getEmployeeImage(project.projectLead) ||
+                                project?.projectLead?.imageUrl ||
                                 user_icon
                               }
                             />
                             <label className="employee-name">
-                              {getEmployeeFullName(project.projectLead)}
+                              {project?.projectLead?.fullName}
                             </label>
                           </div>
                           <hr
@@ -1607,6 +1611,7 @@ const ProjectView = () => {
                       type="button"
                       className={`${i18n.dir() === 'rtl' ? 'float-start' : 'float-end'} btn btn-primary btn-sm`}
                       onClick={() => {
+                        fetchEmployees();
                         openUserModal();
                         setSelectedDevelopers(project?.assignedDevelopers);
                       }}
@@ -1633,10 +1638,10 @@ const ProjectView = () => {
                             <img
                               alt=""
                               className="avatar"
-                              src={getEmployeeImage(developerId) || user_icon}
+                              src={developerId?.imageUrl || user_icon}
                             />
                             <label className="employee-name">
-                              {getEmployeeFullName(developerId)}
+                              {developerId?.fullName}
                             </label>
                           </div>
                           <hr
@@ -1652,83 +1657,6 @@ const ProjectView = () => {
             </div>
           </div>
         )}
-      </div>
-      {/* /Page Content */}
-      {/* Assign Leader Modal */}
-      <div id="assign_leader" className="modal custom-modal fade" role="dialog">
-        <div className="modal-dialog modal-dialog-centered" role="document">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title">Assign Leader to this project</h5>
-              <button
-                type="button"
-                className="close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-              >
-                <span aria-hidden="true">×</span>
-              </button>
-            </div>
-            <div className="modal-body">
-              <div className="input-group m-b-30">
-                <input
-                  placeholder="Search to add a leader"
-                  className="form-control search-input"
-                  type="text"
-                />
-                <span className="input-group-append">
-                  <button className="btn btn-primary w-100">Search</button>
-                </span>
-              </div>
-              <div>
-                <ul className="chat-user-list">
-                  <li>
-                    <a href="#">
-                      <div className="media">
-                        <span className="avatar">
-                          <img alt="" src={Avatar_09} />
-                        </span>
-                        <div className="media-body align-self-center text-nowrap">
-                          <div className="user-name">Richard Miles</div>
-                          <span className="designation">Web Developer</span>
-                        </div>
-                      </div>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#">
-                      <div className="media">
-                        <span className="avatar">
-                          <img alt="" src={Avatar_10} />
-                        </span>
-                        <div className="media-body align-self-center text-nowrap">
-                          <div className="user-name">John Smith</div>
-                          <span className="designation">Android Developer</span>
-                        </div>
-                      </div>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#">
-                      <div className="media">
-                        <span className="avatar">
-                          <img alt="" src={Avatar_16} />
-                        </span>
-                        <div className="media-body align-self-center text-nowrap">
-                          <div className="user-name">Jeffery Lalor</div>
-                          <span className="designation">Team Leader</span>
-                        </div>
-                      </div>
-                    </a>
-                  </li>
-                </ul>
-              </div>
-              <div className="submit-section">
-                <button className="btn btn-primary submit-btn">Submit</button>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       <Modal
@@ -1775,8 +1703,11 @@ const ProjectView = () => {
                           <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
                         }
                         dropdownRender={(menu) => <>{menu}</>}
-                        placeholder="Select Leader"
-                        onChange={(value) => setSelectedLeader(value)}
+                        placeholder="Select Leader"  
+                        onChange={(value) => {
+                          const selectedEmployee = employees?.find(employee => employee?._id === value);
+                          setSelectedLeader(selectedEmployee);
+                        }}
                         className="custom-select custom-normal"
                       >
                         {employees?.map((employee) => (
@@ -1801,10 +1732,10 @@ const ProjectView = () => {
                       <img
                         alt=""
                         className="avatar"
-                        src={getEmployeeImage(selectedLeader) || user_icon}
+                        src={selectedLeader?.imageUrl || user_icon}
                       />
                       <span className="employee-name">
-                        {getEmployeeFullName(selectedLeader)}
+                        {selectedLeader?.fullName}
                       </span>
                     </div>
                   </div>
@@ -1831,85 +1762,6 @@ const ProjectView = () => {
           </div>
         </div>
       </Modal>
-
-      {/* /Assign Leader Modal */}
-      {/* Assign User Modal */}
-      <div id="assign_user" className="modal custom-modal fade" role="dialog">
-        <div className="modal-dialog modal-dialog-centered" role="document">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title">Assign the user to this project</h5>
-              <button
-                type="button"
-                className="close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-              >
-                <span aria-hidden="true">×</span>
-              </button>
-            </div>
-            <div className="modal-body">
-              <div className="input-group m-b-30">
-                <input
-                  placeholder="Search a user to assign"
-                  className="form-control search-input"
-                  type="text"
-                />
-                <span className="input-group-append">
-                  <button className="btn btn-primary">Search</button>
-                </span>
-              </div>
-              <div>
-                <ul className="chat-user-list">
-                  <li>
-                    <a href="#">
-                      <div className="media">
-                        <span className="avatar">
-                          <img alt="" src={Avatar_09} />
-                        </span>
-                        <div className="media-body align-self-center text-nowrap">
-                          <div className="user-name">Richard Miles</div>
-                          <span className="designation">Web Developer</span>
-                        </div>
-                      </div>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#">
-                      <div className="media">
-                        <span className="avatar">
-                          <img alt="" src={Avatar_10} />
-                        </span>
-                        <div className="media-body align-self-center text-nowrap">
-                          <div className="user-name">John Smith</div>
-                          <span className="designation">Android Developer</span>
-                        </div>
-                      </div>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#">
-                      <div className="media">
-                        <span className="avatar">
-                          <img alt="" src={Avatar_16} />
-                        </span>
-                        <div className="media-body align-self-center text-nowrap">
-                          <div className="user-name">Jeffery Lalor</div>
-                          <span className="designation">Team Leader</span>
-                        </div>
-                      </div>
-                    </a>
-                  </li>
-                </ul>
-              </div>
-              <div className="submit-section">
-                <button className="btn btn-primary submit-btn">Submit</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      {/* /Assign User Modal */}
 
       <Modal
         open={openUser}
@@ -1984,16 +1836,16 @@ const ProjectView = () => {
                           <img
                             alt=""
                             className="avatar"
-                            src={getEmployeeImage(developerId) || user_icon}
+                            src={developerId?.imageUrl || user_icon}
                           />
                           <span className="employee-name">
-                            {getEmployeeFullName(developerId)}
+                            {developerId?.fullName}
                           </span>
                         </div>
 
                         <MinusCircleFilled
                           style={{ color: "red", cursor: "pointer" }}
-                          onClick={() => handleRemoveDeveloper(developerId)}
+                          onClick={() => handleRemoveDeveloper(developerId?._id)}
                         />
                       </div>
                       <hr

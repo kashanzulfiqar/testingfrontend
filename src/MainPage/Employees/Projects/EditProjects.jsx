@@ -129,7 +129,9 @@ function EditProjects({
       const initialTeamCost = data?.teamCost?.length > 0
         ? data.teamCost
         : data?.assignedDevelopers?.map((userId) => ({
-            userId,
+            userId: userId?._id,
+            fullName: userId?.fullName,
+            imageUrl: userId?.imageUrl,
             cost: 0,
           }));
 
@@ -162,6 +164,8 @@ function EditProjects({
 
       form.setFieldsValue({
         ...data,
+        projectLead: data?.projectLead?._id,
+        assignedDevelopers: data?.assignedDevelopers?.map((dev) => dev?._id),
         startDate: moment(data?.startDate, "YYYY-MM-DD"),
         endDate: moment(data?.endDate, "YYYY-MM-DD"),
         paymentSchedule: data?.paymentSchedule?.map((schedule) => ({
@@ -216,22 +220,28 @@ function EditProjects({
 
   const handleChange = (values) => {
 
-    setSelectedTeamMembers(values);
+    const selectedEmployees = values?.map((value) =>
+      employees?.find((employee) => employee._id === value)
+    );
+    setSelectedTeamMembers(selectedEmployees);
 
     // Find items to add
-    const newMembers = values.filter((value) => !selectedTeamMembers.includes(value));
+    const newMembers = selectedEmployees.filter((value) => !selectedTeamMembers.some((selected) => selected._id === value._id));
     // Find items to remove
-    const removedMembers = selectedTeamMembers.filter((value) => !values.includes(value));
+    //const removedMembers = selectedTeamMembers.filter((value) => !values.includes(value?._id));
+    const removedMembers = selectedTeamMembers.filter((value) => !selectedEmployees.some((selected) => selected._id === value._id));
     
     // Update team members array
     setTeamCost((prevArray) => {
       // Remove the removed items
-      const filteredArray = prevArray.filter((item) => !removedMembers.includes(item.userId));
+      const filteredArray = prevArray.filter((item) => !removedMembers.some((selected) => selected._id === item.userId));
       // Add new items
       return [
         ...filteredArray,
         ...newMembers.map((userId) => ({
-          userId,
+          userId: userId?._id,
+          fullName: userId?.fullName,
+          imageUrl: userId?.imageUrl,
           cost: 0
         }))
       ];
@@ -897,10 +907,10 @@ function EditProjects({
       title: 'Employee Name',
       dataIndex: 'userId',
       key: 'userId',
-      render: (text) => (
+      render: (text, record) => (
       <h2 className="table-avatar">
-        <label className="avatar"><img alt="" src={getEmployeeImage(text) || user_icon} /></label>
-        <label>{getEmployeeFullName(text)}</label>
+        <label className="avatar"><img alt="" src={getEmployeeImage(text) || record?.imageUrl || user_icon} /></label>
+        <label>{getEmployeeFullName(text) || record?.fullName}</label>
       </h2>
     ),
     },
@@ -1748,7 +1758,11 @@ function EditProjects({
                               document.getElementById("area")
                             }
                             placeholder={t("projectScreen.Modal.selectleader")}
-                            onChange={(value) => setSelectedLeader(value)}
+                            //onChange={(value) => setSelectedLeader(value)}
+                            onChange={(value) => {
+                              const selectedEmployee = employees.find(employee => employee._id === value);
+                              setSelectedLeader(selectedEmployee);
+                            }}
                           >
                             {employees?.map((employee) => (
                               <Select.Option
@@ -1770,12 +1784,12 @@ function EditProjects({
                         {selectedLeader && (
                           <a
                             data-bs-toggle="tooltip"
-                            title={getEmployeeFullName(selectedLeader)}
+                            title={selectedLeader?.fullName}
                             className="avatar"
                           >
                             <img
                               src={
-                                getEmployeeImage(selectedLeader) || user_icon
+                                selectedLeader?.imageUrl || user_icon
                               }
                               alt=""
                             />
@@ -1852,12 +1866,12 @@ function EditProjects({
                             .map((teamMember, index) => (
                               <li key={index}>
                                 <Tooltip
-                                  title={getEmployeeFullName(teamMember)}
+                                  title={teamMember?.fullName}
                                 >
                                   <Avatar
                                     style={{ cursor: "pointer" }}
                                     src={
-                                      getEmployeeImage(teamMember) || user_icon
+                                      teamMember?.imageUrl || user_icon
                                     }
                                   />
                                 </Tooltip>
@@ -1888,13 +1902,13 @@ function EditProjects({
                                         key={index}
                                       >
                                         <Tooltip
-                                          title={getEmployeeFullName(
-                                            teamMember
-                                          )}
+                                          title={
+                                            teamMember?.fullName
+                                          }
                                         >
                                           <Avatar
                                             src={
-                                              getEmployeeImage(teamMember) ||
+                                              teamMember?.imageUrl ||
                                               user_icon
                                             }
                                             style={{ cursor: "pointer" }}
@@ -2545,7 +2559,11 @@ function EditProjects({
                               document.getElementById("area")
                             }
                             placeholder={t("projectScreen.Modal.selectleader")}
-                            onChange={(value) => setSelectedLeader(value)}
+                            //onChange={(value) => setSelectedLeader(value)}
+                            onChange={(value) => {
+                              const selectedEmployee = employees.find(employee => employee._id === value);
+                              setSelectedLeader(selectedEmployee);
+                            }}
                           >
                             {employees?.map((employee) => (
                               <Select.Option
@@ -2567,12 +2585,12 @@ function EditProjects({
                         {selectedLeader && (
                           <a
                             data-bs-toggle="tooltip"
-                            title={getEmployeeFullName(selectedLeader)}
+                            title={selectedLeader?.fullName}
                             className="avatar"
                           >
                             <img
                               src={
-                                getEmployeeImage(selectedLeader) || user_icon
+                                selectedLeader?.imageUrl || user_icon
                               }
                               alt=""
                             />
@@ -2646,12 +2664,12 @@ function EditProjects({
                             .map((teamMember, index) => (
                               <li key={index}>
                                 <Tooltip
-                                  title={getEmployeeFullName(teamMember)}
+                                  title={teamMember?.fullName}
                                 >
                                   <Avatar
                                     style={{ cursor: "pointer" }}
                                     src={
-                                      getEmployeeImage(teamMember) || user_icon
+                                      teamMember?.imageUrl || user_icon
                                     }
                                   />
                                 </Tooltip>
@@ -2682,13 +2700,13 @@ function EditProjects({
                                         key={index}
                                       >
                                         <Tooltip
-                                          title={getEmployeeFullName(
-                                            teamMember
-                                          )}
+                                          title={
+                                            teamMember?.fullName
+                                          }
                                         >
                                           <Avatar
                                             src={
-                                              getEmployeeImage(teamMember) ||
+                                              teamMember?.imageUrl ||
                                               user_icon
                                             }
                                             style={{ cursor: "pointer" }}
