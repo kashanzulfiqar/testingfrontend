@@ -574,7 +574,7 @@ const Projects = () => {
       dataIndex: "projectName",
       key: "projectName",
       render: (text, record) => (
-        <Link to={`/projects/projects-view/${record?._id}`} style={{color: '#333333'}}>
+        <Link to={`/projects/projects-view/${record?._id}`} style={{color: '#333333'}} state={{ project: record }}>
           <label style={{cursor: 'pointer'}} className="longText">{text}</label>
         </Link>
       ),
@@ -1768,7 +1768,7 @@ const filteredColumns = columns.filter(column => {
                           </div>
                         }
                         <h4 className="project-title longText">
-                          <Link to={`/projects/projects-view/${project?._id}`}>
+                          <Link to={`/projects/projects-view/${project?._id}`} state={{ project: project }}>
                             {project?.projectName}
                           </Link>
                         </h4>

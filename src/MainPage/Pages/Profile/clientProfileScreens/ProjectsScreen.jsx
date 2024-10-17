@@ -230,7 +230,7 @@ const ProjectsScreen = ({ isID, isRole }) => {
   return (
     <>
       <div className="row">
-        {tableLoader || empLoader ? (
+        {tableLoader ? (
           <div
             style={{
               display: "flex",
@@ -294,7 +294,7 @@ const ProjectsScreen = ({ isID, isRole }) => {
                     </div>
                   </div> */}
                   <h4 className="project-title" style={{ width: "190px" }}>
-                    <Link to={`/projects/projects-view/${project?._id}`}>
+                    <Link to={`/projects/projects-view/${project?._id}`} state={{ project: project }}>
                       {project?.projectName}
                     </Link>
                   </h4>
