@@ -1653,12 +1653,12 @@ useEffect(() => {
                                     </h6>
                                     <ul className="nav" style={{display:"flex", alignItems:"center"}}>
                                       <li>
-                                        {`Requested On: ${moment(
+                                        {`Request Date: ${moment(
                                           requests.createdAt
                                         ).format("DD MMM YYYY")}`}
                                       </li>
                                       <li>
-                                        {`Approved On: ${moment(
+                                        {`Updated: ${moment(
                                           requests.createdAt
                                         ).format("DD MMM YYYY")}`}
                                       </li>

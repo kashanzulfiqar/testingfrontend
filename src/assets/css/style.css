@@ -13775,6 +13775,7 @@ ul.nav.landingNav li.nav-item {
   width: 1px;
   height: 10px;
   background: #d3d3d4; /* Replace with actual value */
+  margin-top: 3%;
 }
 
 .arrow-btns{
