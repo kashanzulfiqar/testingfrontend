@@ -612,7 +612,7 @@ const EmployeeDashboard = () => {
     apiServices(
       "GET",
       // `project-management/?clientName=${filters.clientName}&projectName=${filters.projectName}&page=${params.page}&limit=${params.limit}`,
-      `project-management/?page=1&limit=999`,
+      `project-management/?employeeId=${user_state?.user?._id}&page=1&limit=999`,
       null,
       user_state
     )
@@ -758,12 +758,12 @@ const EmployeeDashboard = () => {
                 <div>{t("projectScreen.projectLeader")}:</div>
                 <ul className="team-members">
                   <li>
-                    <Tooltip title={getEmployeeFullName(project?.projectLead)}>
+                    <Tooltip title={project?.projectLead?.fullName}>
                       <a>
                         <img
                           alt=""
                           src={
-                            getEmployeeImage(project?.projectLead) || user_icon
+                            project?.projectLead?.imageUrl || user_icon
                           }
                         />
                       </a>
@@ -780,12 +780,12 @@ const EmployeeDashboard = () => {
                       <li key={devIndex}>
                         <Tooltip
                           className="projectTeamMember"
-                          title={getEmployeeFullName(developer)}
+                          title={developer?.fullName}
                         >
                           <a>
                             <img
                               alt=""
-                              src={getEmployeeImage(developer) || user_icon}
+                              src={developer?.imageUrl || user_icon}
                             />
                           </a>
                         </Tooltip>
@@ -823,10 +823,10 @@ const EmployeeDashboard = () => {
                                 className="avatar avatar-xs projectTeamMember"
                                 key={devIndex}
                               >
-                                <Tooltip title={getEmployeeFullName(developer)}>
+                                <Tooltip title={developer?.fullName}>
                                   <Avatar
                                     src={
-                                      getEmployeeImage(developer) || user_icon
+                                      developer?.imageUrl || user_icon
                                     }
                                   />
                                 </Tooltip>
@@ -890,7 +890,7 @@ const EmployeeDashboard = () => {
   };
 
   useEffect(() => {
-    fetchEmployees();
+    //fetchEmployees();
     GetListProjects();
     getSelfRequests();
     fetchDays();
@@ -1206,24 +1206,11 @@ useEffect(() => {
                 {/* Employee Details */}
                 <div className="col-lg-6 col-md-12">
                   <div className="card employee-welcome-card flex-fill">
-                    {loading ? (
-                      <Spin
-                        style={{
-                          height: "66px",
-                          width: "100%",
-                          display: "flex",
-                          justifyContent: "center",
-                          alignItems: "center",
-                        }}
-                      />
-                    ) : (
-                      <div className="card-body">
+                  <div className="card-body">
                         <div className="welcome-info">
                           <div className="welcome-content">
                             <h4>
-                              {userData
-                                ? `Welcome Back, ${userData?.user?.fullName}`
-                                : " "}
+                              {`Welcome Back, ${user_state?.user?.fullName}`}
                             </h4>
                             <p>
                               <label>{todayDate}</label>
@@ -1231,7 +1218,7 @@ useEffect(() => {
                           </div>
                           <div className="welcome-img">
                             <img
-                              src={userData?.user?.imageUrl || user_icon}
+                              src={user_state?.user?.image || user_icon}
                               className="img-fluid"
                               alt="User"
                             />
@@ -1244,7 +1231,6 @@ useEffect(() => {
                           </Link>
                         </div>
                       </div>
-                    )}
                   </div>
                   <div className="card flex-fill">
                     <div className="card-body">
@@ -1936,7 +1922,7 @@ useEffect(() => {
               <div className="card">
                 <div className="card-body">
                   <div className="statistic-header">
-                    <h4>On-Going Projects</h4>
+                    <h4>Assigned Projects</h4>
                     <div className="arrow-btns">
                       <button
                         className="custom-arrow-btn"
