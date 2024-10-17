@@ -937,7 +937,7 @@ const antIcon = (
                           allProjects?.map((project) => (
                           <tr style={{height: '62px'}}>
                             <td>
-                              <h2><Link to={`/projects/projects-view/${project?._id}`}>{project?.projectName}</Link></h2>
+                              <h2><Link to={`/projects/projects-view/${project?._id}`} state={{ project: project }}>{project?.projectName}</Link></h2>
                               {/* <small className="block text-ellipsis">
                                 <span>1</span> <span className="text-muted">open tasks, </span>
                                 <span>9</span> <span className="text-muted">tasks completed</span>

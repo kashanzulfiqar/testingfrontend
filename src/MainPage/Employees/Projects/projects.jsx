@@ -130,47 +130,6 @@ const Projects = () => {
     setPaymentSchedules(updatedSchedules);
   };
   
-  const removeLastPaymentSchedule = () => {
-    if (paymentSchedules.length > 1) {
-      const updatedSchedules = [...paymentSchedules];
-      updatedSchedules.pop(); // Remove the last payment schedule
-      setPaymentSchedules(updatedSchedules);
-    }
-  };
-
-  const getEmployeeImage = (employeeId) => {
-    const employee = employees.find((emp) => emp._id === employeeId);
-    return employee?.imageUrl || ""; // You may provide a default image URL
-  };
-
-  const getEmployeeFullName = (employeeId) => {
-    const employee = employees.find((emp) => emp._id === employeeId);
-    return employee ? employee.fullName : "";
-  };
-
-  const getTeamMemberOptions = () => {
-    return employees.map((employee) => (
-      <Select.Option key={employee._id} value={employee._id}>
-        {employee.fullName}
-      </Select.Option>
-    ));
-    // if (!selectedLeader) {
-    //   return employees.map((employee) => (
-    //     <Select.Option key={employee._id} value={employee._id}>
-    //       {employee.fullName}
-    //     </Select.Option>
-    //   ));
-    // } else {
-    //   return employees
-    //     .filter((employee) => employee._id !== selectedLeader)
-    //     .map((employee) => (
-    //       <Select.Option key={employee._id} value={employee._id}>
-    //         {employee.fullName}
-    //       </Select.Option>
-    //     ));
-    // }
-  };
-
   const [data, setData] = useState([]);
   const [tableData, setTableData] = useState([]);
 
@@ -287,7 +246,6 @@ const Projects = () => {
 
   useEffect(() => {
     getAllDomain();
-    fetchEmployees();
   }, []);
 
   useEffect(() => {
@@ -327,28 +285,6 @@ const Projects = () => {
       );
     });
   }
-
-  const fetchEmployees = () => {
-    apiServices("GET", `user/all-employees`, null, user_state)
-      .then((res) => {
-        if (res.data.success === true) {
-          const emps = res?.data?.User;
-          const sortedData = emps.slice().sort((a, b) => a.fullName.localeCompare(b.fullName));
-          setEmployees(sortedData);
-        }
-      })
-      .catch((err) => {
-        message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
-              ? err?.response?.data?.validation?.body?.message
-              : t('aAttend.errors.getEmployeesError')
-          }`
-        );
-      });
-  };
 
   const ViewClients = () => {
     apiServices(
@@ -638,7 +574,7 @@ const Projects = () => {
       dataIndex: "projectName",
       key: "projectName",
       render: (text, record) => (
-        <Link to={`/projects/projects-view/${record?._id}`} style={{color: '#333333'}}>
+        <Link to={`/projects/projects-view/${record?._id}`} style={{color: '#333333'}} state={{ project: record }}>
           <label style={{cursor: 'pointer'}} className="longText">{text}</label>
         </Link>
       ),
@@ -673,12 +609,12 @@ const Projects = () => {
         // </ul>
         <div style={{minWidth: 'max-content'}}>
           <img
-            src={getEmployeeImage(projectLead) || user_icon}
+            src={projectLead?.imageUrl || user_icon}
             alt=""
             className="avatar"
             style={{ width: "30px", height: "30px", cursor: 'pointer' }}
           />
-          <label style={{cursor: 'pointer'}}>{getEmployeeFullName(projectLead)}</label>
+          <label style={{cursor: 'pointer'}}>{projectLead?.fullName}</label>
         </div>
       ),
     },
@@ -691,8 +627,8 @@ const Projects = () => {
         <ul className="team-members" style={{minWidth: 'max-content'}}>
           {assignedDevelopers?.slice(0, 4).map((developer, index) => (
             <li key={index}>
-              <Tooltip title={getEmployeeFullName(developer)}>
-                <Avatar style={{cursor: 'pointer'}} src={getEmployeeImage(developer) || user_icon} />
+              <Tooltip title={developer?.fullName}>
+                <Avatar style={{cursor: 'pointer'}} src={developer?.imageUrl || user_icon} />
               </Tooltip>
             </li>
           ))}
@@ -715,9 +651,9 @@ const Projects = () => {
                       
                       key={index}
                     >
-                      <Tooltip title={getEmployeeFullName(developer)}>
+                      <Tooltip title={developer?.fullName}>
                         <Avatar
-                          src={getEmployeeImage(developer) || user_icon}
+                          src={developer?.imageUrl || user_icon}
                           style={{cursor: 'pointer'}}
                         />
                       </Tooltip>
@@ -1832,7 +1768,7 @@ const filteredColumns = columns.filter(column => {
                           </div>
                         }
                         <h4 className="project-title longText">
-                          <Link to={`/projects/projects-view/${project?._id}`}>
+                          <Link to={`/projects/projects-view/${project?._id}`} state={{ project: project }}>
                             {project?.projectName}
                           </Link>
                         </h4>
@@ -1879,15 +1815,13 @@ const filteredColumns = columns.filter(column => {
                           <ul className="team-members">
                             <li>
                             <Tooltip
-                                title={getEmployeeFullName(
-                                  project?.projectLead
-                                )}
+                                title={project?.projectLead?.fullName}
                               >
                               <a>
                                 <img
                                   alt=""
                                   src={
-                                    getEmployeeImage(project?.projectLead) ||
+                                    project?.projectLead?.imageUrl ||
                                     user_icon
                                   }
                                 />
@@ -1906,15 +1840,13 @@ const filteredColumns = columns.filter(column => {
                                 <li key={devIndex}>
                                   <Tooltip
                                   className="projectTeamMember"
-                                title={getEmployeeFullName(
-                                  developer
-                                )}
+                                title={developer.fullName}
                               >
                               <a>
                                 <img
                                   alt=""
                                   src={
-                                    getEmployeeImage(developer) ||
+                                    developer.imageUrl ||
                                     user_icon
                                   }
                                 />
@@ -1924,7 +1856,7 @@ const filteredColumns = columns.filter(column => {
                                   {/* <a
                                     className="projectTeamMember"
                                     data-bs-toggle="tooltip"
-                                    title={getEmployeeFullName(developer)}
+                                    title={developer?.fullName}
                                   >
                                     <img
                                       alt=""
@@ -1955,13 +1887,11 @@ const filteredColumns = columns.filter(column => {
                                           key={devIndex}
                                         >
                                           <Tooltip
-                                            title={getEmployeeFullName(
-                                              developer
-                                            )}
+                                            title={developer.fullName}
                                           >
                                             <Avatar
                                               src={
-                                                getEmployeeImage(developer) ||
+                                                developer.imageUrl ||
                                                 user_icon
                                               }
                                             />

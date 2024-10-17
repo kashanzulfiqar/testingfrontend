@@ -70,6 +70,8 @@ export {default as icon02} from '../assets/img/icons/icon-02.svg';
 export {default as icon03} from '../assets/img/icons/icon-04.svg';
 export {default as icon04} from '../assets/img/icons/icon-04.svg';
 export {default as icon05} from '../assets/img/icons/icon-05.svg';
+export {default as clockin} from '../assets/img/icons/clock-in.svg'
+export {default as holidaycalendar} from '../assets/img/icons/holiday-calendar.svg'
 // export {default as DaftarProLogo} from '../assets/Icons/DaftarProLogo.svg';
 // export {default as DaftarProIcon} from '../assets/Icons/DaftarProIcon.svg';
 

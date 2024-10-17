@@ -43,7 +43,7 @@ const ProjectsScreen = ({ isID, isRole }) => {
 
   useEffect(() => {
     getAllProjects();
-    getEmployees();
+    //getEmployees();
   }, []);
 
   //   const d = [
@@ -230,7 +230,7 @@ const ProjectsScreen = ({ isID, isRole }) => {
   return (
     <>
       <div className="row">
-        {tableLoader || empLoader ? (
+        {tableLoader ? (
           <div
             style={{
               display: "flex",
@@ -294,7 +294,7 @@ const ProjectsScreen = ({ isID, isRole }) => {
                     </div>
                   </div> */}
                   <h4 className="project-title" style={{ width: "190px" }}>
-                    <Link to={`/projects/projects-view/${project?._id}`}>
+                    <Link to={`/projects/projects-view/${project?._id}`} state={{ project: project }}>
                       {project?.projectName}
                     </Link>
                   </h4>
@@ -347,14 +347,14 @@ const ProjectsScreen = ({ isID, isRole }) => {
                       <div>{t('projectScreen.projectLeader')}:</div>
                       <ul className="team-members">
                         <li>
-                          <Tooltip title={empInfo[project.projectLead]?.fullName}>
+                          <Tooltip title={project.projectLead?.fullName}>
                           <a
                             href="javascript:void(0)"
                           >
                             <img
                               alt=""
                               src={
-                                empInfo[project.projectLead]?.image || user_icon
+                                project.projectLead?.imageUrl || user_icon
                               }
                             />
                           </a>
@@ -372,14 +372,14 @@ const ProjectsScreen = ({ isID, isRole }) => {
                           <>
                             {index < 4 && (
                               <li>
-                                <Tooltip title={empInfo[dev]?.fullName} >
+                                <Tooltip title={dev?.fullName} >
                                   <a
                                     href="javascript:void(0)"
                                     className="projectTeamMember"
                                   >
                                     <img
                                       alt=""
-                                      src={empInfo[dev]?.image || user_icon}
+                                      src={dev?.imageUrl || user_icon}
                                     />
                                   </a>
                                 </Tooltip>
@@ -402,11 +402,11 @@ const ProjectsScreen = ({ isID, isRole }) => {
                             //           className="avatar avatar-xs projectTeamMember"
                             //           href="javascript:void(0)"
                             //           data-bs-toggle="tooltip"
-                            //           title={empInfo[dev]?.fullName}
+                            //           title={dev?.fullName}
                             //         >
                             //           <img
                             //             alt=""
-                            //             src={empInfo[dev]?.image || user_icon}
+                            //             src={dev?.imageUrl || user_icon}
                             //           />
                             //         </a>
                             //       </div>
@@ -451,13 +451,13 @@ const ProjectsScreen = ({ isID, isRole }) => {
                                   {
                                     project?.assignedDevelopers?.slice(4)
                                     .map((dev, index) => (
-                                      <Tooltip title={empInfo[dev]?.fullName}>
+                                      <Tooltip title={dev?.fullName}>
                                         <a
                                           key={index}
                                           className="avatar avatar-xs projectTeamMember"
                                           href="javascript:void(0)"
                                         >
-                                          <img alt="" src={empInfo[dev]?.image || user_icon} />
+                                          <img alt="" src={dev?.imageUrl || user_icon} />
                                         </a>
                                       </Tooltip>
                                     ))}
