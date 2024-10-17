@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   Avatar_16,
   Avatar_02,
@@ -48,6 +48,7 @@ const ProjectView = () => {
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
   //console.log(permissions,user_state)
   const nav = useNavigate();
+  const location = useLocation();
 
   const [paymentSchedules, setPaymentSchedules] = useState(null);
 
@@ -113,8 +114,9 @@ const ProjectView = () => {
   const { _id } = useParams();
   //console.log(_id);
   //const originalProjectName = projectName.replace(/[-_]/g, ' ');
+  const stateProj = location?.state?.project;
 
-  const project = data?.find((p) => p?._id === _id);
+  const project = stateProj ? stateProj : data?.find((p) => p?._id === _id);
   //console.log("this is project :", project);
   const totalCost = project?.teamCost?.reduce((sum, item) => sum + parseFloat(item.cost), 0);
 
@@ -149,7 +151,8 @@ const ProjectView = () => {
 
   const openEditModal = (data) => {
     setSelectedData(data);
-    fetchFocalPersons(data?.clientId);
+    //fetchFocalPersons(data?.clientId);
+    getAllDomain();
     setEditModal(true);
   };
 
@@ -162,10 +165,12 @@ const ProjectView = () => {
 
   useEffect(() => {
     // if(role === 'admin' || role === 'client' || role === 'focalperson' || permissions?.projectManagement || permissions?.clientManagement ) {
-    setIsLoading(true);
-    GetProjects();
-    //fetchEmployees();
-    getAllDomain();
+    if ((role != "client" && role != "focalperson") && !stateProj) {
+      setIsLoading(true);
+      GetProjects();
+      //fetchEmployees();
+      //getAllDomain();
+    }
     // ViewClients();
     // }else{
     //   nav('/restricted', { state: { unAuthorize: true}})

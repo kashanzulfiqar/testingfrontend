@@ -705,7 +705,7 @@ const EmployeeDashboard = () => {
               </div>
             } */}
               <h4 className="project-title longText">
-                <Link to={`/projects/projects-view/${project?._id}`}>
+                <Link to={`/projects/projects-view/${project?._id}`} state={{ project: project }}>
                   {project?.projectName}
                 </Link>
               </h4>
