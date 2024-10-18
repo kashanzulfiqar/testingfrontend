@@ -8,7 +8,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Avatar_02, Avatar_05, Avatar_09, Avatar_10, Avatar_16, eye, user_icon } from '../../../Entryfile/imagepath'
 import { keyboard, mouse, laptop } from '../../../Entryfile/imagepath';
 import Offcanvas from '../../../Entryfile/offcanvance';
-import { DatePicker, Empty, Form, Input, Select, Spin, Table, message, InputNumber, Upload, Skeleton } from 'antd';
+import { DatePicker, Empty, Form, Input, Select,Button, Spin, Table, message, InputNumber, Upload, Skeleton } from 'antd';
 import Modal from "@mui/material/Modal";
 import { itemRender } from '../../paginationfunction';
 import PhoneNoInput from '../../../Components/PhoneNoInput';
@@ -72,6 +72,7 @@ const [image, setImage] = useState('')
   isBankInfoOpen: false,
   isEmergInfoOpen: false, 
   isprofileInfoOpen: false,
+  isDelOpen: false,
   data: '' 
   });
 
@@ -221,6 +222,7 @@ const handleClose = () => {
     isBankInfoOpen: false,
     isEmergInfoOpen: false, 
     isprofileInfoOpen: false,
+    isDelOpen: false,
     data: '',
   });
   setPhoneLengthError(false)
@@ -565,6 +567,7 @@ const allowedFileTypes = ['image/png', 'image/jpeg', 'image/jpg'];
 
   const onRemoveProfileImage = () => {
     setImageLoader(true)
+    setLoader(true)
 
     let d1 = {
       _id: allData?._id,
@@ -589,6 +592,8 @@ const allowedFileTypes = ['image/png', 'image/jpeg', 'image/jpg'];
         localStorage.setItem('allDataLocal', JSON.stringify({...d1, password: user_data?.password}));
         // setImage(res?.data?.result)
         setImageLoader(false)
+        setLoader(false)
+        handleClose()
         message.success(t('empProfile.errors.profilePictureRemovedSuccessfully'))
       }
     })
@@ -597,6 +602,7 @@ const allowedFileTypes = ['image/png', 'image/jpeg', 'image/jpg'];
       setImage(null)
       localStorage.setItem('updated_user', JSON.stringify({imageUrl: null}))
       nav('/profile', {state: {updated_user: {imageUrl: null}}})
+      setLoader(false)
       message.error(
         `${
           err?.response?.data?.msg
@@ -686,7 +692,18 @@ const antIcon = (
                               {
                               ((image || allData?.imageUrl) && !imageLoader) &&
                               <a href="javascript:void(0)"
-                                onClick={() => onRemoveProfileImage()}
+                                onClick={() => {
+                                  setOpen({
+                                    isFamilyInfoOpen: false,
+                                    isEduInfoOpen: false,
+                                    isExpInfoOpen: false,
+                                    isBankInfoOpen: false,
+                                    isEmergInfoOpen: false,
+                                    isprofileInfoOpen: false,
+                                    isDelOpen: true,
+                                    data: "",
+                                  });
+                                }}
                                 className="fa fa-closee file-remove" style={{color: '#fb1612', position: 'absolute', top: '-1px' ,right: '-4px', fontSize: '19px', fontFamily: 'cursive', padding: '5px 7px 6px', background: 'white', borderRadius: '50%'}} > <i className='fa fa-times' /> </a>
                               }
                             </div>
@@ -754,7 +771,7 @@ const antIcon = (
                       </div>
                       {
                         (location?.pathname !== '/profile') && (role === 'admin' || permissions?.updateUser) &&
-                        <div className="pro-edit"><a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: true, data: '' })}><i className="fa fa-pencil" /></a></div>
+                        <div className="pro-edit"><a href="javascript:void(0)" className="edit-icon" onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: true, isDelOpen: false, data: '' })}><i className="fa fa-pencil" /></a></div>
                       }
                     </div>
                   </div>
@@ -790,7 +807,7 @@ const antIcon = (
                                   <h3 className="card-title">{t('empProfile.bankInformation')}
                                   {
                                     (role === 'admin' || permissions?.updateUser) &&
-                                    <a href="javascript:void(0)" className="edit-icon" style={{ float: i18n.dir() === 'rtl' ? 'left' : 'right' }} onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: false, isBankInfoOpen: true , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a>
+                                    <a href="javascript:void(0)" className="edit-icon" style={{ float: i18n.dir() === 'rtl' ? 'left' : 'right' }} onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: false, isBankInfoOpen: true , isEmergInfoOpen: false, isprofileInfoOpen: false, isDelOpen: false, data: '' })}><i className="fa fa-pencil" /></a>
                                   }
                                   </h3>
                                   { allData?.bankName ?
@@ -819,7 +836,7 @@ const antIcon = (
                                   <h3 className="card-title">{t('empProfile.emergencyContact')}
                                   
                                     {/* (role === 'admin' || permissions?.updateUser) && */}
-                                    <a href="javascript:void(0)" className="edit-icon" style={{ float: i18n.dir() === 'rtl' ? 'left' : 'right' }} onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: true, isprofileInfoOpen: false, data: allData?.emergencyContacts?.length > 0 ? allData.emergencyContacts[0] : {} })}><i className="fa fa-pencil" /></a>
+                                    <a href="javascript:void(0)" className="edit-icon" style={{ float: i18n.dir() === 'rtl' ? 'left' : 'right' }} onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: true, isprofileInfoOpen: false, isDelOpen: false, data: allData?.emergencyContacts?.length > 0 ? allData.emergencyContacts[0] : {} })}><i className="fa fa-pencil" /></a>
                                   
                                   </h3>
                                   {/* <h5 className="section-title">Primary</h5> */}
@@ -875,7 +892,7 @@ const antIcon = (
                                   <h3 className="card-title">{t('empProfile.educationInformations')}
                                   
                                     {/* (role === 'admin' || permissions?.updateUser) && */}
-                                    <a href="javascript:void(0)" className="edit-icon" style={{ float: i18n.dir() === 'rtl' ? 'left' : 'right' }} onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: true, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a>
+                                    <a href="javascript:void(0)" className="edit-icon" style={{ float: i18n.dir() === 'rtl' ? 'left' : 'right' }} onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: true, isExpInfoOpen: false, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: false, isDelOpen: false, data: '' })}><i className="fa fa-pencil" /></a>
                                   
                                   </h3>
                                   <div className="experience-box">
@@ -910,7 +927,7 @@ const antIcon = (
                                   <h3 className="card-title">{t('empProfile.experience')}
                                   
                                     {/* (role === 'admin' || permissions?.updateUser) && */}
-                                    <a href="javascript:void(0)" className="edit-icon" style={{ float: i18n.dir() === 'rtl' ? 'left' : 'right' }} onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: true, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: false, data: '' })}><i className="fa fa-pencil" /></a>
+                                    <a href="javascript:void(0)" className="edit-icon" style={{ float: i18n.dir() === 'rtl' ? 'left' : 'right' }} onClick={() => setOpen({ isFamilyInfoOpen: false, isEduInfoOpen: false, isExpInfoOpen: true, isBankInfoOpen: false , isEmergInfoOpen: false, isprofileInfoOpen: false, isDelOpen: false, data: '' })}><i className="fa fa-pencil" /></a>
                                   
                                   </h3>
                                   <div className="experience-box">
@@ -2166,6 +2183,90 @@ const antIcon = (
           </div>
       </Modal>
         {/* /Experience Modal */}
+        <Modal
+          open={open.isDelOpen}
+          onClose={handleClose}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+          disableRestoreFocus
+          BackdropProps={{
+            style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
+          }}
+        >
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content" style={{ height: "280px" }}>
+              <div
+                className="modal-body"
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                }}
+              >
+                <div className="form-header">
+                  <h3 style={{ marginBottom: "30px" }}>Remove Profile Picture</h3>
+                  <p>
+                    Are you sure you want to remove your{" "}
+                    <b>Profile Picture
+                      {/* {open?.data?.leaveType === "sick"
+                        ? "Sick Leave"
+                        : open?.data?.leaveType === "wfh"
+                        ? "Work From Home"
+                        : open?.data?.leaveType === "casual"
+                        ? "Casual Leave"
+                        : open?.data?.leaveType === "bereavement"
+                        ? "Bereavement Leave"
+                        : open?.data?.leaveType === "marriage"
+                        ? "Marriage Leave"
+                        : open?.data?.leaveType === "maternity"
+                        ? "Maternity Leave"
+                        : open?.data?.leaveType === "paternity"
+                        ? "Paternity Leave"
+                        : open?.data?.leaveType === "annual"
+                        ? "Annual Leave"
+                        : open?.data?.leaveType === "half"
+                        ? "Half Leave"
+                        : open?.data?.leaveType === "unpaid"
+                        ? "Unpaid Leave"
+                        : ""} */}
+                    </b>
+                    ?
+                  </p>
+                </div>
+                <div className="modal-btn delete-action">
+                  <div className="row">
+                    <div className="col-6">
+                      <Button
+                        htmlType="submit"
+                        className="btn btn-primary continue-btn"
+                        onClick={() => onRemoveProfileImage()}
+                        disabled={loader}
+                        style={{ width: "100%" }}
+                      >
+                        {loader ? (
+                          <Spin size="small" indicator={antIcon} />
+                        ) : (
+                          "Delete"
+                        )}
+                      </Button>
+                    </div>
+                    <div className="col-6">
+                      <Button
+                        onClick={handleClose}
+                        className="btn btn-primary submit-btn"
+                        style={{ width: "100%" }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Modal>
+        {/* <Delete/> */}
+        {/* /Delete Leave Modal */}
       </div>
       {/* <Offcanvas /> */}
     </>
