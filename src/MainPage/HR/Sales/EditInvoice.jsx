@@ -1024,27 +1024,6 @@ const EditInvoice = () => {
                   </div>
                 </div>
                 <div className="col-sm-6 col-md-3">
-                    <div className="form-group">
-                      <label>
-                      {t('finance.Invoices.invoicedate')} <span className="text-danger">*</span>
-                      </label>
-                      <div style={{ position: 'relative' }} id='area'>
-                          <Form.Item
-                          name='invoiceDate'
-                          className='custom-border'
-                          rules={[
-                              {
-                                required: true,
-                                message: t('finance.Invoices.pleaseenterinvoicedate'),
-                              },
-                            ]}
-                          >
-                            <DatePicker placeholder={t('requests.addModal.selectDate')} className='form-control' getPopupContainer={() => document.getElementById('area')} />
-                          </Form.Item>
-                      </div>
-                    </div>
-                </div>
-                <div className="col-sm-6 col-md-3">
                   {/* <div className="form-group">
                     <label>Invoice date <span className="text-danger">*</span></label>
                     <div>
@@ -1138,6 +1117,27 @@ const EditInvoice = () => {
                               handleDateChange('invoiceEndDate', date)
                             }}
                             />
+                          </Form.Item>
+                      </div>
+                    </div>
+                </div>
+                <div className="col-sm-6 col-md-3">
+                    <div className="form-group">
+                      <label>
+                      {t('finance.Invoices.invoicedate')} <span className="text-danger">*</span>
+                      </label>
+                      <div style={{ position: 'relative' }} id='area'>
+                          <Form.Item
+                          name='invoiceDate'
+                          className='custom-border'
+                          rules={[
+                              {
+                                required: true,
+                                message: t('finance.Invoices.pleaseenterinvoicedate'),
+                              },
+                            ]}
+                          >
+                            <DatePicker placeholder={t('requests.addModal.selectDate')} className='form-control' getPopupContainer={() => document.getElementById('area')} />
                           </Form.Item>
                       </div>
                     </div>
