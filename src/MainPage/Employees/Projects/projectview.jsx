@@ -109,16 +109,16 @@ const ProjectView = () => {
       ));
   };
 
-  const [data, setData] = useState([]);
-
   const { _id } = useParams();
   //console.log(_id);
   //const originalProjectName = projectName.replace(/[-_]/g, ' ');
   const stateProj = location?.state?.project;
 
-  const project = stateProj ? stateProj : data?.find((p) => p?._id === _id);
+  const [project, setProject] = useState(stateProj ? stateProj : {});
+  const [totalCost, setTotalCost] = useState(project?.teamCost?.reduce((sum, item) => sum + parseFloat(item?.cost), 0));
+  //const project = stateProj ? stateProj : data;
   //console.log("this is project :", project);
-  const totalCost = project?.teamCost?.reduce((sum, item) => sum + parseFloat(item.cost), 0);
+  //const totalCost = project?.teamCost?.reduce((sum, item) => sum + parseFloat(item.cost), 0);
 
   const openUserModal = () => {
     setOpenUser(true);
@@ -208,13 +208,21 @@ const ProjectView = () => {
       "GET",
       `project-management/?employeeId=${
         role === "" && !permissions?.projectManagement ? employee_id : ""
-      }&page=1&limit=99999`,
+      }${_id ? `&projectId=${_id}` : null}&page=1&limit=99999`,
       null,
       user_state
     )
       .then((res) => {
         if (res.data.success === true) {
-          setData(res?.data?.projects?.docs);
+          const temp = res?.data?.projects?.docs[0]
+          setProject(temp);
+          setTotalCost(temp?.teamCost?.reduce((sum, item) => sum + parseFloat(item.cost), 0))
+          if (stateProj) {
+            nav(location.pathname, {
+              state: { ...location.state, project: temp },
+              replace: true, // This ensures the URL is not pushed again but updated
+            });
+          }
           //setData(newProjects);
           setIsLoading(false);
           setLoadLeader(false);
@@ -847,7 +855,7 @@ const ProjectView = () => {
                             null
                           ) : (
                             // Render files
-                            project?.docs.map((doc, index) => {
+                            project?.docs?.map((doc, index) => {
                               if (!doc) {
                                 console.log("NULL file detected");
                                 return null;
@@ -1067,7 +1075,7 @@ const ProjectView = () => {
                             null
                           ) : (
                             // Render files
-                            project?.adminDocs.map((doc, index) => {
+                            project?.adminDocs?.map((doc, index) => {
                               if (!doc) {
                                 console.log("NULL file detected");
                                 return null;
@@ -1634,7 +1642,7 @@ const ProjectView = () => {
                     <Spin size="medium" />
                   ) : (
                     <ul className="list-box">
-                      {project?.assignedDevelopers.map((developerId) => (
+                      {project?.assignedDevelopers?.map((developerId) => (
                         <div className="list-item">
                           <div
                             className="employee-selection d-flex gap-1"
@@ -1827,7 +1835,7 @@ const ProjectView = () => {
                 </div>
 
                 <ul className="chat-user-list">
-                  {selectedDevelopers.map((developerId) => (
+                  {selectedDevelopers?.map((developerId) => (
                     <li>
                       <div
                         className="employee-selection"
