@@ -1025,7 +1025,7 @@ const [chartOptions, setChartOptions] = useState({
     y: {
       formatter: function (minutes) {
         const totalMinutes = (minutes * 60); // Convert hours back to minutes
-        const displayHours = Math.round(totalMinutes / 60); // Get whole hours
+        const displayHours = Math.floor(totalMinutes / 60); 
         const remainingMinutes = Math.round(totalMinutes % 60); // Get remaining minutes
         return `${displayHours}h ${remainingMinutes}m`; // Format tooltip as "Xh Ym"
       },
