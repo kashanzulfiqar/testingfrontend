@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   Avatar_16,
   Avatar_02,
@@ -22,6 +22,7 @@ import {
   Empty,
   Form,
   Input,
+  Divider,
   Pagination,
   Select,
   Spin,
@@ -34,11 +35,16 @@ import {
   InputNumber,
 } from "antd";
 import { Modal } from "@mui/material";
+import PlusOutlined from '@mui/icons-material/Add';
+import { getAllISOCodes } from 'iso-country-currency';
 import moment from "moment";
 import { apiServices } from "../../../Services/apiServices";
 import { apiUploadToS3 } from "../../../Services/uploadImage";
 import { LoadingOutlined, MinusCircleFilled } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
+import AddClientModal from "../../Pages/Profile/modals/AddClientModal";
+import AddFocalModal from "../../Pages/Profile/clientProfileScreens/AddFocalModal";
+import TwoStepClientAdditionModal from "../../Pages/Profile/modals/TwoStepClientAddition";
 
 function EditProjects({
   data,
@@ -48,6 +54,7 @@ function EditProjects({
   allCurrencies,
   allDomain,
 }) {
+  const nav = useNavigate();
   const [form] = Form.useForm();
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
   const { t, i18n } = useTranslation();
@@ -61,6 +68,17 @@ function EditProjects({
   const [focalPersons, setFocalPersons] = useState([]);
   const [selectedTeamMembers, setSelectedTeamMembers] = useState([]);
   const [teamCost, setTeamCost] = useState([]);
+
+  const [open, setOpen] = useState({
+    isAddClientOpen: false,
+    isAddFocalOpen: false,
+    data: ''
+  });
+  const [allClients, setAllClients] = useState([]) 
+  const [allFocalPerson, setAllFocalPerson] = useState([])
+  const [paginationDetail, setPaginationDetail] = useState();
+  const [allCountries, setAllCountries] = useState([]);
+  const [clientData, setClientData] = useState({})
 
   const [selectedClient, setSelectedClient] = useState(null);
   const [selectedLeader, setSelectedLeader] = useState(null);
@@ -108,6 +126,93 @@ function EditProjects({
     );
     setPaymentSchedules(updatedSchedules);
   };
+
+  useEffect(() => {
+    if(role === 'admin' || permissions?.clientManagement) {
+      getAllClients()
+    }else{
+      nav(`${role === 'client' ? '/client/client-profile' : role === 'focalperson' ? `/client/focal-profile` : role === 'admin' ? `/main/dashboard` : `/employee/dashboard`}`)
+    }
+
+    // getFocalPerson()
+
+    // if(client_data){
+    //   setClientData(client_data)
+    //   setLoader(false)
+    // }else if(role === 'client'){
+    //     getSingleClient()
+    // }else if(!client_data && role !== 'client'){
+    //   nav(role === 'focalperson' ? `/client/focal-profile` : role === 'admin' ? `/main/dashboard` : `/employee/dashboard`)
+    // }
+    }, [])
+  
+    const getAllClients = (values) => {
+      apiServices("GET", `client/view-client?deleted=false${values === '' ? '' : values?.clientName === '' ? '' : values?.clientName ? `&clientName=${values?.clientName}` : ''}`, null, user_state)
+        .then((res) => {
+          if (res?.data?.success === true) {
+            setAllClients(res?.data?.clients?.docs);
+            setPaginationDetail(res?.data?.clients)
+          }
+        })
+        .catch((err) => {
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : t('aDash.errors.getAllClientsError')
+            }!`
+          );
+        });
+    }
+
+    const getAllCountries = () => {
+      const isoCodes = getAllISOCodes();
+      const sorted_data = isoCodes.sort((a, b) => a.countryName.localeCompare(b.countryName));
+      setAllCountries(sorted_data)
+    };
+
+    // const getFocalPerson = () => {
+    //   apiServices("GET", `focal-person/view-focal-person?deleted=false&clientId=${clientData?._id}`, null, user_state)
+    //     .then((res) => {
+    //       if (res?.data?.success === true) {
+    //         setAllFocalPerson(res?.data?.focalPersons?.docs);
+    //         setPaginationDetail(res?.data?.focalPersons)
+    //       }
+    //     })
+    //     .catch((err) => {
+    //       message.error(
+    //         `${
+    //           err?.response?.data?.msg
+    //             ? err?.response?.data?.msg
+    //             : err?.response?.data?.validation?.body?.message
+    //             ? err?.response?.data?.validation?.body?.message
+    //             : t('client.getAllFocalPersonError')
+    //         }!`
+    //       );
+    //     });
+    // }
+
+    // const getSingleClient = () => {
+    //   apiServices("GET", `client/get-client-info?_id=${user_state?.user?._id}`, null, user_state)
+    //     .then((res) => {
+    //       if (res?.data?.success === true) {
+    //         setClientData(res?.data?.Client);
+    //       }
+    //     })
+    //     .catch((err) => {
+    //       message.error(
+    //         `${
+    //           err?.response?.data?.msg
+    //             ? err?.response?.data?.msg
+    //             : err?.response?.data?.validation?.body?.message
+    //             ? err?.response?.data?.validation?.body?.message
+    //             : t('Timesheetadmin.getClientError')
+    //         }!`
+    //       );
+    //     });
+    // }
 
   useEffect(() => {
     console.log("EDIT MODAL");
@@ -1145,6 +1250,7 @@ function EditProjects({
   };
 
   return (
+    <>
     <Modal
       open={editModal}
       onClose={closeEditModal}
@@ -1243,7 +1349,24 @@ function EditProjects({
                             notFoundContent={
                               <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
                             }
-                            dropdownRender={(menu) => <>{menu}</>}
+                            dropdownRender={(menu) => <>{menu}{
+                              <>
+                                <Divider
+                                  style={{
+                                    margin: '5px 0',
+                                  }}
+                                />
+                                <Button
+                                  type="button" icon={<PlusOutlined style={{fontSize: '20px', marginRight: '5px'}} />}
+                                  className="addButtonStyles"
+                                  style={{width: '100%', height: '40px', background: '#efefef', borderColor: '#efefef', display: 'flex', justifyContent: 'center', alignItems: 'center'}}
+                                  onClick={() => {setOpen({ isAddClientOpen: true, isAddFocalOpen: false, data: '' }); getAllCountries()}}
+                                >
+                                  Add Client
+                                  {/* {t('client.addClient')}  //  {t('allEmp.Modal.addRole')} */}
+                                </Button>
+                              </>
+                          }</>}
                             className="custom-select custom-normal"
                             getPopupContainer={() =>
                               document.getElementById("area")
@@ -1305,7 +1428,24 @@ function EditProjects({
                             notFoundContent={
                               <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
                             }
-                            dropdownRender={(menu) => <>{menu}</>}
+                            dropdownRender={(menu) => <>{menu}{
+                              <>
+                                <Divider
+                                  style={{
+                                    margin: '5px 0',
+                                  }}
+                                />
+                                <Button
+                                  type="button" icon={<PlusOutlined style={{fontSize: '20px', marginRight: '5px'}} />}
+                                  className="addButtonStyles"
+                                  style={{width: '100%', height: '40px', background: '#efefef', borderColor: '#efefef', display: 'flex', justifyContent: 'center', alignItems: 'center'}}
+                                  onClick={() => setOpen({ isAddClientOpen: true, isAddFocalOpen: true, data: '' })}
+                                >
+                                  Add Focal Person
+                                  {/* {t('client.addClient')}  //  {t('allEmp.Modal.addRole')} */}
+                                </Button>
+                              </>
+                          }</>}
                             className="custom-select custom-normal"
                             getPopupContainer={() =>
                               document.getElementById("area")
@@ -2784,6 +2924,34 @@ function EditProjects({
         </div>
       </div>
     </Modal>
+
+    {open?.isAddClientOpen &&
+          <TwoStepClientAdditionModal
+            open={open}
+            setOpen={setOpen}
+            user_state={user_state}
+            allClients={allClients}
+            setAllClients={setAllClients}
+            setPaginationDetail={setPaginationDetail}
+            paginationDetail={paginationDetail}
+            allCountries={allCountries}
+          />
+    }
+
+{/* {
+          open?.isAddFocalOpen &&
+          <AddFocalModal
+            open={open}
+            setOpen={setOpen}
+            user_state={user_state}
+            allFocalPerson={allFocalPerson}
+            setAllFocalPerson={setAllFocalPerson}
+            clientId={clientData?._id}
+            setPaginationDetail={setPaginationDetail}
+            paginationDetail={paginationDetail}
+          />
+        } */}
+    </>
   );
 }
 
