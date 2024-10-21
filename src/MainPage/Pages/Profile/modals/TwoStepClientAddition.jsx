@@ -75,7 +75,8 @@ const TwoStepClientAdditionModal = ({
             total: paginationDetail?.total + 1,
           });
           message.success(t("client.clientAddedSuccess"));
-          handleClose();
+          next();
+          window.scrollTo(0, 0);
           setLoader(false);
         }
       })
@@ -585,14 +586,18 @@ const TwoStepClientAdditionModal = ({
               </div>
             </div>
           </div>
-          <div className="submit-section">
-            <button
-              type="submit"
-              className="btn btn-primary submit-btn"
-              disabled={loader}
-            >
-              {loader ? <Spin size="small" indicator={antIcon} /> : t("submit")}
-            </button>
+          <div className="submit-section" style={{ marginTop: "5px" }}>
+            <Form.Item>
+              <div className="form-group text-center">
+                <Button
+                  htmlType="submit"
+                  className="btn btn-primary submit-btn"
+                  disabled={loader}
+                >
+                  {loader ? <Spin size="small" indicator={antIcon} /> : "Next"}
+                </Button>
+              </div>
+            </Form.Item>
           </div>
         </Form>
       ),
