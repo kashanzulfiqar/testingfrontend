@@ -22,19 +22,20 @@ import { apiServices } from "../../../../Services/apiServices";
 import { useTranslation } from "react-i18next";
 
 const TwoStepClientAdditionModal = ({
+  twoStepForm,
   open,
   setOpen,
   user_state,
-  allClients,
-  setAllClients,
-  setPaginationDetail,
-  paginationDetail,
+  setClients,
+  setFocalPersons,
+  setFocalPersonDisable,
   allCountries,
 }) => {
   const [form] = Form.useForm();
   const { t, i18n } = useTranslation();
   const company_id = user_state?.user?.companyId;
 
+  const [clientId, setClientId] = useState()
   const [current, setCurrent] = useState(0);
   const [phoneLengthError, setPhoneLengthError] = useState(false);
   const [emergValue, setEmergValue] = useState(null);
@@ -43,13 +44,12 @@ const TwoStepClientAdditionModal = ({
   const [loader, setLoader] = useState(false);
 
   useEffect(() => {
-    console.log("ADD CLIENT MODAL", allCountries);
     if (open?.data) {
       form.setFieldsValue(open?.data);
     }
   }, []);
 
-  const onFinishAdd = (values) => {
+  const onFinishClientAdd = (values) => {
     const replacer = (key, value) => {
       if (value === undefined || value === "" || value === null || !value) {
         return "";
@@ -62,7 +62,9 @@ const TwoStepClientAdditionModal = ({
     apiServices("POST", "client/add-client", new_values, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
-          setAllClients((prev) => [
+          setClientId(res?.data?.Client?._id)
+          console.log("client_id",res?.data?.Client?._id)
+          setClients((prev) => [
             {
               ...new_values,
               _id: res?.data?.Client?._id,
@@ -70,11 +72,9 @@ const TwoStepClientAdditionModal = ({
             },
             ...prev,
           ]);
-          setPaginationDetail({
-            ...paginationDetail,
-            total: paginationDetail?.total + 1,
-          });
           message.success(t("client.clientAddedSuccess"));
+          twoStepForm.setFieldsValue({ clientId: res?.data?.Client?._id })
+          setFocalPersonDisable(false)
           next();
           window.scrollTo(0, 0);
           setLoader(false);
@@ -92,65 +92,90 @@ const TwoStepClientAdditionModal = ({
           }!`
         );
       });
+    
   };
-  const onFinishEdit = (values) => {
+
+  const onFinishFocalPersonAdd = (values) => {
     const replacer = (key, value) => {
       if (value === undefined || value === "" || value === null || !value) {
         return "";
       }
       return value;
     };
+    
     const d = JSON.parse(JSON.stringify(values, replacer));
-    Object.keys(d).forEach((key) => {
-      if (key === "password" || d[key] === "") {
-        delete d[key];
-      }
-    });
-
     const new_values = {
       ...d,
-      companyId: open?.data?.companyId,
-      _id: open?.data?._id,
+      clientId,
     };
     setLoader(true);
-    apiServices("PUT", "client/update-client", new_values, user_state)
+    apiServices("POST", "focal-person/add-focal-person", new_values, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
-          setAllClients(
-            allClients.map((client) => {
-              if (client._id === open?.data?._id) {
-                return {
-                  ...client,
-                  ...d,
-                };
-              } else {
-                return {
-                  ...client,
-                };
-              }
-            })
-          );
+          setFocalPersons((prev) => [
+            {
+              ...new_values,
+              _id: res?.data?.focalPerson?._id,
+              companyId: company_id,
+              clientId,
+            },
+            ...prev,
+          ]);
+          message.success(t("client.focalPersonAddedSuccessfully"));
+          twoStepForm.setFieldsValue({ focalPersonId: res?.data?.focalPerson?._id })
           handleClose();
-          message.success(t("client.clientUpdatedSuccess"));
           setLoader(false);
         }
       })
       .catch((err) => {
         setLoader(false);
-        // console.log(err);
         message.error(
           `${
             err?.response?.data?.msg
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : t("client.updateClientInfoError")
+              : t("client.addFocalPersonInfoError")
           }!`
         );
       });
   };
 
-  const onImageUpload = (imagedata) => {
+  const next = () => {
+    setCurrent(current + 1);
+  };
+
+  const handleClose = () => {
+    setOpen({ isAddClientOpen: false, data: "" });
+    setPhoneLengthError(false);
+    setEmergValue(null);
+    form.resetFields();
+  };
+  const onFocalPersonImageUpload = (imagedata) => {
+    setImageLoader(true);
+    apiUploadToS3(imagedata)
+      .then((res) => {
+        console.log(res?.data?.result?.secure_url);
+        form.setFieldsValue({
+          focalPersonImageUrl: res?.data?.result?.secure_url,
+        });
+        setImage(res?.data?.result?.secure_url);
+        setImageLoader(false);
+      })
+      .catch((err) => {
+        setImageLoader(false);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : t("allEmp.errors.uploadImageError")
+          }!`
+        );
+      });
+  };
+  const onLogoImageUpload = (imagedata) => {
     setImageLoader(true);
     apiUploadToS3(imagedata)
       .then((res) => {
@@ -171,17 +196,6 @@ const TwoStepClientAdditionModal = ({
           }!`
         );
       });
-  };
-
-  const next = () => {
-    setCurrent(current + 1);
-  };
-
-  const handleClose = () => {
-    setOpen({ isAddOpen: false, data: "" });
-    setPhoneLengthError(false);
-    setEmergValue(null);
-    form.resetFields();
   };
   const onHandleEmergChange = (type, value) => {
     if (!value) {
@@ -243,7 +257,7 @@ const TwoStepClientAdditionModal = ({
         <Form
           form={form}
           onFinish={(values) => {
-            open?.data ? onFinishEdit(values) : onFinishAdd(values);
+            onFinishClientAdd(values);
           }}
           onFinishFailed={({ errorFields }) => {
             const phoneErrorExists = errorFields.find((field) =>
@@ -296,9 +310,9 @@ const TwoStepClientAdditionModal = ({
                             beforeCrop={beforeUpload}
                           >
                             <Upload
-                              // action={(image) => onImageUpload(image)}
+                              // action={(image) => onLogoImageUpload(image)}
                               customRequest={({ file, onSuccess, onError }) => {
-                                onImageUpload(file);
+                                onLogoImageUpload(file);
                               }}
                               fileList={null}
                               maxCount={1}
@@ -332,7 +346,7 @@ const TwoStepClientAdditionModal = ({
             <div className="col-md-6">
               <div className="form-group">
                 <label>
-                  {t("client.fullName")} <span className="text-danger">*</span>
+                  {t("client.companyName")} <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="clientName"
@@ -365,7 +379,7 @@ const TwoStepClientAdditionModal = ({
             <div className="col-md-6">
               <div className="form-group">
                 <label>
-                  {t("client.email")} <span className="text-danger">*</span>
+                  {t("client.companyEmail")} <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="clientEmail"
@@ -415,20 +429,11 @@ const TwoStepClientAdditionModal = ({
                     },
                   ]}
                 >
-                  {open?.data ? (
-                    <Input
-                      type="password"
-                      className="form-control"
-                      maxLength={50}
-                      disabled
-                    />
-                  ) : (
                     <Input.Password
                       type="password"
                       className="form-control"
                       maxLength={50}
                     />
-                  )}
                 </Form.Item>
               </div>
             </div>
@@ -609,7 +614,7 @@ const TwoStepClientAdditionModal = ({
         <Form
           form={form}
           onFinish={(values) => {
-            open?.data ? onFinishEdit(values) : onFinishAdd(values);
+            onFinishFocalPersonAdd(values);
           }}
           onFinishFailed={({ errorFields }) => {
             const phoneErrorExists = errorFields.find((field) =>
@@ -662,9 +667,9 @@ const TwoStepClientAdditionModal = ({
                             beforeCrop={beforeUpload}
                           >
                             <Upload
-                              // action={(image) => onImageUpload(image)}
+                              // action={(image) => onFocalPersonImageUpload(image)}
                               customRequest={({ file, onSuccess, onError }) => {
-                                onImageUpload(file);
+                                onFocalPersonImageUpload(file);
                               }}
                               fileList={null}
                               maxCount={1}
@@ -772,20 +777,11 @@ const TwoStepClientAdditionModal = ({
                     },
                   ]}
                 >
-                  {open?.data ? (
-                    <Input
-                      type="password"
-                      className="form-control"
-                      maxLength={50}
-                      disabled
-                    />
-                  ) : (
-                    <Input.Password
+                  <Input.Password
                       type="password"
                       className="form-control"
                       maxLength={50}
                     />
-                  )}
                 </Form.Item>
               </div>
             </div>

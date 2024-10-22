@@ -736,6 +736,8 @@
     "companyLogo": "Company Logo",
     "fullName": "Full Name",
     "email": "Email",
+    "companyName": "Company Name",
+    "companyEmail": "Company Email",
     "password": "Password",
     "phoneNo": "Phone No",
     "country": "Country",

@@ -735,6 +735,8 @@
     "companyLogo": "شعار الشركة",
     "fullName": "الاسم الكامل",
     "email": "البريد الإلكتروني",
+    "companyName": "الاسم الكامل",
+    "companyEmail": "بريد الشركة",
     "password": "كلمة المرور",
     "phoneNo": "رقم الهاتف",
     "country": "الدولة",
