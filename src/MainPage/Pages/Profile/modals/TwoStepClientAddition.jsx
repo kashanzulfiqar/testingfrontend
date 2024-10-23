@@ -934,6 +934,9 @@ const TwoStepClientAdditionModal = ({
                   ? t("finance.Invoices.client")
                   : t("projectScreen.Modal.focalPerson")}
               </h5>
+              <button type="button" className="close" onClick={handleClose}>
+                    <span aria-hidden="true">×</span>
+                </button>
             </div>
             <div className="modal-body">
               <div>
