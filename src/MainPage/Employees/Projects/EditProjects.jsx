@@ -79,7 +79,9 @@ function EditProjects({
 
   const [selectedClient, setSelectedClient] = useState(null);
   const [selectedFocalPerson, setSelectedFocalPerson] = useState(null);
-
+  const [loadingEmployee, setLoadingEmployee] = useState(false);
+  const [loadingClient, setLoadingClient] = useState(false);
+  const [loadingFocalPerson, setLoadingFocalPerson] = useState(false);
   const [selectedLeader, setSelectedLeader] = useState(null);
   const [selectedDevelopers, setSelectedDevelopers] = useState([]);
   const [filesToDelete, setFilesToDelete] = useState([]);
@@ -299,6 +301,7 @@ function EditProjects({
   };
 
   const fetchEmployees = () => {
+    setLoadingEmployee(true)
     apiServices("GET", `user/all-employees`, null, user_state)
       .then((res) => {
         if (res.data.success === true) {
@@ -307,9 +310,11 @@ function EditProjects({
             .slice()
             .sort((a, b) => a.fullName.localeCompare(b.fullName));
           setEmployees(sortedData);
+          setLoadingEmployee(false)
         }
       })
       .catch((err) => {
+        setLoadingEmployee(false)
         message.error(
           `${
             err?.response?.data?.msg
@@ -323,6 +328,7 @@ function EditProjects({
   };
 
   const ViewClients = () => {
+    setLoadingClient(true)
     apiServices(
       "GET",
       `client/all-client`,
@@ -338,9 +344,11 @@ function EditProjects({
             .slice()
             .sort((a, b) => a.clientName.localeCompare(b.clientName));
           setClients(sortedData);
+          setLoadingClient(false)
         }
       })
       .catch((err) => {
+        setLoadingClient(false)
         message.error(
           `${
             err?.response?.data?.msg
@@ -354,6 +362,7 @@ function EditProjects({
   };
 
   const fetchFocalPersons = (clientId) => {
+    setLoadingFocalPerson(true)
     apiServices(
       "GET",
       `focal-person/view-focal-person?deleted=false&clientId=${clientId}`,
@@ -367,12 +376,14 @@ function EditProjects({
             .slice()
             .sort((a, b) => a.focalPersonName.localeCompare(b.focalPersonName));
           setFocalPersons(sortedData);
+          setLoadingFocalPerson(false)
         }
       })
       .catch((err) => {
         // message.error(
         //   `Get Focal Person Error`
         // );
+        setLoadingFocalPerson(false)
         console.log("error");
       });
   };
@@ -1217,7 +1228,8 @@ function EditProjects({
                 <div className="row">
                   <div className="col-sm-6">
                     <div className="form-group">
-                      <label>{t("projectScreen.Modal.projectName")}</label>
+                      <label>{t("projectScreen.Modal.projectName")}{" "}
+                      <span className="text-danger">*</span></label>
                       <Form.Item
                         name="projectName"
                         className="custom-border"
@@ -1240,7 +1252,8 @@ function EditProjects({
                   </div>
                   <div className="col-sm-6">
                     <div className="form-group">
-                      <label>{t("projectScreen.Modal.client")}</label>
+                      <label>{t("projectScreen.Modal.client")}{" "}
+                      <span className="text-danger">*</span></label>
                       <div style={{ position: "relative" }} id="area">
                         <Form.Item
                           name="clientId"
@@ -1265,8 +1278,17 @@ function EditProjects({
                             }
                             optionFilterProp="children"
                             notFoundContent={
-                              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                            }
+                              loadingClient ? (
+                                <Spin style={{
+                                  height: "38px",
+                                  width: "100%",
+                                  display: "flex",
+                                  justifyContent: "center",
+                                  alignItems: "center",
+                                }} />
+                              ) : (
+                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                              )}
                             dropdownRender={(menu) => <>{menu}{
                               <>
                                 <Divider
@@ -1316,9 +1338,11 @@ function EditProjects({
                 </div>
 
                 <div className="row">
+                { focalPersonDisable === false && (
                   <div className="col-sm-6">
                     <div className="form-group">
-                      <label>{t("projectScreen.Modal.focalPerson")}</label>
+                      <label>{t("projectScreen.Modal.focalPerson")}{" "}
+                      <span className="text-danger">*</span></label>
                       <div style={{ position: "relative" }} id="area">
                         <Form.Item
                           name="focalPersonId"
@@ -1333,7 +1357,6 @@ function EditProjects({
                           ]}
                         >
                           <Select
-                            disabled={focalPersonDisable}
                             showSearch
                             onSearch={(val) => {
                               showTeamSearch(val, "focal");
@@ -1346,8 +1369,17 @@ function EditProjects({
                             }
                             optionFilterProp="children"
                             notFoundContent={
-                              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                            }
+                              loadingFocalPerson ? (
+                                <Spin style={{
+                                  height: "38px",
+                                  width: "100%",
+                                  display: "flex",
+                                  justifyContent: "center",
+                                  alignItems: "center",
+                                }} />
+                              ) : (
+                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                              )}
                             dropdownRender={(menu) => <>{menu}{
                               <>
                                 <Divider
@@ -1388,9 +1420,11 @@ function EditProjects({
                       </div>
                     </div>
                   </div>
+                )}
                   <div className="col-sm-6">
                     <div className="form-group">
-                      <label>{t("projectScreen.Modal.projectStatus")}</label>
+                      <label>{t("projectScreen.Modal.projectStatus")}{" "}
+                      <span className="text-danger">*</span></label>
                       <div style={{ position: "relative" }} id="area">
                         <Form.Item
                           name="status"
@@ -1434,7 +1468,8 @@ function EditProjects({
                 <div className="row">
                   <div className="col-sm-6">
                     <div className="form-group">
-                      <label>{t("projectScreen.Modal.startDate")}</label>
+                      <label>{t("projectScreen.Modal.startDate")}{" "}
+                      <span className="text-danger">*</span></label>
                       <div style={{ position: "relative" }} id="area">
                         <Form.Item
                           name="startDate"
@@ -1461,7 +1496,8 @@ function EditProjects({
                   </div>
                   <div className="col-sm-6">
                     <div className="form-group">
-                      <label>{t("projectScreen.Modal.endDate")}</label>
+                      <label>{t("projectScreen.Modal.endDate")}{" "}
+                      <span className="text-danger">*</span></label>
                       <div style={{ position: "relative" }} id="area">
                         {/* <Form.Item
                           name="endDate"
@@ -1533,7 +1569,8 @@ function EditProjects({
                 <div className="row">
                   <div className="col-sm-6">
                     <div className="form-group">
-                      <label>{t("projectScreen.Modal.domain")}</label>
+                      <label>{t("projectScreen.Modal.domain")}{" "}
+                      <span className="text-danger">*</span></label>
                       <div style={{ position: "relative" }} id="area">
                         <Form.Item
                           name="projectDomain"
@@ -1584,7 +1621,8 @@ function EditProjects({
                   </div>
                   <div className="col-sm-6">
                     <div className="form-group">
-                      <label>{t("projectScreen.Modal.projectType")}</label>
+                      <label>{t("projectScreen.Modal.projectType")}{" "}
+                      <span className="text-danger">*</span></label>
                       <div style={{ position: "relative" }} id="area">
                         <Form.Item
                           name="projectType"
@@ -1627,7 +1665,8 @@ function EditProjects({
                   { projectType === 'Billed' && (
                     <div className="col-sm-6">
                       <div className="form-group">
-                        <label>{t("projectScreen.Modal.currency")}</label>
+                        <label>{t("projectScreen.Modal.currency")}{" "}
+                        <span className="text-danger">*</span></label>
                         <div style={{ position: "relative" }} id="area">
                           <Form.Item
                             name="currency"
@@ -1671,7 +1710,8 @@ function EditProjects({
                     projectType === "Billed" && (
                     <div className="col-sm-6">
                       <div className="form-group">
-                        <label>{t("projectScreen.Modal.costType")}</label>
+                        <label>{t("projectScreen.Modal.costType")}{" "}
+                        <span className="text-danger">*</span></label>
                         <div style={{ position: "relative" }} id="area">
                           <Form.Item
                             name="costType"
@@ -1713,7 +1753,8 @@ function EditProjects({
                   {costType === 'Fixed' && projectType === 'Billed' &&  (
                   <div className="col-sm-6">
                     <div className="form-group">
-                      <label>{t("projectScreen.Modal.cost")}</label>
+                      <label>{t("projectScreen.Modal.cost")}{" "}
+                      <span className="text-danger">*</span></label>
 
                       <Form.Item
                         name="cost"
@@ -1745,7 +1786,8 @@ function EditProjects({
                   )}
                   <div className="col-sm-6">
                     <div className="form-group">
-                      <label>{t("projectScreen.Modal.priority")}</label>
+                      <label>{t("projectScreen.Modal.priority")}{" "}
+                      <span className="text-danger">*</span></label>
                       <div style={{ position: "relative" }} id="area">
                         <Form.Item
                           name="priority"
@@ -1785,7 +1827,8 @@ function EditProjects({
                 <div className="row">
                   <div className="col-sm-6">
                     <div className="form-group">
-                      <label>{t("projectScreen.Modal.leader")}</label>
+                      <label>{t("projectScreen.Modal.leader")}{" "}
+                      <span className="text-danger">*</span></label>
                       <div style={{ position: "relative" }} id="area">
                         <Form.Item
                           name="projectLead"
@@ -1810,8 +1853,17 @@ function EditProjects({
                             }
                             optionFilterProp="children"
                             notFoundContent={
-                              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                            }
+                              loadingEmployee ? (
+                                <Spin style={{
+                                  height: "38px",
+                                  width: "100%",
+                                  display: "flex",
+                                  justifyContent: "center",
+                                  alignItems: "center",
+                                }} />
+                              ) : (
+                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                              )}
                             dropdownRender={(menu) => <>{menu}</>}
                             className="custom-select custom-normal"
                             getPopupContainer={() =>
@@ -1863,7 +1915,8 @@ function EditProjects({
                 <div className="row">
                   <div className="col-sm-6">
                     <div className="form-group">
-                      <label>{t("projectScreen.Modal.addTeam")}</label>
+                      <label>{t("projectScreen.Modal.addTeam")}{" "}
+                      <span className="text-danger">*</span></label>
                       <div style={{ position: "relative" }} id="area">
                         <Form.Item
                           name="assignedDevelopers"
@@ -1890,8 +1943,17 @@ function EditProjects({
                             }
                             optionFilterProp="children"
                             notFoundContent={
-                              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                            }
+                              loadingEmployee ? (
+                                <Spin style={{
+                                  height: "38px",
+                                  width: "100%",
+                                  display: "flex",
+                                  justifyContent: "center",
+                                  alignItems: "center",
+                                }} />
+                              ) : (
+                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                              )}
                             dropdownRender={(menu) => <>{menu}</>}
                             getPopupContainer={() =>
                               document.getElementById("area")
@@ -1987,7 +2049,8 @@ function EditProjects({
                 </div>
 
                 <div className="form-group">
-                  <label>{t("projectScreen.Modal.description")}</label>
+                  <label>{t("projectScreen.Modal.description")}{" "}
+                  <span className="text-danger">*</span></label>
                   <Form.Item
                     name="projectDescription"
                     rules={[
@@ -2263,8 +2326,17 @@ function EditProjects({
                             }
                             optionFilterProp="children"
                             notFoundContent={
-                              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                            }
+                              loadingClient ? (
+                                <Spin style={{
+                                  height: "38px",
+                                  width: "100%",
+                                  display: "flex",
+                                  justifyContent: "center",
+                                  alignItems: "center",
+                                }} />
+                              ) : (
+                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                              )}
                             dropdownRender={(menu) => <>{menu}{
                               <>
                                 <Divider
@@ -2314,6 +2386,7 @@ function EditProjects({
                 </div>
 
                 <div className="row">
+                { focalPersonDisable === false && (
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>{t("projectScreen.Modal.focalPerson")}</label>
@@ -2331,7 +2404,6 @@ function EditProjects({
                           ]}
                         >
                           <Select
-                            disabled={focalPersonDisable}
                             showSearch
                             onSearch={(val) => {
                               showTeamSearch(val, "focal");
@@ -2344,8 +2416,17 @@ function EditProjects({
                             }
                             optionFilterProp="children"
                             notFoundContent={
-                              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                            }
+                              loadingFocalPerson ? (
+                                <Spin style={{
+                                  height: "38px",
+                                  width: "100%",
+                                  display: "flex",
+                                  justifyContent: "center",
+                                  alignItems: "center",
+                                }} />
+                              ) : (
+                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                              )}
                             dropdownRender={(menu) => <>{menu}{
                               <>
                                 <Divider
@@ -2386,6 +2467,7 @@ function EditProjects({
                       </div>
                     </div>
                   </div>
+                )}
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>{t("projectScreen.Modal.projectStatus")}</label>
@@ -2647,8 +2729,17 @@ function EditProjects({
                             }
                             optionFilterProp="children"
                             notFoundContent={
-                              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                            }
+                              loadingEmployee ? (
+                                <Spin style={{
+                                  height: "38px",
+                                  width: "100%",
+                                  display: "flex",
+                                  justifyContent: "center",
+                                  alignItems: "center",
+                                }} />
+                              ) : (
+                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                              )}
                             dropdownRender={(menu) => <>{menu}</>}
                             className="custom-select custom-normal"
                             getPopupContainer={() =>
@@ -2727,8 +2818,17 @@ function EditProjects({
                             }
                             optionFilterProp="children"
                             notFoundContent={
-                              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                            }
+                              loadingEmployee ? (
+                                <Spin style={{
+                                  height: "38px",
+                                  width: "100%",
+                                  display: "flex",
+                                  justifyContent: "center",
+                                  alignItems: "center",
+                                }} />
+                              ) : (
+                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                              )}
                             dropdownRender={(menu) => <>{menu}</>}
                             getPopupContainer={() =>
                               document.getElementById("area")
@@ -2890,6 +2990,9 @@ function EditProjects({
             setClients={setClients}
             setFocalPersons={setFocalPersons}
             setFocalPersonDisable={setFocalPersonDisable}
+            clientScreen={false}
+            setPaginationDetail={null}
+            paginationDetail={null}
             allCountries={allCountries}
           />
     }

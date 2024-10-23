@@ -29,13 +29,16 @@ const TwoStepClientAdditionModal = ({
   setClients,
   setFocalPersons,
   setFocalPersonDisable,
+  clientScreen,
+  setPaginationDetail,
+  paginationDetail,
   allCountries,
 }) => {
   const [form] = Form.useForm();
   const { t, i18n } = useTranslation();
   const company_id = user_state?.user?.companyId;
 
-  const [clientId, setClientId] = useState()
+  const [clientId, setClientId] = useState();
   const [current, setCurrent] = useState(0);
   const [phoneLengthError, setPhoneLengthError] = useState(false);
   const [emergValue, setEmergValue] = useState(null);
@@ -62,8 +65,8 @@ const TwoStepClientAdditionModal = ({
     apiServices("POST", "client/add-client", new_values, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
-          setClientId(res?.data?.Client?._id)
-          console.log("client_id",res?.data?.Client?._id)
+          setClientId(res?.data?.Client?._id);
+          console.log("client_id", res?.data?.Client?._id);
           setClients((prev) => [
             {
               ...new_values,
@@ -73,8 +76,15 @@ const TwoStepClientAdditionModal = ({
             ...prev,
           ]);
           message.success(t("client.clientAddedSuccess"));
-          twoStepForm.setFieldsValue({ clientId: res?.data?.Client?._id })
-          setFocalPersonDisable(false)
+          if (!clientScreen) {
+            twoStepForm.setFieldsValue({ clientId: res?.data?.Client?._id });
+            setFocalPersonDisable(false);
+          } else {
+            setPaginationDetail({
+              ...paginationDetail,
+              total: paginationDetail?.total + 1,
+            });
+          }
           next();
           window.scrollTo(0, 0);
           setLoader(false);
@@ -92,7 +102,6 @@ const TwoStepClientAdditionModal = ({
           }!`
         );
       });
-    
   };
 
   const onFinishFocalPersonAdd = (values) => {
@@ -102,7 +111,7 @@ const TwoStepClientAdditionModal = ({
       }
       return value;
     };
-    
+
     const d = JSON.parse(JSON.stringify(values, replacer));
     const new_values = {
       ...d,
@@ -122,7 +131,11 @@ const TwoStepClientAdditionModal = ({
             ...prev,
           ]);
           message.success(t("client.focalPersonAddedSuccessfully"));
-          twoStepForm.setFieldsValue({ focalPersonId: res?.data?.focalPerson?._id })
+          if (!clientScreen) {
+            twoStepForm.setFieldsValue({
+              focalPersonId: res?.data?.focalPerson?._id,
+            });
+          }
           handleClose();
           setLoader(false);
         }
@@ -346,7 +359,8 @@ const TwoStepClientAdditionModal = ({
             <div className="col-md-6">
               <div className="form-group">
                 <label>
-                  {t("client.companyName")} <span className="text-danger">*</span>
+                  {t("client.companyName")}{" "}
+                  <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="clientName"
@@ -379,7 +393,8 @@ const TwoStepClientAdditionModal = ({
             <div className="col-md-6">
               <div className="form-group">
                 <label>
-                  {t("client.companyEmail")} <span className="text-danger">*</span>
+                  {t("client.companyEmail")}{" "}
+                  <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="clientEmail"
@@ -429,11 +444,11 @@ const TwoStepClientAdditionModal = ({
                     },
                   ]}
                 >
-                    <Input.Password
-                      type="password"
-                      className="form-control"
-                      maxLength={50}
-                    />
+                  <Input.Password
+                    type="password"
+                    className="form-control"
+                    maxLength={50}
+                  />
                 </Form.Item>
               </div>
             </div>
@@ -599,7 +614,11 @@ const TwoStepClientAdditionModal = ({
                   className="btn btn-primary submit-btn"
                   disabled={loader}
                 >
-                  {loader ? <Spin size="small" indicator={antIcon} /> : "Next"}
+                  {loader ? (
+                    <Spin size="small" indicator={antIcon} />
+                  ) : (
+                    "Submit"
+                  )}
                 </Button>
               </div>
             </Form.Item>
@@ -778,10 +797,10 @@ const TwoStepClientAdditionModal = ({
                   ]}
                 >
                   <Input.Password
-                      type="password"
-                      className="form-control"
-                      maxLength={50}
-                    />
+                    type="password"
+                    className="form-control"
+                    maxLength={50}
+                  />
                 </Form.Item>
               </div>
             </div>
