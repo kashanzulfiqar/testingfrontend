@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   Avatar_16,
   Avatar_02,
@@ -22,6 +22,7 @@ import {
   Empty,
   Form,
   Input,
+  Divider,
   Pagination,
   Select,
   Spin,
@@ -34,11 +35,16 @@ import {
   InputNumber,
 } from "antd";
 import { Modal } from "@mui/material";
+import PlusOutlined from '@mui/icons-material/Add';
+import { getAllISOCodes } from 'iso-country-currency';
 import moment from "moment";
 import { apiServices } from "../../../Services/apiServices";
 import { apiUploadToS3 } from "../../../Services/uploadImage";
 import { LoadingOutlined, MinusCircleFilled } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
+import AddClientModal from "../../Pages/Profile/modals/AddClientModal";
+import AddFocalModal from "../../Pages/Profile/clientProfileScreens/AddFocalModal";
+import TwoStepClientAdditionModal from "../../Pages/Profile/modals/TwoStepClientAddition";
 
 function EditProjects({
   data,
@@ -46,8 +52,9 @@ function EditProjects({
   closeEditModal,
   getlistprojects,
   allCurrencies,
-  allDomain,
+  allDomain
 }) {
+  const nav = useNavigate();
   const [form] = Form.useForm();
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
   const { t, i18n } = useTranslation();
@@ -61,8 +68,20 @@ function EditProjects({
   const [focalPersons, setFocalPersons] = useState([]);
   const [selectedTeamMembers, setSelectedTeamMembers] = useState([]);
   const [teamCost, setTeamCost] = useState([]);
+  const [focalPersonDisable, setFocalPersonDisable] = useState(true)
+
+  const [open, setOpen] = useState({
+    isAddClientOpen: false,
+    isAddOpen: false,
+    data: ''
+  });
+  const [allCountries, setAllCountries] = useState([]);
 
   const [selectedClient, setSelectedClient] = useState(null);
+  const [selectedFocalPerson, setSelectedFocalPerson] = useState(null);
+  const [loadingEmployee, setLoadingEmployee] = useState(false);
+  const [loadingClient, setLoadingClient] = useState(false);
+  const [loadingFocalPerson, setLoadingFocalPerson] = useState(false);
   const [selectedLeader, setSelectedLeader] = useState(null);
   const [selectedDevelopers, setSelectedDevelopers] = useState([]);
   const [filesToDelete, setFilesToDelete] = useState([]);
@@ -108,6 +127,12 @@ function EditProjects({
     );
     setPaymentSchedules(updatedSchedules);
   };
+  
+    const getAllCountries = () => {
+      const isoCodes = getAllISOCodes();
+      const sorted_data = isoCodes.sort((a, b) => a.countryName.localeCompare(b.countryName));
+      setAllCountries(sorted_data)
+    };
 
   useEffect(() => {
     console.log("EDIT MODAL");
@@ -276,6 +301,7 @@ function EditProjects({
   };
 
   const fetchEmployees = () => {
+    setLoadingEmployee(true)
     apiServices("GET", `user/all-employees`, null, user_state)
       .then((res) => {
         if (res.data.success === true) {
@@ -284,9 +310,11 @@ function EditProjects({
             .slice()
             .sort((a, b) => a.fullName.localeCompare(b.fullName));
           setEmployees(sortedData);
+          setLoadingEmployee(false)
         }
       })
       .catch((err) => {
+        setLoadingEmployee(false)
         message.error(
           `${
             err?.response?.data?.msg
@@ -300,6 +328,7 @@ function EditProjects({
   };
 
   const ViewClients = () => {
+    setLoadingClient(true)
     apiServices(
       "GET",
       `client/all-client`,
@@ -315,9 +344,11 @@ function EditProjects({
             .slice()
             .sort((a, b) => a.clientName.localeCompare(b.clientName));
           setClients(sortedData);
+          setLoadingClient(false)
         }
       })
       .catch((err) => {
+        setLoadingClient(false)
         message.error(
           `${
             err?.response?.data?.msg
@@ -331,6 +362,7 @@ function EditProjects({
   };
 
   const fetchFocalPersons = (clientId) => {
+    setLoadingFocalPerson(true)
     apiServices(
       "GET",
       `focal-person/view-focal-person?deleted=false&clientId=${clientId}`,
@@ -344,12 +376,14 @@ function EditProjects({
             .slice()
             .sort((a, b) => a.focalPersonName.localeCompare(b.focalPersonName));
           setFocalPersons(sortedData);
+          setLoadingFocalPerson(false)
         }
       })
       .catch((err) => {
         // message.error(
         //   `Get Focal Person Error`
         // );
+        setLoadingFocalPerson(false)
         console.log("error");
       });
   };
@@ -1145,6 +1179,7 @@ function EditProjects({
   };
 
   return (
+    <>
     <Modal
       open={editModal}
       onClose={closeEditModal}
@@ -1193,7 +1228,8 @@ function EditProjects({
                 <div className="row">
                   <div className="col-sm-6">
                     <div className="form-group">
-                      <label>{t("projectScreen.Modal.projectName")}</label>
+                      <label>{t("projectScreen.Modal.projectName")}{" "}
+                      <span className="text-danger">*</span></label>
                       <Form.Item
                         name="projectName"
                         className="custom-border"
@@ -1216,7 +1252,8 @@ function EditProjects({
                   </div>
                   <div className="col-sm-6">
                     <div className="form-group">
-                      <label>{t("projectScreen.Modal.client")}</label>
+                      <label>{t("projectScreen.Modal.client")}{" "}
+                      <span className="text-danger">*</span></label>
                       <div style={{ position: "relative" }} id="area">
                         <Form.Item
                           name="clientId"
@@ -1241,9 +1278,35 @@ function EditProjects({
                             }
                             optionFilterProp="children"
                             notFoundContent={
-                              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                            }
-                            dropdownRender={(menu) => <>{menu}</>}
+                              loadingClient ? (
+                                <Spin style={{
+                                  height: "38px",
+                                  width: "100%",
+                                  display: "flex",
+                                  justifyContent: "center",
+                                  alignItems: "center",
+                                }} />
+                              ) : (
+                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                              )}
+                            dropdownRender={(menu) => <>{menu}{
+                              <>
+                                <Divider
+                                  style={{
+                                    margin: '5px 0',
+                                  }}
+                                />
+                                <Button
+                                  type="button" icon={<PlusOutlined style={{fontSize: '20px', marginRight: '5px'}} />}
+                                  className="addButtonStyles"
+                                  style={{width: '100%', height: '40px', background: '#efefef', borderColor: '#efefef', display: 'flex', justifyContent: 'center', alignItems: 'center'}}
+                                  onClick={() => {setOpen({ isAddClientOpen: true, isAddOpen: false, data: '' }); getAllCountries()}}
+                                >
+                                  {t('client.addClient')}
+                                  {/*   //  {t('allEmp.Modal.addRole')} */}
+                                </Button>
+                              </>
+                          }</>}
                             className="custom-select custom-normal"
                             getPopupContainer={() =>
                               document.getElementById("area")
@@ -1252,6 +1315,7 @@ function EditProjects({
                             onChange={(value) => {
                               // Set the selected client when it changes
                               setSelectedClient(value);
+                              setFocalPersonDisable(false)
 
                               form.setFieldsValue({ focalPersonId: null });
                               // Fetch the focal persons based on the selected client
@@ -1274,9 +1338,11 @@ function EditProjects({
                 </div>
 
                 <div className="row">
+                { focalPersonDisable === false && (
                   <div className="col-sm-6">
                     <div className="form-group">
-                      <label>{t("projectScreen.Modal.focalPerson")}</label>
+                      <label>{t("projectScreen.Modal.focalPerson")}{" "}
+                      <span className="text-danger">*</span></label>
                       <div style={{ position: "relative" }} id="area">
                         <Form.Item
                           name="focalPersonId"
@@ -1303,9 +1369,35 @@ function EditProjects({
                             }
                             optionFilterProp="children"
                             notFoundContent={
-                              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                            }
-                            dropdownRender={(menu) => <>{menu}</>}
+                              loadingFocalPerson ? (
+                                <Spin style={{
+                                  height: "38px",
+                                  width: "100%",
+                                  display: "flex",
+                                  justifyContent: "center",
+                                  alignItems: "center",
+                                }} />
+                              ) : (
+                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                              )}
+                            dropdownRender={(menu) => <>{menu}{
+                              <>
+                                <Divider
+                                  style={{
+                                    margin: '5px 0',
+                                  }}
+                                />
+                                <Button
+                                  type="button" icon={<PlusOutlined style={{fontSize: '20px', marginRight: '5px'}} />}
+                                  className="addButtonStyles"
+                                  style={{width: '100%', height: '40px', background: '#efefef', borderColor: '#efefef', display: 'flex', justifyContent: 'center', alignItems: 'center'}}
+                                  onClick={() => setOpen({ isAddClientOpen: false, isAddOpen: true, data: '' })}
+                                >
+                                  Add Focal Person
+                                  {/* {t('client.addClient')}  //  {t('allEmp.Modal.addRole')} */}
+                                </Button>
+                              </>
+                          }</>}
                             className="custom-select custom-normal"
                             getPopupContainer={() =>
                               document.getElementById("area")
@@ -1328,9 +1420,11 @@ function EditProjects({
                       </div>
                     </div>
                   </div>
+                )}
                   <div className="col-sm-6">
                     <div className="form-group">
-                      <label>{t("projectScreen.Modal.projectStatus")}</label>
+                      <label>{t("projectScreen.Modal.projectStatus")}{" "}
+                      <span className="text-danger">*</span></label>
                       <div style={{ position: "relative" }} id="area">
                         <Form.Item
                           name="status"
@@ -1374,7 +1468,8 @@ function EditProjects({
                 <div className="row">
                   <div className="col-sm-6">
                     <div className="form-group">
-                      <label>{t("projectScreen.Modal.startDate")}</label>
+                      <label>{t("projectScreen.Modal.startDate")}{" "}
+                      <span className="text-danger">*</span></label>
                       <div style={{ position: "relative" }} id="area">
                         <Form.Item
                           name="startDate"
@@ -1401,7 +1496,8 @@ function EditProjects({
                   </div>
                   <div className="col-sm-6">
                     <div className="form-group">
-                      <label>{t("projectScreen.Modal.endDate")}</label>
+                      <label>{t("projectScreen.Modal.endDate")}{" "}
+                      <span className="text-danger">*</span></label>
                       <div style={{ position: "relative" }} id="area">
                         {/* <Form.Item
                           name="endDate"
@@ -1473,7 +1569,8 @@ function EditProjects({
                 <div className="row">
                   <div className="col-sm-6">
                     <div className="form-group">
-                      <label>{t("projectScreen.Modal.domain")}</label>
+                      <label>{t("projectScreen.Modal.domain")}{" "}
+                      <span className="text-danger">*</span></label>
                       <div style={{ position: "relative" }} id="area">
                         <Form.Item
                           name="projectDomain"
@@ -1524,7 +1621,8 @@ function EditProjects({
                   </div>
                   <div className="col-sm-6">
                     <div className="form-group">
-                      <label>{t("projectScreen.Modal.projectType")}</label>
+                      <label>{t("projectScreen.Modal.projectType")}{" "}
+                      <span className="text-danger">*</span></label>
                       <div style={{ position: "relative" }} id="area">
                         <Form.Item
                           name="projectType"
@@ -1567,7 +1665,8 @@ function EditProjects({
                   { projectType === 'Billed' && (
                     <div className="col-sm-6">
                       <div className="form-group">
-                        <label>{t("projectScreen.Modal.currency")}</label>
+                        <label>{t("projectScreen.Modal.currency")}{" "}
+                        <span className="text-danger">*</span></label>
                         <div style={{ position: "relative" }} id="area">
                           <Form.Item
                             name="currency"
@@ -1611,7 +1710,8 @@ function EditProjects({
                     projectType === "Billed" && (
                     <div className="col-sm-6">
                       <div className="form-group">
-                        <label>{t("projectScreen.Modal.costType")}</label>
+                        <label>{t("projectScreen.Modal.costType")}{" "}
+                        <span className="text-danger">*</span></label>
                         <div style={{ position: "relative" }} id="area">
                           <Form.Item
                             name="costType"
@@ -1653,7 +1753,8 @@ function EditProjects({
                   {costType === 'Fixed' && projectType === 'Billed' &&  (
                   <div className="col-sm-6">
                     <div className="form-group">
-                      <label>{t("projectScreen.Modal.cost")}</label>
+                      <label>{t("projectScreen.Modal.cost")}{" "}
+                      <span className="text-danger">*</span></label>
 
                       <Form.Item
                         name="cost"
@@ -1685,7 +1786,8 @@ function EditProjects({
                   )}
                   <div className="col-sm-6">
                     <div className="form-group">
-                      <label>{t("projectScreen.Modal.priority")}</label>
+                      <label>{t("projectScreen.Modal.priority")}{" "}
+                      <span className="text-danger">*</span></label>
                       <div style={{ position: "relative" }} id="area">
                         <Form.Item
                           name="priority"
@@ -1725,7 +1827,8 @@ function EditProjects({
                 <div className="row">
                   <div className="col-sm-6">
                     <div className="form-group">
-                      <label>{t("projectScreen.Modal.leader")}</label>
+                      <label>{t("projectScreen.Modal.leader")}{" "}
+                      <span className="text-danger">*</span></label>
                       <div style={{ position: "relative" }} id="area">
                         <Form.Item
                           name="projectLead"
@@ -1750,8 +1853,17 @@ function EditProjects({
                             }
                             optionFilterProp="children"
                             notFoundContent={
-                              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                            }
+                              loadingEmployee ? (
+                                <Spin style={{
+                                  height: "38px",
+                                  width: "100%",
+                                  display: "flex",
+                                  justifyContent: "center",
+                                  alignItems: "center",
+                                }} />
+                              ) : (
+                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                              )}
                             dropdownRender={(menu) => <>{menu}</>}
                             className="custom-select custom-normal"
                             getPopupContainer={() =>
@@ -1803,7 +1915,8 @@ function EditProjects({
                 <div className="row">
                   <div className="col-sm-6">
                     <div className="form-group">
-                      <label>{t("projectScreen.Modal.addTeam")}</label>
+                      <label>{t("projectScreen.Modal.addTeam")}{" "}
+                      <span className="text-danger">*</span></label>
                       <div style={{ position: "relative" }} id="area">
                         <Form.Item
                           name="assignedDevelopers"
@@ -1830,8 +1943,17 @@ function EditProjects({
                             }
                             optionFilterProp="children"
                             notFoundContent={
-                              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                            }
+                              loadingEmployee ? (
+                                <Spin style={{
+                                  height: "38px",
+                                  width: "100%",
+                                  display: "flex",
+                                  justifyContent: "center",
+                                  alignItems: "center",
+                                }} />
+                              ) : (
+                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                              )}
                             dropdownRender={(menu) => <>{menu}</>}
                             getPopupContainer={() =>
                               document.getElementById("area")
@@ -1927,7 +2049,8 @@ function EditProjects({
                 </div>
 
                 <div className="form-group">
-                  <label>{t("projectScreen.Modal.description")}</label>
+                  <label>{t("projectScreen.Modal.description")}{" "}
+                  <span className="text-danger">*</span></label>
                   <Form.Item
                     name="projectDescription"
                     rules={[
@@ -2203,9 +2326,35 @@ function EditProjects({
                             }
                             optionFilterProp="children"
                             notFoundContent={
-                              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                            }
-                            dropdownRender={(menu) => <>{menu}</>}
+                              loadingClient ? (
+                                <Spin style={{
+                                  height: "38px",
+                                  width: "100%",
+                                  display: "flex",
+                                  justifyContent: "center",
+                                  alignItems: "center",
+                                }} />
+                              ) : (
+                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                              )}
+                            dropdownRender={(menu) => <>{menu}{
+                              <>
+                                <Divider
+                                  style={{
+                                    margin: '5px 0',
+                                  }}
+                                />
+                                <Button
+                                  type="button" icon={<PlusOutlined style={{fontSize: '20px', marginRight: '5px'}} />}
+                                  className="addButtonStyles"
+                                  style={{width: '100%', height: '40px', background: '#efefef', borderColor: '#efefef', display: 'flex', justifyContent: 'center', alignItems: 'center'}}
+                                  onClick={() => {setOpen({ isAddClientOpen: true, isAddOpen: false, data: '' }); getAllCountries()}}
+                                >
+                                  {t('client.addClient')}
+                                  {/*   //  {t('allEmp.Modal.addRole')} */}
+                                </Button>
+                              </>
+                          }</>}
                             className="custom-select custom-normal"
                             getPopupContainer={() =>
                               document.getElementById("area")
@@ -2214,6 +2363,7 @@ function EditProjects({
                             onChange={(value) => {
                               // Set the selected client when it changes
                               setSelectedClient(value);
+                              setFocalPersonDisable(false)
 
                               form.setFieldsValue({ focalPersonId: null });
                               // Fetch the focal persons based on the selected client
@@ -2236,6 +2386,7 @@ function EditProjects({
                 </div>
 
                 <div className="row">
+                { focalPersonDisable === false && (
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>{t("projectScreen.Modal.focalPerson")}</label>
@@ -2265,9 +2416,35 @@ function EditProjects({
                             }
                             optionFilterProp="children"
                             notFoundContent={
-                              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                            }
-                            dropdownRender={(menu) => <>{menu}</>}
+                              loadingFocalPerson ? (
+                                <Spin style={{
+                                  height: "38px",
+                                  width: "100%",
+                                  display: "flex",
+                                  justifyContent: "center",
+                                  alignItems: "center",
+                                }} />
+                              ) : (
+                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                              )}
+                            dropdownRender={(menu) => <>{menu}{
+                              <>
+                                <Divider
+                                  style={{
+                                    margin: '5px 0',
+                                  }}
+                                />
+                                <Button
+                                  type="button" icon={<PlusOutlined style={{fontSize: '20px', marginRight: '5px'}} />}
+                                  className="addButtonStyles"
+                                  style={{width: '100%', height: '40px', background: '#efefef', borderColor: '#efefef', display: 'flex', justifyContent: 'center', alignItems: 'center'}}
+                                  onClick={() => setOpen({ isAddClientOpen: false, isAddOpen: true, data: '' })}
+                                >
+                                  Add Focal Person
+                                  {/* {t('client.addClient')}  //  {t('allEmp.Modal.addRole')} */}
+                                </Button>
+                              </>
+                          }</>}
                             className="custom-select custom-normal"
                             getPopupContainer={() =>
                               document.getElementById("area")
@@ -2290,6 +2467,7 @@ function EditProjects({
                       </div>
                     </div>
                   </div>
+                )}
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>{t("projectScreen.Modal.projectStatus")}</label>
@@ -2551,8 +2729,17 @@ function EditProjects({
                             }
                             optionFilterProp="children"
                             notFoundContent={
-                              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                            }
+                              loadingEmployee ? (
+                                <Spin style={{
+                                  height: "38px",
+                                  width: "100%",
+                                  display: "flex",
+                                  justifyContent: "center",
+                                  alignItems: "center",
+                                }} />
+                              ) : (
+                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                              )}
                             dropdownRender={(menu) => <>{menu}</>}
                             className="custom-select custom-normal"
                             getPopupContainer={() =>
@@ -2631,8 +2818,17 @@ function EditProjects({
                             }
                             optionFilterProp="children"
                             notFoundContent={
-                              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                            }
+                              loadingEmployee ? (
+                                <Spin style={{
+                                  height: "38px",
+                                  width: "100%",
+                                  display: "flex",
+                                  justifyContent: "center",
+                                  alignItems: "center",
+                                }} />
+                              ) : (
+                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                              )}
                             dropdownRender={(menu) => <>{menu}</>}
                             getPopupContainer={() =>
                               document.getElementById("area")
@@ -2784,6 +2980,39 @@ function EditProjects({
         </div>
       </div>
     </Modal>
+
+    {open?.isAddClientOpen &&
+          <TwoStepClientAdditionModal
+            twoStepForm={form}
+            open={open}
+            setOpen={setOpen}
+            user_state={user_state}
+            setClients={setClients}
+            setFocalPersons={setFocalPersons}
+            setFocalPersonDisable={setFocalPersonDisable}
+            clientScreen={false}
+            setPaginationDetail={null}
+            paginationDetail={null}
+            allCountries={allCountries}
+          />
+    }
+
+ {
+          open?.isAddOpen &&
+          <AddFocalModal
+            open={open}
+            setOpen={setOpen}
+            user_state={user_state}
+            allFocalPerson={focalPersons}
+            setAllFocalPerson={setFocalPersons}
+            clientId={form.getFieldValue("clientId")}
+            setPaginationDetail={null}
+            paginationDetail={null}
+            projectScreen={true}
+            projectForm={form}
+          />
+        } 
+    </>
   );
 }
 

@@ -9,7 +9,7 @@ import PhoneNoInput from '../../../../Components/PhoneNoInput';
 import { apiServices } from '../../../../Services/apiServices';
 import { useTranslation } from 'react-i18next';
 
-const AddFocalModal = ({ open, setOpen, user_state, allFocalPerson, setAllFocalPerson, clientId, setPaginationDetail, paginationDetail }) => {
+const AddFocalModal = ({ open, setOpen, user_state, allFocalPerson, setAllFocalPerson, clientId, setPaginationDetail, paginationDetail, projectScreen, projectForm }) => {
   const { t, i18n } = useTranslation()
     const [form] = Form.useForm();
     const company_id = user_state?.user?.companyId
@@ -51,10 +51,15 @@ const onFinishAdd = (values) => {
               },
               ...prev,
             ]))
+            if(!projectScreen){
             setPaginationDetail({
                 ...paginationDetail,
                 total: paginationDetail?.total + 1
             })
+          }
+            else {
+            projectForm.setFieldsValue({focalPersonId: res?.data?.focalPerson?._id})
+            }
             message.success(t('client.focalPersonAddedSuccessfully'))
             handleClose();
             setLoader(false);
