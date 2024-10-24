@@ -85,6 +85,7 @@ const TwoStepClientAdditionModal = ({
               total: paginationDetail?.total + 1,
             });
           }
+          form.resetFields();
           next();
           window.scrollTo(0, 0);
           setLoader(false);
@@ -471,14 +472,6 @@ const TwoStepClientAdditionModal = ({
                       message: t("client.phoneLength"),
                     },
                   ]}
-                  validateStatus={phoneLengthError ? "error" : ""}
-                  help={
-                    phoneLengthError?.emp
-                      ? "please enter phone number"
-                      : phoneLengthError?.len
-                      ? "phone length must be at least 5 digits long"
-                      : ""
-                  }
                 >
                   <>
                     <Input
@@ -823,14 +816,6 @@ const TwoStepClientAdditionModal = ({
                       message: t("client.phoneLength"),
                     },
                   ]}
-                  validateStatus={phoneLengthError ? "error" : ""}
-                  help={
-                    phoneLengthError?.emp
-                      ? "please enter phone number"
-                      : phoneLengthError?.len
-                      ? "phone length must be at least 5 digits long"
-                      : ""
-                  }
                 >
                   <>
                     <Input
@@ -935,8 +920,8 @@ const TwoStepClientAdditionModal = ({
                   : t("projectScreen.Modal.focalPerson")}
               </h5>
               <button type="button" className="close" onClick={handleClose}>
-                    <span aria-hidden="true">×</span>
-                </button>
+                <span aria-hidden="true">×</span>
+              </button>
             </div>
             <div className="modal-body">
               <div>
