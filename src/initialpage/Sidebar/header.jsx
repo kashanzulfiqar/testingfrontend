@@ -95,21 +95,21 @@ const Header = (props) => {
     document.documentElement.dir = i18n.dir();
   }, [i18n.language]);
 
-  // useEffect(() => {
-  //   if(!user_state?.user?.superAdmin && (user_state?.user?.role === 'admin' || permissions?.viewAllRequest || permissions?.teamRequest))
-  //   getCounter()
-  //     }, [location])
+  useEffect(() => {
+    if(!user_state?.user?.superAdmin && (user_state?.user?.role === 'admin' || permissions?.viewAllRequest || permissions?.teamRequest))
+    getCounter()
+      }, [])
     
     
-    // const getCounter = () => {
-    //     apiServices("GET", "requests/view-all-request?employeeName=&leaveType=&requestTo=&requestFrom=&page=1&limit=10&status=", null, user_state)
-    //     .then((res) => {
-    //       if (res?.data?.success === true) {
-    //         console.log('pending', res.data?.pendingRequests);
-    //         dispatch(counter(res.data?.pendingRequests))
-    //       }
-    //     })
-    //   }
+    const getCounter = () => {
+        apiServices("GET", "requests/view-all-request?employeeName=&leaveType=&requestTo=&requestFrom=&page=1&limit=10&status=", null, user_state)
+        .then((res) => {
+          if (res?.data?.success === true) {
+            console.log('pending', res.data?.pendingRequests);
+            dispatch(counter(res.data?.pendingRequests))
+          }
+        })
+      }
 
   
   let pathname = location.pathname
