@@ -45,6 +45,8 @@ const TwoStepClientAdditionModal = ({
   const [imageLoader, setImageLoader] = useState(false);
   const [image, setImage] = useState("");
   const [loader, setLoader] = useState(false);
+  const [numFlag, setNumFlag] = useState(false)
+
 
   useEffect(() => {
     if (open?.data) {
@@ -89,6 +91,7 @@ const TwoStepClientAdditionModal = ({
           next();
           window.scrollTo(0, 0);
           setLoader(false);
+          setNumFlag(false);
         }
       })
       .catch((err) => {
@@ -102,6 +105,11 @@ const TwoStepClientAdditionModal = ({
               : t("client.addClientInfoError")
           }!`
         );
+        if (err?.response?.data?.msg === "Input Valid Number" && err?.response?.data?.success === false) {
+          setNumFlag(true);
+        } else {
+          setNumFlag(false); // Reset numFlag to false if the condition is not met
+        }
       });
   };
 
@@ -139,6 +147,7 @@ const TwoStepClientAdditionModal = ({
           }
           handleClose();
           setLoader(false);
+          setNumFlag(false);
         }
       })
       .catch((err) => {
@@ -152,6 +161,11 @@ const TwoStepClientAdditionModal = ({
               : t("client.addFocalPersonInfoError")
           }!`
         );
+        if (err?.response?.data?.msg === "Input Valid Number" && err?.response?.data?.success === false) {
+          setNumFlag(true);
+        } else {
+          setNumFlag(false); // Reset numFlag to false if the condition is not met
+        }
       });
   };
 
@@ -163,6 +177,7 @@ const TwoStepClientAdditionModal = ({
     setOpen({ isAddClientOpen: false, data: "" });
     setPhoneLengthError(false);
     setEmergValue(null);
+    setNumFlag(false);
     form.resetFields();
   };
   const onFocalPersonImageUpload = (imagedata) => {
@@ -488,6 +503,7 @@ const TwoStepClientAdditionModal = ({
                           : ""
                       }
                     />
+                    {numFlag ? (<label style={{ color: 'red' }}>{t('allEmp.errors.validPhoneNumber')}</label>) : ''}
                   </>
                 </Form.Item>
               </div>
@@ -832,6 +848,7 @@ const TwoStepClientAdditionModal = ({
                           : ""
                       }
                     />
+                    {numFlag ? (<label style={{ color: 'red' }}>{t('allEmp.errors.validPhoneNumber')}</label>) : ''}
                   </>
                 </Form.Item>
               </div>

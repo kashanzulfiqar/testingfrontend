@@ -19,6 +19,8 @@ const AddFocalModal = ({ open, setOpen, user_state, allFocalPerson, setAllFocalP
     const [imageLoader, setImageLoader] = useState(false)
     const [image, setImage] = useState('')
     const [loader, setLoader] = useState(false)
+    const [numFlag, setNumFlag] = useState(false)
+
 
 useEffect(() => {
     if(open?.data){
@@ -63,6 +65,7 @@ const onFinishAdd = (values) => {
             message.success(t('client.focalPersonAddedSuccessfully'))
             handleClose();
             setLoader(false);
+            setNumFlag(false);
           }
         })
         .catch((err) => {
@@ -76,6 +79,11 @@ const onFinishAdd = (values) => {
                 : t('client.addFocalPersonInfoError')
             }!`
           );
+          if (err?.response?.data?.msg === "Input Valid Number" && err?.response?.data?.success === false) {
+            setNumFlag(true);
+          } else {
+            setNumFlag(false); // Reset numFlag to false if the condition is not met
+          }
         });
 }
 const onFinishEdit = (values) => {
@@ -119,6 +127,7 @@ const onFinishEdit = (values) => {
               handleClose()
               message.success(t('client.focalPersonUpdatedSuccessfully'))
               setLoader(false)
+              setNumFlag(false);
             }
           })
           .catch((err) => {
@@ -133,6 +142,11 @@ const onFinishEdit = (values) => {
                   : t('client.updateFocalPersonInfoError')
               }!`
             );
+            if (err?.response?.data?.msg === "Input Valid Number" && err?.response?.data?.success === false) {
+              setNumFlag(true);
+            } else {
+              setNumFlag(false); // Reset numFlag to false if the condition is not met
+            }
           });
 }
 
@@ -140,7 +154,9 @@ const handleClose = () => {
     setOpen({ isAddOpen: false, data: '' }); 
     setPhoneLengthError(false);
     setEmergValue(null);
-    form.resetFields(); }
+    form.resetFields();
+    setNumFlag(false);
+ }
 
 const onImageUpload = (imagedata) => {
     setImageLoader(true)
@@ -420,6 +436,7 @@ const antIcon = (
                                     }}
                                     phone={open?.data?.focalPersonPhoneNo ? open?.data?.focalPersonPhoneNo : ""}
                                 />
+                                {numFlag ? (<label style={{ color: 'red' }}>{t('allEmp.errors.validPhoneNumber')}</label>) : ''}
                             </>
                         </Form.Item>
                     </div>
