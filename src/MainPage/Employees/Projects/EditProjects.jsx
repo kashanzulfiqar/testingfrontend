@@ -52,7 +52,6 @@ function EditProjects({
   closeEditModal,
   getlistprojects,
   allCurrencies,
-  allDomain
 }) {
   const nav = useNavigate();
   const [form] = Form.useForm();
@@ -62,7 +61,7 @@ function EditProjects({
   const role = user_state?.user?.role;
 
   const [selectedData, setSelectedData] = useState(null);
-  // const [allDomain, setAllDomain] = useState([]);
+  const [allDomain, setAllDomain] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [clients, setClients] = useState([]);
   const [focalPersons, setFocalPersons] = useState([]);
@@ -80,6 +79,7 @@ function EditProjects({
   const [selectedClient, setSelectedClient] = useState(null);
   const [selectedFocalPerson, setSelectedFocalPerson] = useState(null);
   const [loadingEmployee, setLoadingEmployee] = useState(false);
+  const [loadingDomain, setLoadingDomain] = useState(false);
   const [loadingClient, setLoadingClient] = useState(false);
   const [loadingFocalPerson, setLoadingFocalPerson] = useState(false);
   const [selectedLeader, setSelectedLeader] = useState(null);
@@ -240,7 +240,7 @@ function EditProjects({
   useEffect(() => {
     fetchEmployees();
     ViewClients();
-    // getAllDomain();
+    getAllDomain();
   }, []);
 
 
@@ -275,6 +275,7 @@ function EditProjects({
   };
 
   const getAllDomain = () => {
+    setLoadingDomain(true)
     apiServices("GET", "team/view-team", null, user_state)
       .then((res) => {
         // console.log(res?.data);
@@ -285,10 +286,12 @@ function EditProjects({
             .slice()
             .sort((a, b) => a.teamName.localeCompare(b.teamName));
           setAllDomain(sortedData);
+          setLoadingDomain(false)
         }
       })
       .catch((err) => {
         // console.log(err);
+        setLoadingDomain(false)
         message.error(
           `${
             err?.response?.data?.msg
@@ -1597,8 +1600,17 @@ function EditProjects({
                             }
                             optionFilterProp="children"
                             notFoundContent={
-                              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                            }
+                              loadingDomain ? (
+                                <Spin style={{
+                                  height: "38px",
+                                  width: "100%",
+                                  display: "flex",
+                                  justifyContent: "center",
+                                  alignItems: "center",
+                                }} />
+                              ) : (
+                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                              )}
                             dropdownRender={(menu) => <>{menu}</>}
                             getPopupContainer={() =>
                               document.getElementById("area")
@@ -2640,8 +2652,17 @@ function EditProjects({
                             }
                             optionFilterProp="children"
                             notFoundContent={
-                              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                            }
+                              loadingDomain ? (
+                                <Spin style={{
+                                  height: "38px",
+                                  width: "100%",
+                                  display: "flex",
+                                  justifyContent: "center",
+                                  alignItems: "center",
+                                }} />
+                              ) : (
+                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                              )}
                             dropdownRender={(menu) => <>{menu}</>}
                             getPopupContainer={() =>
                               document.getElementById("area")

@@ -152,7 +152,7 @@ const ProjectView = () => {
   const openEditModal = (data) => {
     setSelectedData(data);
     //fetchFocalPersons(data?.clientId);
-    getAllDomain();
+    //getAllDomain();
     setEditModal(true);
   };
 
@@ -1899,7 +1899,6 @@ const ProjectView = () => {
           closeEditModal={closeEditModal}
           getlistprojects={GetProjects}
           allCurrencies={allCurrencies}
-          allDomain={allDomain}
         />
       )}
 
