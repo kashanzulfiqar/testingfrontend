@@ -411,8 +411,6 @@ const antIcon = (
                             message: t('client.phoneLength'),
                             },
                         ]}
-                        validateStatus={phoneLengthError ? 'error' : ''}
-                        help={phoneLengthError?.emp ? 'please enter phone number' : phoneLengthError?.len ? "phone length must be at least 5 digits long" : ''}
                         >
                             <>
                                 <Input style={{ display: "none" }} value={emergValue?.focalPersonPhoneNo} />
