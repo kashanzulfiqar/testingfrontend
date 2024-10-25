@@ -266,6 +266,7 @@ const LeaveAdmin = () => {
             //console.log("these are ",requestData?.totalDays)
             setTableData([specificRequest]); // Step 2
             //console.log("this is the id",specificRequest)
+            dispatch(counter(res.data?.pendingRequests))
           }
         })
         .catch((error) => {
@@ -294,6 +295,7 @@ const LeaveAdmin = () => {
               ...pagination,
               total: res?.data?.Requests?.totalDocs,
             });
+            dispatch(counter(res.data?.pendingRequests))
           }
         })
         .catch((error) => {
