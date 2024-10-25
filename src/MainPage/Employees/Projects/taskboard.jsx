@@ -863,7 +863,8 @@ const onFinishEdit = (values) => {
           <div className="page-header">
             <div className="row align-items-center">
               <div className="col">
-              {isEditing ? (
+              
+                {isEditing ? (
                 <React.Fragment>
                   <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
             <input
@@ -900,24 +901,24 @@ const onFinishEdit = (values) => {
             </h3>
           )}
             </div>
-          )}
-                {/* <h3 className="page-title">
+          )}{/* <h3 className="page-title">
                   {`${ProjectData?.projectName}`} - Task Board
                 </h3> */}
                 <ul className="breadcrumb">
                   <li className="breadcrumb-item">
                     <Link
                       to={
-                        role === "admin"
-                          ? "/main/dashboard"
-                          : "/employee/dashboard"
+                        "/task-board"
                       }
                     >
-                      {t("holiday.dashboard")}
+                      <span className="arrow_routes"></span>
+                      {t('Task Boards')}
                     </Link>
                   </li>
-                  <li className="breadcrumb-item active">Task Board</li>
+                  <li className="breadcrumb-item active">Board</li>
                 </ul>
+                
+                
               </div>
               <div className="col-auto float-end ms-auto">
                 <a

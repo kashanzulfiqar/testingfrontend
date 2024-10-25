@@ -209,10 +209,7 @@ const getAllCountries = () => {
             <div className="row align-items-center">
               <div className="col">
                 <h3 className="page-title">{t('aDash.clients')}</h3>
-                <ul className="breadcrumb">
-                  <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>{t('Timesheetemployee.dashboard')}</Link></li>
-                  <li className="breadcrumb-item active">{t('aDash.clients')}</li>
-                </ul>
+                
               </div>
               <div className="col-auto float-end ms-auto">
                 <a href="javascript:void(0)" className="btn add-btn" onClick={() => { setOpen({ isAddClientOpen: true, isAddOpen: false, data: '' }); getAllCountries() }}><i className="fa fa-plus" /> {t('client.addClient')}</a>

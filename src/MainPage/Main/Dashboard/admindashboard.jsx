@@ -377,9 +377,6 @@ const antIcon = (
               <div className="row">
                 <div className="col-sm-12">
                   <h3 className="page-title">{t('aDash.welcome', { name: admin_name })}</h3>
-                  <ul className="breadcrumb">
-                    <li className="breadcrumb-item active">{t('dashboard')}</li>
-                  </ul>
                 </div>
               </div>
             </div>

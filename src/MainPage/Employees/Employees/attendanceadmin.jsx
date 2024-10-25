@@ -617,20 +617,7 @@ const AttendanceAdmin = () => {
               <div className="row">
                 <div className="col-sm-12">
                   <h3 className="page-title">{t('attendance')}</h3>
-                  <ul className="breadcrumb">
-                    <li className="breadcrumb-item">
-                      <Link
-                        to={
-                          role === "admin"
-                            ? "/main/dashboard"
-                            : "/employee/dashboard"
-                        }
-                      >
-                        {t('dashboard')}
-                      </Link>
-                    </li>
-                    <li className="breadcrumb-item active">{t('attendance')}</li>
-                  </ul>
+                  
                 </div>
               </div>
             </div>

@@ -449,20 +449,7 @@ const TaskBoardList = () => {
               <div className="row align-items-center">
                 <div className="col">
                   <h3 className="page-title">{t('Task Boards')}</h3>
-                  <ul className="breadcrumb">
-                  <li className="breadcrumb-item">
-                    <Link
-                      to={
-                        role === "admin"
-                          ? "/main/dashboard"
-                          : "/employee/dashboard"
-                      }
-                    >
-                      {t('holiday.dashboard')}
-                    </Link>
-                  </li>
-                    <li className="breadcrumb-item active">{t('Task Boards')}</li>
-                  </ul>
+                  
                 </div>
                 {(role === "admin" || permissions?.projectManagement) && (<div className="col-auto float-end ms-auto">
                   <a

@@ -1382,20 +1382,6 @@ const filteredColumns = columns.filter(column => {
             <div className="row align-items-center">
               <div className="col">
                 <h3 className="page-title">{t('projects')}</h3>
-                <ul className="breadcrumb">
-                  <li className="breadcrumb-item">
-                    <Link
-                      to={
-                        role === "admin"
-                          ? "/main/dashboard"
-                          : "/employee/dashboard"
-                      }
-                    >
-                      {t('dashboard')}
-                    </Link>
-                  </li>
-                  <li className="breadcrumb-item active">{t('projects')}</li>
-                </ul>
               </div>
               <div className="col-auto float-end ms-auto">
                 { (role === "admin" || permissions?.projectManagement) &&

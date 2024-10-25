@@ -158,10 +158,7 @@ const deptYAxisTick = ({ payload, x, y, width }) => {
             <div className="row">
             <div className="col">
                 <h3 className="page-title">{t('reports.employeeReport.reports')}</h3>
-                <ul className="breadcrumb">
-                <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>{t('dashboard')}</Link></li>
-                <li className="breadcrumb-item active">{t('reports.employeeReport.employeeReport')}</li>
-                </ul>
+                
             </div>
             </div>
         </div>
