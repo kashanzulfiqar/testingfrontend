@@ -501,12 +501,12 @@ const ViewDetailTimesheet = () => {
             <div className="page-header">
                 <div className="row align-items-center">
                 <div className="col">
-                    <h3 className="page-title">{t('Timesheetemployee.timesheet')}</h3>
+                    <h3 className="page-title">{t('Timesheetemployee.timesheet')}{" "}{t('Details')}</h3>
                     <ul className="breadcrumb">
                     <li className="breadcrumb-item">
-                        <Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>{t('Timesheetemployee.dashboard')}</Link>
+                        <Link to={"/admin-timesheet"}><span className="arrow_routes"></span>{t('Timesheetemployee.timesheet')}</Link>
                     </li>
-                    <li className="breadcrumb-item active">{t('Timesheetadmin.timesheetadmin')}</li>
+                    <li className="breadcrumb-item active">{t('Details')}</li>
                     </ul>
                 </div>
                 </div>

@@ -271,6 +271,7 @@ const ResourceAllocationDetails = () => {
                       <Link
                         to="/employee/resource-allocation"
                       >
+                        <span className="arrow_routes"></span>
                         Resource Allocation
                       </Link>
                     </li>

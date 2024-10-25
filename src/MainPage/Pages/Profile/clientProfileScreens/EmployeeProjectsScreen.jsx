@@ -940,7 +940,6 @@ const EmployeeProjectsScreen = ({ employeeId }) => {
             closeEditModal={closeModal}
             getlistprojects={getAllProjectsOnEdit}
             allCurrencies={allCurrencies}
-            allDomain={allDomain}
           />
         )}
         {/* Delete Modal */}

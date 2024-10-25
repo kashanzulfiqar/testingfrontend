@@ -9,7 +9,7 @@ import PhoneNoInput from '../../../../Components/PhoneNoInput';
 import { apiServices } from '../../../../Services/apiServices';
 import { useTranslation } from 'react-i18next';
 
-const AddFocalModal = ({ open, setOpen, user_state, allFocalPerson, setAllFocalPerson, clientId, setPaginationDetail, paginationDetail }) => {
+const AddFocalModal = ({ open, setOpen, user_state, allFocalPerson, setAllFocalPerson, clientId, setPaginationDetail, paginationDetail, projectScreen, projectForm }) => {
   const { t, i18n } = useTranslation()
     const [form] = Form.useForm();
     const company_id = user_state?.user?.companyId
@@ -19,6 +19,8 @@ const AddFocalModal = ({ open, setOpen, user_state, allFocalPerson, setAllFocalP
     const [imageLoader, setImageLoader] = useState(false)
     const [image, setImage] = useState('')
     const [loader, setLoader] = useState(false)
+    const [numFlag, setNumFlag] = useState(false)
+
 
 useEffect(() => {
     if(open?.data){
@@ -51,13 +53,19 @@ const onFinishAdd = (values) => {
               },
               ...prev,
             ]))
+            if(!projectScreen){
             setPaginationDetail({
                 ...paginationDetail,
                 total: paginationDetail?.total + 1
             })
+          }
+            else {
+            projectForm.setFieldsValue({focalPersonId: res?.data?.focalPerson?._id})
+            }
             message.success(t('client.focalPersonAddedSuccessfully'))
             handleClose();
             setLoader(false);
+            setNumFlag(false);
           }
         })
         .catch((err) => {
@@ -71,6 +79,11 @@ const onFinishAdd = (values) => {
                 : t('client.addFocalPersonInfoError')
             }!`
           );
+          if (err?.response?.data?.msg === "Input Valid Number" && err?.response?.data?.success === false) {
+            setNumFlag(true);
+          } else {
+            setNumFlag(false); // Reset numFlag to false if the condition is not met
+          }
         });
 }
 const onFinishEdit = (values) => {
@@ -114,6 +127,7 @@ const onFinishEdit = (values) => {
               handleClose()
               message.success(t('client.focalPersonUpdatedSuccessfully'))
               setLoader(false)
+              setNumFlag(false);
             }
           })
           .catch((err) => {
@@ -128,6 +142,11 @@ const onFinishEdit = (values) => {
                   : t('client.updateFocalPersonInfoError')
               }!`
             );
+            if (err?.response?.data?.msg === "Input Valid Number" && err?.response?.data?.success === false) {
+              setNumFlag(true);
+            } else {
+              setNumFlag(false); // Reset numFlag to false if the condition is not met
+            }
           });
 }
 
@@ -135,7 +154,9 @@ const handleClose = () => {
     setOpen({ isAddOpen: false, data: '' }); 
     setPhoneLengthError(false);
     setEmergValue(null);
-    form.resetFields(); }
+    form.resetFields();
+    setNumFlag(false);
+ }
 
 const onImageUpload = (imagedata) => {
     setImageLoader(true)
@@ -406,8 +427,6 @@ const antIcon = (
                             message: t('client.phoneLength'),
                             },
                         ]}
-                        validateStatus={phoneLengthError ? 'error' : ''}
-                        help={phoneLengthError?.emp ? 'please enter phone number' : phoneLengthError?.len ? "phone length must be at least 5 digits long" : ''}
                         >
                             <>
                                 <Input style={{ display: "none" }} value={emergValue?.focalPersonPhoneNo} />
@@ -417,6 +436,7 @@ const antIcon = (
                                     }}
                                     phone={open?.data?.focalPersonPhoneNo ? open?.data?.focalPersonPhoneNo : ""}
                                 />
+                                {numFlag ? (<label style={{ color: 'red' }}>{t('allEmp.errors.validPhoneNumber')}</label>) : ''}
                             </>
                         </Form.Item>
                     </div>

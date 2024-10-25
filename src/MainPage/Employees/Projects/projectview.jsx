@@ -152,7 +152,7 @@ const ProjectView = () => {
   const openEditModal = (data) => {
     setSelectedData(data);
     //fetchFocalPersons(data?.clientId);
-    getAllDomain();
+    //getAllDomain();
     setEditModal(true);
   };
 
@@ -638,12 +638,11 @@ const ProjectView = () => {
                 <li className="breadcrumb-item">
                   <Link
                     to={
-                      role === "admin"
-                        ? "/main/dashboard"
-                        : "/employee/dashboard"
+                      "/projects/project_dashboard"
                     }
                   >
-                    {t('holiday.dashboard')}
+                    <span className="arrow_routes"></span>
+                    {t('projects')}
                   </Link>
                 </li>
                 <li className="breadcrumb-item active">{t('viewProject.projectView')}</li>
@@ -1900,7 +1899,6 @@ const ProjectView = () => {
           closeEditModal={closeEditModal}
           getlistprojects={GetProjects}
           allCurrencies={allCurrencies}
-          allDomain={allDomain}
         />
       )}
 

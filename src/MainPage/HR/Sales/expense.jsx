@@ -381,10 +381,7 @@ const formatDate = (inputDate) => {
             <div className="row align-items-center">
               <div className="col">
                 <h3 className="page-title">{t('finance.Profit&loss.expenses')}</h3>
-                <ul className="breadcrumb">
-                  <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>{t('dashboard')}</Link></li>
-                  <li className="breadcrumb-item active">{t('finance.Profit&loss.expenses')}</li>
-                </ul>
+                
               </div>
               <div className="col-auto float-end ms-auto">
                 <a href="javascript:void(0)" className="btn add-btn" onClick={() => { setOpen({ isAddOpen: true, data: '' }); }}><i className="fa fa-plus" /> {t('finance.expenses.addExpense')}</a>

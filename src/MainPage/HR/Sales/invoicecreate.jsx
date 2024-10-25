@@ -764,7 +764,7 @@ const Invoicecreate = () => {
             <div className="col-sm-12">
               <h3 className="page-title">{t('finance.Invoices.createinvoice')}</h3>
               <ul className="breadcrumb">
-                <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>{t('dashboard')}</Link></li>
+                <li className="breadcrumb-item"><Link to={"/invoices"}><span className="arrow_routes"></span>{t('finance.Invoices.invoices')}</Link></li>
                 <li className="breadcrumb-item active">{t('finance.Invoices.createinvoice')}</li>
               </ul>
             </div>

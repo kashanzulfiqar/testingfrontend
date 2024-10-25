@@ -2,19 +2,16 @@ import React, { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import {
-  headerlogo, lnEnglish, lnFrench, lnSpanish, lnGerman, Avatar_02, Avatar_03, Avatar_05,
-  Avatar_06, Avatar_08, Avatar_09, Avatar_13, Avatar_17, Avatar_21, user_icon
-} from '../../Entryfile/imagepath'
+import { user_icon } from '../../Entryfile/imagepath'
 import notifications from '../../assets/json/notifications';
 import message from '../../assets/json/message';
 import DaftarProWhiteIcon from '../../files/Icons/DaftarProWhiteIcon.svg'
 import { apiServices } from '../../Services/apiServices';
-import { counter } from '../../Redux/Reducer/permissions/pendingCounterSlice';
 //import { changeLanguage } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { Button, Dropdown, Menu, message as Message1 } from 'antd';
 import { DownOutlined, GlobalOutlined } from '@ant-design/icons';
+import { counter } from '../../Redux/Reducer/permissions/pendingCounterSlice';
 
 const Header = (props) => {
   const { t, i18n } = useTranslation(); 
@@ -102,7 +99,7 @@ const Header = (props) => {
   useEffect(() => {
     if(!user_state?.user?.superAdmin && (user_state?.user?.role === 'admin' || permissions?.viewAllRequest || permissions?.teamRequest))
     getCounter()
-      }, [location])
+      }, [])
     
     
     const getCounter = () => {

@@ -13817,6 +13817,17 @@ ul.nav.landingNav li.nav-item {
   transform: rotate(45deg);
 }
 
+.arrow_routes {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-bottom: 2px;
+  margin-right: 5px;
+  border-right: 3px solid black;
+  border-bottom: 3px solid black;
+  transform: rotate(135deg);
+}
+
 .left-arrow {
   transform: rotate(135deg); /* Rotate to create a left arrow */
 }

@@ -13,6 +13,7 @@ import { itemRender } from '../paginationfunction';
 import { apiServices } from '../../Services/apiServices';
 import { getAllISOCodes } from 'iso-country-currency';
 import { useTranslation } from 'react-i18next';
+import TwoStepClientAdditionModal from '../Pages/Profile/modals/TwoStepClientAddition';
 
 
 const Clients = () => {
@@ -26,6 +27,7 @@ const Clients = () => {
   const role = user_state?.user?.role
 
   const [allClients, setAllClients] = useState([])
+  const [focalPersons, setFocalPersons] = useState([]);
   const [tableLoader, setTableLoader] = useState(true)
   const [loader, setLoader] = useState(false)
   const [pageSize, setPageSize] = useState(20);
@@ -33,6 +35,7 @@ const Clients = () => {
   const [paginationDetail, setPaginationDetail] = useState();
   const [filterValues, setFilterValues] = useState();
   const [open, setOpen] = useState({
+    isAddClientOpen: false,
     isAddOpen: false,
     data: ''
   });
@@ -45,6 +48,12 @@ const Clients = () => {
     nav(`${role === 'client' ? '/client/client-profile' : role === 'focalperson' ? `/client/focal-profile` : role === 'admin' ? `/main/dashboard` : `/employee/dashboard`}`)
   }
   }, [])
+  
+  useEffect(() => {
+  
+    fetchFocalPersons(allClients?._id)
+    
+    }, [setAllClients])
 
   const getAllClients = (values, current_page, page_size) => {
     setTableLoader(true);
@@ -70,6 +79,29 @@ const Clients = () => {
       });
   }
 
+  const fetchFocalPersons = (clientId) => {
+    apiServices(
+      "GET",
+      `focal-person/view-focal-person?deleted=false&clientId=${clientId}`,
+      null,
+      user_state
+    )
+      .then((res) => {
+        if (res.data.success === true) {
+          const focalperson = res?.data?.focalPersons.docs;
+          const sortedData = focalperson
+            .slice()
+            .sort((a, b) => a.focalPersonName.localeCompare(b.focalPersonName));
+          setFocalPersons(sortedData);
+        }
+      })
+      .catch((err) => {
+        // message.error(
+        //   `Get Focal Person Error`
+        // );
+        console.log("error");
+      });
+  };
   const onFinishDelete = (id) => {
     setLoader(true)
     apiServices("DELETE", "client/delete-client", id, user_state)
@@ -177,13 +209,10 @@ const getAllCountries = () => {
             <div className="row align-items-center">
               <div className="col">
                 <h3 className="page-title">{t('aDash.clients')}</h3>
-                <ul className="breadcrumb">
-                  <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>{t('Timesheetemployee.dashboard')}</Link></li>
-                  <li className="breadcrumb-item active">{t('aDash.clients')}</li>
-                </ul>
+                
               </div>
               <div className="col-auto float-end ms-auto">
-                <a href="javascript:void(0)" className="btn add-btn" onClick={() => { setOpen({ isAddOpen: true, data: '' }); getAllCountries() }}><i className="fa fa-plus" /> {t('client.addClient')}</a>
+                <a href="javascript:void(0)" className="btn add-btn" onClick={() => { setOpen({ isAddClientOpen: true, isAddOpen: false, data: '' }); getAllCountries() }}><i className="fa fa-plus" /> {t('client.addClient')}</a>
                 <div className="view-icons">
                   <Link to="/clients" className="grid-view btn btn-link active"><i className="fa fa-th" /></Link>
                   <Link to="/clients-list" className="list-view btn btn-link"><i className="fa fa-bars" /></Link>
@@ -271,7 +300,7 @@ const getAllCountries = () => {
                       <div className="dropdown profile-action">
                         <a href="javascript:void(0)" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
                         <div className="dropdown-menu dropdown-menu-right">
-                          <a className="dropdown-item" href="javascript:void(0)" onClick={() => { setOpen({ isAddOpen: true, data: client }); getAllCountries() }}><i className="fa fa-pencil m-r-5" /> {t('edit')}</a>
+                          <a className="dropdown-item" href="javascript:void(0)" onClick={() => { setOpen({ isAddClientOpen: false, isAddOpen: true, data: client }); getAllCountries() }}><i className="fa fa-pencil m-r-5" /> {t('edit')}</a>
                           <a className="dropdown-item" href="javascript:void(0)" onClick={() => { setOpen({ isDelOpen: true, data: client }) }}><i className="fa fa-trash-o m-r-5" /> {t('delete')}</a>
                         </div>
                       </div>
@@ -317,6 +346,22 @@ const getAllCountries = () => {
         {/* /Page Content */}
 
         {/* Add Client Modal */}
+        {open?.isAddClientOpen &&
+          <TwoStepClientAdditionModal
+            twoStepForm={null}
+            open={open}
+            setOpen={setOpen}
+            user_state={user_state}
+            setClients={setAllClients}
+            setFocalPersons={setFocalPersons}
+            setFocalPersonDisable={null}
+            clientScreen={true}
+            setPaginationDetail={setPaginationDetail}
+            paginationDetail={paginationDetail}
+            allCountries={allCountries}
+          />
+    }
+        {/* Edit Client Modal */}
         {
           open?.isAddOpen &&
           <AddClientModal

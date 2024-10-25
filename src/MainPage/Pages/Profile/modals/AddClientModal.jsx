@@ -20,6 +20,7 @@ const AddClientModal = ({ open, setOpen, user_state, allClients, setAllClients, 
     const [imageLoader, setImageLoader] = useState(false)
     const [image, setImage] = useState('')
     const [loader, setLoader] = useState(false)
+    const [numFlag, setNumFlag] = useState(false)
 
 useEffect(() => {
     if(open?.data){
@@ -110,6 +111,7 @@ const onFinishEdit = (values) => {
               handleClose()
               message.success(t('client.clientUpdatedSuccess'))
               setLoader(false)
+              setNumFlag(false)
             }
           })
           .catch((err) => {
@@ -124,6 +126,11 @@ const onFinishEdit = (values) => {
                   : t('client.updateClientInfoError')
               }!`
             );
+            if (err?.response?.data?.msg === "Input Valid Number" && err?.response?.data?.success === false) {
+              setNumFlag(true);
+            } else {
+              setNumFlag(false); // Reset numFlag to false if the condition is not met
+            }
           });
 }
 
@@ -153,7 +160,8 @@ const onImageUpload = (imagedata) => {
     setOpen({ isAddOpen: false, data: '' });
     setPhoneLengthError(false);
     setEmergValue(null);
-    form.resetFields(); 
+    form.resetFields();
+    setNumFlag(false)
 }
   const onHandleEmergChange = (type, value) => {
     if (!value) {
@@ -404,7 +412,7 @@ const antIcon = (
                             },
                         ]}
                         validateStatus={phoneLengthError ? 'error' : ''}
-                        help={phoneLengthError?.emp ? 'please enter phone number' : phoneLengthError?.len ? "phone length must be at least 5 digits long" : ''}
+                        help={phoneLengthError?.emp ? 'please enter phone number' : phoneLengthError?.len ? "phone length must be at least 5 digits long" : numFlag ? <label style={{ color: 'red' }}>{t('allEmp.errors.validPhoneNumber')}</label> : ''}
                         >
                             <>
                                 <Input style={{ display: "none" }} value={emergValue?.clientPhoneNo} />
