@@ -1229,12 +1229,7 @@ const EmployeeSalary = () => {
             <div className="row align-items-center">
               <div className="col">
                 <h3 className="page-title">{t('payroll.currentPayroll.currentPayroll')}</h3>
-                <ul className="breadcrumb">
-                  <li className="breadcrumb-item">
-                    <Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>{t('payroll.currentPayroll.dashBoard')}</Link>
-                  </li>
-                  <li className="breadcrumb-item active">{t('payroll.currentPayroll.currentPayroll')}</li>
-                </ul>
+                
               </div>
               <div className="col-auto float-end ms-auto d-flex gap-2">
                 <Button className="btn add-btn"

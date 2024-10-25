@@ -585,15 +585,13 @@ const ViewPL = () => {
                     <li className="breadcrumb-item">
                       <Link
                         to={
-                          role === "admin"
-                            ? "/main/dashboard"
-                            : "/employee/dashboard"
+                          "/profit-loss"
                         }
-                      >
-                        {t('dashboard')}
+                      ><span className="arrow_routes"></span>
+                        {t('finance.Profit&loss.profitAndloss')}
                       </Link>
                     </li>
-                    <li className="breadcrumb-item active">{t('finance.Profit&loss.expenses')}</li>
+                    <li className="breadcrumb-item active">{t('Details')}</li>
                   </ul>
                 </div>
               </div>

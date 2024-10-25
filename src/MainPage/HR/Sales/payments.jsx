@@ -345,10 +345,7 @@ const Payments = () => {
           <div className="row">
             <div className="col-sm-12">
               <h3 className="page-title">{t('finance.payments.payments')}</h3>
-              <ul className="breadcrumb">
-                <li className="breadcrumb-item"><Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>{t('dashboard')}</Link></li>
-                <li className="breadcrumb-item active">{t('finance.payments.payments')}</li>
-              </ul>
+              
             </div>
           </div>
         </div>

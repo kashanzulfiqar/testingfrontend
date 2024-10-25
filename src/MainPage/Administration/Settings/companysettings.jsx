@@ -108,41 +108,7 @@ useEffect(() => {
             <div className="row">
               <div className="col-12">
                 <h4 className="page-title">{t('sideBar.settings')}</h4>
-                <ul className="breadcrumb">
-                  <li className="breadcrumb-item">
-                    <Link to={role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}>
-                    {t('dashboard')}
-                    </Link>
-                  </li>
-                  <li className="breadcrumb-item active">{
-                      showComponent==="Company Settings" 
-                      ? t('settings.companySettings.companySettings') 
-                      : showComponent==="Leave Settings" 
-                      ? t('settings.leaveSettings')
-                      : showComponent==="Roles" 
-                      ? t('settings.roles')
-                      : showComponent==="Departments" 
-                      ? t('settings.departments')
-                      : showComponent==="Designations" 
-                      ? t('settings.designations')
-                      : showComponent==="Shifts" 
-                      ? t('settings.shifts')
-                      : showComponent==="Tax Slabs" 
-                      ? t('settings.taxSlabs')
-                      : showComponent==="Bank Details" 
-                      ? t('settings.bankDetails')
-                      : showComponent==="Invoice Tax Slabs" 
-                      ? t('settings.invoiceTaxSlabs')
-                      : showComponent==="Invoice Tags" 
-                      ? t('settings.invoiceTags')
-                      : showComponent==="Invoice Counter" 
-                      ? t('settings.invoiceCounter')
-                      : showComponent==="Expense Categories" 
-                      ? t('settings.expenseCategories')
-                      : showComponent
-                      }
-                    </li>
-                </ul>
+                
               </div>
               <div className="col-9 m-b-0 text-right"></div>
             </div>
