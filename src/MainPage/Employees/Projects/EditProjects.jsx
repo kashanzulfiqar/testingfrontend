@@ -200,6 +200,7 @@ function EditProjects({
             : null,
         })),
       });
+      setFocalPersonDisable(false)
     }
   }, []);
 
