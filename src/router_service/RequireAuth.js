@@ -5,13 +5,11 @@ import useAuth from "../hooks/useAuth";
 import { useSelector } from 'react-redux';
 import Header from '../initialpage/Sidebar/header';
 import Sidebar from '../initialpage/Sidebar/sidebar';
-import { counter } from '../Redux/Reducer/permissions/pendingCounterSlice';
-import { apiServices } from '../Services/apiServices';
 const RequireAuth = ({Role}) => {
     
   const nav = useNavigate();
     const value = useSelector(state => state.user.loginvalue)
-    const permissions = useSelector((state) => state?.permissionsSlice?.data);
+    //const permissions = useSelector((state) => state?.permissionsSlice?.data);
     const role = value?.user?.role
     const firstTimeLogin = localStorage.getItem("firstTimeLogin");
     const { auth } = useAuth();
@@ -54,20 +52,20 @@ const RequireAuth = ({Role}) => {
       }
     }, []);
     
-    const getCounter = () => {
-      apiServices("GET", "requests/view-all-request?employeeName=&leaveType=&requestTo=&requestFrom=&page=1&limit=10&status=", null, value)
-      .then((res) => {
-        if (res?.data?.success === true) {
-          console.log('pending', res.data?.pendingRequests);
-          dispatch(counter(res.data?.pendingRequests))
-        }
-      })
-    }
+    // const getCounter = () => {
+    //   apiServices("GET", "requests/view-all-request?employeeName=&leaveType=&requestTo=&requestFrom=&page=1&limit=10&status=", null, value)
+    //   .then((res) => {
+    //     if (res?.data?.success === true) {
+    //       console.log('pending', res.data?.pendingRequests);
+    //       dispatch(counter(res.data?.pendingRequests))
+    //     }
+    //   })
+    // }
 
-    useEffect(() => {
-      if(!value?.user?.superAdmin && (value?.user?.role === 'admin' || permissions?.viewAllRequest || permissions?.teamRequest))
-        getCounter()
-      }, [])
+    // useEffect(() => {
+    //   if(!value?.user?.superAdmin && (value?.user?.role === 'admin' || permissions?.viewAllRequest || permissions?.teamRequest))
+    //     getCounter()
+    //   }, [])
 
     useEffect(() => {
       if(location.pathname !== '/change-password'){
