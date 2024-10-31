@@ -318,23 +318,29 @@ const AdminDashboard = () => {
       "Jan", "Feb", "Mar", "Apr", "May", "Jun",
       "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
     ];
-
+  
     function fillMissingMonths(data) {
       const monthMap = {};
       data?.forEach(item => (monthMap[item?.month] = item));
-    
-      const result = allMonths?.map(month => {
-        return monthMap[month] || { month, totalRevenue: 0 };
-        // return monthMap[month] || { month };
+  
+      const currentMonthIndex = new Date().getMonth(); // Get the current month index (0 for Jan to 11 for Dec)
+  
+      const result = allMonths.map((month, index) => {
+        if (index <= currentMonthIndex) {
+          return monthMap[month] || { month, totalRevenue: 0 };
+        } else {
+          return { month, totalRevenue: null }; // Hide line after the current month
+        }
       });
-    
+  
       return result;
     }
-    
+  
     const filledData = fillMissingMonths(data?.months);
-    setTableMonthData(filledData)
-    setYear(data?.year)
-  }
+    setTableMonthData(filledData);
+    setYear(data?.year);
+  };
+  
 
   const formatDate = (inputDate) => {
     if(inputDate){
