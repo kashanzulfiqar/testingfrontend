@@ -590,10 +590,10 @@ const Employeeslist = () => {
                   (role === 'admin' || permissions?.addUser) &&
                   <a href="javascript:void(0)" className="btn add-btn" style={{marginLeft:'5px'}} onClick={() => setOpen({ isAddOpen: true, isEditOpen: false, data: '' })}><i className="fa fa-plus" /> {t('allEmp.addEmployee')}</a>
                 }
-                {
+                {/* {
                   (role === 'admin' || permissions?.addUser) &&
                   <a href="javascript:void(0)" className="btn add-btn" onClick={() => setUpload(true)}><i className="la la-file-excel" />Import Data</a>
-                }
+                } */}
                    <div className="view-icons">
                      <Link to="/employee/allemployees" className="grid-view btn btn-link"><i className="fa fa-th" /></Link>
                      <Link to="/employee/employees-list" className="list-view btn btn-link active"><i className="fa fa-bars" /></Link>

@@ -244,9 +244,9 @@ const Projects = () => {
 
   };
 
-  useEffect(() => {
-    getAllDomain();
-  }, []);
+  // useEffect(() => {
+  //   getAllDomain();
+  // }, []);
 
   useEffect(() => {
     //if(role === 'admin' || permissions?.projectManagement ) { 
@@ -3418,7 +3418,6 @@ const filteredColumns = columns.filter(column => {
             closeEditModal={closeEditModal}
             getlistprojects={GetListProjects}
             allCurrencies={allCurrencies}
-            allDomain={allDomain}
           />
         )}
         
@@ -3429,7 +3428,6 @@ const filteredColumns = columns.filter(column => {
             closeEditModal={closeCreateModal}
             getlistprojects={GetListProjects}
             allCurrencies={allCurrencies}
-            allDomain={allDomain}
           />
         )}
 
