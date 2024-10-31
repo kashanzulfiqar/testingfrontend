@@ -707,11 +707,12 @@ const handleYearChange = (year) => {
                               // formatter={(value) => <label>{value.toLocaleString()}</label>}
                               formatter={(value, name, entry) => {
                                 if (
-                                  entry.dataKey === "totalExpense" ||
                                   entry.dataKey === "totalRevenue"
                                 ) {
                                   // return <label> {value.toLocaleString()}</label>;
                                   return amountFormatter(value);
+                                } else if (entry.dataKey === "totalExpense") {
+                                  return amountFormatter(Math.abs(value));
                                 } else {
                                   return (
                                     <>
@@ -726,10 +727,10 @@ const handleYearChange = (year) => {
                               contentStyle={{ direction: i18n.dir() }}
                             />
                             <Legend
-                              formatter={(value) => {
-                                if (value === "Total Expense") {
+                              formatter={(value, entry) => {
+                                if (entry.dataKey === "totalExpense") {
                                   return <label>{t('finance.Profit&loss.totalExpense')}</label>;
-                                } else if (value === "Total Revenue") {
+                                } else if (entry.dataKey === "totalRevenue") {
                                   return <label>{t('finance.Profit&loss.totalRevenue')}</label>;
                                 } else {
                                   return t('finance.Profit&loss.profitLoss');
@@ -746,7 +747,7 @@ const handleYearChange = (year) => {
                             <Bar
                               dataKey="totalRevenue"
                               name={t('finance.Profit&loss.totalRevenue')}
-                              fill="#ff9b44"
+                              fill="limegreen"
                               barSize={20}
                               minPointSize={1}
                             />
