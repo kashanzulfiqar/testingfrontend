@@ -625,6 +625,11 @@ const antIcon = (
   />
 );
 
+const columns = [
+  {
+    title: "#",
+    dataIndex: "",
+    width: 50,}]
 
   return (
     <>
@@ -785,6 +790,7 @@ const antIcon = (
                   <li className="nav-item"><a href="javascript:void(0)"  className={`nav-link ${activeTab === 'projects' ? 'active' : ''}`} onClick={() => { setActiveTab('projects') }}>{t('projects')}</a></li>
                   {/* <li className="nav-item"><a href="javascript:void(0)"  className={`nav-link ${activeTab === 'bank' ? 'active' : ''}`} onClick={() => { setActiveTab('bank') }}>{t('empProfile.bankAndStatutory')} <small className="text-danger">{t('empProfile.AdminOnly')}</small></a></li> */}
                   <li className="nav-item"><a href="javascript:void(0)"  className={`nav-link ${activeTab === 'assets' ? 'active' : ''}`} onClick={() => { setActiveTab('assets') }}>{t('empProfile.assets')}</a></li>
+                  <li className="nav-item"><a href="javascript:void(0)"  className={`nav-link ${activeTab === 'requests' ? 'active' : ''}`} onClick={() => { setActiveTab('requests') }}>{t('requests.requests')}</a></li>
                 </ul>
               </div>
             </div>
@@ -1467,6 +1473,37 @@ const antIcon = (
                                   </h1>
                                   <h3 className="mb-5 mt-3" style={{color:'#1F1F1F'}}> {t('visitLater')}</h3>
                                 </div>
+                    </div>
+                  )
+                }
+
+{
+                  (activeTab === 'requests' && allData?._id) && (
+                    <div className="tab-pane fade show active" id="emp_assets">
+                      <Table
+                        loading={dataLoading}
+                        className='table-striped customCellWidth'
+                        style = {{overflowX : 'auto'}}
+                        columns={columns}
+                        dataSource={allData}
+                        pagination={false}
+                        components={i18n.dir()==="rtl" ?
+                          {
+                          header: {
+                            cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                          },
+                        } :
+                        null
+                        }
+                        onRow={ i18n.dir()==="rtl" ?
+                          (record, rowIndex) => {
+                          return {
+                            style: { textAlign: 'right' }, // Align table data to the right
+                          };
+                        } :
+                        null
+                        }
+                      />
                     </div>
                   )
                 }
