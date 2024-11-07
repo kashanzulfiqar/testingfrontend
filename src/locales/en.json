@@ -545,7 +545,7 @@
     "Approved": "Approved",
     "Declined": "Declined",
     "cancelled": "Cancelled",
-    "leavesTypes":"leavesTypes",
+    "leavesTypes":"Request Type",
     "total": "Total",
     "alloted": "Alloted", 
     "taken": "Taken", 

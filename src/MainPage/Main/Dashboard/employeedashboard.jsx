@@ -1491,7 +1491,7 @@ useEffect(() => {
                             <div className="col-md-4">
                               <div className="attendance-details">
                                 <h4 className="text-pink">
-                                  {userData?.leave?.leavesTaken || 0}
+                                  {requestData?.leave?.takenLeaves || 0}
                                 </h4>
                                 <p>Leaves Taken</p>
                               </div>
