@@ -626,7 +626,7 @@ const TwoStepClientAdditionModal = ({
                   {loader ? (
                     <Spin size="small" indicator={antIcon} />
                   ) : (
-                    "Submit"
+                    "Next"
                   )}
                 </Button>
               </div>

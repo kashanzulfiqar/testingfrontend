@@ -545,6 +545,11 @@
     "Approved": "Approved",
     "Declined": "Declined",
     "cancelled": "Cancelled",
+    "leavesTypes":"leavesTypes",
+    "total": "Total",
+    "alloted": "Alloted", 
+    "taken": "Taken", 
+    "remaining": "Remaining",
     "viewModal": {
       "details": "Details",
       "sick": "Sick",
