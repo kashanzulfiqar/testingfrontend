@@ -545,6 +545,11 @@
     "Approved": "موافقة",
     "Declined": "رفض",
     "cancelled": "تم الإلغاء",
+    "leavesTypes":"أنواع الإجازات",
+    "total": "الإجمالي",
+    "alloted": "المخصص", 
+    "taken": "المستَخدَم", 
+    "remaining": "المتبقي",
     "viewModal": {
       "details": "التفاصيل",
       "sick": "مرضي",

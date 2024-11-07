@@ -625,6 +625,102 @@ const antIcon = (
   />
 );
 
+const leaveData = [
+  {
+    title: t('aRequests.sick'),
+    alloted: allData?.sickLeaves,
+    taken: allData?.takenSickLeaves,
+    remaining: allData?.remainingSickLeaves
+  },
+  {
+    title: t('aRequests.casual'),
+    alloted: allData?.casualLeaves,
+    taken: allData?.takenCasualLeaves,
+    remaining: allData?.remainingCasualLeaves
+  },
+  {
+    title: t('aRequests.wfh'),
+    alloted: allData?.workFromHomeLeaves,
+    taken: allData?.takenWorkFromHomeLeaves,
+    remaining: allData?.remainingWorkFromHomeLeaves
+  },
+  {
+    title: t('aRequests.bereavement'),
+    alloted: allData?.bereavementLeaves,
+    taken: allData?.takenBereavementLeaves,
+    remaining: allData?.remainingBereavementLeaves
+  },
+  {
+    title: t('aRequests.unpaid'),
+    alloted: allData?.unpaidLeaves,
+    taken: allData?.takenUnpaidLeaves,
+    remaining: allData?.remainingUnpaidLeaves
+  },
+  {
+    title: t('aRequests.paternity'),
+    alloted: allData?.paternityLeaves,
+    taken: allData?.takenPaternityLeaves,
+    remaining: allData?.remainingPaternityLeaves
+  },
+  {
+    title: t('aRequests.maternity'),
+    alloted: allData?.maternityLeaves,
+    taken: allData?.takenMaternityLeaves,
+    remaining: allData?.remainingMaternityLeaves
+  },
+  {
+    title: t('aRequests.marriage'),
+    alloted: allData?.marriageLeaves,
+    taken: allData?.takenMarriageLeaves,
+    remaining: allData?.remainingMarriageLeaves
+  },
+  {
+    title: t('aRequests.half'),
+    alloted: allData?.halfDayLeaves,
+    taken: allData?.takenHalfDayLeaves,
+    remaining: allData?.remainingHalfDayLeaves
+  },
+  {
+    title: t('aRequests.annual'),
+    alloted: allData?.annualLeaves,
+    taken: allData?.takenAnnualLeaves,
+    remaining: allData?.remainingAnnualLeaves
+  },
+  {
+    title: t('aRequests.total'),
+    alloted: allData?.allotedLeaves,
+    taken: allData?.takenLeaves,
+    remaining: allData?.remainingLeaves,
+  },
+];
+const columns = [
+  {
+    title: '#',
+    dataIndex: 'index',
+    key: 'index',
+    render: (text, record, index) => (record.title === t('aRequests.total') ? '' : index + 1),
+  },
+  {
+    title: t('aRequests.leavesTypes'),
+    dataIndex: 'title',
+    key: 'title',
+  },
+  {
+    title: t('aRequests.alloted'),
+    dataIndex: 'alloted',
+    key: 'alloted',
+  },
+  {
+    title: t('aRequests.taken'),
+    dataIndex: 'taken',
+    key: 'taken',
+  },
+  {
+    title: t('aRequests.remaining'),
+    dataIndex: 'remaining',
+    key: 'remaining',
+  },
+];
 
   return (
     <>
@@ -784,6 +880,7 @@ const antIcon = (
                   {/* <li className="nav-item"><a href="#emp_projects" data-bs-toggle="tab" className="nav-link">Projects</a></li> */}
                   <li className="nav-item"><a href="javascript:void(0)"  className={`nav-link ${activeTab === 'projects' ? 'active' : ''}`} onClick={() => { setActiveTab('projects') }}>{t('projects')}</a></li>
                   {/* <li className="nav-item"><a href="javascript:void(0)"  className={`nav-link ${activeTab === 'bank' ? 'active' : ''}`} onClick={() => { setActiveTab('bank') }}>{t('empProfile.bankAndStatutory')} <small className="text-danger">{t('empProfile.AdminOnly')}</small></a></li> */}
+                  <li className="nav-item"><a href="javascript:void(0)"  className={`nav-link ${activeTab === 'requests' ? 'active' : ''}`} onClick={() => { setActiveTab('requests') }}>{t('requests.requests')}</a></li>
                   <li className="nav-item"><a href="javascript:void(0)"  className={`nav-link ${activeTab === 'assets' ? 'active' : ''}`} onClick={() => { setActiveTab('assets') }}>{t('empProfile.assets')}</a></li>
                 </ul>
               </div>
@@ -1467,6 +1564,37 @@ const antIcon = (
                                   </h1>
                                   <h3 className="mb-5 mt-3" style={{color:'#1F1F1F'}}> {t('visitLater')}</h3>
                                 </div>
+                    </div>
+                  )
+                }
+
+{
+                  (activeTab === 'requests' && allData?._id) && (
+                    <div className="tab-pane fade show active" id="emp_assets">
+                      <Table
+                        loading={dataLoading}
+                        className='table-striped customCellWidth'
+                        style = {{overflowX : 'auto'}}
+                        columns={columns}
+                        dataSource={leaveData}
+                        pagination={false}
+                        components={i18n.dir()==="rtl" ?
+                          {
+                          header: {
+                            cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
+                          },
+                        } :
+                        null
+                        }
+                        onRow={(record, rowIndex) => {
+                          return {
+                            style: {
+                              textAlign: i18n.dir() === 'rtl' ? 'right' : 'left',
+                              fontWeight: record.title === 'Total' ? 'bold' : 'normal', // Bold style for the "Total" row
+                            },
+                          };
+                        }}
+                      />
                     </div>
                   )
                 }
