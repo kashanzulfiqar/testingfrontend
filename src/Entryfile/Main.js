@@ -31,6 +31,7 @@ import "../assets/js/bootstrap-datetimepicker.min.js";
 import "../assets/js/multiselect.min.js";
 import "../assets/plugins/bootstrap-tagsinput/bootstrap-tagsinput.css";
 import "../assets/css/bootstrap-datetimepicker.min.css";
+import "../assets/scss/main.scss";
 import '../assets/css/style.css';
 import i18n from '../i18n.js';
 import { I18nextProvider } from 'react-i18next';
