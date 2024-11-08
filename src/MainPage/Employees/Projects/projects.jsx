@@ -1753,7 +1753,7 @@ const filteredColumns = columns.filter(column => {
                             </div>
                           </div>
                         }
-                        <h4 className="project-title longText">
+                        <h4 className="project-title longText2">
                           <Link to={`/projects/projects-view/${project?._id}`} state={{ project: project }}>
                             {project?.projectName}
                           </Link>
@@ -1764,7 +1764,7 @@ const filteredColumns = columns.filter(column => {
                         <span className="text-xs">9</span>{" "}
                         <span className="text-muted">tasks completed</span>
                       </small> */}
-                        <div style={{ height: "110px" }}>
+                        <div style={{ height: "110px", marginTop: "20px"}}>
                           <p className="text-muted longText1">
                             {project?.projectDescription}
                           </p>

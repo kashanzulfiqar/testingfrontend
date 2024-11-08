@@ -1161,6 +1161,11 @@ useEffect(() => {
     },
   ];
 
+  // Assume joiningDate and birthDate are coming from the backend, part of requestData object.
+const today = new Date();
+const todayDay = today.getDate();
+const todayMonth = today.getMonth() + 1; // getMonth() is zero-based
+
   const dataSourceWfh = userData?.employeeOnWfh || [];
   const dataSourceLeave = userData?.employeeOnLeave || [];
   return (
@@ -1633,6 +1638,96 @@ useEffect(() => {
                       </ul>
                       <div className="tab-content">
                         <div className="tab-pane active" id="notification_tab">
+                        {userData?.workAnniversary?.map((employee, index) => {
+                          const joiningDate = new Date(employee.joiningDate);
+                          const joiningDay = joiningDate.getDate();
+                          const joiningMonth = joiningDate.getMonth() + 1;
+
+                          // Check if today's day and month match the employee's joining date for work anniversary
+                          const isWorkAnniversary = todayDay === joiningDay && todayMonth === joiningMonth;
+
+                          return (
+                            isWorkAnniversary && (
+                              <div key={index} className="employee-noti-content" style={{ position: "relative" }}>
+                                <span 
+                                  className="pin-icon" 
+                                  style={{
+                                    position: "absolute",
+                                    top: "10px",
+                                    right: "10px",
+                                    fontSize: "16px",
+                                    color: "#999"
+                                  }}
+                                >
+                                  📌
+                                </span>
+                                <ul className="employee-notification-list">
+                                <li className="employee-notification-grid">
+                                  <div className="employee-notification-icon">
+                                    <span className="badge-soft-danger rounded-circle">
+                                      🎉
+                                    </span>
+                                  </div>
+                                  <div className="employee-notification-content">
+                                    <h6>
+                                      <label>
+                                        {`Happy Work Anniversary, ${employee.fullName}!`}
+                                      </label>
+                                      
+                                    </h6>
+                                    <ul className="nav" style={{display:"flex", alignItems:"center"}}>
+                                      <li>
+                                        {`Request Date: ${moment(
+                                          employee.joiningDate
+                                        ).format("DD MMM YYYY")}`}
+                                      </li>
+                                    </ul>
+                                  </div>
+                                </li>
+                                </ul>
+                              </div>
+                            )
+                          );
+                        })}
+                          {userData?.workAnniversary?.map((employee, index) => {
+                          const joiningDate = new Date(employee.joiningDate);
+                          const joiningDay = joiningDate.getDate();
+                          const joiningMonth = joiningDate.getMonth() + 1;
+
+                          // Check if today's day and month match the employee's joining date for work anniversary
+                          const isWorkAnniversary = todayDay === joiningDay && todayMonth === joiningMonth;
+
+                          return (
+                            isWorkAnniversary && (
+                              <div key={index} className="employee-noti-content">
+                                <ul className="employee-notification-list">
+                                <li className="employee-notification-grid">
+                                  <div className="employee-notification-icon">
+                                    <span className="badge-soft-danger rounded-circle">
+                                      🎂
+                                    </span>
+                                  </div>
+                                  <div className="employee-notification-content">
+                                    <h6>
+                                      <label>
+                                        {`Happy BirthDay, ${employee.fullName}!`}
+                                      </label>
+                                      
+                                    </h6>
+                                    <ul className="nav" style={{display:"flex", alignItems:"center"}}>
+                                      <li>
+                                        {`Request Date: ${moment(
+                                          employee.joiningDate
+                                        ).format("DD MMM YYYY")}`}
+                                      </li>
+                                    </ul>
+                                  </div>
+                                </li>
+                                </ul>
+                              </div>
+                            )
+                          );
+                        })}
                           {requestData?.SelfRequests?.map((requests, indx) => (
                             <div key={indx} className="employee-noti-content">
                               <ul className="employee-notification-list">
