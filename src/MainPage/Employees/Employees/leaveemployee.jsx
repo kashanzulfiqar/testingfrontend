@@ -34,6 +34,9 @@ const LeaveEmployee = () => {
     isDelOpen: false,
     data: "",
   });
+
+  const [numberOfDays, setNumberOfDays] = useState('0');
+  const [LeavesType, setLeavesType] = useState("");
   const [tableLoader, setTableLoader] = useState(false);
   const [pageSize, setPageSize] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
@@ -43,9 +46,14 @@ const LeaveEmployee = () => {
   const [paginationDetail, setPaginationDetail] = useState();
   const [fromDate, setFromDate] = useState(null);
   const [compLeaves, setCompLeaves] = useState({});
-  const [singleUser, setSingleUser] = useState();
   const [workingDays, setWorkingDays] = useState([]);
-
+  const [allotedCasualLeaves, setAllotedCasualLeaves] = useState([]);
+  const [allotedSickLeaves, setAllotedSickLeaves] = useState([]);
+  const [allotedWfhLeaves, setAllotedWfhLeaves] = useState([]);
+  const [remainingLeaves, setRemainingLeaves] = useState([]);
+  const [remainingCasualLeaves, setRemainingCasualLeaves] = useState([]);
+  const [remainingSickLeaves, setRemainingSickLeaves] = useState([]);
+  const [remainingWfhLeaves, setRemainingWfhLeaves] = useState([]);
   
     const [data, setData] = useState([]);
     useEffect( ()=>{
@@ -61,32 +69,11 @@ const LeaveEmployee = () => {
       if(permissions?.viewSelfRequest) {
         getSelfRequests();
         getLeaves()
-        getUser()
       }else{
         nav('/restricted', { state: { unAuthorize: true}})
       }
     }, []);
 
-    const getUser = () => {
-
-      apiServices("GET", "user/employee-overview", null, user_state)
-      .then((res) => {
-        if (res?.data?.success === true) {
-          setSingleUser(res?.data?.user)
-        }
-      })
-      .catch((err) => {
-        message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
-              ? err?.response?.data?.validation?.body?.message
-              : t('requests.errors.getUserInfoError')
-          }!`
-        );
-      });
-        }
     const getLeaves = () => {
 
       apiServices("GET", "leave-policy", null, user_state)
@@ -115,6 +102,13 @@ const LeaveEmployee = () => {
           console.log(res?.data);
           if (res?.data?.success === true) {
             setWorkingDays(res?.data?.workingDays)
+            setAllotedCasualLeaves(res?.data?.casualLeaves)
+            setAllotedSickLeaves(res?.data?.sickLeaves)
+            setAllotedWfhLeaves(res?.data?.wfhLeaves)
+            setRemainingLeaves(res?.data?.remainingLeaves)
+            setRemainingCasualLeaves(res?.data?.remainingCasualLeaves)
+            setRemainingSickLeaves(res?.data?.remainingSickLeaves)
+            setRemainingWfhLeaves(res?.data?.remainingWfhLeaves)
             setData(res?.data?.SelfRequests?.docs);
           setPaginationDetail(res?.data?.SelfRequests?.total)
             setTableLoader(false);
@@ -144,7 +138,7 @@ const LeaveEmployee = () => {
         
       const columns = [
         {
-          title: t('requests.leaveType'),
+          title: t('aRequests.leavesTypes'),
           dataIndex: 'leaveType',
           render: (text, record) => {
             return(            
@@ -248,6 +242,8 @@ const LeaveEmployee = () => {
                         isDelOpen: false,
                         data: record,
                       })
+                      setNumberOfDays(record?.totalDays)
+                      setLeavesType(record?.leaveType)
                       form.setFieldsValue({
                         ...record,
                         startDate: moment(record?.startDate, 'YYYY-MM-DD'),
@@ -343,6 +339,10 @@ const leaves = [
           return value;
         };
         
+        if(values?.leaveType == LeavesType && values?.totalDays > numberOfDays){
+          console.log("asdfghjklpoiuytrewqzxcvbnm",values?.leaveType, LeavesType, values?.totalDays, numberOfDays);
+          
+        }
         const d = JSON.parse(JSON.stringify(values, replacer));
 
           let new_data = {
@@ -367,6 +367,7 @@ const leaves = [
               ...data,
             ]);
             setPaginationDetail(prev => prev+1)
+            getSelfRequests();
             handleClose();
             message.success(t('requests.errors.requestAddedSuccessfully'));
             setLoader(false);
@@ -410,6 +411,7 @@ const leaves = [
                       }
                     })
                   );
+                  getSelfRequests();
                   handleClose();
                   message.success(t('requests.errors.requestUpdatedSuccessfully'));
                   setLoader(false)
@@ -454,6 +456,7 @@ const leaves = [
                   }
                 })
               );
+              getSelfRequests();
               handleClose();
               message.success(t('requests.errors.requestDeletedSuccessfully'));
               setLoader(false)
@@ -569,25 +572,25 @@ const leaves = [
           <div className="col-md-3">
             <div className="stats-info">
               <label>{t('requests.casualLeave')}</label>
-              <h4 style={{unicodeBidi:'plaintext'}}>{singleUser?.casualLeaves} / {compLeaves?.casualLeaves}</h4>
+              <h4 style={{unicodeBidi:'plaintext'}}>{remainingCasualLeaves} / {allotedCasualLeaves}</h4>
             </div>
           </div>
           <div className="col-md-3">
             <div className="stats-info">
               <label>{t('requests.sickLeave')}</label>
-              <h4 style={{unicodeBidi:'plaintext'}}>{singleUser?.sickLeaves} / {compLeaves?.sickLeaves}</h4>
+              <h4 style={{unicodeBidi:'plaintext'}}>{remainingSickLeaves} / {allotedSickLeaves}</h4>
             </div>
           </div>
           <div className="col-md-3">
             <div className="stats-info">
               <label>{t('requests.workFromHome')}</label>
-              <h4 style={{unicodeBidi:'plaintext'}}>{singleUser?.workFromHomeLeaves} / {compLeaves?.workFromHomeLeaves}</h4>
+              <h4 style={{unicodeBidi:'plaintext'}}>{remainingWfhLeaves} / {allotedWfhLeaves}</h4>
             </div>
           </div>
           <div className="col-md-3">
             <div className="stats-info" style={{minHeight: '83px'}}>
               <label>{t('requests.remainingLeave')}</label>
-              <h4>{singleUser?.remainingLeaves}</h4>
+              <h4>{remainingLeaves}</h4>
             </div>
           </div>
         </div>
