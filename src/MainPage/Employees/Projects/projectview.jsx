@@ -422,6 +422,32 @@ const ProjectView = () => {
       });
   };
 
+  const handleUpdateStatus = async (values) => {
+        const updatedData = {
+            _id: project?._id,
+            startDate: moment(project?.startDate).format("YYYY-MM-DD"),
+            endDate: moment(project?.endDate).format("YYYY-MM-DD"),
+            status: values // Only updating the status
+        };
+
+        try {
+            const res = await apiServices("PUT", `project-management/`, updatedData, user_state);
+
+            if (res.data.success) {
+                message.success(t("ProjectStatusUpdatedSuccessfully"));
+                GetProjects();
+                }
+        } catch (err) {
+            message.error(
+                err?.response?.data?.msg
+                    ? err?.response?.data?.msg
+                    : err?.response?.data?.validation?.body?.message
+                    ? err?.response?.data?.validation?.body?.message
+                    : t("projectScreen.errors.errorUpdatingProjectStatus")
+            );
+        }
+};
+
   useEffect(() => {
     if ($(".select").length > 0) {
       $(".select").select2({
@@ -649,28 +675,119 @@ const ProjectView = () => {
               </ul>
             </div>
 
-            <div className="col-auto float-end ms-auto">
-              {!isLoading && (role === 'admin' || permissions?.projectManagement) && 
-                <button
-                  className="btn add-btn"
-                  onClick={() => {
-                    getAllCurrencies();
-                    openEditModal(project);
-                    form.setFieldsValue({
-                      ...project,
-                      startDate: moment(project?.startDate, "YYYY-MM-DD"),
-                      endDate: moment(project?.endDate, "YYYY-MM-DD"),
-                    });
-                  }}
-                  disabled={
-                    role === "client" ||
-                    role === "focalperson" ||
-                    (role === "" && !permissions?.projectManagement)
-                  }
+            <div className="col-auto float-end ms-auto" style={{display: 'flex', alignItems: 'center', gap: '5px'}}>
+              {!isLoading && (role === 'admin' || permissions?.projectManagement) &&
+              <>
+              <div className="project-status-container">
+                <a
+                  className={`btn btn-white btn-sm btn-rounded dropdown-toggle`} // Always has the dropdown-toggle class
+                  href="javascript:void(0)"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                  onClick={(e) => e.preventDefault()}
                 >
-                  <i className="fa fa-plus" />
-                  {t('viewProject.editProject')}
-                </button>
+                  <i
+                    className={`fa ${
+                      project?.status === "Scheduled"
+                        ? "fa-dot-circle-o text-danger"
+                        : project?.status === "Ongoing"
+                        ? "fa-dot-circle-o text-warning"
+                        : project?.status === "Paused"
+                        ? "fa-dot-circle-o text-muted"
+                        : project?.status === "Completed"
+                        ? "fa-dot-circle-o text-success"
+                        : project?.status === "Archived"
+                        ? "fa-dot-circle-o text-muted"
+                        : "fa-dot-circle-o"
+                    }`}
+                  />{" "}
+                  {project?.status === 'Scheduled' 
+                    ? t('projectScreen.Modal.scheduled')
+                    : project?.status === 'On-Going' 
+                    ? t('projectScreen.Modal.onGoing')
+                    : project?.status === 'Paused' 
+                    ? t('projectScreen.Modal.paused')
+                    : project?.status === 'Completed' 
+                    ? t('projectScreen.Modal.completed')
+                    : project?.status === 'Archived' 
+                    ? t('projectScreen.Modal.archived') 
+                    : project?.status}
+                </a>
+                <div className="dropdown-menu dropdown-menu-right">
+                  <a
+                    className="dropdown-item"
+                    href="javascript:void(0)"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleUpdateStatus("Scheduled");
+                    }}
+                  >
+                    <i className="fa fa-dot-circle-o text-danger" /> {t("projectScreen.Modal.scheduled")}
+                  </a>
+                  <a
+                    className="dropdown-item"
+                    href="javascript:void(0)"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleUpdateStatus("Ongoing");
+                    }}
+                  >
+                    <i className="fa fa-dot-circle-o text-warning" /> {t("projectScreen.Modal.onGoing")}
+                  </a>
+                  <a
+                    className="dropdown-item"
+                    href="javascript:void(0)"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleUpdateStatus("Paused");
+                    }}
+                  >
+                    <i className="fa fa-dot-circle-o text-muted" /> {t("projectScreen.Modal.paused")}
+                  </a>
+                  <a
+                    className="dropdown-item"
+                    href="javascript:void(0)"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleUpdateStatus("Completed");
+                    }}
+                  >
+                    <i className="fa fa-dot-circle-o text-success" /> {t("projectScreen.Modal.completed")}
+                  </a>
+                  <a
+                    className="dropdown-item"
+                    href="javascript:void(0)"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleUpdateStatus("Archived");
+                    }}
+                  >
+                    <i className="fa fa-dot-circle-o text-muted" /> {t("projectScreen.Modal.archived")}
+                  </a>
+                </div>
+              </div>
+            
+              <button
+                className="btn add-btn"
+                onClick={() => {
+                  getAllCurrencies();
+                  openEditModal(project);
+                  form.setFieldsValue({
+                    ...project,
+                    startDate: moment(project?.startDate, "YYYY-MM-DD"),
+                    endDate: moment(project?.endDate, "YYYY-MM-DD"),
+                  });
+                }}
+                disabled={
+                  role === "client" ||
+                  role === "focalperson" ||
+                  (role === "" && !permissions?.projectManagement)
+                }
+              >
+                <i className="fa fa-plus" />
+                {t('viewProject.editProject')}
+              </button>
+            </>
               }
 
               {
@@ -722,7 +839,25 @@ const ProjectView = () => {
 
               <div className="card">
                 <div className="card-body">
-                  <h5 className="card-title m-b-20">Project Files</h5>
+                  <h5 className="card-title m-b-20">Project Files
+                  { (role === 'admin' || permissions?.projectManagement) &&
+                      <button
+                      type="button"
+                      className={`${i18n.dir() === 'rtl' ? 'float-start' : 'float-end'} btn btn-primary btn-sm`}
+                      // onClick={() => {
+                      //   fetchEmployees();
+                      //   openUserModal();
+                      //   setSelectedDevelopers(project?.assignedDevelopers);
+                      // }}
+                      disabled={
+                        role === "client" ||
+                        role === "focalperson" ||
+                        (role === "" && !permissions?.projectManagement)
+                      }
+                    >
+                      <i className="fa fa-plus" /> {t('holiday.add')}
+                    </button>
+                    }</h5>
                   {project?.docs?.length > 0 ? 
                     <>
                       <div className="row">
@@ -791,10 +926,17 @@ const ProjectView = () => {
                                               window.open(fullImageUrl, "_blank")
                                             }
                                           />
-                                          <div className="download-icon hidden">
-                                            <a href={downloadLink} download>
-                                              <i className="fa fa-download" />
-                                            </a>
+                                          <div className="download-icon-container">
+                                            <div className="download-icon hidden">
+                                              <a href={downloadLink} download>
+                                                <i className="fa fa-download" />
+                                              </a>
+                                            </div>
+                                            <div className="delete-icon">
+                                              <a onClick={() => handleDelete(doc.id)}>
+                                                <i className="fa fa-trash" />
+                                              </a>
+                                            </div>
                                           </div>
                                         </div>
                                       </a>
@@ -816,10 +958,17 @@ const ProjectView = () => {
                                           className="img-fluid"
                                           alt={`Image ${index + 1}`}
                                         />
-                                        <div className="download-icon">
-                                          <a href={fullImageUrl} download>
-                                            <i className="fa fa-download" />
-                                          </a>
+                                        <div className="download-icon-container">
+                                          <div className="download-icon">
+                                            <a href={fullImageUrl} download>
+                                              <i className="fa fa-download" />
+                                            </a>
+                                          </div>
+                                          <div className="delete-icon">
+                                            <a onClick={() => handleDelete(doc.id)}>
+                                              <i className="fa fa-trash" />
+                                            </a>
+                                          </div>
                                         </div>
                                       </div>
                                       <div className="uploaded-img-name">{`File ${
@@ -912,6 +1061,8 @@ const ProjectView = () => {
                                     </div>
                                     <ul className="files-action">
                                       <li className="dropdown dropdown-action">
+                                      <div className="download-icon-container">
+                                      <div className="download-icon">
                                         <a
                                           href={downloadLink}
                                           className="dropdown-toggle btn btn-link"
@@ -920,6 +1071,16 @@ const ProjectView = () => {
                                           <i className="fa fa-download" />{" "}
                                           {/* Download icon */}
                                         </a>
+                                        </div>
+                                        <div className="download-icon">
+                                        <a
+                                          onClick={() => handleDelete(doc.id)}
+                                          className="dropdown-toggle btn btn-link"
+                                        >
+                                          <i className="fa fa-trash" />
+                                        </a>
+                                        </div>
+                                        </div>
                                       </li>
                                     </ul>
                                   </div>
@@ -939,7 +1100,31 @@ const ProjectView = () => {
             {(role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) &&
               <div className="card">
                 <div className="card-body">
-                  <div style={{display:'flex', flexDirection: 'row', alignItems: 'center'}}><h5 className="card-title m-b-20">Confidential Files</h5> <span className="badge badge-pill bg-custom float-end" style={{marginLeft:'10px', marginBottom: 'auto'}}>ADMIN</span></div>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}
+                ><div style={{display:'flex', flexDirection: 'row', alignItems: 'center'}}><h5 className="card-title m-b-20">Confidential Files</h5> <span className="badge badge-pill bg-custom float-end" style={{marginLeft:'10px', marginBottom: 'auto'}}>ADMIN</span></div>
+                      <button
+                      type="button"
+                      className={`${i18n.dir() === 'rtl' ? 'float-start' : 'float-end'} btn btn-primary btn-sm`}
+                      // onClick={() => {
+                      //   fetchEmployees();
+                      //   openUserModal();
+                      //   setSelectedDevelopers(project?.assignedDevelopers);
+                      // }}
+                      disabled={
+                        role === "client" ||
+                        role === "focalperson" ||
+                        (role === "" && !permissions?.projectManagement)
+                      }
+                    >
+                      <i className="fa fa-plus" /> {t('holiday.add')}
+                    </button>
+                    </div>
                   {
                     project?.adminDocs?.length > 0 ? 
                     <>
@@ -1009,10 +1194,17 @@ const ProjectView = () => {
                                               window.open(fullImageUrl, "_blank")
                                             }
                                           />
-                                          <div className="download-icon hidden">
-                                            <a href={downloadLink} download>
-                                              <i className="fa fa-download" />
-                                            </a>
+                                          <div className="download-icon-container">
+                                            <div className="download-icon hidden">
+                                              <a href={downloadLink} download>
+                                                <i className="fa fa-download" />
+                                              </a>
+                                            </div>
+                                            <div className="delete-icon">
+                                              <a onClick={() => handleDelete(doc)}>
+                                                <i className="fa fa-trash" />
+                                              </a>
+                                            </div>  
                                           </div>
                                         </div>
                                       </a>
@@ -1034,10 +1226,17 @@ const ProjectView = () => {
                                           className="img-fluid"
                                           alt={`Image ${index + 1}`}
                                         />
-                                        <div className="download-icon">
-                                          <a href={fullImageUrl} download>
-                                            <i className="fa fa-download" />
-                                          </a>
+                                        <div className="download-icon-container">
+                                          <div className="download-icon">
+                                            <a href={fullImageUrl} download>
+                                              <i className="fa fa-download" />
+                                            </a>
+                                          </div>
+                                          <div className="delete-icon">
+                                            <a onClick={() => handleDelete(doc)}>
+                                              <i className="fa fa-trash" />
+                                            </a>
+                                          </div>
                                         </div>
                                       </div>
                                       <div className="uploaded-img-name">{`File ${
@@ -1132,6 +1331,8 @@ const ProjectView = () => {
                                     </div>
                                     <ul className="files-action">
                                       <li className="dropdown dropdown-action">
+                                      <div className="download-icon-container">
+                                      <div className="download-icon">
                                         <a
                                           href={downloadLink}
                                           className="dropdown-toggle btn btn-link"
@@ -1140,6 +1341,16 @@ const ProjectView = () => {
                                           <i className="fa fa-download" />{" "}
                                           {/* Download icon */}
                                         </a>
+                                        </div>
+                                        <div className="delete-icon">
+                                          <a
+                                          onClick={() => handleDelete(doc.id)}
+                                          className="dropdown-toggle btn btn-link"
+                                        >
+                                          <i className="fa fa-trash" />
+                                        </a>
+                                        </div>
+                                        </div>
                                       </li>
                                     </ul>
                                   </div>

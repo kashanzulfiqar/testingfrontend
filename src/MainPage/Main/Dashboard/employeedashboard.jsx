@@ -81,6 +81,53 @@ const EmployeeDashboard = () => {
   const isDisabled = !Bdisbale;
 
   const [attendanceData, setAttendanceData] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [skip, setSkip] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const limit = 6; // Load 6 items per request
+
+  // useEffect(() => {
+  //   fetchNotifications(skip); // Initial fetch
+  // }, []);
+
+  // const fetchNotifications = async (currentSkip) => {
+  //   try {
+  //     // Fetch anniversaries and birthdays
+  //     const userResponse = await apiServices("GET", `user/employee-overview-dashboard?limit=${limit}&skip=${currentSkip}`);
+  //     const workAnniversary = userResponse.data.workAnniversary;
+  //     const todayBirthdays = userResponse.data.todayBirthdays;
+
+  //     // Fetch self requests
+  //     const requestResponse = await apiServices("GET", `requests/view-self-request-dashboard?limit=${limit}&skip=${currentSkip}`);
+  //     const selfRequests = requestResponse.data.SelfRequests;
+
+  //     // Combine both types of data
+  //     const newNotifications = [
+  //       ...workAnniversary.map((item) => ({ type: "workAnniversary", ...item })),
+  //       ...todayBirthdays.map((item) => ({ type: "birthday", ...item })),
+  //       ...selfRequests.map((item) => ({ type: "selfRequest", ...item })),
+  //     ];
+
+  //     // Check if there are more items to load
+  //     if (newNotifications.length < limit * 2) { // Adjust to desired load amount
+  //       setHasMore(false);
+  //     }
+
+  //     // Add to existing notifications and update skip
+  //     setNotifications((prevData) => [...prevData, ...newNotifications]);
+  //     setSkip(currentSkip + limit);
+  //   } catch (error) {
+  //     console.error("Failed to load notifications:", error);
+  //   }
+  // };
+
+  const handleScroll = (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.target;
+    if (scrollTop + clientHeight >= scrollHeight - 5 && hasMore) {
+      fetchdata(skip);
+      getSelfRequests(skip); // Load more data when scrolled to the bottom
+    }
+  };
 
   useEffect(() => {
     // Update direction when language changes
@@ -896,9 +943,9 @@ const EmployeeDashboard = () => {
   useEffect(() => {
     //fetchEmployees();
     GetListProjects();
-    getSelfRequests();
+    getSelfRequests(skip);
     fetchDays();
-    fetchdata();
+    fetchdata(skip);
     // if (permissions?.viewSelfRequest) {
 
     // } else {
@@ -906,14 +953,15 @@ const EmployeeDashboard = () => {
     // }
   }, []);
 
-  const fetchdata = async () => {
+  const fetchdata = async (currentSkip) => {
     setLoading(true);
-    apiServices("GET", `user/employee-overview-dashboard`, null, user_state)
+    apiServices("GET", `user/employee-overview-dashboard?limit=${limit}&skip=${currentSkip}`, null, user_state)
       .then((res) => {
         if (res.data.success === true) {
           const userData = res?.data;
           setUserData(userData);
           console.log("user information", userData);
+          setSkip(currentSkip + limit);
           setLoading(false);
         }
       })
@@ -938,15 +986,16 @@ const EmployeeDashboard = () => {
       });
   };
 
-  const getSelfRequests = async () => {
+  const getSelfRequests = async (currentSkip) => {
     setIsLoading(true);
-    apiServices("GET", `requests/view-self-request-dashboard`, null, user_state)
+    apiServices("GET", `requests/view-self-request-dashboard?limit=${limit}&skip=${currentSkip}`, null, user_state)
       .then((res) => {
         console.log("request page data in emmplyee dash", res?.data);
         if (res?.data?.success === true) {
           // setWorkingDays(res?.data?.workingDays)
           setRequestData(res?.data);
           // setPaginationDetail(res?.data?.SelfRequests?.total)
+          setSkip(currentSkip + limit);
           setIsLoading(false);
         }
       })
@@ -1641,7 +1690,7 @@ const todayMonth = today.getMonth() + 1; // getMonth() is zero-based
                       </li> */}
                       </ul>
                       <div className="tab-content">
-                        <div className="tab-pane active" id="notification_tab">
+                        <div className="tab-pane active" id="notification_tab" onScroll={handleScroll}>
                         {userData?.workAnniversary?.map((employee, index) => {
                           const joiningDate = new Date(employee.joiningDate);
                           const joiningDay = joiningDate.getDate();
@@ -1692,17 +1741,27 @@ const todayMonth = today.getMonth() + 1; // getMonth() is zero-based
                             )
                           );
                         })}
-                          {userData?.workAnniversary?.map((employee, index) => {
-                          const joiningDate = new Date(employee.joiningDate);
-                          const joiningDay = joiningDate.getDate();
-                          const joiningMonth = joiningDate.getMonth() + 1;
+                          {userData?.todayBirthdays?.map((employee, index) => {
+                          const birthdayDate = new Date(employee.dateOfBirth);
+                          const birthdayDay = birthdayDate.getDate();
+                          const birthdayMonth = birthdayDate.getMonth() + 1;
 
                           // Check if today's day and month match the employee's joining date for work anniversary
-                          const isWorkAnniversary = todayDay === joiningDay && todayMonth === joiningMonth;
+                          const isBirthday = todayDay === birthdayDay && todayMonth === birthdayMonth;
 
                           return (
-                            isWorkAnniversary && (
-                              <div key={index} className="employee-noti-content">
+                            isBirthday && (
+                              <div key={index} className="employee-noti-content" style={{ position: "relative" }}>
+                              <PushPin  
+                                style={{
+                                  position: "absolute",
+                                  top: "10px",
+                                  right: "10px",
+                                  fontSize: "16px",
+                                  transform: "rotate(45deg)",
+                                  color: "#999"
+                                }}
+                              />
                                 <ul className="employee-notification-list">
                                 <li className="employee-notification-grid">
                                   <div className="employee-notification-icon">
@@ -1720,7 +1779,7 @@ const todayMonth = today.getMonth() + 1; // getMonth() is zero-based
                                     <ul className="nav" style={{display:"flex", alignItems:"center"}}>
                                       <li>
                                         {`Request Date: ${moment(
-                                          employee.joiningDate
+                                          employee.dateOfBirth
                                         ).format("DD MMM YYYY")}`}
                                       </li>
                                     </ul>
@@ -1763,111 +1822,6 @@ const todayMonth = today.getMonth() + 1; // getMonth() is zero-based
                                     </ul>
                                   </div>
                                 </li>
-
-                                {/* <li className="employee-notification-grid">
-                              <div className="employee-notification-icon">
-                                <Link to="/activities">
-                                  <span className="badge-soft-info rounded-circle">
-                                    ER
-                                  </span>
-                                </Link>
-                              </div>
-                              <div className="employee-notification-content">
-                                <h6>
-                                  <Link to="/activities">
-                                    You’re enrolled in upcom....
-                                  </Link>
-                                </h6>
-                                <ul className="nav">
-                                  <li>12:40 PM</li>
-                                  <li>21 Apr 2024</li>
-                                </ul>
-                              </div>
-                            </li>
-                            <li className="employee-notification-grid">
-                              <div className="employee-notification-icon">
-                                <Link to="/activities">
-                                  <span className="badge-soft-warning rounded-circle">
-                                    SM
-                                  </span>
-                                </Link>
-                              </div>
-                              <div className="employee-notification-content">
-                                <h6>
-                                  <Link to="/activities">
-                                    Your annual compliance trai
-                                  </Link>
-                                </h6>
-                                <ul className="nav">
-                                  <li>11:00 AM</li>
-                                  <li>21 Apr 2024</li>
-                                </ul>
-                              </div>
-                            </li>
-                            <li className="employee-notification-grid">
-                              <div className="employee-notification-icon">
-                                <Link to="/activities">
-                                  <span className="rounded-circle">
-                                    <img
-                                      src={Avatar_02}
-                                      className="img-fluid rounded-circle"
-                                      alt="User"
-                                    />
-                                  </span>
-                                </Link>
-                              </div>
-                              <div className="employee-notification-content">
-                                <h6>
-                                  <Link to="/activities">
-                                    Jessica has requested feedba
-                                  </Link>
-                                </h6>
-                                <ul className="nav">
-                                  <li>10:30 AM</li>
-                                  <li>21 Apr 2024</li>
-                                </ul>
-                              </div>
-                            </li>
-                            <li className="employee-notification-grid">
-                              <div className="employee-notification-icon">
-                                <Link to="/activities">
-                                  <span className="badge-soft-warning rounded-circle">
-                                    DT
-                                  </span>
-                                </Link>
-                              </div>
-                              <div className="employee-notification-content">
-                                <h6>
-                                  <Link to="/activities">
-                                    Gentle remainder about train
-                                  </Link>
-                                </h6>
-                                <ul className="nav">
-                                  <li>09:00 AM</li>
-                                  <li>21 Apr 2024</li>
-                                </ul>
-                              </div>
-                            </li>
-                            <li className="employee-notification-grid">
-                              <div className="employee-notification-icon">
-                                <Link to="/activities">
-                                  <span className="badge-soft-danger rounded-circle">
-                                    AU
-                                  </span>
-                                </Link>
-                              </div>
-                              <div className="employee-notification-content">
-                                <h6>
-                                  <Link to="/activities">
-                                    Our HR system will be down
-                                  </Link>
-                                </h6>
-                                <ul className="nav">
-                                  <li>11:50 AM</li>
-                                  <li>21 Apr 2024</li>
-                                </ul>
-                              </div>
-                            </li> */}
                               </ul>
                             </div>
                           ))}
