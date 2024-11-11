@@ -8,11 +8,15 @@ import {
 //import { avatar1, avatar13, avatar16, avatar18, avatar19, avatar2, avatar20, avatar21, avatar23, avatar26, avatar4, avatar6, avatar8, clockin, employeeimg, holidaycalendar } from "../../../../../Routes/ImagePath";
 import Chart from "react-apexcharts";
 import { ArrowRightCircle } from "react-feather";
+// import { FaBirthdayCake, FaThumbtack } from "react-icons/fa";
+// import { GiPartyPopper } from "react-icons/gi";
 import { user_icon } from "../../../Entryfile/imagepath.jsx";
 import { apiServices } from "../../../Services/apiServices.js";
 import { useTranslation } from "react-i18next";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { Spin, Table, Empty, DatePicker, message, Tooltip, Avatar } from "antd";
+import { GiftOutlined, PushpinOutlined } from "@ant-design/icons";
+import { Cake, Celebration, PushPin } from "@mui/icons-material";
 
 const EmployeeDashboard = () => {
   const moment = require("moment");
@@ -1649,29 +1653,28 @@ const todayMonth = today.getMonth() + 1; // getMonth() is zero-based
                           return (
                             isWorkAnniversary && (
                               <div key={index} className="employee-noti-content" style={{ position: "relative" }}>
-                                <span 
-                                  className="pin-icon" 
+                                <PushPin  
                                   style={{
                                     position: "absolute",
                                     top: "10px",
                                     right: "10px",
                                     fontSize: "16px",
+                                    transform: "rotate(45deg)",
                                     color: "#999"
                                   }}
-                                >
-                                  📌
-                                </span>
+                                />
+                                
                                 <ul className="employee-notification-list">
                                 <li className="employee-notification-grid">
                                   <div className="employee-notification-icon">
                                     <span className="badge-soft-danger rounded-circle">
-                                      🎉
+                                    <Celebration/>
                                     </span>
                                   </div>
                                   <div className="employee-notification-content">
                                     <h6>
                                       <label>
-                                        {`Happy Work Anniversary, ${employee.fullName}!`}
+                                        {`Happy Work Anniversary ${employee.fullName}!`}
                                       </label>
                                       
                                     </h6>
@@ -1704,13 +1707,13 @@ const todayMonth = today.getMonth() + 1; // getMonth() is zero-based
                                 <li className="employee-notification-grid">
                                   <div className="employee-notification-icon">
                                     <span className="badge-soft-danger rounded-circle">
-                                      🎂
+                                    <Cake/>
                                     </span>
                                   </div>
                                   <div className="employee-notification-content">
                                     <h6>
                                       <label>
-                                        {`Happy BirthDay, ${employee.fullName}!`}
+                                        {`Happy Birthday ${employee.fullName}!`}
                                       </label>
                                       
                                     </h6>

@@ -13,6 +13,7 @@ import { itemRender } from '../paginationfunction';
 import { apiServices } from '../../Services/apiServices';
 import { getAllISOCodes } from 'iso-country-currency';
 import { useTranslation } from 'react-i18next';
+import { getCode, getCountryCode } from 'countries-list';
 import TwoStepClientAdditionModal from '../Pages/Profile/modals/TwoStepClientAddition';
 
 
@@ -206,8 +207,17 @@ const antIcon = (
 
 const getAllCountries = () => {
   const isoCodes = getAllISOCodes();
+  console.log("iso",isoCodes);
   const sorted_data = isoCodes.sort((a, b) => a.countryName.localeCompare(b.countryName));
   setAllCountries(sorted_data)
+};
+
+const getCountryCodeFromList = (country) => {
+  if (country === 'Aland Islands') {
+    return 'ax'; // ISO 3166-1 alpha-2 code for Åland Islands
+  }
+  const countryCode = getCountryCode(country);
+  return countryCode ? countryCode.toLowerCase() : null; // Convert to lowercase if found
 };
 
   return (
@@ -343,13 +353,12 @@ const getAllCountries = () => {
                   <div key={index} className="col-md-4 col-sm-6 col-12 col-lg-4 col-xl-3 d-flex">
                     <div className="profile-widget" style={{width: '100%', display: 'flex', flexDirection: 'column'}}>
                       {/* Country Flag */}
-                      {console.log("Country Code:", client.country)}
+                      {console.log("Country Code:", getCountryCodeFromList(client.country))}
                       {client?.country && (
                         <div style={{ position: 'absolute', top: '10px', left: '10px' }}>
                           <img
-                            src={`https://flagcdn.com/16x12/${client.country.toUpperCase()}.png`}
+                            src={`https://flagcdn.com/16x12/${getCountryCodeFromList(client.country)}.png`}
                             alt={`${client.country} flag`}
-                            onError={(e) => e.target.src = user_icon} 
                             width="16"
                             height="12"
                           />
