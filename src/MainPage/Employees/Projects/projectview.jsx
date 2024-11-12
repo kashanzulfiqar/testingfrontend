@@ -117,21 +117,14 @@ const ProjectView = () => {
   const [project, setProject] = useState(stateProj ? stateProj : {});
   const [totalCost, setTotalCost] = useState(project?.teamCost?.reduce((sum, item) => sum + parseFloat(item?.cost), 0));
   const [files, setFiles] = useState(project?.docs || []);
-  const [confidentialFiles, setConfidentialfiles] = useState(project?.adminDocs || [])
+  const [confidentialFiles, setConfidentialFiles] = useState(project?.adminDocs || [])
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [selectedConfidentialFiles, setSelectedConfidentialFiles] = useState([]);
   const fileInputRef = useRef(null);
   const [uploadType, setUploadType] = useState("");
-  const [deleteModal, setDeleteModal] = useState({ isOpen: false, fileId: null });
-  // Open confirmation modal with file ID
-  const openDeleteModal = (fileId) => {
-    setDeleteModal({ isOpen: true, fileId });
-  };
-
-  // Close confirmation modal
-  const closeDeleteModal = () => {
-    setDeleteModal({ isOpen: false, fileId: null });
-  };
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [fileIdToDelete, setFileIdToDelete] = useState(null);
+  const [deleteType, setDeleteType] = useState("");
   //const project = stateProj ? stateProj : data;
   //console.log("this is project :", project);
   //const totalCost = project?.teamCost?.reduce((sum, item) => sum + parseFloat(item.cost), 0);
@@ -721,7 +714,7 @@ const ProjectView = () => {
         if (res.data.success) {
         message.success(t("ProjectUpdatedSuccessfully"));
         setFiles(updatedDocs); // Update files in local state
-        setConfidentialfiles(updatedAdminDocs); // Update files in local state
+        setConfidentialFiles(updatedAdminDocs); // Update files in local state
         GetProjects(); // Refresh project data if needed
       }
     })
@@ -744,6 +737,59 @@ const ProjectView = () => {
   const handleFileInputChange = (event) => {
     onFileUpload(event.target.files, uploadType);
   };
+
+  // Show modal and set the fileId to delete
+  const showDeleteModal = (fileId, type) => {
+    setFileIdToDelete(fileId);
+    setDeleteType(type);
+    setIsModalVisible(true);
+  };
+
+  // Confirm delete action
+  const confirmDelete = () => {
+    handleDelete(fileIdToDelete, deleteType);
+    setIsModalVisible(false); // Hide modal after deletion
+  };
+
+  // Cancel delete action
+  const cancelDelete = () => {
+    setIsModalVisible(false);
+    setFileIdToDelete(null); // Clear the fileId
+  };
+
+  const handleDelete = (fileId, type) => {
+    let updatedDocs;
+    if (type === "normal") {
+      updatedDocs = files.filter(doc => doc._id !== fileId);
+    } else if (type === "admin") {
+      updatedDocs = confidentialFiles.filter(doc => doc._id !== fileId);
+    }
+  
+    const updatedData = {
+      _id: project._id,
+      startDate: moment(project.startDate).format("YYYY-MM-DD"),
+      endDate: moment(project.endDate).format("YYYY-MM-DD"),
+      docs: type === "normal" ? updatedDocs : files, // Update docs only if "normal"
+      adminDocs: type === "admin" ? updatedDocs : confidentialFiles, // Update adminDocs only if "admin"
+    };
+  
+    apiServices("PUT", `project-management/`, updatedData, user_state)
+      .then((res) => {
+        if (res.data.success) {
+          message.success(t("FileDeletedSuccessfully"));
+          type === "normal" ? setFiles(updatedDocs) : setConfidentialFiles(updatedDocs);
+          GetProjects();
+        }
+      })
+      .catch((err) => {
+        message.error(
+          err?.response?.data?.msg ||
+          err?.response?.data?.validation?.body?.message ||
+          t("projectScreen.errors.errorDeletingFile")
+        );
+      });
+  };
+  
 
   return (
     <div className="page-wrapper">
@@ -936,7 +982,8 @@ const ProjectView = () => {
                 </div>
               </div>
 
-              <div className="card">
+                <>
+                <div className="card">
                 <div className="card-body">
                   <h5 className="card-title m-b-20">Project Files
                   { (role === 'admin' || permissions?.projectManagement) &&
@@ -1120,44 +1167,7 @@ const ProjectView = () => {
                                 "/upload/fl_attachment/"
                               )}`;
 
-                              const handleDelete = () => {  
-                                const { fileId } = deleteModal;
-                                console.log("u files s",files, doc?._id, fileId);
-                                const updatedDocs = files.filter(doc => doc._id != fileId);
-                                console.log("updateddocuments",updatedDocs);
-                                
-                            
-                                const updatedData = {
-                                  _id: project._id,
-                                  startDate: moment(project.startDate).format("YYYY-MM-DD"),
-                                  endDate: moment(project.endDate).format("YYYY-MM-DD"),
-                                  docs: updatedDocs, // Send updated docs without the deleted file
-                                };
-                            
-                                  apiServices("PUT", `project-management/`, updatedData, user_state)
-                                  .then((res) => {
-                            
-                                  if (res.data.success) {
-                                    message.success(t("FileDeletedSuccessfully"));
-                                    setFiles(updatedDocs); // Update local state to reflect the deleted file
-                                    GetProjects(); // Refresh project data if needed
-                                  }
-                                })
-                                 .catch((err) => {
-                                  message.error(
-                                    err?.response?.data?.msg ||
-                                    err?.response?.data?.validation?.body?.message ||
-                                    t("projectScreen.errors.errorDeletingFile")
-                                  );
-                                })
-                                .finally(
-                                  closeDeleteModal()
-                                )
-                              };
-
                               return (
-                                <div>
-                                  <>
                                 <li key={index}>
                                   <div
                                     className="files-cont"
@@ -1191,7 +1201,7 @@ const ProjectView = () => {
                                           href="#"
                                           onClick={(e) => {
                                             e.preventDefault();
-                                            openDeleteModal(doc._id);
+                                            showDeleteModal(doc._id, "normal");
                                           }}
                                           className="btn btn-link"
                                         >
@@ -1211,62 +1221,6 @@ const ProjectView = () => {
                                     </ul>
                                   </div>
                                 </li>
-                                </>
-
-                                {/* Confirmation Modal for File Deletion */}
-                                <Modal
-                                open={deleteModal.isOpen}
-                                onClose={closeDeleteModal}
-                                aria-labelledby="modal-modal-title"
-                                aria-describedby="modal-modal-description"
-                                disableRestoreFocus
-                                BackdropProps={{
-                                  style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
-                                }}
-                              >
-                                <div className="modal-dialog modal-dialog-centered">
-                                  <div className="modal-content" style={{ height: "280px" }}>
-                                    <div
-                                      className="modal-body"
-                                      style={{
-                                        display: "flex",
-                                        flexDirection: "column",
-                                        justifyContent: "center",
-                                      }}
-                                    >
-                                      <div className="form-header">
-                                        <h3 style={{ marginBottom: "30px" }}>Remove File</h3>
-                                        <p>Are you sure you want to delete this file?</p>
-                                      </div>
-                                      <div className="modal-btn delete-action">
-                                        <div className="row">
-                                          <div className="col-6">
-                                            <Button
-                                              htmlType="submit"
-                                              className="btn btn-primary continue-btn"
-                                              onClick={handleDelete}
-                                              disabled={isLoading}
-                                              style={{ width: "100%" }}
-                                            >
-                                              {isLoading ? <Spin size="small" /> : "Delete"}
-                                            </Button>
-                                          </div>
-                                          <div className="col-6">
-                                            <Button
-                                              onClick={closeDeleteModal}
-                                              className="btn btn-primary submit-btn"
-                                              style={{ width: "100%" }}
-                                            >
-                                              Cancel
-                                            </Button>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </Modal>
-                            </div>
                               );
                             })
                           )
@@ -1278,8 +1232,61 @@ const ProjectView = () => {
                   }
                 </div>
               </div>
-
+              <Modal
+              visible={isModalVisible}
+              onCancel={cancelDelete}
+              aria-labelledby="modal-modal-title"
+              aria-describedby="modal-modal-description"
+              disableRestoreFocus
+              BackdropProps={{
+                style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
+              }}
+            >
+              <div className="modal-dialog modal-dialog-centered">
+                <div className="modal-content" style={{ height: "280px" }}>
+                  <div
+                    className="modal-body"
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <div className="form-header">
+                      <h3 style={{ marginBottom: "30px" }}>Remove File</h3>
+                      <p>Are you sure you want to delete this file?</p>
+                    </div>
+                    <div className="modal-btn delete-action">
+                      <div className="row">
+                        <div className="col-6">
+                          <Button
+                            htmlType="submit"
+                            className="btn btn-primary continue-btn"
+                            onClick={confirmDelete}
+                            disabled={isLoading}
+                            style={{ width: "100%" }}
+                          >
+                            {isLoading ? <Spin size="small" /> : "Delete"}
+                          </Button>
+                        </div>
+                        <div className="col-6">
+                          <Button
+                            onClick={cancelDelete}
+                            className="btn btn-primary submit-btn"
+                            style={{ width: "100%" }}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Modal>
+              </>
             {(role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) &&
+            <>
               <div className="card">
                 <div className="card-body">
                 <div
@@ -1473,43 +1480,7 @@ const ProjectView = () => {
                                 "/upload/",
                                 "/upload/fl_attachment/"
                               )}`;
-                              const handleDelete = () => {
-                                const { fileId } = deleteModal;
-                                console.log("u files s",confidentialFiles, doc?._id, fileId);
-                                const updatedDocs = confidentialFiles.filter(doc => doc._id != fileId);
-                                console.log("updateddocuments",updatedDocs);
-                                
-                            
-                                const updatedData = {
-                                  _id: project._id,
-                                  startDate: moment(project.startDate).format("YYYY-MM-DD"),
-                                  endDate: moment(project.endDate).format("YYYY-MM-DD"),
-                                  adminDocs: updatedDocs, // Send updated docs without the deleted file
-                                };
-                            
-                                apiServices("PUT", `project-management/`, updatedData, user_state)
-                                  .then((res) => {
-                            
-                                  if (res.data.success) {
-                                    message.success(t("FileDeletedSuccessfully"));
-                                    setFiles(updatedDocs); // Update local state to reflect the deleted file
-                                    GetProjects(); // Refresh project data if needed
-                                  }
-                                })
-                                 .catch((err) => {
-                                  message.error(
-                                    err?.response?.data?.msg ||
-                                    err?.response?.data?.validation?.body?.message ||
-                                    t("projectScreen.errors.errorDeletingFile")
-                                  );
-                                })
-                                .finally(
-                                  closeDeleteModal()
-                                )
-                              };
-
                               return (
-                                <div>
                                 <li key={index}>
                                   <div
                                     className="files-cont"
@@ -1543,7 +1514,7 @@ const ProjectView = () => {
                                           href="#"
                                           onClick={(e) => {
                                             e.preventDefault();
-                                            openDeleteModal(doc._id);
+                                            showDeleteModal(doc._id, "admin");
                                           }}
                                           className="btn btn-link"
                                         >
@@ -1563,61 +1534,6 @@ const ProjectView = () => {
                                     </ul>
                                   </div>
                                 </li>
-
-                                {/* Confirmation Modal for File Deletion */}
-                                <Modal
-                                open={deleteModal.isOpen}
-                                onClose={closeDeleteModal}
-                                aria-labelledby="modal-modal-title"
-                                aria-describedby="modal-modal-description"
-                                disableRestoreFocus
-                                BackdropProps={{
-                                  style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
-                                }}
-                              >
-                                <div className="modal-dialog modal-dialog-centered">
-                                  <div className="modal-content" style={{ height: "280px" }}>
-                                    <div
-                                      className="modal-body"
-                                      style={{
-                                        display: "flex",
-                                        flexDirection: "column",
-                                        justifyContent: "center",
-                                      }}
-                                    >
-                                      <div className="form-header">
-                                        <h3 style={{ marginBottom: "30px" }}>Remove File</h3>
-                                        <p>Are you sure you want to delete this file?</p>
-                                      </div>
-                                      <div className="modal-btn delete-action">
-                                        <div className="row">
-                                          <div className="col-6">
-                                            <Button
-                                              htmlType="submit"
-                                              className="btn btn-primary continue-btn"
-                                              onClick={handleDelete}
-                                              disabled={isLoading}
-                                              style={{ width: "100%" }}
-                                            >
-                                              {isLoading ? <Spin size="small" /> : "Delete"}
-                                            </Button>
-                                          </div>
-                                          <div className="col-6">
-                                            <Button
-                                              onClick={closeDeleteModal}
-                                              className="btn btn-primary submit-btn"
-                                              style={{ width: "100%" }}
-                                            >
-                                              Cancel
-                                            </Button>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </Modal>
-                            </div>
                               );
                             })
                           )
@@ -1629,6 +1545,59 @@ const ProjectView = () => {
                   }
                 </div>
               </div>
+              <Modal
+              visible={isModalVisible}
+              onCancel={cancelDelete}
+              aria-labelledby="modal-modal-title"
+              aria-describedby="modal-modal-description"
+              disableRestoreFocus
+              BackdropProps={{
+                style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
+              }}
+            >
+              <div className="modal-dialog modal-dialog-centered">
+                <div className="modal-content" style={{ height: "280px" }}>
+                  <div
+                    className="modal-body"
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <div className="form-header">
+                      <h3 style={{ marginBottom: "30px" }}>Remove File</h3>
+                      <p>Are you sure you want to delete this file?</p>
+                    </div>
+                    <div className="modal-btn delete-action">
+                      <div className="row">
+                        <div className="col-6">
+                          <Button
+                            htmlType="submit"
+                            className="btn btn-primary continue-btn"
+                            onClick={confirmDelete}
+                            disabled={isLoading}
+                            style={{ width: "100%" }}
+                          >
+                            {isLoading ? <Spin size="small" /> : "Delete"}
+                          </Button>
+                        </div>
+                        <div className="col-6">
+                          <Button
+                            onClick={cancelDelete}
+                            className="btn btn-primary submit-btn"
+                            style={{ width: "100%" }}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Modal>
+            </>
             }
 
               {((role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) && project?.projectType === "Billed") ? 
