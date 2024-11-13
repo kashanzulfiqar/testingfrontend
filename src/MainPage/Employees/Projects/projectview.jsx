@@ -824,8 +824,8 @@ const onFileUpload = async (uploadedFiles, type) => {
       return;
     }
 
-    const fileData = { fileName: file.name };
-    validFiles.push(fileData);
+    // const fileData = { fileName: file.name };
+    validFiles.push(file);
   });
 
   if (validFiles.length > 0) {
@@ -1209,6 +1209,17 @@ const handleDelete = async (fileId, type) => {
                                               window.open(fullImageUrl, "_blank")
                                             }
                                           />
+                                          
+                                            <a
+                                              href="#"
+                                              onClick={(e) => {
+                                                e.preventDefault();
+                                                showDeleteModal(doc._id, "normal");
+                                              }}
+                                              className="btn btn-link"
+                                            >
+                                              <i className="fa fa-trash" />
+                                            </a>
                                           <div className="download-icon hidden">
                                             <a href={downloadLink} download>
                                               <i className="fa fa-download" />
@@ -1234,6 +1245,17 @@ const handleDelete = async (fileId, type) => {
                                           className="img-fluid"
                                           alt={`Image ${index + 1}`}
                                         />
+                                        
+                                          <a
+                                            href="#"
+                                            onClick={(e) => {
+                                              e.preventDefault();
+                                              showDeleteModal(doc._id, "normal");
+                                            }}
+                                            className="btn btn-link"
+                                          >
+                                            <i className="fa fa-trash" />
+                                          </a>
                                         <div className="download-icon">
                                           <a href={fullImageUrl} download>
                                             <i className="fa fa-download" />
@@ -1522,6 +1544,16 @@ const handleDelete = async (fileId, type) => {
                                             }
                                           />
                                           <div className="download-icon hidden">
+                                          <a
+                                          href="#"
+                                          onClick={(e) => {
+                                            e.preventDefault();
+                                            showDeleteModal(doc._id, "admin");
+                                          }}
+                                          className="btn btn-link"
+                                        >
+                                          <i className="fa fa-trash" />
+                                        </a>
                                             <a href={downloadLink} download>
                                               <i className="fa fa-download" />
                                             </a>
@@ -1547,6 +1579,16 @@ const handleDelete = async (fileId, type) => {
                                           alt={`Image ${index + 1}`}
                                         />
                                         <div className="download-icon">
+                                        <a
+                                          href="#"
+                                          onClick={(e) => {
+                                            e.preventDefault();
+                                            showDeleteModal(doc._id, "admin");
+                                          }}
+                                          className="btn btn-link"
+                                        >
+                                          <i className="fa fa-trash" />
+                                        </a>
                                           <a href={fullImageUrl} download>
                                             <i className="fa fa-download" />
                                           </a>

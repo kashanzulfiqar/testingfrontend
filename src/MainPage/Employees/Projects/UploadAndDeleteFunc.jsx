@@ -57,7 +57,9 @@ export const uploadFunction = async (files) => {
           imageUrl: res?.data?.result?.secure_url,
           resource_type: res?.data?.result?.resource_type,
         }))
-        .catch((err) => {
+        .catch((err) => { 
+          console.log("s3 error",err)
+
           message.error(
             err?.response?.data?.msg
               ? err.response.data.msg
