@@ -358,7 +358,7 @@ const monthData = getNextSixMonths();
                 //   },
                 //   itemRender: itemRender,
                 // }}
-                style = {{ background: "white"}}
+                style = {{height: "400px", background: "white"}}
                 columns={columns}
 
                 dataSource={allocations}
