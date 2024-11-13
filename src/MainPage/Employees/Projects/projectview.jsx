@@ -226,6 +226,8 @@ const ProjectView = () => {
           const temp = res?.data?.projects?.docs[0]
           setProject(temp);
           setTotalCost(temp?.teamCost?.reduce((sum, item) => sum + parseFloat(item.cost), 0))
+          setFiles(temp?.docs)
+          setConfidentialFiles(temp?.adminDocs)
           if (stateProj) {
             nav(location.pathname, {
               state: { ...location.state, project: temp },
