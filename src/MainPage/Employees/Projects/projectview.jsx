@@ -660,7 +660,7 @@ const ProjectView = () => {
 
   const onFileUpload = (uploadedFiles, type) => {
     const validFiles = [];
-    const existingFileNames = (type === "admin" ? selectedConfidentialFiles : selectedFiles).map(f => f.fileName);
+    const existingFileNames = (type === "admin" ? confidentialFiles : files).map(f => f.fileName);
 
     Array.from(uploadedFiles).forEach(file => {
       const fileExtension = file.name.split(".").pop().toLowerCase();
@@ -690,10 +690,10 @@ const ProjectView = () => {
     // If we have valid files, update state and call the API to save
     if (validFiles.length > 0) {
       if (type === "admin") {
-        setSelectedConfidentialFiles(prev => [...prev, ...validFiles]);
+        setConfidentialFiles(prev => [...prev, ...validFiles]);
         updateProjectWithFiles(files, [...confidentialFiles, ...validFiles], type);
       } else {
-        setSelectedFiles(prev => [...prev, ...validFiles]);
+        setFiles(prev => [...prev, ...validFiles]);
         updateProjectWithFiles([...files, ...validFiles], confidentialFiles, type);
       }
     }
@@ -760,9 +760,13 @@ const ProjectView = () => {
   const handleDelete = (fileId, type) => {
     let updatedDocs;
     if (type === "normal") {
+      console.log("delete files",files, fileId)
       updatedDocs = files.filter(doc => doc._id !== fileId);
+      console.log("updated files",updatedDocs)
     } else if (type === "admin") {
+      console.log("delete confidential files",confidentialFiles, fileId)
       updatedDocs = confidentialFiles.filter(doc => doc._id !== fileId);
+      console.log("updated confidential files",updatedDocs)
     }
   
     const updatedData = {
@@ -1233,8 +1237,8 @@ const ProjectView = () => {
                 </div>
               </div>
               <Modal
-              visible={isModalVisible}
-              onCancel={cancelDelete}
+              open={isModalVisible}
+              onClose={cancelDelete}
               aria-labelledby="modal-modal-title"
               aria-describedby="modal-modal-description"
               disableRestoreFocus
