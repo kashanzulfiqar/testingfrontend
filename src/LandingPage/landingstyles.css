@@ -24,6 +24,17 @@
     background-position: bottom;
     background-size: cover;
 }
+.privacy-container{
+    background: url("./assets/PolicyBanner.svg");
+    background-repeat: no-repeat;
+    background-position: bottom;
+    background-size: cover;
+}
+.privacy-heading{
+    font-family: 'Poppins', sans-serif;
+    font-size: 36px;
+    font-weight: 600;
+}
 .topnav2{
     font-family: 'Poppins', sans-serif;
     font-size: 17px;
@@ -181,6 +192,13 @@
 
         
 
+}
+
+.privacy-text-container{
+    text-align: center;
+        color: #fff;
+        padding: 4% !important;
+        padding-top: 4% !important;
 }
 
 .landing-header-text-container{
