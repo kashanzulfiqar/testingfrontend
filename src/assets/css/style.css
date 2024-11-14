@@ -8453,7 +8453,7 @@ padding: 10px 20px !important;
   padding: 4px;
 }
 .view-icons .btn.active {
-  color: #333333;
+  /* color: #333333; */
 }
 
 .add-btn {
@@ -14002,4 +14002,15 @@ ul.nav.landingNav li.nav-item {
 
 .owl-nav.project-nav .owl-prev {
     margin-right: 5px;
+}
+
+.tab-pane * {
+  color: black !important;
+  word-spacing: var(--word-spacing);
+}
+.tab-pane p {
+  color: #4D5154 !important;
+}
+.tab-pane Link {
+  color: #FF902F !important;
 }
