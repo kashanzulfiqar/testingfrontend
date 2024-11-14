@@ -1753,18 +1753,20 @@ const filteredColumns = columns.filter(column => {
                             </div>
                           </div>
                         }
+                        <div style={{ height: "43px"}}>
                         <h4 className="project-title longText">
                           <Link to={`/projects/projects-view/${project?._id}`} state={{ project: project }}>
                             {project?.projectName}
                           </Link>
                         </h4>
+                        </div>
                         {/* <small className="block text-ellipsis m-b-15">
                         <span className="text-xs">1</span>{" "}
                         <span className="text-muted">open tasks, </span>
                         <span className="text-xs">9</span>{" "}
                         <span className="text-muted">tasks completed</span>
                       </small> */}
-                        <div style={{ height: "110px" }}>
+                        <div style={{ height: "88px", marginTop: "20px"}}>
                           <p className="text-muted longText1">
                             {project?.projectDescription}
                           </p>

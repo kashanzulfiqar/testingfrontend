@@ -39,8 +39,25 @@ const ClientsList = () => {
     data: ''
   });
   const [allCountries, setAllCountries] = useState([]);
+  const [filters, setFilters] = useState({
+    clientName: "",
+    country: "",
+  });
+
+  const [selectedFilters, setSelectedFilters] = useState({
+    clientName: "",
+    country: "",
+  });
+
+  const handleFilterChange = (value, filterType) => {
+    setSelectedFilters({
+      ...selectedFilters,
+      [filterType]: value,
+    });
+  };
 
   useEffect(() => {
+    getAllCountries();
     if(role === 'admin' || permissions?.clientManagement) {
       getAllClients()
     }else{
@@ -50,7 +67,7 @@ const ClientsList = () => {
 
     const getAllClients = (values, current_page, page_size) => {
       setTableLoader(true);
-      apiServices("GET", `client/view-client?deleted=false${values === '' ? '' : values?.clientName === '' ? '' : values?.clientName ? `&clientName=${values?.clientName}` : filterValues?.clientName ? `&clientName=${filterValues?.clientName}` : ''}&page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}`, null, user_state)
+      apiServices("GET", `client/view-client?deleted=false${values === '' ? '' : values?.clientName === '' ? '' : values?.clientName ? `&clientName=${values?.clientName}` : filterValues?.clientName ? `&clientName=${filterValues?.clientName}` : ''}${values === '' ? '' : values?.country === '' ? '' : values?.country ? `&country=${values?.country}` : filterValues?.country ? `&country=${filterValues?.country}` : ''}&page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}`, null, user_state)
         .then((res) => {
           if (res?.data?.success === true) {
             setAllClients(res?.data?.clients?.docs);
@@ -102,15 +119,11 @@ const ClientsList = () => {
         });
     }
   
-    const onFilterFinish = (values) => {
-      if(values?.clientName){
-        // getAllClients(values, currentPage, pageSize);
-        getAllClients(values, 1, pageSize);
-        setFilterValues(values);
-        setCurrentPage(1);
-        console.log(values);
-      }
-    }
+    const onFilterFinish = () => {
+      setFilters(selectedFilters);
+      setCurrentPage(1);
+      getAllClients(selectedFilters, currentPage, pageSize)
+  }
   
   
   const columns = [
@@ -273,7 +286,7 @@ const getAllCountries = () => {
               autoComplete='off'
             >
             <div className="row filter-row">
-              <div className="col-sm-6 col-md-6">  
+              <div className="col-sm-3 col-md-3">  
                 <div className="form-group">
                 <Form.Item
                     name="clientName"
@@ -283,7 +296,40 @@ const getAllCountries = () => {
                     className="form-control"
                     style={{height:'50px'}}
                     placeholder={t('projectScreen.clientName')}
+                    onChange={(e) =>
+                      handleFilterChange(e.target.value, "clientName")
+                    }
                   />
+                  </Form.Item>
+                </div>
+              </div>
+              <div className="col-sm-3 col-md-3">  
+                <div className="form-group">
+                  <Form.Item 
+                    name="country"
+                    className="custom-border"
+                  >
+                    <Select
+                      onChange={(value) => {
+                        handleFilterChange(value, "country");
+                      }} // Handle changes
+                      style={{height:'50px'}}
+                      className='custom-select searchCenter'
+                      placeholder={t('client.selectCountry')}
+                      // options={allCountries.map((country) => ({
+                      //   label: country.countryName,
+                      //   value: country.countryCode
+                      // }))}
+                    >
+                      {allCountries?.map((country) => (
+                                <Select.Option
+                                  key={country.countryCode}
+                                  value={country.countryName}
+                                >
+                                  {country.countryName}
+                                </Select.Option>
+                              ))}
+                    </Select>
                   </Form.Item>
                 </div>
               </div>
