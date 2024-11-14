@@ -575,7 +575,7 @@ const EmployeeSalary = () => {
       dataIndex: "basicSalary",
       render: (text, record) => (
         <span>
-          {record?.basicSalary ? `${record?.basicSalary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} PKR` : record?.user?.salary ? `${record?.user?.salary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} PKR` : "-"}
+          {record?.basicSalary ? `${record?.basicSalary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${record.preferredCurrency}` : record?.user?.salary ? `${record?.user?.salary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${record.preferredCurrency}` : "-"}
         </span>
       ),
     },
@@ -642,7 +642,7 @@ const EmployeeSalary = () => {
       dataIndex: "creditSalary",
       render: (text, record) => (
         <span>
-          {record?.creditSalary ? `${record?.creditSalary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} PKR` : "-"}
+          {record?.creditSalary ? `${record?.creditSalary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${record.preferredCurrency}` : "-"}
         </span>
       ),
     },
@@ -764,7 +764,7 @@ const EmployeeSalary = () => {
       dataIndex: "basicSalary",
       render: (text, record) => (
         <span>
-          {record?.basicSalary ? `${record?.basicSalary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} PKR` : record?.user?.salary ? `${record?.user?.salary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} PKR` : "-"}
+          {record?.basicSalary ? `${record?.basicSalary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${record.preferredCurrency}` : record?.user?.salary ? `${record?.user?.salary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${record.preferredCurrency}` : "-"}
         </span>
       ),
     },
@@ -831,7 +831,7 @@ const EmployeeSalary = () => {
       dataIndex: "creditSalary",
       render: (text, record) => (
         <span>
-          {record?.creditSalary ? `${record?.creditSalary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} PKR` : "-"}
+          {record?.creditSalary ? `${record?.creditSalary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${record.preferredCurrency}` : "-"}
         </span>
       ),
     },
