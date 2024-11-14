@@ -35,7 +35,7 @@ import { apiServices } from "../../../Services/apiServices";
 import { LoadingOutlined, MinusCircleFilled } from "@ant-design/icons";
 import EditProjects from "./EditProjects";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
-//import EditProjects from "./EditProjects";
+import { DeleteFiles, uploadFunction } from "./UploadAndDeleteFunc";
 import { getAllISOCodes } from "iso-country-currency";
 import { useTranslation } from "react-i18next";
 
@@ -445,7 +445,7 @@ const ProjectView = () => {
             const res = await apiServices("PUT", `project-management/`, updatedData, user_state);
 
             if (res.data.success) {
-                message.success(t("ProjectStatusUpdatedSuccessfully"));
+                message.success(t("finance.expenses.statusUpdatedSuccessfully"));
                 GetProjects();
                 }
         } catch (err) {
@@ -658,66 +658,209 @@ const ProjectView = () => {
     }
   };
 
-  const acceptableFormats = ["jpg", "jpeg", "png", "gif", "pdf", "doc", "docx"];
+  // const acceptableFormats = ["jpg", "jpeg", "png", "gif", "pdf", "doc", "docx"];
 
-  const onFileUpload = (uploadedFiles, type) => {
-    const validFiles = [];
-    const existingFileNames = (type === "admin" ? confidentialFiles : files).map(f => f.fileName);
+  // const onFileUpload = (uploadedFiles, type) => {
+  //   const validFiles = [];
+  //   const existingFileNames = (type === "admin" ? confidentialFiles : files).map(f => f.fileName);
 
-    Array.from(uploadedFiles).forEach(file => {
-      const fileExtension = file.name.split(".").pop().toLowerCase();
+  //   Array.from(uploadedFiles).forEach(file => {
+  //     const fileExtension = file.name.split(".").pop().toLowerCase();
 
-      // File format validation
-      if (!acceptableFormats.includes(fileExtension)) {
-        message.error(t("projectScreen.errors.fileFormatNotSupported", { file: file.name }));
-        return;
-      }
+  //     // File format validation
+  //     if (!acceptableFormats.includes(fileExtension)) {
+  //       message.error(t("projectScreen.errors.fileFormatNotSupported", { file: file.name }));
+  //       return;
+  //     }
 
-      // File size validation
-      if (file.size > 10485760) { // 10 MB limit
-        message.error(t("projectScreen.errors.fileSizeExceedsLimit", { file: file.name }));
-        return;
-      }
+  //     // File size validation
+  //     if (file.size > 10485760) { // 10 MB limit
+  //       message.error(t("projectScreen.errors.fileSizeExceedsLimit", { file: file.name }));
+  //       return;
+  //     }
 
-      // Duplicate file validation
-      if (existingFileNames.includes(file.name)) {
-        message.error(t("projectScreen.errors.fileAlreadySelected", { file: file.name }));
-        return;
-      }
+  //     // Duplicate file validation
+  //     if (existingFileNames.includes(file.name)) {
+  //       message.error(t("projectScreen.errors.fileAlreadySelected", { file: file.name }));
+  //       return;
+  //     }
 
-      const fileData = { fileName: file.name };
-      validFiles.push(fileData);
-    });
+  //     const fileData = { fileName: file.name };
+  //     validFiles.push(fileData);
+  //   });
 
-    // If we have valid files, update state and call the API to save
-    if (validFiles.length > 0) {
-      if (type === "admin") {
-        setConfidentialFiles(prev => [...prev, ...validFiles]);
-        updateProjectWithFiles(files, [...confidentialFiles, ...validFiles], type);
-      } else {
-        setFiles(prev => [...prev, ...validFiles]);
-        updateProjectWithFiles([...files, ...validFiles], confidentialFiles, type);
-      }
+  //   // If we have valid files, update state and call the API to save
+  //   if (validFiles.length > 0) {
+  //     if (type === "admin") {
+  //       setConfidentialFiles(prev => [...prev, ...validFiles]);
+  //       updateProjectWithFiles(files, [...confidentialFiles, ...validFiles], type);
+  //     } else {
+  //       setFiles(prev => [...prev, ...validFiles]);
+  //       updateProjectWithFiles([...files, ...validFiles], confidentialFiles, type);
+  //     }
+  //   }
+  // };
+
+  // // Function to update project with selected files
+  // const updateProjectWithFiles = (updatedDocs, updatedAdminDocs, type) => {
+  //   const updatedData = {
+  //     _id: project._id,
+  //     startDate: moment(project.startDate).format("YYYY-MM-DD"),
+  //     endDate: moment(project.endDate).format("YYYY-MM-DD"),
+  //     docs: type === "normal" ? updatedDocs : files,
+  //     adminDocs: type === "admin" ? updatedAdminDocs : confidentialFiles,
+  //   };
+
+  //   apiServices("PUT", `project-management/`, updatedData, user_state)
+  //     .then((res) => {
+  //       if (res.data.success) {
+  //       message.success(t("Project Updated Successfully"));
+  //       setFiles(updatedDocs); // Update files in local state
+  //       setConfidentialFiles(updatedAdminDocs); // Update files in local state
+  //       GetProjects(); // Refresh project data if needed
+  //     }
+  //   })
+  //   .catch((err) => {
+  //     message.error(
+  //       err?.response?.data?.msg ||
+  //       err?.response?.data?.validation?.body?.message ||
+  //       t("projectScreen.errors.errorUpdatingProjectStatus")
+  //     );
+  //   })
+  // };
+
+  // // Trigger file input on "Add" button click
+  // const handleAddClick = (type) => {
+  //   setUploadType(type);
+  //   fileInputRef.current.click();
+  // };
+
+  // // Handle file input change
+  // const handleFileInputChange = (event) => {
+  //   onFileUpload(event.target.files, uploadType);
+  // };
+
+  // // Show modal and set the fileId to delete
+  // const showDeleteModal = (fileId, type) => {
+  //   setFileIdToDelete(fileId);
+  //   setDeleteType(type);
+  //   setIsModalVisible(true);
+  // };
+
+  // // Confirm delete action
+  // const confirmDelete = () => {
+  //   handleDelete(fileIdToDelete, deleteType);
+  //   setIsModalVisible(false); // Hide modal after deletion
+  // };
+
+  // // Cancel delete action
+  // const cancelDelete = () => {
+  //   setIsModalVisible(false);
+  //   setFileIdToDelete(null); // Clear the fileId
+  // };
+
+  // const handleDelete = (fileId, type) => {
+  //   let updatedDocs;
+  //   if (type === "normal") {
+  //     console.log("delete files",files, fileId)
+  //     updatedDocs = files.filter(doc => doc._id !== fileId);
+  //     console.log("updated files",updatedDocs)
+  //   } else if (type === "admin") {
+  //     console.log("delete confidential files",confidentialFiles, fileId)
+  //     updatedDocs = confidentialFiles.filter(doc => doc._id !== fileId);
+  //     console.log("updated confidential files",updatedDocs)
+  //   }
+  
+  //   const updatedData = {
+  //     _id: project._id,
+  //     startDate: moment(project.startDate).format("YYYY-MM-DD"),
+  //     endDate: moment(project.endDate).format("YYYY-MM-DD"),
+  //     docs: type === "normal" ? updatedDocs : files, // Update docs only if "normal"
+  //     adminDocs: type === "admin" ? updatedDocs : confidentialFiles, // Update adminDocs only if "admin"
+  //   };
+  
+  //   apiServices("PUT", `project-management/`, updatedData, user_state)
+  //     .then((res) => {
+  //       if (res.data.success) {
+  //         message.success(t("FileDeletedSuccessfully"));
+  //         type === "normal" ? setFiles(updatedDocs) : setConfidentialFiles(updatedDocs);
+  //         GetProjects();
+  //       }
+  //     })
+  //     .catch((err) => {
+  //       message.error(
+  //         err?.response?.data?.msg ||
+  //         err?.response?.data?.validation?.body?.message ||
+  //         t("projectScreen.errors.errorDeletingFile")
+  //       );
+  //     });
+  // };
+
+
+const acceptableFormats = ["jpg", "jpeg", "png", "gif", "pdf", "doc", "docx", "xls", "xlsx"];
+
+const onFileUpload = async (uploadedFiles, type) => {
+  const validFiles = [];
+  const existingFileNames = (type === "admin" ? confidentialFiles : files).map(f => f.fileName);
+
+  Array.from(uploadedFiles).forEach(file => {
+    const fileExtension = file.name.split(".").pop().toLowerCase();
+
+    // File format validation
+    if (!acceptableFormats.includes(fileExtension)) {
+      message.error(t("projectScreen.errors.fileFormatNotSupported", { file: file.name }));
+      return;
     }
+
+    // File size validation
+    if (file.size > 10485760) { // 10 MB limit
+      message.error(t("projectScreen.errors.fileSizeExceedsLimit", { file: file.name }));
+      return;
+    }
+
+    // Duplicate file validation
+    if (existingFileNames.includes(file.name)) {
+      message.error(t("projectScreen.errors.fileAlreadySelected", { file: file.name }));
+      return;
+    }
+
+    // const fileData = { fileName: file.name };
+    validFiles.push(file);
+  });
+
+  if (validFiles.length > 0) {
+    try {
+      const uploadedFilesData = await uploadFunction(validFiles);
+      const updatedFiles = type === "admin" ? [...confidentialFiles, ...uploadedFilesData] : [...files, ...uploadedFilesData];
+      if (type === "admin") {
+        setConfidentialFiles(updatedFiles);
+        updateProjectWithFiles(files, updatedFiles, type);
+      } else {
+        setFiles(updatedFiles);
+        updateProjectWithFiles(updatedFiles, confidentialFiles, type);
+      }
+    } catch (error) {
+      message.error(t("projectScreen.errors.fileUploadError"));
+    }
+  }
+};
+
+const updateProjectWithFiles = (updatedDocs, updatedAdminDocs, type) => {
+  const updatedData = {
+    _id: project._id,
+    startDate: moment(project.startDate).format("YYYY-MM-DD"),
+    endDate: moment(project.endDate).format("YYYY-MM-DD"),
+    docs: type === "normal" ? updatedDocs : files,
+    adminDocs: type === "admin" ? updatedAdminDocs : confidentialFiles,
   };
 
-  // Function to update project with selected files
-  const updateProjectWithFiles = (updatedDocs, updatedAdminDocs, type) => {
-    const updatedData = {
-      _id: project._id,
-      startDate: moment(project.startDate).format("YYYY-MM-DD"),
-      endDate: moment(project.endDate).format("YYYY-MM-DD"),
-      docs: type === "normal" ? updatedDocs : files,
-      adminDocs: type === "admin" ? updatedAdminDocs : confidentialFiles,
-    };
-
-    apiServices("PUT", `project-management/`, updatedData, user_state)
-      .then((res) => {
-        if (res.data.success) {
-        message.success(t("ProjectUpdatedSuccessfully"));
-        setFiles(updatedDocs); // Update files in local state
-        setConfidentialFiles(updatedAdminDocs); // Update files in local state
-        GetProjects(); // Refresh project data if needed
+  apiServices("PUT", `project-management/`, updatedData, user_state)
+    .then((res) => {
+      if (res.data.success) {
+        message.success(t("projectScreen.errors.projectDetailsUpdatedSuccessfully"));
+        setFiles(updatedDocs);
+        setConfidentialFiles(updatedAdminDocs);
+        GetProjects();
       }
     })
     .catch((err) => {
@@ -726,75 +869,66 @@ const ProjectView = () => {
         err?.response?.data?.validation?.body?.message ||
         t("projectScreen.errors.errorUpdatingProjectStatus")
       );
-    })
-  };
+    });
+};
 
-  // Trigger file input on "Add" button click
-  const handleAddClick = (type) => {
-    setUploadType(type);
-    fileInputRef.current.click();
-  };
+// Trigger file input on "Add" button click
+const handleAddClick = (type) => {
+  setUploadType(type);
+  fileInputRef.current.click();
+};
 
-  // Handle file input change
-  const handleFileInputChange = (event) => {
-    onFileUpload(event.target.files, uploadType);
-  };
+// Handle file input change
+const handleFileInputChange = (event) => {
+  onFileUpload(event.target.files, uploadType);
+};
 
-  // Show modal and set the fileId to delete
-  const showDeleteModal = (fileId, type) => {
-    setFileIdToDelete(fileId);
-    setDeleteType(type);
-    setIsModalVisible(true);
-  };
+// Show modal and set the fileId to delete
+const showDeleteModal = (fileId, type) => {
+  setFileIdToDelete(fileId);
+  setDeleteType(type);
+  setIsModalVisible(true);
+};
 
-  // Confirm delete action
-  const confirmDelete = () => {
-    handleDelete(fileIdToDelete, deleteType);
-    setIsModalVisible(false); // Hide modal after deletion
-  };
+// Confirm delete action
+const confirmDelete = () => {
+  handleDelete(fileIdToDelete, deleteType);
+  setIsModalVisible(false);
+};
 
-  // Cancel delete action
-  const cancelDelete = () => {
-    setIsModalVisible(false);
-    setFileIdToDelete(null); // Clear the fileId
-  };
+// Cancel delete action
+const cancelDelete = () => {
+  setIsModalVisible(false);
+  setFileIdToDelete(null);
+};
 
-  const handleDelete = (fileId, type) => {
-    let updatedDocs;
-    if (type === "normal") {
-      console.log("delete files",files, fileId)
-      updatedDocs = files.filter(doc => doc._id !== fileId);
-      console.log("updated files",updatedDocs)
-    } else if (type === "admin") {
-      console.log("delete confidential files",confidentialFiles, fileId)
-      updatedDocs = confidentialFiles.filter(doc => doc._id !== fileId);
-      console.log("updated confidential files",updatedDocs)
+const handleDelete = async (fileId, type) => {
+  let updatedDocs;
+  if (type === "normal") {
+    updatedDocs = files.filter(doc => doc._id !== fileId);
+  } else if (type === "admin") {
+    updatedDocs = confidentialFiles.filter(doc => doc._id !== fileId);
+  }
+
+  try {
+    const deleteResults = await DeleteFiles([{ public_id: fileId }], user_state);
+    console.log("Delete Results:", deleteResults);
+    message.success(t("File Deleted Successfully"));
+    if (type === "admin") {
+      setConfidentialFiles(updatedDocs);
+      updateProjectWithFiles(files, updatedDocs, type);
+    } else {
+      setFiles(updatedDocs);
+      updateProjectWithFiles(updatedDocs, confidentialFiles, type);
     }
-  
-    const updatedData = {
-      _id: project._id,
-      startDate: moment(project.startDate).format("YYYY-MM-DD"),
-      endDate: moment(project.endDate).format("YYYY-MM-DD"),
-      docs: type === "normal" ? updatedDocs : files, // Update docs only if "normal"
-      adminDocs: type === "admin" ? updatedDocs : confidentialFiles, // Update adminDocs only if "admin"
-    };
-  
-    apiServices("PUT", `project-management/`, updatedData, user_state)
-      .then((res) => {
-        if (res.data.success) {
-          message.success(t("FileDeletedSuccessfully"));
-          type === "normal" ? setFiles(updatedDocs) : setConfidentialFiles(updatedDocs);
-          GetProjects();
-        }
-      })
-      .catch((err) => {
-        message.error(
-          err?.response?.data?.msg ||
-          err?.response?.data?.validation?.body?.message ||
-          t("projectScreen.errors.errorDeletingFile")
-        );
-      });
-  };
+    // type === "normal" ? setFiles(updatedDocs) : setConfidentialFiles(updatedDocs);
+    // updateProjectWithFiles(updatedDocs, confidentialFiles, type);
+  } catch (error) {
+    console.error("Error in handleDelete:", error);
+    message.error(t("projectScreen.errors.errorDeletingFile"));
+  }
+};
+
   
 
   return (
@@ -1003,7 +1137,7 @@ const ProjectView = () => {
                           role === "focalperson" ||
                           (role === "" && !permissions?.projectManagement)
                         }>
-                          <i className="fa fa-plus" /> {t('viewProject.uploadedFiles')}
+                          <i className="fa fa-plus" /> {t('projectScreen.Modal.uploadFiles')}
                         </button>
                         <input
                           ref={fileInputRef}
@@ -1082,11 +1216,38 @@ const ProjectView = () => {
                                               window.open(fullImageUrl, "_blank")
                                             }
                                           />
-                                          <div className="download-icon hidden">
-                                            <a href={downloadLink} download>
-                                              <i className="fa fa-download" />
+                                          
+                                          <div className="dropdown dropdown-action profile-action">
+                                            <a
+                                              className="action-icon dropdown-toggle"
+                                              data-bs-toggle="dropdown"
+                                              aria-expanded="false"
+                                            >
+                                              <i className="material-icons">more_vert</i>
                                             </a>
+                                            <div className="dropdown-menu dropdown-menu-right">
+                                              <button
+                                                className="dropdown-item"
+                                                onClick={(e) => {
+                                                  e.preventDefault();
+                                                  showDeleteModal(doc._id, "normal");
+                                                }}
+                                              >
+                                                <i className={`fa fa-trash ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
+                                                {t('delete')}
+                                              </button>
+                                              <button
+                                                className="dropdown-item"
+                                                onClick={() => {
+                                                  window.open(downloadLink);
+                                                }}
+                                              >
+                                                <i className={`fa fa-download ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
+                                                {t('download')}
+                                              </button>
+                                            </div>
                                           </div>
+
                                         </div>
                                       </a>
                                       <div className="uploaded-img-name">{doc?.fileName}</div>
@@ -1107,10 +1268,35 @@ const ProjectView = () => {
                                           className="img-fluid"
                                           alt={`Image ${index + 1}`}
                                         />
-                                        <div className="download-icon">
-                                          <a href={fullImageUrl} download>
-                                            <i className="fa fa-download" />
+                                        <div className="dropdown dropdown-action profile-action">
+                                          <a
+                                            className="action-icon dropdown-toggle"
+                                            data-bs-toggle="dropdown"
+                                            aria-expanded="false"
+                                          >
+                                            <i className="material-icons">more_vert</i>
                                           </a>
+                                          <div className="dropdown-menu dropdown-menu-right">
+                                            <button
+                                              className="dropdown-item"
+                                              onClick={(e) => {
+                                                e.preventDefault();
+                                                showDeleteModal(doc._id, "normal");
+                                              }}
+                                            >
+                                              <i className={`fa fa-trash ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
+                                              {t('delete')}
+                                            </button>
+                                            <button
+                                              className="dropdown-item"
+                                              onClick={() => {
+                                                window.open(fullImageUrl, '_blank');
+                                              }}
+                                            >
+                                              <i className={`fa fa-download ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
+                                              {t('download')}
+                                            </button>
+                                          </div>
                                         </div>
                                       </div>
                                       <div className="uploaded-img-name">{`File ${
@@ -1314,7 +1500,7 @@ const ProjectView = () => {
                         (role === "" && !permissions?.projectManagement)
                       }
                     >
-                      <i className="fa fa-plus" /> {t('viewProject.uploadedFiles')}
+                      <i className="fa fa-plus" /> {t('projectScreen.Modal.uploadFiles')}
                     </button>
                     <input
                           ref={fileInputRef}
@@ -1394,10 +1580,35 @@ const ProjectView = () => {
                                               window.open(fullImageUrl, "_blank")
                                             }
                                           />
-                                          <div className="download-icon hidden">
-                                            <a href={downloadLink} download>
-                                              <i className="fa fa-download" />
+                                          <div className="dropdown dropdown-action profile-action">
+                                            <a
+                                              className="action-icon dropdown-toggle"
+                                              data-bs-toggle="dropdown"
+                                              aria-expanded="false"
+                                            >
+                                              <i className="material-icons">more_vert</i>
                                             </a>
+                                            <div className="dropdown-menu dropdown-menu-right">
+                                              <button
+                                                className="dropdown-item"
+                                                onClick={(e) => {
+                                                  e.preventDefault();
+                                                  showDeleteModal(doc._id, "admin");
+                                                }}
+                                              >
+                                                <i className={`fa fa-trash ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
+                                                {t('delete')}
+                                              </button>
+                                              <button
+                                                className="dropdown-item"
+                                                onClick={() => {
+                                                  window.open(downloadLink, '_blank');
+                                                }}
+                                              >
+                                                <i className={`fa fa-download ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
+                                                {t('download')}
+                                              </button>
+                                            </div>
                                           </div>
                                         </div>
                                       </a>
@@ -1419,10 +1630,35 @@ const ProjectView = () => {
                                           className="img-fluid"
                                           alt={`Image ${index + 1}`}
                                         />
-                                        <div className="download-icon">
-                                          <a href={fullImageUrl} download>
-                                            <i className="fa fa-download" />
+                                        <div className="dropdown dropdown-action profile-action">
+                                          <a
+                                            className="action-icon dropdown-toggle"
+                                            data-bs-toggle="dropdown"
+                                            aria-expanded="false"
+                                          >
+                                            <i className="material-icons">more_vert</i>
                                           </a>
+                                          <div className="dropdown-menu dropdown-menu-right">
+                                            <button
+                                              className="dropdown-item"
+                                              onClick={(e) => {
+                                                e.preventDefault();
+                                                showDeleteModal(doc._id, "admin");
+                                              }}
+                                            >
+                                              <i className={`fa fa-trash ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
+                                              {t('delete')}
+                                            </button>
+                                            <button
+                                              className="dropdown-item"
+                                              onClick={() => {
+                                                window.open(fullImageUrl, '_blank');
+                                              }}
+                                            >
+                                              <i className={`fa fa-download ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
+                                              {t('download')}
+                                            </button>
+                                          </div>
                                         </div>
                                       </div>
                                       <div className="uploaded-img-name">{`File ${
