@@ -1210,21 +1210,37 @@ const handleDelete = async (fileId, type) => {
                                             }
                                           />
                                           
+                                          <div className="dropdown dropdown-action profile-action">
                                             <a
-                                              href="#"
-                                              onClick={(e) => {
-                                                e.preventDefault();
-                                                showDeleteModal(doc._id, "normal");
-                                              }}
-                                              className="btn btn-link"
+                                              className="action-icon dropdown-toggle"
+                                              data-bs-toggle="dropdown"
+                                              aria-expanded="false"
                                             >
-                                              <i className="fa fa-trash" />
+                                              <i className="material-icons">more_vert</i>
                                             </a>
-                                          <div className="download-icon hidden">
-                                            <a href={downloadLink} download>
-                                              <i className="fa fa-download" />
-                                            </a>
+                                            <div className="dropdown-menu dropdown-menu-right">
+                                              <button
+                                                className="dropdown-item"
+                                                onClick={(e) => {
+                                                  e.preventDefault();
+                                                  showDeleteModal(doc._id, "normal");
+                                                }}
+                                              >
+                                                <i className={`fa fa-trash ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
+                                                {t('delete')}
+                                              </button>
+                                              <button
+                                                className="dropdown-item"
+                                                onClick={() => {
+                                                  window.open(downloadLink, '_blank');
+                                                }}
+                                              >
+                                                <i className={`fa fa-download ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
+                                                {t('download')}
+                                              </button>
+                                            </div>
                                           </div>
+
                                         </div>
                                       </a>
                                       <div className="uploaded-img-name">{doc?.fileName}</div>
@@ -1245,21 +1261,35 @@ const handleDelete = async (fileId, type) => {
                                           className="img-fluid"
                                           alt={`Image ${index + 1}`}
                                         />
-                                        
+                                        <div className="dropdown dropdown-action profile-action">
                                           <a
-                                            href="#"
-                                            onClick={(e) => {
-                                              e.preventDefault();
-                                              showDeleteModal(doc._id, "normal");
-                                            }}
-                                            className="btn btn-link"
+                                            className="action-icon dropdown-toggle"
+                                            data-bs-toggle="dropdown"
+                                            aria-expanded="false"
                                           >
-                                            <i className="fa fa-trash" />
+                                            <i className="material-icons">more_vert</i>
                                           </a>
-                                        <div className="download-icon">
-                                          <a href={fullImageUrl} download>
-                                            <i className="fa fa-download" />
-                                          </a>
+                                          <div className="dropdown-menu dropdown-menu-right">
+                                            <button
+                                              className="dropdown-item"
+                                              onClick={(e) => {
+                                                e.preventDefault();
+                                                showDeleteModal(doc._id, "normal");
+                                              }}
+                                            >
+                                              <i className={`fa fa-trash ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
+                                              {t('delete')}
+                                            </button>
+                                            <button
+                                              className="dropdown-item"
+                                              onClick={() => {
+                                                window.open(fullImageUrl, '_blank');
+                                              }}
+                                            >
+                                              <i className={`fa fa-download ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
+                                              {t('download')}
+                                            </button>
+                                          </div>
                                         </div>
                                       </div>
                                       <div className="uploaded-img-name">{`File ${
@@ -1543,20 +1573,35 @@ const handleDelete = async (fileId, type) => {
                                               window.open(fullImageUrl, "_blank")
                                             }
                                           />
-                                          <div className="download-icon hidden">
-                                          <a
-                                          href="#"
-                                          onClick={(e) => {
-                                            e.preventDefault();
-                                            showDeleteModal(doc._id, "admin");
-                                          }}
-                                          className="btn btn-link"
-                                        >
-                                          <i className="fa fa-trash" />
-                                        </a>
-                                            <a href={downloadLink} download>
-                                              <i className="fa fa-download" />
+                                          <div className="dropdown dropdown-action profile-action">
+                                            <a
+                                              className="action-icon dropdown-toggle"
+                                              data-bs-toggle="dropdown"
+                                              aria-expanded="false"
+                                            >
+                                              <i className="material-icons">more_vert</i>
                                             </a>
+                                            <div className="dropdown-menu dropdown-menu-right">
+                                              <button
+                                                className="dropdown-item"
+                                                onClick={(e) => {
+                                                  e.preventDefault();
+                                                  showDeleteModal(doc._id, "normal");
+                                                }}
+                                              >
+                                                <i className={`fa fa-trash ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
+                                                {t('delete')}
+                                              </button>
+                                              <button
+                                                className="dropdown-item"
+                                                onClick={() => {
+                                                  window.open(downloadLink, '_blank');
+                                                }}
+                                              >
+                                                <i className={`fa fa-download ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
+                                                {t('download')}
+                                              </button>
+                                            </div>
                                           </div>
                                         </div>
                                       </a>
@@ -1578,20 +1623,35 @@ const handleDelete = async (fileId, type) => {
                                           className="img-fluid"
                                           alt={`Image ${index + 1}`}
                                         />
-                                        <div className="download-icon">
-                                        <a
-                                          href="#"
-                                          onClick={(e) => {
-                                            e.preventDefault();
-                                            showDeleteModal(doc._id, "admin");
-                                          }}
-                                          className="btn btn-link"
-                                        >
-                                          <i className="fa fa-trash" />
-                                        </a>
-                                          <a href={fullImageUrl} download>
-                                            <i className="fa fa-download" />
+                                        <div className="dropdown dropdown-action profile-action">
+                                          <a
+                                            className="action-icon dropdown-toggle"
+                                            data-bs-toggle="dropdown"
+                                            aria-expanded="false"
+                                          >
+                                            <i className="material-icons">more_vert</i>
                                           </a>
+                                          <div className="dropdown-menu dropdown-menu-right">
+                                            <button
+                                              className="dropdown-item"
+                                              onClick={(e) => {
+                                                e.preventDefault();
+                                                showDeleteModal(doc._id, "normal");
+                                              }}
+                                            >
+                                              <i className={`fa fa-trash ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
+                                              {t('delete')}
+                                            </button>
+                                            <button
+                                              className="dropdown-item"
+                                              onClick={() => {
+                                                window.open(fullImageUrl, '_blank');
+                                              }}
+                                            >
+                                              <i className={`fa fa-download ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
+                                              {t('download')}
+                                            </button>
+                                          </div>
                                         </div>
                                       </div>
                                       <div className="uploaded-img-name">{`File ${
