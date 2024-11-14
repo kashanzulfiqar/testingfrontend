@@ -1,0 +1,52 @@
+.list-group-item {
+    border: none;
+    outline: none !important;
+    margin-bottom: 10px; /* Add margin between the list items */
+  }
+
+.list-group-item:hover,
+.list-group-item:focus,
+.list-group-item:active {
+  border: none !important; /* Ensure no border on hover, focus, or active */
+  outline: none !important; /* Ensure no outline on hover, focus, or active */
+  box-shadow: none !important; /* Remove any shadow */
+  background-color: transparent; /* Ensure background stays transparent */
+}
+  
+  .active-section {
+    position: relative; /* Allows the use of ::after */
+    background-color: transparent; /* Remove background highlight */
+  }
+  
+  .active-section::after {
+    content: '';
+    position: absolute;
+    left: 5%; /* Adjust this to move the underline to the right */
+    bottom: 0;
+    width: 90%; /* Adjust this for the length of the underline */
+    height: 3px; /* Thickness of the underline */
+    background-color: orange; /* Color of the underline */
+  }
+  
+  .policy-detail {
+    margin-bottom: 20px; /* Add margin between policy content items */
+  }
+  
+  .privacy-container li {
+    margin-bottom: 10px; /* Adds space between list items */
+    list-style-type: disc; /* Ensures bullet points are shown */
+    margin-left: 20px; /* Indents the bullet */
+  }
+  /* Add margin above the ul */
+.policy-content ul {
+    margin-top: 16px; /* Adjust this value as needed for spacing above the list */
+    padding-left: 20px; /* Ensures there is room for bullet points */
+    list-style-type: disc; /* Ensures bullet points are displayed */
+  }
+  
+  /* Add spacing for each li element */
+  .policy-content ul li {
+    margin-top: 8px;  /* Adds spacing above each list item */
+    margin-bottom: 8px; /* Adds spacing below each list item */
+  }
+  
