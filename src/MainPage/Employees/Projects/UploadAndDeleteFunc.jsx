@@ -1,6 +1,7 @@
 import { message } from "antd";
 import { apiServices } from "../../../Services/apiServices";
 import { apiUploadToS3 } from "../../../Services/uploadImage";
+import { t } from "i18next";
 
 export const DeleteFiles = async (files, user_state) => {
     // Create an array of promises for deleting each file

@@ -355,12 +355,11 @@ const getCountryCodeFromList = (country) => {
                       {/* Country Flag */}
                       {console.log("Country Code:", getCountryCodeFromList(client.country))}
                       {client?.country && (
-                        <div style={{ position: 'absolute', top: '10px', left: '10px' }}>
+                        <div style={{ position: 'absolute', top: '10px', left: '10px', width: "10%", height: "8%" }}>
                           <img
                             src={`https://flagcdn.com/16x12/${getCountryCodeFromList(client.country)}.png`}
                             alt={`${client.country} flag`}
-                            width="16"
-                            height="12"
+                            style={{ width: "100%", height: "100%" }}
                           />
                         </div>
                       )}

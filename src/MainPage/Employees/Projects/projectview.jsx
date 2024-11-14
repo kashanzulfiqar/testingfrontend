@@ -445,7 +445,7 @@ const ProjectView = () => {
             const res = await apiServices("PUT", `project-management/`, updatedData, user_state);
 
             if (res.data.success) {
-                message.success(t("ProjectStatusUpdatedSuccessfully"));
+                message.success(t("finance.expenses.statusUpdatedSuccessfully"));
                 GetProjects();
                 }
         } catch (err) {
@@ -797,7 +797,7 @@ const ProjectView = () => {
   // };
 
 
-const acceptableFormats = ["jpg", "jpeg", "png", "gif", "pdf", "doc", "docx"];
+const acceptableFormats = ["jpg", "jpeg", "png", "gif", "pdf", "doc", "docx", "xls", "xlsx"];
 
 const onFileUpload = async (uploadedFiles, type) => {
   const validFiles = [];
@@ -857,7 +857,7 @@ const updateProjectWithFiles = (updatedDocs, updatedAdminDocs, type) => {
   apiServices("PUT", `project-management/`, updatedData, user_state)
     .then((res) => {
       if (res.data.success) {
-        message.success(t("Project Updated Successfully"));
+        message.success(t("projectScreen.errors.projectDetailsUpdatedSuccessfully"));
         setFiles(updatedDocs);
         setConfidentialFiles(updatedAdminDocs);
         GetProjects();
@@ -914,8 +914,15 @@ const handleDelete = async (fileId, type) => {
     const deleteResults = await DeleteFiles([{ public_id: fileId }], user_state);
     console.log("Delete Results:", deleteResults);
     message.success(t("File Deleted Successfully"));
-    type === "normal" ? setFiles(updatedDocs) : setConfidentialFiles(updatedDocs);
-    updateProjectWithFiles(updatedDocs, confidentialFiles, type);
+    if (type === "admin") {
+      setConfidentialFiles(updatedDocs);
+      updateProjectWithFiles(files, updatedDocs, type);
+    } else {
+      setFiles(updatedDocs);
+      updateProjectWithFiles(updatedDocs, confidentialFiles, type);
+    }
+    // type === "normal" ? setFiles(updatedDocs) : setConfidentialFiles(updatedDocs);
+    // updateProjectWithFiles(updatedDocs, confidentialFiles, type);
   } catch (error) {
     console.error("Error in handleDelete:", error);
     message.error(t("projectScreen.errors.errorDeletingFile"));
@@ -1130,7 +1137,7 @@ const handleDelete = async (fileId, type) => {
                           role === "focalperson" ||
                           (role === "" && !permissions?.projectManagement)
                         }>
-                          <i className="fa fa-plus" /> {t('viewProject.uploadedFiles')}
+                          <i className="fa fa-plus" /> {t('projectScreen.Modal.uploadFiles')}
                         </button>
                         <input
                           ref={fileInputRef}
@@ -1232,7 +1239,7 @@ const handleDelete = async (fileId, type) => {
                                               <button
                                                 className="dropdown-item"
                                                 onClick={() => {
-                                                  window.open(downloadLink, '_blank');
+                                                  window.open(downloadLink);
                                                 }}
                                               >
                                                 <i className={`fa fa-download ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
@@ -1493,7 +1500,7 @@ const handleDelete = async (fileId, type) => {
                         (role === "" && !permissions?.projectManagement)
                       }
                     >
-                      <i className="fa fa-plus" /> {t('viewProject.uploadedFiles')}
+                      <i className="fa fa-plus" /> {t('projectScreen.Modal.uploadFiles')}
                     </button>
                     <input
                           ref={fileInputRef}
@@ -1586,7 +1593,7 @@ const handleDelete = async (fileId, type) => {
                                                 className="dropdown-item"
                                                 onClick={(e) => {
                                                   e.preventDefault();
-                                                  showDeleteModal(doc._id, "normal");
+                                                  showDeleteModal(doc._id, "admin");
                                                 }}
                                               >
                                                 <i className={`fa fa-trash ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
@@ -1636,7 +1643,7 @@ const handleDelete = async (fileId, type) => {
                                               className="dropdown-item"
                                               onClick={(e) => {
                                                 e.preventDefault();
-                                                showDeleteModal(doc._id, "normal");
+                                                showDeleteModal(doc._id, "admin");
                                               }}
                                             >
                                               <i className={`fa fa-trash ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
