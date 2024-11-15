@@ -941,8 +941,11 @@ const LeadsDetails = () => {
         open.isAddNotes && (
             <LeadNotes
             openModal={open.isAddNotes}
-            closeModal={!open.isAddNotes}
+            closeModal={()=>{
+              setOpen({isAddNotes:false})
+            }}
             data={null}
+            leadId={leadObject?._id}
             />
         )
       }

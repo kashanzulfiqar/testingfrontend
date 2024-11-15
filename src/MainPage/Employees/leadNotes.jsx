@@ -28,9 +28,10 @@ import { getAllISOCodes } from "iso-country-currency";
 import moment from "moment";
 import { LoadingOutlined, MinusCircleFilled } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
-import { acceptableFormats } from "./Projects/EditProjects";
+import { acceptableFormats, uploadFunction } from "./Projects/EditProjects";
+import { apiServices } from "../../Services/apiServices";
 
-function LeadNotes({ openModal, closeModal, data }) {
+function LeadNotes({ openModal, closeModal, data, leadId }) {
   const nav = useNavigate();
   const [form] = Form.useForm();
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
@@ -46,7 +47,52 @@ function LeadNotes({ openModal, closeModal, data }) {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [newFiles, setNewFiles] = useState([]);
 
-  const onFileUpload = async (files, type) => {
+  const handleAddNotes = async (val, existing) => {
+    let docs = [...uploadFiles];
+    let temp1 = [];
+    if (newFiles?.length > 0) {
+      temp1 = await uploadFunction(newFiles);
+      docs = [...docs, ...temp1];
+    }
+
+    if (existing) {
+      const updatedData = {
+        leadId: leadId,
+        _id: existing?._id,
+      };
+      apiServices("PUT", "leads/editNote", updatedData, user_state)
+        .then((res) => {
+          if (res.data.success === true) {
+            message.success('Note Updated Successfully');
+            //viewLeads();
+          }
+        })
+        .catch((error) => {
+          console.log("error", error);
+          message.error('Error updating Note');
+        })
+    }
+    else {
+      const updatedData = {
+        ...val,
+        leadId: leadId,
+        files: docs,
+      };
+      apiServices("PUT", "leads/addNote", updatedData, user_state)
+        .then((res) => {
+          if (res.data.success === true) {
+            message.success('Note Added Successfully');
+            //viewLeads();
+          }
+        })
+        .catch((error) => {
+          console.log("error", error);
+          message.error('Error Adding Note');
+        })
+    }
+  };
+
+  const onFileUpload = async (files) => {
     const uploadPromises = [];
     const validFiles = []; // To store valid files
     const existingFileNames = selectedFiles?.map((file) => file?.fileName);
@@ -98,7 +144,7 @@ function LeadNotes({ openModal, closeModal, data }) {
     }
   };
 
-  const removeSelectedFile = (index, type) => {
+  const removeSelectedFile = (index) => {
     const updatedSelectedFiles = [...selectedFiles];
     const fileToRemove = updatedSelectedFiles[index];
     console.log(fileToRemove);
@@ -122,7 +168,7 @@ function LeadNotes({ openModal, closeModal, data }) {
     //DeleteFiles(fileToRemove?.public_id)
   };
 
-  const displaySelectedFiles = (type) => {
+  const displaySelectedFiles = () => {
     return selectedFiles?.map((file, index) => (
       <Space key={index}>
         <Tag
@@ -168,7 +214,7 @@ function LeadNotes({ openModal, closeModal, data }) {
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">
-                {selectedData ? t("holiday.update") : t("holiday.add")} Notes
+                {data ? t("holiday.update") : t("holiday.add")} Note
               </h5>
 
               <button type="button" className="close" onClick={closeModal}>
@@ -178,7 +224,7 @@ function LeadNotes({ openModal, closeModal, data }) {
             <div className="modal-body">
               <Form
                 form={form}
-                onFinish={(val) => UpdateProject(val, selectedData)}
+                onFinish={(val) => handleAddNotes(val, data)}
                 onFinishFailed={({ errorFields }) => {
                   const consecutiveSpacesError = errorFields.find((field) =>
                     field.errors.toString().includes("consecutive spaces")
@@ -219,8 +265,8 @@ function LeadNotes({ openModal, closeModal, data }) {
                   </Form.Item>
                 </div>
                 <div className="form-group">
-                  <label>Note</label>
-                  <Form.Item name="notes">
+                  <label>Comments <span className="text-danger">*</span></label>
+                  <Form.Item name="comments">
                     <Input.TextArea className="form-control" rows={5} />
                   </Form.Item>
                   {/* <textarea rows={4} className="form-control summernote" placeholder="Enter your message here" defaultValue={""} /> */}
