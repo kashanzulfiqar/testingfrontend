@@ -79,6 +79,7 @@ import DisabledCompanies from '../MainPage/SuperAdmin/disbaledCompanies';
 import LeadsDetails from '../MainPage/Employees/leadsDetails';
 import PrivacyPolicy from '../LandingPage/privacyPolicy';
 import RefundPolicy from '../LandingPage/refundPolicy';
+import TermsAndConditions from '../LandingPage/TermsConditions';
 
 
 const App = () => {
@@ -131,6 +132,7 @@ const App = () => {
     <div>
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/refund-policy" element={<RefundPolicy />} />
         <Route path="/contact-us" element={<ContactUs />} />
