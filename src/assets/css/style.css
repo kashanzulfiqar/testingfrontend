@@ -5965,7 +5965,8 @@ table.table-new.dataTable > thead .sorting_desc_disabled:focus:before {
   color: #777;
 }
 .files-list > li:hover .files-action {
-  display: block;
+  display: flex;
+  justify-content: center;
 }
 
 .search-box {
@@ -7885,7 +7886,7 @@ background: #f5f5f5 !important;
   text-overflow: ellipsis; 
 }
 .longText{
-  -webkit-line-clamp: 1;
+  -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     display: -webkit-box;
     max-width: 190px;
@@ -12601,7 +12602,7 @@ styles by Qazi
 }
 
 .longText1{
-  -webkit-line-clamp: 4;
+  -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     display: -webkit-box;
     overflow: hidden;
@@ -12628,6 +12629,11 @@ styles by Qazi
 /* Add this CSS to your stylesheet or style tag */
 .uploaded-img {
   position: relative;
+}
+
+.scrollable-requests {
+  max-height: 500px; /* Adjust this height as needed */
+  overflow-y: auto;
 }
 
 .download-icon {

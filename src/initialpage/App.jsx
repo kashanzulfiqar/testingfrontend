@@ -77,6 +77,8 @@ import AdminResetPassword from './AdminReset';
 import AdminForgot from './Forgot-Admin';
 import DisabledCompanies from '../MainPage/SuperAdmin/disbaledCompanies';
 import LeadsDetails from '../MainPage/Employees/leadsDetails';
+import PrivacyPolicy from '../LandingPage/privacyPolicy';
+import RefundPolicy from '../LandingPage/refundPolicy';
 
 
 const App = () => {
@@ -129,6 +131,8 @@ const App = () => {
     <div>
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/refund-policy" element={<RefundPolicy />} />
         <Route path="/contact-us" element={<ContactUs />} />
         <Route path="/live-demo" element={<Demo />} />
         <Route path="/admin-login" element={<AdminLogin />} />

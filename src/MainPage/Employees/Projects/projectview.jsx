@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Helmet } from "react-helmet";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import {
@@ -35,7 +35,7 @@ import { apiServices } from "../../../Services/apiServices";
 import { LoadingOutlined, MinusCircleFilled } from "@ant-design/icons";
 import EditProjects from "./EditProjects";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
-//import EditProjects from "./EditProjects";
+import { DeleteFiles, uploadFunction } from "./UploadAndDeleteFunc";
 import { getAllISOCodes } from "iso-country-currency";
 import { useTranslation } from "react-i18next";
 
@@ -116,6 +116,15 @@ const ProjectView = () => {
 
   const [project, setProject] = useState(stateProj ? stateProj : {});
   const [totalCost, setTotalCost] = useState(project?.teamCost?.reduce((sum, item) => sum + parseFloat(item?.cost), 0));
+  const [files, setFiles] = useState(project?.docs || []);
+  const [confidentialFiles, setConfidentialFiles] = useState(project?.adminDocs || [])
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [selectedConfidentialFiles, setSelectedConfidentialFiles] = useState([]);
+  const fileInputRef = useRef(null);
+  const [uploadType, setUploadType] = useState("");
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [fileIdToDelete, setFileIdToDelete] = useState(null);
+  const [deleteType, setDeleteType] = useState("");
   //const project = stateProj ? stateProj : data;
   //console.log("this is project :", project);
   //const totalCost = project?.teamCost?.reduce((sum, item) => sum + parseFloat(item.cost), 0);
@@ -217,6 +226,8 @@ const ProjectView = () => {
           const temp = res?.data?.projects?.docs[0]
           setProject(temp);
           setTotalCost(temp?.teamCost?.reduce((sum, item) => sum + parseFloat(item.cost), 0))
+          setFiles(temp?.docs)
+          setConfidentialFiles(temp?.adminDocs)
           if (stateProj) {
             nav(location.pathname, {
               state: { ...location.state, project: temp },
@@ -422,6 +433,32 @@ const ProjectView = () => {
       });
   };
 
+  const handleUpdateStatus = async (values) => {
+        const updatedData = {
+            _id: project?._id,
+            startDate: moment(project?.startDate).format("YYYY-MM-DD"),
+            endDate: moment(project?.endDate).format("YYYY-MM-DD"),
+            status: values // Only updating the status
+        };
+
+        try {
+            const res = await apiServices("PUT", `project-management/`, updatedData, user_state);
+
+            if (res.data.success) {
+                message.success(t("finance.expenses.statusUpdatedSuccessfully"));
+                GetProjects();
+                }
+        } catch (err) {
+            message.error(
+                err?.response?.data?.msg
+                    ? err?.response?.data?.msg
+                    : err?.response?.data?.validation?.body?.message
+                    ? err?.response?.data?.validation?.body?.message
+                    : t("projectScreen.errors.errorUpdatingProjectStatus")
+            );
+        }
+};
+
   useEffect(() => {
     if ($(".select").length > 0) {
       $(".select").select2({
@@ -621,6 +658,279 @@ const ProjectView = () => {
     }
   };
 
+  // const acceptableFormats = ["jpg", "jpeg", "png", "gif", "pdf", "doc", "docx"];
+
+  // const onFileUpload = (uploadedFiles, type) => {
+  //   const validFiles = [];
+  //   const existingFileNames = (type === "admin" ? confidentialFiles : files).map(f => f.fileName);
+
+  //   Array.from(uploadedFiles).forEach(file => {
+  //     const fileExtension = file.name.split(".").pop().toLowerCase();
+
+  //     // File format validation
+  //     if (!acceptableFormats.includes(fileExtension)) {
+  //       message.error(t("projectScreen.errors.fileFormatNotSupported", { file: file.name }));
+  //       return;
+  //     }
+
+  //     // File size validation
+  //     if (file.size > 10485760) { // 10 MB limit
+  //       message.error(t("projectScreen.errors.fileSizeExceedsLimit", { file: file.name }));
+  //       return;
+  //     }
+
+  //     // Duplicate file validation
+  //     if (existingFileNames.includes(file.name)) {
+  //       message.error(t("projectScreen.errors.fileAlreadySelected", { file: file.name }));
+  //       return;
+  //     }
+
+  //     const fileData = { fileName: file.name };
+  //     validFiles.push(fileData);
+  //   });
+
+  //   // If we have valid files, update state and call the API to save
+  //   if (validFiles.length > 0) {
+  //     if (type === "admin") {
+  //       setConfidentialFiles(prev => [...prev, ...validFiles]);
+  //       updateProjectWithFiles(files, [...confidentialFiles, ...validFiles], type);
+  //     } else {
+  //       setFiles(prev => [...prev, ...validFiles]);
+  //       updateProjectWithFiles([...files, ...validFiles], confidentialFiles, type);
+  //     }
+  //   }
+  // };
+
+  // // Function to update project with selected files
+  // const updateProjectWithFiles = (updatedDocs, updatedAdminDocs, type) => {
+  //   const updatedData = {
+  //     _id: project._id,
+  //     startDate: moment(project.startDate).format("YYYY-MM-DD"),
+  //     endDate: moment(project.endDate).format("YYYY-MM-DD"),
+  //     docs: type === "normal" ? updatedDocs : files,
+  //     adminDocs: type === "admin" ? updatedAdminDocs : confidentialFiles,
+  //   };
+
+  //   apiServices("PUT", `project-management/`, updatedData, user_state)
+  //     .then((res) => {
+  //       if (res.data.success) {
+  //       message.success(t("Project Updated Successfully"));
+  //       setFiles(updatedDocs); // Update files in local state
+  //       setConfidentialFiles(updatedAdminDocs); // Update files in local state
+  //       GetProjects(); // Refresh project data if needed
+  //     }
+  //   })
+  //   .catch((err) => {
+  //     message.error(
+  //       err?.response?.data?.msg ||
+  //       err?.response?.data?.validation?.body?.message ||
+  //       t("projectScreen.errors.errorUpdatingProjectStatus")
+  //     );
+  //   })
+  // };
+
+  // // Trigger file input on "Add" button click
+  // const handleAddClick = (type) => {
+  //   setUploadType(type);
+  //   fileInputRef.current.click();
+  // };
+
+  // // Handle file input change
+  // const handleFileInputChange = (event) => {
+  //   onFileUpload(event.target.files, uploadType);
+  // };
+
+  // // Show modal and set the fileId to delete
+  // const showDeleteModal = (fileId, type) => {
+  //   setFileIdToDelete(fileId);
+  //   setDeleteType(type);
+  //   setIsModalVisible(true);
+  // };
+
+  // // Confirm delete action
+  // const confirmDelete = () => {
+  //   handleDelete(fileIdToDelete, deleteType);
+  //   setIsModalVisible(false); // Hide modal after deletion
+  // };
+
+  // // Cancel delete action
+  // const cancelDelete = () => {
+  //   setIsModalVisible(false);
+  //   setFileIdToDelete(null); // Clear the fileId
+  // };
+
+  // const handleDelete = (fileId, type) => {
+  //   let updatedDocs;
+  //   if (type === "normal") {
+  //     console.log("delete files",files, fileId)
+  //     updatedDocs = files.filter(doc => doc._id !== fileId);
+  //     console.log("updated files",updatedDocs)
+  //   } else if (type === "admin") {
+  //     console.log("delete confidential files",confidentialFiles, fileId)
+  //     updatedDocs = confidentialFiles.filter(doc => doc._id !== fileId);
+  //     console.log("updated confidential files",updatedDocs)
+  //   }
+  
+  //   const updatedData = {
+  //     _id: project._id,
+  //     startDate: moment(project.startDate).format("YYYY-MM-DD"),
+  //     endDate: moment(project.endDate).format("YYYY-MM-DD"),
+  //     docs: type === "normal" ? updatedDocs : files, // Update docs only if "normal"
+  //     adminDocs: type === "admin" ? updatedDocs : confidentialFiles, // Update adminDocs only if "admin"
+  //   };
+  
+  //   apiServices("PUT", `project-management/`, updatedData, user_state)
+  //     .then((res) => {
+  //       if (res.data.success) {
+  //         message.success(t("FileDeletedSuccessfully"));
+  //         type === "normal" ? setFiles(updatedDocs) : setConfidentialFiles(updatedDocs);
+  //         GetProjects();
+  //       }
+  //     })
+  //     .catch((err) => {
+  //       message.error(
+  //         err?.response?.data?.msg ||
+  //         err?.response?.data?.validation?.body?.message ||
+  //         t("projectScreen.errors.errorDeletingFile")
+  //       );
+  //     });
+  // };
+
+
+const acceptableFormats = ["jpg", "jpeg", "png", "gif", "pdf", "doc", "docx", "xls", "xlsx"];
+
+const onFileUpload = async (uploadedFiles, type) => {
+  const validFiles = [];
+  const existingFileNames = (type === "admin" ? confidentialFiles : files).map(f => f.fileName);
+
+  Array.from(uploadedFiles).forEach(file => {
+    const fileExtension = file.name.split(".").pop().toLowerCase();
+
+    // File format validation
+    if (!acceptableFormats.includes(fileExtension)) {
+      message.error(t("projectScreen.errors.fileFormatNotSupported", { file: file.name }));
+      return;
+    }
+
+    // File size validation
+    if (file.size > 10485760) { // 10 MB limit
+      message.error(t("projectScreen.errors.fileSizeExceedsLimit", { file: file.name }));
+      return;
+    }
+
+    // Duplicate file validation
+    if (existingFileNames.includes(file.name)) {
+      message.error(t("projectScreen.errors.fileAlreadySelected", { file: file.name }));
+      return;
+    }
+
+    // const fileData = { fileName: file.name };
+    validFiles.push(file);
+  });
+
+  if (validFiles.length > 0) {
+    try {
+      const uploadedFilesData = await uploadFunction(validFiles);
+      const updatedFiles = type === "admin" ? [...confidentialFiles, ...uploadedFilesData] : [...files, ...uploadedFilesData];
+      if (type === "admin") {
+        setConfidentialFiles(updatedFiles);
+        updateProjectWithFiles(files, updatedFiles, type);
+      } else {
+        setFiles(updatedFiles);
+        updateProjectWithFiles(updatedFiles, confidentialFiles, type);
+      }
+    } catch (error) {
+      message.error(t("projectScreen.errors.fileUploadError"));
+    }
+  }
+};
+
+const updateProjectWithFiles = (updatedDocs, updatedAdminDocs, type) => {
+  const updatedData = {
+    _id: project._id,
+    startDate: moment(project.startDate).format("YYYY-MM-DD"),
+    endDate: moment(project.endDate).format("YYYY-MM-DD"),
+    docs: type === "normal" ? updatedDocs : files,
+    adminDocs: type === "admin" ? updatedAdminDocs : confidentialFiles,
+  };
+
+  apiServices("PUT", `project-management/`, updatedData, user_state)
+    .then((res) => {
+      if (res.data.success) {
+        message.success(t("projectScreen.errors.projectDetailsUpdatedSuccessfully"));
+        setFiles(updatedDocs);
+        setConfidentialFiles(updatedAdminDocs);
+        GetProjects();
+      }
+    })
+    .catch((err) => {
+      message.error(
+        err?.response?.data?.msg ||
+        err?.response?.data?.validation?.body?.message ||
+        t("projectScreen.errors.errorUpdatingProjectStatus")
+      );
+    });
+};
+
+// Trigger file input on "Add" button click
+const handleAddClick = (type) => {
+  setUploadType(type);
+  fileInputRef.current.click();
+};
+
+// Handle file input change
+const handleFileInputChange = (event) => {
+  onFileUpload(event.target.files, uploadType);
+};
+
+// Show modal and set the fileId to delete
+const showDeleteModal = (fileId, type) => {
+  setFileIdToDelete(fileId);
+  setDeleteType(type);
+  setIsModalVisible(true);
+};
+
+// Confirm delete action
+const confirmDelete = () => {
+  handleDelete(fileIdToDelete, deleteType);
+  setIsModalVisible(false);
+};
+
+// Cancel delete action
+const cancelDelete = () => {
+  setIsModalVisible(false);
+  setFileIdToDelete(null);
+};
+
+const handleDelete = async (fileId, type) => {
+  let updatedDocs;
+  if (type === "normal") {
+    updatedDocs = files.filter(doc => doc._id !== fileId);
+  } else if (type === "admin") {
+    updatedDocs = confidentialFiles.filter(doc => doc._id !== fileId);
+  }
+
+  try {
+    const deleteResults = await DeleteFiles([{ public_id: fileId }], user_state);
+    console.log("Delete Results:", deleteResults);
+    message.success(t("File Deleted Successfully"));
+    if (type === "admin") {
+      setConfidentialFiles(updatedDocs);
+      updateProjectWithFiles(files, updatedDocs, type);
+    } else {
+      setFiles(updatedDocs);
+      updateProjectWithFiles(updatedDocs, confidentialFiles, type);
+    }
+    // type === "normal" ? setFiles(updatedDocs) : setConfidentialFiles(updatedDocs);
+    // updateProjectWithFiles(updatedDocs, confidentialFiles, type);
+  } catch (error) {
+    console.error("Error in handleDelete:", error);
+    message.error(t("projectScreen.errors.errorDeletingFile"));
+  }
+};
+
+  
+
   return (
     <div className="page-wrapper">
       <Helmet>
@@ -649,28 +959,120 @@ const ProjectView = () => {
               </ul>
             </div>
 
-            <div className="col-auto float-end ms-auto">
-              {!isLoading && (role === 'admin' || permissions?.projectManagement) && 
-                <button
-                  className="btn add-btn"
-                  onClick={() => {
-                    getAllCurrencies();
-                    openEditModal(project);
-                    form.setFieldsValue({
-                      ...project,
-                      startDate: moment(project?.startDate, "YYYY-MM-DD"),
-                      endDate: moment(project?.endDate, "YYYY-MM-DD"),
-                    });
-                  }}
-                  disabled={
-                    role === "client" ||
-                    role === "focalperson" ||
-                    (role === "" && !permissions?.projectManagement)
-                  }
+            <div className="col-auto float-end ms-auto" style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+              {!isLoading && (role === 'admin' || permissions?.projectManagement) &&
+              <>
+              <div className="project-status-container">
+                <a
+                  className={`btn btn-white btn-sm btn-rounded dropdown-toggle`} // Always has the dropdown-toggle class
+                  style={{padding: "8px 12px"}}
+                  href="javascript:void(0)"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                  onClick={(e) => e.preventDefault()}
                 >
-                  <i className="fa fa-plus" />
-                  {t('viewProject.editProject')}
-                </button>
+                  <i
+                    className={`fa ${
+                      project?.status === "Scheduled"
+                        ? "fa-dot-circle-o text-danger"
+                        : project?.status === "Ongoing"
+                        ? "fa-dot-circle-o text-warning"
+                        : project?.status === "Paused"
+                        ? "fa-dot-circle-o text-muted"
+                        : project?.status === "Completed"
+                        ? "fa-dot-circle-o text-success"
+                        : project?.status === "Archived"
+                        ? "fa-dot-circle-o text-muted"
+                        : "fa-dot-circle-o"
+                    }`}
+                  />{" "}
+                  {project?.status === 'Scheduled' 
+                    ? t('projectScreen.Modal.scheduled')
+                    : project?.status === 'On-Going' 
+                    ? t('projectScreen.Modal.onGoing')
+                    : project?.status === 'Paused' 
+                    ? t('projectScreen.Modal.paused')
+                    : project?.status === 'Completed' 
+                    ? t('projectScreen.Modal.completed')
+                    : project?.status === 'Archived' 
+                    ? t('projectScreen.Modal.archived') 
+                    : project?.status}
+                </a>
+                <div className="dropdown-menu dropdown-menu-right">
+                  <a
+                    className="dropdown-item"
+                    href="javascript:void(0)"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleUpdateStatus("Scheduled");
+                    }}
+                  >
+                    <i className="fa fa-dot-circle-o text-danger" /> {t("projectScreen.Modal.scheduled")}
+                  </a>
+                  <a
+                    className="dropdown-item"
+                    href="javascript:void(0)"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleUpdateStatus("Ongoing");
+                    }}
+                  >
+                    <i className="fa fa-dot-circle-o text-warning" /> {t("projectScreen.Modal.onGoing")}
+                  </a>
+                  <a
+                    className="dropdown-item"
+                    href="javascript:void(0)"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleUpdateStatus("Paused");
+                    }}
+                  >
+                    <i className="fa fa-dot-circle-o text-muted" /> {t("projectScreen.Modal.paused")}
+                  </a>
+                  <a
+                    className="dropdown-item"
+                    href="javascript:void(0)"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleUpdateStatus("Completed");
+                    }}
+                  >
+                    <i className="fa fa-dot-circle-o text-success" /> {t("projectScreen.Modal.completed")}
+                  </a>
+                  <a
+                    className="dropdown-item"
+                    href="javascript:void(0)"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleUpdateStatus("Archived");
+                    }}
+                  >
+                    <i className="fa fa-dot-circle-o text-muted" /> {t("projectScreen.Modal.archived")}
+                  </a>
+                </div>
+              </div>
+            
+              <button
+                className="btn add-btn"
+                onClick={() => {
+                  getAllCurrencies();
+                  openEditModal(project);
+                  form.setFieldsValue({
+                    ...project,
+                    startDate: moment(project?.startDate, "YYYY-MM-DD"),
+                    endDate: moment(project?.endDate, "YYYY-MM-DD"),
+                  });
+                }}
+                disabled={
+                  role === "client" ||
+                  role === "focalperson" ||
+                  (role === "" && !permissions?.projectManagement)
+                }
+              >
+                <i className="fa fa-plus" />
+                {t('viewProject.editProject')}
+              </button>
+            </>
               }
 
               {
@@ -720,9 +1122,32 @@ const ProjectView = () => {
                 </div>
               </div>
 
-              <div className="card">
+                <>
+                <div className="card">
                 <div className="card-body">
-                  <h5 className="card-title m-b-20">Project Files</h5>
+                  <h5 className="card-title m-b-20">Project Files
+                  { (role === 'admin' || permissions?.projectManagement) &&
+                    <>
+                      <button
+                        type="button"
+                        className={`${i18n.dir() === 'rtl' ? 'float-start' : 'float-end'} btn btn-primary btn-sm`}
+                        onClick={() => handleAddClick("normal") }
+                        disabled={
+                          role === "client" ||
+                          role === "focalperson" ||
+                          (role === "" && !permissions?.projectManagement)
+                        }>
+                          <i className="fa fa-plus" /> {t('projectScreen.Modal.uploadFiles')}
+                        </button>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          multiple
+                          style={{ display: "none" }}
+                          onChange={handleFileInputChange}
+                        />
+                    </>
+                  }</h5>
                   {project?.docs?.length > 0 ? 
                     <>
                       <div className="row">
@@ -791,11 +1216,38 @@ const ProjectView = () => {
                                               window.open(fullImageUrl, "_blank")
                                             }
                                           />
-                                          <div className="download-icon hidden">
-                                            <a href={downloadLink} download>
-                                              <i className="fa fa-download" />
+                                          
+                                          <div className="dropdown dropdown-action profile-action">
+                                            <a
+                                              className="action-icon dropdown-toggle"
+                                              data-bs-toggle="dropdown"
+                                              aria-expanded="false"
+                                            >
+                                              <i className="material-icons">more_vert</i>
                                             </a>
+                                            <div className="dropdown-menu dropdown-menu-right">
+                                              <button
+                                                className="dropdown-item"
+                                                onClick={(e) => {
+                                                  e.preventDefault();
+                                                  showDeleteModal(doc._id, "normal");
+                                                }}
+                                              >
+                                                <i className={`fa fa-trash ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
+                                                {t('delete')}
+                                              </button>
+                                              <button
+                                                className="dropdown-item"
+                                                onClick={() => {
+                                                  window.open(downloadLink);
+                                                }}
+                                              >
+                                                <i className={`fa fa-download ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
+                                                {t('download')}
+                                              </button>
+                                            </div>
                                           </div>
+
                                         </div>
                                       </a>
                                       <div className="uploaded-img-name">{doc?.fileName}</div>
@@ -816,10 +1268,35 @@ const ProjectView = () => {
                                           className="img-fluid"
                                           alt={`Image ${index + 1}`}
                                         />
-                                        <div className="download-icon">
-                                          <a href={fullImageUrl} download>
-                                            <i className="fa fa-download" />
+                                        <div className="dropdown dropdown-action profile-action">
+                                          <a
+                                            className="action-icon dropdown-toggle"
+                                            data-bs-toggle="dropdown"
+                                            aria-expanded="false"
+                                          >
+                                            <i className="material-icons">more_vert</i>
                                           </a>
+                                          <div className="dropdown-menu dropdown-menu-right">
+                                            <button
+                                              className="dropdown-item"
+                                              onClick={(e) => {
+                                                e.preventDefault();
+                                                showDeleteModal(doc._id, "normal");
+                                              }}
+                                            >
+                                              <i className={`fa fa-trash ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
+                                              {t('delete')}
+                                            </button>
+                                            <button
+                                              className="dropdown-item"
+                                              onClick={() => {
+                                                window.open(fullImageUrl, '_blank');
+                                              }}
+                                            >
+                                              <i className={`fa fa-download ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
+                                              {t('download')}
+                                            </button>
+                                          </div>
                                         </div>
                                       </div>
                                       <div className="uploaded-img-name">{`File ${
@@ -911,10 +1388,22 @@ const ProjectView = () => {
                                       </span>
                                     </div>
                                     <ul className="files-action">
-                                      <li className="dropdown dropdown-action">
+                                      <li>
+                                        <a
+                                          href="#"
+                                          onClick={(e) => {
+                                            e.preventDefault();
+                                            showDeleteModal(doc._id, "normal");
+                                          }}
+                                          className="btn btn-link"
+                                        >
+                                          <i className="fa fa-trash" />
+                                        </a>
+                                      </li>
+                                      <li>
                                         <a
                                           href={downloadLink}
-                                          className="dropdown-toggle btn btn-link"
+                                          className="btn btn-link"
                                           download
                                         >
                                           <i className="fa fa-download" />{" "}
@@ -935,11 +1424,93 @@ const ProjectView = () => {
                   }
                 </div>
               </div>
-
+              <Modal
+              open={isModalVisible}
+              onClose={cancelDelete}
+              aria-labelledby="modal-modal-title"
+              aria-describedby="modal-modal-description"
+              disableRestoreFocus
+              BackdropProps={{
+                style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
+              }}
+            >
+              <div className="modal-dialog modal-dialog-centered">
+                <div className="modal-content" style={{ height: "280px" }}>
+                  <div
+                    className="modal-body"
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <div className="form-header">
+                      <h3 style={{ marginBottom: "30px" }}>Remove File</h3>
+                      <p>Are you sure you want to delete this file?</p>
+                    </div>
+                    <div className="modal-btn delete-action">
+                      <div className="row">
+                        <div className="col-6">
+                          <Button
+                            htmlType="submit"
+                            className="btn btn-primary continue-btn"
+                            onClick={confirmDelete}
+                            disabled={isLoading}
+                            style={{ width: "100%" }}
+                          >
+                            {isLoading ? <Spin size="small" /> : "Delete"}
+                          </Button>
+                        </div>
+                        <div className="col-6">
+                          <Button
+                            onClick={cancelDelete}
+                            className="btn btn-primary submit-btn"
+                            style={{ width: "100%" }}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Modal>
+              </>
             {(role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) &&
+            <>
               <div className="card">
                 <div className="card-body">
-                  <div style={{display:'flex', flexDirection: 'row', alignItems: 'center'}}><h5 className="card-title m-b-20">Confidential Files</h5> <span className="badge badge-pill bg-custom float-end" style={{marginLeft:'10px', marginBottom: 'auto'}}>ADMIN</span></div>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}
+                ><div style={{display:'flex', flexDirection: 'row', alignItems: 'center'}}><h5 className="card-title m-b-20">Confidential Files</h5> <span className="badge badge-pill bg-custom float-end" style={{marginLeft:'10px', marginBottom: 'auto'}}>ADMIN</span></div>
+                    <>
+                    <button
+                      type="button"
+                      className={`${i18n.dir() === 'rtl' ? 'float-start' : 'float-end'} btn btn-primary btn-sm`}
+                      onClick={() => handleAddClick("admin") }
+                      disabled={
+                        role === "client" ||
+                        role === "focalperson" ||
+                        (role === "" && !permissions?.projectManagement)
+                      }
+                    >
+                      <i className="fa fa-plus" /> {t('projectScreen.Modal.uploadFiles')}
+                    </button>
+                    <input
+                          ref={fileInputRef}
+                          type="file"
+                          multiple
+                          style={{ display: "none" }}
+                          onChange={handleFileInputChange}
+                        />
+                    </>
+                    </div>
                   {
                     project?.adminDocs?.length > 0 ? 
                     <>
@@ -1009,10 +1580,35 @@ const ProjectView = () => {
                                               window.open(fullImageUrl, "_blank")
                                             }
                                           />
-                                          <div className="download-icon hidden">
-                                            <a href={downloadLink} download>
-                                              <i className="fa fa-download" />
+                                          <div className="dropdown dropdown-action profile-action">
+                                            <a
+                                              className="action-icon dropdown-toggle"
+                                              data-bs-toggle="dropdown"
+                                              aria-expanded="false"
+                                            >
+                                              <i className="material-icons">more_vert</i>
                                             </a>
+                                            <div className="dropdown-menu dropdown-menu-right">
+                                              <button
+                                                className="dropdown-item"
+                                                onClick={(e) => {
+                                                  e.preventDefault();
+                                                  showDeleteModal(doc._id, "admin");
+                                                }}
+                                              >
+                                                <i className={`fa fa-trash ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
+                                                {t('delete')}
+                                              </button>
+                                              <button
+                                                className="dropdown-item"
+                                                onClick={() => {
+                                                  window.open(downloadLink, '_blank');
+                                                }}
+                                              >
+                                                <i className={`fa fa-download ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
+                                                {t('download')}
+                                              </button>
+                                            </div>
                                           </div>
                                         </div>
                                       </a>
@@ -1034,10 +1630,35 @@ const ProjectView = () => {
                                           className="img-fluid"
                                           alt={`Image ${index + 1}`}
                                         />
-                                        <div className="download-icon">
-                                          <a href={fullImageUrl} download>
-                                            <i className="fa fa-download" />
+                                        <div className="dropdown dropdown-action profile-action">
+                                          <a
+                                            className="action-icon dropdown-toggle"
+                                            data-bs-toggle="dropdown"
+                                            aria-expanded="false"
+                                          >
+                                            <i className="material-icons">more_vert</i>
                                           </a>
+                                          <div className="dropdown-menu dropdown-menu-right">
+                                            <button
+                                              className="dropdown-item"
+                                              onClick={(e) => {
+                                                e.preventDefault();
+                                                showDeleteModal(doc._id, "admin");
+                                              }}
+                                            >
+                                              <i className={`fa fa-trash ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
+                                              {t('delete')}
+                                            </button>
+                                            <button
+                                              className="dropdown-item"
+                                              onClick={() => {
+                                                window.open(fullImageUrl, '_blank');
+                                              }}
+                                            >
+                                              <i className={`fa fa-download ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
+                                              {t('download')}
+                                            </button>
+                                          </div>
                                         </div>
                                       </div>
                                       <div className="uploaded-img-name">{`File ${
@@ -1101,7 +1722,6 @@ const ProjectView = () => {
                                 "/upload/",
                                 "/upload/fl_attachment/"
                               )}`;
-
                               return (
                                 <li key={index}>
                                   <div
@@ -1131,10 +1751,22 @@ const ProjectView = () => {
                                       </span>
                                     </div>
                                     <ul className="files-action">
-                                      <li className="dropdown dropdown-action">
+                                      <li>
+                                        <a
+                                          href="#"
+                                          onClick={(e) => {
+                                            e.preventDefault();
+                                            showDeleteModal(doc._id, "admin");
+                                          }}
+                                          className="btn btn-link"
+                                        >
+                                          <i className="fa fa-trash" />
+                                        </a>
+                                      </li>
+                                      <li>
                                         <a
                                           href={downloadLink}
-                                          className="dropdown-toggle btn btn-link"
+                                          className="btn btn-link"
                                           download
                                         >
                                           <i className="fa fa-download" />{" "}
@@ -1155,6 +1787,59 @@ const ProjectView = () => {
                   }
                 </div>
               </div>
+              <Modal
+              visible={isModalVisible}
+              onCancel={cancelDelete}
+              aria-labelledby="modal-modal-title"
+              aria-describedby="modal-modal-description"
+              disableRestoreFocus
+              BackdropProps={{
+                style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
+              }}
+            >
+              <div className="modal-dialog modal-dialog-centered">
+                <div className="modal-content" style={{ height: "280px" }}>
+                  <div
+                    className="modal-body"
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <div className="form-header">
+                      <h3 style={{ marginBottom: "30px" }}>Remove File</h3>
+                      <p>Are you sure you want to delete this file?</p>
+                    </div>
+                    <div className="modal-btn delete-action">
+                      <div className="row">
+                        <div className="col-6">
+                          <Button
+                            htmlType="submit"
+                            className="btn btn-primary continue-btn"
+                            onClick={confirmDelete}
+                            disabled={isLoading}
+                            style={{ width: "100%" }}
+                          >
+                            {isLoading ? <Spin size="small" /> : "Delete"}
+                          </Button>
+                        </div>
+                        <div className="col-6">
+                          <Button
+                            onClick={cancelDelete}
+                            className="btn btn-primary submit-btn"
+                            style={{ width: "100%" }}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Modal>
+            </>
             }
 
               {((role === 'admin' || (permissions?.projectManagement && permissions?.managePayrolls)) && project?.projectType === "Billed") ? 

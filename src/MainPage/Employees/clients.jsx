@@ -13,6 +13,7 @@ import { itemRender } from '../paginationfunction';
 import { apiServices } from '../../Services/apiServices';
 import { getAllISOCodes } from 'iso-country-currency';
 import { useTranslation } from 'react-i18next';
+import { getCode, getCountryCode } from 'countries-list';
 import TwoStepClientAdditionModal from '../Pages/Profile/modals/TwoStepClientAddition';
 
 
@@ -40,8 +41,25 @@ const Clients = () => {
     data: ''
   });
   const [allCountries, setAllCountries] = useState([]);
+  const [filters, setFilters] = useState({
+    clientName: "",
+    country: "",
+  });
+
+  const [selectedFilters, setSelectedFilters] = useState({
+    clientName: "",
+    country: "",
+  });
+
+  const handleFilterChange = (value, filterType) => {
+    setSelectedFilters({
+      ...selectedFilters,
+      [filterType]: value,
+    });
+  };
 
   useEffect(() => {
+      getAllCountries(); // Fetch countries on component mount
   if(role === 'admin' || permissions?.clientManagement) {
     getAllClients()
   }else{
@@ -57,7 +75,7 @@ const Clients = () => {
 
   const getAllClients = (values, current_page, page_size) => {
     setTableLoader(true);
-    apiServices("GET", `client/view-client?deleted=false${values === '' ? '' : values?.clientName === '' ? '' : values?.clientName ? `&clientName=${values?.clientName}` : filterValues?.clientName ? `&clientName=${filterValues?.clientName}` : ''}&page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}`, null, user_state)
+    apiServices("GET", `client/view-client?deleted=false${values === '' ? '' : values?.clientName === '' ? '' : values?.clientName ? `&clientName=${values?.clientName}` : filterValues?.clientName ? `&clientName=${filterValues?.clientName}` : ''}${values === '' ? '' : values?.country === '' ? '' : values?.country ? `&country=${values?.country}` : filterValues?.country ? `&country=${filterValues?.country}` : ''}&page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}`, null, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
           setAllClients(res?.data?.clients?.docs);
@@ -132,15 +150,13 @@ const Clients = () => {
       });
   }
 
-  const onFilterFinish = (values) => {
-    if(values?.clientName){
-      // getAllClients(values, currentPage, pageSize);
-      getAllClients(values, 1, pageSize);
-      setFilterValues(values)
+  const onFilterFinish = () => {
+      setFilters(selectedFilters);
       setCurrentPage(1);
-      console.log(values);
-    }
+      getAllClients(selectedFilters, currentPage, pageSize)
   }
+
+
 
   const customEmptyText = (
     <Empty
@@ -191,8 +207,17 @@ const antIcon = (
 
 const getAllCountries = () => {
   const isoCodes = getAllISOCodes();
+  console.log("iso",isoCodes);
   const sorted_data = isoCodes.sort((a, b) => a.countryName.localeCompare(b.countryName));
   setAllCountries(sorted_data)
+};
+
+const getCountryCodeFromList = (country) => {
+  if (country === 'Aland Islands') {
+    return 'ax'; // ISO 3166-1 alpha-2 code for Åland Islands
+  }
+  const countryCode = getCountryCode(country);
+  return countryCode ? countryCode.toLowerCase() : null; // Convert to lowercase if found
 };
 
   return (
@@ -255,7 +280,7 @@ const getAllCountries = () => {
               autoComplete='off'
             >
             <div className="row filter-row">
-              <div className="col-sm-6 col-md-6">  
+              <div className="col-sm-3 col-md-3">  
                 <div className="form-group">
                 <Form.Item
                     name="clientName"
@@ -265,7 +290,40 @@ const getAllCountries = () => {
                     className="form-control"
                     style={{height:'50px'}}
                     placeholder={t('projectScreen.clientName')}
+                    onChange={(e) =>
+                      handleFilterChange(e.target.value, "clientName")
+                    }
                   />
+                  </Form.Item>
+                </div>
+              </div>
+              <div className="col-sm-3 col-md-3">  
+                <div className="form-group">
+                  <Form.Item 
+                    name="country"
+                    className="custom-border"
+                  >
+                    <Select
+                      onChange={(value) => {
+                        handleFilterChange(value, "country");
+                      }} // Handle changes
+                      style={{height:'50px'}}
+                      className='custom-select searchCenter'
+                      placeholder={t('client.selectCountry')}
+                      // options={allCountries.map((country) => ({
+                      //   label: country.countryName,
+                      //   value: country.countryCode
+                      // }))}
+                    >
+                      {allCountries?.map((country) => (
+                                <Select.Option
+                                  key={country.countryCode}
+                                  value={country.countryName}
+                                >
+                                  {country.countryName}
+                                </Select.Option>
+                              ))}
+                    </Select>
                   </Form.Item>
                 </div>
               </div>
@@ -294,6 +352,17 @@ const getAllCountries = () => {
                   <>
                   <div key={index} className="col-md-4 col-sm-6 col-12 col-lg-4 col-xl-3 d-flex">
                     <div className="profile-widget" style={{width: '100%', display: 'flex', flexDirection: 'column'}}>
+                      {/* Country Flag */}
+                      {console.log("Country Code:", getCountryCodeFromList(client.country))}
+                      {client?.country && (
+                        <div style={{ position: 'absolute', top: '10px', left: '10px', width: "10%", height: "8%" }}>
+                          <img
+                            src={`https://flagcdn.com/16x12/${getCountryCodeFromList(client.country)}.png`}
+                            alt={`${client.country} flag`}
+                            style={{ width: "100%", height: "100%" }}
+                          />
+                        </div>
+                      )}
                       <div className="profile-img">
                         <Link to="/client/client-profile" state={{client_data: client}} onClick={() => sessionStorage.setItem(`clients_tab`, 'projects')} className="avatar"><img alt="" src={client?.logo || user_icon} /></Link>
                       </div>

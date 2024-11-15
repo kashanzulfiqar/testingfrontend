@@ -20,6 +20,8 @@ const NavigationBar = (props) => {
   useEffect(() => {
     console.log("location", location);
     if (
+      location.pathname === "/privacy-policy" ||
+      location.pathname === "/refund-policy" ||
       location.pathname === "/contact-us" ||
       location.pathname === "/live-demo"
     ) {

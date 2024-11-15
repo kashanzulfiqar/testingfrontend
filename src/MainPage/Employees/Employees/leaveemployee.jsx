@@ -138,7 +138,7 @@ const LeaveEmployee = () => {
         
       const columns = [
         {
-          title: t('requests.leaveType'),
+          title: t('aRequests.leavesTypes'),
           dataIndex: 'leaveType',
           render: (text, record) => {
             return(            

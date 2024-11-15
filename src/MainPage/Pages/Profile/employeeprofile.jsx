@@ -685,14 +685,12 @@ const leaveData = [
     alloted: allData?.annualLeaves,
     taken: allData?.takenAnnualLeaves,
     remaining: allData?.remainingAnnualLeaves
-  },
-  {
-    title: t('aRequests.total'),
-    alloted: allData?.allotedLeaves,
-    taken: allData?.takenLeaves,
-    remaining: allData?.remainingLeaves,
-  },
+  }
 ];
+
+const allotted = leaveData.reduce((acc, item) => acc + parseInt(item.alloted), 0);
+const taken = leaveData.reduce((acc, item) => acc + parseInt(item.taken), 0);
+const remaining = leaveData.reduce((acc, item) => acc + parseInt(item.remaining), 0);
 const columns = [
   {
     title: '#',
@@ -1577,6 +1575,15 @@ const columns = [
                         style = {{overflowX : 'auto'}}
                         columns={columns}
                         dataSource={leaveData}
+                        summary={() => (
+                          <Table.Summary.Row>
+                            <Table.Summary.Cell index={0}></Table.Summary.Cell>
+                            <Table.Summary.Cell index={1}><strong>Total</strong></Table.Summary.Cell>
+                            <Table.Summary.Cell index={2}><strong>{allotted}</strong></Table.Summary.Cell>
+                            <Table.Summary.Cell index={3}><strong>{taken}</strong></Table.Summary.Cell>
+                            <Table.Summary.Cell index={4}><strong>{remaining}</strong></Table.Summary.Cell>
+                          </Table.Summary.Row>
+                        )}
                         pagination={false}
                         components={i18n.dir()==="rtl" ?
                           {
@@ -1590,7 +1597,7 @@ const columns = [
                           return {
                             style: {
                               textAlign: i18n.dir() === 'rtl' ? 'right' : 'left',
-                              fontWeight: record.title === 'Total' ? 'bold' : 'normal', // Bold style for the "Total" row
+                              // fontWeight: record.title === 'Total' ? 'bold' : 'normal', // Bold style for the "Total" row
                             },
                           };
                         }}
