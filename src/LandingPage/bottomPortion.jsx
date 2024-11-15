@@ -40,6 +40,19 @@ const BottomPortion = () => {
     }
   };
 
+  const handlePricingClick = () => {
+    if (location.pathname === "/") {
+      // Scroll to the pricing section if already on the homepage
+      const pricingSection = document.getElementById("pricing-section");
+      if (pricingSection) {
+        pricingSection.scrollIntoView({ behavior: "smooth" });
+      }
+    } else {
+      // Navigate to the homepage and pass state to scroll to pricing
+      nav("/", { state: { scrollToPricing: true } });
+    }
+  };
+
   const isValidEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
@@ -116,7 +129,11 @@ const BottomPortion = () => {
           <h4>Information</h4>
           <ul>
             <li>Testimonials</li>
-            <li>Pricing</li>
+            <li
+              onClick={handlePricingClick}
+              style={{ cursor: "pointer" }}
+            >
+              Pricing</li>
             <li>FAQs</li>
           </ul>
         </div>
@@ -125,7 +142,7 @@ const BottomPortion = () => {
         <div className="col-sm-4 col-md-4 col-lg-2 company">
           <h4>Company</h4>
           <ul>
-            <li>About Us</li>
+            {/* <li>About Us</li> */}
             <li
               onClick={() => {
                 handleNavigation("/privacy-policy");
@@ -142,8 +159,20 @@ const BottomPortion = () => {
             >
               Refund Policy
             </li>
-            <li>Terms</li>
-            <li>Cookies</li>
+            <li
+              onClick={() => {
+                handleNavigation("/terms-and-conditions");
+              }}
+              style={{ cursor: "pointer" }}
+            >            
+              Terms</li>
+            <li
+              onClick={() => {
+                handleNavigation("/contact-us");
+              }}
+              style={{ cursor: "pointer" }}
+            >        
+              Contact Us</li>
           </ul>
         </div>
 
