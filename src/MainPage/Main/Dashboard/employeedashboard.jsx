@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
+import ordinal from "ordinal"
 import {
   clockin,
   holidaycalendar,
@@ -1606,12 +1607,12 @@ const todayMonth = today.getMonth() + 1; // getMonth() is zero-based
                 <div className="card-body">
                   <div className="statistic-header">
                     <h4>Important</h4>
-                    <div className="important-notification">
+                    {/* <div className="important-notification">
                       <Link to="/employee/requests">
                         <span className="me-1">View All</span>
                         <ArrowRightCircle size={15} />
                       </Link>
-                    </div>
+                    </div> */}
                   </div>
                   {loading ? (
                     <Spin
@@ -1647,6 +1648,11 @@ const todayMonth = today.getMonth() + 1; // getMonth() is zero-based
                           const joiningDate = new Date(employee.joiningDate);
                           const joiningDay = joiningDate.getDate();
                           const joiningMonth = joiningDate.getMonth() + 1;
+                          const joiningYear = joiningDate.getFullYear(); // Extract the year from the birthday
+
+                          // Calculate the age
+                          const currentYear = new Date().getFullYear();
+                          const years = currentYear - joiningYear;
 
                           // Check if today's day and month match the employee's joining date for work anniversary
                           const isWorkAnniversary = todayDay === joiningDay && todayMonth === joiningMonth;
@@ -1681,9 +1687,7 @@ const todayMonth = today.getMonth() + 1; // getMonth() is zero-based
                                     </h6>
                                     <ul className="nav" style={{display:"flex", alignItems:"center"}}>
                                       <li>
-                                        {`Request Date: ${moment(
-                                          employee.joiningDate
-                                        ).format("DD MMM YYYY")}`}
+                                      {`Celebrating ${years} ${years === 1 ? 'year' : 'years'} of hard work!`}
                                       </li>
                                     </ul>
                                   </div>
@@ -1697,6 +1701,11 @@ const todayMonth = today.getMonth() + 1; // getMonth() is zero-based
                           const birthdayDate = new Date(employee.dateOfBirth);
                           const birthdayDay = birthdayDate.getDate();
                           const birthdayMonth = birthdayDate.getMonth() + 1;
+                          const birthdayYear = birthdayDate.getFullYear(); // Extract the year from the birthday
+
+                          // Calculate the age
+                          const currentYear = new Date().getFullYear();
+                          const age = currentYear - birthdayYear;
 
                           // Check if today's day and month match the employee's joining date for work anniversary
                           const isBirthday = todayDay === birthdayDay && todayMonth === birthdayMonth;
@@ -1725,14 +1734,11 @@ const todayMonth = today.getMonth() + 1; // getMonth() is zero-based
                                     <h6>
                                       <label>
                                         {`Happy Birthday ${employee.fullName}!`}
-                                      </label>
-                                      
+                                      </label>  
                                     </h6>
                                     <ul className="nav" style={{display:"flex", alignItems:"center"}}>
                                       <li>
-                                        {`Request Date: ${moment(
-                                          employee.dateOfBirth
-                                        ).format("DD MMM YYYY")}`}
+                                        {`Just turned ${age} years old!`}
                                       </li>
                                     </ul>
                                   </div>
@@ -1745,38 +1751,55 @@ const todayMonth = today.getMonth() + 1; // getMonth() is zero-based
                           {requestData?.SelfRequests?.map((requests, indx) => (
                             <div key={indx} className="employee-noti-content">
                               <ul className="employee-notification-list">
-                                <li className="employee-notification-grid">
-                                  <div className="employee-notification-icon">
-                                    <span className="badge-soft-danger rounded-circle">
-                                      HR
-                                    </span>
-                                  </div>
-                                  <div className="employee-notification-content">
-                                    <h6>
-                                      <label>
-                                        {`Your ${formatLeaveType(
-                                        requests.requestType
-                                      )} request is ${requests.status}`}
-                                      </label>
-                                      
-                                    </h6>
-                                    <ul className="nav" style={{display:"flex", alignItems:"center"}}>
-                                      <li>
-                                        {`Request Date: ${moment(
-                                          requests.createdAt
-                                        ).format("DD MMM YYYY")}`}
-                                      </li>
-                                      <li>
-                                        {`Updated: ${moment(
-                                          requests.createdAt
-                                        ).format("DD MMM YYYY")}`}
-                                      </li>
-                                    </ul>
-                                  </div>
-                                </li>
+                                <Link to="/employee/requests">
+                                  <li className="employee-notification-grid">
+                                    <div className="employee-notification-icon">
+                                      <span className="badge-soft-danger rounded-circle">
+                                        HR
+                                      </span>
+                                    </div>
+                                    <div className="employee-notification-content">
+                                      <h6>
+                                        <label>
+                                          {`Your ${formatLeaveType(
+                                          requests.requestType
+                                        )} request is ${requests.status}`}
+                                        </label>
+                                        
+                                      </h6>
+                                      <ul className="nav" style={{display:"flex", alignItems:"center"}}>
+                                        <li>
+                                          {`Request Date: ${moment(
+                                            requests.createdAt
+                                          ).format("DD MMM YYYY")}`}
+                                        </li>
+                                        <li>
+                                          {`Updated: ${moment(
+                                            requests.createdAt
+                                          ).format("DD MMM YYYY")}`}
+                                        </li>
+                                      </ul>
+                                    </div>
+                                  </li>
+                                </Link>  
                               </ul>
                             </div>
                           ))}
+                          <div className="employee-noti-content">
+                              <ul className="employee-notification-list">
+                                <Link to="/employee/requests">
+                                  <li className="employee-notification-grid" style={{justifyContent: 'center'}}>
+                                    <div className="employee-notification-content">
+                                      <h6>
+                                        <label style={{color: '#ffb062', textDecoration: 'underline', cursor: 'pointer' }}>
+                                          {`Click Here to View all Requests`}
+                                        </label>
+                                      </h6>
+                                    </div>
+                                  </li>
+                                </Link>  
+                              </ul>
+                            </div>
                           </div>
                         </div>
                         {/* <div className="tab-pane fade" id="schedule_tab">

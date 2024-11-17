@@ -215,7 +215,27 @@ const Payments = () => {
           <label>{text?.clientName}</label>
           ),
       },
+      {
+        title: 'Invoice Month',
+        dataIndex: 'invoiceMonth',
+        render: (text, record) => {
+          if (record?.invoiceMonth) {
+          // Split the 'YYYY-MM' string into year and month
+          const [year, month] = text.split('-');
 
+          // Create a new Date object for the first day of the given month
+          const date = new Date(`${year}-${month}-01`);
+
+          // Format the date to 'Month Year' (e.g., 'July 2024')
+          const formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+
+          return formattedDate;
+          }
+          else{
+            return 'N/A'
+          }
+        },
+      },
       {
         title: t('finance.payments.paymentType'),
         dataIndex: 'paymentType',

@@ -251,7 +251,6 @@ const Projects = () => {
   useEffect(() => {
     //if(role === 'admin' || permissions?.projectManagement ) { 
       if(!flag){
-        setIsLoading(true);
         GetListProjects();
       }
       
@@ -337,7 +336,8 @@ const Projects = () => {
 
   const GetListProjects = (page, pageSize) => {
     //setLoader(true);
-
+    
+    setIsLoading(true);
     const params = {
       ...filters,
       page: page || pagination.current,
