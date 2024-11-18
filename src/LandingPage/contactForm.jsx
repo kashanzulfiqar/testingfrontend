@@ -147,6 +147,15 @@ const ContactUs = () => {
                         </p>
                         <p style={{ color: "#6d6d6d" }}>+92 51 831 1327</p>
                       </div>
+                      <div>
+                        <p style={{ marginBottom: "7%" }}>
+                          <strong>Address:</strong>
+                        </p>
+                        <p style={{ color: "#6d6d6d", marginBottom: "2%" }}>
+                          +1 647 471 0046
+                        </p>
+                        <p style={{ color: "#6d6d6d" }}>Office # 22Y, Sector F, DHA Phase 1, Islamabad</p>
+                      </div>
                     </div>
                   </div>
                 </div>
