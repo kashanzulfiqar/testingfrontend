@@ -57,6 +57,9 @@ const ProjectView = () => {
   const [TableLoad, setTableLoad] = useState(false);
   const [LoadLeader, setLoadLeader] = useState(false);
   const [LoadTeam, setLoadTeam] = useState(false);
+  const [loadStatus, setLoadStatus] = useState(false)
+  const [loadFiles, setLoadFiles] = useState(false)
+  const [loadConfidentialFiles, setLoadConfidentialFiles] = useState(false)
   const [openUser, setOpenUser] = useState(false);
   const [openLeader, setOpenLeader] = useState(false);
   const [selectedData, setSelectedData] = useState(null);
@@ -238,6 +241,9 @@ const ProjectView = () => {
           setIsLoading(false);
           setLoadLeader(false);
           setLoadTeam(false);
+          setLoadStatus(false);
+          setLoadConfidentialFiles(false);
+          setLoadFiles(false);
           setTableLoad(false);
         }
       })
@@ -254,6 +260,9 @@ const ProjectView = () => {
         setIsLoading(false);
         setLoadLeader(false);
         setLoadTeam(false);
+        setLoadStatus(false);
+        setLoadConfidentialFiles(false);
+        setLoadFiles(false);
         setTableLoad(false);
       });
   };
@@ -440,6 +449,7 @@ const ProjectView = () => {
             endDate: moment(project?.endDate).format("YYYY-MM-DD"),
             status: values // Only updating the status
         };
+        setLoadStatus(true)
 
         try {
             const res = await apiServices("PUT", `project-management/`, updatedData, user_state);
@@ -835,8 +845,10 @@ const onFileUpload = async (uploadedFiles, type) => {
       if (type === "admin") {
         setConfidentialFiles(updatedFiles);
         updateProjectWithFiles(files, updatedFiles, type);
+        setLoadConfidentialFiles(true)
       } else {
         setFiles(updatedFiles);
+        setLoadFiles(true)
         updateProjectWithFiles(updatedFiles, confidentialFiles, type);
       }
     } catch (error) {
@@ -913,7 +925,7 @@ const handleDelete = async (fileId, type) => {
   try {
     const deleteResults = await DeleteFiles([{ public_id: fileId }], user_state);
     console.log("Delete Results:", deleteResults);
-    message.success(t("File Deleted Successfully"));
+    // message.success(t("File Deleted Successfully"));
     if (type === "admin") {
       setConfidentialFiles(updatedDocs);
       updateProjectWithFiles(files, updatedDocs, type);
@@ -986,17 +998,23 @@ const handleDelete = async (fileId, type) => {
                         : "fa-dot-circle-o"
                     }`}
                   />{" "}
-                  {project?.status === 'Scheduled' 
-                    ? t('projectScreen.Modal.scheduled')
-                    : project?.status === 'On-Going' 
-                    ? t('projectScreen.Modal.onGoing')
-                    : project?.status === 'Paused' 
-                    ? t('projectScreen.Modal.paused')
-                    : project?.status === 'Completed' 
-                    ? t('projectScreen.Modal.completed')
-                    : project?.status === 'Archived' 
-                    ? t('projectScreen.Modal.archived') 
-                    : project?.status}
+                  {loadStatus ? (
+                    <Spin size="small" />
+                  ) : (
+                    <>
+                      {project?.status === 'Scheduled' 
+                      ? t('projectScreen.Modal.scheduled')
+                      : project?.status === 'On-Going' 
+                      ? t('projectScreen.Modal.onGoing')
+                      : project?.status === 'Paused' 
+                      ? t('projectScreen.Modal.paused')
+                      : project?.status === 'Completed' 
+                      ? t('projectScreen.Modal.completed')
+                      : project?.status === 'Archived' 
+                      ? t('projectScreen.Modal.archived') 
+                      : project?.status}
+                    </>
+                    )}
                 </a>
                 <div className="dropdown-menu dropdown-menu-right">
                   <a
@@ -2206,8 +2224,12 @@ const handleDelete = async (fileId, type) => {
                           </td>
                         </tr>
 
+                        
                         <tr>
                           <td>{t('viewProject.status')}:</td>
+                          {loadStatus ? (
+                            <Spin size="small" />
+                          ) : (
                           <td className="text-end">
                           {project?.status === 'Scheduled' 
                             ? t('projectScreen.Modal.scheduled')
@@ -2221,7 +2243,7 @@ const handleDelete = async (fileId, type) => {
                             ? t('projectScreen.Modal.archived') 
                             : project?.status
                             }
-                            </td>
+                            </td>)}
                         </tr>
                       </tbody>
                     </table>

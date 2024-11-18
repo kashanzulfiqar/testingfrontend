@@ -304,6 +304,7 @@ const getCountryCodeFromList = (country) => {
                     className="custom-border"
                   >
                     <Select
+                    showSearch
                       onChange={(value) => {
                         handleFilterChange(value, "country");
                       }} // Handle changes
@@ -357,9 +358,9 @@ const getCountryCodeFromList = (country) => {
                       {client?.country && (
                         <div style={{ position: 'absolute', top: '10px', left: '10px', width: "10%", height: "8%" }}>
                           <img
-                            src={`https://flagcdn.com/16x12/${getCountryCodeFromList(client.country)}.png`}
+                            src={`https://flagcdn.com/128x96/${getCountryCodeFromList(client.country)}.png`}
                             alt={`${client.country} flag`}
-                            style={{ width: "100%", height: "100%" }}
+                            // style={{ width: "100%", height: "100%" }}
                           />
                         </div>
                       )}

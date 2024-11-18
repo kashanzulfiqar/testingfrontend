@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import ordinal from "ordinal"
 import {
   clockin,
   holidaycalendar,
@@ -1658,7 +1657,7 @@ const todayMonth = today.getMonth() + 1; // getMonth() is zero-based
                           const isWorkAnniversary = todayDay === joiningDay && todayMonth === joiningMonth;
 
                           return (
-                            isWorkAnniversary && (
+                            isWorkAnniversary && years > 0 &&(
                               <div key={index} className="employee-noti-content" style={{ position: "relative" }}>
                                 <PushPin  
                                   style={{
