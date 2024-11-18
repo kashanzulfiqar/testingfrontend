@@ -15,11 +15,15 @@ import { Tooltip } from "react-bootstrap";
 import moment from "moment";
 import ReachOutModal from "./ReachOutModal";
 import LeadNotes from "./leadNotes";
+import { message } from "antd";
+import { useSelector } from "react-redux";
+import { apiServices } from "../../Services/apiServices";
 
 const LeadsDetails = () => {
+  const user_state = useSelector((state) => state.user.loginvalue);
   const location = useLocation();
-  const leadObject = location.state;
-  console.log(leadObject);
+  // const leadObject = location.state;
+  // console.log(leadObject);
   const recentlyViewd = [
     { value: "Sort By Alphabet", label: "Sort By Alphabet" },
     { value: "Ascending", label: "Ascending" },
@@ -27,6 +31,7 @@ const LeadsDetails = () => {
   ];
   const [showFirstField, setShowFirstField] = useState(false);  
 
+  const [leadObject, setLeadObject] = useState(location.state)
   const [open, setOpen] = useState({
     isAddReachOut: false,
     isEditReachout: false,
@@ -36,6 +41,30 @@ const LeadsDetails = () => {
     isDeleteNotes: false,
     data: "",
   });
+
+  useEffect(() => {
+    setLeadObject(location?.state);
+  }, []);
+
+  const viewLeads = () => {
+    apiServices("GET", `leads?leadId=${leadObject?._id}`, null, user_state)
+      .then((res) => {
+        if (res.data.success === true) {
+          setLeadObject(res?.data?.Lead?.docs[0]);
+        }
+      })
+      .catch((err) => {
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Error getting lead"
+          }`
+        );
+      })
+  };
 
   const handleSaveAndNext = () => {
     setShowFirstField(true);
@@ -58,6 +87,98 @@ const LeadsDetails = () => {
 
   const formatDateWithoutTime = (dateString) => {
     return moment(dateString).format("DD MMM YYYY"); // e.g., 10 Oct 2024
+  };
+
+  const renderNotes = () => {
+    return leadObject?.notes?.map((note) => {
+      return (
+        <div key={note._id} className="calls-box">
+          <div className="caller-info">
+            <div className="calls-user">
+              <img src={note?.addedBy?.imageUrl} alt="img" />
+              <div>
+                <h6>{note?.addedBy?.fullName}</h6>
+                <p>{formatDateWithTime(note?.updatedAt)}</p>
+              </div>
+            </div>
+            <div className="dropdown dropdown-action text-end">
+          <a
+            href="#"
+            className="action-icon dropdown-toggle"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"            
+          >
+            <i className="material-icons">more_vert</i>
+          </a>
+          <div className="dropdown-menu dropdown-menu-right">
+            <a
+              className="dropdown-item"
+              href="javascript:void(0)"
+            onClick={(e) => {
+              setOpen({
+                isEditNotes: true,
+                data: note,
+              });
+            }}              
+            >
+              <i className="fa fa-pencil m-r-5" /> Edit
+            </a>
+            <a className="dropdown-item" 
+            href="javascript:void(0)"
+            // onClick={(e) => {
+            //   e.stopPropagation()
+            //   setOpen({
+            //     isAddOpen: false,
+            //     isDelOpen: true,
+            //     data: record,
+            //   });
+            // }}
+            >
+              <i className="fa fa-trash-o m-r-5" /> Delete
+            </a>
+          </div>
+        </div>
+          </div>
+          <p>
+          {note?.text}
+          </p>
+          <ul>
+            <li>
+              <div className="note-download">
+                <div className="note-info">
+                  <label className="note-icon bg-success">
+                    <i className="las la-file-excel" />
+                  </label>
+                  <div>
+                    <h6>Project Specs.xls</h6>
+                    <p>365 KB</p>
+                  </div>
+                </div>
+                <Link to="#">
+                  <i className="las la-download" />
+                </Link>
+              </div>
+            </li>
+            <li>
+              <div className="note-download">
+                <div className="note-info">
+                  <label className="note-icon">
+                    <img src={media35} alt="img" />
+                  </label>
+                  <div>
+                    <h6>090224.jpg</h6>
+                    <p>365 KB</p>
+                  </div>
+                </div>
+                <Link to="#">
+                  <i className="las la-download" />
+                </Link>
+              </div>
+            </li>
+          </ul>
+        </div>
+      );
+    });
   };
 
   const renderReachOuts = () => {
@@ -236,7 +357,7 @@ const LeadsDetails = () => {
                     </li>
                     <li>
                       <label className="other-title">Source</label>
-                      <label>{leadObject?.source.title}</label>
+                      <label>{leadObject?.source?.title}</label>
                     </li>
                   </ul>
                   <div className="d-flex align-items-center justify-content-between flex-wrap">
@@ -394,278 +515,13 @@ const LeadsDetails = () => {
                       </ul>
                     </div>
                     <div className="notes-activity">
-                      <div className="calls-box">
-                        <div className="caller-info">
-                          <div className="calls-user">
-                            <img src={Avatar_01} alt="img" />
-                            <div>
-                              <h6>Darlee Robertson</h6>
-                              <p>15 Sep 2023, 12:10 pm</p>
-                            </div>
-                          </div>
-                          <div className="calls-action">
-                            <div className="dropdown action-drop">
-                              <Link
-                                to="#"
-                                className="dropdown-toggle"
-                                data-bs-toggle="dropdown"
-                                aria-expanded="false"
-                              >
-                                <MoreVertical size={15} />
-                              </Link>
-                              <div className="dropdown-menu dropdown-menu-right">
-                                <Link className="dropdown-item" to="#">
-                                  <i className="las la-edit me-1" />
-                                  Edit
-                                </Link>
-                                <Link className="dropdown-item" to="#">
-                                  <i className="las la-trash me-1" />
-                                  Delete
-                                </Link>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <h5>Notes added by Antony</h5>
-                        <p>
-                          A project review evaluates the success of an
-                          initiative and identifies areas for improvement. It
-                          can also evaluate a current project to determine
-                          whether it's on the right track. Or, it can determine
-                          the success of a completed project.{" "}
-                        </p>
-                        <ul>
-                          <li>
-                            <div className="note-download">
-                              <div className="note-info">
-                                <label className="note-icon bg-success">
-                                  <i className="las la-file-excel" />
-                                </label>
-                                <div>
-                                  <h6>Project Specs.xls</h6>
-                                  <p>365 KB</p>
-                                </div>
-                              </div>
-                              <Link to="#">
-                                <i className="las la-download" />
-                              </Link>
-                            </div>
-                          </li>
-                          <li>
-                            <div className="note-download">
-                              <div className="note-info">
-                                <label className="note-icon">
-                                  <img src={media35} alt="img" />
-                                </label>
-                                <div>
-                                  <h6>090224.jpg</h6>
-                                  <p>365 KB</p>
-                                </div>
-                              </div>
-                              <Link to="#">
-                                <i className="las la-download" />
-                              </Link>
-                            </div>
-                          </li>
-                        </ul>
-                        <div className="notes-editor">
-                          <div
-                            className="note-edit-wrap"
-                            style={{
-                              display: showFirstField ? "block" : "none",
-                            }}
-                          >
-                            <div className="summernote">
-                              Write a new comment, send your team notification
-                              by typing @ followed by their name
-                            </div>
-                            <div className="text-end note-btns">
-                              <Link
-                                to="#"
-                                onClick={handleCancel}
-                                className="btn btn-lighter add-cancel"
-                              >
-                                Cancel
-                              </Link>
-                              <Link to="#" className="btn btn-primary">
-                                Save
-                              </Link>
-                            </div>
-                          </div>
-                          <div className="text-end">
-                            <Link
-                              to="#"
-                              className="add-comment"
-                              onClick={handleSaveAndNext}
-                            >
-                              <i className="las la-plus-circle me-1" />
-                              Add Comment
-                            </Link>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="calls-box">
-                        <div className="caller-info">
-                          <div className="calls-user">
-                            <img src={Avatar_02} alt="img" />
-                            <div>
-                              <h6>Sharon Roy</h6>
-                              <p>18 Sep 2023, 09:52 am</p>
-                            </div>
-                          </div>
-                          <div className="calls-action">
-                            <div className="dropdown action-drop">
-                              <Link
-                                to="#"
-                                className="dropdown-toggle"
-                                data-bs-toggle="dropdown"
-                                aria-expanded="false"
-                              >
-                                <MoreVertical size={15} />
-                              </Link>
-                              <div className="dropdown-menu dropdown-menu-right">
-                                <Link className="dropdown-item" to="#">
-                                  <i className="las la-edit me-1" />
-                                  Edit
-                                </Link>
-                                <Link className="dropdown-item" to="#">
-                                  <i className="las la-trash me-1" />
-                                  Delete
-                                </Link>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <h5>Notes added by Antony</h5>
-                        <p>
-                          A project plan typically contains a list of the
-                          essential elements of a project, such as stakeholders,
-                          scope, timelines, estimated cost and communication
-                          methods. The project manager typically lists the
-                          information based on the assignment.
-                        </p>
-                        <ul>
-                          <li>
-                            <div className="note-download">
-                              <div className="note-info">
-                                <label className="note-icon bg-success">
-                                  <i className="las la-file-excel" />
-                                </label>
-                                <div>
-                                  <h6>Andrewpass.txt</h6>
-                                  <p>365 KB</p>
-                                </div>
-                              </div>
-                              <Link to="#">
-                                <i className="las la-file-alt" />
-                              </Link>
-                            </div>
-                          </li>
-                        </ul>
-                        <div className="reply-box">
-                          <p>
-                            The best way to get a project done faster is to
-                            start sooner. A goal without a timeline is just a
-                            dream.The goal you set must be challenging. At the
-                            same time, it should be realistic and attainable,
-                            not impossible to reach.
-                          </p>
-                          <p>
-                            Commented by{" "}
-                            <label className="text-primary">Aeron</label> on 15
-                            Sep 2023, 11:15 pm
-                          </p>
-                        </div>
-                        <div className="notes-editor">
-                          <div className="note-edit-wrap">
-                            <div className="summernote">
-                              Write a new comment, send your team notification
-                              by typing @ followed by their name
-                            </div>
-                            <div className="text-end note-btns">
-                              <Link
-                                to="#"
-                                className="btn btn-lighter add-cancel"
-                              >
-                                Cancel
-                              </Link>
-                              <Link to="#" className="btn btn-primary">
-                                Save
-                              </Link>
-                            </div>
-                          </div>
-                          <div className="text-end">
-                            <Link to="#" className="add-comment">
-                              <i className="las la-plus-circle me-1" />
-                              Add Comment
-                            </Link>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="calls-box">
-                        <div className="caller-info">
-                          <div className="calls-user">
-                            <img src={Avatar_04} alt="img" />
-                            <div>
-                              <h6>Vaughan</h6>
-                              <p>20 Sep 2023, 10:26 pm</p>
-                            </div>
-                          </div>
-                          <div className="calls-action">
-                            <div className="dropdown action-drop">
-                              <Link
-                                to="#"
-                                className="dropdown-toggle"
-                                data-bs-toggle="dropdown"
-                                aria-expanded="false"
-                              >
-                                <MoreVertical size={15} />
-                              </Link>
-                              <div className="dropdown-menu dropdown-menu-right">
-                                <Link className="dropdown-item" to="#">
-                                  <i className="las la-edit me-1" />
-                                  Edit
-                                </Link>
-                                <Link className="dropdown-item" to="#">
-                                  <i className="las la-trash me-1" />
-                                  Delete
-                                </Link>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <p>
-                          Projects play a crucial role in the success of
-                          organizations, and their importance cannot be
-                          overstated. Whether it's launching a new product,
-                          improving an existing
-                        </p>
-                        <div className="notes-editor">
-                          <div className="note-edit-wrap">
-                            <div className="summernote">
-                              Write a new comment, send your team notification
-                              by typing @ followed by their name
-                            </div>
-                            <div className="text-end note-btns">
-                              <Link
-                                to="#"
-                                className="btn btn-lighter add-cancel"
-                              >
-                                Cancel
-                              </Link>
-                              <Link to="#" className="btn btn-primary">
-                                Save
-                              </Link>
-                            </div>
-                          </div>
-                          <div className="text-end">
-                            <Link to="#" className="add-comment">
-                              <i className="las la-plus-circle me-1" />
-                              Add Comment
-                            </Link>
-                          </div>
-                        </div>
-                      </div>
+                      {leadObject?.notes &&
+                        leadObject.notes.length > 0 ? (
+                          renderNotes()// Pass the required data
+                          ) : (
+                            <p>No Notes Added Yet.</p>
+                        )
+                      }
                     </div>
                   </div>
                   {/* /Notes */}
@@ -933,7 +789,20 @@ const LeadsDetails = () => {
             <ReachOutModal 
             openModal={open.isAddReachOut}
             closeModal={!open.isAddReachOut}
-            data={null}
+            data={open?.data}
+            />
+        )
+      }
+      {
+        open.isEditNotes && (
+            <LeadNotes
+            openModal={open.isEditNotes}
+            closeModal={()=>{
+              setOpen({isEditNotes:false})
+            }}
+            data={open?.data}
+            leadId={leadObject?._id}
+            viewLeads={viewLeads}
             />
         )
       }
@@ -946,6 +815,7 @@ const LeadsDetails = () => {
             }}
             data={null}
             leadId={leadObject?._id}
+            viewLeads={viewLeads}
             />
         )
       }

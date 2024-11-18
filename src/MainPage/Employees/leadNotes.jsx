@@ -31,7 +31,7 @@ import { useTranslation } from "react-i18next";
 import { acceptableFormats, uploadFunction } from "./Projects/EditProjects";
 import { apiServices } from "../../Services/apiServices";
 
-function LeadNotes({ openModal, closeModal, data, leadId }) {
+function LeadNotes({ openModal, closeModal, data, leadId, viewLeads }) {
   const nav = useNavigate();
   const [form] = Form.useForm();
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
@@ -47,7 +47,20 @@ function LeadNotes({ openModal, closeModal, data, leadId }) {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [newFiles, setNewFiles] = useState([]);
 
+  useEffect(() => {
+    console.log("EDIT MODAL");
+    if (data) {
+
+      setSelectedFiles(data?.files);
+      setUploadFiles(data?.files);
+      form.setFieldsValue({
+        ...data,
+      });
+    }
+  }, []);
+
   const handleAddNotes = async (val, existing) => {
+    setLoader(true);
     let docs = [...uploadFiles];
     let temp1 = [];
     if (newFiles?.length > 0) {
@@ -57,19 +70,26 @@ function LeadNotes({ openModal, closeModal, data, leadId }) {
 
     if (existing) {
       const updatedData = {
+        note: {
+          ...val,
+          _id: existing?._id,
+          files: docs,
+        },
         leadId: leadId,
-        _id: existing?._id,
       };
       apiServices("PUT", "leads/editNote", updatedData, user_state)
         .then((res) => {
           if (res.data.success === true) {
             message.success('Note Updated Successfully');
-            //viewLeads();
+            viewLeads();
+            closeModal();
+            setLoader(false);
           }
         })
         .catch((error) => {
           console.log("error", error);
           message.error('Error updating Note');
+          setLoader(false);
         })
     }
     else {
@@ -82,12 +102,15 @@ function LeadNotes({ openModal, closeModal, data, leadId }) {
         .then((res) => {
           if (res.data.success === true) {
             message.success('Note Added Successfully');
-            //viewLeads();
+            viewLeads();
+            closeModal();
+            setLoader(false);
           }
         })
         .catch((error) => {
           console.log("error", error);
           message.error('Error Adding Note');
+          setLoader(false);
         })
     }
   };
@@ -238,35 +261,8 @@ function LeadNotes({ openModal, closeModal, data, leadId }) {
                 name="control-hooks"
               >
                 <div className="form-group">
-                  <label>
-                    Title <span className="text-danger">*</span>
-                  </label>
-                  <Form.Item
-                    name="title"
-                    rules={[
-                      {
-                        whitespace: true,
-                        required: true,
-                        validator: (_, value) => {
-                          if (!value || value.trim() === "") {
-                            return Promise.reject("please enter title");
-                          } else if (/\s{2,}/.test(value)) {
-                            return Promise.reject(
-                              t("allEmp.errors.removeConsecutiveSpaces2")
-                            );
-                          }
-                          return Promise.resolve();
-                        },
-                      },
-                    ]}
-                    className="custom-border"
-                  >
-                    <Input className="form-control" maxLength={50} autoFocus />
-                  </Form.Item>
-                </div>
-                <div className="form-group">
-                  <label>Comments <span className="text-danger">*</span></label>
-                  <Form.Item name="comments">
+                  <label>Note <span className="text-danger">*</span></label>
+                  <Form.Item name="text">
                     <Input.TextArea className="form-control" rows={5} />
                   </Form.Item>
                   {/* <textarea rows={4} className="form-control summernote" placeholder="Enter your message here" defaultValue={""} /> */}
