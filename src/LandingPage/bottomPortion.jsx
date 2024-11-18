@@ -8,8 +8,10 @@ import Facebook from "./assets/Facebook.svg";
 import LinkedIn from "./assets/LinkedIn.svg";
 import Instagram from "./assets/Instagram.svg";
 import { apiServices } from "../Services/apiServices";
+import { useNavigate } from "react-router-dom";
 
 const BottomPortion = () => {
+  const nav = useNavigate();
   const [viewChange, setViewChange] = useState(false);
   const [email, setEmail] = useState("");
   const [loader, setLoader] = useState(false);
@@ -30,6 +32,26 @@ const BottomPortion = () => {
       window.removeEventListener("resize", updateCardsToShow);
     };
   }, []);
+
+  const handleNavigation = (path) => {
+    // Only navigate if the target path is different from the current path
+    if (location.pathname !== path) {
+      nav(path);
+    }
+  };
+
+  const handlePricingClick = () => {
+    if (location.pathname === "/") {
+      // Scroll to the pricing section if already on the homepage
+      const pricingSection = document.getElementById("pricing-section");
+      if (pricingSection) {
+        pricingSection.scrollIntoView({ behavior: "smooth" });
+      }
+    } else {
+      // Navigate to the homepage and pass state to scroll to pricing
+      nav("/", { state: { scrollToPricing: true } });
+    }
+  };
 
   const isValidEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -107,7 +129,11 @@ const BottomPortion = () => {
           <h4>Information</h4>
           <ul>
             <li>Testimonials</li>
-            <li>Pricing</li>
+            <li
+              onClick={handlePricingClick}
+              style={{ cursor: "pointer" }}
+            >
+              Pricing</li>
             <li>FAQs</li>
           </ul>
         </div>
@@ -116,10 +142,37 @@ const BottomPortion = () => {
         <div className="col-sm-4 col-md-4 col-lg-2 company">
           <h4>Company</h4>
           <ul>
-            <li>About Us</li>
-            <li>Privacy Policy</li>
-            <li>Terms</li>
-            <li>Cookies</li>
+            {/* <li>About Us</li> */}
+            <li
+              onClick={() => {
+                handleNavigation("/privacy-policy");
+              }}
+              style={{ cursor: "pointer" }}
+            >
+              Privacy Policy
+            </li>
+            <li
+              onClick={() => {
+                handleNavigation("/refund-policy");
+              }}
+              style={{ cursor: "pointer" }}
+            >
+              Refund Policy
+            </li>
+            <li
+              onClick={() => {
+                handleNavigation("/terms-and-conditions");
+              }}
+              style={{ cursor: "pointer" }}
+            >            
+              Terms</li>
+            <li
+              onClick={() => {
+                handleNavigation("/contact-us");
+              }}
+              style={{ cursor: "pointer" }}
+            >        
+              Contact Us</li>
           </ul>
         </div>
 
@@ -155,10 +208,10 @@ const BottomPortion = () => {
               disabled={loader}
             >
               {loader ? (
-              <Spin size="small" indicator={antIcon} />
-            ) : (
-              <RightOutlined style={{ marginRight: "8px" }} />
-            )}
+                <Spin size="small" indicator={antIcon} />
+              ) : (
+                <RightOutlined style={{ marginRight: "8px" }} />
+              )}
             </Button>
           </div>
           <p>
