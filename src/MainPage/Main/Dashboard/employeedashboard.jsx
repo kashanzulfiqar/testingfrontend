@@ -1489,7 +1489,7 @@ const todayMonth = today.getMonth() + 1; // getMonth() is zero-based
                       ) : (
                         <div className="attendance-list">
                           <div className="row">
-                            <div className="col-md-4">
+                            <div className="col-md-4 col-6">
                               <div className="attendance-details">
                                 <h4 className="text-primary">
                                   {userData?.leave?.totalLeaves || 0}
@@ -1497,7 +1497,7 @@ const todayMonth = today.getMonth() + 1; // getMonth() is zero-based
                                 <p>Total Leaves</p>
                               </div>
                             </div>
-                            <div className="col-md-4">
+                            <div className="col-md-4 col-6">
                               <div className="attendance-details">
                                 <h4 className="text-pink">
                                   {userData?.leave?.takenLeaves || 0}
@@ -1505,7 +1505,7 @@ const todayMonth = today.getMonth() + 1; // getMonth() is zero-based
                                 <p>Leaves Taken</p>
                               </div>
                             </div>
-                            <div className="col-md-4">
+                            <div className="col-md-4 col-6">
                               <div className="attendance-details">
                                 <h4 className="text-success">
                                   {userData?.leave?.remainingLeaves || 0}
@@ -1513,7 +1513,7 @@ const todayMonth = today.getMonth() + 1; // getMonth() is zero-based
                                 <p>Leaves Remaining</p>
                               </div>
                             </div>
-                            <div className="col-md-4">
+                            <div className="col-md-4 col-6">
                               <div className="attendance-details">
                                 <h4 className="text-purple">
                                   {userData?.leave?.pendingApprovel || 0}
@@ -1521,7 +1521,7 @@ const todayMonth = today.getMonth() + 1; // getMonth() is zero-based
                                 <p>Pending Approval</p>
                               </div>
                             </div>
-                            <div className="col-md-4">
+                            <div className="col-md-4 col-6">
                               <div className="attendance-details">
                                 <h4 className="text-info">
                                   {userData?.attendence?.workingDays || 0}
@@ -1529,7 +1529,7 @@ const todayMonth = today.getMonth() + 1; // getMonth() is zero-based
                                 <p>Days Worked</p>
                               </div>
                             </div>
-                            <div className="col-md-4">
+                            <div className="col-md-4 col-6">
                               <div className="attendance-details">
                                 <h4 className="text-danger">
                                   {userData?.attendence?.totalAbsence || 0}
@@ -1550,7 +1550,7 @@ const todayMonth = today.getMonth() + 1; // getMonth() is zero-based
                   </div>
                   <div className="card flex-fill">
                     <div className="card-body">
-                      <div className="statistic-header">
+                      <div className="statistic-header" style={{paddingBottom: '6.8%'}}>
                         <h4>Working hours</h4>
                         {/* <div className="dropdown statistic-dropdown">
                           <Link
@@ -1790,7 +1790,7 @@ const todayMonth = today.getMonth() + 1; // getMonth() is zero-based
                                   <li className="employee-notification-grid" style={{justifyContent: 'center'}}>
                                     <div className="employee-notification-content">
                                       <h6>
-                                        <label style={{color: '#ffb062', textDecoration: 'underline', cursor: 'pointer' }}>
+                                        <label style={{color: '#ffb062', textDecoration: 'underline', cursor: 'pointer', marginTop: '5%' }}>
                                           {`Click Here to View all Requests`}
                                         </label>
                                       </h6>
