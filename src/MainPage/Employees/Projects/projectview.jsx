@@ -1261,7 +1261,7 @@ const handleDelete = async (fileId, type) => {
                                                 }}
                                               >
                                                 <i className={`fa fa-download ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
-                                                {t('download')}
+                                                {t('Clientinvoices.download')}
                                               </button>
                                             </div>
                                           </div>
@@ -1312,7 +1312,7 @@ const handleDelete = async (fileId, type) => {
                                               }}
                                             >
                                               <i className={`fa fa-download ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
-                                              {t('download')}
+                                              {t('Clientinvoices.download')}
                                             </button>
                                           </div>
                                         </div>
@@ -1624,7 +1624,7 @@ const handleDelete = async (fileId, type) => {
                                                 }}
                                               >
                                                 <i className={`fa fa-download ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
-                                                {t('download')}
+                                                {t('Clientinvoices.download')}
                                               </button>
                                             </div>
                                           </div>
@@ -1674,7 +1674,7 @@ const handleDelete = async (fileId, type) => {
                                               }}
                                             >
                                               <i className={`fa fa-download ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
-                                              {t('download')}
+                                              {t('Clientinvoices.download')}
                                             </button>
                                           </div>
                                         </div>
