@@ -919,7 +919,7 @@ const LeaveAdmin = () => {
                       <div className="stats-info text-center">
                         <label className="text-muted">{t('aRequests.viewModal.sick')}</label>
                         <h4 className="fw-bold" style={{ fontSize: "14px", fontFamily: "Arial, sans-serif" }}>
-                          {parseFloat(selectedRecord?.user?.remainingSickLeaves).toFixed(1)}/{parseFloat(statdata?.totalCompanySickLeave).toFixed(1)}
+                          {parseFloat(selectedRecord?.user?.remainingSickLeaves).toFixed(1)}/{parseFloat(selectedRecord?.user?.sickLeaves).toFixed(1)}
                         </h4>
                       </div>
                     </div>
@@ -927,7 +927,7 @@ const LeaveAdmin = () => {
                       <div className="stats-info text-center">
                         <label className="text-muted">{t('aRequests.viewModal.casual')}</label>
                         <h4 className="fw-bold" style={{ fontSize: "14px", fontFamily: "Arial, sans-serif" }}>
-                          {parseFloat(selectedRecord?.user?.remainingCasualLeaves).toFixed(1)}/{parseFloat(statdata?.totalCompanyCasualLeave).toFixed(1)}
+                          {parseFloat(selectedRecord?.user?.remainingCasualLeaves).toFixed(1)}/{parseFloat(selectedRecord?.user?.casualLeaves).toFixed(1)}
                         </h4>
                       </div>
                     </div>
@@ -935,7 +935,7 @@ const LeaveAdmin = () => {
                       <div className="stats-info text-center">
                         <label className="text-muted">{t('aRequests.viewModal.annual')}</label>
                         <h4 className="fw-bold" style={{ fontSize: "14px", fontFamily: "Arial, sans-serif" }}>
-                          {parseFloat(selectedRecord?.user?.remainingAnnualLeaves).toFixed(1)}/{parseFloat(statdata?.totalCompanyAnnualLeave).toFixed(1)}
+                          {parseFloat(selectedRecord?.user?.remainingAnnualLeaves).toFixed(1)}/{parseFloat(selectedRecord?.user?.annualLeaves).toFixed(1)}
                         </h4>
                       </div>
                     </div>
@@ -943,7 +943,7 @@ const LeaveAdmin = () => {
                       <div className="stats-info text-center">
                         <label className="text-muted">{t('aRequests.viewModal.wfh')}</label>
                         <h4 className="fw-bold" style={{ fontSize: "14px", fontFamily: "Arial, sans-serif" }}>
-                          {parseFloat(selectedRecord?.user?.remainingWfhLeaves).toFixed(1)}/{parseFloat(statdata?.totalCompanyWfhLeave).toFixed(1)}
+                          {parseFloat(selectedRecord?.user?.remainingWfhLeaves).toFixed(1)}/{parseFloat(selectedRecord?.user?.wfhLeaves).toFixed(1)}
                         </h4>
                       </div>
                     </div>

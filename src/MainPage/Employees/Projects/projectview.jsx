@@ -1216,6 +1216,7 @@ const handleDelete = async (fileId, type) => {
                                   >
                                     <div className="uploaded-box">
                                       <a>
+                                      
                                         <div
                                           className="uploaded-img"
                                           style={{
@@ -1234,41 +1235,38 @@ const handleDelete = async (fileId, type) => {
                                               window.open(fullImageUrl, "_blank")
                                             }
                                           />
-                                          
-                                          <div className="dropdown dropdown-action profile-action">
-                                            <a
-                                              className="action-icon dropdown-toggle"
-                                              data-bs-toggle="dropdown"
-                                              aria-expanded="false"
-                                            >
-                                              <i className="material-icons">more_vert</i>
-                                            </a>
-                                            <div className="dropdown-menu dropdown-menu-right">
-                                              <button
-                                                className="dropdown-item"
-                                                onClick={(e) => {
-                                                  e.preventDefault();
-                                                  showDeleteModal(doc._id, "normal");
-                                                }}
-                                              >
-                                                <i className={`fa fa-trash ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
-                                                {t('delete')}
-                                              </button>
-                                              <button
-                                                className="dropdown-item"
+                                          <button
+                                          style={{ backgroundColor: "white",
+                                            border: "transparent",
+                                            borderRadius:"50px",
+                                            margin: "5px 0px 5px 5px",
+                                            color: "red",
+                                            fontSize: "20px",position: "absolute", textAlign: "right", top: "-18px", right: "-18px"}}
+                                          onClick={(e) => {
+                                            e.preventDefault();
+                                            showDeleteModal(doc._id, "normal");
+                                          }}
+                                        >
+                                          <i className={`fa fa-close fa-md ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`}
+                                           />
+                                        </button>
+
+                                        </div>
+                                      </a>
+                                      <div style={{display: "flex"}}>
+                                      <div className="uploaded-img-name">{doc?.fileName}</div>
+                                      <button
+                                                style={{ backgroundColor: "white",
+                                                  border: "transparent",
+                                                  borderRadius:"50px",
+                                                  fontSize: "17px", textAlign: "right"}}
                                                 onClick={() => {
                                                   window.open(downloadLink);
                                                 }}
                                               >
                                                 <i className={`fa fa-download ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
-                                                {t('Clientinvoices.download')}
                                               </button>
-                                            </div>
-                                          </div>
-
-                                        </div>
-                                      </a>
-                                      <div className="uploaded-img-name">{doc?.fileName}</div>
+                                      </div>
                                     </div>
                                   </div>
                                 );

@@ -13492,6 +13492,13 @@ ul.nav.landingNav li.nav-item {
   color: #333; /* Replace $title-color with the appropriate value */
   margin-bottom: 0;
 }
+.uploaded-img-name{
+  -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    display: -webkit-box;
+    max-width: 160px;
+    overflow: hidden;
+}
 
 .clock-in-info .clock-in-btn .btn {
   display: -webkit-inline-box;
