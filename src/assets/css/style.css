@@ -13499,6 +13499,26 @@ ul.nav.landingNav li.nav-item {
     max-width: 160px;
     overflow: hidden;
 }
+.uploaded-img-delete{
+  background-color: white;
+  border: transparent;
+  border-radius: 50px;
+  margin: 5px 0px 5px 5px;
+  color: red;
+  font-size: 20px;
+  position: absolute;
+  text-align: right;
+  top: -18px;
+  right: -18px;
+}
+
+.uploaded-img-download{
+  background-color: white;
+  border: transparent;
+  border-radius: 50px;
+  font-size: 20px;
+  text-align: right;
+}
 
 .clock-in-info .clock-in-btn .btn {
   display: -webkit-inline-box;
