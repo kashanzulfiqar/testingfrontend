@@ -12645,6 +12645,13 @@ styles by Qazi
     overflow: hidden;
 }
 
+.selected-file-name{
+  max-width: 209px;
+  display: block; /* Use block or inline-block for single-line ellipsis */
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis; 
+}
 
 .customselect-height > div {
   height: auto !important;

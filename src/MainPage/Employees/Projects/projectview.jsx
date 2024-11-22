@@ -812,7 +812,11 @@ const acceptableFormats = ["jpg", "jpeg", "png", "gif", "pdf", "doc", "docx", "x
 const onFileUpload = async (uploadedFiles, type) => {
   const validFiles = [];
   const existingFileNames = (type === "admin" ? confidentialFiles : files).map(f => f.fileName);
-
+  if(type === "admin"){
+    setLoadConfidentialFiles(true)
+  }else{
+    setLoadFiles(true)
+  }
   Array.from(uploadedFiles).forEach(file => {
     const fileExtension = file.name.split(".").pop().toLowerCase();
 
@@ -845,10 +849,10 @@ const onFileUpload = async (uploadedFiles, type) => {
       if (type === "admin") {
         setConfidentialFiles(updatedFiles);
         updateProjectWithFiles(files, updatedFiles, type);
-        setLoadConfidentialFiles(true)
+        // setLoadConfidentialFiles(true)
       } else {
         setFiles(updatedFiles);
-        setLoadFiles(true)
+        // setLoadFiles(true)
         updateProjectWithFiles(updatedFiles, confidentialFiles, type);
       }
     } catch (error) {
@@ -917,8 +921,10 @@ const cancelDelete = () => {
 const handleDelete = async (fileId, type) => {
   let updatedDocs;
   if (type === "normal") {
+    setLoadFiles(true)
     updatedDocs = files.filter(doc => doc._id !== fileId);
   } else if (type === "admin") {
+    setLoadConfidentialFiles(true)
     updatedDocs = confidentialFiles.filter(doc => doc._id !== fileId);
   }
 
@@ -1167,7 +1173,11 @@ const handleDelete = async (fileId, type) => {
                     </>
                   }</h5>
                   {project?.docs?.length > 0 ? 
-                    <>
+                  <>
+                    {loadFiles ? (
+                      <Spin/>
+                    ) : (
+                      <>
                       <div className="row">
                         {
                           project?.docs?.some((doc) => {
@@ -1245,12 +1255,12 @@ const handleDelete = async (fileId, type) => {
                                           </button>
                                         </div>
                                       </a>
-                                      <div style={{display: "flex", alignItems: "center", marginTop: "2%"}}>
+                                      <div style={{display: "flex", alignItems: "center", marginTop: "2%", justifyContent: "space-between"}}>
                                         <div className="uploaded-img-name">{doc?.fileName}</div>
                                         <button
                                           className="uploaded-img-download"
                                           onClick={() => {
-                                          window.open(downloadLink);
+                                          window.open(downloadLink, "_blank");
                                           }}
                                           >
                                           <i className={`fa fa-download ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
@@ -1283,7 +1293,7 @@ const handleDelete = async (fileId, type) => {
                                           <i className={`fa fa-close fa-md ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`}/>
                                           </button>
                                           </div>
-                                          <div style={{display: "flex", alignItems: "center", marginTop: "2%"}}>
+                                          <div style={{display: "flex", alignItems: "center", marginTop: "2%", justifyContent: "space-between"}}>
                                           <div className="uploaded-img-name">{`File ${index + 1}`}</div>
                                         <button
                                           className="uploaded-img-download"
@@ -1410,6 +1420,7 @@ const handleDelete = async (fileId, type) => {
                           )
                           }
                       </ul>
+                    </>)}
                     </>
                     :
                   <label>{t('viewProject.noFilesUploaded')}</label>
@@ -1506,6 +1517,10 @@ const handleDelete = async (fileId, type) => {
                   {
                     project?.adminDocs?.length > 0 ? 
                     <>
+                    {loadConfidentialFiles ? (
+                      <Spin/>
+                    ) : (
+                    <>
                       <div className="row">
                         {
                           project?.adminDocs?.some((doc) => {
@@ -1583,7 +1598,7 @@ const handleDelete = async (fileId, type) => {
                                           </button>
                                           </div>
                                           </a>
-                                          <div style={{display: "flex", alignItems: "center", marginTop: "2%"}}>
+                                          <div style={{display: "flex", alignItems: "center", marginTop: "2%", justifyContent: "space-between"}}>
                                           <div className="uploaded-img-name">{doc?.fileName}</div>
                                         <button
                                           className="uploaded-img-download"
@@ -1621,7 +1636,7 @@ const handleDelete = async (fileId, type) => {
                                           <i className={`fa fa-close fa-md ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`}/>
                                           </button>
                                           </div>
-                                          <div style={{display: "flex", alignItems: "center", marginTop: "2%"}}>
+                                          <div style={{display: "flex", alignItems: "center", marginTop: "2%", justifyContent: "space-between"}}>
                                             <div className="uploaded-img-name">{`File ${index + 1}`}</div>
                                         <button
                                           className="uploaded-img-download"
@@ -1749,6 +1764,8 @@ const handleDelete = async (fileId, type) => {
                           )
                         }
                       </ul>
+                    </>
+                    )}
                     </>
                     :
                   <label>{t('viewProject.noFilesUploaded')}</label>
