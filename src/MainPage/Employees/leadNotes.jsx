@@ -273,7 +273,20 @@ function LeadNotes({ openModal, closeModal, data, leadId, viewLeads, viewFiles }
               >
                 <div className="form-group">
                   <label>Note <span className="text-danger">*</span></label>
-                  <Form.Item name="text">
+                  <Form.Item 
+                    name="text"
+                    rules={[
+                      {
+                        required: true,
+                        message: 'please enter the note',
+                      },
+                      {
+                          min: 5,
+                          message: 'Minimum length should be 5 characters',
+                        },
+                    ]}
+                    validateTrigger="onSubmit"
+                  >
                     <Input.TextArea className="form-control" rows={5} />
                   </Form.Item>
                   {/* <textarea rows={4} className="form-control summernote" placeholder="Enter your message here" defaultValue={""} /> */}
