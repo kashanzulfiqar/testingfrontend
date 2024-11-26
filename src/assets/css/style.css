@@ -14020,3 +14020,9 @@ ul.nav.landingNav li.nav-item {
 .tab-pane Link {
   color: #FF902F !important;
 }
+
+.disabled-option {
+  color: grey !important;
+  pointer-events: none !important; /* Prevent clicking */
+  cursor: not-allowed !important; /* Show a "no entry" cursor */
+}

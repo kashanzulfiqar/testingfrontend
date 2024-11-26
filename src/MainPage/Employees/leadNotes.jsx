@@ -28,10 +28,11 @@ import { getAllISOCodes } from "iso-country-currency";
 import moment from "moment";
 import { LoadingOutlined, MinusCircleFilled } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
-import { acceptableFormats, uploadFunction } from "./Projects/EditProjects";
+import { acceptableFormats } from "./Projects/EditProjects";
 import { apiServices } from "../../Services/apiServices";
+import { DeleteFiles, uploadFunction } from "./Projects/UploadAndDeleteFunc";
 
-function LeadNotes({ openModal, closeModal, data, leadId, viewLeads }) {
+function LeadNotes({ openModal, closeModal, data, leadId, viewLeads, viewFiles }) {
   const nav = useNavigate();
   const [form] = Form.useForm();
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
@@ -41,6 +42,7 @@ function LeadNotes({ openModal, closeModal, data, leadId, viewLeads }) {
 
   const [selectedData, setSelectedData] = useState(null);
   const [loader, setLoader] = useState(false);
+  const [fileFlag, setFileFlag] = useState(false);
 
   const [filesToDelete, setFilesToDelete] = useState([]);
   const [uploadFiles, setUploadFiles] = useState([]);
@@ -64,8 +66,15 @@ function LeadNotes({ openModal, closeModal, data, leadId, viewLeads }) {
     let docs = [...uploadFiles];
     let temp1 = [];
     if (newFiles?.length > 0) {
-      temp1 = await uploadFunction(newFiles);
+      setFileFlag(true);
+      temp1 = await uploadFunction(newFiles, user_state);
       docs = [...docs, ...temp1];
+    }
+    if (filesToDelete?.length > 0) {      
+      setFileFlag(true);
+      await DeleteFiles(filesToDelete, user_state);
+      console.log("All files deleted successfully");
+
     }
 
     if (existing) {
@@ -81,6 +90,7 @@ function LeadNotes({ openModal, closeModal, data, leadId, viewLeads }) {
         .then((res) => {
           if (res.data.success === true) {
             message.success('Note Updated Successfully');
+            viewFiles();
             viewLeads();
             closeModal();
             setLoader(false);
@@ -102,6 +112,7 @@ function LeadNotes({ openModal, closeModal, data, leadId, viewLeads }) {
         .then((res) => {
           if (res.data.success === true) {
             message.success('Note Added Successfully');
+            viewFiles();
             viewLeads();
             closeModal();
             setLoader(false);

@@ -190,14 +190,7 @@ const Leads = () => {
   }, [filters]);
 
   useEffect(() => {
-    if ( role === 'admin' || permissions?.leadsManagement ) {
     setIsStatLoading(true);
-    fetchEmployees();
-    viewSources();
-    viewMediums();
-    } else {
-      nav('/restricted', { state: { unAuthorize: true}})
-    }
   }, []);
 
   const getEmployeeImage = (employeeId) => {
@@ -640,7 +633,6 @@ const Leads = () => {
             aria-expanded="false"
             onClick={(e) => {
               e.stopPropagation()
-              e.preventDefault()
             }}
           >
             <i
@@ -663,7 +655,7 @@ const Leads = () => {
               className={`dropdown-item ${text === "pending" && "disabled"}`}
               href="javascript:void(0)"
               onClick={(e) => {
-                e.preventDefault();
+                e.stopPropagation()
                 handleUpdateStatus(record, "pending");
               }}
             >
@@ -673,7 +665,7 @@ const Leads = () => {
               className={`dropdown-item ${text === "onHold" && "disabled"}`}
               href="javascript:void(0)"
               onClick={(e) => {
-                e.preventDefault();
+                e.stopPropagation()
                 handleUpdateStatus(record, "onHold");
               }}
             >
@@ -683,7 +675,7 @@ const Leads = () => {
               className={`dropdown-item ${text === "converted" && "disabled"}`}
               href="javascript:void(0)"
               onClick={(e) => {
-                e.preventDefault();
+                e.stopPropagation()
                 handleUpdateStatus(record, "converted");
               }}
             >
@@ -693,7 +685,7 @@ const Leads = () => {
               className={`dropdown-item ${text === "notConverted" && "disabled"}`}
               href="javascript:void(0)"
               onClick={(e) => {
-                e.preventDefault();
+                e.stopPropagation()
                 handleUpdateStatus(record, "notConverted");
               }}
             >
@@ -765,7 +757,6 @@ const Leads = () => {
             aria-expanded="false"            
             onClick={(e) => {
               e.stopPropagation()
-              //e.preventDefault()
             }}
           >
             <i className="material-icons">more_vert</i>
@@ -777,6 +768,9 @@ const Leads = () => {
               onClick={(e) => {
                 e.stopPropagation()
                 getAllCurrencies();
+                fetchEmployees();
+                viewSources();
+                viewMediums();
                 setOpen({
                   isAddOpen: true,
                   isDelOpen: false,
@@ -791,6 +785,8 @@ const Leads = () => {
                   communicationMedium: record?.communicationMedium,
                   reachOuts: record?.reachOuts?.map((reachOut) => ({
                     ...reachOut,
+                    communicationMedium: reachOut?.communicationMedium?._id,
+                    communicatedBy: reachOut?.communicatedBy?._id,
                     date: reachOut.date
                     ? moment(reachOut.date, "YYYY-MM-DD")
                     : null,
@@ -814,7 +810,9 @@ const Leads = () => {
             <a className="dropdown-item" 
             href="javascript:void(0)"
             onClick={(e) => {
-              e.stopPropagation()
+              e.stopPropagation();  
+              fetchEmployees();
+              viewMediums();
               setOpen2({
                 isAddOpen: true,
                 isDelOpen: false,
@@ -828,6 +826,8 @@ const Leads = () => {
                 communicationMedium: record?.communicationMedium,
                 reachOuts: record?.reachOuts?.map((reachOut) => ({
                   ...reachOut,
+                  communicationMedium: reachOut?.communicationMedium?._id,
+                  communicatedBy: reachOut?.communicatedBy?._id,
                   date: reachOut.date
                   ? moment(reachOut.date, "YYYY-MM-DD")
                   : null,
@@ -1007,14 +1007,14 @@ const Leads = () => {
             // }
             onChange={(value)=>{
               setReachOutValues((prev) =>
-                prev.filter((reachOut) => reachOut.communicationMedium !== previous)
+                prev.filter((reachOut) => reachOut.communicationMedium._id !== previous?._id)
               );
               setReachOutValues((prev) => [...prev, { communicationMedium: value }])
             }}
           >
             {mediumOptions?.map((item) => {
               setPrevious(form.getFieldValue(['reachOuts',index,'communicationMedium'],));
-              const isCommunicationMedium = reachOutValues.some(reachOut => reachOut.communicationMedium === item._id);
+              const isCommunicationMedium = reachOutValues.some(reachOut => reachOut.communicationMedium._id === item._id);
               return (
                 <Option key={item?._id} value={item?._id}>
                   {item?.title}
@@ -1076,11 +1076,6 @@ const Leads = () => {
                 document.getElementById("area")
               }
               placeholder="Select a personnel"
-              onChange={(value) => {
-                setSelectedLeader(value);
-                setTempName(getEmployeeFullName(value));
-                setTempImage(getEmployeeImage(value));
-              }}
             >
               {employees?.map((employee) => (
                 <Select.Option
@@ -1323,7 +1318,10 @@ const Leads = () => {
                 href="javascript:void(0)"
                 className="btn add-btn"
                 onClick={() => {
-                  getAllCurrencies();
+                  getAllCurrencies();   
+                  fetchEmployees();
+                  viewSources();
+                  viewMediums();
                   setOpen({
                     isAddOpen: true,
                     isDelOpen: false,
@@ -2269,11 +2267,6 @@ const Leads = () => {
                               document.getElementById("area")
                             }
                             placeholder="Select a personnel"
-                            onChange={(value) => {
-                              setSelectedLeader(value);
-                              setTempName(getEmployeeFullName(value));
-                              setTempImage(getEmployeeImage(value));
-                            }}
                           >
                             {employees?.map((employee) => (
                               <Select.Option
