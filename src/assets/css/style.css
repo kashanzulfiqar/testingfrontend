@@ -123,12 +123,6 @@ a{
   /* word-spacing: -4px; */
   word-spacing: var(--a-spacing);
 }
-input{
-  /* word-spacing: -3.5px; */
-}
-.inputWordSpacing{
-  /* word-spacing: normal; */
-}
 
 /* --- adjust space on safari browser and small screens--- */
 @media not all and (min-resolution: 0.001dpcm) {
@@ -7416,10 +7410,6 @@ textarea.form-control {
   border-right: none !important;
 }
 
-.accordian-table thead{
-  /* display: none; */
-}
-
 .accordian-table tbody tr td{
   width: 80px !important;
   text-wrap: nowrap !important;
@@ -7585,11 +7575,6 @@ textarea.form-control {
   border-color: #41c750 !important;
   transition: .3 all;
 }
-.SubmitForApprovalButton:hover{
-  /* background-color: #FF9B44 !important;
-  color: #fff !important;
-  transition: .3s all; */
-}
 
 /* show legend on profit loss graph screen */
 .showLegend .recharts-legend-wrapper{
@@ -7679,9 +7664,6 @@ textarea.form-control {
 .profitLossTable thead > tr > th:nth-child(2){
   background-color: #FFFFFF !important;
   z-index: 301 !important;
-}
-.profitLossTable tbody tr:nth-child(odd) > td:nth-child(2){
-  /* background: #f5f5f5 !important; */
 }
 
 .profitLossTable thead > tr > th:nth-child(8) {
@@ -7885,12 +7867,6 @@ background: #f5f5f5 !important;
 .fixedColmn tbody > tr:nth-child(1) > td{
   padding: 0px !important;
 }
-.fixedColmn .ant-table-content{
-  /* position: sticky;
-    top: 0;
-    background: white;
-    z-index: 300; */
-}
 
 .custom-border .ant-select-disabled > div{
   color: black !important;
@@ -7922,9 +7898,7 @@ background: #f5f5f5 !important;
 .customCellWidth tr >th:nth-child(2){
   min-width: 190px !important;
 }
-.customCellWidth tr >th{
-  /* vertical-align: middle !important; */
-}
+
 .ant-tooltip{
   z-index: 3000;
 }
@@ -8142,15 +8116,11 @@ min-width: fit-content !important;
   border-color: #e3e3e3 !important; 
 } */
 /* for error message color */
-.custom-border .ant-form-item-explain-error {
-  /* color: red; */
-}
+
 .react-tel-input .form-control{
   border-color: #e3e3e3;
 }
-.react-tel-input .flag-dropdown {
-  /* border-color: #e3e3e3; */
-}
+
 .invalidPhone{
   background-color: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -8484,7 +8454,7 @@ padding: 10px 20px !important;
   padding: 4px;
 }
 .view-icons .btn.active {
-  color: #333333;
+  /* color: #333333; */
 }
 
 .add-btn {
@@ -14072,4 +14042,21 @@ ul.nav.landingNav li.nav-item {
 
 .owl-nav.project-nav .owl-prev {
     margin-right: 5px;
+}
+
+.tab-pane * {
+  color: black !important;
+  word-spacing: var(--word-spacing);
+}
+.tab-pane p {
+  color: #4D5154 !important;
+}
+.tab-pane Link {
+  color: #FF902F !important;
+}
+
+.disabled-option {
+  color: grey !important;
+  pointer-events: none !important; /* Prevent clicking */
+  cursor: not-allowed !important; /* Show a "no entry" cursor */
 }
