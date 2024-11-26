@@ -987,7 +987,7 @@ const handleDelete = async (fileId, type) => {
                     className={`fa ${
                       project?.status === "Scheduled"
                         ? "fa-dot-circle-o text-danger"
-                        : project?.status === "Ongoing"
+                        : project?.status === "On-Going"
                         ? "fa-dot-circle-o text-warning"
                         : project?.status === "Paused"
                         ? "fa-dot-circle-o text-muted"
@@ -1018,7 +1018,7 @@ const handleDelete = async (fileId, type) => {
                 </a>
                 <div className="dropdown-menu dropdown-menu-right">
                   <a
-                    className="dropdown-item"
+                    className={`dropdown-item ${project?.status === "Scheduled" && "disabled"}`}
                     href="javascript:void(0)"
                     onClick={(e) => {
                       e.preventDefault();
@@ -1028,17 +1028,17 @@ const handleDelete = async (fileId, type) => {
                     <i className="fa fa-dot-circle-o text-danger" /> {t("projectScreen.Modal.scheduled")}
                   </a>
                   <a
-                    className="dropdown-item"
+                    className={`dropdown-item ${project?.status === "On-Going" && "disabled"}`}
                     href="javascript:void(0)"
                     onClick={(e) => {
                       e.preventDefault();
-                      handleUpdateStatus("Ongoing");
+                      handleUpdateStatus("On-Going");
                     }}
                   >
                     <i className="fa fa-dot-circle-o text-warning" /> {t("projectScreen.Modal.onGoing")}
                   </a>
                   <a
-                    className="dropdown-item"
+                    className={`dropdown-item ${project?.status === "Paused" && "disabled"}`}
                     href="javascript:void(0)"
                     onClick={(e) => {
                       e.preventDefault();
@@ -1048,7 +1048,7 @@ const handleDelete = async (fileId, type) => {
                     <i className="fa fa-dot-circle-o text-muted" /> {t("projectScreen.Modal.paused")}
                   </a>
                   <a
-                    className="dropdown-item"
+                    className={`dropdown-item ${project?.status === "Completed" && "disabled"}`}
                     href="javascript:void(0)"
                     onClick={(e) => {
                       e.preventDefault();
@@ -1058,7 +1058,7 @@ const handleDelete = async (fileId, type) => {
                     <i className="fa fa-dot-circle-o text-success" /> {t("projectScreen.Modal.completed")}
                   </a>
                   <a
-                    className="dropdown-item"
+                    className={`dropdown-item ${project?.status === "Archived" && "disabled"}`}
                     href="javascript:void(0)"
                     onClick={(e) => {
                       e.preventDefault();
@@ -1261,7 +1261,7 @@ const handleDelete = async (fileId, type) => {
                                                 }}
                                               >
                                                 <i className={`fa fa-download ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
-                                                {t('download')}
+                                                {t('Clientinvoices.download')}
                                               </button>
                                             </div>
                                           </div>
@@ -1312,7 +1312,7 @@ const handleDelete = async (fileId, type) => {
                                               }}
                                             >
                                               <i className={`fa fa-download ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
-                                              {t('download')}
+                                              {t('Clientinvoices.download')}
                                             </button>
                                           </div>
                                         </div>
@@ -1624,7 +1624,7 @@ const handleDelete = async (fileId, type) => {
                                                 }}
                                               >
                                                 <i className={`fa fa-download ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
-                                                {t('download')}
+                                                {t('Clientinvoices.download')}
                                               </button>
                                             </div>
                                           </div>
@@ -1674,7 +1674,7 @@ const handleDelete = async (fileId, type) => {
                                               }}
                                             >
                                               <i className={`fa fa-download ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
-                                              {t('download')}
+                                              {t('Clientinvoices.download')}
                                             </button>
                                           </div>
                                         </div>
