@@ -601,6 +601,16 @@ const Leads = () => {
         message.error('Error updating status');
       })
   };
+  const closeDropDown = (e) => {
+    // Close the dropdown
+    const dropdown = e.target.closest('.dropdown-menu');
+    if (dropdown) {
+      const dropdownToggle = dropdown.previousElementSibling;
+      if (dropdownToggle && dropdownToggle.classList.contains('dropdown-toggle')) {
+        dropdownToggle.click(); // Programmatically close the dropdown
+      }
+    }
+  }
 
   const columns = [
     {
@@ -657,6 +667,7 @@ const Leads = () => {
               onClick={(e) => {
                 e.stopPropagation()
                 handleUpdateStatus(record, "pending");
+                closeDropDown(e)
               }}
             >
               <i className="fa fa-dot-circle-o text-info" /> Pending
@@ -667,6 +678,7 @@ const Leads = () => {
               onClick={(e) => {
                 e.stopPropagation()
                 handleUpdateStatus(record, "onHold");
+                closeDropDown(e)
               }}
             >
               <i className="fa fa-dot-circle-o text-purple" /> On Hold
@@ -677,6 +689,7 @@ const Leads = () => {
               onClick={(e) => {
                 e.stopPropagation()
                 handleUpdateStatus(record, "converted");
+                closeDropDown(e)
               }}
             >
               <i className="fa fa-dot-circle-o text-success" /> Converted
@@ -687,6 +700,7 @@ const Leads = () => {
               onClick={(e) => {
                 e.stopPropagation()
                 handleUpdateStatus(record, "notConverted");
+                closeDropDown(e)
               }}
             >
               <i className="fa fa-dot-circle-o text-primary" /> Not Converted

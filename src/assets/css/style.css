@@ -12615,6 +12615,13 @@ styles by Qazi
     overflow: hidden;
 }
 
+.selected-file-name{
+  max-width: 209px;
+  display: block; /* Use block or inline-block for single-line ellipsis */
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis; 
+}
 
 .customselect-height > div {
   height: auto !important;
@@ -13461,6 +13468,33 @@ ul.nav.landingNav li.nav-item {
   font-weight: 500; /* Replace $font-weight-medium with the appropriate value */
   color: #333; /* Replace $title-color with the appropriate value */
   margin-bottom: 0;
+}
+.uploaded-img-name{
+  -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    display: -webkit-box;
+    max-width: 160px;
+    overflow: hidden;
+}
+.uploaded-img-delete{
+  background-color: white;
+  border: transparent;
+  border-radius: 50px;
+  margin: 5px 0px 5px 5px;
+  color: red;
+  font-size: 20px;
+  position: absolute;
+  text-align: right;
+  top: -18px;
+  right: -18px;
+}
+
+.uploaded-img-download{
+  background-color: white;
+  border: transparent;
+  border-radius: 50px;
+  font-size: 20px;
+  text-align: right;
 }
 
 .clock-in-info .clock-in-btn .btn {

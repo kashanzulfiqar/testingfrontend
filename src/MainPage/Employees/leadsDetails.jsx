@@ -46,6 +46,9 @@ const LeadsDetails = () => {
   const [showFirstField, setShowFirstField] = useState(false);
   const [loader, setLoader] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadNotes, setLoadNotes] = useState(false);
+  const [loadReactOut, setLoadReachOut] = useState(false);
+  const [loadStatus, setLoadStatus] = useState(false);
 
   const [leadObject, setLeadObject] = useState(location.state);
   const [leadFiles, setLeadFiles] = useState([]);
@@ -102,6 +105,9 @@ const LeadsDetails = () => {
       .then((res) => {
         if (res.data.success === true) {
           setLeadObject(res?.data?.Lead?.docs[0]);
+          setLoadNotes(false)
+          setLoadReachOut(false)
+          setLoadStatus(false)
         }
       })
       .catch((err) => {
@@ -114,6 +120,9 @@ const LeadsDetails = () => {
               : "Error getting lead"
           }`
         );
+        setLoadNotes(false);
+        setLoadReachOut(false);
+        setLoadStatus(false)
       });
   };
 
@@ -346,6 +355,12 @@ const LeadsDetails = () => {
       data.noteId = val?.noteId;
     }
 
+    if(open.isDeleteNotes){
+      setLoadNotes(true)
+    }else if(open.isDeleteReachout){
+      setLoadReachOut(true)
+    }
+
     let apiUrl = open.isDeleteNotes
       ? "leads/deleteNote"
       : open.isDeleteReachout
@@ -366,7 +381,7 @@ const LeadsDetails = () => {
           // else{
           //}
           viewLeads();
-          viewFiles();
+          open.isDeleteNotes ? viewFiles() : null;
           message.success(
             open.isDeleteNotes
               ? "Note deleted successfully"
@@ -407,6 +422,7 @@ const LeadsDetails = () => {
       updatedData.projectType = newStatus;
     } else if (type == "status") {
       updatedData.status = newStatus;
+      setLoadStatus(true)
     }
     apiServices("PUT", "leads", updatedData, user_state)
       .then((res) => {
@@ -799,6 +815,10 @@ const LeadsDetails = () => {
                             : "fa-dot-circle-o text-primary"
                         }`}
                       />{" "}
+                      {loadStatus ? (
+                    <Spin size="small" />
+                  ) : (
+                    <>
                       {leadObject?.status === "pending"
                         ? t("aRequests.Pending")
                         : leadObject?.status === "converted"
@@ -808,6 +828,7 @@ const LeadsDetails = () => {
                         : leadObject?.status === "onHold"
                         ? "On Hold"
                         : leadObject?.status}
+                        </>)}
                     </a>
                     <div className="dropdown-menu dropdown-menu-right">
                       <a
@@ -817,10 +838,10 @@ const LeadsDetails = () => {
                         href="javascript:void(0)"
                         onClick={(e) => {
                           e.preventDefault();
-                          handleUpdateStatus(leadObject, "onGoing", "status");
+                          handleUpdateStatus(leadObject, "pending", "status");
                         }}
                       >
-                        <i className="fa fa-dot-circle-o text-info" /> On-Going
+                        <i className="fa fa-dot-circle-o text-info" /> Pending
                       </a>
                       <a
                         className={`dropdown-item ${
@@ -1085,7 +1106,7 @@ const LeadsDetails = () => {
                     </div>
                     <div className="notes-activity">
                       {leadObject?.notes && leadObject.notes.length > 0 ? (
-                        renderNotes() // Pass the required data
+                        loadNotes ? <Spin size="large" style={{display: "flex", justifyContent:"center"}}/> : renderNotes() // Pass the required data
                       ) : (
                         <p>No Notes Added Yet.</p>
                       )}
@@ -1116,7 +1137,7 @@ const LeadsDetails = () => {
                     <div className="calls-activity">
                       {leadObject?.reachOuts &&
                       leadObject.reachOuts.length > 0 ? (
-                        renderReachOuts() // Pass the required data
+                        loadReactOut ? <Spin size="large" style={{display: "flex", justifyContent:"center"}}/> : renderReachOuts() // Pass the required data
                       ) : (
                         <p>No communication records available.</p>
                       )}
@@ -1297,6 +1318,7 @@ const LeadsDetails = () => {
           leadId={leadObject?._id}
           viewLeads={viewLeads}
           viewFiles={null}
+          setLoadReachOut={setLoadReachOut}
         />
       )}
       {open.isEditReachout && (
@@ -1307,6 +1329,7 @@ const LeadsDetails = () => {
           leadId={leadObject?._id}
           viewLeads={viewLeads}
           viewFiles={null}
+          setLoadReachOut={setLoadReachOut}
         />
       )}
       {open.isEditNotes && (
@@ -1317,6 +1340,7 @@ const LeadsDetails = () => {
           leadId={leadObject?._id}
           viewLeads={viewLeads}
           viewFiles={viewFiles}
+          setLoadNotes={setLoadNotes}
         />
       )}
       {open.isAddNotes && (
@@ -1327,6 +1351,7 @@ const LeadsDetails = () => {
           leadId={leadObject?._id}
           viewLeads={viewLeads}
           viewFiles={viewFiles}
+          setLoadNotes={setLoadNotes}
         />
       )}
     </>

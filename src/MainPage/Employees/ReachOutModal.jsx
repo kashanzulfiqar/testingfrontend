@@ -32,7 +32,7 @@ import { acceptableFormats } from "./Projects/EditProjects";
 import { apiServices } from "../../Services/apiServices";
 import { DeleteFiles, uploadFunction } from "./Projects/UploadAndDeleteFunc";
 
-function ReachOutModal({ openModal, closeModal, data, leadId, viewLeads, viewFiles }) {
+function ReachOutModal({ openModal, closeModal, data, leadId, viewLeads, viewFiles, setLoadReachOut}) {
   const nav = useNavigate();
   const [form] = Form.useForm();
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
@@ -135,6 +135,7 @@ function ReachOutModal({ openModal, closeModal, data, leadId, viewLeads, viewFil
         .then((res) => {
           if (res.data.success === true) {
             message.success('Reachout Record Updated Successfully');
+            setLoadReachOut(true)
             viewLeads();
             closeModal();
             setLoader(false);
@@ -158,6 +159,7 @@ function ReachOutModal({ openModal, closeModal, data, leadId, viewLeads, viewFil
         .then((res) => {
           if (res.data.success === true) {
             message.success('Reachout Record Added Successfully');
+            setLoadReachOut(true)
             viewLeads();
             closeModal();
             setLoader(false);

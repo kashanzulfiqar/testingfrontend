@@ -812,7 +812,11 @@ const acceptableFormats = ["jpg", "jpeg", "png", "gif", "pdf", "doc", "docx", "x
 const onFileUpload = async (uploadedFiles, type) => {
   const validFiles = [];
   const existingFileNames = (type === "admin" ? confidentialFiles : files).map(f => f.fileName);
-
+  if(type === "admin"){
+    setLoadConfidentialFiles(true)
+  }else{
+    setLoadFiles(true)
+  }
   Array.from(uploadedFiles).forEach(file => {
     const fileExtension = file.name.split(".").pop().toLowerCase();
 
@@ -845,10 +849,10 @@ const onFileUpload = async (uploadedFiles, type) => {
       if (type === "admin") {
         setConfidentialFiles(updatedFiles);
         updateProjectWithFiles(files, updatedFiles, type);
-        setLoadConfidentialFiles(true)
+        // setLoadConfidentialFiles(true)
       } else {
         setFiles(updatedFiles);
-        setLoadFiles(true)
+        // setLoadFiles(true)
         updateProjectWithFiles(updatedFiles, confidentialFiles, type);
       }
     } catch (error) {
@@ -917,8 +921,10 @@ const cancelDelete = () => {
 const handleDelete = async (fileId, type) => {
   let updatedDocs;
   if (type === "normal") {
+    setLoadFiles(true)
     updatedDocs = files.filter(doc => doc._id !== fileId);
   } else if (type === "admin") {
+    setLoadConfidentialFiles(true)
     updatedDocs = confidentialFiles.filter(doc => doc._id !== fileId);
   }
 
@@ -1167,7 +1173,11 @@ const handleDelete = async (fileId, type) => {
                     </>
                   }</h5>
                   {project?.docs?.length > 0 ? 
-                    <>
+                  <>
+                    {loadFiles ? (
+                      <Spin size="large" style={{display: "flex", justifyContent:"center"}}/>
+                    ) : (
+                      <>
                       <div className="row">
                         {
                           project?.docs?.some((doc) => {
@@ -1234,41 +1244,28 @@ const handleDelete = async (fileId, type) => {
                                               window.open(fullImageUrl, "_blank")
                                             }
                                           />
-                                          
-                                          <div className="dropdown dropdown-action profile-action">
-                                            <a
-                                              className="action-icon dropdown-toggle"
-                                              data-bs-toggle="dropdown"
-                                              aria-expanded="false"
-                                            >
-                                              <i className="material-icons">more_vert</i>
-                                            </a>
-                                            <div className="dropdown-menu dropdown-menu-right">
-                                              <button
-                                                className="dropdown-item"
-                                                onClick={(e) => {
-                                                  e.preventDefault();
-                                                  showDeleteModal(doc._id, "normal");
-                                                }}
-                                              >
-                                                <i className={`fa fa-trash ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
-                                                {t('delete')}
-                                              </button>
-                                              <button
-                                                className="dropdown-item"
-                                                onClick={() => {
-                                                  window.open(downloadLink);
-                                                }}
-                                              >
-                                                <i className={`fa fa-download ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
-                                                {t('Clientinvoices.download')}
-                                              </button>
-                                            </div>
-                                          </div>
-
+                                          <button
+                                          className="uploaded-img-delete"
+                                          onClick={(e) => {
+                                            e.preventDefault();
+                                            showDeleteModal(doc._id, "normal");
+                                          }}
+                                          >
+                                          <i className={`fa fa-close fa-md ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`}/>
+                                          </button>
                                         </div>
                                       </a>
-                                      <div className="uploaded-img-name">{doc?.fileName}</div>
+                                      <div style={{display: "flex", alignItems: "center", marginTop: "2%", justifyContent: "space-between"}}>
+                                        <div className="uploaded-img-name" title={doc?.fileName}>{doc?.fileName}</div>
+                                        <button
+                                          className="uploaded-img-download"
+                                          onClick={() => {
+                                          window.open(downloadLink, "_blank");
+                                          }}
+                                          >
+                                          <i className={`fa fa-download ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
+                                        </button>
+                                      </div>
                                     </div>
                                   </div>
                                 );
@@ -1286,40 +1283,27 @@ const handleDelete = async (fileId, type) => {
                                           className="img-fluid"
                                           alt={`Image ${index + 1}`}
                                         />
-                                        <div className="dropdown dropdown-action profile-action">
-                                          <a
-                                            className="action-icon dropdown-toggle"
-                                            data-bs-toggle="dropdown"
-                                            aria-expanded="false"
+                                        <button
+                                          className="uploaded-img-delete"
+                                          onClick={(e) => {
+                                            e.preventDefault();
+                                            showDeleteModal(doc._id, "normal");
+                                          }}
                                           >
-                                            <i className="material-icons">more_vert</i>
-                                          </a>
-                                          <div className="dropdown-menu dropdown-menu-right">
-                                            <button
-                                              className="dropdown-item"
-                                              onClick={(e) => {
-                                                e.preventDefault();
-                                                showDeleteModal(doc._id, "normal");
-                                              }}
-                                            >
-                                              <i className={`fa fa-trash ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
-                                              {t('delete')}
-                                            </button>
-                                            <button
-                                              className="dropdown-item"
-                                              onClick={() => {
-                                                window.open(fullImageUrl, '_blank');
-                                              }}
-                                            >
-                                              <i className={`fa fa-download ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
-                                              {t('Clientinvoices.download')}
-                                            </button>
+                                          <i className={`fa fa-close fa-md ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`}/>
+                                          </button>
                                           </div>
-                                        </div>
+                                          <div style={{display: "flex", alignItems: "center", marginTop: "2%", justifyContent: "space-between"}}>
+                                          <div className="uploaded-img-name" title={`File ${index + 1}`}>{`File ${index + 1}`}</div>
+                                        <button
+                                          className="uploaded-img-download"
+                                          onClick={() => {
+                                            window.open(fullImageUrl, '_blank');
+                                          }}
+                                          >
+                                          <i className={`fa fa-download ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
+                                        </button>
                                       </div>
-                                      <div className="uploaded-img-name">{`File ${
-                                        index + 1
-                                      }`}</div>
                                     </div>
                                   </div>
                                 );
@@ -1436,6 +1420,7 @@ const handleDelete = async (fileId, type) => {
                           )
                           }
                       </ul>
+                    </>)}
                     </>
                     :
                   <label>{t('viewProject.noFilesUploaded')}</label>
@@ -1532,6 +1517,10 @@ const handleDelete = async (fileId, type) => {
                   {
                     project?.adminDocs?.length > 0 ? 
                     <>
+                    {loadConfidentialFiles ? (
+                      <Spin size="large" style={{display: "flex", justifyContent:"center"}}/>
+                    ) : (
+                    <>
                       <div className="row">
                         {
                           project?.adminDocs?.some((doc) => {
@@ -1598,39 +1587,28 @@ const handleDelete = async (fileId, type) => {
                                               window.open(fullImageUrl, "_blank")
                                             }
                                           />
-                                          <div className="dropdown dropdown-action profile-action">
-                                            <a
-                                              className="action-icon dropdown-toggle"
-                                              data-bs-toggle="dropdown"
-                                              aria-expanded="false"
-                                            >
-                                              <i className="material-icons">more_vert</i>
-                                            </a>
-                                            <div className="dropdown-menu dropdown-menu-right">
-                                              <button
-                                                className="dropdown-item"
-                                                onClick={(e) => {
-                                                  e.preventDefault();
-                                                  showDeleteModal(doc._id, "admin");
-                                                }}
-                                              >
-                                                <i className={`fa fa-trash ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
-                                                {t('delete')}
-                                              </button>
-                                              <button
-                                                className="dropdown-item"
-                                                onClick={() => {
-                                                  window.open(downloadLink, '_blank');
-                                                }}
-                                              >
-                                                <i className={`fa fa-download ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
-                                                {t('Clientinvoices.download')}
-                                              </button>
-                                            </div>
+                                          <button
+                                          className="uploaded-img-delete"
+                                          onClick={(e) => {
+                                            e.preventDefault();
+                                            showDeleteModal(doc._id, "admin");
+                                          }}
+                                          >
+                                          <i className={`fa fa-close fa-md ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`}/>
+                                          </button>
                                           </div>
-                                        </div>
-                                      </a>
-                                      <div className="uploaded-img-name">{doc?.fileName}</div>
+                                          </a>
+                                          <div style={{display: "flex", alignItems: "center", marginTop: "2%", justifyContent: "space-between"}}>
+                                          <div className="uploaded-img-name" title={doc?.fileName}>{doc?.fileName}</div>
+                                        <button
+                                          className="uploaded-img-download"
+                                          onClick={() => {
+                                            window.open(downloadLink, '_blank');
+                                          }}
+                                          >
+                                          <i className={`fa fa-download ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
+                                        </button>
+                                      </div>
                                     </div>
                                   </div>
                                 );
@@ -1648,40 +1626,27 @@ const handleDelete = async (fileId, type) => {
                                           className="img-fluid"
                                           alt={`Image ${index + 1}`}
                                         />
-                                        <div className="dropdown dropdown-action profile-action">
-                                          <a
-                                            className="action-icon dropdown-toggle"
-                                            data-bs-toggle="dropdown"
-                                            aria-expanded="false"
+                                        <button
+                                          className="uploaded-img-delete"
+                                          onClick={(e) => {
+                                            e.preventDefault();
+                                            showDeleteModal(doc._id, "admin");
+                                          }}
                                           >
-                                            <i className="material-icons">more_vert</i>
-                                          </a>
-                                          <div className="dropdown-menu dropdown-menu-right">
-                                            <button
-                                              className="dropdown-item"
-                                              onClick={(e) => {
-                                                e.preventDefault();
-                                                showDeleteModal(doc._id, "admin");
-                                              }}
-                                            >
-                                              <i className={`fa fa-trash ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
-                                              {t('delete')}
-                                            </button>
-                                            <button
-                                              className="dropdown-item"
-                                              onClick={() => {
-                                                window.open(fullImageUrl, '_blank');
-                                              }}
-                                            >
-                                              <i className={`fa fa-download ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
-                                              {t('Clientinvoices.download')}
-                                            </button>
+                                          <i className={`fa fa-close fa-md ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`}/>
+                                          </button>
                                           </div>
-                                        </div>
+                                          <div style={{display: "flex", alignItems: "center", marginTop: "2%", justifyContent: "space-between"}}>
+                                            <div className="uploaded-img-name" title={`File ${index + 1}`}>{`File ${index + 1}`}</div>
+                                        <button
+                                          className="uploaded-img-download"
+                                          onClick={() => {
+                                            window.open(fullImageUrl, '_blank');
+                                          }}
+                                          >
+                                          <i className={`fa fa-download ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
+                                        </button>
                                       </div>
-                                      <div className="uploaded-img-name">{`File ${
-                                        index + 1
-                                      }`}</div>
                                     </div>
                                   </div>
                                 );
@@ -1799,6 +1764,8 @@ const handleDelete = async (fileId, type) => {
                           )
                         }
                       </ul>
+                    </>
+                    )}
                     </>
                     :
                   <label>{t('viewProject.noFilesUploaded')}</label>

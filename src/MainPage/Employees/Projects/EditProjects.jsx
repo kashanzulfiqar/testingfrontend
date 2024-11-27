@@ -843,7 +843,7 @@ function EditProjects({
             color="blue" // You can customize the color as needed
             className="custom-tag"
           >
-            {file?.fileName || file?.name}
+            <div className="selected-file-name">{file?.fileName || file?.name}</div>
           </Tag>
         </Space>
       ));
@@ -856,7 +856,7 @@ function EditProjects({
             color="blue" // You can customize the color as needed
             className="custom-tag"
           >
-            {file?.fileName || file.name}
+            <div className="selected-file-name">{file?.fileName || file.name}</div>
           </Tag>
         </Space>
       ));
