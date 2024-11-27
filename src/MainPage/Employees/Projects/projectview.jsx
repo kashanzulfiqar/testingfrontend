@@ -1175,7 +1175,7 @@ const handleDelete = async (fileId, type) => {
                   {project?.docs?.length > 0 ? 
                   <>
                     {loadFiles ? (
-                      <Spin/>
+                      <Spin size="large" style={{display: "flex", justifyContent:"center"}}/>
                     ) : (
                       <>
                       <div className="row">
@@ -1256,7 +1256,7 @@ const handleDelete = async (fileId, type) => {
                                         </div>
                                       </a>
                                       <div style={{display: "flex", alignItems: "center", marginTop: "2%", justifyContent: "space-between"}}>
-                                        <div className="uploaded-img-name">{doc?.fileName}</div>
+                                        <div className="uploaded-img-name" title={doc?.fileName}>{doc?.fileName}</div>
                                         <button
                                           className="uploaded-img-download"
                                           onClick={() => {
@@ -1294,7 +1294,7 @@ const handleDelete = async (fileId, type) => {
                                           </button>
                                           </div>
                                           <div style={{display: "flex", alignItems: "center", marginTop: "2%", justifyContent: "space-between"}}>
-                                          <div className="uploaded-img-name">{`File ${index + 1}`}</div>
+                                          <div className="uploaded-img-name" title={`File ${index + 1}`}>{`File ${index + 1}`}</div>
                                         <button
                                           className="uploaded-img-download"
                                           onClick={() => {
@@ -1518,7 +1518,7 @@ const handleDelete = async (fileId, type) => {
                     project?.adminDocs?.length > 0 ? 
                     <>
                     {loadConfidentialFiles ? (
-                      <Spin/>
+                      <Spin size="large" style={{display: "flex", justifyContent:"center"}}/>
                     ) : (
                     <>
                       <div className="row">
@@ -1599,7 +1599,7 @@ const handleDelete = async (fileId, type) => {
                                           </div>
                                           </a>
                                           <div style={{display: "flex", alignItems: "center", marginTop: "2%", justifyContent: "space-between"}}>
-                                          <div className="uploaded-img-name">{doc?.fileName}</div>
+                                          <div className="uploaded-img-name" title={doc?.fileName}>{doc?.fileName}</div>
                                         <button
                                           className="uploaded-img-download"
                                           onClick={() => {
@@ -1637,7 +1637,7 @@ const handleDelete = async (fileId, type) => {
                                           </button>
                                           </div>
                                           <div style={{display: "flex", alignItems: "center", marginTop: "2%", justifyContent: "space-between"}}>
-                                            <div className="uploaded-img-name">{`File ${index + 1}`}</div>
+                                            <div className="uploaded-img-name" title={`File ${index + 1}`}>{`File ${index + 1}`}</div>
                                         <button
                                           className="uploaded-img-download"
                                           onClick={() => {
