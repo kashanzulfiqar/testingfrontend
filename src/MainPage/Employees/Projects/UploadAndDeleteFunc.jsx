@@ -48,15 +48,17 @@ export const DeleteFiles = async (files, user_state) => {
     }
 };
 
-export const uploadFunction = async (files) => {
+export const uploadFunction = async (files, user_state) => {
     const uploadPromises = files?.map((file) => {
       return apiUploadToS3(file)
         .then((res) => ({
+          ownerId: user_state?.user?._id,
           asset_id: res?.data?.result?.asset_id,
           public_id: res?.data?.result?.public_id,
           fileName: file?.name,
           imageUrl: res?.data?.result?.secure_url,
           resource_type: res?.data?.result?.resource_type,
+          bytes: res?.data?.result?.bytes,
         }))
         .catch((err) => { 
           console.log("s3 error",err)
