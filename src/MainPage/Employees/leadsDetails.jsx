@@ -35,7 +35,7 @@ const LeadsDetails = () => {
   const { t, i18n } = useTranslation();
   const user_state = useSelector((state) => state.user.loginvalue);
   const location = useLocation();
-  // const leadObject = location.state;
+  const locationLead = location.state;
   // console.log(leadObject);
   const [activeTab, setActiveTab] = useState("notes");
   const recentlyViewd = [
@@ -50,7 +50,7 @@ const LeadsDetails = () => {
   const [loadReactOut, setLoadReachOut] = useState(false);
   const [loadStatus, setLoadStatus] = useState(false);
 
-  const [leadObject, setLeadObject] = useState(location.state);
+  const [leadObject, setLeadObject] = useState([]);
   const [leadFiles, setLeadFiles] = useState([]);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [newFiles, setNewFiles] = useState([]);
@@ -68,7 +68,8 @@ const LeadsDetails = () => {
   const [size, setSize] = useState(20);
 
   useEffect(() => {
-    setLeadObject(location?.state);
+    const allDataLocal = JSON.parse(localStorage.getItem("allDataLocalStorage"));
+      setLeadObject(allDataLocal ? allDataLocal : locationLead);
     viewFiles();
   }, []);
 
@@ -76,7 +77,7 @@ const LeadsDetails = () => {
     setIsLoading(true);
     apiServices(
       "GET",
-      `leads/view-files?leadId=${leadObject?._id}`,
+      `leads/view-files?leadId=${locationLead?._id}`,
       null,
       user_state
     )
@@ -392,6 +393,7 @@ const LeadsDetails = () => {
           //viewCategory();
           setLoader(false);
           handleClose();
+          localStorage.setItem(`allDataLocalStorage`, JSON.stringify(d));
         }
       })
       .catch((err) => {
@@ -433,6 +435,7 @@ const LeadsDetails = () => {
               : "Project Type Updated Successfully"
           );
           viewLeads();
+          localStorage.setItem(`allDataLocalStorage`, JSON.stringify(d));
         }
       })
       .catch((error) => {
@@ -476,6 +479,7 @@ const LeadsDetails = () => {
           viewLeads();
           setLoader(false);
           setSelectedFiles([]);
+          localStorage.setItem(`allDataLocalStorage`, JSON.stringify(d));
         }
       })
       .catch((error) => {

@@ -1753,7 +1753,7 @@ const Leads = () => {
                         <Input
                           className="form-control"
                           placeholder="Enter Client Phone no."
-                          maxLength={50}
+                          maxLength={16}
                         />
                       </Form.Item>
                     </div>
