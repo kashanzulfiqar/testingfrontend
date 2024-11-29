@@ -823,7 +823,7 @@ const LeaveAdmin = () => {
                     //   },
                     //   itemRender: itemRender,
                     // }}
-                    style = {{overflowX : 'auto', paddingBottom: '70px'}}
+                    style = {{overflowX : 'auto'}}
                     columns={columns}
                     dataSource={tableData} // Step 4
                     rowKey={(record) => record?._id} // Assuming _id is the unique key

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Avatar_03,
   Avatar_01,
@@ -32,10 +32,11 @@ import { acceptableFormats } from "./Projects/EditProjects";
 import { uploadFunction } from "./Projects/UploadAndDeleteFunc";
 
 const LeadsDetails = () => {
+  const nav = useNavigate();
   const { t, i18n } = useTranslation();
   const user_state = useSelector((state) => state.user.loginvalue);
   const location = useLocation();
-  // const leadObject = location.state;
+  // const locationLead = location.state;
   // console.log(leadObject);
   const [activeTab, setActiveTab] = useState("notes");
   const recentlyViewd = [
@@ -43,14 +44,13 @@ const LeadsDetails = () => {
     { value: "Ascending", label: "Ascending" },
     { value: "Descending", label: "Descending" },
   ];
-  const [showFirstField, setShowFirstField] = useState(false);
   const [loader, setLoader] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [loadNotes, setLoadNotes] = useState(false);
   const [loadReactOut, setLoadReachOut] = useState(false);
   const [loadStatus, setLoadStatus] = useState(false);
 
-  const [leadObject, setLeadObject] = useState(location.state);
+  const [leadObject, setLeadObject] = useState(location?.state?.lead);
   const [leadFiles, setLeadFiles] = useState([]);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [newFiles, setNewFiles] = useState([]);
@@ -68,7 +68,7 @@ const LeadsDetails = () => {
   const [size, setSize] = useState(20);
 
   useEffect(() => {
-    setLeadObject(location?.state);
+    //setLeadObject(location?.state?.lead);
     viewFiles();
   }, []);
 
@@ -104,7 +104,12 @@ const LeadsDetails = () => {
     apiServices("GET", `leads?leadId=${leadObject?._id}`, null, user_state)
       .then((res) => {
         if (res.data.success === true) {
-          setLeadObject(res?.data?.Lead?.docs[0]);
+          const updatedLeads = res?.data?.Lead?.docs[0]
+          setLeadObject(updatedLeads);
+          nav(location.pathname, { 
+            state: {...location.state, lead: updatedLeads} ,
+            replace: true
+          }); 
           setLoadNotes(false)
           setLoadReachOut(false)
           setLoadStatus(false)
@@ -131,14 +136,6 @@ const LeadsDetails = () => {
       ?.replace(/([A-Z])/g, " $1") // Add space before capital letters
       ?.replace(/^./, (str) => str?.toUpperCase()); // Capitalize the first letter
   }
-
-  const handleSaveAndNext = () => {
-    setShowFirstField(true);
-  };
-
-  const handleCancel = () => {
-    setShowFirstField(false);
-  };
 
   const getInitials = (name) => {
     if (!name) return "";
@@ -381,7 +378,7 @@ const LeadsDetails = () => {
           // else{
           //}
           viewLeads();
-          open.isDeleteNotes ? viewFiles() : null;
+          (open.isDeleteNotes || open.isDelFileOpen) ? viewFiles() : null;
           message.success(
             open.isDeleteNotes
               ? "Note deleted successfully"
@@ -1195,7 +1192,7 @@ const LeadsDetails = () => {
                           locale={{
                             emptyText: isLoading ? null : customEmptyText,
                           }}
-                          style={{ overflowX: "auto", paddingBottom: "95px" }}
+                          style={{ overflowX: "auto"}}
                           loading={isLoading}
                           pagination={false}
                           columns={fileColumns}

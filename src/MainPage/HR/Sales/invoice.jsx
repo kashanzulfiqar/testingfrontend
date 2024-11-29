@@ -621,7 +621,7 @@ const onFinish = (values) => {
                   //   showTotal : (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
                   //   showSizeChanger : true,onShowSizeChange: onShowSizeChange ,itemRender : itemRender } }
                   pagination={false}
-                  style = {{overflowX : 'auto', paddingBottom: '130px'}}
+                  style = {{overflowX : 'auto'}}
                   columns={columns}                 
                   // bordered
                   dataSource={allInvoices}

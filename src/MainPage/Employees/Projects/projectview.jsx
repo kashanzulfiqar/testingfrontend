@@ -1223,6 +1223,7 @@ const handleDelete = async (fileId, type) => {
                                   <div
                                     key={index}
                                     className="col-md-3 col-sm-4 col-lg-4 col-xl-3"
+                                    style={{paddingBottom: "12px"}}
                                   >
                                     <div className="uploaded-box">
                                       <a>
@@ -1275,6 +1276,7 @@ const handleDelete = async (fileId, type) => {
                                   <div
                                     key={index}
                                     className="col-md-3 col-sm-4 col-lg-4 col-xl-3"
+                                    style={{paddingBottom: "12px"}}
                                   >
                                     <div className="uploaded-box">
                                       <div className="uploaded-img">
@@ -1566,6 +1568,7 @@ const handleDelete = async (fileId, type) => {
                                   <div
                                     key={index}
                                     className="col-md-3 col-sm-4 col-lg-4 col-xl-3"
+                                    style={{paddingBottom: "12px"}}
                                   >
                                     <div className="uploaded-box">
                                       <a>
@@ -1618,6 +1621,7 @@ const handleDelete = async (fileId, type) => {
                                   <div
                                     key={index}
                                     className="col-md-3 col-sm-4 col-lg-4 col-xl-3"
+                                    style={{paddingBottom: "12px"}}
                                   >
                                     <div className="uploaded-box">
                                       <div className="uploaded-img">

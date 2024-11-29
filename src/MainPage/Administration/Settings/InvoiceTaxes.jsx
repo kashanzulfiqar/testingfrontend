@@ -457,7 +457,7 @@ const InvoiceTaxes = () => {
                 //   itemRender: itemRender,
                 // }}
                 pagination={false}
-                style = {{overflowX : 'auto', paddingBottom: '70px'}}
+                style = {{overflowX : 'auto'}}
                 columns={columns}
                 bordered
                 dataSource={taxes.slice((currentPage - 1) * pageSize, currentPage * pageSize)}

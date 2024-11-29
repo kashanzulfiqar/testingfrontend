@@ -501,7 +501,7 @@ const TaskBoardList = () => {
                 //   },
                 //   itemRender: itemRender,
                 // }}
-                style = {{overflowX : 'auto', paddingBottom: '70px'}}
+                style = {{overflowX : 'auto'}}
                 columns={columns}
                 bordered
                 dataSource={tableData}
