@@ -44,6 +44,7 @@ import { apiServices } from "../../Services/apiServices";
 import moment from "moment";
 import { DeleteOutlined, LoadingOutlined, MinusCircleFilled, PlusOutlined } from "@ant-design/icons";
 import { getAllISOCodes } from "iso-country-currency";
+import PhoneNoInput from "../../Components/PhoneNoInput";
 
 const Leads = () => {
   const { t, i18n } = useTranslation();
@@ -89,7 +90,8 @@ const Leads = () => {
     projectType: "",
   });
 
-  
+  const [phoneLengthError, setPhoneLengthError] = useState(false);
+  const [emergValue, setEmergValue] = useState(null)
   const [leadObj, setLeadObj] = useState();
   const [employees, setEmployees] = useState([]);
   const [accountManagers, setAccountManagers] = useState([]);
@@ -244,12 +246,44 @@ const Leads = () => {
     setOpen({ isAddOpen: false, isDelOpen: false, data: "" });
     setOpen2({ isAddOpen: false, isDelOpen: false, data: "" });
     form.resetFields();
+    setPhoneLengthError(false)
+    setEmergValue(null);
     setSelectedLeader(null);
     setLoader(false);
     setTempImage("");
     setTempSource("");
     setTempName("");
   };
+
+  const onHandleEmergChange = (type, value) => {
+    if (!value) {
+      setPhoneLengthError({emp: true});
+    }
+    else if (value && value.length < 4) {
+      setPhoneLengthError({len: true});
+    } else {
+      setPhoneLengthError(false);
+    }
+
+      let newvalue = value ? "+" + value : "";
+
+      const updatedValues = {
+        [type]: `${newvalue}`,
+      };
+      form.setFieldsValue(updatedValues)
+      setEmergValue({
+        [type]: `${newvalue}`,
+      });
+  };
+
+  const isValidEmail = (email) => {
+    if(email){
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+    } else {
+      return true
+    }
+  }
 
   const viewLeads = (page, pageSize) => {
     const params = {
@@ -1601,7 +1635,7 @@ const Leads = () => {
                     : null
                 }
                 onRow={(record, rowIndex) => ({
-                  onClick: () => nav('/leads-details', { state: record}),
+                  onClick: () => nav('/leads-details', { state: { lead: record } }),
                   style: { cursor: 'pointer' },
                   ...(i18n.dir() === "rtl" && {
                     style: { textAlign: 'right' }, // Align table data to the right
@@ -1669,6 +1703,10 @@ const Leads = () => {
                 form={form}
                 onFinish={(val) => onFinish(val, open?.data)}
                 onFinishFailed={({ errorFields }) => {
+                  const phoneErrorExists = errorFields.find(field => field.errors.toString().includes('please enter phone number'));
+                    if(phoneErrorExists){
+                    setPhoneLengthError({emp: true})
+                    }
                   const consecutiveSpacesError = errorFields.find((field) =>
                     field.errors.toString().includes("consecutive spaces")
                   );
@@ -1734,10 +1772,23 @@ const Leads = () => {
                       <Form.Item
                         name="clientEmail"
                         className="custom-border"
+                        rules={[
+                          {
+                          whitespace: true,
+                          required: true,
+                          validator: (_, value) => {
+                            if (/\s{2,}/.test(value)) {
+                              return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
+                              } else if (!isValidEmail(value)) {
+                              return Promise.reject(t('client.pleaseEnterValidEmail'));
+                              }
+                              return Promise.resolve();
+                          },
+                          },
+                      ]}
                       >
                         <Input
                           className="form-control"
-                          placeholder="Enter Client Email"
                           maxLength={50}
                         />
                       </Form.Item>
@@ -1749,12 +1800,28 @@ const Leads = () => {
                       <Form.Item
                         name="clientPhone"
                         className="custom-border"
+                        rules={[
+                          {
+                          whitespace: true,
+                          message: t('client.pleaseEnterPhoneNumber'),
+                          },
+                          {
+                          min: 5,
+                          message: t('client.phoneLength'),
+                          },
+                      ]}
+                      validateStatus={phoneLengthError ? 'error' : ''}
+                      help={phoneLengthError?.len ? "phone length must be at least 5 digits long" : ''}
                       >
-                        <Input
-                          className="form-control"
-                          placeholder="Enter Client Phone no."
-                          maxLength={16}
-                        />
+                          <>
+                              <Input style={{ display: "none" }} value={emergValue?.clientPhoneNo} />
+                              <PhoneNoInput
+                                  onChangePhone={(value) => {
+                                  onHandleEmergChange("clientPhoneNo", value);
+                                  }}
+                                  phone={open?.data?.clientPhoneNo ? open?.data?.clientPhoneNo : ""}
+                              />
+                          </>
                       </Form.Item>
                     </div>
                   </div>

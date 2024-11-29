@@ -572,7 +572,7 @@ const onFinishEdit = (values) => {
                     emptyText: tableLoader ? null : customEmptyText,
                   }}
                   pagination={false}
-                  style = {{overflowX : 'auto', paddingBottom: '70px'}}
+                  style = {{overflowX : 'auto'}}
                   columns={columns}                 
                   // bordered
                   dataSource={allTasks}

@@ -261,7 +261,7 @@ const antIcon = (
                     locale={{
                         emptyText: tableLoader ? null : customEmptyText,
                     }}
-                    style = {{overflowX : 'auto', paddingBottom: '65px'}}
+                    style = {{overflowX : 'auto'}}
                     pagination={false}
                     columns={columns}       
                     // bordered

@@ -1978,7 +1978,7 @@ const filteredColumns = columns.filter(column => {
                       emptyText: isLoading ? null : customEmptyText
                     }}
                     className="table-striped custom-table datatable"
-                    style = {{overflowX : 'auto', paddingBottom: '70px'}}
+                    style = {{overflowX : 'auto'}}
                     loading={isLoading}
                     //style={{ height: "400px", background: "white" }}
                     columns={filteredColumns}
