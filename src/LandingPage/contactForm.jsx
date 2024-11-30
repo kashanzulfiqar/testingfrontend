@@ -4,15 +4,14 @@ import "./contactUs.css";
 import {
   LoadingOutlined,
   MailFilled,
-  MailOutlined,
   PhoneFilled,
-  PhoneOutlined,
 } from "@ant-design/icons";
 import { apiServices } from "../Services/apiServices";
 import ReCAPTCHA from "react-google-recaptcha";
 import NavigationBar from "./navigation";
 import BottomPortion from "./bottomPortion";
 import "./landingstyles.css";
+import { LocationOn } from "@mui/icons-material";
 
 const ContactUs = () => {
   const [form] = Form.useForm();
@@ -129,6 +128,7 @@ const ContactUs = () => {
                         flexDirection: "row",
                         alignItems: "flex-start",
                         columnGap: "2%",
+                        marginBottom: "7%",
                       }}
                     >
                       <PhoneFilled
@@ -147,8 +147,25 @@ const ContactUs = () => {
                         </p>
                         <p style={{ color: "#6d6d6d" }}>+92 51 831 1327</p>
                       </div>
+                    </div>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        alignItems: "flex-start",
+                        columnGap: "2%",
+                      }}
+                    >
+                      <LocationOn
+                        style={{
+                          color: "#f06724",
+                          marginRight: "8px",
+                          fontSize: "xx-large",
+                        }}
+                      />
                       <div>
-                        <p style={{ marginBottom: "7%" }}>
+                        <p>
                           <strong>Address:</strong>
                         </p>
                         <p style={{ color: "#6d6d6d" }}>Office # 22Y, Sector F, DHA Phase 1, Islamabad</p>
