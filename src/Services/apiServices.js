@@ -4,9 +4,9 @@ import { login } from "../Entryfile/features/users.jsx";
 import { superAdmin } from "../Redux/Reducer/permissions/superAdminSlice.js";
 
 let location = window.location.origin
-// https://daftar-pro-stage.herokuapp.com/
-const DEV_BASE_URL = "https://daftar-pro-stage.herokuapp.com"
-const PRD_BASE_URL = "https://daftarpro-prd.herokuapp.com";
+// https://stage-api.daftarpro.com/
+const DEV_BASE_URL = "https://stage-api.daftarpro.com"
+const PRD_BASE_URL = "https://api.daftarpro.com";
 
 // const PRD_BASE_URL = "https://hrms.herokuapp.com";
 // const arr = [ "https://www.daftarpro.com",  "https://daftarpro.com", "http://www.daftarpro.com",  "http://daftarpro.com" ]

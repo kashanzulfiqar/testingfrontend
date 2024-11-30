@@ -2,8 +2,8 @@ import axios from "axios";
 export const apiLoginEmployee = async (endpoint, data) => {
     let location = window.location.origin
 
-    const DEV_BASE_URL =" https://daftar-pro-stage.herokuapp.com"
-    const PRD_BASE_URL = "https://daftarpro-prd.herokuapp.com";
+    const DEV_BASE_URL ="https://stage-api.daftarpro.com"
+    const PRD_BASE_URL = "https://api.daftarpro.com";
 
     // const PRD_BASE_URL = "https://hrms.herokuapp.com";
 
