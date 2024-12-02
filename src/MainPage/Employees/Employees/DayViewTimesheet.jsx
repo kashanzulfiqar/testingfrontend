@@ -145,17 +145,17 @@ let t_data = [
     let dropdownValues = []
     if (type === 'project'){
       allProjects.forEach((proj)=>{
-        dropdownValues.push(proj.projectName.toLowerCase())
+        dropdownValues.push(proj.projectName?.toLowerCase())
      })
     } else if (type === 'task'){
         allTasks.forEach((proj)=>{
-          dropdownValues.push(proj.titile.toLowerCase())
+          dropdownValues.push(proj.title?.toLowerCase())
        })
       }
   
     if(val !== ''){
       dropdownValues.some((team) => {
-        if(team.includes(val.toLowerCase())){
+        if(team.includes(val?.toLowerCase())){
           // setNoData(false);
           return true
         }else{
@@ -769,7 +769,7 @@ let t_data = [
                                     onSearch={(val) => {
                                       searchHandler(val, 'project')
                                     }}
-                                    filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                                    filterOption={(input, option) => option.children?.toLowerCase().indexOf(input?.toLowerCase()) >= 0}
                                     optionFilterProp="children"
                                     notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
                                     dropdownRender={(menu) => (
@@ -821,7 +821,7 @@ let t_data = [
                                     onSearch={(val) => {
                                       searchHandler(val, 'task')
                                     }}
-                                    filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                                    filterOption={(input, option) => option.children?.toLowerCase().indexOf(input?.toLowerCase()) >= 0}
                                     optionFilterProp="children"
                                     notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
                                     dropdownRender={(menu) => (
