@@ -1,0 +1,52 @@
+name: Deploy Frontend to EC2
+
+on:
+  push:
+    branches:
+      - Development
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY_FRONTEND }}
+          SSH_HOST: ${{ secrets.EC2_HOST }}
+          SSH_USER: ${{ secrets.EC2_USER }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          echo -e "Host ec2\n\tHostName $SSH_HOST\n\tUser $SSH_USER\n\tIdentityFile ~/.ssh/deploy_key\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
+          
+      - name: Deploy and Build on EC2
+        run: |
+          ssh ec2 '
+            set -e
+            echo "Starting deployment..."
+            
+            echo "Changing to project directory..."
+            cd /var/www/daftarpro-frontend/daftarpro-web-frontend
+            
+            echo "Pulling latest code..."
+            git pull origin Development
+            
+            echo "Installing dependencies..."
+            yarn install --frozen-lockfile || { echo "Failed to install dependencies"; exit 1; }
+            
+            echo "Building project..."
+            yarn build || { echo "Build failed"; exit 1; }
+            
+            echo "Restarting nginx..."
+            sudo systemctl restart nginx
+            
+            echo "Deployment completed successfully!"
+          '
+
+      - name: Send notification on failure
+        if: failure()
+        run: |
+          echo "Deployment failed! Check the logs above for details."
+          exit 1
