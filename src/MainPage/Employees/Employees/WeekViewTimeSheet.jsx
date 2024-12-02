@@ -124,7 +124,7 @@ function WeekViewTimeSheet({ tableStartDate, setTableStartDate, selectedDate, se
      })
     } else if (type === 'task'){
         allTasks.forEach((proj)=>{
-          dropdownValues.push(proj.titile?.toLowerCase())
+          dropdownValues.push(proj.title?.toLowerCase())
        })
       }
   
