@@ -1,16 +1,11 @@
 //Api Upload to s3
 import axios from "axios"
 
-
+const DEV_BASE_URL ="https://stage-api.daftarpro.com"
+const PRD_BASE_URL = "https://api.daftarpro.com";
 export const apiUploadToS3 = (imagedata) => {
 
     let location = window.location.origin
-
-    const DEV_BASE_URL =" https://stage-api.daftarpro.com"
-    const PRD_BASE_URL = "https://api.daftarpro.com";
-
-    // const PRD_BASE_URL = "https://hrms.herokuapp.com";
-
     let BASE_URL = (location === "https://www.daftarpro.com" || location ===  "www.daftarpro.com" || location === "https://daftarpro.com" || location === "http://daftarpro.com" || location === "http://daftarpro.com") ? PRD_BASE_URL : DEV_BASE_URL
     // let BASE_URL = PRD_BASE_URL
     
@@ -44,10 +39,6 @@ export const excelImport = (imagedata, companyId, user_email) => {
 
     let location = window.location.origin
 
-    const DEV_BASE_URL =" https://stage-api.daftarpro.com"
-    const PRD_BASE_URL = "https://api.daftarpro.com";
-
-    // const PRD_BASE_URL = "https://hrms.herokuapp.com";
 
     let BASE_URL = (location === "https://www.daftarpro.com" || location ===  "www.daftarpro.com" || location === "https://daftarpro.com" || location === "http://daftarpro.com" || location === "http://daftarpro.com") ? PRD_BASE_URL : DEV_BASE_URL
     // let BASE_URL = PRD_BASE_URL
