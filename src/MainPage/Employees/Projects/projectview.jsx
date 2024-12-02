@@ -901,7 +901,16 @@ const handleAddClick = (type) => {
 
 // Handle file input change
 const handleFileInputChange = (event) => {
-  onFileUpload(event.target.files, uploadType);
+  console.log("selected file",event.target.files);
+  onFileUpload(event.target.files, uploadType)
+  .then(() => {
+    // Reset the file input value to allow re-uploading the same file
+    event.target.value = '';
+  })
+  .catch(() => {
+    // Reset the file input even on failure to allow retrying
+    event.target.value = '';
+  });
 };
 
 // Show modal and set the fileId to delete
@@ -953,6 +962,33 @@ const handleDelete = async (fileId, type) => {
 };
 
   
+async function downloadFile(url, fileName) {
+  try {
+    // Fetch the file as a Blob
+    const response = await fetch(url, { method: "GET" });
+    if (!response.ok) {
+      throw new Error(`Failed to fetch file: ${response.statusText}`);
+    }
+    const blob = await response.blob();
+
+    // Create an object URL for the Blob
+    const objectUrl = window.URL.createObjectURL(blob);
+
+    // Create an anchor element and trigger the download
+    const anchor = document.createElement("a");
+    anchor.href = objectUrl;
+    anchor.download = fileName; // Set the original file name
+    document.body.appendChild(anchor); // Append to DOM
+    anchor.click(); // Trigger click
+    document.body.removeChild(anchor); // Clean up
+
+    // Release the object URL
+    window.URL.revokeObjectURL(objectUrl);
+  } catch (error) {
+    console.error("Download failed:", error.message);
+  }
+}
+
 
   return (
     <div className="page-wrapper">
@@ -1265,8 +1301,9 @@ const handleDelete = async (fileId, type) => {
                                         <div className="uploaded-img-name" title={doc?.fileName}>{doc?.fileName}</div>
                                         <button
                                           className="uploaded-img-download"
-                                          onClick={() => {
-                                          window.open(downloadLink, "_blank");
+                                          onClick={(e) => {
+                                            e.preventDefault(); // Prevent default link behavior
+                                            downloadFile(downloadLink, doc?.fileName); // Use original file name
                                           }}
                                           >
                                           <i className={`fa fa-download ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
@@ -1411,9 +1448,12 @@ const handleDelete = async (fileId, type) => {
                                       </li>
                                       <li>
                                         <a
-                                          href={downloadLink}
+                                          href="#"
                                           className="btn btn-link"
-                                          download
+                                          onClick={(e) => {
+                                            e.preventDefault(); // Prevent default link behavior
+                                            downloadFile(downloadLink, doc?.fileName); // Use original file name
+                                          }}
                                         >
                                           <i className="fa fa-download" />{" "}
                                           {/* Download icon */}
@@ -1610,8 +1650,9 @@ const handleDelete = async (fileId, type) => {
                                           <div className="uploaded-img-name" title={doc?.fileName}>{doc?.fileName}</div>
                                         <button
                                           className="uploaded-img-download"
-                                          onClick={() => {
-                                            window.open(downloadLink, '_blank');
+                                          onClick={(e) => {
+                                            e.preventDefault(); // Prevent default link behavior
+                                            downloadFile(downloadLink, doc?.fileName); // Use original file name
                                           }}
                                           >
                                           <i className={`fa fa-download ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
@@ -1757,9 +1798,12 @@ const handleDelete = async (fileId, type) => {
                                       </li>
                                       <li>
                                         <a
-                                          href={downloadLink}
+                                          href="#"
                                           className="btn btn-link"
-                                          download
+                                          onClick={(e) => {
+                                            e.preventDefault(); // Prevent default link behavior
+                                            downloadFile(downloadLink, doc?.fileName); // Use original file name
+                                          }}
                                         >
                                           <i className="fa fa-download" />{" "}
                                           {/* Download icon */}
