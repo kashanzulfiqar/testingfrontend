@@ -466,6 +466,7 @@ const ProjectView = () => {
                     ? err?.response?.data?.validation?.body?.message
                     : t("projectScreen.errors.errorUpdatingProjectStatus")
             );
+            setLoadStatus(false)
         }
 };
 
@@ -812,11 +813,6 @@ const acceptableFormats = ["jpg", "jpeg", "png", "gif", "pdf", "doc", "docx", "x
 const onFileUpload = async (uploadedFiles, type) => {
   const validFiles = [];
   const existingFileNames = (type === "admin" ? confidentialFiles : files).map(f => f.fileName);
-  if(type === "admin"){
-    setLoadConfidentialFiles(true)
-  }else{
-    setLoadFiles(true)
-  }
   Array.from(uploadedFiles).forEach(file => {
     const fileExtension = file.name.split(".").pop().toLowerCase();
 
@@ -844,6 +840,11 @@ const onFileUpload = async (uploadedFiles, type) => {
 
   if (validFiles.length > 0) {
     try {
+      if(type === "admin"){
+        setLoadConfidentialFiles(true)
+      }else{
+        setLoadFiles(true)
+      }
       const uploadedFilesData = await uploadFunction(validFiles);
       const updatedFiles = type === "admin" ? [...confidentialFiles, ...uploadedFilesData] : [...files, ...uploadedFilesData];
       if (type === "admin") {
@@ -857,6 +858,8 @@ const onFileUpload = async (uploadedFiles, type) => {
       }
     } catch (error) {
       message.error(t("projectScreen.errors.fileUploadError"));
+      setLoadConfidentialFiles(false);
+      setLoadFiles(false);
     }
   }
 };
@@ -885,6 +888,8 @@ const updateProjectWithFiles = (updatedDocs, updatedAdminDocs, type) => {
         err?.response?.data?.validation?.body?.message ||
         t("projectScreen.errors.errorUpdatingProjectStatus")
       );
+      setLoadConfidentialFiles(false);
+      setLoadFiles(false);
     });
 };
 
@@ -1490,7 +1495,7 @@ const handleDelete = async (fileId, type) => {
                   style={{
                     display: 'flex',
                     flexDirection: 'row',
-                    alignItems: 'center',
+                    alignItems: 'baseline',
                     justifyContent: 'space-between'
                   }}
                 ><div style={{display:'flex', flexDirection: 'row', alignItems: 'center'}}><h5 className="card-title m-b-20">Confidential Files</h5> <span className="badge badge-pill bg-custom float-end" style={{marginLeft:'10px', marginBottom: 'auto'}}>ADMIN</span></div>
