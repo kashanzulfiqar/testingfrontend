@@ -12,7 +12,6 @@ import {
   PlaceHolder,
   user_icon,
 } from "../../../Entryfile/imagepath";
-import Editproject from "../../../_components/modelbox/Editproject";
 import { useSelector } from "react-redux";
 import {
   Avatar,
@@ -45,6 +44,18 @@ import { useTranslation } from "react-i18next";
 import AddClientModal from "../../Pages/Profile/modals/AddClientModal";
 import AddFocalModal from "../../Pages/Profile/clientProfileScreens/AddFocalModal";
 import TwoStepClientAdditionModal from "../../Pages/Profile/modals/TwoStepClientAddition";
+
+export const acceptableFormats = [
+  "pdf",
+  "doc",
+  "docx",
+  "jpg",
+  "jpeg",
+  "png",
+  "gif",
+  "xls",
+  "xlsx",
+];
 
 function EditProjects({
   data,
@@ -672,18 +683,6 @@ function EditProjects({
     }
   };
 
-  const acceptableFormats = [
-    "pdf",
-    "doc",
-    "docx",
-    "jpg",
-    "jpeg",
-    "png",
-    "gif",
-    "xls",
-    "xlsx",
-  ];
-
   const onFileUpload = async (files, type) => {
     if (type === "normal") {
       const uploadPromises = [];
@@ -844,7 +843,7 @@ function EditProjects({
             color="blue" // You can customize the color as needed
             className="custom-tag"
           >
-            {file?.fileName || file?.name}
+            <div className="selected-file-name">{file?.fileName || file?.name}</div>
           </Tag>
         </Space>
       ));
@@ -857,7 +856,7 @@ function EditProjects({
             color="blue" // You can customize the color as needed
             className="custom-tag"
           >
-            {file?.fileName || file.name}
+            <div className="selected-file-name">{file?.fileName || file.name}</div>
           </Tag>
         </Space>
       ));

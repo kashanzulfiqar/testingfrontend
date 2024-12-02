@@ -322,7 +322,6 @@ const SalarySlip = () => {
                     locale={{
                       emptyText: tableLoader ? null : customEmptyText,
                     }}
-                    style = {{paddingBottom: '70px'}}
                     columns={columns}
                     dataSource={data}
                     pagination={false}

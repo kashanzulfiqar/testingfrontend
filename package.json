@@ -113,6 +113,7 @@
     "redux": "^4.2.1",
     "redux-persist": "^6.0.0",
     "redux-saga": "^1.2.2",
+    "sass": "^1.80.5",
     "serve": "^14.2.0",
     "slick-carousel": "^1.8.1",
     "slimscroll": "^0.9.1",

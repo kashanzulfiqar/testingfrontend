@@ -76,6 +76,7 @@ import Demo from '../LandingPage/demo';
 import AdminResetPassword from './AdminReset';
 import AdminForgot from './Forgot-Admin';
 import DisabledCompanies from '../MainPage/SuperAdmin/disbaledCompanies';
+import LeadsDetails from '../MainPage/Employees/leadsDetails';
 import PrivacyPolicy from '../LandingPage/privacyPolicy';
 import RefundPolicy from '../LandingPage/refundPolicy';
 import TermsAndConditions from '../LandingPage/TermsConditions';
@@ -193,6 +194,7 @@ const App = () => {
           <Route path={`employee/resource-allocation`} element={<ResourceAllocation />} />
           <Route path={`/resource-allocation/details`} element={<ResourceAllocationDetails />} />
           <Route path={`/leads`} element={<Leads />} />
+          <Route path={`/leads-details`} element={<LeadsDetails />} />
           <Route path={`/documentation`} element={<GitBook />} />
           <Route path={`/report-problem`} element={<Query />} />
 
