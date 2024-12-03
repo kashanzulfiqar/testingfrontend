@@ -1,0 +1,62 @@
+name: Deploy Frontend to EC2
+
+on:
+  push:
+    branches:
+      - Development
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY_FRONTEND }}
+          SSH_HOST: ${{ secrets.EC2_HOST }}
+          SSH_USER: ${{ secrets.EC2_USER }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          echo -e "Host ec2\n\tHostName $SSH_HOST\n\tUser $SSH_USER\n\tIdentityFile ~/.ssh/deploy_key\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
+          
+      - name: Deploy and Build on EC2
+        run: |
+          ssh ec2 '
+            set -e
+            echo "Starting deployment..."
+            
+            echo "Setting up SSH agent and adding frontend deploy key..."
+            eval "$(ssh-agent -s)"
+            ssh-add ~/.ssh/${{ secrets.EC2_KEY_NAME }}
+            
+            echo "Changing to project directory..."
+            cd ${{ secrets.DEPLOYMENT_PATH }}
+            
+            echo "Pulling latest code..."
+            git pull origin Development
+            
+            echo "Installing dependencies..."
+            yarn install || { echo "Failed to install dependencies"; exit 1; }
+            
+            # echo "Removing old build..."
+            # rm -rf dist/
+            
+            echo "Building project..."
+            yarn build || { echo "Build failed"; exit 1; }
+            
+            # echo "Restarting nginx..."
+            # sudo systemctl restart nginx
+            
+            echo "Deployment completed successfully!"
+            
+            echo "Cleaning up SSH agent..."
+            ssh-agent -k
+          '
+
+      - name: Send notification on failure
+        if: failure()
+        run: |
+          echo "Deployment failed! Check the logs above for details."
+          exit 1

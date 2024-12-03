@@ -74,5 +74,6 @@ export {default as clockin} from '../assets/img/icons/clock-in.svg'
 export {default as holidaycalendar} from '../assets/img/icons/holiday-calendar.svg'
 // export {default as DaftarProLogo} from '../assets/Icons/DaftarProLogo.svg';
 // export {default as DaftarProIcon} from '../assets/Icons/DaftarProIcon.svg';
+export { default as media35 } from "../assets/img/media-35.jpg"; 
 
 

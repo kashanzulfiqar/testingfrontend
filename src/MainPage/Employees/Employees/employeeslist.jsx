@@ -745,7 +745,7 @@ const Employeeslist = () => {
                     // pagination= { {total : users?.length,
                     //   showTotal : (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
                     //   showSizeChanger : true,onShowSizeChange: onShowSizeChange ,itemRender : itemRender } }
-                    style = {{overflowX : 'auto', paddingBottom: '65px'}}
+                    style = {{overflowX : 'auto'}}
                     columns={columns}                 
                     // bordered
                     dataSource={users}

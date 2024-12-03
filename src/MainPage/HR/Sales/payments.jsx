@@ -58,7 +58,7 @@ const Payments = () => {
 
   const getAllInvoices = (values, current_page, page_size) => {
     setTableLoader(true);
-    apiServices("GET", `invoices?${values === '' ? '' : values?.clientName === '' ? '' : values?.clientName ? `clientName=${values?.clientName}` : filterValues?.clientName ? `clientName=${filterValues?.clientName}` : ''}${values === '' ? '' : values?.invoiceNo === '' ? '' : values?.invoiceNo ? `&invoiceNo=${encodeURIComponent(values?.invoiceNo)}` : filterValues?.invoiceNo ? `&invoiceNo=${encodeURIComponent(filterValues?.invoiceNo)}` : ''}${values === '' ? '' : values?.fromDate === '' ? '' : values?.fromDate ? `&invoiceFrom=${values?.fromDate}` : filterValues?.fromDate ? `&invoiceFrom=${filterValues?.fromDate}` : ''}${values === '' ? '' : values?.toDate === '' ? '' : values?.toDate ? `&invoiceTo=${values?.toDate}` : filterValues?.toDate ? `&invoiceTo=${filterValues?.toDate}` : ''}${values === '' ? '' : values?.status === '' ? '' : values?.status ? `&status=${values?.status}` : filterValues?.status ? `&status=${filterValues?.status}` : ''}&page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}`, null, user_state)
+    apiServices("GET", `invoices?${values === '' ? '' : values?.clientName === '' ? '' : values?.clientName ? `clientName=${values?.clientName}` : filterValues?.clientName ? `clientName=${filterValues?.clientName}` : ''}${values === '' ? '' : values?.invoiceNo === '' ? '' : values?.invoiceNo ? `&invoiceNo=${encodeURIComponent(values?.invoiceNo)}` : filterValues?.invoiceNo ? `&invoiceNo=${encodeURIComponent(filterValues?.invoiceNo)}` : ''}${values === '' ? '' : values?.invoiceMonth === '' ? '' : values?.invoiceMonth ? `&invoiceMonth=${values?.invoiceMonth}` : filterValues?.invoiceMonth ? `&invoiceMonth=${filterValues?.invoiceMonth}` : ''}${values === '' ? '' : values?.status === '' ? '' : values?.status ? `&status=${values?.status}` : filterValues?.status ? `&status=${filterValues?.status}` : ''}&page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}`, null, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
           setAllInvoices(res?.data?.Invoices?.docs);
@@ -86,24 +86,23 @@ const Payments = () => {
 
   const onFilterFinish = (values) => {
 
-    let from_date;
-    let to_date;
-    if(values?.month){
-      const date = values?.month ? moment(values?.month).format('YYYY-MM') : ''
-      const [year, month] = date.split('-');
-      from_date = moment(new Date(year, month - 1, 1)).format('YYYY-MM-DD');
-      to_date = moment(new Date(year, month, 0)).format('YYYY-MM-DD');
-    }
+    // let from_date;
+    // let to_date;
+    // if(values?.month){
+    //   const date = values?.month ? moment(values?.month).format('YYYY-MM') : ''
+    //   const [year, month] = date.split('-');
+    //   from_date = moment(new Date(year, month - 1, 1)).format('YYYY-MM-DD');
+    //   to_date = moment(new Date(year, month, 0)).format('YYYY-MM-DD');
+    // }
 
     let formatted_data = {
       clientName: values?.clientName || '',
       invoiceNo: values?.invoiceNo || '',
-      fromDate: from_date || '',
-      toDate: to_date || '',
+      invoiceMonth: moment(values?.invoiceMonth).format('YYYY-MM') || '',
       status: values?.status || ''
     }
 
-    if(formatted_data?.clientName || formatted_data?.invoiceNo || formatted_data?.fromDate || formatted_data?.status){
+    if(formatted_data?.clientName || formatted_data?.invoiceNo || formatted_data?.invoiceMonth || formatted_data?.status){
       // getAllInvoices(formatted_data, currentPage, pageSize);
       getAllInvoices(formatted_data, 1, pageSize);
       setFilterValues(formatted_data);
@@ -216,7 +215,27 @@ const Payments = () => {
           <label>{text?.clientName}</label>
           ),
       },
+      {
+        title: 'Invoice Month',
+        dataIndex: 'invoiceMonth',
+        render: (text, record) => {
+          if (record?.invoiceMonth) {
+          // Split the 'YYYY-MM' string into year and month
+          const [year, month] = text.split('-');
 
+          // Create a new Date object for the first day of the given month
+          const date = new Date(`${year}-${month}-01`);
+
+          // Format the date to 'Month Year' (e.g., 'July 2024')
+          const formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+
+          return formattedDate;
+          }
+          else{
+            return 'N/A'
+          }
+        },
+      },
       {
         title: t('finance.payments.paymentType'),
         dataIndex: 'paymentType',
@@ -399,7 +418,7 @@ const Payments = () => {
           </div>
           <div className="col-sm-6 col-md-2">
             <Form.Item
-              name="month"
+              name="invoiceMonth"
               className="custom-border"
               // rules={[
               //   ({ getFieldValue }) => ({
@@ -414,14 +433,14 @@ const Payments = () => {
               //   }),
               // ]}
             >
-              <DatePicker 
+              <DatePicker.MonthPicker
                 allowClear={false}
                 size='large'
                 placeholder={t('finance.payments.month&year')}
                 className='form-control filterDate'
                 style={{minHeight: '50px', display: 'flex'}} 
                 getPopupContainer={() => document.getElementById('area')}
-                format="MM-YYYY"
+                format="YYYY-MM"
                 picker='month'
               />
             </Form.Item>
@@ -509,7 +528,7 @@ const Payments = () => {
                     emptyText: tableLoader ? null : customEmptyText,
                   }}
                   pagination= {false}
-                  style = {{overflowX : 'auto', paddingBottom: '70px'}}
+                  style = {{overflowX : 'auto'}}
                   columns={columns}                 
                   // bordered
                   dataSource={allInvoices}

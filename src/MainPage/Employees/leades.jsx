@@ -44,6 +44,7 @@ import { apiServices } from "../../Services/apiServices";
 import moment from "moment";
 import { DeleteOutlined, LoadingOutlined, MinusCircleFilled, PlusOutlined } from "@ant-design/icons";
 import { getAllISOCodes } from "iso-country-currency";
+import PhoneNoInput from "../../Components/PhoneNoInput";
 
 const Leads = () => {
   const { t, i18n } = useTranslation();
@@ -89,7 +90,8 @@ const Leads = () => {
     projectType: "",
   });
 
-  
+  const [phoneLengthError, setPhoneLengthError] = useState(false);
+  const [emergValue, setEmergValue] = useState(null)
   const [leadObj, setLeadObj] = useState();
   const [employees, setEmployees] = useState([]);
   const [accountManagers, setAccountManagers] = useState([]);
@@ -190,14 +192,7 @@ const Leads = () => {
   }, [filters]);
 
   useEffect(() => {
-    if ( role === 'admin' || permissions?.leadsManagement ) {
     setIsStatLoading(true);
-    fetchEmployees();
-    viewSources();
-    viewMediums();
-    } else {
-      nav('/restricted', { state: { unAuthorize: true}})
-    }
   }, []);
 
   const getEmployeeImage = (employeeId) => {
@@ -251,12 +246,44 @@ const Leads = () => {
     setOpen({ isAddOpen: false, isDelOpen: false, data: "" });
     setOpen2({ isAddOpen: false, isDelOpen: false, data: "" });
     form.resetFields();
+    setPhoneLengthError(false)
+    setEmergValue(null);
     setSelectedLeader(null);
     setLoader(false);
     setTempImage("");
     setTempSource("");
     setTempName("");
   };
+
+  const onHandleEmergChange = (type, value) => {
+    if (!value) {
+      setPhoneLengthError({emp: true});
+    }
+    else if (value && value.length < 4) {
+      setPhoneLengthError({len: true});
+    } else {
+      setPhoneLengthError(false);
+    }
+
+      let newvalue = value ? "+" + value : "";
+
+      const updatedValues = {
+        [type]: `${newvalue}`,
+      };
+      form.setFieldsValue(updatedValues)
+      setEmergValue({
+        [type]: `${newvalue}`,
+      });
+  };
+
+  const isValidEmail = (email) => {
+    if(email){
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+    } else {
+      return true
+    }
+  }
 
   const viewLeads = (page, pageSize) => {
     const params = {
@@ -608,6 +635,16 @@ const Leads = () => {
         message.error('Error updating status');
       })
   };
+  const closeDropDown = (e) => {
+    // Close the dropdown
+    const dropdown = e.target.closest('.dropdown-menu');
+    if (dropdown) {
+      const dropdownToggle = dropdown.previousElementSibling;
+      if (dropdownToggle && dropdownToggle.classList.contains('dropdown-toggle')) {
+        dropdownToggle.click(); // Programmatically close the dropdown
+      }
+    }
+  }
 
   const columns = [
     {
@@ -638,7 +675,9 @@ const Leads = () => {
             href="javascript:void(0)"
             data-bs-toggle="dropdown"
             aria-expanded="false"
-            onClick={(e) => e.preventDefault()}
+            onClick={(e) => {
+              e.stopPropagation()
+            }}
           >
             <i
               className={`fa ${
@@ -660,8 +699,9 @@ const Leads = () => {
               className={`dropdown-item ${text === "pending" && "disabled"}`}
               href="javascript:void(0)"
               onClick={(e) => {
-                e.preventDefault();
+                e.stopPropagation()
                 handleUpdateStatus(record, "pending");
+                closeDropDown(e)
               }}
             >
               <i className="fa fa-dot-circle-o text-info" /> Pending
@@ -670,8 +710,9 @@ const Leads = () => {
               className={`dropdown-item ${text === "onHold" && "disabled"}`}
               href="javascript:void(0)"
               onClick={(e) => {
-                e.preventDefault();
+                e.stopPropagation()
                 handleUpdateStatus(record, "onHold");
+                closeDropDown(e)
               }}
             >
               <i className="fa fa-dot-circle-o text-purple" /> On Hold
@@ -680,8 +721,9 @@ const Leads = () => {
               className={`dropdown-item ${text === "converted" && "disabled"}`}
               href="javascript:void(0)"
               onClick={(e) => {
-                e.preventDefault();
+                e.stopPropagation()
                 handleUpdateStatus(record, "converted");
+                closeDropDown(e)
               }}
             >
               <i className="fa fa-dot-circle-o text-success" /> Converted
@@ -690,8 +732,9 @@ const Leads = () => {
               className={`dropdown-item ${text === "notConverted" && "disabled"}`}
               href="javascript:void(0)"
               onClick={(e) => {
-                e.preventDefault();
+                e.stopPropagation()
                 handleUpdateStatus(record, "notConverted");
+                closeDropDown(e)
               }}
             >
               <i className="fa fa-dot-circle-o text-primary" /> Not Converted
@@ -759,7 +802,10 @@ const Leads = () => {
             href="#"
             className="action-icon dropdown-toggle"
             data-bs-toggle="dropdown"
-            aria-expanded="false"
+            aria-expanded="false"            
+            onClick={(e) => {
+              e.stopPropagation()
+            }}
           >
             <i className="material-icons">more_vert</i>
           </a>
@@ -767,8 +813,12 @@ const Leads = () => {
             <a
               className="dropdown-item"
               href="javascript:void(0)"
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation()
                 getAllCurrencies();
+                fetchEmployees();
+                viewSources();
+                viewMediums();
                 setOpen({
                   isAddOpen: true,
                   isDelOpen: false,
@@ -783,6 +833,8 @@ const Leads = () => {
                   communicationMedium: record?.communicationMedium,
                   reachOuts: record?.reachOuts?.map((reachOut) => ({
                     ...reachOut,
+                    communicationMedium: reachOut?.communicationMedium?._id,
+                    communicatedBy: reachOut?.communicatedBy?._id,
                     date: reachOut.date
                     ? moment(reachOut.date, "YYYY-MM-DD")
                     : null,
@@ -805,7 +857,10 @@ const Leads = () => {
             </a>
             <a className="dropdown-item" 
             href="javascript:void(0)"
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();  
+              fetchEmployees();
+              viewMediums();
               setOpen2({
                 isAddOpen: true,
                 isDelOpen: false,
@@ -819,6 +874,8 @@ const Leads = () => {
                 communicationMedium: record?.communicationMedium,
                 reachOuts: record?.reachOuts?.map((reachOut) => ({
                   ...reachOut,
+                  communicationMedium: reachOut?.communicationMedium?._id,
+                  communicatedBy: reachOut?.communicatedBy?._id,
                   date: reachOut.date
                   ? moment(reachOut.date, "YYYY-MM-DD")
                   : null,
@@ -841,7 +898,8 @@ const Leads = () => {
             </a>
             <a className="dropdown-item" 
             href="javascript:void(0)"
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation()
               setOpen({
                 isAddOpen: false,
                 isDelOpen: true,
@@ -909,7 +967,7 @@ const Leads = () => {
             rules={[
               {
                 required: true,
-                message: "please enter a date",
+                message: "Please enter a date",
               },
             ]}
             className="custom-border"
@@ -940,7 +998,7 @@ const Leads = () => {
           rules={[
             {
               required: true,
-              message: "please select a medium",
+              message: "Please select a medium",
             },
           ]}
         >
@@ -997,14 +1055,14 @@ const Leads = () => {
             // }
             onChange={(value)=>{
               setReachOutValues((prev) =>
-                prev.filter((reachOut) => reachOut.communicationMedium !== previous)
+                prev.filter((reachOut) => reachOut.communicationMedium._id !== previous?._id)
               );
               setReachOutValues((prev) => [...prev, { communicationMedium: value }])
             }}
           >
             {mediumOptions?.map((item) => {
               setPrevious(form.getFieldValue(['reachOuts',index,'communicationMedium'],));
-              const isCommunicationMedium = reachOutValues.some(reachOut => reachOut.communicationMedium === item._id);
+              const isCommunicationMedium = reachOutValues.some(reachOut => reachOut.communicationMedium._id === item._id);
               return (
                 <Option key={item?._id} value={item?._id}>
                   {item?.title}
@@ -1041,15 +1099,41 @@ const Leads = () => {
           rules={[
             {
               required: true,
-              message: "Enter name of communication person",
+              message: "Select a communication person",
             },
           ]}
         >
-          <Input
-            className="form-control"
-            placeholder="Enter a Name"
-            maxLength={50}
-          />
+            <Select
+              showSearch
+              onSearch={(val) => {
+                showTeamSearch(val, "Team");
+                // onTeamChange(val)
+              }}
+              filterOption={(input, option) =>
+                option.children
+                  ?.toLowerCase()
+                  ?.indexOf(input?.toLowerCase()) >= 0
+              }
+              optionFilterProp="children"
+              notFoundContent={
+                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+              }
+              dropdownRender={(menu) => <>{menu}</>}
+              className="custom-select custom-normal"
+              getPopupContainer={() =>
+                document.getElementById("area")
+              }
+              placeholder="Select a personnel"
+            >
+              {employees?.map((employee) => (
+                <Select.Option
+                  key={employee._id}
+                  value={employee._id}
+                >
+                  {employee.fullName}
+                </Select.Option>
+              ))}
+            </Select>
         </Form.Item>
       ),
     },
@@ -1282,7 +1366,10 @@ const Leads = () => {
                 href="javascript:void(0)"
                 className="btn add-btn"
                 onClick={() => {
-                  getAllCurrencies();
+                  getAllCurrencies();   
+                  fetchEmployees();
+                  viewSources();
+                  viewMediums();
                   setOpen({
                     isAddOpen: true,
                     isDelOpen: false,
@@ -1547,15 +1634,13 @@ const Leads = () => {
                       }
                     : null
                 }
-                onRow={
-                  i18n.dir() === "rtl"
-                    ? (record, rowIndex) => {
-                        return {
-                          style: { textAlign: "right" }, // Align table data to the right
-                        };
-                      }
-                    : null
-                }
+                onRow={(record, rowIndex) => ({
+                  onClick: () => nav('/leads-details', { state: { lead: record } }),
+                  style: { cursor: 'pointer' },
+                  ...(i18n.dir() === "rtl" && {
+                    style: { textAlign: 'right' }, // Align table data to the right
+                  }),
+                })}
               />
             </div>
             {data?.length > 0 && (
@@ -1618,6 +1703,10 @@ const Leads = () => {
                 form={form}
                 onFinish={(val) => onFinish(val, open?.data)}
                 onFinishFailed={({ errorFields }) => {
+                  const phoneErrorExists = errorFields.find(field => field.errors.toString().includes('please enter phone number'));
+                    if(phoneErrorExists){
+                    setPhoneLengthError({emp: true})
+                    }
                   const consecutiveSpacesError = errorFields.find((field) =>
                     field.errors.toString().includes("consecutive spaces")
                   );
@@ -1632,20 +1721,21 @@ const Leads = () => {
                 <div className="row">
                   <div className="col-sm-6">
                     <div className="form-group">
-                      <label>Lead Name</label>
+                      <label>Lead Title{" "}
+                      <span className="text-danger">*</span></label>
                       <Form.Item
                         name="leadName"
                         className="custom-border"
                         rules={[
                           {
                             required: true,
-                            message: "Enter a lead name",
+                            message: "Enter a lead title",
                           },
                         ]}
                       >
                         <Input
                           className="form-control"
-                          placeholder="Enter Lead Name"
+                          placeholder="Enter Lead Title"
                           maxLength={50}
                         />
                       </Form.Item>
@@ -1653,7 +1743,8 @@ const Leads = () => {
                   </div>
                   <div className="col-sm-6">
                     <div className="form-group">
-                      <label>Client Name</label>
+                      <label>Client Name{" "}
+                      <span className="text-danger">*</span></label>
                       <Form.Item
                         name="clientName"
                         className="custom-border"
@@ -1677,7 +1768,70 @@ const Leads = () => {
                 <div className="row">
                   <div className="col-sm-6">
                     <div className="form-group">
-                      <label>Status</label>
+                      <label>Client Email</label>
+                      <Form.Item
+                        name="clientEmail"
+                        className="custom-border"
+                        rules={[
+                          {
+                          whitespace: true,
+                          required: true,
+                          validator: (_, value) => {
+                            if (/\s{2,}/.test(value)) {
+                              return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
+                              } else if (!isValidEmail(value)) {
+                              return Promise.reject(t('client.pleaseEnterValidEmail'));
+                              }
+                              return Promise.resolve();
+                          },
+                          },
+                      ]}
+                      >
+                        <Input
+                          className="form-control"
+                          maxLength={50}
+                        />
+                      </Form.Item>
+                    </div>
+                  </div>
+                  <div className="col-sm-6">
+                    <div className="form-group">
+                      <label>Client Phone</label>
+                      <Form.Item
+                        name="clientPhone"
+                        className="custom-border"
+                        rules={[
+                          {
+                          whitespace: true,
+                          message: t('client.pleaseEnterPhoneNumber'),
+                          },
+                          {
+                          min: 5,
+                          message: t('client.phoneLength'),
+                          },
+                      ]}
+                      validateStatus={phoneLengthError ? 'error' : ''}
+                      help={phoneLengthError?.len ? "phone length must be at least 5 digits long" : ''}
+                      >
+                          <>
+                              <Input style={{ display: "none" }} value={emergValue?.clientPhoneNo} />
+                              <PhoneNoInput
+                                  onChangePhone={(value) => {
+                                  onHandleEmergChange("clientPhoneNo", value);
+                                  }}
+                                  phone={open?.data?.clientPhoneNo ? open?.data?.clientPhoneNo : ""}
+                              />
+                          </>
+                      </Form.Item>
+                    </div>
+                  </div>
+                </div>                
+
+                <div className="row">
+                  <div className="col-sm-6">
+                    <div className="form-group">
+                      <label>Status{" "}
+                      <span className="text-danger">*</span></label>
                       <div style={{ position: "relative" }} id="area">
                         <Form.Item
                           name="status"
@@ -1716,7 +1870,8 @@ const Leads = () => {
 
                   <div className="col-sm-6">
                     <div className="form-group">
-                      <label>Project Type</label>
+                      <label>Project Type{" "}
+                      <span className="text-danger">*</span></label>
                       <div style={{ position: "relative" }} id="area">
                         <Form.Item
                           name="projectType"
@@ -1724,7 +1879,7 @@ const Leads = () => {
                           rules={[
                             {
                               required: true,
-                              message: 'please choose a project type',
+                              message: 'Please choose a project type',
                             },
                           ]}
                         >
@@ -1754,7 +1909,8 @@ const Leads = () => {
                 <div className="row">
                 <div className="col-sm-6">
                     <div className="form-group">
-                      <label>Source</label>
+                      <label>Source{" "}
+                      <span className="text-danger">*</span></label>
                       <Form.Item
                         name="source"
                         className="custom-border"
@@ -1878,7 +2034,8 @@ const Leads = () => {
                   </div>
                   <div className="col-sm-6">
                     <div className="form-group">
-                      <label>Account Manager</label>
+                      <label>Account Manager{" "}
+                      <span className="text-danger">*</span></label>
                       <div style={{ position: "relative" }} id="area">
                         <Form.Item
                           name="accountManager"
@@ -2005,7 +2162,8 @@ const Leads = () => {
                 <>
                   <div className="col-sm-6">
                     <div className="form-group">
-                      <label>First Reach Out</label>
+                      <label>First Reach Out{" "}
+                      <span className="text-danger">*</span></label>
                       <div style={{ position: "relative" }} id="area">
                         <Form.Item
                           name="reachOut"
@@ -2033,7 +2191,8 @@ const Leads = () => {
                   
                   <div className="col-sm-6">
                     <div className="form-group">
-                      <label>Communication Medium</label>
+                      <label>Communication Medium{" "}
+                      <span className="text-danger">*</span></label>
                       <div style={{ position: "relative" }} id="area">
                         <Form.Item
                           name="communicationMedium"
@@ -2156,22 +2315,49 @@ const Leads = () => {
                   </div>
                   <div className="col-sm-6">
                     <div className="form-group">
-                      <label>Communicated By</label>
+                      <label>Communicated By{" "}
+                      <span className="text-danger">*</span></label>
                       <Form.Item
                         name="communicatedBy"
                         className="custom-border"
                         rules={[
                           {
                             required: true,
-                            message: "Enter name of communication person",
+                            message: "Select a communication person",
                           },
                         ]}
                       >
-                        <Input
-                          className="form-control"
-                          placeholder="Enter a name"
-                          maxLength={50}
-                        />
+                          <Select
+                            showSearch
+                            onSearch={(val) => {
+                              showTeamSearch(val, "Team");
+                              // onTeamChange(val)
+                            }}
+                            filterOption={(input, option) =>
+                              option.children
+                                ?.toLowerCase()
+                                ?.indexOf(input?.toLowerCase()) >= 0
+                            }
+                            optionFilterProp="children"
+                            notFoundContent={
+                              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                            }
+                            dropdownRender={(menu) => <>{menu}</>}
+                            className="custom-select custom-normal"
+                            getPopupContainer={() =>
+                              document.getElementById("area")
+                            }
+                            placeholder="Select a personnel"
+                          >
+                            {employees?.map((employee) => (
+                              <Select.Option
+                                key={employee._id}
+                                value={employee._id}
+                              >
+                                {employee.fullName}
+                              </Select.Option>
+                            ))}
+                          </Select>
                       </Form.Item>
                     </div>
                   </div>
