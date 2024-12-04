@@ -1,13 +1,17 @@
 import { Modal } from "@mui/material";
 import { Button, Form, Input } from "antd";
-import React from "react";
+import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 
-function ReasoningModal() {
+function ReasoningModal({openModal, closeModal}) {
+  
+  const { t, i18n } = useTranslation();
+  const [loader, setLoader] = useState(false);
   return (
     <>
       <Modal
-        open={open.isAddOpen}
-        onClose={handleClose}
+        open={openModal}
+        onClose={closeModal}
         aria-labelledby="modal-modal-title"
         // className="modal custom-modal fade"
         aria-describedby="modal-modal-description"
@@ -19,11 +23,11 @@ function ReasoningModal() {
         <div className="modal-dialog modal-dialog-centered" role="document">
           <div className="modal-content">
             <div className="modal-header">
-              <h5 className="modal-title">
+              {/* <h5 className="modal-title">
                 {open?.data ? t("holiday.update") : t("holiday.add")}{" "}
                 {t("allEmp.Modal.designationName")}
-              </h5>
-              <button type="button" className="close" onClick={handleClose}>
+              </h5> */}
+              <button type="button" className="close" onClick={closeModal}>
                 <span aria-hidden="true">×</span>
               </button>
             </div>
@@ -56,32 +60,22 @@ function ReasoningModal() {
               >
                 <div className="form-group">
                   <label>
-                    {t("allEmp.Modal.designationName")}{" "}
+                    {t("Reason")}{" "}
                     <span className="text-danger">*</span>
                   </label>
                   <Form.Item
-                    name="designationName"
+                    name="reason"
                     rules={[
                       {
                         whitespace: true,
                         required: true,
-                        validator: (_, value) => {
-                          if (!value || value.trim() === "") {
-                            return Promise.reject(
-                              t("allEmp.errors.enterDesignationName")
-                            );
-                          } else if (/\s{2,}/.test(value)) {
-                            return Promise.reject(
-                              t("allEmp.errors.removeConsecutiveSpaces2")
-                            );
-                          }
-                          return Promise.resolve();
+                        message:t("Please enter a Reason")
+                            
                         },
-                      },
                     ]}
                     className="custom-border"
                   >
-                    <Input className="form-control" maxLength={50} autoFocus />
+                    <Input.TextArea className="form-control" placeholder="Enter reason for status 'Not Converted'" rows={5} />
                   </Form.Item>
                 </div>
                 <div className="submit-section">

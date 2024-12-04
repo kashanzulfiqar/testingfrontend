@@ -58,7 +58,7 @@ const Leads = () => {
   const nav = useNavigate();
 
   const [data, setData] = useState([]);
-
+  const [isReasonDisable, setIsReasonDisable] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [loader, setLoader] = useState(false);
 
@@ -247,6 +247,7 @@ const Leads = () => {
     setOpen2({ isAddOpen: false, isDelOpen: false, data: "" });
     form.resetFields();
     setPhoneLengthError(false)
+    setIsReasonDisable(true)
     setEmergValue(null);
     setSelectedLeader(null);
     setLoader(false);
@@ -824,6 +825,9 @@ const Leads = () => {
                   isDelOpen: false,
                   data: record,
                 });
+                if(record?.status === "notConverted"){
+                  setIsReasonDisable(false)
+                }
                 setReachOutValues(record?.reachOuts)
                 form.setFieldsValue({
                   ...record,
@@ -1763,10 +1767,8 @@ const Leads = () => {
                       </Form.Item>
                     </div>
                   </div>
-                </div>
 
-                <div className="row">
-                  <div className="col-sm-6">
+                <div className="col-sm-6">
                     <div className="form-group">
                       <label>Client Email</label>
                       <Form.Item
@@ -1789,6 +1791,7 @@ const Leads = () => {
                       >
                         <Input
                           className="form-control"
+                          placeholder="Enter Client Email"
                           maxLength={50}
                         />
                       </Form.Item>
@@ -1824,10 +1827,8 @@ const Leads = () => {
                           </>
                       </Form.Item>
                     </div>
-                  </div>
-                </div>                
+                  </div>              
 
-                <div className="row">
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>Status{" "}
@@ -1849,6 +1850,13 @@ const Leads = () => {
                               document.getElementById("area")
                             }
                             placeholder={t("projectScreen.Modal.selectStatus")}
+                            onChange={(value) => {
+                              if(value === "notConverted"){
+                                setIsReasonDisable(false)
+                              } else {
+                                setIsReasonDisable(true)
+                              }
+                            }}
                           >
                             <Select.Option value="pending">
                               Pending
@@ -1867,6 +1875,29 @@ const Leads = () => {
                       </div>
                     </div>
                   </div>
+
+                  {
+                  isReasonDisable === false &&
+                  <div className="col-sm-6"> 
+                  <div className="form-group">
+                    <label>Reason{" "}<span className="text-danger">*</span></label>
+                    <Form.Item 
+                      name="reason" 
+                      rules={[
+                        {
+                          whitespace: true,
+                          required: true,
+                          message: t('Please enter a Reason'),
+                        }
+                      ]}
+                      className="custom-border"
+                    >
+                      <Input.TextArea className="form-control" placeholder="Enter reason for status 'Not Converted'" rows={5} />
+                    </Form.Item>
+                    {/* <textarea rows={4} className="form-control summernote" placeholder="Enter your message here" defaultValue={""} /> */}
+                  </div>
+                  </div>
+                }
 
                   <div className="col-sm-6">
                     <div className="form-group">
@@ -1904,9 +1935,7 @@ const Leads = () => {
                       </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="row">
                 <div className="col-sm-6">
                     <div className="form-group">
                       <label>Source{" "}
@@ -2086,10 +2115,7 @@ const Leads = () => {
                         </Form.Item>
                       </div>
                     </div>
-                  </div>
-                </div>
-
-                <div className="row">     
+                  </div>     
                 <div className="col-sm-3">
                     <div className="form-group">
                       <label>Project Worth</label>

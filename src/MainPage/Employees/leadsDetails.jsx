@@ -30,6 +30,7 @@ import { Modal } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { acceptableFormats } from "./Projects/EditProjects";
 import { uploadFunction } from "./Projects/UploadAndDeleteFunc";
+import ReasoningModal from "./ReasoningModal";
 
 const LeadsDetails = () => {
   const nav = useNavigate();
@@ -55,6 +56,7 @@ const LeadsDetails = () => {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [newFiles, setNewFiles] = useState([]);
   const [open, setOpen] = useState({
+    isReasoning:false,
     isAddReachOut: false,
     isEditReachout: false,
     isDeleteReachout: false,
@@ -440,6 +442,7 @@ const LeadsDetails = () => {
 
   const handleClose = () => {
     setOpen({
+      isReasoning:false,
       isAddNotes: false,
       isAddReachOut: false,
       isEditReachout: false,
@@ -872,6 +875,7 @@ const LeadsDetails = () => {
                         href="javascript:void(0)"
                         onClick={(e) => {
                           e.preventDefault();
+                          setOpen({ isReasoning: true })
                           handleUpdateStatus(
                             leadObject,
                             "notConverted",
@@ -1349,6 +1353,12 @@ const LeadsDetails = () => {
           viewLeads={viewLeads}
           viewFiles={viewFiles}
           setLoadNotes={setLoadNotes}
+        />
+      )}
+      {open.isReasoning &&(
+        <ReasoningModal
+          openModal={open.isReasoning}
+          closeModal={handleClose}
         />
       )}
     </>
