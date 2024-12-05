@@ -512,6 +512,8 @@ const LeaveAdmin = () => {
                 ? ""
                 : text === "Cancelled"
                 ? ""
+                : (text === "Pending" && user_state?.user?._id === record?.user?._id)
+                ? ""
                 : "dropdown-toggle"
             }`}
             href={
@@ -523,7 +525,8 @@ const LeaveAdmin = () => {
               text !== "Approved" &&
               text !== "Declined" &&
               text !== "Cancelled" &&
-              (permissions?.requestApproval || role === "admin")
+              (permissions?.requestApproval || role === "admin") &&
+              !(text === "Pending" && user_state?.user?._id === record?.user?._id)
                 ? "dropdown"
                 : ""
             }
@@ -545,7 +548,8 @@ const LeaveAdmin = () => {
           </a>
           <div
             className={`dropdown-menu dropdown-menu-right ${
-              text === "Approved" || text === "Declined" || text === "Cancelled"
+              (text === "Approved" || text === "Declined" || text === "Cancelled" ||
+              (text === "Pending" && user_state?.user?._id === record?.user?._id))
                 ? "disabled"
                 : ""
             }`}

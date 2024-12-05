@@ -1624,7 +1624,7 @@ const todayMonth = today.getMonth() + 1; // getMonth() is zero-based
                         alignItems: "center",
                       }}
                     />
-                  ) : requestData?.SelfRequests?.length > 0 ? (
+                  ) : requestData?.SelfRequests?.length > 0 || requestData?.workAnniversary?.length > 0 || requestData?.todayBirthdays?.length > 0 ? (
                     <div className="notification-tab">
                       <ul className="nav nav-tabs">
                         <li>
@@ -1748,7 +1748,7 @@ const todayMonth = today.getMonth() + 1; // getMonth() is zero-based
                           );
                         })}
                           {requestData?.SelfRequests?.map((requests, indx) => (
-                            <div key={indx} className="employee-noti-content">
+                            <><div key={indx} className="employee-noti-content">
                               <ul className="employee-notification-list">
                                 <Link to="/employee/requests">
                                   <li className="employee-notification-grid">
@@ -1774,7 +1774,7 @@ const todayMonth = today.getMonth() + 1; // getMonth() is zero-based
                                         </li>
                                         <li>
                                           {`Updated: ${moment(
-                                            requests.createdAt
+                                            requests.updatedAt
                                           ).format("DD MMM YYYY")}`}
                                         </li>
                                       </ul>
@@ -1783,22 +1783,24 @@ const todayMonth = today.getMonth() + 1; // getMonth() is zero-based
                                 </Link>  
                               </ul>
                             </div>
+                            <div className="employee-noti-content">
+                            <ul className="employee-notification-list">
+                              <Link to="/employee/requests">
+                                <li className="employee-notification-grid" style={{justifyContent: 'center'}}>
+                                  <div className="employee-notification-content">
+                                    <h6>
+                                      <label style={{color: '#ffb062', textDecoration: 'underline', cursor: 'pointer', marginTop: '5%' }}>
+                                        {`Click Here to View all Requests`}
+                                      </label>
+                                    </h6>
+                                  </div>
+                                </li>
+                              </Link>  
+                            </ul>
+                          </div>
+                          </>
                           ))}
-                          <div className="employee-noti-content">
-                              <ul className="employee-notification-list">
-                                <Link to="/employee/requests">
-                                  <li className="employee-notification-grid" style={{justifyContent: 'center'}}>
-                                    <div className="employee-notification-content">
-                                      <h6>
-                                        <label style={{color: '#ffb062', textDecoration: 'underline', cursor: 'pointer', marginTop: '5%' }}>
-                                          {`Click Here to View all Requests`}
-                                        </label>
-                                      </h6>
-                                    </div>
-                                  </li>
-                                </Link>  
-                              </ul>
-                            </div>
+                          
                           </div>
                         </div>
                         {/* <div className="tab-pane fade" id="schedule_tab">
