@@ -137,7 +137,7 @@ const AdminResetPassword = () => {
   return (
     <>
       <Helmet>
-        <title>Reset Password - DaftarPro</title>
+        <title>Reset Password - Admin DaftarPro</title>
         <meta name="description" content="Login page" />
         <link rel="icon" type="image/x-icon" href={favicon} />				
       </Helmet>
@@ -346,7 +346,7 @@ const AdminResetPassword = () => {
                 </div>
 
                 <div className="form-group text-center">
-                  <Link to="/login">
+                  <Link to="/admin-login">
                     <span className="account-btn" style={{ color: "white" }}>
                       Login Now
                     </span>
