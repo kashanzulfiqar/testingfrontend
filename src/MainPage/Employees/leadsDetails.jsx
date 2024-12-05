@@ -55,6 +55,7 @@ const LeadsDetails = () => {
   const [leadFiles, setLeadFiles] = useState([]);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [newFiles, setNewFiles] = useState([]);
+  const [reason, setReason] = useState(""); // State to hold the reason
   const [open, setOpen] = useState({
     isReasoning:false,
     isAddReachOut: false,
@@ -412,9 +413,10 @@ const LeadsDetails = () => {
       });
   };
 
-  const handleUpdateStatus = (record, newStatus, type) => {
+  const handleUpdateStatus = (record, newStatus, type, reason) => {
     const updatedData = {
       _id: record?._id,
+      reason: reason,
     };
 
     if (type == "projectType") {
@@ -439,7 +441,12 @@ const LeadsDetails = () => {
         message.error("Error updating status");
       });
   };
-
+  const handleReasoningSubmit = (enteredReason) => {
+    // Close the modal and update the status with the reason
+    handleUpdateStatus(leadObject, "notConverted", "status", enteredReason);
+    setOpen({ isReasoning: false });
+    setReason(enteredReason); // Store the reason in the state
+  };
   const handleClose = () => {
     setOpen({
       isReasoning:false,
@@ -876,11 +883,6 @@ const LeadsDetails = () => {
                         onClick={(e) => {
                           e.preventDefault();
                           setOpen({ isReasoning: true })
-                          handleUpdateStatus(
-                            leadObject,
-                            "notConverted",
-                            "status"
-                          );
                         }}
                       >
                         <i className="fa fa-dot-circle-o text-primary" /> Not
@@ -996,6 +998,23 @@ const LeadsDetails = () => {
                       </div>
                     </li>
                   </ul>
+
+                  {leadObject?.reason && 
+                  <>
+                  <div className="d-flex align-items-center justify-content-between flex-wrap">
+                    <h5>
+                      <label>Reason</label>
+                    </h5>
+                  </div>
+                  <ul className="other-info">
+                    <li>
+                      <label style={{lineBreak:"anywhere"}}>
+                        {leadObject?.reason}
+                      </label>
+                    </li>
+                  </ul>
+                  </>
+                  }
 
                   <ul className="other-info">
                     <li>
@@ -1359,6 +1378,7 @@ const LeadsDetails = () => {
         <ReasoningModal
           openModal={open.isReasoning}
           closeModal={handleClose}
+          onSubmit={handleReasoningSubmit} // Pass the submit handler
         />
       )}
     </>
