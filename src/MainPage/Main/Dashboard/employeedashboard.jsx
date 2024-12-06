@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import {
-  clockin,
-  holidaycalendar,
-} from "../../../Entryfile/imagepath.jsx";
+import { clockin, holidaycalendar } from "../../../Entryfile/imagepath.jsx";
 //import { avatar1, avatar13, avatar16, avatar18, avatar19, avatar2, avatar20, avatar21, avatar23, avatar26, avatar4, avatar6, avatar8, clockin, employeeimg, holidaycalendar } from "../../../../../Routes/ImagePath";
 import Chart from "react-apexcharts";
 import { ArrowRightCircle } from "react-feather";
@@ -709,7 +706,10 @@ const EmployeeDashboard = () => {
               </div>
             } */}
               <h4 className="project-title longText">
-                <Link to={`/projects/projects-view/${project?._id}`} state={{ project: project }}>
+                <Link
+                  to={`/projects/projects-view/${project?._id}`}
+                  state={{ project: project }}
+                >
                   {project?.projectName}
                 </Link>
               </h4>
@@ -766,9 +766,7 @@ const EmployeeDashboard = () => {
                       <a>
                         <img
                           alt=""
-                          src={
-                            project?.projectLead?.imageUrl || user_icon
-                          }
+                          src={project?.projectLead?.imageUrl || user_icon}
                         />
                       </a>
                     </Tooltip>
@@ -829,9 +827,7 @@ const EmployeeDashboard = () => {
                               >
                                 <Tooltip title={developer?.fullName}>
                                   <Avatar
-                                    src={
-                                      developer?.imageUrl || user_icon
-                                    }
+                                    src={developer?.imageUrl || user_icon}
                                   />
                                 </Tooltip>
                               </a>
@@ -956,105 +952,104 @@ const EmployeeDashboard = () => {
       });
   };
 
-// Step 1: Convert the `lastFiveDays` data into x-axis categories and hours worked arrays
-const processLastFiveDays = (lastFiveDays) => {
-  const categories = [];
-  const hoursWorkedInHours = [];
+  // Step 1: Convert the `lastFiveDays` data into x-axis categories and hours worked arrays
+  const processLastFiveDays = (lastFiveDays) => {
+    const categories = [];
+    const hoursWorkedInHours = [];
 
-  lastFiveDays.forEach((dayObj) => {
-    const day = Object.keys(dayObj)[0]; // Get the day label, e.g., "M", "T", "W"
-    const minutes = dayObj[day]; // Get the hours worked in minutes
-    const hours = (Math.ceil(minutes) / 60).toFixed(2); // Convert minutes to hours and format to 2 decimal places
+    lastFiveDays.forEach((dayObj) => {
+      const day = Object.keys(dayObj)[0]; // Get the day label, e.g., "M", "T", "W"
+      const minutes = dayObj[day]; // Get the hours worked in minutes
+      const hours = (Math.ceil(minutes) / 60).toFixed(2); // Convert minutes to hours and format to 2 decimal places
 
-    categories.push(day); // Add day label to x-axis categories
-    hoursWorkedInHours.push(hours); // Add hours to the series data
-  });
+      categories.push(day); // Add day label to x-axis categories
+      hoursWorkedInHours.push(hours); // Add hours to the series data
+    });
 
-  return { categories, hoursWorkedInHours };
-};
+    return { categories, hoursWorkedInHours };
+  };
 
-// Step 2: Process the `lastFiveDays` data
-const pastSevenDaysData = processLastFiveDays(sevenDays?.hoursWorked || []);
+  // Step 2: Process the `lastFiveDays` data
+  const pastSevenDaysData = processLastFiveDays(sevenDays?.hoursWorked || []);
 
-// Step 3: Use the processed data to update the chart options
-const [chartOptions, setChartOptions] = useState({
-  series: [
-    {
-      name: "Hours",
-      data: pastSevenDaysData.hoursWorkedInHours, // Set initial series data
-    },
-  ],
-  colors: ["#55CE63"],
-  chart: {
-    type: "bar",
-    height: 210,
-    stacked: true,
-    zoom: {
-      enabled: true,
-    },
-  },
-  responsive: [
-    {
-      breakpoint: 280,
-      options: {
-        legend: {
-          position: "bottom",
-          offsetY: 0,
-        },
-      },
-    },
-  ],
-  plotOptions: {
-    bar: {
-      horizontal: false,
-      borderRadius: 6,
-      borderRadiusApplication: "end",
-      borderRadiusWhenStacked: "all",
-      columnWidth: "30%",
-      endingShape: "rounded",
-    },
-  },
-  dataLabels: {
-    enabled: false,
-  },
-  yaxis: {
-    min: 0,
-    max: 10,
-    tickAmount: 5,
-  },
-  xaxis: {
-    categories: pastSevenDaysData.categories, // Set x-axis categories
-  },
-  tooltip: {
-    y: {
-      formatter: function (minutes) {
-        const totalMinutes = (minutes * 60); // Convert hours back to minutes
-        const displayHours = Math.floor(totalMinutes / 60); 
-        const remainingMinutes = Math.round(totalMinutes % 60); // Get remaining minutes
-        return `${displayHours}h ${remainingMinutes}m`; // Format tooltip as "Xh Ym"
-      },
-    },
-  },
-  legend: { show: false },
-  fill: {
-    opacity: 1,
-  },
-});
-
-// Step 4: Update chart options when data changes
-useEffect(() => {
-  setChartOptions((prevOptions) => ({
-    ...prevOptions,
-    xaxis: { categories: pastSevenDaysData.categories }, // Update x-axis categories
+  // Step 3: Use the processed data to update the chart options
+  const [chartOptions, setChartOptions] = useState({
     series: [
       {
         name: "Hours",
-        data: pastSevenDaysData.hoursWorkedInHours, // Update series data
+        data: pastSevenDaysData.hoursWorkedInHours, // Set initial series data
       },
     ],
-  }));
-}, [sevenDays?.hoursWorked]); // Listen for changes in `lastFiveDays`
+    colors: ["#55CE63"],
+    chart: {
+      type: "bar",
+      height: 210,
+      stacked: true,
+      zoom: {
+        enabled: true,
+      },
+    },
+    responsive: [
+      {
+        breakpoint: 280,
+        options: {
+          legend: {
+            position: "bottom",
+            offsetY: 0,
+          },
+        },
+      },
+    ],
+    plotOptions: {
+      bar: {
+        horizontal: false,
+        borderRadius: 6,
+        borderRadiusApplication: "end",
+        borderRadiusWhenStacked: "all",
+        columnWidth: "30%",
+        endingShape: "rounded",
+      },
+    },
+    dataLabels: {
+      enabled: false,
+    },
+    yaxis: {
+      min: 0,
+      max: 10,
+      tickAmount: 5,
+    },
+    xaxis: {
+      categories: pastSevenDaysData.categories, // Set x-axis categories
+    },
+    tooltip: {
+      y: {
+        formatter: function (minutes) {
+          const totalMinutes = minutes * 60; // Convert hours back to minutes
+          const displayHours = Math.floor(totalMinutes / 60);
+          const remainingMinutes = Math.round(totalMinutes % 60); // Get remaining minutes
+          return `${displayHours}h ${remainingMinutes}m`; // Format tooltip as "Xh Ym"
+        },
+      },
+    },
+    legend: { show: false },
+    fill: {
+      opacity: 1,
+    },
+  });
 
+  // Step 4: Update chart options when data changes
+  useEffect(() => {
+    setChartOptions((prevOptions) => ({
+      ...prevOptions,
+      xaxis: { categories: pastSevenDaysData.categories }, // Update x-axis categories
+      series: [
+        {
+          name: "Hours",
+          data: pastSevenDaysData.hoursWorkedInHours, // Update series data
+        },
+      ],
+    }));
+  }, [sevenDays?.hoursWorked]); // Listen for changes in `lastFiveDays`
 
   const settings = {
     dots: false,
@@ -1166,9 +1161,9 @@ useEffect(() => {
   ];
 
   // Assume joiningDate and birthDate are coming from the backend, part of requestData object.
-const today = new Date();
-const todayDay = today.getDate();
-const todayMonth = today.getMonth() + 1; // getMonth() is zero-based
+  const today = new Date();
+  const todayDay = today.getDate();
+  const todayMonth = today.getMonth() + 1; // getMonth() is zero-based
 
   const dataSourceWfh = userData?.employeeOnWfh || [];
   const dataSourceLeave = userData?.employeeOnLeave || [];
@@ -1215,31 +1210,31 @@ const todayMonth = today.getMonth() + 1; // getMonth() is zero-based
                 {/* Employee Details */}
                 <div className="col-lg-6 col-md-12">
                   <div className="card employee-welcome-card flex-fill">
-                  <div className="card-body">
-                        <div className="welcome-info">
-                          <div className="welcome-content">
-                            <h4>
-                              {`Welcome Back, ${user_state?.user?.fullName}`}
-                            </h4>
-                            <p>
-                              <label>{todayDate}</label>
-                            </p>
-                          </div>
-                          <div className="welcome-img">
-                            <img
-                              src={user_state?.user?.image || user_icon}
-                              className="img-fluid"
-                              alt="User"
-                            />
-                          </div>
+                    <div className="card-body">
+                      <div className="welcome-info">
+                        <div className="welcome-content">
+                          <h4>
+                            {`Welcome Back, ${user_state?.user?.fullName}`}
+                          </h4>
+                          <p>
+                            <label>{todayDate}</label>
+                          </p>
                         </div>
-
-                        <div className="welcome-btn">
-                          <Link to="/profile" className="btn">
-                            View Profile
-                          </Link>
+                        <div className="welcome-img">
+                          <img
+                            src={user_state?.user?.image || user_icon}
+                            className="img-fluid"
+                            alt="User"
+                          />
                         </div>
                       </div>
+
+                      <div className="welcome-btn">
+                        <Link to="/profile" className="btn">
+                          View Profile
+                        </Link>
+                      </div>
+                    </div>
                   </div>
                   <div className="card flex-fill">
                     <div className="card-body">
@@ -1271,13 +1266,13 @@ const todayMonth = today.getMonth() + 1; // getMonth() is zero-based
                           <p>Work Time</p>
                           <h5>
                             <label>
-                            {isDisabled ? (
-                              <Spin size="large" />
-                            ) : isCheckedOut ? (
-                              formatHoursMinutes(checkOut.hoursWorked)
-                            ) : (
-                              formatElapsedTime(elapsedTime) // Create a function to format elapsed time
-                            )}
+                              {isDisabled ? (
+                                <Spin size="large" />
+                              ) : isCheckedOut ? (
+                                formatHoursMinutes(checkOut.hoursWorked)
+                              ) : (
+                                formatElapsedTime(elapsedTime) // Create a function to format elapsed time
+                              )}
                             </label>
                           </h5>
                         </div>
@@ -1550,7 +1545,10 @@ const todayMonth = today.getMonth() + 1; // getMonth() is zero-based
                   </div>
                   <div className="card flex-fill">
                     <div className="card-body">
-                      <div className="statistic-header" style={{paddingBottom: '6.8%'}}>
+                      <div
+                        className="statistic-header"
+                        style={{ paddingBottom: "6.8%" }}
+                      >
                         <h4>Working hours</h4>
                         {/* <div className="dropdown statistic-dropdown">
                           <Link
@@ -1624,7 +1622,9 @@ const todayMonth = today.getMonth() + 1; // getMonth() is zero-based
                         alignItems: "center",
                       }}
                     />
-                  ) : requestData?.SelfRequests?.length > 0 || requestData?.workAnniversary?.length > 0 || requestData?.todayBirthdays?.length > 0 ? (
+                  ) : requestData?.SelfRequests?.length > 0 ||
+                    requestData?.workAnniversary?.length > 0 ||
+                    requestData?.todayBirthdays?.length > 0 ? (
                     <div className="notification-tab">
                       <ul className="nav nav-tabs">
                         <li>
@@ -1642,297 +1642,228 @@ const todayMonth = today.getMonth() + 1; // getMonth() is zero-based
                       </ul>
                       <div className="tab-content">
                         <div className="tab-pane active" id="notification_tab">
-                        <div className="scrollable-requests">
-                        {requestData?.workAnniversary?.map((employee, index) => {
-                          const joiningDate = new Date(employee.joiningDate);
-                          const joiningDay = joiningDate.getDate();
-                          const joiningMonth = joiningDate.getMonth() + 1;
-                          const joiningYear = joiningDate.getFullYear(); // Extract the year from the birthday
+                          <div className="scrollable-requests">
+                            {requestData?.workAnniversary?.map(
+                              (employee, index) => {
+                                const joiningDate = new Date(
+                                  employee.joiningDate
+                                );
+                                const joiningDay = joiningDate.getDate();
+                                const joiningMonth = joiningDate.getMonth() + 1;
+                                const joiningYear = joiningDate.getFullYear(); // Extract the year from the birthday
 
-                          // Calculate the age
-                          const currentYear = new Date().getFullYear();
-                          const years = currentYear - joiningYear;
+                                // Calculate the age
+                                const currentYear = new Date().getFullYear();
+                                const years = currentYear - joiningYear;
 
-                          // Check if today's day and month match the employee's joining date for work anniversary
-                          const isWorkAnniversary = todayDay === joiningDay && todayMonth === joiningMonth;
+                                // Check if today's day and month match the employee's joining date for work anniversary
+                                const isWorkAnniversary =
+                                  todayDay === joiningDay &&
+                                  todayMonth === joiningMonth;
 
-                          return (
-                            isWorkAnniversary && years > 0 &&(
-                              <div key={index} className="employee-noti-content" style={{ position: "relative" }}>
-                                <PushPin  
-                                  style={{
-                                    position: "absolute",
-                                    top: "10px",
-                                    right: "10px",
-                                    fontSize: "16px",
-                                    transform: "rotate(45deg)",
-                                    color: "#999"
-                                  }}
-                                />
-                                
-                                <ul className="employee-notification-list">
-                                <li className="employee-notification-grid">
-                                  <div className="employee-notification-icon">
-                                    <span className="badge-soft-danger rounded-circle">
-                                    <Celebration/>
-                                    </span>
-                                  </div>
-                                  <div className="employee-notification-content">
-                                    <h6>
-                                      <label>
-                                        {`Happy Work Anniversary ${employee.fullName}!`}
-                                      </label>
-                                      
-                                    </h6>
-                                    <ul className="nav" style={{display:"flex", alignItems:"center"}}>
-                                      <li>
-                                      {`Celebrating ${years} ${years === 1 ? 'year' : 'years'} of hard work!`}
-                                      </li>
-                                    </ul>
-                                  </div>
-                                </li>
-                                </ul>
-                              </div>
-                            )
-                          );
-                        })}
-                          {requestData?.todayBirthdays?.map((employee, index) => {
-                          const birthdayDate = new Date(employee.dateOfBirth);
-                          const birthdayDay = birthdayDate.getDate();
-                          const birthdayMonth = birthdayDate.getMonth() + 1;
-                          const birthdayYear = birthdayDate.getFullYear(); // Extract the year from the birthday
+                                return (
+                                  isWorkAnniversary &&
+                                  years > 0 && (
+                                    <div
+                                      key={index}
+                                      className="employee-noti-content"
+                                      style={{ position: "relative" }}
+                                    >
+                                      <PushPin
+                                        style={{
+                                          position: "absolute",
+                                          top: "10px",
+                                          right: "10px",
+                                          fontSize: "16px",
+                                          transform: "rotate(45deg)",
+                                          color: "#999",
+                                        }}
+                                      />
 
-                          // Calculate the age
-                          const currentYear = new Date().getFullYear();
-                          const age = currentYear - birthdayYear;
-
-                          // Check if today's day and month match the employee's joining date for work anniversary
-                          const isBirthday = todayDay === birthdayDay && todayMonth === birthdayMonth;
-
-                          return (
-                            isBirthday && (
-                              <div key={index} className="employee-noti-content" style={{ position: "relative" }}>
-                              <PushPin  
-                                style={{
-                                  position: "absolute",
-                                  top: "10px",
-                                  right: "10px",
-                                  fontSize: "16px",
-                                  transform: "rotate(45deg)",
-                                  color: "#999"
-                                }}
-                              />
-                                <ul className="employee-notification-list">
-                                <li className="employee-notification-grid">
-                                  <div className="employee-notification-icon">
-                                    <span className="badge-soft-danger rounded-circle">
-                                    <Cake/>
-                                    </span>
-                                  </div>
-                                  <div className="employee-notification-content">
-                                    <h6>
-                                      <label>
-                                        {`Happy Birthday ${employee.fullName}!`}
-                                      </label>  
-                                    </h6>
-                                    <ul className="nav" style={{display:"flex", alignItems:"center"}}>
-                                      <li>
-                                        {`Just turned ${age} years old!`}
-                                      </li>
-                                    </ul>
-                                  </div>
-                                </li>
-                                </ul>
-                              </div>
-                            )
-                          );
-                        })}
-                          {requestData?.SelfRequests?.map((requests, indx) => (
-                            <><div key={indx} className="employee-noti-content">
-                              <ul className="employee-notification-list">
-                                <Link to="/employee/requests">
-                                  <li className="employee-notification-grid">
-                                    <div className="employee-notification-icon">
-                                      <span className="badge-soft-danger rounded-circle">
-                                        HR
-                                      </span>
-                                    </div>
-                                    <div className="employee-notification-content">
-                                      <h6>
-                                        <label>
-                                          {`Your ${formatLeaveType(
-                                          requests.requestType
-                                        )} request is ${requests.status}`}
-                                        </label>
-                                        
-                                      </h6>
-                                      <ul className="nav" style={{display:"flex", alignItems:"center"}}>
-                                        <li>
-                                          {`Request Date: ${moment(
-                                            requests.createdAt
-                                          ).format("DD MMM YYYY")}`}
-                                        </li>
-                                        <li>
-                                          {`Updated: ${moment(
-                                            requests.updatedAt
-                                          ).format("DD MMM YYYY")}`}
+                                      <ul className="employee-notification-list">
+                                        <li className="employee-notification-grid">
+                                          <div className="employee-notification-icon">
+                                            <span className="badge-soft-danger rounded-circle">
+                                              <Celebration />
+                                            </span>
+                                          </div>
+                                          <div className="employee-notification-content">
+                                            <h6>
+                                              <label>
+                                                {`Happy Work Anniversary ${employee.fullName}!`}
+                                              </label>
+                                            </h6>
+                                            <ul
+                                              className="nav"
+                                              style={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                              }}
+                                            >
+                                              <li>
+                                                {`Celebrating ${years} ${
+                                                  years === 1 ? "year" : "years"
+                                                } of hard work!`}
+                                              </li>
+                                            </ul>
+                                          </div>
                                         </li>
                                       </ul>
                                     </div>
-                                  </li>
-                                </Link>  
-                              </ul>
-                            </div>
-                            <div className="employee-noti-content">
-                            <ul className="employee-notification-list">
-                              <Link to="/employee/requests">
-                                <li className="employee-notification-grid" style={{justifyContent: 'center'}}>
-                                  <div className="employee-notification-content">
-                                    <h6>
-                                      <label style={{color: '#ffb062', textDecoration: 'underline', cursor: 'pointer', marginTop: '5%' }}>
-                                        {`Click Here to View all Requests`}
-                                      </label>
-                                    </h6>
-                                  </div>
-                                </li>
-                              </Link>  
-                            </ul>
-                          </div>
-                          </>
-                          ))}
-                          
+                                  )
+                                );
+                              }
+                            )}
+                            {requestData?.todayBirthdays?.map(
+                              (employee, index) => {
+                                const birthdayDate = new Date(
+                                  employee.dateOfBirth
+                                );
+                                const birthdayDay = birthdayDate.getDate();
+                                const birthdayMonth =
+                                  birthdayDate.getMonth() + 1;
+                                const birthdayYear = birthdayDate.getFullYear(); // Extract the year from the birthday
+
+                                // Calculate the age
+                                const currentYear = new Date().getFullYear();
+                                const age = currentYear - birthdayYear;
+
+                                // Check if today's day and month match the employee's joining date for work anniversary
+                                const isBirthday =
+                                  todayDay === birthdayDay &&
+                                  todayMonth === birthdayMonth;
+
+                                return (
+                                  isBirthday && (
+                                    <div
+                                      key={index}
+                                      className="employee-noti-content"
+                                      style={{ position: "relative" }}
+                                    >
+                                      <PushPin
+                                        style={{
+                                          position: "absolute",
+                                          top: "10px",
+                                          right: "10px",
+                                          fontSize: "16px",
+                                          transform: "rotate(45deg)",
+                                          color: "#999",
+                                        }}
+                                      />
+                                      <ul className="employee-notification-list">
+                                        <li className="employee-notification-grid">
+                                          <div className="employee-notification-icon">
+                                            <span className="badge-soft-danger rounded-circle">
+                                              <Cake />
+                                            </span>
+                                          </div>
+                                          <div className="employee-notification-content">
+                                            <h6>
+                                              <label>
+                                                {`Happy Birthday ${employee.fullName}!`}
+                                              </label>
+                                            </h6>
+                                            <ul
+                                              className="nav"
+                                              style={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                              }}
+                                            >
+                                              <li>
+                                                {`Just turned ${age} years old!`}
+                                              </li>
+                                            </ul>
+                                          </div>
+                                        </li>
+                                      </ul>
+                                    </div>
+                                  )
+                                );
+                              }
+                            )}
+                            {requestData?.SelfRequests?.length > 0 ? (
+                              <>
+                                {requestData?.SelfRequests?.map(
+                                  (requests, indx) => (
+                                    <div
+                                      key={indx}
+                                      className="employee-noti-content"
+                                    >
+                                      <ul className="employee-notification-list">
+                                        <Link to="/employee/requests">
+                                          <li className="employee-notification-grid">
+                                            <div className="employee-notification-icon">
+                                              <span className="badge-soft-danger rounded-circle">
+                                                HR
+                                              </span>
+                                            </div>
+                                            <div className="employee-notification-content">
+                                              <h6>
+                                                <label>
+                                                  {`Your ${formatLeaveType(
+                                                    requests.requestType
+                                                  )} request is ${
+                                                    requests.status
+                                                  }`}
+                                                </label>
+                                              </h6>
+                                              <ul
+                                                className="nav"
+                                                style={{
+                                                  display: "flex",
+                                                  alignItems: "center",
+                                                }}
+                                              >
+                                                <li>
+                                                  {`Request Date: ${moment(
+                                                    requests.createdAt
+                                                  ).format("DD MMM YYYY")}`}
+                                                </li>
+                                                <li>
+                                                  {`Updated: ${moment(
+                                                    requests.updatedAt
+                                                  ).format("DD MMM YYYY")}`}
+                                                </li>
+                                              </ul>
+                                            </div>
+                                          </li>
+                                        </Link>
+                                      </ul>
+                                    </div>
+                                  )
+                                )}
+                                <div className="employee-noti-content">
+                                  <ul className="employee-notification-list">
+                                    <Link to="/employee/requests">
+                                      <li
+                                        className="employee-notification-grid"
+                                        style={{ justifyContent: "center" }}
+                                      >
+                                        <div className="employee-notification-content">
+                                          <h6>
+                                            <label
+                                              style={{
+                                                color: "#ffb062",
+                                                textDecoration: "underline",
+                                                cursor: "pointer",
+                                                marginTop: "5%",
+                                              }}
+                                            >
+                                              {`Click Here to View all Requests`}
+                                            </label>
+                                          </h6>
+                                        </div>
+                                      </li>
+                                    </Link>
+                                  </ul>
+                                </div>
+                              </>
+                            ) : (
+                              ""
+                            )}
                           </div>
                         </div>
-                        {/* <div className="tab-pane fade" id="schedule_tab">
-                        <div className="employee-noti-content">
-                          <ul className="employee-notification-list">
-                            <li className="employee-notification-grid">
-                              <div className="employee-notification-icon">
-                                <Link to="/activities">
-                                  <span className="rounded-circle">
-                                    <img
-                                      //src={avatar2}
-                                      className="img-fluid rounded-circle"
-                                      alt="User"
-                                    />
-                                  </span>
-                                </Link>
-                              </div>
-                              <div className="employee-notification-content">
-                                <h6>
-                                  <Link to="/activities">
-                                    John has requested feedba
-                                  </Link>
-                                </h6>
-                                <ul className="nav">
-                                  <li>10:30 AM</li>
-                                  <li>21 Apr 2024</li>
-                                </ul>
-                              </div>
-                            </li>
-                            <li className="employee-notification-grid">
-                              <div className="employee-notification-icon">
-                                <Link to="/activities">
-                                  <span className="badge-soft-danger rounded-circle">
-                                    HR
-                                  </span>
-                                </Link>
-                              </div>
-                              <div className="employee-notification-content">
-                                <h6>
-                                  <Link to="/activities">
-                                    Your leave request has been
-                                  </Link>
-                                </h6>
-                                <ul className="nav">
-                                  <li>02:10 PM</li>
-                                  <li>21 Apr 2024</li>
-                                </ul>
-                              </div>
-                            </li>
-                            <li className="employee-notification-grid">
-                              <div className="employee-notification-icon">
-                                <Link to="/activities">
-                                  <span className="badge-soft-info rounded-circle">
-                                    ER
-                                  </span>
-                                </Link>
-                              </div>
-                              <div className="employee-notification-content">
-                                <h6>
-                                  <Link to="/activities">
-                                    You’re enrolled in upcom....
-                                  </Link>
-                                </h6>
-                                <ul className="nav">
-                                  <li>12:40 PM</li>
-                                  <li>21 Apr 2024</li>
-                                </ul>
-                              </div>
-                            </li>
-                            <li className="employee-notification-grid">
-                              <div className="employee-notification-icon">
-                                <Link to="/activities">
-                                  <span className="badge-soft-warning rounded-circle">
-                                    SM
-                                  </span>
-                                </Link>
-                              </div>
-                              <div className="employee-notification-content">
-                                <h6>
-                                  <Link to="/activities">
-                                    Your annual compliance trai
-                                  </Link>
-                                </h6>
-                                <ul className="nav">
-                                  <li>11:00 AM</li>
-                                  <li>21 Apr 2024</li>
-                                </ul>
-                              </div>
-                            </li>
-                            <li className="employee-notification-grid">
-                              <div className="employee-notification-icon">
-                                <Link to="/activities">
-                                  <span className="badge-soft-warning rounded-circle">
-                                    DT
-                                  </span>
-                                </Link>
-                              </div>
-                              <div className="employee-notification-content">
-                                <h6>
-                                  <Link to="/activities">
-                                    Gentle remainder about train
-                                  </Link>
-                                </h6>
-                                <ul className="nav">
-                                  <li>09:00 AM</li>
-                                  <li>21 Apr 2024</li>
-                                </ul>
-                              </div>
-                            </li>
-                            <li className="employee-notification-grid">
-                              <div className="employee-notification-icon">
-                                <Link to="/activities">
-                                  <span className="badge-soft-danger rounded-circle">
-                                    AU
-                                  </span>
-                                </Link>
-                              </div>
-                              <div className="employee-notification-content">
-                                <h6>
-                                  <Link to="/activities">
-                                    Our HR system will be down
-                                  </Link>
-                                </h6>
-                                <ul className="nav">
-                                  <li>11:50 AM</li>
-                                  <li>21 Apr 2024</li>
-                                </ul>
-                              </div>
-                            </li>
-                          </ul>
-                        </div>
-                      </div> */}
                       </div>
                     </div>
                   ) : (
