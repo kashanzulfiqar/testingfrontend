@@ -45,6 +45,7 @@ import moment from "moment";
 import { DeleteOutlined, LoadingOutlined, MinusCircleFilled, PlusOutlined } from "@ant-design/icons";
 import { getAllISOCodes } from "iso-country-currency";
 import PhoneNoInput from "../../Components/PhoneNoInput";
+import ReasoningModal from "./ReasoningModal";
 
 const Leads = () => {
   const { t, i18n } = useTranslation();
@@ -58,10 +59,11 @@ const Leads = () => {
   const nav = useNavigate();
 
   const [data, setData] = useState([]);
-
+  const [isReasonDisable, setIsReasonDisable] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [loader, setLoader] = useState(false);
-
+  const [reason, setReason] = useState(""); // State to hold the reason
+  const [selectedRecord, setSelectedRecord] = useState(null); // To store the selected record
   const [searchValue, setSearchValue] = useState("");
   const [flag, setFlag] = useState(true);
 
@@ -105,6 +107,7 @@ const Leads = () => {
   const [previous, setPrevious] = useState(false);
 
   const [open, setOpen] = useState({
+    isReasoning:false,
     isAddOpen: false,
     isEditOpen: false,
     data: "",
@@ -243,10 +246,11 @@ const Leads = () => {
   };
 
   const handleClose = () => {
-    setOpen({ isAddOpen: false, isDelOpen: false, data: "" });
+    setOpen({isReasoning:false, isAddOpen: false, isDelOpen: false, data: "" });
     setOpen2({ isAddOpen: false, isDelOpen: false, data: "" });
     form.resetFields();
     setPhoneLengthError(false)
+    setIsReasonDisable(true)
     setEmergValue(null);
     setSelectedLeader(null);
     setLoader(false);
@@ -617,11 +621,25 @@ const Leads = () => {
           );
         });
   };
-
-  const handleUpdateStatus = (record, newStatus) => {
+  const handleStatusChange = (record, text) => {
+    if (text === "notConverted") {
+      setSelectedRecord(record);  // Set the record when 'Not Converted' is clicked
+      setOpen({ isReasoning: true });
+    } else {
+      handleUpdateStatus(record, text); // Handle status change for other options
+    }
+  };
+  const handleReasoningSubmit = (enteredReason) => {
+    // Close the modal and update the status with the reason
+    handleUpdateStatus(selectedRecord, "notConverted", enteredReason);
+    setOpen({ isReasoning: false });
+    setReason(enteredReason); // Store the reason in the state
+  };
+  const handleUpdateStatus = (record, newStatus, reason) => {
     const updatedData = {
       _id: record?._id,
       status: newStatus,
+      reason: reason,
     };
     apiServices("PUT", "leads", updatedData, user_state)
       .then((res) => {
@@ -700,7 +718,7 @@ const Leads = () => {
               href="javascript:void(0)"
               onClick={(e) => {
                 e.stopPropagation()
-                handleUpdateStatus(record, "pending");
+                handleStatusChange(record, "pending");
                 closeDropDown(e)
               }}
             >
@@ -711,7 +729,7 @@ const Leads = () => {
               href="javascript:void(0)"
               onClick={(e) => {
                 e.stopPropagation()
-                handleUpdateStatus(record, "onHold");
+                handleStatusChange(record, "onHold");
                 closeDropDown(e)
               }}
             >
@@ -722,7 +740,7 @@ const Leads = () => {
               href="javascript:void(0)"
               onClick={(e) => {
                 e.stopPropagation()
-                handleUpdateStatus(record, "converted");
+                handleStatusChange(record, "converted");
                 closeDropDown(e)
               }}
             >
@@ -733,7 +751,7 @@ const Leads = () => {
               href="javascript:void(0)"
               onClick={(e) => {
                 e.stopPropagation()
-                handleUpdateStatus(record, "notConverted");
+                handleStatusChange(record, "notConverted")
                 closeDropDown(e)
               }}
             >
@@ -824,6 +842,9 @@ const Leads = () => {
                   isDelOpen: false,
                   data: record,
                 });
+                if(record?.status === "notConverted"){
+                  setIsReasonDisable(false)
+                }
                 setReachOutValues(record?.reachOuts)
                 form.setFieldsValue({
                   ...record,
@@ -1763,10 +1784,8 @@ const Leads = () => {
                       </Form.Item>
                     </div>
                   </div>
-                </div>
 
-                <div className="row">
-                  <div className="col-sm-6">
+                <div className="col-sm-6">
                     <div className="form-group">
                       <label>Client Email</label>
                       <Form.Item
@@ -1789,6 +1808,7 @@ const Leads = () => {
                       >
                         <Input
                           className="form-control"
+                          placeholder="Enter Client Email"
                           maxLength={50}
                         />
                       </Form.Item>
@@ -1824,10 +1844,8 @@ const Leads = () => {
                           </>
                       </Form.Item>
                     </div>
-                  </div>
-                </div>                
+                  </div>              
 
-                <div className="row">
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>Status{" "}
@@ -1849,6 +1867,13 @@ const Leads = () => {
                               document.getElementById("area")
                             }
                             placeholder={t("projectScreen.Modal.selectStatus")}
+                            onChange={(value) => {
+                              if(value === "notConverted"){
+                                setIsReasonDisable(false)
+                              } else {
+                                setIsReasonDisable(true)
+                              }
+                            }}
                           >
                             <Select.Option value="pending">
                               Pending
@@ -1867,6 +1892,29 @@ const Leads = () => {
                       </div>
                     </div>
                   </div>
+
+                  {
+                  isReasonDisable === false &&
+                  <div className="col-sm-6"> 
+                  <div className="form-group">
+                    <label>Reason{" "}<span className="text-danger">*</span></label>
+                    <Form.Item 
+                      name="reason" 
+                      rules={[
+                        {
+                          whitespace: true,
+                          required: true,
+                          message: t('Please enter a Reason'),
+                        }
+                      ]}
+                      className="custom-border"
+                    >
+                      <Input.TextArea className="form-control" placeholder="Enter reason for status 'Not Converted'" rows={5} />
+                    </Form.Item>
+                    {/* <textarea rows={4} className="form-control summernote" placeholder="Enter your message here" defaultValue={""} /> */}
+                  </div>
+                  </div>
+                }
 
                   <div className="col-sm-6">
                     <div className="form-group">
@@ -1904,9 +1952,7 @@ const Leads = () => {
                       </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="row">
                 <div className="col-sm-6">
                     <div className="form-group">
                       <label>Source{" "}
@@ -2086,10 +2132,7 @@ const Leads = () => {
                         </Form.Item>
                       </div>
                     </div>
-                  </div>
-                </div>
-
-                <div className="row">     
+                  </div>     
                 <div className="col-sm-3">
                     <div className="form-group">
                       <label>Project Worth</label>
@@ -2702,6 +2745,13 @@ const Leads = () => {
         </div>
       </Modal>
 
+      {open.isReasoning &&(
+        <ReasoningModal
+          openModal={open.isReasoning}
+          closeModal={handleClose}
+          onSubmit={handleReasoningSubmit} // Pass the submit handler
+        />
+      )}
       {/* {addSource && (
         <AddSource
           addSource={addSource}

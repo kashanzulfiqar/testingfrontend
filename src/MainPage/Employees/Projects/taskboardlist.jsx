@@ -600,7 +600,7 @@ const TaskBoardList = () => {
                             rules={[
                             {
                                 whitespace: true,
-                                required: true,
+                                // required: true,
                                 message: t('Tasks.pleaseselectproject'),
                             },
                             ]}
