@@ -178,7 +178,7 @@ const BottomPortion = () => {
 
         {/* Newsletter Column */}
         <div className="col-sm-4 col-md-4 col-lg-4 emailbar">
-          <h4>Subscribe to Newsletter</h4>
+          <h4>Subscribe to our Newsletter</h4>
           <div style={{ display: "flex" }}>
             <Input
               style={{

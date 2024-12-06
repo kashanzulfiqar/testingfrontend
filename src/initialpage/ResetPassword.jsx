@@ -346,7 +346,7 @@ const ResetPassword = () => {
                 </div>
 
                 <div className="form-group text-center">
-                  <Link to="/admin-login">
+                  <Link to="/login">
                     <span className="account-btn" style={{ color: "white" }}>
                       Login Now
                     </span>
