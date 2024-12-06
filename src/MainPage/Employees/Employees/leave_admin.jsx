@@ -1083,7 +1083,8 @@ const LeaveAdmin = () => {
                       {selectedRecord?.status !== "Approved" &&
                         selectedRecord?.status !== "Declined" &&
                         selectedRecord?.status !== "Cancelled" &&
-                        (permissions?.requestApproval || role === "admin") && (
+                        (permissions?.requestApproval || role === "admin") &&
+                          user_state?.user?._id !== selectedRecord?.user?._id && (
                           <>
                             <Button
                               type="button"
