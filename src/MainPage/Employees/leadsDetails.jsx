@@ -36,6 +36,9 @@ const LeadsDetails = () => {
   const nav = useNavigate();
   const { t, i18n } = useTranslation();
   const user_state = useSelector((state) => state.user.loginvalue);
+  const permissions = useSelector((state) => state?.permissionsSlice?.data);
+  //console.log(permissions)
+  const role = user_state?.user?.role;
   const location = useLocation();
   // const locationLead = location.state;
   // console.log(leadObject);
@@ -50,6 +53,7 @@ const LeadsDetails = () => {
   const [loadNotes, setLoadNotes] = useState(false);
   const [loadReactOut, setLoadReachOut] = useState(false);
   const [loadStatus, setLoadStatus] = useState(false);
+  const [loadReason, setLoadReason] = useState(false);
 
   const [leadObject, setLeadObject] = useState(location?.state?.lead);
   const [leadFiles, setLeadFiles] = useState([]);
@@ -57,7 +61,8 @@ const LeadsDetails = () => {
   const [newFiles, setNewFiles] = useState([]);
   const [reason, setReason] = useState(""); // State to hold the reason
   const [open, setOpen] = useState({
-    isReasoning:false,
+    isAddReasoning:false,
+    isEditReasoning:false,
     isAddReachOut: false,
     isEditReachout: false,
     isDeleteReachout: false,
@@ -71,8 +76,11 @@ const LeadsDetails = () => {
   const [size, setSize] = useState(20);
 
   useEffect(() => {
-    //setLeadObject(location?.state?.lead);
-    viewFiles();
+    if ( role === 'admin' || permissions?.leadsManagement ) {
+      viewFiles();
+      } else {
+        nav('/restricted', { state: { unAuthorize: true}})
+      }
   }, []);
 
   const viewFiles = () => {
@@ -116,6 +124,7 @@ const LeadsDetails = () => {
           setLoadNotes(false)
           setLoadReachOut(false)
           setLoadStatus(false)
+          setLoadReason(false)
         }
       })
       .catch((err) => {
@@ -131,6 +140,7 @@ const LeadsDetails = () => {
         setLoadNotes(false);
         setLoadReachOut(false);
         setLoadStatus(false)
+        setLoadReason(false)
       });
   };
 
@@ -416,22 +426,30 @@ const LeadsDetails = () => {
   const handleUpdateStatus = (record, newStatus, type, reason) => {
     const updatedData = {
       _id: record?._id,
-      reason: reason,
     };
 
     if (type == "projectType") {
       updatedData.projectType = newStatus;
     } else if (type == "status") {
       updatedData.status = newStatus;
+      updatedData.reason = reason;
       setLoadStatus(true)
+    } else if (type === "reasonOnly") {
+      updatedData.reason = reason; // Update only the reason
+      updatedData.status = newStatus;
+      setLoadReason(true)
     }
     apiServices("PUT", "leads", updatedData, user_state)
       .then((res) => {
         if (res.data.success === true) {
           message.success(
-            type == "status"
-              ? "Status Updated Successfully"
-              : "Project Type Updated Successfully"
+            type === "status"
+            ? "Status Updated Successfully"
+            : type === "projectType"
+            ? "Project Type Updated Successfully"
+            : type === "reasonOnly"
+            ? "Reason Updated Successfully"
+            : ""
           );
           viewLeads();
         }
@@ -444,12 +462,18 @@ const LeadsDetails = () => {
   const handleReasoningSubmit = (enteredReason) => {
     // Close the modal and update the status with the reason
     handleUpdateStatus(leadObject, "notConverted", "status", enteredReason);
-    setOpen({ isReasoning: false });
+    setOpen({ isAddReasoning: false ,isEditReasoning: false});
     setReason(enteredReason); // Store the reason in the state
+  };
+  const handleReasonUpdateSubmit = (enteredReason) => {
+    handleUpdateStatus(leadObject, "notConverted", "reasonOnly", enteredReason);
+    setOpen({ isAddReasoning: false, isEditReasoning: false });
+    setReason(enteredReason); // Store the updated reason in state
   };
   const handleClose = () => {
     setOpen({
-      isReasoning:false,
+      isAddReasoning:false,
+      isEditReasoning:false,
       isAddNotes: false,
       isAddReachOut: false,
       isEditReachout: false,
@@ -882,7 +906,7 @@ const LeadsDetails = () => {
                         href="javascript:void(0)"
                         onClick={(e) => {
                           e.preventDefault();
-                          setOpen({ isReasoning: true })
+                          setOpen({ isAddReasoning: true })
                         }}
                       >
                         <i className="fa fa-dot-circle-o text-primary" /> Not
@@ -1005,12 +1029,17 @@ const LeadsDetails = () => {
                     <h5>
                       <label>Reason</label>
                     </h5>
+                    <h3 style={{marginLeft:'1%'}}>
+                    <a onClick={() => setOpen({ isEditReasoning: true, data: leadObject?.reason})}><i className="fa fa-pencil ml-2" /></a>
+                    </h3>
                   </div>
                   <ul className="other-info">
                     <li>
-                      <label style={{lineBreak:"anywhere"}}>
+                    {loadReason ? (
+                    <Spin size="small" />
+                  ) : (<label style={{lineBreak:"anywhere"}}>
                         {leadObject?.reason}
-                      </label>
+                      </label>)}
                     </li>
                   </ul>
                   </>
@@ -1374,12 +1403,24 @@ const LeadsDetails = () => {
           setLoadNotes={setLoadNotes}
         />
       )}
-      {open.isReasoning &&(
+      {open.isAddReasoning &&(
         <ReasoningModal
-          openModal={open.isReasoning}
+          openModal={open.isAddReasoning}
           closeModal={handleClose}
+          data={null}
           onSubmit={handleReasoningSubmit} // Pass the submit handler
         />
+      )}
+      {open.isEditReasoning &&(
+        <>
+        {console.log("Data being passed to ReasoningModal:", open?.data)}
+        <ReasoningModal
+          openModal={open.isEditReasoning}
+          closeModal={handleClose}
+          data={open?.data}
+          onSubmit={handleReasonUpdateSubmit} // Pass the submit handler
+        />
+        </>
       )}
     </>
   );
