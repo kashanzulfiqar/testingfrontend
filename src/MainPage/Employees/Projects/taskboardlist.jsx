@@ -192,14 +192,16 @@ const TaskBoardList = () => {
     apiServices(
       "GET",
       // `project-management/?clientName=${filters.clientName}&projectName=${filters.projectName}&page=${params.page}&limit=${params.limit}`,
-      `project-management/?taskBoard=true&projectName=${filters.projectName}&employeeId=${(role === '' && !permissions?.projectManagement) ? employee_id : ''}&page=${params.page}&limit=${params.limit}`,
+      `taskBoard/view-taskBoard/?page=${params.page}&limit=${params.limit}`,
       null,
       user_state
     )
       .then((res) => {
         if (res.data.success === true) {
-          setCategoryObj(res?.data?.projects);
-          setTableData(res?.data?.projects?.docs);
+          setCategoryObj(res?.data?.taskBoards);
+          console.log("taskboards", res?.data?.taskBoards?.map((board) => {board?.boardTitle}));
+          
+          setTableData(res?.data?.taskBoards);
  
           setIsLoading(false);
           // setPagination({
@@ -589,7 +591,7 @@ const TaskBoardList = () => {
                 }}
                 autoComplete="off"
               >
-                <div className="form-group">
+                {/* <div className="form-group">
                         <label>
                         {t('Tasks.project')} <span className="text-danger">*</span>
                         </label>
@@ -634,7 +636,21 @@ const TaskBoardList = () => {
                                 </Select>
                         </Form.Item>
                         </div>
-                        </div>
+                        </div> */}
+                        <div className="form-group">
+                <label>
+                  {t("Title")} <span className="text-danger">*</span>
+                </label>
+                <Form.Item
+                  name="title"
+                  rules={[{ required: true, message: t("Please enter a Title") }]}
+                >
+                  <Input
+                    className="form-control"
+                    placeholder="Enter Title for your Taskboard"
+                  />
+                </Form.Item>
+              </div>
                 <div className="submit-section">
                   <Form.Item>
                     <Button
