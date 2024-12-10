@@ -2344,7 +2344,7 @@ async function downloadFile(url, fileName) {
               <div className="card project-user">
                 <div className="card-body">
                   <h6 className="card-title m-b-20">
-                    <label style={{ width: "69%" }}>{t('viewProject.assignedDevelopers')}</label>
+                    <label style={{ width: "69%" }}>{t('viewProject.assignedTeam')}</label>
                     { (role === 'admin' || permissions?.projectManagement) &&
                       <button
                       type="button"

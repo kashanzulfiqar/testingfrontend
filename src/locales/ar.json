@@ -798,7 +798,7 @@
     "priority": "الأولوية",
     "status": "الحالة",
     "assignedLeader": "القائد المعين",
-    "assignedDevelopers": "المطورون المعينون",
+    "assignedTeam": "الفريق المعين",
     "payments": "المدفوعات",
     "paymentTitle": "عنوان المدفوعات",
     "amountInFigure": "المبلغ بالأرقام",
