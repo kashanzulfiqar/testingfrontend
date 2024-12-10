@@ -452,6 +452,8 @@ const TaskBoard = () => {
   };
 
   useEffect(() => {
+    console.log(ProjectData);
+    
     setIsLoading(true);
     setIsTaskLoading(true);
     getAllTasks(ProjectData?._id);

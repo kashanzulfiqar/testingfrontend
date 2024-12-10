@@ -191,17 +191,17 @@ const TaskBoardList = () => {
 
     apiServices(
       "GET",
-      // `project-management/?clientName=${filters.clientName}&projectName=${filters.projectName}&page=${params.page}&limit=${params.limit}`,
       `taskBoard/view-taskBoard/?page=${params.page}&limit=${params.limit}`,
+      // `project-management/?taskBoard=true&projectName=${filters.projectName}&employeeId=${(role === '' && !permissions?.projectManagement) ? employee_id : ''}&page=${params.page}&limit=${params.limit}`,
       null,
       user_state
     )
       .then((res) => {
         if (res.data.success === true) {
-          setCategoryObj(res?.data?.taskBoards);
-          console.log("taskboards", res?.data?.taskBoards?.map((board) => {board?.boardTitle}));
-          
-          setTableData(res?.data?.taskBoards);
+          console.log("taskboards", res?.data?.taskBoards);
+          const taskBoards = res?.data?.taskBoards || [];
+          // setCategoryObj(res?.data?.projects);
+          setTableData(taskBoards);
  
           setIsLoading(false);
           // setPagination({
@@ -211,11 +211,11 @@ const TaskBoardList = () => {
           //setFlag(true);
           setPagination({
             ...pagination,
-            current : res.data.projects.page,
-            total: res.data.projects.totalDocs,
+            current: page || 1,
+            total: taskBoards.length,
           });
-          setPage(parseInt(res?.data?.projects?.page, 10));
-          setSize(parseInt(res?.data?.projects?.limit, 10));
+          setPage(parseInt(params.page, 10));
+          setSize(parseInt(params.limit, 10));
       }
       })
       .catch((err) => {
@@ -278,9 +278,9 @@ const TaskBoardList = () => {
         (page - 1) * size + index + 1,
     },
     {
-      title: t('Project Name'),
-      dataIndex: "projectName",
-      key: "projectName",
+      title: t('TaskBoard Name'),
+      dataIndex: "boardTitle",
+      key: "boardTitle",
       render: (text, record) => (
         <a
         onClick={() => nav(`/task-board/${record?._id}`, { state: record})} 
@@ -288,6 +288,11 @@ const TaskBoardList = () => {
         <label style={{cursor: 'pointer'}}>{text}</label>
       </a>
       ),
+    },
+    {
+      title: t('Project Name'),
+      dataIndex: ["project", "projectName"],
+      key: "projectName"
     },
     // {
     //   title: t('holiday.date'),
@@ -591,9 +596,23 @@ const TaskBoardList = () => {
                 }}
                 autoComplete="off"
               >
-                {/* <div className="form-group">
+              <div className="form-group">
+                <label>
+                  {t("Title")} <span className="text-danger">*</span>
+                </label>
+                <Form.Item
+                  name="boardTitle"
+                  rules={[{ required: true, message: t("Please enter a Title") }]}
+                >
+                  <Input
+                    className="form-control"
+                    placeholder="Enter Title for your Taskboard"
+                  />
+                </Form.Item>
+              </div>
+                <div className="form-group">
                         <label>
-                        {t('Tasks.project')} <span className="text-danger">*</span>
+                        {t('Tasks.project')} {/* <span className="text-danger">*</span> */}
                         </label>
                         <div style={{ position: "relative" }} id="area">
                         <Form.Item
@@ -636,21 +655,7 @@ const TaskBoardList = () => {
                                 </Select>
                         </Form.Item>
                         </div>
-                        </div> */}
-                        <div className="form-group">
-                <label>
-                  {t("Title")} <span className="text-danger">*</span>
-                </label>
-                <Form.Item
-                  name="title"
-                  rules={[{ required: true, message: t("Please enter a Title") }]}
-                >
-                  <Input
-                    className="form-control"
-                    placeholder="Enter Title for your Taskboard"
-                  />
-                </Form.Item>
-              </div>
+                        </div>
                 <div className="submit-section">
                   <Form.Item>
                     <Button
