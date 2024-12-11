@@ -200,7 +200,7 @@ const TaskBoardList = () => {
         if (res.data.success === true) {
           console.log("taskboards", res?.data?.taskBoards);
           const taskBoards = res?.data?.taskBoards || [];
-          // setCategoryObj(res?.data?.projects);
+          setCategoryObj(taskBoards);
           setTableData(taskBoards);
  
           setIsLoading(false);
@@ -211,8 +211,8 @@ const TaskBoardList = () => {
           //setFlag(true);
           setPagination({
             ...pagination,
-            current: page || 1,
-            total: taskBoards.length,
+            current: res?.data?.currentPage,
+            total: res?.data?.totalItems,
           });
           setPage(parseInt(params.page, 10));
           setSize(parseInt(params.limit, 10));
@@ -529,6 +529,22 @@ const TaskBoardList = () => {
                     } :
                     null
                     }
+                  //   onRow={
+                  //     (record, rowIndex) => {
+                  //         // Add conditional styles based on i18n direction
+                  //         const rowStyle = i18n.dir() === "rtl" ? { textAlign: "right" } : {};
+                  
+                  //         // Return combined properties for the row
+                  //         return {
+                  //             style: rowStyle, // Apply the style
+                  //             onClick: () => {
+                  //                 nav(`/task-board/${record._id}`, {
+                  //                     state: { board: record, project: record.project },
+                  //                 });
+                  //             }, // Add click handler
+                  //         };
+                  //     }
+                  // }
                 // onChange={this.handleTableChange}
               />
             </div>
@@ -621,7 +637,7 @@ const TaskBoardList = () => {
                             rules={[
                             {
                                 whitespace: true,
-                                required: true,
+                                // required: true,
                                 message: t('Tasks.pleaseselectproject'),
                             },
                             ]}
