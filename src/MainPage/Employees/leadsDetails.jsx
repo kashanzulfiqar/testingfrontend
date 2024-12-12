@@ -1027,7 +1027,7 @@ const LeadsDetails = () => {
                   <>
                   <div className="d-flex align-items-center justify-content-between flex-wrap">
                     <h5>
-                      <label>Reason</label>
+                      <label>Conversion Reason</label>
                     </h5>
                     <h3 style={{marginLeft:'1%'}}>
                     <a onClick={() => setOpen({ isEditReasoning: true, data: leadObject?.reason})}><i className="fa fa-pencil ml-2" /></a>
