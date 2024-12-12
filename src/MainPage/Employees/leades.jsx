@@ -1897,7 +1897,7 @@ const Leads = () => {
                   isReasonDisable === false &&
                   <div className="col-sm-6"> 
                   <div className="form-group">
-                    <label>Reason{" "}<span className="text-danger">*</span></label>
+                    <label>Conversion Reason{" "}<span className="text-danger">*</span></label>
                     <Form.Item 
                       name="reason" 
                       rules={[
