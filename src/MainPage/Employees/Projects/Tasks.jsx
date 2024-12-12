@@ -27,6 +27,7 @@ const Tasks = () => {
 
   const [allTasks, setAllTasks] = useState([]);
   const [allProjects, setAllProjects] = useState([]);
+  const [allTaskboards, setAllTaskboards] = useState([]);
   const [descLength, setDescLength] = useState(0);
   const [tableLoader, setTableLoader] = useState(true);
   const [loader, setLoader] = useState(false)
@@ -45,6 +46,7 @@ const Tasks = () => {
       console.log("here")
       getAllTasks();
       getAllProjects()
+      getAllTaskBoards()
     }else{
       nav(`${role === 'client' ? '/client/client-profile' : role === 'focalperson' ? `/client/focal-profile` : role === 'admin' ? `/main/dashboard` : `/employee/dashboard`}`)
     }
@@ -96,6 +98,46 @@ const Tasks = () => {
         );
       });
   }
+
+  const getAllTaskBoards = () => {
+    //setLoader(true);
+
+    apiServices("GET", `taskBoard/view-taskBoard/?page=${1}&limit=${99999}`, null, user_state)
+      .then((res) => {
+        if (res.data.success === true) {
+          console.log("taskboards", res?.data?.taskBoards);
+          const taskBoards = res?.data?.taskBoards || [];
+          setAllTaskboards(taskBoards);
+          // setTableData(taskBoards);
+ 
+          // setIsLoading(false);
+          // // setPagination({
+          // //   ...pagination,
+          // //   total: res.data.projects.totalDocs,
+          // // });
+          // //setFlag(true);
+          // setPagination({
+          //   ...pagination,
+          //   current: res?.data?.currentPage,
+          //   total: res?.data?.totalItems,
+          // });
+          // setPage(parseInt(params.page, 10));
+          // setSize(parseInt(params.limit, 10));
+      }
+      })
+      .catch((err) => {
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : t('projectScreen.errors.getEmployeeProjectsError')
+          }`
+        );
+        setIsLoading(false);
+      })
+  };
 
   const handleUpdateStatus = (boardId, taskId, sourceId, destinationId ) => {
 
@@ -285,10 +327,19 @@ const onFinishEdit = (values) => {
         title: t('Tasks.projectName'),
         dataIndex: 'projectId',
         render: (text, record) => (
-            <Link to={`/projects/projects-view/${record?.projectId?._id}`} style={{color: '#333333'}}>
-                <label style={{cursor: 'pointer'}} className="longText">{record?.projectId?.projectName}</label>
+          record?.projectId ? (
+            // If projectId is not null, render the clickable link
+            <Link to={`/projects/projects-view/${record?.projectId}`} style={{ color: '#333333' }}>
+              <label style={{ cursor: 'pointer' }} className="longText">
+                {record?.projectName}
+              </label>
             </Link>
-            // <strong>{record?.projectId?.projectName}</strong>
+          ) : (
+            // If projectId is null, render plain text (non-clickable)
+            <span style={{ color: '#666666' }}>
+              {record?.projectName}
+            </span>
+          )
         ),
       },       
       {
@@ -699,53 +750,58 @@ const onFinishEdit = (values) => {
                         </div>
                     </div>
                     <div className="col-12">
-                        <div className="form-group">
-                        <label>
-                        {t('Tasks.project')} <span className="text-danger">*</span>
-                        </label>
-                        <div style={{ position: "relative" }} id="area">
-                        <Form.Item
-                            name='projectId'
-                            className='custom-border'
-                            rules={[
-                            {
-                                whitespace: true,
-                                required: true,
-                                message: t('Tasks.pleaseselectproject'),
-                            },
-                            ]}
-                        >
-                                <Select
-                                    showSearch
-                                    onSearch={(val) => {
-                                      searchHandler(val, 'project')
-                                    }}
-                                    filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                                    optionFilterProp="children"
-                                    notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
-                                    dropdownRender={(menu) => (
-                                      <>
-                                        {menu}
-                                      </>
-                                    )}
-                                    className="custom-select custom-normal"
-                                    getPopupContainer={() =>
-                                        document.getElementById("area")
-                                    }
-                                    placeholder={t('Tasks.selectproject')}
-                                    >
-                                    {
-                                        allProjects.map((project, index) => (
-                                        <Select.Option key={index} value={project._id}>
-                                            {project.projectName}
-                                        </Select.Option>
-                                        ))
-                                    }
-                                </Select>
-                        </Form.Item>
-                        </div>
-                        </div>
-                    </div>
+  <div className="form-group">
+    <label>
+      {t('TaskBoard')} <span className="text-danger">*</span>
+    </label>
+    <div style={{ position: "relative" }} id="area">
+      <Form.Item
+        name='boardId'
+        className='custom-border'
+        rules={[
+          {
+            whitespace: true,
+            required: true,
+            message: t('please select taskboard'),
+          },
+        ]}
+      >
+        <Select
+          showSearch
+          onSearch={(val) => searchHandler(val, 'taskboard')}
+          filterOption={(input, option) => {
+            // Extract the task board name from the children (text content inside Option)
+            const taskBoardName = option?.props?.children?.toString() || '';
+            return taskBoardName.toLowerCase().includes(input.toLowerCase());
+          }}
+          optionFilterProp="children"
+          notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+          dropdownRender={(menu) => (
+            <>
+              {menu}
+            </>
+          )}
+          className="custom-select custom-normal"
+          getPopupContainer={() => document.getElementById("area")}
+          placeholder={t('Select Taskboard')}
+        >
+          {
+            allTaskboards.map((taskBoard, index) => (
+              <Select.Option key={index} value={taskBoard._id}>
+                {taskBoard.boardTitle}
+                {taskBoard.project && taskBoard.project.projectName && (
+                  <span className="ml-2 text-muted">
+                    ({taskBoard.project.projectName}) {/* Show associated project name */}
+                  </span>
+                )}
+              </Select.Option>
+            ))
+          }
+        </Select>
+      </Form.Item>
+    </div>
+  </div>
+</div>
                     <div className="col-12">
                         <div className="form-group">
                         <label>
