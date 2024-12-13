@@ -282,17 +282,28 @@ const TaskBoardList = () => {
       dataIndex: "boardTitle",
       key: "boardTitle",
       render: (text, record) => (
-        <a
-        onClick={() => nav(`/task-board/${record?._id}`, { state: record})} 
-      >
-        <label style={{cursor: 'pointer'}}>{text}</label>
-      </a>
+        <div>
+          <a
+            onClick={() => nav(`/task-board/${record?._id}`, { state: record})}>
+            <label style={{cursor: 'pointer'}}>{text}</label>
+          </a>
+          {/* Show project name as a tag if project exists */}
+          {record?.project?.projectName && (
+            <span
+              style={{
+                marginLeft: "8px",
+                backgroundColor: "#f0f0f0",
+                color: "#595959",
+                padding: "2px 8px",
+                borderRadius: "12px",
+                fontSize: "12px",
+              }}
+            >
+              {record.project.projectName}
+            </span>
+          )}
+        </div>
       ),
-    },
-    {
-      title: t('Project Name'),
-      dataIndex: ["project", "projectName"],
-      key: "projectName"
     },
     // {
     //   title: t('holiday.date'),

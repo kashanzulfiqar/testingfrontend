@@ -2,7 +2,7 @@
 import React, { useState ,useEffect  } from 'react';
 import { Helmet } from "react-helmet";
 import { Link, useNavigate } from 'react-router-dom';
-import { Form, Table, Input, Pagination, Empty, Select, Spin, message, Button, Tag, Tooltip } from 'antd';
+import { Form, Table, Input, Pagination, Empty, Select, Spin, message, Button, Tag, Tooltip, Switch } from 'antd';
 import 'antd/dist/antd.css';
 import {itemRender,onShowSizeChange} from "../../paginationfunction"
 import "../../antdstyle.css"
@@ -29,6 +29,7 @@ const Tasks = () => {
   const [allProjects, setAllProjects] = useState([]);
   const [allTaskboards, setAllTaskboards] = useState([]);
   const [descLength, setDescLength] = useState(0);
+  const [isProjectAssociated, setIsProjectAssociated] = useState(false);
   const [tableLoader, setTableLoader] = useState(true);
   const [loader, setLoader] = useState(false)
   const [pageSize, setPageSize] = useState(20);
@@ -106,23 +107,9 @@ const Tasks = () => {
       .then((res) => {
         if (res.data.success === true) {
           console.log("taskboards", res?.data?.taskBoards);
-          const taskBoards = res?.data?.taskBoards || [];
+          const taskBoards = res?.data?.taskBoards.filter((taskBoard) => !taskBoard.project) || [];
           setAllTaskboards(taskBoards);
-          // setTableData(taskBoards);
- 
-          // setIsLoading(false);
-          // // setPagination({
-          // //   ...pagination,
-          // //   total: res.data.projects.totalDocs,
-          // // });
-          // //setFlag(true);
-          // setPagination({
-          //   ...pagination,
-          //   current: res?.data?.currentPage,
-          //   total: res?.data?.totalItems,
-          // });
-          // setPage(parseInt(params.page, 10));
-          // setSize(parseInt(params.limit, 10));
+          
       }
       })
       .catch((err) => {
@@ -236,6 +223,13 @@ const handleClose = (type) => {
     });
     form2.resetFields(); 
   }
+};
+const handleOpen = () => {
+  // If it's for adding a new task, reset the toggle state to false
+  if (!open?.data) {
+    setIsProjectAssociated(false);
+  }
+  // Otherwise, preserve the toggle state for editing
 };
 
 const searchHandler = (val, type) => {
@@ -679,6 +673,7 @@ const onFinishEdit = (values) => {
         <Modal
             open={open?.isAddOpen}
             onClose={handleClose}
+            onOpen={handleOpen}
             aria-labelledby="modal-modal-title"
             className="modalScroll"
             aria-describedby="modal-modal-description"
@@ -749,59 +744,99 @@ const onFinishEdit = (values) => {
                         </Form.Item>
                         </div>
                     </div>
+                    {/* Toggle button to switch between Taskboard and Project */}
                     <div className="col-12">
-  <div className="form-group">
-    <label>
-      {t('TaskBoard')} <span className="text-danger">*</span>
-    </label>
-    <div style={{ position: "relative" }} id="area">
-      <Form.Item
-        name='boardId'
-        className='custom-border'
-        rules={[
-          {
-            whitespace: true,
-            required: true,
-            message: t('please select taskboard'),
-          },
-        ]}
-      >
-        <Select
-          showSearch
-          onSearch={(val) => searchHandler(val, 'taskboard')}
-          filterOption={(input, option) => {
-            // Extract the task board name from the children (text content inside Option)
-            const taskBoardName = option?.props?.children?.toString() || '';
-            return taskBoardName.toLowerCase().includes(input.toLowerCase());
-          }}
-          optionFilterProp="children"
-          notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
-          dropdownRender={(menu) => (
-            <>
-              {menu}
-            </>
-          )}
-          className="custom-select custom-normal"
-          getPopupContainer={() => document.getElementById("area")}
-          placeholder={t('Select Taskboard')}
-        >
-          {
-            allTaskboards.map((taskBoard, index) => (
-              <Select.Option key={index} value={taskBoard._id}>
-                {taskBoard.boardTitle}
-                {taskBoard.project && taskBoard.project.projectName && (
-                  <span className="ml-2 text-muted">
-                    ({taskBoard.project.projectName}) {/* Show associated project name */}
-                  </span>
-                )}
-              </Select.Option>
-            ))
-          }
-        </Select>
-      </Form.Item>
-    </div>
-  </div>
-</div>
+                        <div className="form-group">
+                            <label>
+                                <span>{t('Associated with project')}</span>
+                                <Switch
+                                    checked={isProjectAssociated}
+                                    onChange={(checked) => setIsProjectAssociated(checked)}
+                                    style={{ marginLeft: '10px' }}
+                                />
+                            </label>
+                        </div>
+                    </div>
+
+                    {/* Conditionally render Taskboard or Project Selection */}
+                    <div className="col-12">
+                        <div className="form-group">
+                            {isProjectAssociated ? (
+                                <>
+                                    <label>
+                                        {t('Project')} <span className="text-danger">*</span>
+                                    </label>
+                                    <Form.Item
+                                        name="projectId"
+                                        className="custom-border"
+                                        rules={[
+                                            {
+                                                whitespace: true,
+                                                required: true,
+                                                message: t('please select project'),
+                                            },
+                                        ]}
+                                    >
+                                        <Select
+                                            showSearch
+                                            onSearch={(val) => searchHandler(val, 'project')}
+                                            filterOption={(input, option) =>
+                                                (option?.props?.children || '').toLowerCase().includes(input.toLowerCase())
+                                            }
+                                            notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                                            className="custom-select custom-normal"
+                                            placeholder={t('Select Project')}
+                                        >
+                                            {allProjects.map((project, index) => (
+                                                <Select.Option key={index} value={project._id}>
+                                                    {project.projectName}
+                                                </Select.Option>
+                                            ))}
+                                        </Select>
+                                    </Form.Item>
+                                </>
+                            ) : (
+                                <>
+                                    <label>
+                                        {t('TaskBoard')} <span className="text-danger">*</span>
+                                    </label>
+                                    <Form.Item
+                                        name="boardId"
+                                        className="custom-border"
+                                        rules={[
+                                            {
+                                                whitespace: true,
+                                                required: true,
+                                                message: t('please select taskboard'),
+                                            },
+                                        ]}
+                                    >
+                                        <Select
+                                            showSearch
+                                            onSearch={(val) => searchHandler(val, 'taskboard')}
+                                            filterOption={(input, option) =>
+                                                (option?.props?.children || '').toLowerCase().includes(input.toLowerCase())
+                                            }
+                                            notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                                            className="custom-select custom-normal"
+                                            placeholder={t('Select Taskboard')}
+                                        >
+                                            {allTaskboards.map((taskBoard, index) => (
+                                                <Select.Option key={index} value={taskBoard._id}>
+                                                    {taskBoard.boardTitle}
+                                                    {taskBoard.project && taskBoard.project.projectName && (
+                                                        <span className="ml-2 text-muted">
+                                                            ({taskBoard.project.projectName})
+                                                        </span>
+                                                    )}
+                                                </Select.Option>
+                                            ))}
+                                        </Select>
+                                    </Form.Item>
+                                </>
+                            )}
+                        </div>
+                    </div>
                     <div className="col-12">
                         <div className="form-group">
                         <label>
