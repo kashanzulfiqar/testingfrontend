@@ -946,8 +946,8 @@ function EditProjects({
       key: 'userId',
       render: (text, record) => (
       <h2 className="table-avatar">
-        <label className="avatar"><img alt="" src={getEmployeeImage(text) || record?.imageUrl || user_icon} /></label>
-        <label>{getEmployeeFullName(text) || record?.fullName}</label>
+        <label className="avatar"><img alt="" src={record?.imageUrl || user_icon} /></label>
+        <label>{record?.fullName}</label>
       </h2>
     ),
     },

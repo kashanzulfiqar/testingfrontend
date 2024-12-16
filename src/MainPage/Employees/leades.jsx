@@ -2151,6 +2151,7 @@ const Leads = () => {
                         <InputNumber
                           placeholder={'Enter a cost'}
                           className="form-control"
+                          min={0}
                           formatter={(value) => {
                             return `${value}`.replace(
                               /\B(?=(\d{3})+(?!\d))/g,
