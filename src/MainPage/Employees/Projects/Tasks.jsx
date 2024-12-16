@@ -53,6 +53,23 @@ const Tasks = () => {
     }
   }, [])
 
+  // Effect to handle modal open state changes
+useEffect(() => {
+  if (open?.isAddOpen) {
+      // Reset toggle state when modal is opened
+      if (open?.data) {
+          // Editing mode
+          if (open.data.projectId) {
+              setIsProjectAssociated(true); // Task is associated with a project
+          } else if (open.data.boardId) {
+              setIsProjectAssociated(false); // Task is associated with a task board
+          }
+      } else {
+          // Adding mode
+          setIsProjectAssociated(false); // Default to task board
+      }
+  }
+}, [open]);
   const getAllTasks = (values, current_page, page_size) => {
     setTableLoader(true);
     apiServices("GET", `tasks?${values === '' ? '' : values?.projectId === '' ? '' : values?.projectId ? `projectId=${values?.projectId}` : filterValues?.projectId ? `projectId=${filterValues?.projectId}` : ''}${values === '' ? '' : values?.title === '' ? '' : values?.title ? `&title=${values?.title}` : filterValues?.title ? `&title=${filterValues?.title}` : ''}${values === '' ? '' : values?.tag === '' ? '' : values?.tag ? `&tag=${values?.tag}` : filterValues?.tag ? `&tag=${filterValues?.tag}` : ''}&page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}`, null, user_state)
@@ -224,13 +241,6 @@ const handleClose = (type) => {
     form2.resetFields(); 
   }
 };
-const handleOpen = () => {
-  // If it's for adding a new task, reset the toggle state to false
-  if (!open?.data) {
-    setIsProjectAssociated(false);
-  }
-  // Otherwise, preserve the toggle state for editing
-};
 
 const searchHandler = (val, type) => {
   let dropdownValues = []
@@ -325,7 +335,7 @@ const onFinishEdit = (values) => {
             // If projectId is not null, render the clickable link
             <Link to={`/projects/projects-view/${record?.projectId}`} style={{ color: '#333333' }}>
               <label style={{ cursor: 'pointer' }} className="longText">
-                {record?.projectName}
+                {record?.projectId?.projectName}
               </label>
             </Link>
           ) : (
@@ -673,7 +683,6 @@ const onFinishEdit = (values) => {
         <Modal
             open={open?.isAddOpen}
             onClose={handleClose}
-            onOpen={handleOpen}
             aria-labelledby="modal-modal-title"
             className="modalScroll"
             aria-describedby="modal-modal-description"
