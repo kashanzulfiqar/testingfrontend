@@ -98,7 +98,7 @@ const TaskBoard = () => {
   const handleCancel = () => {
     // Revert to original project name
     console.log("called")
-    setBoardTitle(ProjectData?.projectName);
+    setBoardTitle(BoardData?.board?.boardTitle);
     setIsEditing(false);
   };
 
@@ -123,8 +123,8 @@ const TaskBoard = () => {
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
   const role = user_state?.user?.role;
 
-  const ProjectData = location?.state;
-  console.log(ProjectData);
+  const BoardData = location?.state;
+  console.log("data from previous screen",BoardData);
   const onDragEnd = (result) => {
     // Dropped outside the droppable area
     if (!result.destination) {
@@ -359,7 +359,7 @@ const TaskBoard = () => {
   const getAllTasks = (id) => {
     apiServices(
       "GET",
-      `tasks?projectId=${id}&page=${1}&limit=${99999}`,
+      `tasks?id=${id}&page=${1}&limit=${99999}`,
       null,
       user_state
     )
@@ -391,7 +391,7 @@ const TaskBoard = () => {
   const getTasksOptions = (id) => {
     apiServices(
       "GET",
-      `tasks?projectId=${id}&lane=empty&page=${1}&limit=${99999}`,
+      `tasks?id=${id}&lane=empty&page=${1}&limit=${99999}`,
       null,
       user_state
     )
@@ -421,7 +421,7 @@ const TaskBoard = () => {
   const getTaskBoard = (id) => {
     apiServices(
       "GET",
-      `taskBoard/view-taskBoard?projectId=${id}`,
+      `taskBoard/view-taskBoard?id=${id}`,
       null,
       user_state
     )
@@ -431,7 +431,7 @@ const TaskBoard = () => {
           //setAllTasks(sortedData);
           res?.data?.taskBoards?.map((board) => {
             setBoardId(board?._id);
-            setBoardTitle(board?.boardTitle ? board?.boardTitle : ProjectData?.projectName);
+            setBoardTitle(board?.boardTitle ? board?.boardTitle : BoardData?.board?.boardTitle);
             setColumns(board?.columns);
           });
           setIsLoading(false);
@@ -452,12 +452,10 @@ const TaskBoard = () => {
   };
 
   useEffect(() => {
-    console.log(ProjectData);
-    
     setIsLoading(true);
     setIsTaskLoading(true);
-    getAllTasks(ProjectData?._id);
-    getTaskBoard(ProjectData?._id);
+    getAllTasks(BoardData?.board?.project ? BoardData?.board?.project?._id : BoardData?.board?._id);
+    getTaskBoard(BoardData?.board?.project ? BoardData?.board?.project?._id : BoardData?.board?._id);
   }, []);
 
   const onFinish = (values, info) => {
@@ -673,7 +671,9 @@ const TaskBoard = () => {
   const onFinishAdd = (values) => {
     let updated_data = {
       ...values,
-      projectId: ProjectData?._id
+      ...(BoardData?.board?.project 
+        ? { projectId: BoardData?.board?.project?._id } 
+        : { boardId: BoardData?.board?._id }),
     }
     setLoader(true)
     apiServices("POST", 'tasks', updated_data, user_state)
@@ -703,7 +703,9 @@ const TaskBoard = () => {
 const onFinishEdit = (values) => {
   const data = {
       ...values,
-      projectId: ProjectData?._id,
+      ...(BoardData?.board?.project 
+        ? { projectId: BoardData?.board?.project?._id } 
+        : { boardId: BoardData?.board?._id }),
       _id: addTask?.data?.taskId
   }
 
@@ -895,7 +897,7 @@ const onFinishEdit = (values) => {
           ) : (
             <div style={{display:'flex', flexDirection:'row', alignItems:'center'}}>
             <h3 className="page-title" >
-              {boardTitle ? boardTitle : ProjectData?.projectName}
+              {boardTitle ? boardTitle : BoardData?.board?.boardTitle}
             </h3>
             {(role === "admin" || permissions?.projectManagement) &&
             (<h3 style={{marginLeft:'1%'}}>
@@ -1149,7 +1151,7 @@ const onFinishEdit = (values) => {
                                     //   }
                                     // }}
                                     onClick={() => {
-                                      getTasksOptions(ProjectData?._id);
+                                      getTasksOptions(BoardData?.board?.project ? BoardData?.board?.project?._id : BoardData?.board?._id);
                                       setTaskModal(true);
                                       setColumnId(column._id);
                                     }}

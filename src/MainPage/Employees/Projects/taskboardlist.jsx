@@ -162,6 +162,8 @@ const TaskBoardList = () => {
         if (res.data.success === true) {
           //setCategoryObj(res?.data?.projects);
           const sortedData = res?.data?.projects?.docs?.slice().sort((a, b) => a.projectName.localeCompare(b.projectName));
+          console.log("project in taskboard dropdown:",sortedData);
+          
           setAllProjects(sortedData);
           setIsLoading(false);          
       }
@@ -283,10 +285,11 @@ const TaskBoardList = () => {
       key: "boardTitle",
       render: (text, record) => (
         <div>
-          <a
+          <label style={{cursor: 'pointer'}}>{text}</label>
+          {/* <a
             onClick={() => nav(`/task-board/${record?._id}`, { state: record})}>
-            <label style={{cursor: 'pointer'}}>{text}</label>
-          </a>
+            
+          </a> */}
           {/* Show project name as a tag if project exists */}
           {record?.project?.projectName && (
             <span
@@ -532,30 +535,30 @@ const TaskBoardList = () => {
                     } :
                     null
                     }
-                    onRow={ i18n.dir()==="rtl" ?
+                    // onRow={ i18n.dir()==="rtl" ?
+                    //   (record, rowIndex) => {
+                    //   return {
+                    //     style: { textAlign: 'right' }, // Align table data to the right
+                    //   };
+                    // } :
+                    // null
+                    // }
+                    onRow={
                       (record, rowIndex) => {
-                      return {
-                        style: { textAlign: 'right' }, // Align table data to the right
-                      };
-                    } :
-                    null
-                    }
-                  //   onRow={
-                  //     (record, rowIndex) => {
-                  //         // Add conditional styles based on i18n direction
-                  //         const rowStyle = i18n.dir() === "rtl" ? { textAlign: "right" } : {};
+                          // Add conditional styles based on i18n direction
+                          const rowStyle = i18n.dir() === "rtl" ? { textAlign: "right" } : {};
                   
-                  //         // Return combined properties for the row
-                  //         return {
-                  //             style: rowStyle, // Apply the style
-                  //             onClick: () => {
-                  //                 nav(`/task-board/${record._id}`, {
-                  //                     state: { board: record, project: record.project },
-                  //                 });
-                  //             }, // Add click handler
-                  //         };
-                  //     }
-                  // }
+                          // Return combined properties for the row
+                          return {
+                              style: rowStyle, // Apply the style
+                              onClick: () => {
+                                  nav(`/task-board/${record._id}`, {
+                                      state: { board: record},
+                                  });
+                              }, // Add click handler
+                          };
+                      }
+                  }
                 // onChange={this.handleTableChange}
               />
             </div>

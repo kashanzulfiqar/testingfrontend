@@ -30,6 +30,7 @@ const Tasks = () => {
   const [allTaskboards, setAllTaskboards] = useState([]);
   const [descLength, setDescLength] = useState(0);
   const [isProjectAssociated, setIsProjectAssociated] = useState(false);
+  const [originalTaskboard, setOriginalTaskboard] = useState(null);
   const [tableLoader, setTableLoader] = useState(true);
   const [loader, setLoader] = useState(false)
   const [pageSize, setPageSize] = useState(20);
@@ -61,6 +62,9 @@ useEffect(() => {
           // Editing mode
           if (open.data.projectId) {
               setIsProjectAssociated(true); // Task is associated with a project
+              if (open?.data?.boardId) {
+                setOriginalTaskboard(open.data.boardId);
+              }
           } else if (open.data.boardId) {
               setIsProjectAssociated(false); // Task is associated with a task board
           }
@@ -70,6 +74,21 @@ useEffect(() => {
       }
   }
 }, [open]);
+
+const handleToggleChange = (checked) => {
+  setIsProjectAssociated(checked);
+
+  if (!checked) {
+    // If toggling off and previously linked to a project
+    if (open?.data?.projectId) {
+      form2.setFieldsValue({ boardId: undefined }); // Reset taskboard field
+    } else {
+      // If toggling off and originally a taskboard task, retain the value
+      form2.setFieldsValue({ boardId: originalTaskboard });
+    }
+  }
+};
+
   const getAllTasks = (values, current_page, page_size) => {
     setTableLoader(true);
     apiServices("GET", `tasks?${values === '' ? '' : values?.projectId === '' ? '' : values?.projectId ? `projectId=${values?.projectId}` : filterValues?.projectId ? `projectId=${filterValues?.projectId}` : ''}${values === '' ? '' : values?.title === '' ? '' : values?.title ? `&title=${values?.title}` : filterValues?.title ? `&title=${filterValues?.title}` : ''}${values === '' ? '' : values?.tag === '' ? '' : values?.tag ? `&tag=${values?.tag}` : filterValues?.tag ? `&tag=${filterValues?.tag}` : ''}&page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}`, null, user_state)
@@ -760,7 +779,7 @@ const onFinishEdit = (values) => {
                                 <span>{t('Associated with project')}</span>
                                 <Switch
                                     checked={isProjectAssociated}
-                                    onChange={(checked) => setIsProjectAssociated(checked)}
+                                    onChange={handleToggleChange}
                                     style={{ marginLeft: '10px' }}
                                 />
                             </label>
