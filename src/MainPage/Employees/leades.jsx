@@ -556,6 +556,7 @@ const Leads = () => {
                 lastReachOut: values.reachOut,
                 reachOuts: res?.data?.Lead?.reachOuts,
                 _id: res?.data?.Lead?._id,
+                modifiedBy: res?.data?.Lead?.modifiedBy
               },
               ...data,
             ]);
@@ -1114,6 +1115,7 @@ const Leads = () => {
       dataIndex: "communicatedBy",
       key: "communicatedBy",
       render: (text, record, index) => (
+        <div style={{ position: "relative" }} id={`user-${index}`}>
         <Form.Item
           name={["reachOuts", index, "communicatedBy"]}
           className="custom-border"
@@ -1142,7 +1144,7 @@ const Leads = () => {
               dropdownRender={(menu) => <>{menu}</>}
               className="custom-select custom-normal"
               getPopupContainer={() =>
-                document.getElementById("area")
+                document.getElementById(`user-${index}`)
               }
               placeholder="Select a personnel"
             >
@@ -1156,6 +1158,7 @@ const Leads = () => {
               ))}
             </Select>
         </Form.Item>
+        </div>
       ),
     },
     {
