@@ -556,6 +556,7 @@ const Leads = () => {
                 lastReachOut: values.reachOut,
                 reachOuts: res?.data?.Lead?.reachOuts,
                 _id: res?.data?.Lead?._id,
+                modifiedBy: res?.data?.Lead?.modifiedBy
               },
               ...data,
             ]);
@@ -1114,6 +1115,7 @@ const Leads = () => {
       dataIndex: "communicatedBy",
       key: "communicatedBy",
       render: (text, record, index) => (
+        <div style={{ position: "relative" }} id={`user-${index}`}>
         <Form.Item
           name={["reachOuts", index, "communicatedBy"]}
           className="custom-border"
@@ -1142,7 +1144,7 @@ const Leads = () => {
               dropdownRender={(menu) => <>{menu}</>}
               className="custom-select custom-normal"
               getPopupContainer={() =>
-                document.getElementById("area")
+                document.getElementById(`user-${index}`)
               }
               placeholder="Select a personnel"
             >
@@ -1156,6 +1158,7 @@ const Leads = () => {
               ))}
             </Select>
         </Form.Item>
+        </div>
       ),
     },
     {
@@ -1897,7 +1900,7 @@ const Leads = () => {
                   isReasonDisable === false &&
                   <div className="col-sm-6"> 
                   <div className="form-group">
-                    <label>Reason{" "}<span className="text-danger">*</span></label>
+                    <label>Conversion Reason{" "}<span className="text-danger">*</span></label>
                     <Form.Item 
                       name="reason" 
                       rules={[
@@ -2151,6 +2154,7 @@ const Leads = () => {
                         <InputNumber
                           placeholder={'Enter a cost'}
                           className="form-control"
+                          min={0}
                           formatter={(value) => {
                             return `${value}`.replace(
                               /\B(?=(\d{3})+(?!\d))/g,

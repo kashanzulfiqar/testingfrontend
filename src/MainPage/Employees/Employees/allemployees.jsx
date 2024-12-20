@@ -33,7 +33,7 @@ const AllEmployees = () => {
   const [allRoles, setAllRoles] = useState([])
   const [desigInfo, setDesigInfo] = useState({})
 
-  const [open, setOpen] = useState({ isAddOpen: false, isEditOpen: false, data: '' })
+  const [open, setOpen] = useState({ isAddOpen: false, isEditOpen: false, isErrOpen: false, data: '' })
   const [upload, setUpload] = useState(false)
   const [uploadFile, setUploadFile] = useState();
   const [tableLoader, setTableLoader] = useState(false)
@@ -151,7 +151,7 @@ const AllEmployees = () => {
   
 
   const handleClose = () => {
-    setOpen({ isAddOpen: false, isEditOpen: false, isDelOpen: false, data: '' });
+    setOpen({ isAddOpen: false, isEditOpen: false, isDelOpen: false, isErrOpen: false, data: '' });
     setNumFlag(false);
   };
 
@@ -371,15 +371,29 @@ const AllEmployees = () => {
         })
         .catch((err) => {
           setLoader(false)
-          message.error(
-            `${
-              err?.response?.data?.msg
-                ? err?.response?.data?.msg
-                : err?.response?.data?.validation?.body?.message
-                ? err?.response?.data?.validation?.body?.message
-                : t('allEmp.errors.disableEmployeeError')
-            }!`
-          );
+          // Check for specific error with project list
+          const errorData = err?.response?.data;
+            if (errorData?.projects && errorData?.msg) {
+              // Use setOpen to manage modal state
+              setOpen({
+                isErrOpen: true,
+                data: {
+                  message: errorData.msg,
+                  projects: errorData.projects,
+                },
+              });// Show modal
+            } else {
+              // Fallback for generic errors
+            message.error(
+              `${
+                errorData?.msg
+                  ? errorData?.msg
+                  : errorData?.validation?.body?.message
+                  ? errorData?.validation?.body?.message
+                  : t('allEmp.errors.disableEmployeeError')
+              }!`
+            );
+          }
         });
       }else{
         setLoader(true)
@@ -725,6 +739,64 @@ const AllEmployees = () => {
           />
         }
       {/* /Edit Employee Modal */}
+      <Modal
+        open={open.isErrOpen} // Control visibility of the error modal
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+        disableRestoreFocus
+        BackdropProps={{
+          style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
+        }}
+      >
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content" style={{ height: "auto" }}>
+            <div
+              className="modal-body"
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+              }}
+            >
+              <div className="form-header">
+                <h3 style={{ marginBottom: "30px" }}>{t('Action Required')}</h3>
+                <p>{open?.data?.message}</p>
+                {open?.data?.projects && open?.data?.projects.length > 0 && (
+                  <ul>
+                    {open?.data?.projects.map((project) => (
+                      <li key={project.projectId}>
+                        <a
+                          href={`/projects/projects-view/${project.projectId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ textDecoration: "underline", color: "#007bff" }}
+                        >
+                          {project.projectName}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <div className="modal-btn delete-action">
+                <div className="row">
+                  <div className="col-12">
+                    <Button
+                      onClick={handleClose}
+                      className="btn btn-primary submit-btn"
+                      style={{ width: "100%" }}
+                    >
+                      {t('close')}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
       {/* Delete Employee Modal */}
       <Modal
         open={open.isDelOpen}
