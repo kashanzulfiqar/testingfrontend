@@ -1924,8 +1924,10 @@ const Leads = () => {
                         <Select
                           showSearch
                           onSearch={(val) => {
-                            setSearchValue(val);
-                            showTeamSearch(val, "source");
+                            // Limit search value to 50 characters
+                            const truncatedValue = val.length > 50 ? val.substring(0, 50) : val;
+                            setSearchValue(truncatedValue);
+                            showTeamSearch(truncatedValue, "source");
                             // onTeamChange(val)
                           }}
                           filterOption={(input, option) =>
@@ -1942,7 +1944,7 @@ const Leads = () => {
                           dropdownRender={(menu) => (
                             <>
                               {menu}
-                              {searchValue && !sourceOptions?.some(option => option?.title?.toLowerCase() === searchValue?.toLowerCase()) && (
+                              {searchValue && !sourceOptions?.some(option => option?.title?.toLowerCase() === searchValue?.toLowerCase()) && searchValue.length <= 50 &&  (
                                   <>
                                     <Divider style={{ margin: "5px 0" }} />
                                     <Button

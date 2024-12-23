@@ -210,7 +210,7 @@ const LeadsDetails = () => {
               </div>
             </div>
           </div>
-          <p style={{ lineBreak: "anywhere" }}>{note?.text}</p>
+          <p className="your-text-class">{note?.text}</p>
           <ul>
             {note?.files?.map((file) => {
               // Extract the image ID from the Cloudinary URL
