@@ -12961,6 +12961,11 @@ padding-right: unset;
   border-right: 1px solid rgba(0, 0, 0, 0.06);
 }
 
+.LeadTable td,
+.LeadTable th {
+  vertical-align: top; /* Align all content to the top */
+}
+
 .LeadTable td:last-child {
   border-right: none;
 }

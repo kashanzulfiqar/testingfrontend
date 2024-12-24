@@ -555,6 +555,7 @@ const Leads = () => {
               },
               ...data,
             ]);
+            viewLeads();
             handleClose();
             message.success("Lead Added Successfully");
             setLoader(false);
@@ -792,12 +793,14 @@ const Leads = () => {
       title: "Source",
       dataIndex: "source",
       key: "source",
-      render: (text, record) => <label>{record?.source?.title}</label>,
+      render: (text, record) => <label className="longText4">{record?.source?.title}</label>,
     },
     {
       title: "Action",
       render: (text, record) => (
-        <div className="dropdown dropdown-action text-end">
+        <div className="dropdown dropdown-action text-end"
+        onClick={(e) => e.stopPropagation()}
+        >
           <a
             href="#"
             className="action-icon dropdown-toggle"
@@ -1149,7 +1152,6 @@ const Leads = () => {
             <Input
             className="form-control"
             placeholder="Enter any comment"
-            maxLength={50}
           />
           </Form.Item>
       ),
@@ -1616,10 +1618,21 @@ const Leads = () => {
                 locale={{
                   emptyText: isLoading ? null : customEmptyText,
                 }}
-                style={{ overflowX: "auto", paddingBottom: "95px" }}
+                style={{ overflowX: "auto"}}
                 loading={isLoading}
                 pagination={false}
-                columns={columns}
+                columns={columns.map((column, index) => ({
+                  ...column,
+                  onCell: (_, rowIndex) => ({
+                    onClick: (e) => {
+                      // Prevent navigation for the last column
+                      if (index === columns.length - 1) {
+                        e.stopPropagation();
+                      }
+                    },
+                    style: { cursor: index === columns.length - 1 ? 'default' : 'pointer' },
+                  }),
+                }))}
                 // Use columns1 for the first table
                 dataSource={data} // Define your data source for the first table
                 rowKey={(record) => record?._id}
@@ -1923,12 +1936,14 @@ const Leads = () => {
                       >
                         <Select
                           showSearch
+                          value={searchValue}
                           onSearch={(val) => {
-                            // Limit search value to 50 characters
-                            const truncatedValue = val.length > 50 ? val.substring(0, 50) : val;
-                            setSearchValue(truncatedValue);
-                            showTeamSearch(truncatedValue, "source");
-                            // onTeamChange(val)
+                            if (val.length <= 50) {
+                              setSearchValue(val); // Allow up to 50 characters
+                              showTeamSearch(val, "source");
+                            } else {
+                              setSearchValue(val.slice(0, 50)); // Truncate if over limit
+                            }
                           }}
                           filterOption={(input, option) =>
                             option.children[0]
@@ -1944,7 +1959,7 @@ const Leads = () => {
                           dropdownRender={(menu) => (
                             <>
                               {menu}
-                              {searchValue && !sourceOptions?.some(option => option?.title?.toLowerCase() === searchValue?.toLowerCase()) && searchValue.length <= 50 &&  (
+                              {searchValue && !sourceOptions?.some(option => option?.title?.toLowerCase() === searchValue?.toLowerCase()) &&  (
                                   <>
                                     <Divider style={{ margin: "5px 0" }} />
                                     <Button
