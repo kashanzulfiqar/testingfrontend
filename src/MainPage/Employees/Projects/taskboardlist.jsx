@@ -323,7 +323,10 @@ const TaskBoardList = () => {
     {
       title: t('holiday.actions'),
       render: (record, row) => (
-        <div className="dropdown dropdown-action text-end">
+        <div 
+          onClick={(e) => e.stopPropagation()} // Stop navigation on click
+          className="dropdown dropdown-action text-end"
+        >
           <a
             href="javascript:void(0)"
             // className="action-icon dropdown-toggle"

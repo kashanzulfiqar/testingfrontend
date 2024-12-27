@@ -431,7 +431,7 @@ const TaskBoard = () => {
           //setAllTasks(sortedData);
           res?.data?.taskBoards?.map((board) => {
             setBoardId(board?._id);
-            setBoardTitle(board?.boardTitle ? board?.boardTitle : BoardData?.board?.boardTitle);
+            setBoardTitle(board?.boardTitle ? board?.boardTitle : BoardData?.board?.boardTitle ? BoardData?.board?.boardTitle : BoardData?.board?.project?.projectName);
             setColumns(board?.columns);
           });
           setIsLoading(false);
@@ -897,7 +897,7 @@ const onFinishEdit = (values) => {
           ) : (
             <div style={{display:'flex', flexDirection:'row', alignItems:'center'}}>
             <h3 className="page-title" >
-              {boardTitle ? boardTitle : BoardData?.board?.boardTitle}
+              {boardTitle ? boardTitle : BoardData?.board?.boardTitle ? BoardData?.board?.boardTitle : BoardData?.board?.project?.projectName}
             </h3>
             {(role === "admin" || permissions?.projectManagement) &&
             (<h3 style={{marginLeft:'1%'}}>
