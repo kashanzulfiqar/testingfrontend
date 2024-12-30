@@ -1096,48 +1096,50 @@ const Leads = () => {
       dataIndex: "communicatedBy",
       key: "communicatedBy",
       render: (text, record, index) => (
-        <Form.Item
-          name={["reachOuts", index, "communicatedBy"]}
-          className="custom-border"
-          rules={[
-            {
-              required: true,
-              message: "Select a communication person",
-            },
-          ]}
-        >
-            <Select
-              showSearch
-              onSearch={(val) => {
-                showTeamSearch(val, "Team");
-                // onTeamChange(val)
-              }}
-              filterOption={(input, option) =>
-                option.children
-                  ?.toLowerCase()
-                  ?.indexOf(input?.toLowerCase()) >= 0
-              }
-              optionFilterProp="children"
-              notFoundContent={
-                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-              }
-              dropdownRender={(menu) => <>{menu}</>}
-              className="custom-select custom-normal"
-              getPopupContainer={() =>
-                document.getElementById("area")
-              }
-              placeholder="Select a personnel"
-            >
-              {employees?.map((employee) => (
-                <Select.Option
-                  key={employee._id}
-                  value={employee._id}
-                >
-                  {employee.fullName}
-                </Select.Option>
-              ))}
-            </Select>
-        </Form.Item>
+        <div style={{ position: "relative" }} id={`user-${index}`}>
+          <Form.Item
+            name={["reachOuts", index, "communicatedBy"]}
+            className="custom-border"
+            rules={[
+              {
+                required: true,
+                message: "Select a communication person",
+              },
+            ]}
+          >
+              <Select
+                showSearch
+                onSearch={(val) => {
+                  showTeamSearch(val, "Team");
+                  // onTeamChange(val)
+                }}
+                filterOption={(input, option) =>
+                  option.children
+                    ?.toLowerCase()
+                    ?.indexOf(input?.toLowerCase()) >= 0
+                }
+                optionFilterProp="children"
+                notFoundContent={
+                  <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                }
+                dropdownRender={(menu) => <>{menu}</>}
+                className="custom-select custom-normal"
+                getPopupContainer={() =>
+                  document.getElementById(`user-${index}`)
+                }
+                placeholder="Select a personnel"
+              >
+                {employees?.map((employee) => (
+                  <Select.Option
+                    key={employee._id}
+                    value={employee._id}
+                  >
+                    {employee.fullName}
+                  </Select.Option>
+                ))}
+              </Select>
+          </Form.Item>
+        </div>
       ),
     },
     {
@@ -1943,6 +1945,18 @@ const Leads = () => {
                               showTeamSearch(val, "source");
                             } else {
                               setSearchValue(val.slice(0, 50)); // Truncate if over limit
+                            }
+                          }}
+                          onInputKeyDown={(e) => {
+                            if (searchValue.length >= 50 && e.key.length === 1 && !e.ctrlKey) {
+                              e.preventDefault(); // Prevent input when max length reached
+                            }
+                          }}
+                          onPaste={(e) => {
+                            const pastedData = e.clipboardData.getData("Text");
+                            if (pastedData.length > 50) {
+                              e.preventDefault(); // Prevent pasting more than 50 characters
+                              setSearchValue(pastedData.slice(0, 50));
                             }
                           }}
                           filterOption={(input, option) =>
