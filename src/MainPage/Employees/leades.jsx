@@ -286,6 +286,7 @@ const Leads = () => {
   }
 
   const viewLeads = (page, pageSize) => {
+    setIsLoading(true);
     const params = {
       ...filters,
       page: page || pagination.current,
@@ -479,9 +480,15 @@ const Leads = () => {
   };
 
   const removeReachOuts = (indexToRemove) => {
-    const updatedReachOuts = reachOuts.filter(
-      (_, index) => index !== indexToRemove
-    );
+    // Get the current form values for reachOuts
+  const currentValues = form.getFieldValue('reachOuts') || [];
+
+  // Filter out the row to be removed while preserving the remaining values
+  const updatedReachOuts = currentValues.filter((_, index) => index !== indexToRemove);
+    // Update the form values to reflect the new array
+    form.setFieldsValue({
+      reachOuts: updatedReachOuts,
+    });
     setReachOuts(updatedReachOuts);
   };
 
@@ -978,9 +985,7 @@ const Leads = () => {
           >
             <DatePicker
               suffixIcon={null}
-              getPopupContainer={() =>
-                document.getElementById(`date-${index}`)
-              }
+              getPopupContainer={() => document.body}
               placeholder={t("requests.addModal.selectDate")}
               className="form-control"
               size="large"
@@ -1017,7 +1022,7 @@ const Leads = () => {
             }
             optionFilterProp="children"
             className="custom-select custom-normal"
-            getPopupContainer={() => document.getElementById(`medium-${index}`)}
+            getPopupContainer={() => document.body}
             notFoundContent={<></>}
             dropdownRender={(menu) => (
               <>
@@ -1124,8 +1129,7 @@ const Leads = () => {
                 }
                 dropdownRender={(menu) => <>{menu}</>}
                 className="custom-select custom-normal"
-                getPopupContainer={() =>
-                  document.getElementById(`user-${index}`)
+                getPopupContainer={() => document.body
                 }
                 placeholder="Select a personnel"
               >
