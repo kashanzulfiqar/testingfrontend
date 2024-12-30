@@ -174,6 +174,33 @@ const LeadsDetails = () => {
     }
   };
 
+  async function downloadFile(url, fileName) {
+    try {
+      // Fetch the file as a Blob
+      const response = await fetch(url, { method: "GET" });
+      if (!response.ok) {
+        throw new Error(`Failed to fetch file: ${response.statusText}`);
+      }
+      const blob = await response.blob();
+  
+      // Create an object URL for the Blob
+      const objectUrl = window.URL.createObjectURL(blob);
+  
+      // Create an anchor element and trigger the download
+      const anchor = document.createElement("a");
+      anchor.href = objectUrl;
+      anchor.download = fileName; // Set the original file name
+      document.body.appendChild(anchor); // Append to DOM
+      anchor.click(); // Trigger click
+      document.body.removeChild(anchor); // Clean up
+  
+      // Release the object URL
+      window.URL.revokeObjectURL(objectUrl);
+    } catch (error) {
+      console.error("Download failed:", error.message);
+    }
+  }
+
   const renderNotes = () => {
     return leadObject?.notes?.map((note) => {
       return (
@@ -223,7 +250,7 @@ const LeadsDetails = () => {
               </div>
             </div>
           </div>
-          <p style={{ lineBreak: "anywhere" }}>{note?.text}</p>
+          <p className="your-text-class">{note?.text}</p>
           <ul>
             {note?.files?.map((file) => {
               // Extract the image ID from the Cloudinary URL
@@ -272,11 +299,14 @@ const LeadsDetails = () => {
                       </div>
                     </div>
                     <Link
-                      to={downloadLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      download
-                      onClick={(e) => e.stopPropagation()} // Prevent parent click event
+                      // to={downloadLink}
+                      // target="_blank"
+                      // rel="noopener noreferrer"
+                      // download
+                      
+                      onClick={(e) => {e.stopPropagation()
+                        downloadFile(downloadLink, file?.fileName); // Use original file name
+                      }} // Prevent parent click event
                     >
                       <i className="las la-download" />
                     </Link>
@@ -346,7 +376,7 @@ const LeadsDetails = () => {
               </div>
             </div>
           </div>
-          {reachOut.comments && <p>{reachOut.comments}</p>}
+          {reachOut.comments && <p className="your-text-class">{reachOut.comments}</p>}
         </div>
       );
     });
@@ -654,6 +684,18 @@ const LeadsDetails = () => {
             <a
               className="dropdown-item"
               href="javascript:void(0)"
+              onClick={(e) => {e.stopPropagation()
+                const downloadLink = record?.imageUrl?.replace(
+                  "/upload/",
+                  "/upload/fl_attachment/"
+                );
+                const fileName = record?.fileName; // Ensure this exists in `record`
+                if (downloadLink && fileName) {
+                  downloadFile(downloadLink, fileName); // Call the download function
+                } else {
+                  console.error("Download link or file name is missing");
+                }
+              }} // Prevent parent click event
               // onClick={(e) => {
               //   e.stopPropagation();
               //   getAllCurrencies();
@@ -949,7 +991,7 @@ const LeadsDetails = () => {
                     </li>
                     <li>
                       <label className="other-title">Source</label>
-                      <label>{leadObject?.source?.title}</label>
+                      <p style={{overflowWrap: "break-word", wordBreak: "break-word"}}>{leadObject?.source?.title}</p>
                     </li>
                   </ul>
                   <div className="d-flex align-items-center justify-content-between flex-wrap">

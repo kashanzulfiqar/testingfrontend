@@ -12950,9 +12950,20 @@ padding-right: unset;
   text-decoration: underline;
 }
 
+.your-text-class {
+  overflow-wrap: break-word;
+  word-break: break-word;
+  word-break: keep-all; /* For regular words */
+  white-space: normal;
+}
 
 .LeadTable td {
   border-right: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.LeadTable td,
+.LeadTable th {
+  vertical-align: top; /* Align all content to the top */
 }
 
 .LeadTable td:last-child {

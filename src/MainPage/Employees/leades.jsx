@@ -290,6 +290,7 @@ const Leads = () => {
   }
 
   const viewLeads = (page, pageSize) => {
+    setIsLoading(true);
     const params = {
       ...filters,
       page: page || pagination.current,
@@ -483,9 +484,15 @@ const Leads = () => {
   };
 
   const removeReachOuts = (indexToRemove) => {
-    const updatedReachOuts = reachOuts.filter(
-      (_, index) => index !== indexToRemove
-    );
+    // Get the current form values for reachOuts
+  const currentValues = form.getFieldValue('reachOuts') || [];
+
+  // Filter out the row to be removed while preserving the remaining values
+  const updatedReachOuts = currentValues.filter((_, index) => index !== indexToRemove);
+    // Update the form values to reflect the new array
+    form.setFieldsValue({
+      reachOuts: updatedReachOuts,
+    });
     setReachOuts(updatedReachOuts);
   };
 
@@ -560,6 +567,7 @@ const Leads = () => {
               },
               ...data,
             ]);
+            viewLeads();
             handleClose();
             message.success("Lead Added Successfully");
             setLoader(false);
@@ -811,12 +819,14 @@ const Leads = () => {
       title: "Source",
       dataIndex: "source",
       key: "source",
-      render: (text, record) => <label>{record?.source?.title}</label>,
+      render: (text, record) => <label className="longText4">{record?.source?.title}</label>,
     },
     {
       title: "Action",
       render: (text, record) => (
-        <div className="dropdown dropdown-action text-end">
+        <div className="dropdown dropdown-action text-end"
+        onClick={(e) => e.stopPropagation()}
+        >
           <a
             href="#"
             className="action-icon dropdown-toggle"
@@ -997,9 +1007,7 @@ const Leads = () => {
           >
             <DatePicker
               suffixIcon={null}
-              getPopupContainer={() =>
-                document.getElementById(`date-${index}`)
-              }
+              getPopupContainer={() => document.body}
               placeholder={t("requests.addModal.selectDate")}
               className="form-control"
               size="large"
@@ -1036,7 +1044,7 @@ const Leads = () => {
             }
             optionFilterProp="children"
             className="custom-select custom-normal"
-            getPopupContainer={() => document.getElementById(`medium-${index}`)}
+            getPopupContainer={() => document.body}
             notFoundContent={<></>}
             dropdownRender={(menu) => (
               <>
@@ -1116,48 +1124,47 @@ const Leads = () => {
       key: "communicatedBy",
       render: (text, record, index) => (
         <div style={{ position: "relative" }} id={`user-${index}`}>
-        <Form.Item
-          name={["reachOuts", index, "communicatedBy"]}
-          className="custom-border"
-          rules={[
-            {
-              required: true,
-              message: "Select a communication person",
-            },
-          ]}
-        >
-            <Select
-              showSearch
-              onSearch={(val) => {
-                showTeamSearch(val, "Team");
-                // onTeamChange(val)
-              }}
-              filterOption={(input, option) =>
-                option.children
-                  ?.toLowerCase()
-                  ?.indexOf(input?.toLowerCase()) >= 0
-              }
-              optionFilterProp="children"
-              notFoundContent={
-                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-              }
-              dropdownRender={(menu) => <>{menu}</>}
-              className="custom-select custom-normal"
-              getPopupContainer={() =>
-                document.getElementById(`user-${index}`)
-              }
-              placeholder="Select a personnel"
-            >
-              {employees?.map((employee) => (
-                <Select.Option
-                  key={employee._id}
-                  value={employee._id}
-                >
-                  {employee.fullName}
-                </Select.Option>
-              ))}
-            </Select>
-        </Form.Item>
+          <Form.Item
+            name={["reachOuts", index, "communicatedBy"]}
+            className="custom-border"
+            rules={[
+              {
+                required: true,
+                message: "Select a communication person",
+              },
+            ]}
+          >
+              <Select
+                showSearch
+                onSearch={(val) => {
+                  showTeamSearch(val, "Team");
+                  // onTeamChange(val)
+                }}
+                filterOption={(input, option) =>
+                  option.children
+                    ?.toLowerCase()
+                    ?.indexOf(input?.toLowerCase()) >= 0
+                }
+                optionFilterProp="children"
+                notFoundContent={
+                  <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                }
+                dropdownRender={(menu) => <>{menu}</>}
+                className="custom-select custom-normal"
+                getPopupContainer={() => document.body
+                }
+                placeholder="Select a personnel"
+              >
+                {employees?.map((employee) => (
+                  <Select.Option
+                    key={employee._id}
+                    value={employee._id}
+                  >
+                    {employee.fullName}
+                  </Select.Option>
+                ))}
+              </Select>
+          </Form.Item>
         </div>
       ),
     },
@@ -1173,7 +1180,6 @@ const Leads = () => {
             <Input
             className="form-control"
             placeholder="Enter any comment"
-            maxLength={50}
           />
           </Form.Item>
       ),
@@ -1640,10 +1646,21 @@ const Leads = () => {
                 locale={{
                   emptyText: isLoading ? null : customEmptyText,
                 }}
-                style={{ overflowX: "auto", paddingBottom: "95px" }}
+                style={{ overflowX: "auto"}}
                 loading={isLoading}
                 pagination={false}
-                columns={columns}
+                columns={columns.map((column, index) => ({
+                  ...column,
+                  onCell: (_, rowIndex) => ({
+                    onClick: (e) => {
+                      // Prevent navigation for the last column
+                      if (index === columns.length - 1) {
+                        e.stopPropagation();
+                      }
+                    },
+                    style: { cursor: index === columns.length - 1 ? 'default' : 'pointer' },
+                  }),
+                }))}
                 // Use columns1 for the first table
                 dataSource={data} // Define your data source for the first table
                 rowKey={(record) => record?._id}
@@ -1972,10 +1989,26 @@ const Leads = () => {
                       >
                         <Select
                           showSearch
+                          value={searchValue}
                           onSearch={(val) => {
-                            setSearchValue(val);
-                            showTeamSearch(val, "source");
-                            // onTeamChange(val)
+                            if (val.length <= 50) {
+                              setSearchValue(val); // Allow up to 50 characters
+                              showTeamSearch(val, "source");
+                            } else {
+                              setSearchValue(val.slice(0, 50)); // Truncate if over limit
+                            }
+                          }}
+                          onInputKeyDown={(e) => {
+                            if (searchValue.length >= 50 && e.key.length === 1 && !e.ctrlKey) {
+                              e.preventDefault(); // Prevent input when max length reached
+                            }
+                          }}
+                          onPaste={(e) => {
+                            const pastedData = e.clipboardData.getData("Text");
+                            if (pastedData.length > 50) {
+                              e.preventDefault(); // Prevent pasting more than 50 characters
+                              setSearchValue(pastedData.slice(0, 50));
+                            }
                           }}
                           filterOption={(input, option) =>
                             option.children[0]
@@ -1991,7 +2024,7 @@ const Leads = () => {
                           dropdownRender={(menu) => (
                             <>
                               {menu}
-                              {searchValue && !sourceOptions?.some(option => option?.title?.toLowerCase() === searchValue?.toLowerCase()) && (
+                              {searchValue && !sourceOptions?.some(option => option?.title?.toLowerCase() === searchValue?.toLowerCase()) &&  (
                                   <>
                                     <Divider style={{ margin: "5px 0" }} />
                                     <Button
