@@ -12,6 +12,8 @@ import {
   Spin,
   Empty,
   Pagination,
+  Tooltip,
+  Avatar,
 } from "antd";
 import Modal from "@mui/material/Modal";
 import "antd/dist/antd.css";
@@ -24,11 +26,14 @@ import { apiServices } from "../../../Services/apiServices";
 import { LoadingOutlined } from "@ant-design/icons";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { useTranslation } from "react-i18next";
+import { user_icon } from "../../../Entryfile/imagepath";
 
 const TaskBoardList = () => {
   const { t, i18n } = useTranslation();
   const [menu, setMenu] = useState(false);
-
+  const [loadingEmployee, setLoadingEmployee] = useState(false);
+  const [employees, setEmployees] = useState([]);
+  const [selectedTeamMembers, setSelectedTeamMembers] = useState([]);
   const moment = require("moment");
   const [form] = Form.useForm();
   const nav = useNavigate();
@@ -123,6 +128,7 @@ const TaskBoardList = () => {
 
   useEffect(() => {
     setIsLoading(true);
+    fetchEmployees();
     GetListProjects();
   }, [pagination.current, pagination.pageSize]);
 
@@ -148,6 +154,48 @@ const TaskBoardList = () => {
     }
   }
 
+  const fetchEmployees = () => {
+      setLoadingEmployee(true)
+      apiServices("GET", `user/all-employees`, null, user_state)
+        .then((res) => {
+          if (res.data.success === true) {
+            const emps = res?.data?.User;
+            const sortedData = emps
+              .slice()
+              .sort((a, b) => a.fullName.localeCompare(b.fullName));
+            setEmployees(sortedData);
+            setLoadingEmployee(false)
+          }
+        })
+        .catch((err) => {
+          setLoadingEmployee(false)
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : t("aAttend.errors.getEmployeesError")
+            }`
+          );
+        });
+    };
+
+    const getTeamMemberOptions = () => {
+        return employees?.map((employee) => (
+          <Select.Option key={employee._id} value={employee._id}>
+            {employee.fullName}
+          </Select.Option>
+        ));
+      }
+
+      const handleChange = (values) => {
+
+        const selectedEmployees = values?.map((value) =>
+          employees?.find((employee) => employee._id === value)
+        );
+        setSelectedTeamMembers(selectedEmployees);
+      }
   const getProjects = (page, pageSize) => {
     //setLoader(true);
 
@@ -235,6 +283,7 @@ const TaskBoardList = () => {
   };
 
   const handleClose = () => {
+    setSelectedTeamMembers([])
     setOpen({ isAddOpen: false, isDelOpen: false, data: "" });
     setLoader(false);
   };
@@ -689,6 +738,141 @@ const TaskBoardList = () => {
                         </Form.Item>
                         </div>
                         </div>
+                        <div className="row">
+                  <div className="col-sm-6">
+                    <div className="form-group">
+                      <label>{t("projectScreen.Modal.addTeam")}{" "}
+                      <span className="text-danger">*</span></label>
+                      <div style={{ position: "relative" }} id="area">
+                        <Form.Item
+                          name="assignedDevelopers"
+                          className="addTeamHeight"
+                          rules={[
+                            {
+                              required: true,
+                              message: t(
+                                "projectScreen.Modal.teamCannotBeEmpty"
+                              ),
+                            },
+                          ]}
+                        >
+                          <Select
+                            showSearch
+                            onSearch={(val) => {
+                              showTeamSearch(val, "Team");
+                              // onTeamChange(val)
+                            }}
+                            filterOption={(input, option) =>
+                              option.children
+                                .toLowerCase()
+                                .indexOf(input.toLowerCase()) >= 0
+                            }
+                            optionFilterProp="children"
+                            notFoundContent={
+                              loadingEmployee ? (
+                                <Spin style={{
+                                  height: "38px",
+                                  width: "100%",
+                                  display: "flex",
+                                  justifyContent: "center",
+                                  alignItems: "center",
+                                }} />
+                              ) : (
+                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                              )}
+                            dropdownRender={(menu) => <>{menu}</>}
+                            getPopupContainer={() =>
+                              document.getElementById("area")
+                            }
+                            className="customselect-height custom-select"
+                            mode="multiple"
+                            placeholder={t(
+                              "projectScreen.Modal.selectTeamMembers"
+                            )}
+                            
+                            onChange={handleChange}
+                          >
+                            {getTeamMemberOptions()}
+                          </Select>
+                        </Form.Item>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-sm-6">
+                    <div className="form-group">
+                      <label>{t("projectScreen.Modal.teamMembers")}</label>
+                      <div
+                        className="project-members"
+                        style={{ margin: "4px auto" }}
+                      >
+                        <ul
+                          className="team-members"
+                          style={{ minWidth: "max-content" }}
+                        >
+                          {selectedTeamMembers
+                            ?.slice(0, 4)
+                            .map((teamMember, index) => (
+                              <li key={index}>
+                                <Tooltip
+                                  title={teamMember?.fullName}
+                                >
+                                  <Avatar
+                                    style={{ cursor: "pointer" }}
+                                    src={
+                                      teamMember?.imageUrl || user_icon
+                                    }
+                                  />
+                                </Tooltip>
+                              </li>
+                            ))}
+                          {selectedTeamMembers?.length > 4 && (
+                            <li className="dropdown avatar-dropdown">
+                              <Link
+                                className="all-users dropdown-toggle projectTeamMember"
+                                style={{
+                                  display: "inline-flex",
+                                  height: "33px",
+                                  width: "33px",
+                                }}
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                              >
+                                +{selectedTeamMembers?.length - 4}
+                              </Link>
+                              {/* Dropdown menu for additional team members */}
+                              <div className="dropdown-menu dropdown-menu-right">
+                                <div className="avatar-group">
+                                  {selectedTeamMembers
+                                    ?.slice(4)
+                                    .map((teamMember, index) => (
+                                      <a
+                                        className="avatar avatar-xs projectTeamMember"
+                                        key={index}
+                                      >
+                                        <Tooltip
+                                          title={
+                                            teamMember?.fullName
+                                          }
+                                        >
+                                          <Avatar
+                                            src={
+                                              teamMember?.imageUrl ||
+                                              user_icon
+                                            }
+                                            style={{ cursor: "pointer" }}
+                                          />
+                                        </Tooltip>
+                                      </a>
+                                    ))}
+                                </div>
+                              </div>
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 <div className="submit-section">
                   <Form.Item>
                     <Button

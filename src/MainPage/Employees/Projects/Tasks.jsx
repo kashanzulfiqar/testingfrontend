@@ -62,9 +62,7 @@ useEffect(() => {
           // Editing mode
           if (open.data.projectId) {
               setIsProjectAssociated(true); // Task is associated with a project
-              if (open?.data?.boardId) {
-                setOriginalTaskboard(open.data.boardId);
-              }
+              form2.setFieldsValue({ boardId: undefined }); // Reset taskboard field
           } else if (open.data.boardId) {
               setIsProjectAssociated(false); // Task is associated with a task board
           }
@@ -74,20 +72,6 @@ useEffect(() => {
       }
   }
 }, [open]);
-
-const handleToggleChange = (checked) => {
-  setIsProjectAssociated(checked);
-
-  if (!checked) {
-    // If toggling off and previously linked to a project
-    if (open?.data?.projectId) {
-      form2.setFieldsValue({ boardId: undefined }); // Reset taskboard field
-    } else {
-      // If toggling off and originally a taskboard task, retain the value
-      form2.setFieldsValue({ boardId: originalTaskboard });
-    }
-  }
-};
 
   const getAllTasks = (values, current_page, page_size) => {
     setTableLoader(true);
@@ -779,7 +763,7 @@ const onFinishEdit = (values) => {
                                 <span>{t('Associated with project')}</span>
                                 <Switch
                                     checked={isProjectAssociated}
-                                    onChange={handleToggleChange}
+                                    onChange={(checked) => setIsProjectAssociated(checked)}
                                     style={{ marginLeft: '10px' }}
                                 />
                             </label>
