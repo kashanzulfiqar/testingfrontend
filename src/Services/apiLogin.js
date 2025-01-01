@@ -1,21 +1,12 @@
 import axios from "axios";
+import { BASE_URL } from '../config/apiConfig';
+
 export const apiLoginEmployee = async (endpoint, data) => {
     let location = window.location.origin
-
-    const DEV_BASE_URL ="https://stage-api.daftarpro.com"
-    const PRD_BASE_URL = "https://api.daftarpro.com";
-
-
-    let BASE_URL = (location === "https://www.daftarpro.com" || location ===  "www.daftarpro.com" || location === "https://daftarpro.com" || location === "http://daftarpro.com" || location === "http://daftarpro.com") ? PRD_BASE_URL : DEV_BASE_URL
-    // let BASE_URL = (location === "https://www.daftarpro.com" || location === "https://daftarpro.com") ? PRD_BASE_URL : DEV_BASE_URL
-    
-    // let AuthObj= JSON.parse(localStorage.getItem('AuthObj'));
-    // let athtoken= AuthObj?.acesstoken;
     
     try {
         let result = axios({
             url: `${BASE_URL}/${endpoint}`,
-            // url: `${BASE_URL}/${'admin/loginadmin'}`,
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
