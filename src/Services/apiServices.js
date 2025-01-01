@@ -2,15 +2,9 @@ import axios from "axios";
 import {store} from '../Entryfile/Main.js';
 import { login } from "../Entryfile/features/users.jsx";
 import { superAdmin } from "../Redux/Reducer/permissions/superAdminSlice.js";
+import { BASE_URL } from '../config/apiConfig';
 
 let location = window.location.origin
-// https://stage-api.daftarpro.com/
-const DEV_BASE_URL = "https://stage-api.daftarpro.com"
-const PRD_BASE_URL = "https://api.daftarpro.com";
-
-// const arr = [ "https://www.daftarpro.com",  "https://daftarpro.com", "http://www.daftarpro.com",  "http://daftarpro.com" ]
-
-const BASE_URL = (location === "https://www.daftarpro.com" || location ===  "www.daftarpro.com" || location === "https://daftarpro.com" || location === "http://daftarpro.com" || location === "http://daftarpro.com") ? PRD_BASE_URL : DEV_BASE_URL
 
 export const apiServices = async (type, endpoint, data, state) => {
     

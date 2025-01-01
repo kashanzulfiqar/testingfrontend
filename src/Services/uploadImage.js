@@ -1,54 +1,23 @@
 //Api Upload to s3
 import axios from "axios"
+import { BASE_URL } from '../config/apiConfig';
 
-const DEV_BASE_URL ="https://stage-api.daftarpro.com"
-const PRD_BASE_URL = "https://api.daftarpro.com";
 export const apiUploadToS3 = (imagedata) => {
-
-    let location = window.location.origin
-    let BASE_URL = (location === "https://www.daftarpro.com" || location ===  "www.daftarpro.com" || location === "https://daftarpro.com" || location === "http://daftarpro.com" || location === "http://daftarpro.com") ? PRD_BASE_URL : DEV_BASE_URL
-    // let BASE_URL = PRD_BASE_URL
-    
-    
-    
-    // let BASE_URL = (location === "https://www.daftarpro.com" || location === "https://daftarpro.com") ? PRD_BASE_URL : DEV_BASE_URL
-
     const url = `${BASE_URL}/user/uploadfile`;
-
     const formData = new FormData();
-
     formData.append("files", imagedata);
             
     const config = {
-
         headers: {
-
             "content-type": "multipart/form-data",
-
         },
-
     };
 
     return axios.post(url, formData, config);
-
-
-
 }
 
 export const excelImport = (imagedata, companyId, user_email) => {
-
-    let location = window.location.origin
-
-
-    let BASE_URL = (location === "https://www.daftarpro.com" || location ===  "www.daftarpro.com" || location === "https://daftarpro.com" || location === "http://daftarpro.com" || location === "http://daftarpro.com") ? PRD_BASE_URL : DEV_BASE_URL
-    // let BASE_URL = PRD_BASE_URL
-    
-    
-    
-    // let BASE_URL = (location === "https://www.daftarpro.com" || location === "https://daftarpro.com") ? PRD_BASE_URL : DEV_BASE_URL
-
     const url = `${BASE_URL}/user/importExcel`;
-
     const formData = new FormData();
 
     formData.append("files", imagedata);
@@ -56,17 +25,10 @@ export const excelImport = (imagedata, companyId, user_email) => {
     formData.append("user_email", user_email);
             
     const config = {
-
         headers: {
-
             "Content-Type": "multipart/form-data",
-
         },
-
     };
 
     return axios.post(url, formData, config);
-
-
-
 }

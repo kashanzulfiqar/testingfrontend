@@ -10,6 +10,8 @@ import { User, Avatar_19, Avatar_07, Avatar_06, Avatar_14, user_icon } from '../
 import {
   BarChart, Bar, Cell, ResponsiveContainer,
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+  ComposedChart,
+  ReferenceLine,
 } from 'recharts';
 import "../../index.css"
 import { useSelector } from 'react-redux';
@@ -19,6 +21,17 @@ import { getAllISOCodes } from 'iso-country-currency';
 import { LoadingOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 
+const amountFormatter = (value) => {
+  if (value >= 1e9) {
+    return `${(value / 1e9).toFixed(1)}B`;
+  } else if (value >= 1e6) {
+    return `${(value / 1e6).toFixed(1)}M`;
+  } else if (value >= 1e3) {
+    return `${(value / 1e3).toFixed(1)}K`;
+  } else {
+    return value;
+  }
+};
 
 const AdminDashboard = () => {
   const { t, i18n } = useTranslation();
@@ -368,6 +381,21 @@ const antIcon = (
     spin
   />
 );
+
+const filteredYearData = tableYearData.filter(item => item.totalRevenue > 0);
+
+  // Calculate growth and add it to the data
+  const calculateGrowth = (data) => {
+    return data.map((item, index, arr) => {
+      if (index === 0) return { ...item, growth: 0 }; // No growth for the first year
+      const previousYearRevenue = arr[index - 1].totalRevenue;
+      const growth = previousYearRevenue ? ((item.totalRevenue - previousYearRevenue) / previousYearRevenue) * 100 : 0;
+      return { ...item, growth };
+    });
+  };
+
+  const enrichedData = calculateGrowth(filteredYearData);
+
   return (
     <>
       <div className={`main-wrapper ${menu ? 'slide-nav' : ''}`}>
@@ -450,46 +478,60 @@ const antIcon = (
                     <div className="card" dir="ltr">
                       <div className="card-body">
                         <h3 className="card-title">{t('aDash.totalRevenue')}</h3>
-                        {/* <button onClick={() => {}}>SVG</button> */}
-
                         {
                           loader ? <Spin style={{height: '300px', display: 'grid', placeItems: 'center'}} /> :
                           allData?.revenue?.length > 0 ?
                           <ResponsiveContainer width='100%' height={300}>
-                            <BarChart
-                              data={tableYearData}
+                            <ComposedChart
+                              data={enrichedData}
                               margin={{
                                 top: 5, right: 5, left: 5, bottom: 5,
-                              }}
-                              onClick={(value) => {
-                                if(value?.activePayload[0]?.payload?.months){
-                                  monthHandler(value?.activePayload[0]?.payload)
-                                }
                               }}
                             >
                               <CartesianGrid />
                               <XAxis dataKey="year" />
-                              {/* <YAxis tickFormatter={(value) => value >= 1000 ? `${(value / 1000).toFixed(1)}k` : value} /> */}
-                              <YAxis 
-                                tickFormatter={(value) => {
-                                if (value >= 1e9) {
-                                  return `${(value / 1e9).toFixed(1)}B`;
-                                } else if (value >= 1e6) {
-                                  return `${(value / 1e6).toFixed(1)}M`;
-                                } else if (value >= 1e3) {
-                                  return `${(value / 1e3).toFixed(1)}K`;
-                                } else {
-                                  return value;
-                                }
-                              }} />
+                              <YAxis yAxisId="left" tickFormatter={amountFormatter} />
+                              <YAxis yAxisId="right" orientation="right" tickFormatter={(value) => `${value}%`} />
                               <Tooltip
                                 labelFormatter={(value) => `${t('empProfile.year')} : ${value}`}
-                                formatter={(value) => <label>{value.toLocaleString()}</label>}
+                                formatter={(value, name) => {
+                                  if (name === "Growth") {
+                                    return [`${value.toFixed(2)}%`, name];
+                                  }
+                                  return [value.toLocaleString(), name];
+                                }}
                                 contentStyle={{ direction: i18n.dir() }}
                               />
                               <Legend />
-                              <Bar dataKey="totalRevenue" name={t('finance.Profit&loss.totalRevenue')} fill="#ff9b44" maxBarSize={20} />
-                            </BarChart>
+                              <Bar 
+                                yAxisId="left" 
+                                dataKey="totalRevenue" 
+                                name={t('finance.Profit&loss.totalRevenue')} 
+                                fill="#ff9b44" 
+                                maxBarSize={Math.max(20, 100 / enrichedData.length)}
+                              />
+                              <ReferenceLine yAxisId="right" y={0} stroke="#666" strokeDasharray="3 3" />
+                              <Line 
+                                yAxisId="right" 
+                                type="basis" 
+                                dataKey="growth" 
+                                name="Growth" 
+                                stroke="#cc7a00"
+                                strokeWidth={3} 
+                                dot={{ r: 3 }} 
+                                activeDot={{ r: 7 }} 
+                              />
+                              <Line 
+                                yAxisId="left" 
+                                type="monotone" 
+                                dataKey="profit" 
+                                name="Profit" 
+                                stroke="#82ca9d" 
+                                strokeWidth={3}
+                                dot={{ r: 3 }}
+                                activeDot={{ r: 7 }}
+                              />
+                            </ComposedChart>
                           </ResponsiveContainer> :
                           <label style={{height: '300px', display: 'grid', placeItems: 'center', color: 'grey'}}>{t('aRequests.errors.noRecordFound')}</label>
                         }
