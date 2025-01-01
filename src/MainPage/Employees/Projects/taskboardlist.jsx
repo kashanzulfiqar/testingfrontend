@@ -357,18 +357,56 @@ const TaskBoardList = () => {
         </div>
       ),
     },
-    // {
-    //   title: t('holiday.date'),
-    //   dataIndex: "holidayDate",
-    //   key: "holidayDate",
-    //   render: (text) => moment(text).format("D MMM YYYY"),
-    // },
-    // {
-    //   title: t('holiday.day'),
-    //   dataIndex: "holidayDate",
-    //   key: "holidayDate",
-    //   render: (text) => moment(text).format("dddd"),
-    // },
+    {
+          title: t('projectScreen.team'),
+          dataIndex: "assignedDevelopers",
+          key: "assignedDevelopers",
+          render: (assignedDevelopers) => (
+            <div className="project-members" style={{margin: '4px auto'}}>
+            <ul className="team-members" style={{minWidth: 'max-content'}}>
+              {assignedDevelopers?.slice(0, 4).map((developer, index) => (
+                <li key={index}>
+                  <Tooltip title={developer?.fullName}>
+                    <Avatar style={{cursor: 'pointer'}} src={developer?.imageUrl || user_icon} />
+                  </Tooltip>
+                </li>
+              ))}
+              {assignedDevelopers?.length > 4 && (
+                <li className="dropdown avatar-dropdown">
+                  <Link
+                    className="all-users dropdown-toggle projectTeamMember"
+                    style={{display:'inline-flex', height: '33px', width: '33px'}}
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                    onClick={(e) => e.stopPropagation()} // Stop propagation here
+                  >
+                    +{assignedDevelopers?.length - 4}
+                  </Link>
+                  {/* Dropdown menu for additional team members */}
+                  <div className="dropdown-menu dropdown-menu-right">
+                    <div className="avatar-group">
+                      {assignedDevelopers?.slice(4).map((developer, index) => (
+                        <a
+                          className="avatar avatar-xs projectTeamMember"
+                          
+                          key={index}
+                        >
+                          <Tooltip title={developer?.fullName}>
+                            <Avatar
+                              src={developer?.imageUrl || user_icon}
+                              style={{cursor: 'pointer'}}
+                            />
+                          </Tooltip>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                </li>
+              )}
+            </ul>
+            </div>
+          ),
+        },
     {
       title: t('holiday.actions'),
       render: (record, row) => (
