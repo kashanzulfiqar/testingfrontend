@@ -152,7 +152,7 @@ const LeadsDetails = () => {
 
   const getInitials = (name) => {
     if (!name) return "";
-    const nameParts = name.split(" ");
+    const nameParts = name.trim().split(" ");
     const initials = nameParts.map((part) => part[0].toUpperCase()).join("");
     return initials.length > 2 ? initials.slice(0, 2) : initials; // Limit to 2 characters
   };
