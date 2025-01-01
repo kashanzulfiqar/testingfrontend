@@ -515,8 +515,8 @@ function EditProjects({
         status: values.status,
         docs: docs,
         adminDocs: admin,
-        paymentSchedule:
-          projectType === "Billed" ? values?.paymentSchedule : [],
+        paymentSchedule: values?.paymentSchedule,
+          // projectType === "Billed" ? values?.paymentSchedule : [],
         deleted: false,
         companyId: selectedData.companyId,
       };
@@ -865,13 +865,20 @@ function EditProjects({
     }
   };
 
+  const handleCostType = (value) => {
+    setCostType(value);
+    if (projectType === "Billed" && value === "Fixed" && paymentSchedules?.length === 0) {
+      addPaymentSchedule();
+    }
+  };
+
   const handleCostChange = (value) => {
     setProjectCost(value);
     const paymentSchedules = form.getFieldValue("paymentSchedule");
 
     const updatedPaymentSchedules = paymentSchedules?.map((schedule) => {
       const { amountInFigure } = schedule;
-      const percentage = ((amountInFigure / value) * 100).toFixed(2);
+      const percentage = value ? ((amountInFigure / value) * 100).toFixed(2) : 0;
       return {
         ...schedule,
         amountInPercent: parseFloat(percentage),
@@ -897,7 +904,7 @@ function EditProjects({
     const newPaymentSchedules = [...paymentSchedules];
     newPaymentSchedules[index].amountInFigure = value;
 
-    const percentage = ((value / projectCost) * 100).toFixed(2);
+    const percentage = projectCost ? ((value / projectCost) * 100).toFixed(2) : 0;
     newPaymentSchedules[index].amountInPercent = parseFloat(percentage);
 
     setPaymentSchedules(newPaymentSchedules);
@@ -1031,6 +1038,7 @@ function EditProjects({
           {/* <Input type="number" className="form-control" /> */}
           <InputNumber
             className="form-control"
+            min={0}
             placeholder={t("projectScreen.Modal.enterAmount")}
             formatter={(value) => {
               return `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -1757,7 +1765,7 @@ function EditProjects({
                               placeholder={t(
                                 "projectScreen.Modal.selectCostType"
                               )}
-                              onChange={(value) => setCostType(value)}
+                              onChange={(value) => handleCostType(value)}
                             >
                               <Select.Option value="Hourly">
                                 {t("projectScreen.Modal.hourly")}
@@ -1795,6 +1803,7 @@ function EditProjects({
                         {/* <Input type="number" className="form-control" /> */}
                         <InputNumber
                           className="form-control"
+                          min={0}
                           formatter={(value) => {
                             return `${value}`.replace(
                               /\B(?=(\d{3})+(?!\d))/g,

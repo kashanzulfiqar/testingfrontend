@@ -98,7 +98,7 @@ const Payments = () => {
     let formatted_data = {
       clientName: values?.clientName || '',
       invoiceNo: values?.invoiceNo || '',
-      invoiceMonth: moment(values?.invoiceMonth).format('YYYY-MM') || '',
+      invoiceMonth: values?.invoiceMonth ? moment(values?.invoiceMonth).format('YYYY-MM') : '',
       status: values?.status || ''
     }
 
