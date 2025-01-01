@@ -66,7 +66,7 @@ const Leads = () => {
   const [selectedRecord, setSelectedRecord] = useState(null); // To store the selected record
   const [searchValue, setSearchValue] = useState("");
   const [flag, setFlag] = useState(true);
-
+  const [activeDropdown, setActiveDropdown] = useState(null); // To track active dropdown
   const [page, setPage] = useState(1);
   const [size, setSize] = useState(20);
   const [pagination, setPagination] = useState({
@@ -695,7 +695,7 @@ const Leads = () => {
       title: "Status",
       dataIndex: 'status',
       key: 'status',
-      render: (text, record) => (
+      render: (text, record, index) => (
         <div>
           <a
             className="btn btn-white btn-sm btn-rounded dropdown-toggle"
@@ -704,6 +704,7 @@ const Leads = () => {
             aria-expanded="false"
             onClick={(e) => {
               e.stopPropagation()
+              setActiveDropdown(activeDropdown === `status-${index}` ? null : `status-${index}`);
             }}
           >
             <i
@@ -720,7 +721,7 @@ const Leads = () => {
             {text === "pending" ? t("aRequests.Pending") : text === "converted" ? "Converted" : text === "notConverted" ? 'Not Converted' : text === "onHold" ? "On Hold" : text}
           </a>
           <div
-            className="dropdown-menu dropdown-menu-right"
+            className={`dropdown-menu dropdown-menu-right ${activeDropdown === `status-${index}` ? 'show' : ''}`}
           >
             <a
               className={`dropdown-item ${text === "pending" && "disabled"}`}
@@ -823,7 +824,9 @@ const Leads = () => {
     },
     {
       title: "Action",
-      render: (text, record) => (
+      dataIndex: 'action',
+      key: "action",
+      render: (text, record, index) => (
         <div className="dropdown dropdown-action text-end"
         onClick={(e) => e.stopPropagation()}
         >
@@ -834,11 +837,12 @@ const Leads = () => {
             aria-expanded="false"            
             onClick={(e) => {
               e.stopPropagation()
+              setActiveDropdown(activeDropdown === `action-${index}` ? null : `action-${index}`);
             }}
           >
             <i className="material-icons">more_vert</i>
           </a>
-          <div className="dropdown-menu dropdown-menu-right">
+          <div className={`dropdown-menu dropdown-menu-right ${activeDropdown === `action-${index}` ? 'show' : ''}`}>
             <a
               className="dropdown-item"
               href="javascript:void(0)"
@@ -1994,8 +1998,6 @@ const Leads = () => {
                             if (val.length <= 50) {
                               setSearchValue(val); // Allow up to 50 characters
                               showTeamSearch(val, "source");
-                            } else {
-                              setSearchValue(val.slice(0, 50)); // Truncate if over limit
                             }
                           }}
                           onInputKeyDown={(e) => {
@@ -2006,9 +2008,12 @@ const Leads = () => {
                           onPaste={(e) => {
                             const pastedData = e.clipboardData.getData("Text");
                             if (pastedData.length > 50) {
-                              e.preventDefault(); // Prevent pasting more than 50 characters
-                              setSearchValue(pastedData.slice(0, 50));
-                            }
+                              setSearchValue("")
+                              setOpen3(false); // Close the dropdown
+                              message.error("Source should not exceed 50 characters."); // Show validation message
+                            } else {
+                              setSearchValue(pastedData); // Update the state
+                              }
                           }}
                           filterOption={(input, option) =>
                             option.children[0]
