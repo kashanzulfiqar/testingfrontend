@@ -86,6 +86,7 @@ import LeadReport from "../MainPage/HR/Reports/leadreport";
 import PrivacyPolicy from "../LandingPage/privacyPolicy";
 import RefundPolicy from "../LandingPage/refundPolicy";
 import TermsAndConditions from "../LandingPage/TermsConditions";
+import LeadsDetails from "../MainPage/Employees/leadsDetails";
 
 const App = () => {
   const login = useSelector((state) => state.user.loginvalue);
@@ -238,6 +239,7 @@ const App = () => {
             element={<ResourceAllocationDetails />}
           />
           <Route path={`/leads`} element={<Leads />} />
+          <Route path={`/leads-details`} element={<LeadsDetails />} />
           <Route path={`/documentation`} element={<GitBook />} />
           <Route path={`/report-problem`} element={<Query />} />
 

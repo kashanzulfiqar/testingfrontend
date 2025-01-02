@@ -72,26 +72,26 @@ const LeadReport = () => {
 
           // Calculate stats for the cards
           const totalLeads = leads.length;
-          const pendingLeads = leads.filter(
-            (lead) => lead.status === "pending"
+          const ongoingLeads = leads.filter(
+            (lead) => lead.status === "OnGoing"
           ).length;
           const onHoldLeads = leads.filter(
-            (lead) => lead.status === "onHold"
+            (lead) => lead.status === "OnHold"
           ).length;
           const convertedLeads = leads.filter(
-            (lead) => lead.status === "converted"
+            (lead) => lead.status === "Converted"
           ).length;
-          const notConvertedLeads = leads.filter(
-            (lead) => lead.status === "notConverted"
+          const lostLeads = leads.filter(
+            (lead) => lead.status === "Lost"
           ).length;
-          const activeLeads = pendingLeads + onHoldLeads;
+          const activeLeads = ongoingLeads + onHoldLeads;
 
           const stats = {
             totalLeads,
-            pendingLeads,
+            ongoingLeads,
             onHoldLeads,
             convertedLeads,
-            notConvertedLeads,
+            lostLeads,
             activeLeads,
           };
           setStats(stats);
@@ -127,14 +127,14 @@ const LeadReport = () => {
           // Process monthly data
           const monthlyData = {};
           const monthlyConverted = {};
-          const monthlyNotConverted = {};
+          const monthlyLost = {};
 
           // Initialize all months with 0
           moment.months().forEach((month) => {
             const monthKey = moment(month, "MMMM").format("MMM");
             monthlyData[monthKey] = 0;
             monthlyConverted[monthKey] = 0;
-            monthlyNotConverted[monthKey] = 0;
+            monthlyLost[monthKey] = 0;
           });
 
           // Count leads for each month
@@ -142,12 +142,11 @@ const LeadReport = () => {
             const month = moment(lead.createdAt).format("MMM");
             monthlyData[month] = (monthlyData[month] || 0) + 1;
 
-            // Track converted and not converted leads
-            if (lead.status === "converted") {
+            // Track converted and lost leads
+            if (lead.status === "Converted") {
               monthlyConverted[month] = (monthlyConverted[month] || 0) + 1;
-            } else if (lead.status === "notConverted") {
-              monthlyNotConverted[month] =
-                (monthlyNotConverted[month] || 0) + 1;
+            } else if (lead.status === "Lost") {
+              monthlyLost[month] = (monthlyLost[month] || 0) + 1;
             }
           });
 
@@ -156,7 +155,7 @@ const LeadReport = () => {
             const monthKey = moment(month, "MMMM").format("MMM");
             const totalMonthLeads = monthlyData[monthKey] || 0;
             const convertedLeads = monthlyConverted[monthKey] || 0;
-            const notConvertedLeads = monthlyNotConverted[monthKey] || 0;
+            const lostLeads = monthlyLost[monthKey] || 0;
 
             return {
               month: monthKey,
@@ -165,12 +164,12 @@ const LeadReport = () => {
                 totalMonthLeads > 0
                   ? (convertedLeads / totalMonthLeads) * 100
                   : 0,
-              notConverted:
+              lost:
                 totalMonthLeads > 0
-                  ? (notConvertedLeads / totalMonthLeads) * 100
+                  ? (lostLeads / totalMonthLeads) * 100
                   : 0,
               convertedCount: convertedLeads,
-              notConvertedCount: notConvertedLeads,
+              lostCount: lostLeads,
             };
           });
 
@@ -245,8 +244,8 @@ const LeadReport = () => {
             </Col>
             <Col xs={24} sm={12} md={6}>
               <StatCard
-                title="Not Converted"
-                value={stats.notConvertedLeads}
+                title="Lost"
+                value={stats.lostLeads}
                 color="#ff4d4f"
               />
             </Col>
@@ -410,7 +409,7 @@ const LeadReport = () => {
                           stroke="#52c41a"
                           strokeWidth={2}
                           dot={{ fill: "#52c41a" }}
-                          name="converted"
+                          name="Converted"
                         />
                         <Line
                           yAxisId="right"
@@ -419,7 +418,7 @@ const LeadReport = () => {
                           stroke="#ff4d4f"
                           strokeWidth={2}
                           dot={{ fill: "#ff4d4f" }}
-                          name="notConverted"
+                          name="Lost"
                         />
                       </ComposedChart>
                     </ResponsiveContainer>

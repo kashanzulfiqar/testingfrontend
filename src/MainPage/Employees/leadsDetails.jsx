@@ -491,12 +491,13 @@ const LeadsDetails = () => {
   };
   const handleReasoningSubmit = (enteredReason) => {
     // Close the modal and update the status with the reason
-    handleUpdateStatus(leadObject, "notConverted", "status", enteredReason);
+    handleUpdateStatus(leadObject, "Lost", "status", enteredReason);
+    handleUpdateStatus(leadObject, "Lost", "reasonOnly", enteredReason);
     setOpen({ isAddReasoning: false ,isEditReasoning: false});
     setReason(enteredReason); // Store the reason in the state
   };
   const handleReasonUpdateSubmit = (enteredReason) => {
-    handleUpdateStatus(leadObject, "notConverted", "reasonOnly", enteredReason);
+    handleUpdateStatus(leadObject, "Lost", "reasonOnly", enteredReason);
     setOpen({ isAddReasoning: false, isEditReasoning: false });
     setReason(enteredReason); // Store the updated reason in state
   };
@@ -879,11 +880,11 @@ const LeadsDetails = () => {
                     >
                       <i
                         className={`fa ${
-                          leadObject?.status === "onHold"
+                          leadObject?.status === "OnHold"
                             ? "fa-dot-circle-o text-purple"
-                            : leadObject?.status === "pending"
+                            : leadObject?.status === "OnGoing"
                             ? "fa-dot-circle-o text-info"
-                            : leadObject?.status === "converted"
+                            : leadObject?.status === "Converted"
                             ? "fa-dot-circle-o text-success"
                             : "fa-dot-circle-o text-primary"
                         }`}
@@ -892,67 +893,44 @@ const LeadsDetails = () => {
                     <Spin size="small" />
                   ) : (
                     <>
-                      {leadObject?.status === "pending"
-                        ? t("aRequests.Pending")
-                        : leadObject?.status === "converted"
+                      {leadObject?.status === "OnGoing"
+                        ? "Ongoing"
+                        : leadObject?.status === "Converted"
                         ? "Converted"
-                        : leadObject?.status === "notConverted"
-                        ? "Not Converted"
-                        : leadObject?.status === "onHold"
-                        ? "On Hold"
-                        : leadObject?.status}
-                        </>)}
+                        : leadObject?.status === "Lost"
+                        ? "Lost"
+                        : ""}
+                    </>)}
                     </a>
                     <div className="dropdown-menu dropdown-menu-right">
                       <a
-                        className={`dropdown-item ${
-                          leadObject?.status === "pending" && "disabled"
-                        }`}
+                        className={`dropdown-item ${leadObject?.status === "OnGoing" && "disabled"}`}
                         href="javascript:void(0)"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleUpdateStatus(leadObject, "pending", "status");
-                        }}
+                        onClick={() => handleUpdateStatus(leadObject, "OnGoing", "status")}
                       >
-                        <i className="fa fa-dot-circle-o text-info" /> Pending
+                        <i className="fa fa-dot-circle-o text-info" /> Ongoing
                       </a>
                       <a
-                        className={`dropdown-item ${
-                          leadObject?.status === "onHold" && "disabled"
-                        }`}
+                        className={`dropdown-item ${leadObject?.status === "OnHold" && "disabled"}`}
                         href="javascript:void(0)"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleUpdateStatus(leadObject, "onHold", "status");
-                        }}
+                        onClick={() => handleUpdateStatus(leadObject, "OnHold", "status")}
                       >
                         <i className="fa fa-dot-circle-o text-purple" /> On Hold
                       </a>
                       <a
-                        className={`dropdown-item ${
-                          leadObject?.status === "converted" && "disabled"
-                        }`}
+                        className={`dropdown-item ${leadObject?.status === "Converted" && "disabled"}`}
                         href="javascript:void(0)"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleUpdateStatus(leadObject, "converted", "status");
-                        }}
+                        onClick={() => handleUpdateStatus(leadObject, "Converted", "status")}
                       >
                         <i className="fa fa-dot-circle-o text-success" />{" "}
                         Converted
                       </a>
                       <a
-                        className={`dropdown-item ${
-                          leadObject?.status === "notConverted" && "disabled"
-                        }`}
+                        className={`dropdown-item ${leadObject?.status === "Lost" && "disabled"}`}
                         href="javascript:void(0)"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setOpen({ isAddReasoning: true })
-                        }}
+                        onClick={() => handleUpdateStatus(leadObject, "Lost", "status")}
                       >
-                        <i className="fa fa-dot-circle-o text-primary" /> Not
-                        Converted
+                        <i className="fa fa-dot-circle-o text-primary" /> Lost
                       </a>
                     </div>
                   </div>
