@@ -38,6 +38,55 @@ import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { DeleteFiles, uploadFunction } from "./UploadAndDeleteFunc";
 import { getAllISOCodes } from "iso-country-currency";
 import { useTranslation } from "react-i18next";
+import numeral from "numeral";
+
+// Utility function to format cost values
+const formatCostToWords = (value, currency) => {
+  if (!value) return '0';
+  
+  const scales = [
+    { value: 1e66, name: 'undecillion' },
+    { value: 1e63, name: 'vigintillion' },
+    { value: 1e60, name: 'novemdecillion' },
+    { value: 1e57, name: 'octodecillion' },
+    { value: 1e54, name: 'septendecillion' },
+    { value: 1e51, name: 'sexdecillion' },
+    { value: 1e48, name: 'quindecillion' },
+    { value: 1e45, name: 'quattuordecillion' },
+    { value: 1e42, name: 'tredecillion' },
+    { value: 1e39, name: 'duodecillion' },
+    { value: 1e36, name: 'undecillion' },
+    { value: 1e33, name: 'decillion' },
+    { value: 1e30, name: 'nonillion' },
+    { value: 1e27, name: 'octillion' },
+    { value: 1e24, name: 'septillion' },
+    { value: 1e21, name: 'sextillion' },
+    { value: 1e18, name: 'quintillion' },
+    { value: 1e15, name: 'quadrillion' },
+    { value: 1e12, name: 'trillion' },
+    { value: 1e9, name: 'billion' },
+    { value: 1e6, name: 'million' },
+    { value: 1e3, name: 'thousand' }
+  ];
+
+  const formatValue = (val) => {
+    // Handle numbers larger than the highest scale
+    if (val >= 1e69) {
+      return 'Value too large to represent';
+    }
+
+    // Find the appropriate scale
+    const scale = scales.find(s => val >= s.value);
+    
+    if (scale) {
+      return numeral(val / scale.value).format('0.0') + ' ' + scale.name;
+    }
+    
+    return numeral(val).format('0,0');
+  };
+
+  return `${formatValue(parseFloat(value))} ${currency}`;
+};
 
 const ProjectView = () => {
   const [form] = Form.useForm();
@@ -2187,9 +2236,9 @@ async function downloadFile(url, fileName) {
                             {
                               (project?.costType === 'Monthly' || project?.costType === 'Hourly' )
                               ? 
-                              `${totalCost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} ${project?.currency}` 
+                              formatCostToWords(totalCost, project?.currency)
                               : 
-                              `${project?.cost?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}  ${project?.currency}`
+                              formatCostToWords(project?.cost, project?.currency)
                             }
                               {/* {project?.cost
                                 ?.toString()

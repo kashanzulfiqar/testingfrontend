@@ -986,6 +986,8 @@ function EditProjects({
           <InputNumber
             className="form-control"
             value={record.cost}
+            stringMode={true}
+            style={{ paddingRight: '25px', width: '100%' }}
             placeholder={t('projectScreen.Modal.enterAmount')}
             formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
             parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
@@ -1039,6 +1041,8 @@ function EditProjects({
           <InputNumber
             className="form-control"
             min={0}
+            stringMode={true}
+            style={{ paddingRight: '25px', width: '100%' }}
             placeholder={t("projectScreen.Modal.enterAmount")}
             formatter={(value) => {
               return `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -1804,6 +1808,8 @@ function EditProjects({
                         <InputNumber
                           className="form-control"
                           min={0}
+                          stringMode={true}
+                          style={{ paddingRight: '25px', width: '100%' }}
                           formatter={(value) => {
                             return `${value}`.replace(
                               /\B(?=(\d{3})+(?!\d))/g,
