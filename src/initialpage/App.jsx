@@ -136,14 +136,13 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    if(location?.pathname !== "/profile/employee-profile"){
-      localStorage.removeItem('allDataLocal');
+    if (location?.pathname !== "/profile/employee-profile") {
+      localStorage.removeItem("allDataLocal");
     }
-    if(location?.pathname !== "/admin-timesheet/details"){
-      localStorage.removeItem('allDataLocalStorage')
+    if (location?.pathname !== "/admin-timesheet/details") {
+      localStorage.removeItem("allDataLocalStorage");
     }
-  }, [location])
-
+  }, [location]);
 
   return (
     <div>
@@ -168,12 +167,22 @@ const App = () => {
         {/* <Route path="/app/*" element={<DefaultLayout />} /> */}
 
         {/* <Route element={<Layout />}> */}
-        <Route path="/" element={<><RequireAuth /> </>}>
+        <Route
+          path="/"
+          element={
+            <>
+              <RequireAuth />{" "}
+            </>
+          }
+        >
           {/* <Route> */}
           {/* dashboard */}
           <Route path={`/restricted`} element={<Navigate to={loginState?.user?.role === 'admin' ? `/main/dashboard` : `/employee/dashboard`} />} />
           <Route path={`super-admin/dashboard`} element={<SuperAdminMain />} />
-          <Route path={`super-admin/disabled-companies`} element={<DisabledCompanies />} />
+          <Route
+            path={`super-admin/disabled-companies`}
+            element={<DisabledCompanies />}
+          />
           <Route path={`main/dashboard`} element={<AdminDashboard />} />
           <Route path={`employee/dashboard`} element={<EmployeeDashboard />} />
 
@@ -188,11 +197,17 @@ const App = () => {
           <Route path={`employee/request-admin`} element={<LeaveAdmin />} />
           <Route path={`employee/request-admin/:id`} element={<LeaveAdmin />} />
           <Route path={`employee/timesheet`} element={<Timesheet />} />
-          <Route path={`/profile/employee-profile`} element={<EmployeeProfile />} />
+          <Route
+            path={`/profile/employee-profile`}
+            element={<EmployeeProfile />}
+          />
           <Route path={`/profile`} element={<EmployeeProfile />} />
           <Route path={`/change-password`} element={<ChangePassword />} />
           <Route path={`payroll/payslip`} element={<SalarySlip />} />
-          <Route path={`payroll/payroll-histroy`} element={<PayrollHistory />} />
+          <Route
+            path={`payroll/payroll-histroy`}
+            element={<PayrollHistory />}
+          />
           <Route path={`clients`} element={<Clients />} />
           <Route path={`clients-list`} element={<ClientsList />} />
           <Route path={`client/client-profile`} element={<ClientProfile />} />
@@ -207,12 +222,20 @@ const App = () => {
           <Route path={`projects/tasks`} element={<Tasks />} />
           <Route path={`employee-timesheet`} element={<EmployeeTimesheet />} />
           <Route path={`admin-timesheet`} element={<AdminTimeSheet />} />
-          <Route path={`admin-timesheet/details`} element={<ViewDetailTimesheet />} />
+          <Route
+            path={`admin-timesheet/details`}
+            element={<ViewDetailTimesheet />}
+          />
           <Route path={`employee-report`} element={<EmployeesReport />} />
-          <Route path={`employee/resource-allocation`} element={<ResourceAllocation />} />
-          <Route path={`/resource-allocation/details`} element={<ResourceAllocationDetails />} />
+          <Route
+            path={`employee/resource-allocation`}
+            element={<ResourceAllocation />}
+          />
+          <Route
+            path={`/resource-allocation/details`}
+            element={<ResourceAllocationDetails />}
+          />
           <Route path={`/leads`} element={<Leads />} />
-          <Route path={`/leads-details`} element={<LeadsDetails />} />
           <Route path={`/documentation`} element={<GitBook />} />
           <Route path={`/report-problem`} element={<Query />} />
 
@@ -221,26 +244,34 @@ const App = () => {
           {/* <Route path="/settings/roles-permissions" element={<RolePermisson />} /> */}
 
           {/* Settings  */}
-          <Route path="/employee/attendance-employee" element={<AttendanceEmployee />} />
-          <Route path="/employee/attendance-admin" element={<AttendanceAdmin />} />
+          <Route
+            path="/employee/attendance-employee"
+            element={<AttendanceEmployee />}
+          />
+          <Route
+            path="/employee/attendance-admin"
+            element={<AttendanceAdmin />}
+          />
 
           {/* Payrolls */}
           <Route path="/payroll/current-payroll" element={<EmployeeSalary />} />
 
           {/* Projects */}
           <Route path="/projects/project_dashboard" element={<Projects />} />
-          <Route path="/projects/projects-view/:_id" element={<ProjectView />} />
+          <Route
+            path="/projects/projects-view/:_id"
+            element={<ProjectView />}
+          />
           <Route path="/profit-loss/view" element={<ViewPL />} />
 
           <Route path="/attendance-report" element={<AttendanceReport />} />
+          <Route path="/lead-report" element={<LeadReport />} />
 
           {/* <Link to={`/projects/projects-view/${record?._id}`} style={{color: '#333333'}}>
           <label style={{cursor: 'pointer'}} className="longText">{text}</label>
         </Link> */}
-
-
         </Route>
-        
+
         {/* <Route path="/404" element={<Error404 />}></Route> */}
         <Route path="*" element={<Error404 />}></Route>
 
