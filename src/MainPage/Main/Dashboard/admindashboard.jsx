@@ -605,73 +605,90 @@ const AdminDashboard = () => {
                 <div className="card" dir="ltr" style={{ height: "400px" }}>
                   <div className="card-body">
                     <h3 className="card-title">{t("aDash.totalRevenue")}</h3>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <ComposedChart
-                        data={enrichedData}
-                        margin={{
-                          top: 40,
-                          right: 5,
-                          left: 5,
-                          bottom: 20,
-                        }}
-                      >
-                        <CartesianGrid />
-                        <XAxis dataKey="year" />
-                        <YAxis yAxisId="left" tickFormatter={amountFormatter} />
-                        <YAxis
-                          yAxisId="right"
-                          orientation="right"
-                          tickFormatter={(value) => `${value}%`}
-                        />
-                        <Tooltip
-                          labelFormatter={(value) =>
-                            `${t("empProfile.year")} : ${value}`
-                          }
-                          formatter={(value, name) => {
-                            if (name === "Growth %") {
-                              return [`${value.toFixed(2)}%`, name];
-                            }
-                            return [value.toLocaleString(), name];
+                    {loader ? (
+                      <div style={{ minHeight: "340px" }}>
+                        <Spin
+                          style={{
+                            height: "300px",
+                            display: "grid",
+                            placeItems: "center",
                           }}
-                          contentStyle={{ direction: i18n.dir() }}
                         />
-                        <Bar
-                          yAxisId="left"
-                          dataKey="totalRevenue"
-                          name="Total Revenue"
-                          fill="#ff9b44"
-                          barSize={20}
-                          minPointSize={1}
-                        />
-                        <ReferenceLine
-                          yAxisId="right"
-                          y={0}
-                          stroke="#666"
-                          strokeDasharray="3 3"
-                        />
-                        <Line
-                          yAxisId="right"
-                          type="basis"
-                          dataKey="growth"
-                          name="Growth %"
-                          stroke="#cc7a00"
-                          strokeWidth={3}
-                          dot={{ r: 3 }}
-                          activeDot={{ r: 7 }}
-                        />
-                        <Line
-                          yAxisId="left"
-                          type="monotone"
-                          dataKey="profit"
-                          name="Profit"
-                          stroke="#82ca9d"
-                          strokeWidth={3}
-                          dot={{ r: 3 }}
-                          activeDot={{ r: 7 }}
-                        />
-                      </ComposedChart>
-                    </ResponsiveContainer>
-                    <CustomLegend />
+                      </div>
+                    ) : (
+                      <>
+                        <ResponsiveContainer width="100%" height={300}>
+                          <ComposedChart
+                            data={enrichedData}
+                            margin={{
+                              top: 40,
+                              right: 5,
+                              left: 5,
+                              bottom: 20,
+                            }}
+                          >
+                            <CartesianGrid />
+                            <XAxis dataKey="year" />
+                            <YAxis
+                              yAxisId="left"
+                              tickFormatter={amountFormatter}
+                            />
+                            <YAxis
+                              yAxisId="right"
+                              orientation="right"
+                              tickFormatter={(value) => `${value}%`}
+                            />
+                            <Tooltip
+                              labelFormatter={(value) =>
+                                `${t("empProfile.year")} : ${value}`
+                              }
+                              formatter={(value, name) => {
+                                if (name === "Growth %") {
+                                  return [`${value.toFixed(2)}%`, name];
+                                }
+                                return [value.toLocaleString(), name];
+                              }}
+                              contentStyle={{ direction: i18n.dir() }}
+                            />
+                            <Bar
+                              yAxisId="left"
+                              dataKey="totalRevenue"
+                              name="Total Revenue"
+                              fill="#ff9b44"
+                              barSize={20}
+                              minPointSize={1}
+                            />
+                            <ReferenceLine
+                              yAxisId="right"
+                              y={0}
+                              stroke="#666"
+                              strokeDasharray="3 3"
+                            />
+                            <Line
+                              yAxisId="right"
+                              type="basis"
+                              dataKey="growth"
+                              name="Growth %"
+                              stroke="#cc7a00"
+                              strokeWidth={3}
+                              dot={{ r: 3 }}
+                              activeDot={{ r: 7 }}
+                            />
+                            <Line
+                              yAxisId="left"
+                              type="monotone"
+                              dataKey="profit"
+                              name="Profit"
+                              stroke="#82ca9d"
+                              strokeWidth={3}
+                              dot={{ r: 3 }}
+                              activeDot={{ r: 7 }}
+                            />
+                          </ComposedChart>
+                        </ResponsiveContainer>
+                        <CustomLegend />
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
