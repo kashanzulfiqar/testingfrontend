@@ -830,6 +830,12 @@ const LeadsDetails = () => {
           <div className="row">
             {/* Contact User */}
             <div className="col-md-12">
+              {leadObject?.status === "Lost" && leadObject?.lost_reason && (
+                <div className="alert alert-danger d-flex align-items-center mb-3">
+                  <i className="fa fa-info-circle me-2" /> 
+                  <span>Lost Reason: {leadObject?.lost_reason}</span>
+                </div>
+              )}
               <div className="contact-wrap">
                 <div className="contact-profile">
                   <div
@@ -886,7 +892,7 @@ const LeadsDetails = () => {
                             ? "fa-dot-circle-o text-info"
                             : leadObject?.status === "Converted"
                             ? "fa-dot-circle-o text-success"
-                            : "fa-dot-circle-o text-primary"
+                            : "fa-dot-circle-o text-danger"
                         }`}
                       />{" "}
                       {loadStatus ? (
@@ -930,7 +936,7 @@ const LeadsDetails = () => {
                         href="javascript:void(0)"
                         onClick={() => handleUpdateStatus(leadObject, "Lost", "status")}
                       >
-                        <i className="fa fa-dot-circle-o text-primary" /> Lost
+                        <i className="fa fa-dot-circle-o text-danger" /> Lost
                       </a>
                     </div>
                   </div>
