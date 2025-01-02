@@ -774,8 +774,12 @@ const AdminDashboard = () => {
               <div className="col-md-12">
                 <div className="row g-0">
                   {/* NEW EMPLOYEES */}
-                  <div className="col-xl-3 col-lg-3 col-md-6 col-sm-12 text-center">
-                    <div className="card" dir="ltr">
+                  <div className="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+                    <div
+                      className="card"
+                      dir="ltr"
+                      style={{ minWidth: "250px", height: "180px" }}
+                    >
                       <div className="card-body">
                         <div className="d-flex justify-content-between mb-3">
                           <div>
@@ -832,8 +836,12 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                   {/* EARNINGS */}
-                  <div className="col-xl-3 col-lg-3 col-md-6 col-sm-12 text-center">
-                    <div className="card" dir="ltr">
+                  <div className="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+                    <div
+                      className="card"
+                      dir="ltr"
+                      style={{ minWidth: "250px", height: "180px" }}
+                    >
                       <div className="card-body">
                         <div className="d-flex justify-content-between mb-3">
                           <div>
@@ -900,8 +908,12 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                   {/* EXPENSES */}
-                  <div className="col-xl-3 col-lg-3 col-md-6 col-sm-12 text-center">
-                    <div className="card" dir="ltr">
+                  <div className="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+                    <div
+                      className="card"
+                      dir="ltr"
+                      style={{ minWidth: "250px", height: "180px" }}
+                    >
                       <div className="card-body">
                         <div className="d-flex justify-content-between mb-3">
                           <div>
@@ -968,8 +980,12 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                   {/* PROFIT */}
-                  <div className="col-xl-3 col-lg-3 col-md-6 col-sm-12 text-center">
-                    <div className="card" dir="ltr">
+                  <div className="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+                    <div
+                      className="card"
+                      dir="ltr"
+                      style={{ minWidth: "250px", height: "180px" }}
+                    >
                       <div className="card-body">
                         <div className="d-flex justify-content-between mb-3">
                           <div>
