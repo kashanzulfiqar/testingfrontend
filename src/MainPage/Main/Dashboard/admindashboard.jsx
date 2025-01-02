@@ -698,7 +698,7 @@ const AdminDashboard = () => {
                 <div className="card" dir="ltr" style={{ height: "400px" }}>
                   <div className="card-body">
                     <h3 className="card-title">
-                      {t("aDash.salesOverview")} {year ? ` - ${year}` : ""}
+                      {t("aDash.monthlyRevenue")} {year ? ` - ${year}` : ""}
                     </h3>
                     {loader ? (
                       <Spin

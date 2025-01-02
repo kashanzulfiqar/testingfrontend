@@ -1,6 +1,6 @@
 // API URL Configuration
 const API_URLS = {
-  LOCAL: "http://localhost:3001",
+  LOCAL: "http://localhost:3000",
   STAGING: "https://stage-api.daftarpro.com",
   PRODUCTION: "https://api.daftarpro.com",
 };
