@@ -216,7 +216,6 @@ const AdminDashboard = () => {
     setLoader(true);
     apiServices("GET", "user/admin-dashboard", null, user_state)
       .then((res) => {
-        // if (res?.data?.success === true) {
         setAllData(res?.data);
 
         const d = res?.data?.revenue;
@@ -244,7 +243,6 @@ const AdminDashboard = () => {
           ?.sort((a, b) => a?.year - b?.year);
         setTableYearData(sortedYears1);
         setLoader(false);
-        // }
       })
       .catch((err) => {
         setLoader(false);
@@ -439,13 +437,13 @@ const AdminDashboard = () => {
       const monthMap = {};
       data?.forEach((item) => (monthMap[item?.month] = item));
 
-      const currentMonthIndex = new Date().getMonth(); // Get the current month index (0 for Jan to 11 for Dec)
+      const currentMonthIndex = new Date().getMonth(); // get the current month
 
       const result = allMonths.map((month, index) => {
         if (index <= currentMonthIndex) {
           return monthMap[month] || { month, totalRevenue: 0 };
         } else {
-          return { month, totalRevenue: null }; // Hide line after the current month
+          return { month, totalRevenue: null };
         }
       });
 
@@ -463,9 +461,7 @@ const AdminDashboard = () => {
       const day = date.getDate();
       const month = date.toLocaleString("default", { month: "short" });
       const year = date.getFullYear();
-
-      const formattedDate = `${day} ${month} ${year}`;
-      return formattedDate;
+      return `${day} ${month} ${year}`;
     }
   };
 
@@ -476,6 +472,7 @@ const AdminDashboard = () => {
     );
     setAllCountries(sorted_data);
   };
+
   const antIcon = (
     <LoadingOutlined
       style={{
@@ -493,7 +490,7 @@ const AdminDashboard = () => {
   // Calculate growth and add it to the data
   const calculateGrowth = (data) => {
     return data.map((item, index, arr) => {
-      if (index === 0) return { ...item, growth: 0 }; // No growth for the first year
+      if (index === 0) return { ...item, growth: 0 };
       const previousYearRevenue = arr[index - 1].totalRevenue;
       const growth = previousYearRevenue
         ? ((item.totalRevenue - previousYearRevenue) / previousYearRevenue) *
@@ -526,6 +523,8 @@ const AdminDashboard = () => {
               </div>
             </div>
             {/* /Page Header */}
+
+            {/* TOP ROW OF 4 CARDS: Active Projects, Clients, Tasks, Employees (unchanged) */}
             {loader ? (
               <div className="row" style={{ marginInline: "0px" }}>
                 <div
@@ -600,6 +599,9 @@ const AdminDashboard = () => {
                 </div>
               </div>
             )}
+            {/* /TOP ROW OF 4 CARDS */}
+
+            {/* ROW of TWO CHARTS: Total Revenue + Sales Overview */}
             <div className="row">
               <div className="col-md-6 text-center">
                 <div className="card" dir="ltr" style={{ height: "400px" }}>
@@ -708,14 +710,12 @@ const AdminDashboard = () => {
                       />
                     ) : allData?.revenue?.length > 0 ? (
                       <ResponsiveContainer width="100%" height={300}>
-                        {/* <LineChart data={linechartdata} */}
                         <LineChart
                           data={tableMonthData}
                           margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
                         >
                           <CartesianGrid />
                           <XAxis dataKey="month" interval={0} />
-                          {/* <YAxis tickFormatter={(value) => value >= 1000 ? `${(value / 1000).toFixed(1)}k` : value} /> */}
                           <YAxis
                             tickFormatter={(value) => {
                               if (value >= 1e9) {
@@ -748,8 +748,6 @@ const AdminDashboard = () => {
                             dot={{ r: 3 }}
                             activeDot={{ r: 7 }}
                           />
-                          {/* <Line type="monotone" dataKey="Total Sales" stroke="#ff9b44" fill="#00c5fb" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 7 }} /> */}
-                          {/* <Line type="monotone" dataKey="Total Revenue" stroke="#fc6075" fill="#0253cc" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 7 }} /> */}
                         </LineChart>
                       </ResponsiveContainer>
                     ) : (
@@ -768,15 +766,42 @@ const AdminDashboard = () => {
                 </div>
               </div>
             </div>
+            {/* /ROW of TWO CHARTS */}
+
+            {/* ===== HERE is the row with NEW EMPLOYEES, EARNINGS, EXPENSES, PROFIT. 
+                We only change these columns from col-md-6 to col-xl-3 col-lg-3 col-md-6 col-sm-12 to line them in 1 row. ===== */}
             <div className="row">
               <div className="col-md-12">
-                <div className="row">
-                  <div className="col-md-6 text-center">
+                <div className="row g-0">
+                  {/* NEW EMPLOYEES */}
+                  <div className="col-xl-3 col-lg-3 col-md-6 col-sm-12 text-center">
                     <div className="card" dir="ltr">
                       <div className="card-body">
-                        <h3 className="card-title">
-                          {t("aDash.newEmployees")}
-                        </h3>
+                        <div className="d-flex justify-content-between mb-3">
+                          <div>
+                            <span
+                              className="d-block"
+                              style={{ fontWeight: "600" }}
+                            >
+                              {t("aDash.newEmployees")}
+                            </span>
+                          </div>
+                          <div>
+                            <span
+                              className={
+                                allData?.employeeIncreaseRate < 0
+                                  ? "text-danger"
+                                  : "text-success"
+                              }
+                              style={{ unicodeBidi: "plaintext" }}
+                            >
+                              {allData?.employeeIncreaseRate !== undefined &&
+                                allData?.employeeIncreaseRate !== null &&
+                                (allData?.employeeIncreaseRate > 0 ? "+" : "")}
+                              {allData?.employeeIncreaseRate}%
+                            </span>
+                          </div>
+                        </div>
                         <h3 className="mb-3">{allData?.employeesAdded}</h3>
                         <div
                           className="progress mb-2"
@@ -793,20 +818,29 @@ const AdminDashboard = () => {
                             aria-valuemax={100}
                           />
                         </div>
-                        <p className="mb-0">
-                          <label>
+                        <p className="mb-0 text-start">
+                          <label
+                            style={{
+                              unicodeBidi: "plaintext",
+                              color: "#1f1f1f",
+                            }}
+                          >
                             Overall Employees {allData?.employeeCount}
                           </label>
                         </p>
                       </div>
                     </div>
                   </div>
-                  <div className="col-md-6 text-center">
+                  {/* EARNINGS */}
+                  <div className="col-xl-3 col-lg-3 col-md-6 col-sm-12 text-center">
                     <div className="card" dir="ltr">
                       <div className="card-body">
                         <div className="d-flex justify-content-between mb-3">
                           <div>
-                            <span className="d-block">
+                            <span
+                              className="d-block"
+                              style={{ fontWeight: "600" }}
+                            >
                               {t("aDash.earnings")}
                             </span>
                           </div>
@@ -850,7 +884,7 @@ const AdminDashboard = () => {
                             aria-valuemax={100}
                           />
                         </div>
-                        <p className="mb-0">
+                        <p className="mb-0 text-start">
                           <label>{t("aDash.previousMonth")}</label>{" "}
                           <label
                             className="text-muted"
@@ -865,12 +899,16 @@ const AdminDashboard = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="col-md-6 text-center">
+                  {/* EXPENSES */}
+                  <div className="col-xl-3 col-lg-3 col-md-6 col-sm-12 text-center">
                     <div className="card" dir="ltr">
                       <div className="card-body">
                         <div className="d-flex justify-content-between mb-3">
                           <div>
-                            <span className="d-block">
+                            <span
+                              className="d-block"
+                              style={{ fontWeight: "600" }}
+                            >
                               {t("aDash.expenses")}
                             </span>
                           </div>
@@ -914,7 +952,7 @@ const AdminDashboard = () => {
                             aria-valuemax={100}
                           />
                         </div>
-                        <p className="mb-0">
+                        <p className="mb-0 text-start">
                           <label>{t("aDash.previousMonth")}</label>{" "}
                           <label
                             className="text-muted"
@@ -929,12 +967,18 @@ const AdminDashboard = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="col-md-6 text-center">
+                  {/* PROFIT */}
+                  <div className="col-xl-3 col-lg-3 col-md-6 col-sm-12 text-center">
                     <div className="card" dir="ltr">
                       <div className="card-body">
                         <div className="d-flex justify-content-between mb-3">
                           <div>
-                            <span className="d-block">{t("aDash.profit")}</span>
+                            <span
+                              className="d-block"
+                              style={{ fontWeight: "600" }}
+                            >
+                              {t("aDash.profit")}
+                            </span>
                           </div>
                           <div>
                             <span
@@ -976,7 +1020,7 @@ const AdminDashboard = () => {
                             aria-valuemax={100}
                           />
                         </div>
-                        <p className="mb-0">
+                        <p className="mb-0 text-start">
                           <label>{t("aDash.previousMonth")}</label>{" "}
                           <label
                             className="text-muted"
@@ -994,7 +1038,9 @@ const AdminDashboard = () => {
                 </div>
               </div>
             </div>
-            {/* Statistics Widget */}
+            {/* /SECOND ROW of 4 STAT CARDS (now in one row) */}
+
+            {/* The rest of the code (Statistics Widget, etc.) stays exactly as before */}
             <div className="row">
               <div className="col-md-12 col-lg-12 col-xl-4 d-flex">
                 <div className="card flex-fill dash-statistics">
@@ -1153,6 +1199,8 @@ const AdminDashboard = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Task Statistics */}
               <div className="col-md-12 col-lg-6 col-xl-4 d-flex">
                 <div className="card flex-fill">
                   <div className="card-body">
@@ -1312,13 +1360,14 @@ const AdminDashboard = () => {
                               {allData?.statistics?.backlogTasks}
                             </span>
                           </p>
-                          {/*<p className="mb-0"><i className={`fa fa-dot-circle-o text-info ${i18n.dir() === 'rtl' ? 'ms-2' : 'me-2'}`} />{t('aDash.reviewTasks')} <span className={`${i18n.dir() === 'rtl' ? 'float-start' : 'float-end'}`}>5</span></p> */}
                         </div>
                       </>
                     )}
                   </div>
                 </div>
               </div>
+
+              {/* Recent Requests */}
               <div className="col-md-12 col-lg-6 col-xl-4 d-flex">
                 <div className="card flex-fill">
                   <div className="card-body">
@@ -1341,14 +1390,13 @@ const AdminDashboard = () => {
                           textAlign: "center",
                         }}
                       >
-                        {t("aDash.noPermissionToView")} <br />{" "}
+                        {t("aDash.noPermissionToView")} <br />
                         {t("aDash.requests")}
                       </label>
                     ) : allRequests?.length > 0 ? (
                       allRequests?.map((req) => (
-                        <div className="leave-info-box">
+                        <div className="leave-info-box" key={req?._id}>
                           <div className="media d-flex align-items-center">
-                            {/* <Link to="/app/profile/employee-profile" className="avatar"><img alt="" src={User} /></Link> */}
                             <img
                               className="avatar"
                               alt=""
@@ -1430,6 +1478,7 @@ const AdminDashboard = () => {
               </div>
             </div>
             {/* /Statistics Widget */}
+
             <div className="row">
               <div className="col-md-6 d-flex">
                 <div className="card card-table flex-fill">
@@ -1473,7 +1522,7 @@ const AdminDashboard = () => {
                           </thead>
                           <tbody>
                             {allInvoices?.map((invoice) => (
-                              <tr>
+                              <tr key={invoice?._id}>
                                 <td>
                                   <Link
                                     to="/invoices/view-invoice"
@@ -1484,7 +1533,7 @@ const AdminDashboard = () => {
                                 </td>
                                 <td>
                                   <h2>
-                                    <a href="#">
+                                    <a href="#!">
                                       {invoice?.client?.clientName}
                                     </a>
                                   </h2>
@@ -1588,7 +1637,7 @@ const AdminDashboard = () => {
                           </thead>
                           <tbody>
                             {allPayments?.map((payment) => (
-                              <tr>
+                              <tr key={payment?._id}>
                                 <td>
                                   <Link
                                     to="/invoices/view-invoice"
@@ -1599,7 +1648,7 @@ const AdminDashboard = () => {
                                 </td>
                                 <td>
                                   <h2>
-                                    <a href="#">
+                                    <a href="#!">
                                       {payment?.client?.clientName}
                                     </a>
                                   </h2>
@@ -1687,16 +1736,13 @@ const AdminDashboard = () => {
                               </th>
                               <th>{t("aDash.email")}</th>
                               <th>{t("aDash.phoneNo")}</th>
-                              {/* <th className="text-end">Action</th> */}
                             </tr>
                           </thead>
                           <tbody>
                             {allClients?.map((client) => (
-                              <tr style={{ height: "62px" }}>
+                              <tr style={{ height: "62px" }} key={client?._id}>
                                 <td>
                                   <h2 className="table-avatar">
-                                    {/* <a href="#" className="avatar"><img alt="" src={Avatar_19} /></a>
-                                <Link to="/app/profile/client-profile">Barry Cuda <span>CEO</span></Link> */}
                                     <Link
                                       to="/client/client-profile"
                                       state={{ client_data: client }}
@@ -1731,26 +1777,6 @@ const AdminDashboard = () => {
                                 <td style={{ unicodeBidi: "plaintext" }}>
                                   {client?.clientPhoneNo}
                                 </td>
-                                {/* <td>
-                              <div className="dropdown action-label">
-                                <a className="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-                                  <i className="fa fa-dot-circle-o text-success" /> Active
-                                </a>
-                                <div className="dropdown-menu dropdown-menu-right">
-                                  <a className="dropdown-item" href="#"><i className="fa fa-dot-circle-o text-success" /> Active</a>
-                                  <a className="dropdown-item" href="#"><i className="fa fa-dot-circle-o text-danger" /> Inactive</a>
-                                </div>
-                              </div>
-                            </td> */}
-                                {/* <td className="text-end">
-                              <div className="dropdown dropdown-action">
-                                <a href="javascript:void(0)" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
-                                <div className="dropdown-menu dropdown-menu-right">
-                                  <a className="dropdown-item" href="javascript:void(0)" onClick={() => { setOpen({ isAddOpen: true, data: client }); getAllCountries() }}><i className="fa fa-pencil m-r-5" /> Edit</a>
-                                  <a className="dropdown-item" href="javascript:void(0)" onClick={() => { setOpen({ isDelOpen: true, data: client }) }}><i className="fa fa-trash-o m-r-5" /> Delete</a>
-                                </div>
-                              </div>
-                            </td> */}
                               </tr>
                             ))}
                           </tbody>
@@ -1812,14 +1838,12 @@ const AdminDashboard = () => {
                           <thead>
                             <tr>
                               <th>{t("aDash.projectName")} </th>
-                              {/* <th>Progress</th> */}
                               <th>{t("status")}</th>
-                              {/* <th className="text-end">Action</th> */}
                             </tr>
                           </thead>
                           <tbody>
                             {allProjects?.map((project) => (
-                              <tr style={{ height: "62px" }}>
+                              <tr style={{ height: "62px" }} key={project?._id}>
                                 <td>
                                   <h2>
                                     <Link
@@ -1829,16 +1853,7 @@ const AdminDashboard = () => {
                                       {project?.projectName}
                                     </Link>
                                   </h2>
-                                  {/* <small className="block text-ellipsis">
-                                <span>1</span> <span className="text-muted">open tasks, </span>
-                                <span>9</span> <span className="text-muted">tasks completed</span>
-                              </small> */}
                                 </td>
-                                {/* <td>
-                              <div className="progress progress-xs progress-striped">
-                                <div className="progress-bar" role="progressbar" data-bs-toggle="tooltip" title="65%" style={{ width: '65%' }} />
-                              </div>
-                            </td> */}
                                 <td>
                                   <label
                                     className={
@@ -1864,41 +1879,6 @@ const AdminDashboard = () => {
                                       : ""}
                                   </label>
                                 </td>
-                                {/* <td className="text-end">
-                              <div className="dropdown dropdown-action">
-                                <a href="javascript:void(0)" className="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i className="material-icons">more_vert</i></a>
-                                <div className="dropdown-menu dropdown-menu-right">
-                                  <a
-                                    className="dropdown-item"
-                                    href="javascript:void(0)"
-                                    onClick={() => {
-                                      getAllDomain();
-                                      getAllCurrencies();
-                                      setOpen2({
-                                        editOpen: true,
-                                        delOpen: false,
-                                        data: project,
-                                      });
-                                    }}
-                                  >
-                                    <i className="fa fa-pencil m-r-5" /> Edit
-                                  </a>
-                                  <a
-                                    className="dropdown-item"
-                                    href="javascript:void(0)"
-                                    onClick={() => {
-                                      setOpen2({
-                                        editOpen: false,
-                                        delOpen: true,
-                                        data: project,
-                                      });
-                                    }}
-                                  >
-                                    <i className="fa fa-trash-o m-r-5" /> Delete
-                                  </a>
-                                </div>
-                              </div>
-                            </td> */}
                               </tr>
                             ))}
                           </tbody>
@@ -1931,7 +1911,6 @@ const AdminDashboard = () => {
           {/* /Page Content */}
         </div>
       </div>
-      {/* <Offcanvas /> */}
     </>
   );
 };
