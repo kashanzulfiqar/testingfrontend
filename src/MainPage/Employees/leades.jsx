@@ -31,8 +31,9 @@ import {
   Tag,
   Tooltip,
   message,
+  Modal,
+  Radio,
 } from "antd";
-import { Modal } from "@mui/material";
 import "antd/dist/antd.css";
 import { itemRender, onShowSizeChange } from "../paginationfunction";
 import "../antdstyle.css";
@@ -125,6 +126,17 @@ const Leads = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedMedium, setSelectedMedium] = useState(null);
   const [selectedSource, setSelectedSource] = useState(null);
+
+  const [isLostReasonModalVisible, setIsLostReasonModalVisible] = useState(false);
+  const [selectedLostReason, setSelectedLostReason] = useState(null);
+
+  const lostReasons = [
+    { value: "Client Not Responding", label: "Client Not Responding" },
+    { value: "High Price", label: "High Price" },
+    { value: "Interview Failed", label: "Interview Failed" },
+    { value: "Assessment Task Failed", label: "Assessment Task Failed" },
+    { value: "Other", label: "Other" }
+  ];
 
   const handleOk = () => {
     setLoader(true);
@@ -417,6 +429,7 @@ const Leads = () => {
       pageSize: 20,
       total: 0,
     });
+    viewLeads(1, 20); // Add this line to force a data refresh
   };
 
   const viewSources = () => {
@@ -630,37 +643,75 @@ const Leads = () => {
           );
         });
   };
-  const handleStatusChange = (record, text) => {
-    if (text === "notConverted") {
-      setSelectedRecord(record);  // Set the record when 'Not Converted' is clicked
-      setOpen({ isReasoning: true });
+  const handleStatusChange = (record, newStatus) => {
+    if (newStatus === "Lost") {
+      setSelectedRecord(record);
+      setSelectedLostReason(null);
+      setIsLostReasonModalVisible(true);
     } else {
-      handleUpdateStatus(record, text); // Handle status change for other options
+      handleUpdateStatus(record, newStatus);
     }
   };
   const handleReasoningSubmit = (enteredReason) => {
     // Close the modal and update the status with the reason
-    handleUpdateStatus(selectedRecord, "notConverted", enteredReason);
+    handleUpdateStatus(selectedRecord, "Lost", enteredReason);
     setOpen({ isReasoning: false });
     setReason(enteredReason); // Store the reason in the state
   };
-  const handleUpdateStatus = (record, newStatus, reason) => {
-    const updatedData = {
-      _id: record?._id,
-      status: newStatus,
-      reason: reason,
-    };
-    apiServices("PUT", "leads", updatedData, user_state)
-      .then((res) => {
-        if (res.data.success === true) {
-          message.success('Status Updated Successfully');
-          viewLeads();
-        }
-      })
-      .catch((error) => {
-        console.log("error", error);
-        message.error('Error updating status');
-      })
+  const handleLostReasonSubmit = () => {
+    if (!selectedLostReason) {
+      message.error("Please select a reason");
+      return;
+    }
+
+    handleUpdateStatus(selectedRecord, "Lost", selectedLostReason);
+    setIsLostReasonModalVisible(false);
+    setSelectedLostReason(null);
+  };
+  const handleUpdateStatus = async (record, newStatus, lostReason = null) => {
+    try {
+      // Log the request details for debugging
+      console.log('Updating status with:', {
+        leadId: record._id,
+        status: newStatus,
+        lostReason: lostReason
+      });
+
+      const data = {
+        status: newStatus
+      };
+
+      // Only add lost_reason if status is Lost and reason is provided
+      if (newStatus === "Lost" && lostReason) {
+        data.lost_reason = lostReason;
+      }
+
+      const response = await apiServices(
+        "PUT",
+        `leads/${record._id}/status`,
+        data,
+        user_state
+      );
+      
+      if (response?.data?.success === true) {
+        message.success("Status updated successfully");
+        viewLeads();
+      } else {
+        throw new Error(response?.data?.msg || "Error updating status");
+      }
+    } catch (err) {
+      console.error("Error updating status:", {
+        error: err,
+        response: err?.response?.data,
+        status: err?.response?.status
+      });
+      
+      let errorMessage = "Error updating status";
+      if (err?.response?.data?.msg) {
+        errorMessage = err.response.data.msg;
+      }
+      message.error(errorMessage);
+    }
   };
   const closeDropDown = (e) => {
     // Close the dropdown
@@ -708,64 +759,56 @@ const Leads = () => {
             }}
           >
             <i
-              className={`fa ${
-                text === "onHold"
-                  ? "fa-dot-circle-o text-purple"
-                  : text === "pending"
-                  ? "fa-dot-circle-o text-info"
-                  : text === "converted"
-                  ? "fa-dot-circle-o text-success"
-                  : "fa-dot-circle-o text-primary"
-              }`}
+              className={`fa fa-dot-circle-o ${getStatusColor(text)}`}
             />{" "}
-            {text === "pending" ? t("aRequests.Pending") : text === "converted" ? "Converted" : text === "notConverted" ? 'Not Converted' : text === "onHold" ? "On Hold" : text}
+            {getStatusLabel(text)}
           </a>
           <div
             className={`dropdown-menu dropdown-menu-right ${activeDropdown === `status-${index}` ? 'show' : ''}`}
           >
             <a
-              className={`dropdown-item ${text === "pending" && "disabled"}`}
+              className={`dropdown-item ${text === "OnGoing" && "disabled"}`}
               href="javascript:void(0)"
               onClick={(e) => {
                 e.stopPropagation()
-                handleStatusChange(record, "pending");
+                handleStatusChange(record, "OnGoing");
                 closeDropDown(e)
               }}
             >
-              <i className="fa fa-dot-circle-o text-info" /> Pending
+              <i className="fa fa-dot-circle-o text-info" /> Ongoing
             </a>
             <a
-              className={`dropdown-item ${text === "onHold" && "disabled"}`}
+              className={`dropdown-item ${text === "OnHold" && "disabled"}`}
               href="javascript:void(0)"
               onClick={(e) => {
                 e.stopPropagation()
-                handleStatusChange(record, "onHold");
+                handleStatusChange(record, "OnHold");
                 closeDropDown(e)
               }}
             >
               <i className="fa fa-dot-circle-o text-purple" /> On Hold
             </a>
             <a
-              className={`dropdown-item ${text === "converted" && "disabled"}`}
+              className={`dropdown-item ${text === "Converted" && "disabled"}`}
               href="javascript:void(0)"
               onClick={(e) => {
                 e.stopPropagation()
-                handleStatusChange(record, "converted");
+                handleStatusChange(record, "Converted");
                 closeDropDown(e)
               }}
             >
               <i className="fa fa-dot-circle-o text-success" /> Converted
             </a>
             <a
-              className={`dropdown-item ${text === "notConverted" && "disabled"}`}
+              className={`dropdown-item ${text === "Lost" && "disabled"}`}
               href="javascript:void(0)"
               onClick={(e) => {
                 e.stopPropagation()
-                handleStatusChange(record, "notConverted")
+                handleStatusChange(record, "Lost");
                 closeDropDown(e)
               }}
             >
-              <i className="fa fa-dot-circle-o text-primary" /> Not Converted
+              <i className="fa fa-dot-circle-o text-danger" /> Lost
             </a>
           </div>
         </div>
@@ -857,7 +900,7 @@ const Leads = () => {
                   isDelOpen: false,
                   data: record,
                 });
-                if(record?.status === "notConverted"){
+                if(record?.status === "Lost"){
                   setIsReasonDisable(false)
                 }
                 setReachOutValues(record?.reachOuts)
@@ -1380,6 +1423,36 @@ const Leads = () => {
     />
   );
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "OnHold":
+        return "text-purple";
+      case "OnGoing":
+        return "text-info";
+      case "Converted":
+        return "text-success";
+      case "Lost":
+        return "text-danger";
+      default:
+        return "text-primary";
+    }
+  };
+
+  const getStatusLabel = (status) => {
+    switch (status) {
+      case "OnGoing":
+        return "Ongoing";
+      case "OnHold":
+        return "On Hold";
+      case "Converted":
+        return "Converted";
+      case "Lost":
+        return "Lost";
+      default:
+        return status;
+    }
+  };
+
   return (
     <div className="page-wrapper">
       <Helmet>
@@ -1433,9 +1506,9 @@ const Leads = () => {
           </div>
           <div className="col-md-3 custom-col-md-3">
             <div className="stats-info" style={{paddingBottom:'20px'}}>
-              <label className="custom-label">Pending Leads</label>
+              <label className="custom-label">Ongoing Leads</label>
               <div style={{ display: "flex", flexDirection:"row", alignItems: "baseline", justifyContent:"center"}}>
-                  <h5 style={{ marginRight: "5px" }}>{stats?.pendingPercentage ? `${stats?.pendingPercentage}% (${stats?.pendingLeads ? stats?.pendingLeads : '0'})` : "0"}</h5>
+                  <h5 style={{ marginRight: "5px" }}>{stats?.ongoingPercentage ? `${stats?.ongoingPercentage}% (${stats?.ongoingLeads ? stats?.ongoingLeads : '0'})` : "0"}</h5>
               </div>
             </div>
           </div>
@@ -1449,10 +1522,9 @@ const Leads = () => {
           </div>
           <div className="col-md-3 custom-col-md-3" >
             <div className="stats-info" style={{paddingBottom:'20px'}}>
-              <label className="custom-label">Not Converted Leads</label>
+              <label className="custom-label">Lost Leads</label>
               <div style={{ display: "flex", flexDirection:"row", alignItems: "baseline", justifyContent:"center"}}>
-                  
-                  <h5 style={{ marginRight: "5px" }}>{stats?.notConvertedPercentage ? `${stats?.notConvertedPercentage}% (${stats?.notConvertedLeads ? stats?.notConvertedLeads : '0'})` : "0"}</h5>
+                  <h5 style={{ marginRight: "5px" }}>{stats?.lostPercentage ? `${stats?.lostPercentage}% (${stats?.lostLeads ? stats?.lostLeads : '0'})` : "0"}</h5>
               </div>
             </div>
           </div>
@@ -1460,7 +1532,6 @@ const Leads = () => {
             <div className="stats-info" style={{paddingBottom:'20px'}}>
               <label className="custom-label">On-Hold Leads</label>
               <div style={{ display: "flex", flexDirection:"row", alignItems: "baseline", justifyContent:"center"}}>
-                  
                   <h5 style={{ marginRight: "5px" }}>{stats?.onHoldPercentage ? `${stats?.onHoldPercentage}% (${stats?.onHoldLeads ? stats?.onHoldLeads : '0'})` : "0"}</h5>
               </div>
             </div>
@@ -1529,10 +1600,10 @@ const Leads = () => {
                           }
                           className="custom-select custom-normal"
                         >
-                          <Select.Option value="pending">Pending</Select.Option>
-                          <Select.Option value="onHold">On Hold</Select.Option>
-                          <Select.Option value="converted">Converted</Select.Option>
-                          <Select.Option value="notConverted">Not Converted</Select.Option>
+                          <Select.Option value="OnGoing">Ongoing</Select.Option>
+                          <Select.Option value="OnHold">On Hold</Select.Option>
+                          <Select.Option value="Converted">Converted</Select.Option>
+                          <Select.Option value="Lost">Lost</Select.Option>
                         </Select>
                   </Form.Item>
                 </div>
@@ -1892,25 +1963,51 @@ const Leads = () => {
                             }
                             placeholder={t("projectScreen.Modal.selectStatus")}
                             onChange={(value) => {
-                              if(value === "notConverted"){
+                              if(value === "Lost"){
                                 setIsReasonDisable(false)
                               } else {
                                 setIsReasonDisable(true)
+                                form.setFieldsValue({ lost_reason: undefined });
                               }
                             }}
                           >
-                            <Select.Option value="pending">
-                              Pending
-                            </Select.Option>
-                            <Select.Option value="onHold">
-                              On Hold
-                            </Select.Option>
-                            <Select.Option value="converted">
-                              Converted
-                            </Select.Option>
-                            <Select.Option value="notConverted">
-                              Not Converted
-                            </Select.Option>
+                            <Select.Option value="OnGoing">Ongoing</Select.Option>
+                            <Select.Option value="OnHold">On Hold</Select.Option>
+                            <Select.Option value="Converted">Converted</Select.Option>
+                            <Select.Option value="Lost">Lost</Select.Option>
+                          </Select>
+                        </Form.Item>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="col-sm-6">
+                    <div className="form-group">
+                      <label>Lost Reason{isReasonDisable ? "" : <span className="text-danger">*</span>}</label>
+                      <div style={{ position: "relative" }} id="lost-reason-area">
+                        <Form.Item
+                          name="lost_reason"
+                          className="custom-border"
+                          rules={[
+                            {
+                              required: !isReasonDisable,
+                              message: "Please select a reason",
+                            },
+                          ]}
+                        >
+                          <Select
+                            className="custom-select custom-normal"
+                            getPopupContainer={() =>
+                              document.getElementById("lost-reason-area")
+                            }
+                            placeholder="Select reason"
+                            disabled={isReasonDisable}
+                          >
+                            {lostReasons.map(reason => (
+                              <Select.Option key={reason.value} value={reason.value}>
+                                {reason.label}
+                              </Select.Option>
+                            ))}
                           </Select>
                         </Form.Item>
                       </div>
@@ -2813,6 +2910,31 @@ const Leads = () => {
         />
       )} */}
       {/* /Page Content */}
+
+      <Modal
+        title="Select Reason for Lost Status"
+        visible={isLostReasonModalVisible}
+        onOk={handleLostReasonSubmit}
+        onCancel={() => {
+          setIsLostReasonModalVisible(false);
+          setSelectedLostReason(null);
+        }}
+        okText="Submit"
+        cancelText="Cancel"
+      >
+        <Radio.Group
+          value={selectedLostReason}
+          onChange={(e) => setSelectedLostReason(e.target.value)}
+        >
+          <Space direction="vertical">
+            {lostReasons.map(reason => (
+              <Radio key={reason.value} value={reason.value}>
+                {reason.label}
+              </Radio>
+            ))}
+          </Space>
+        </Radio.Group>
+      </Modal>
     </div>
   );
 };

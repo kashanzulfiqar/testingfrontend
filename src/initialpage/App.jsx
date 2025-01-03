@@ -262,6 +262,7 @@ const App = () => {
           />
           <Route path={`/leads`} element={<Leads />} />
           <Route path={`/leads-details`} element={<LeadsDetails />} />
+          <Route path={`/leads-details`} element={<LeadsDetails />} />
           <Route path={`/documentation`} element={<GitBook />} />
           <Route path={`/report-problem`} element={<Query />} />
 

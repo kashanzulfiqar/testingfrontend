@@ -337,7 +337,7 @@ module.exports = {
   //   static: {
   //   directory: path.join(__dirname, "public/"),
   // },
-  port: 3001,
+  port: 3000,
   historyApiFallback: true,
   // devMiddleware: {
   //   publicPath: "https://localhost:3001/dist/",
