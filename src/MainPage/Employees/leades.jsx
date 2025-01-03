@@ -433,7 +433,7 @@ const Leads = () => {
   };
 
   const viewSources = () => {
-    apiServices("GET", `leads/view-source`, null, user_state)
+    apiServices("GET", `api/leads/view-source`, null, user_state)
       .then((res) => {
         if (res.data.success === true) {
           const sources = res?.data?.Sources;
@@ -441,20 +441,13 @@ const Leads = () => {
         }
       })
       .catch((err) => {
-        message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
-              ? err?.response?.data?.validation?.body?.message
-              : "Error getting mediums"
-          }`
-        );
+        console.error("Error fetching sources:", err);
+        message.error("Error getting sources");
       });
   };
 
   const viewMediums = () => {
-    apiServices("GET", `leads/view-medium`, null, user_state)
+    apiServices("GET", `api/leads/view-medium`, null, user_state)
       .then((res) => {
         if (res.data.success === true) {
           const mediums = res?.data?.Mediums;
@@ -462,15 +455,8 @@ const Leads = () => {
         }
       })
       .catch((err) => {
-        message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
-              ? err?.response?.data?.validation?.body?.message
-              : "Error getting Medium options"
-          }`
-        );
+        console.error("Error fetching mediums:", err);
+        message.error("Error getting mediums");
       });
   };
 
@@ -1795,34 +1781,27 @@ const Leads = () => {
         aria-describedby="modal-modal-description"
         disableRestoreFocus
         BackdropProps={{
-          style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
+          style: { backgroundColor: "rgb(0 0 0 / 87%)" },
         }}
         sx={{ overflowY: "auto" }}
       >
-        <div
-          className="modal-dialog modal-dialog-centered modal-lg"
-          role="document"
-        >
+        <div className="modal-dialog modal-dialog-centered" role="document">
           <div className="modal-content">
             <div className="modal-header">
-              <h5 className="modal-title">
-                {open?.data ? t("holiday.update") : t("holiday.add")} Lead
-              </h5>
-
+              <h5 className="modal-title">Add Lead</h5>
               <button type="button" className="close" onClick={handleClose}>
                 <span aria-hidden="true">×</span>
               </button>
             </div>
-
             <div className="modal-body">
               <Form
                 form={form}
                 onFinish={(val) => onFinish(val, open?.data)}
                 onFinishFailed={({ errorFields }) => {
                   const phoneErrorExists = errorFields.find(field => field.errors.toString().includes('please enter phone number'));
-                    if(phoneErrorExists){
+                  if(phoneErrorExists){
                     setPhoneLengthError({emp: true})
-                    }
+                  }
                   const consecutiveSpacesError = errorFields.find((field) =>
                     field.errors.toString().includes("consecutive spaces")
                   );
@@ -1833,822 +1812,247 @@ const Leads = () => {
                   }
                 }}
                 name="control-hooks"
+                layout="vertical"
               >
                 <div className="row">
                   <div className="col-sm-6">
-                    <div className="form-group">
-                      <label>Lead Title{" "}
-                      <span className="text-danger">*</span></label>
-                      <Form.Item
-                        name="leadName"
-                        className="custom-border"
-                        rules={[
-                          {
-                            required: true,
-                            message: "Enter a lead title",
-                          },
-                        ]}
-                      >
-                        <Input
-                          className="form-control"
-                          placeholder="Enter Lead Title"
-                          maxLength={50}
-                        />
-                      </Form.Item>
-                    </div>
-                  </div>
-                  <div className="col-sm-6">
-                    <div className="form-group">
-                      <label>Client Name{" "}
-                      <span className="text-danger">*</span></label>
-                      <Form.Item
-                        name="clientName"
-                        className="custom-border"
-                        rules={[
-                          {
-                            required: true,
-                            message: "Enter a client name",
-                          },
-                        ]}
-                      >
-                        <Input
-                          className="form-control"
-                          placeholder="Enter Client Name"
-                          maxLength={50}
-                        />
-                      </Form.Item>
-                    </div>
-                  </div>
-
-                <div className="col-sm-6">
-                    <div className="form-group">
-                      <label>Client Email</label>
-                      <Form.Item
-                        name="clientEmail"
-                        className="custom-border"
-                        rules={[
-                          {
-                          whitespace: true,
-                          required: true,
-                          validator: (_, value) => {
-                            if (/\s{2,}/.test(value)) {
-                              return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
-                              } else if (!isValidEmail(value)) {
-                              return Promise.reject(t('client.pleaseEnterValidEmail'));
-                              }
-                              return Promise.resolve();
-                          },
-                          },
-                      ]}
-                      >
-                        <Input
-                          className="form-control"
-                          placeholder="Enter Client Email"
-                          maxLength={50}
-                        />
-                      </Form.Item>
-                    </div>
-                  </div>
-                  <div className="col-sm-6">
-                    <div className="form-group">
-                      <label>Client Phone</label>
-                      <Form.Item
-                        name="clientPhone"
-                        className="custom-border"
-                        rules={[
-                          {
-                          whitespace: true,
-                          message: t('client.pleaseEnterPhoneNumber'),
-                          },
-                          {
-                          min: 5,
-                          message: t('client.phoneLength'),
-                          },
-                      ]}
-                      validateStatus={phoneLengthError ? 'error' : ''}
-                      help={phoneLengthError?.len ? "phone length must be at least 5 digits long" : ''}
-                      >
-                          <>
-                              <Input style={{ display: "none" }} value={emergValue?.clientPhoneNo} />
-                              <PhoneNoInput
-                                  onChangePhone={(value) => {
-                                  onHandleEmergChange("clientPhoneNo", value);
-                                  }}
-                                  phone={open?.data?.clientPhoneNo ? open?.data?.clientPhoneNo : ""}
-                              />
-                          </>
-                      </Form.Item>
-                    </div>
-                  </div>              
-
-                  <div className="col-sm-6">
-                    <div className="form-group">
-                      <label>Status{" "}
-                      <span className="text-danger">*</span></label>
-                      <div style={{ position: "relative" }} id="area">
-                        <Form.Item
-                          name="status"
-                          className="custom-border"
-                          rules={[
-                            {
-                              required: true,
-                              message: t("projectScreen.Modal.chooseStatus"),
-                            },
-                          ]}
-                        >
-                          <Select
-                            className="custom-select custom-normal"
-                            getPopupContainer={() =>
-                              document.getElementById("area")
-                            }
-                            placeholder={t("projectScreen.Modal.selectStatus")}
-                            onChange={(value) => {
-                              if(value === "Lost"){
-                                setIsReasonDisable(false)
-                              } else {
-                                setIsReasonDisable(true)
-                                form.setFieldsValue({ lost_reason: undefined });
-                              }
-                            }}
-                          >
-                            <Select.Option value="OnGoing">Ongoing</Select.Option>
-                            <Select.Option value="OnHold">On Hold</Select.Option>
-                            <Select.Option value="Converted">Converted</Select.Option>
-                            <Select.Option value="Lost">Lost</Select.Option>
-                          </Select>
-                        </Form.Item>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="col-sm-6">
-                    <div className="form-group">
-                      <label>Lost Reason{isReasonDisable ? "" : <span className="text-danger">*</span>}</label>
-                      <div style={{ position: "relative" }} id="lost-reason-area">
-                        <Form.Item
-                          name="lost_reason"
-                          className="custom-border"
-                          rules={[
-                            {
-                              required: !isReasonDisable,
-                              message: "Please select a reason",
-                            },
-                          ]}
-                        >
-                          <Select
-                            className="custom-select custom-normal"
-                            getPopupContainer={() =>
-                              document.getElementById("lost-reason-area")
-                            }
-                            placeholder="Select reason"
-                            disabled={isReasonDisable}
-                          >
-                            {lostReasons.map(reason => (
-                              <Select.Option key={reason.value} value={reason.value}>
-                                {reason.label}
-                              </Select.Option>
-                            ))}
-                          </Select>
-                        </Form.Item>
-                      </div>
-                    </div>
-                  </div>
-
-                  {
-                  isReasonDisable === false &&
-                  <div className="col-sm-6"> 
-                  <div className="form-group">
-                    <label>Conversion Reason{" "}<span className="text-danger">*</span></label>
-                    <Form.Item 
-                      name="reason" 
+                    <Form.Item
+                      label={<>Lead Title <span className="text-danger">*</span></>}
+                      name="leadName"
                       rules={[
                         {
-                          whitespace: true,
                           required: true,
-                          message: t('Please enter a Reason'),
-                        }
-                      ]}
-                      className="custom-border"
-                    >
-                      <Input.TextArea className="form-control" placeholder="Enter reason for status 'Not Converted'" rows={5} />
-                    </Form.Item>
-                    {/* <textarea rows={4} className="form-control summernote" placeholder="Enter your message here" defaultValue={""} /> */}
-                  </div>
-                  </div>
-                }
-
-                  <div className="col-sm-6">
-                    <div className="form-group">
-                      <label>Project Type{" "}
-                      <span className="text-danger">*</span></label>
-                      <div style={{ position: "relative" }} id="area">
-                        <Form.Item
-                          name="projectType"
-                          className="custom-border"
-                          rules={[
-                            {
-                              required: true,
-                              message: 'Please choose a project type',
-                            },
-                          ]}
-                        >
-                          <Select
-                            className="custom-select custom-normal"
-                            getPopupContainer={() =>
-                              document.getElementById("area")
-                            }
-                            placeholder='Select a Project Type'
-                          >
-                            <Select.Option value="staffAugmentation">
-                              Staff Augmentation
-                            </Select.Option>
-                            <Select.Option value="endToEndProject">
-                              End to End Project
-                            </Select.Option>
-                            <Select.Option value="bugFixes">
-                              Bug Fixes
-                            </Select.Option>
-                          </Select>
-                        </Form.Item>
-                      </div>
-                    </div>
-                  </div>
-
-                <div className="col-sm-6">
-                    <div className="form-group">
-                      <label>Source{" "}
-                      <span className="text-danger">*</span></label>
-                      <Form.Item
-                        name="source"
-                        className="custom-border"
-                        rules={[
-                          {
-                            required: true,
-                            message: "Enter a lead source",
-                          },
-                        ]}
-                      >
-                        <Select
-                          showSearch
-                          value={searchValue}
-                          onSearch={(val) => {
-                            if (val.length <= 50) {
-                              setSearchValue(val); // Allow up to 50 characters
-                              showTeamSearch(val, "source");
-                            }
-                          }}
-                          onInputKeyDown={(e) => {
-                            if (searchValue.length >= 50 && e.key.length === 1 && !e.ctrlKey) {
-                              e.preventDefault(); // Prevent input when max length reached
-                            }
-                          }}
-                          onPaste={(e) => {
-                            const pastedData = e.clipboardData.getData("Text");
-                            if (pastedData.length > 50) {
-                              setSearchValue("")
-                              setOpen3(false); // Close the dropdown
-                              message.error("Source should not exceed 50 characters."); // Show validation message
-                            } else {
-                              setSearchValue(pastedData); // Update the state
-                              }
-                          }}
-                          filterOption={(input, option) =>
-                            option.children[0]
-                              ?.toLowerCase()
-                              ?.indexOf(input?.toLowerCase()) >= 0
-                          }
-                          optionFilterProp="children"
-                          className="custom-select custom-normal"
-                          getPopupContainer={() =>
-                            document.getElementById("area")
-                          }
-                          notFoundContent={<></>}
-                          dropdownRender={(menu) => (
-                            <>
-                              {menu}
-                              {searchValue && !sourceOptions?.some(option => option?.title?.toLowerCase() === searchValue?.toLowerCase()) &&  (
-                                  <>
-                                    <Divider style={{ margin: "5px 0" }} />
-                                    <Button
-                                      type="button"
-                                      icon={
-                                        <PlusOutlined style={{ fontSize: "20px", marginRight: "5px" }} />
-                                      }
-                                      className="addButtonStyles"
-                                      style={{
-                                        width: "100%",
-                                        height: "40px",
-                                        background: "#efefef",
-                                        borderColor: "#efefef",
-                                        display: "flex",
-                                        justifyContent: "center",
-                                        alignItems: "center",
-                                      }}
-                                      onClick={() => handleAddSource(searchValue)}
-                                    >
-                                      {`Add "${searchValue}"`}
-                                    </Button>
-                                  </>
-                                )}
-                              {/* {
-                                <>
-                                  <Divider
-                                    style={{
-                                      margin: "5px 0",
-                                    }}
-                                  />
-                                  <Button
-                                    type="button"
-                                    icon={
-                                      <PlusOutlined
-                                        style={{
-                                          fontSize: "20px",
-                                          marginRight: "5px",
-                                        }}
-                                      />
-                                    }
-                                    className="addButtonStyles"
-                                    style={{
-                                      width: "100%",
-                                      height: "40px",
-                                      background: "#efefef",
-                                      borderColor: "#efefef",
-                                      display: "flex",
-                                      justifyContent: "center",
-                                      alignItems: "center",
-                                    }}
-                                    onClick={() => setAddSource(true)}
-                                  >
-                                    Add Source
-                                  </Button>
-                                </>
-                              } */}
-                            </>
-                          )}
-                          style={{
-                            width: "100%",
-                          }}
-                          placeholder="Select source option"
-                          onChange={(value, option) => {
-                            setTempSource(option?.children[0] || "");
-                          }}
-                          onDropdownVisibleChange={(open) => setOpen3(open)}
-                        >
-                          {sourceOptions?.map((item, index) => {
-                            return (
-                              <Option key={index} value={item?._id}>
-                                {item?.title}
-                                {open3 && item?._id !== form.getFieldValue('source') && (
-                                    <span style={{ float: "right" }}>
-                                      <DeleteOutlined
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setSelectedSource(item);
-                                          setIsModalVisible(true);
-                                        }}
-                                      />
-                                    </span>
-                                  )}
-                              </Option>
-                            );
-                          })}
-                        </Select>
-                      </Form.Item>
-                    </div>
-                  </div>
-                  <div className="col-sm-6">
-                    <div className="form-group">
-                      <label>Account Manager{" "}
-                      <span className="text-danger">*</span></label>
-                      <div style={{ position: "relative" }} id="area">
-                        <Form.Item
-                          name="accountManager"
-                          className="custom-border"
-                          rules={[
-                            {
-                              required: true,
-                              message: "Select an account manager",
-                            },
-                          ]}
-                        >
-                          <Select
-                            showSearch
-                            onSearch={(val) => {
-                              showTeamSearch(val, "Team");
-                              // onTeamChange(val)
-                            }}
-                            filterOption={(input, option) =>
-                              option.children
-                                ?.toLowerCase()
-                                ?.indexOf(input?.toLowerCase()) >= 0
-                            }
-                            optionFilterProp="children"
-                            notFoundContent={
-                              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                            }
-                            dropdownRender={(menu) => <>{menu}</>}
-                            className="custom-select custom-normal"
-                            getPopupContainer={() =>
-                              document.getElementById("area")
-                            }
-                            placeholder="Select Account Manager"
-                            onChange={(value) => {
-                              setSelectedLeader(value);
-                              setTempName(getEmployeeFullName(value));
-                              setTempImage(getEmployeeImage(value));
-                            }}
-                          >
-                            {employees?.map((employee) => (
-                              <Select.Option
-                                key={employee._id}
-                                value={employee._id}
-                              >
-                                {employee.fullName}
-                              </Select.Option>
-                            ))}
-                          </Select>
-                        </Form.Item>
-                      </div>
-                    </div>
-                  </div>     
-                <div className="col-sm-3">
-                    <div className="form-group">
-                      <label>Project Worth</label>
-
-                      <Form.Item name="projectWorth" 
-                      className="custom-border"
-                      dependencies={['currency']}
-                      rules={[
-                        {
-                          validator: validateProjectWorth,
+                          message: "Enter a lead title",
                         },
                       ]}
-                      validateTrigger="onFinish"
-                      >
-                        {/* <Input type="number" className="form-control" /> */}
-                        <InputNumber
-                          placeholder={'Enter a cost'}
-                          className="form-control"
-                          min={0}
-                          formatter={(value) => {
-                            return `${value}`.replace(
-                              /\B(?=(\d{3})+(?!\d))/g,
-                              ","
-                            );
-                          }}
-                          parser={(value) => {
-                            return value.replace(/\$\s?|(,*)/g, "");
-                          }}
-                        />
-                      </Form.Item>
-                    </div>
-                  </div>
-                  <div className="col-sm-3">
-                    <div className="form-group">
-                      <label>{t('projectScreen.Modal.currency')}</label>
-                      <div style={{ position: "relative" }} id="area">
-                        <Form.Item
-                          name="currency"
-                          className="custom-border"
-                          dependencies={['projectWorth']}
-                          rules={[
-                            {
-                              validator: validateCurrency,
-                            },
-                          ]}
-                          validateTrigger="onFinish"
-                        >
-                          <Select
-                            showSearch
-                            className="custom-select custom-normal"
-                            getPopupContainer={() =>
-                              document.getElementById("area")
-                            }
-                            placeholder={t('projectScreen.Modal.selectCurrency')}
-                          >
-                            {
-                              allCurrencies.map((currency, index) => (
-                                <Select.Option key={index} value={currency?.currency}>
-                                  {currency?.currency}
-                                </Select.Option>
-                              ))
-                            }
-                          </Select>
-                        </Form.Item>
-                      </div>
-                    </div>
-                  </div>  
-
-                {
-                !open?.data && 
-                <>
-                  <div className="col-sm-6">
-                    <div className="form-group">
-                      <label>First Reach Out{" "}
-                      <span className="text-danger">*</span></label>
-                      <div style={{ position: "relative" }} id="area">
-                        <Form.Item
-                          name="reachOut"
-                          className="custom-border"
-                          rules={[
-                            {
-                              required: true,
-                              message: "Enter a reach out date",
-                            },
-                          ]}
-                        >
-                          <DatePicker
-                            getPopupContainer={() =>
-                              document.getElementById("area")
-                            }
-                            style={{ width: "100%" }}
-                            className="form-control"
-                            placeholder="Enter reach-out date"
-                            size="large"
-                          />
-                        </Form.Item>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="col-sm-6">
-                    <div className="form-group">
-                      <label>Communication Medium{" "}
-                      <span className="text-danger">*</span></label>
-                      <div style={{ position: "relative" }} id="area">
-                        <Form.Item
-                          name="communicationMedium"
-                          className="custom-border"
-                          rules={[
-                            {
-                              required: true,
-                              message: "Choose a communication medium",
-                            },
-                          ]}
-                        >
-                          <Select
-                            showSearch
-                            onSearch={(val) => {
-                              setSearchValue(val);
-                              showTeamSearch(val, "medium");
-                              // onTeamChange(val)
-                            }}
-                            filterOption={(input, option) =>
-                              option.children[0]
-                                ?.toLowerCase()
-                                ?.indexOf(input?.toLowerCase()) >= 0
-                            }
-                            optionFilterProp="children"
-                            className="custom-select custom-normal"
-                            getPopupContainer={() =>
-                              document.getElementById("area")
-                            }
-                            notFoundContent={<></>}
-                            dropdownRender={(menu) => (
-                              <>
-                                {menu}
-                                {searchValue && !mediumOptions?.some(option => option?.title?.toLowerCase() === searchValue?.toLowerCase()) && (
-                                  <>
-                                    <Divider style={{ margin: "5px 0" }} />
-                                    <Button
-                                      type="button"
-                                      icon={
-                                        <PlusOutlined style={{ fontSize: "20px", marginRight: "5px" }} />
-                                      }
-                                      className="addButtonStyles"
-                                      style={{
-                                        width: "100%",
-                                        height: "40px",
-                                        background: "#efefef",
-                                        borderColor: "#efefef",
-                                        display: "flex",
-                                        justifyContent: "center",
-                                        alignItems: "center",
-                                      }}
-                                      onClick={() => handleAddMedium(searchValue)}
-                                    >
-                                      {`Add "${searchValue}"`}
-                                    </Button>
-                                  </>
-                                )}
-                                {/* {
-                                  <>
-                                    <Divider
-                                      style={{
-                                        margin: "5px 0",
-                                      }}
-                                    />
-                                    <Button
-                                      type="button"
-                                      icon={
-                                        <PlusOutlined
-                                          style={{
-                                            fontSize: "20px",
-                                            marginRight: "5px",
-                                          }}
-                                        />
-                                      }
-                                      className="addButtonStyles"
-                                      style={{
-                                        width: "100%",
-                                        height: "40px",
-                                        background: "#efefef",
-                                        borderColor: "#efefef",
-                                        display: "flex",
-                                        justifyContent: "center",
-                                        alignItems: "center",
-                                      }}
-                                      onClick={() => setAddMedium(true)}
-                                    >
-                                      Add Medium
-                                    </Button>
-                                  </>
-                                } */}
-                              </>
-                            )}
-                            style={{
-                              width: "100%",
-                            }}
-                            placeholder="Select a medium"
-                            onDropdownVisibleChange={(open) => setOpen1(open)}
-                          >
-                            {mediumOptions?.map((item, index) => {
-                              return (
-                                <Option key={index} value={item?._id}>
-                                  {item?.title}
-                                  {open1 && item?._id !== form.getFieldValue('communicationMedium') && (
-                                    <span style={{ float: "right" }}>
-                                      <DeleteOutlined
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setSelectedMedium(item);
-                                          setIsModalVisible(true);
-                                        }}
-                                      />
-                                    </span>
-                                  )}
-                                </Option>
-                              );
-                            })}
-                          </Select>
-                        </Form.Item>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-sm-6">
-                    <div className="form-group">
-                      <label>Communicated By{" "}
-                      <span className="text-danger">*</span></label>
-                      <Form.Item
-                        name="communicatedBy"
-                        className="custom-border"
-                        rules={[
-                          {
-                            required: true,
-                            message: "Select a communication person",
-                          },
-                        ]}
-                      >
-                          <Select
-                            showSearch
-                            onSearch={(val) => {
-                              showTeamSearch(val, "Team");
-                              // onTeamChange(val)
-                            }}
-                            filterOption={(input, option) =>
-                              option.children
-                                ?.toLowerCase()
-                                ?.indexOf(input?.toLowerCase()) >= 0
-                            }
-                            optionFilterProp="children"
-                            notFoundContent={
-                              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                            }
-                            dropdownRender={(menu) => <>{menu}</>}
-                            className="custom-select custom-normal"
-                            getPopupContainer={() =>
-                              document.getElementById("area")
-                            }
-                            placeholder="Select a personnel"
-                          >
-                            {employees?.map((employee) => (
-                              <Select.Option
-                                key={employee._id}
-                                value={employee._id}
-                              >
-                                {employee.fullName}
-                              </Select.Option>
-                            ))}
-                          </Select>
-                      </Form.Item>
-                    </div>
-                  </div>
-                </>
-                }
-                </div>
-                {
-                  !open?.data && 
-                  <div className="form-group">
-                    <label>Comments</label>
-                    <Form.Item name="comments">
-                      <Input.TextArea className="form-control" rows={5} />
+                    >
+                      <Input placeholder="Enter Lead Title" />
                     </Form.Item>
-                    {/* <textarea rows={4} className="form-control summernote" placeholder="Enter your message here" defaultValue={""} /> */}
                   </div>
-                }
-
-                {open?.data && (
-                  <>
-                    <h4
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-evenly",
-                        alignItems: "center",
-                      }}
+                  <div className="col-sm-6">
+                    <Form.Item
+                      label={<>Client Name <span className="text-danger">*</span></>}
+                      name="clientName"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Enter a client name",
+                        },
+                      ]}
                     >
-                      Reach Outs
-                    </h4>
-                    <hr
-                      className="developer-dividerdddd"
-                      style={{ opacity: "0", marginTop: "0px" }}
-                    />
-                    <div className="table-responsive">
-                      <Table
-                        dataSource={reachOuts}
-                        columns={reachOutColumns}
-                        rowKey={(record, index) => index}
-                        pagination={false}
-                        bordered
-                        style={{ overflowX: "auto", height: "320px" }}
-                        components={
-                          i18n.dir() === "rtl"
-                            ? {
-                                header: {
-                                  cell: ({ children }) => (
-                                    <th style={{ textAlign: "right" }}>
-                                      {children}
-                                    </th>
-                                  ),
-                                },
-                              }
-                            : null
+                      <Input placeholder="Enter Client Name" />
+                    </Form.Item>
+                  </div>
+                  <div className="col-sm-6">
+                    <Form.Item
+                      label="Client Email"
+                      name="clientEmail"
+                      rules={[
+                        {
+                          validator: (_, value) => {
+                            if (!value || isValidEmail(value)) {
+                              return Promise.resolve();
+                            }
+                            return Promise.reject(new Error('Please enter a valid email'));
+                          },
+                        },
+                      ]}
+                    >
+                      <Input placeholder="Enter Client Email" />
+                    </Form.Item>
+                  </div>
+                  <div className="col-sm-6">
+                    <Form.Item
+                      label="Client Phone"
+                      name="clientPhone"
+                    >
+                      <Input
+                        addonBefore={
+                          <Select defaultValue="+92" style={{ width: 80 }}>
+                            <Option value="+92">+92</Option>
+                          </Select>
                         }
-                        onRow={
-                          i18n.dir() === "rtl"
-                            ? (record, rowIndex) => {
-                                return {
-                                  style: { textAlign: "right" }, // Align table data to the right
-                                };
-                              }
-                            : null
-                        }
+                        placeholder="Enter Client Phone"
                       />
-                    </div>
-
-                    <div className="submit-section">
-                      <Form.Item>
-                        <Button
-                          type="primary"
-                          onClick={addReachOuts}
-                          className="btn btn-primary submit-btn btn-add"
-                          style={{
-                            fontSize: "14px",
-                            minWidth: "30px",
-                            height: "39px",
-                            lineHeight: "0px",
-                          }}
-                        >
-                          <i className="fa fa-plus m-r-5" />
-                          Add Reach Out
-                        </Button>
-                      </Form.Item>
-                      <hr />
-                    </div>
-                  </>
-                )}
-
-                <div className="submit-section">
-                  <Form.Item>
-                    <Button
-                      type="primary"
-                      htmlType="submit"
-                      className="btn btn-primary submit-btn"
-                      disabled={loader}
+                    </Form.Item>
+                  </div>
+                  <div className="col-sm-6">
+                    <Form.Item
+                      label={<>Status <span className="text-danger">*</span></>}
+                      name="status"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Select a status",
+                        },
+                      ]}
                     >
-                      {loader ? (
-                        <Spin size="small" indicator={antIcon} />
-                      ) : (
-                        t("submit")
-                      )}
-                    </Button>
-                  </Form.Item>
+                      <Select placeholder="Select a Status">
+                        <Option value="New">New</Option>
+                        <Option value="In Progress">In Progress</Option>
+                        <Option value="On Hold">On Hold</Option>
+                        <Option value="Lost">Lost</Option>
+                        <Option value="Converted">Converted</Option>
+                      </Select>
+                    </Form.Item>
+                  </div>
+                  <div className="col-sm-6">
+                    <Form.Item
+                      label={<>Project Type <span className="text-danger">*</span></>}
+                      name="projectType"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Select a project type",
+                        },
+                      ]}
+                    >
+                      <Select placeholder="Select a Project Type">
+                        <Option value="staffAugmentation">Staff Augmentation</Option>
+                        <Option value="projectBased">Project Based</Option>
+                      </Select>
+                    </Form.Item>
+                  </div>
+                  <div className="col-sm-6">
+                    <Form.Item
+                      label={<>Source <span className="text-danger">*</span></>}
+                      name="source"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Select a source",
+                        },
+                      ]}
+                    >
+                      <Select placeholder="Select source option">
+                        {sourceOptions?.map((source) => (
+                          <Option key={source._id} value={source._id}>
+                            {source.title}
+                          </Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </div>
+                  <div className="col-sm-6">
+                    <Form.Item
+                      label={<>Account Manager <span className="text-danger">*</span></>}
+                      name="accountManager"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Select an account manager",
+                        },
+                      ]}
+                    >
+                      <Select placeholder="Select Account Manager">
+                        {accountManagers?.map((manager) => (
+                          <Option key={manager._id} value={manager._id}>
+                            {manager.fullName}
+                          </Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </div>
+                  <div className="col-sm-4">
+                    <Form.Item
+                      label="Project Worth"
+                      name="projectWorth"
+                    >
+                      <Input placeholder="Enter a cost" type="number" />
+                    </Form.Item>
+                  </div>
+                  <div className="col-sm-4">
+                    <Form.Item
+                      label="Currency"
+                      name="currency"
+                    >
+                      <Select placeholder="Select Currency">
+                        {allCurrencies?.map((currency) => (
+                          <Option key={currency.code} value={currency.code}>
+                            {currency.code}
+                          </Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </div>
+                  <div className="col-sm-4">
+                    <Form.Item
+                      label={<>First Reach Out <span className="text-danger">*</span></>}
+                      name="reachOut"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Enter reach-out date",
+                        },
+                      ]}
+                    >
+                      <DatePicker placeholder="Enter reach-out date" style={{ width: '100%' }} />
+                    </Form.Item>
+                  </div>
+                  <div className="col-sm-6">
+                    <Form.Item
+                      label={<>Communication Medium <span className="text-danger">*</span></>}
+                      name="communicationMedium"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Select a medium",
+                        },
+                      ]}
+                    >
+                      <Select placeholder="Select a medium">
+                        {mediumOptions?.map((medium) => (
+                          <Option key={medium._id} value={medium._id}>
+                            {medium.title}
+                          </Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </div>
+                  <div className="col-sm-6">
+                    <Form.Item
+                      label={<>Communicated By <span className="text-danger">*</span></>}
+                      name="communicatedBy"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Select a personnel",
+                        },
+                      ]}
+                    >
+                      <Select placeholder="Select a personnel">
+                        {employees?.map((employee) => (
+                          <Option key={employee._id} value={employee._id}>
+                            {employee.fullName}
+                          </Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </div>
+                  <div className="col-sm-12">
+                    <Form.Item
+                      label="Comments"
+                      name="comments"
+                    >
+                      <Input.TextArea rows={4} placeholder="Enter comments" />
+                    </Form.Item>
+                  </div>
+                </div>
+                <div className="submit-section">
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    className="submit-btn"
+                    loading={loader}
+                  >
+                    Submit
+                  </Button>
                 </div>
               </Form>
             </div>
           </div>
         </div>
       </Modal>
-
 
       <Modal
         open={open2.isAddOpen}

@@ -12,7 +12,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import * as Yup from 'yup';
 import { alphaNumericPattern, emailrgx } from '../constant'
 import { useDispatch, useSelector } from 'react-redux';
-import { login } from '../Entryfile/features/users.jsx';
+import { loginStart, loginSuccess, loginFailure } from '../Entryfile/features/users.jsx';
 import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 import { Form, Input, Spin, message } from 'antd';
 import { apiLoginEmployee } from "../Services/apiLogin";
@@ -126,7 +126,7 @@ const AdminLogin = (props) => {
         // setOpen(true);
         // console.log(res?.data?.result);
         //dispatch(getPermissionList({ roleId: res?.data?.result?.user?.roleId, athtoken: res?.data?.result?.access_token?.accessToken }))
-        //dispatch(login(res?.data?.result));
+        //dispatch(loginSuccess(res?.data?.result));
         //dispatch(superAdmin(res?.data?.result?.user?.superAdmin))
         // if(!res?.data?.result?.user?.role && res?.data?.result?.user?.firstTimeLogin){
         //   // nav('/change-password');
@@ -180,7 +180,7 @@ const AdminLogin = (props) => {
   })
 
     // Credentials are valid, proceed with login
-    // dispatch(login(data));
+    // dispatch(loginSuccess(data));
     // nav('/main/dashboard');
   }
   const dispatch = useDispatch();

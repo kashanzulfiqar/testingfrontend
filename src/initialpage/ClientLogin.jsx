@@ -12,7 +12,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import * as Yup from 'yup';
 import { alphaNumericPattern, emailrgx } from '../constant'
 import { useDispatch, useSelector } from 'react-redux';
-import { login } from '../Entryfile/features/users.jsx';
+import { loginStart, loginSuccess, loginFailure } from '../Entryfile/features/users.jsx';
 import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 import { Form, Input, Spin, message } from 'antd';
 import { apiLoginEmployee } from "../Services/apiLogin";
@@ -88,7 +88,7 @@ const ClientLogin = (props) => {
     apiLoginEmployee( !verificationToken ? 'client/login-client' : `user/login-user?token=${verificationToken}` , data).then((res) => {
       if (res?.data?.success === true) {
         // console.log(res?.data?.result);
-        dispatch(login(res?.data?.result));
+        dispatch(loginSuccess(res?.data?.result));
         if(res?.data?.result?.user?.firstTimeLogin){
           setTimeout(() => {
             setLoader(false)
