@@ -575,11 +575,11 @@ const AdminDashboard = () => {
                   <div className="card dash-widget">
                     <div className="card-body">
                       <span className="dash-widget-icon">
-                        <i className="fa fa-diamond" />
+                        <i className="fa fa-bullseye" />
                       </span>
                       <div className="dash-widget-info">
-                        <h3>{allData?.tasksCount}</h3>
-                        <label>{t("aDash.tasks")}</label>
+                        <h3>{allData?.activeLeadsCount}</h3>
+                        <label>{t("aDash.leads")}</label>
                       </div>
                     </div>
                   </div>
