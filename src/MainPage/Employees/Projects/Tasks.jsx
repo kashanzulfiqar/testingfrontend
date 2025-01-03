@@ -336,7 +336,7 @@ const onFinishEdit = (values) => {
         render: (text, record) => (
           record?.projectId ? (
             // If projectId is not null, render the clickable link
-            <Link to={`/projects/projects-view/${record?.projectId}`} style={{ color: '#333333' }}>
+            <Link to={`/projects/projects-view/${record?.projectId?._id}`} style={{ color: '#333333' }}>
               <label style={{ cursor: 'pointer' }} className="longText">
                 {record?.projectId?.projectName}
               </label>
