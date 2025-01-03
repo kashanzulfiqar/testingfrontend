@@ -13,9 +13,11 @@ import SuccessIcon from "../files/Icons/SuccessIcon.svg";
 import { LoadingOutlined } from "@ant-design/icons";
 import { apiServices } from "../Services/apiServices.js";
 import favicon from '../files/Icons/DaftarProIcon.svg';
+import { useTranslation } from 'react-i18next';
 
 
 const AdminResetPassword = () => {
+  const { t } = useTranslation();
   const [form] = Form.useForm();
   const { token } = useParams();
 
@@ -192,8 +194,13 @@ const AdminResetPassword = () => {
                           message: "please enter password",
                         },
                         {
-                          min: 8,
-                          message: "Password length should be more than 8",
+                          validator(rule, value) {
+                            const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+\\|/?.>,<=~`-])[A-Za-z\d!@#$%^&*()_+\\|/?.>,<=~`-]{8,}$/;
+                            if (value && !passwordRegex.test(value)) {
+                              return Promise.reject(t('password.newPasswordCriteria'));
+                            }
+                            return Promise.resolve();
+                          },
                         },
                       ]}
                       className="custom-border"
