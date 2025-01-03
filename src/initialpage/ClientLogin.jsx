@@ -247,11 +247,11 @@ const ClientLogin = (props) => {
                           <div className="col">
                             <label>Password</label>
                           </div>
-                          {/* <div className="col-auto">
-                            <Link className="text-muted" to="/forget-password">
+                          <div className="col-auto">
+                            <Link className="text-muted" to="/client/forgot-password">
                               Forgot password?
                             </Link>
-                          </div> */}
+                          </div>
                         </div>
                         <Form.Item
                           name="password"

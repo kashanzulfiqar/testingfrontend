@@ -187,6 +187,7 @@
     "projects": "المشاريع",
     "clients": "العملاء",
     "tasks": "المهام",
+    "leads": "Active Leads",
     "employees": "الموظفين",
     "totalRevenue": "إجمالي الإيرادات",
     "salesOverview": "نظرة عامة على المبيعات",
@@ -547,8 +548,8 @@
     "cancelled": "تم الإلغاء",
     "leavesTypes": "نوع الطلب",
     "total": "الإجمالي",
-    "alloted": "المخصص", 
-    "taken": "المستَخدَم", 
+    "alloted": "المخصص",
+    "taken": "المستَخدَم",
     "remaining": "المتبقي",
     "viewModal": {
       "details": "التفاصيل",
