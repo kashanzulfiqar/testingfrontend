@@ -6,6 +6,8 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
+import { useSelector, useDispatch } from 'react-redux';
+import { login } from '../Entryfile/features/users.jsx';
 
 import LoginPage from "./loginpage";
 import RegistrationPage from "./RegistrationPage";
@@ -28,7 +30,6 @@ import AdminDashboard from "../MainPage/Main/Dashboard/admindashboard";
 import EmployeeDashboard from "../MainPage/Main/Dashboard/employeedashboard";
 import Sidebar from "./Sidebar/sidebar";
 import Header from "./Sidebar/header";
-import { useSelector } from "react-redux";
 import Layout from "../SidebarLayout/Layout";
 import ResetPassword from "./ResetPassword";
 import Employeeslist from "../MainPage/Employees/Employees/employeeslist";
@@ -82,36 +83,55 @@ import Demo from "../LandingPage/demo";
 import AdminResetPassword from "./AdminReset";
 import AdminForgot from "./Forgot-Admin";
 import DisabledCompanies from "../MainPage/SuperAdmin/disbaledCompanies";
+import LeadsDetails from '../MainPage/Employees/leadsDetails';
 import LeadReport from "../MainPage/HR/Reports/leadreport";
 import PrivacyPolicy from "../LandingPage/privacyPolicy";
 import RefundPolicy from "../LandingPage/refundPolicy";
 import TermsAndConditions from "../LandingPage/TermsConditions";
-import LeadsDetails from "../MainPage/Employees/leadsDetails";
+import ClientForgotPassword from "./ClientForgotPassword";
+import ClientResetPassword from "./ClientResetPassword";
 
 const App = () => {
-  const login = useSelector((state) => state.user.loginvalue);
+  const loginState = useSelector((state) => state.user.loginvalue);
   const nav = useNavigate();
   const location = useLocation();
-  //   useEffect(() => {
-  //     if (
-  //       location.pathname.includes('login') ||
-  //       location.pathname.includes('register') ||
-  //       location.pathname.includes('forgotpassword') ||
-  //       location.pathname.includes('otp') ||
-  //       location.pathname.includes('lockscreen')
-  //     ) {
-  //       // $('body').addClass('account-page');
-  //     } else if (
-  //       location.pathname.includes('error-404') ||
-  //       location.pathname.includes('error-500')
-  //     ) {
-  //       $('body').addClass('error-page');
-  //     }
-  //   }, []);
+  const dispatch = useDispatch();
+
+  // Add cross-tab logout listener
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'logout' && e.newValue) {
+        try {
+          // Parse the logout data
+          const logoutData = JSON.parse(e.newValue);
+          const loggedOutUser = logoutData.userId;
+          const currentUser = loginState?.user?._id || loginState?.email;
+
+          // Only logout if it's the same user
+          if (loggedOutUser === currentUser) {
+            localStorage.clear();
+            sessionStorage.clear();
+            dispatch(login(null));
+            const currentOrigin = window?.location?.origin;
+            window.history.replaceState(null, null, `${currentOrigin}/login`);
+            window.location.reload();
+          }
+        } catch (error) {
+          console.error('Error handling logout event:', error);
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [dispatch, nav, loginState]);
 
   useEffect(() => {
     // console.log('loc--------',location.pathname);
-    if (!login) {
+    if (!loginState) {
       // nav('/login');
     }
     if (
@@ -122,7 +142,7 @@ const App = () => {
         location.pathname === "/forget-password" ||
         location.pathname === "/reset-password/:id" ||
         location.pathname === "/register") &&
-      login
+      loginState
     ) {
       // nav('/employee/dashboard');
     }
@@ -149,6 +169,8 @@ const App = () => {
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/client/login" element={<ClientLogin />} />
+        <Route path="/client/forgot-password" element={<ClientForgotPassword />} />
+        <Route path="/client/reset-password/:token" element={<ClientResetPassword />} />
         <Route path="/login/:email/:token" element={<LoginPage />} />
         <Route path="/forget" element={<AdminForgot />} />
         <Route path="/forget-password" element={<ForgotPassword />} />
@@ -174,7 +196,7 @@ const App = () => {
             element={
               <Navigate
                 to={
-                  login?.user?.role === "admin"
+                  loginState?.user?.role === "admin"
                     ? `/main/dashboard`
                     : `/employee/dashboard`
                 }
@@ -240,6 +262,7 @@ const App = () => {
           />
           <Route path={`/leads`} element={<Leads />} />
           <Route path={`/leads-details`} element={<LeadsDetails />} />
+          <Route path={`/leads-details`} element={<LeadsDetails />} />
           <Route path={`/documentation`} element={<GitBook />} />
           <Route path={`/report-problem`} element={<Query />} />
 
@@ -292,7 +315,7 @@ const App = () => {
         <Route path="/error-500" element={<Error500 />} /> */}
       </Routes>
 
-      {/* {login &&
+      {/* {loginState &&
         !location.pathname.includes('/login') &&
         !location.pathname.includes('/login/:id') &&
         !location.pathname.includes('/forget-password') &&

@@ -198,19 +198,18 @@ const Header = (props) => {
             <Link className="dropdown-item" to="/change-password">{t('header.changePassword')}</Link>
             {/* <Link className="dropdown-item" to="/login">Logout</Link> */}
             <a className="dropdown-item" onClick={() => {
+              // First trigger the logout event for other tabs with user info
+              const logoutData = {
+                userId: user_state?.user?._id || user_state?.email,
+                timestamp: Date.now()
+              };
+              localStorage.setItem('logout', JSON.stringify(logoutData));
+              // Then handle the logout in this tab
               localStorage.clear();
               sessionStorage.clear();
-              // nav('/login');
-              setTimeout(() => {
-                localStorage.clear();
-                sessionStorage.clear();
-
-                // window.location.href = `${window?.location?.origin}/login`
-                // window.location.href = `${window?.location?.origin}${(user_state?.user?.role === 'client' || user_state?.user?.role === 'focalperson') ? '/client/login' : '/login'}`
-                window.history.replaceState(null, null, `${window?.location?.origin}${superAdmin ? '/admin-login' : ((user_state?.user?.role === 'client' || user_state?.user?.role === 'focalperson') ? '/client/login' : '/login')}`);
-                // window.history.back();
-                window.location.reload();
-              }, 800);
+              const currentOrigin = window?.location?.origin;
+              window.history.replaceState(null, null, `${currentOrigin}${superAdmin ? '/admin-login' : ((user_state?.user?.role === 'client' || user_state?.user?.role === 'focalperson') ? '/client/login' : '/login')}`);
+              window.location.reload();
             }}>{t('header.logout')}</a>
           </div>
         </li>
@@ -238,19 +237,18 @@ const Header = (props) => {
       {i18n.language === 'en' ? t('header.switchToLanguage', {language: "'العربية'"}) : t('header.switchToLanguage', {language: "'English'"})}
     </a> */}
           <a className="dropdown-item" onClick={() => {
+              // First trigger the logout event for other tabs with user info
+              const logoutData = {
+                userId: user_state?.user?._id || user_state?.email,
+                timestamp: Date.now()
+              };
+              localStorage.setItem('logout', JSON.stringify(logoutData));
+              // Then handle the logout in this tab
               localStorage.clear();
               sessionStorage.clear();
-              // nav('/login');
-              // window.location.href = `${window?.location?.origin}/login`
-              setTimeout(() => {
-                localStorage.clear();
-                sessionStorage.clear();
-
-                // window.location.href = `${window?.location?.origin}${(user_state?.user?.role === 'client' || user_state?.user?.role === 'focalperson') ? '/client/login' : '/login'}`
-                window.history.replaceState(null, null, `${window?.location?.origin}${superAdmin ? '/admin-login' : ((user_state?.user?.role === 'client' || user_state?.user?.role === 'focalperson') ? '/client/login' : '/login')}`);
-                // window.history.back();
-                window.location.reload();
-              }, 800);
+              const currentOrigin = window?.location?.origin;
+              window.history.replaceState(null, null, `${currentOrigin}${superAdmin ? '/admin-login' : ((user_state?.user?.role === 'client' || user_state?.user?.role === 'focalperson') ? '/client/login' : '/login')}`);
+              window.location.reload();
             }}>{t('header.logout')}</a>
         </div>
       </div>
