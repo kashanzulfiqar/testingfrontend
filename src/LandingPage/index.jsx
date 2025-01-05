@@ -57,26 +57,10 @@ const LandingPage = () => {
     {
       "@context": "https://schema.org",
       "@type": "WebPage",
-      name: "DaftarPro Register",
+      name: "Register on DaftarPro",
       url: `${baseUrl}/register`,
       description:
         "Register with DaftarPro and unlock your business's full potential. Start managing your projects, HR, and finances in one place today!",
-    },
-    {
-      "@context": "https://schema.org",
-      "@type": "WebPage",
-      name: "DaftarPro Pricing",
-      url: `${baseUrl}/pricing`,
-      description:
-        "Flexible pricing plans for businesses of all sizes. Choose the perfect plan for your business needs.",
-    },
-    {
-      "@context": "https://schema.org",
-      "@type": "WebPage",
-      name: "DaftarPro Features",
-      url: `${baseUrl}/features`,
-      description:
-        "Discover DaftarPro's powerful features for HR management, project tracking, financial management, and more.",
     },
     {
       "@context": "https://schema.org",
@@ -89,7 +73,7 @@ const LandingPage = () => {
     {
       "@context": "https://schema.org",
       "@type": "WebPage",
-      name: "Live Demo",
+      name: "Checkout Live Demo",
       url: `${baseUrl}/live-demo`,
       description:
         "Experience DaftarPro in action with our interactive live demo. See how our platform can transform your business operations.",
@@ -105,28 +89,16 @@ const LandingPage = () => {
         "Register with DaftarPro and unlock your business's full potential. Start managing your projects, HR, and finances in one place today!",
     },
     {
-      path: "/pricing",
-      label: "Pricing",
+      path: "/login",
+      label: "Login",
       description:
-        "Flexible pricing plans for businesses of all sizes. Choose the perfect plan for your business needs.",
-    },
-    {
-      path: "/features",
-      label: "Features",
-      description:
-        "Discover DaftarPro's powerful features for HR management, project tracking, financial management, and more.",
+        "Securely log in to your DaftarPro account and access your business management dashboard.",
     },
     {
       path: "/live-demo",
       label: "Live Demo",
       description:
         "Experience DaftarPro in action with our interactive live demo. See how our platform can transform your business operations.",
-    },
-    {
-      path: "/login",
-      label: "Login",
-      description:
-        "Securely log in to your DaftarPro account and access your business management dashboard.",
     },
   ];
 
@@ -342,11 +314,6 @@ const LandingPage = () => {
             <section id="features" className="features-section">
               <Element name="features">
                 <Features />
-                <div className="feature-cta">
-                  <RouterLink to="/pricing" className="cta-link">
-                    See our Pricing Plans
-                  </RouterLink>
-                </div>
               </Element>
             </section>
 
@@ -357,26 +324,11 @@ const LandingPage = () => {
             <section id="pricing" className="pricing-section">
               <Element name="pricing">
                 <PlanCards />
-                <div className="pricing-cta">
-                  <RouterLink to="/register" className="cta-link">
-                    Get Started Now
-                  </RouterLink>
-                </div>
               </Element>
             </section>
 
             <section className="get-started-section">
               <GetStarted />
-            </section>
-
-            <section className="demo-section">
-              <Element name="demo">
-                <div className="demo-cta">
-                  <RouterLink to="/live-demo" className="cta-link">
-                    Try Live Demo
-                  </RouterLink>
-                </div>
-              </Element>
             </section>
 
             <footer className="site-footer">
