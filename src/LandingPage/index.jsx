@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet";
 import Navbar from "./Navbar";
-// import BackgroundSVG from "./BackgroundSVG";
-// import image9 from "./image9.png";
 import "./landingstyles.css";
 import { Input, Button, Divider, message } from "antd";
 import im1 from "./assets/im1.png";
@@ -27,13 +25,12 @@ import BottomPortion from "./bottomPortion";
 
 const LandingPage = () => {
   const nav = useNavigate();
-
   const isLogin = useSelector((state) => state.user.loginvalue);
   const role = isLogin?.user?.role;
   const location = useLocation();
   const baseUrl = window.location.origin;
 
-  // JSON-LD structured data
+  // JSON-LD structured data for main website
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "WebSite",
@@ -55,13 +52,83 @@ const LandingPage = () => {
     ],
   };
 
-  const pricingStructuredData = {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    name: "DaftarPro Pricing",
-    url: `${baseUrl}/pricing`,
-    description: "Flexible pricing plans for businesses of all sizes",
-  };
+  // JSON-LD structured data for key pages
+  const pagesStructuredData = [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      name: "DaftarPro Register",
+      url: `${baseUrl}/register`,
+      description:
+        "Register with DaftarPro and unlock your business's full potential. Start managing your projects, HR, and finances in one place today!",
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      name: "DaftarPro Pricing",
+      url: `${baseUrl}/pricing`,
+      description:
+        "Flexible pricing plans for businesses of all sizes. Choose the perfect plan for your business needs.",
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      name: "DaftarPro Features",
+      url: `${baseUrl}/features`,
+      description:
+        "Discover DaftarPro's powerful features for HR management, project tracking, financial management, and more.",
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      name: "DaftarPro Login",
+      url: `${baseUrl}/login`,
+      description:
+        "Securely log in to your DaftarPro account and access your business management dashboard.",
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      name: "Live Demo",
+      url: `${baseUrl}/live-demo`,
+      description:
+        "Experience DaftarPro in action with our interactive live demo. See how our platform can transform your business operations.",
+    },
+  ];
+
+  // Navigation links for key pages
+  const navigationLinks = [
+    {
+      path: "/register",
+      label: "Register",
+      description:
+        "Register with DaftarPro and unlock your business's full potential. Start managing your projects, HR, and finances in one place today!",
+    },
+    {
+      path: "/pricing",
+      label: "Pricing",
+      description:
+        "Flexible pricing plans for businesses of all sizes. Choose the perfect plan for your business needs.",
+    },
+    {
+      path: "/features",
+      label: "Features",
+      description:
+        "Discover DaftarPro's powerful features for HR management, project tracking, financial management, and more.",
+    },
+    {
+      path: "/live-demo",
+      label: "Live Demo",
+      description:
+        "Experience DaftarPro in action with our interactive live demo. See how our platform can transform your business operations.",
+    },
+    {
+      path: "/login",
+      label: "Login",
+      description:
+        "Securely log in to your DaftarPro account and access your business management dashboard.",
+    },
+  ];
 
   useEffect(() => {
     console.log(location.state);
@@ -177,13 +244,42 @@ const LandingPage = () => {
           name="keywords"
           content="business management software, HR management system, project management tool, employee management, payroll software, attendance tracking, leave management, resource allocation, timesheet management, employee dashboard, client management, lead management, lead tracking, sales pipeline, invoice management, expense tracking, profit loss tracking, task management, team collaboration, business analytics, performance tracking, employee attendance, salary management, project tracking, client portal, focal person management, document management, business reports, employee reports, attendance reports, lead reports, business automation, enterprise resource planning, ERP software, HR automation, project planning, task assignment, team management, remote work management, business productivity, workforce management, business efficiency, cloud-based business software, integrated business solution, business process management, BPM software, all-in-one business platform, SME software, enterprise management system, company management software, staff management, human resource software, project portfolio management, business reporting tools, financial management software"
         />
+        <link rel="canonical" href={baseUrl} />
+
+        {/* Open Graph tags for social sharing */}
+        <meta
+          property="og:title"
+          content="DaftarPro - All-in-One Business Management Platform"
+        />
+        <meta
+          property="og:description"
+          content="Manage your entire business in one place! Streamline projects, HR, finances, and more with DaftarPro - the ultimate solution for businesses of all sizes."
+        />
+        <meta property="og:image" content={`${baseUrl}/assets/og-image.png`} />
+        <meta property="og:url" content={baseUrl} />
+        <meta property="og:type" content="website" />
+
+        {/* Twitter Card tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta
+          name="twitter:title"
+          content="DaftarPro - All-in-One Business Management Platform"
+        />
+        <meta
+          name="twitter:description"
+          content="Manage your entire business in one place! Streamline projects, HR, finances, and more with DaftarPro."
+        />
+        <meta name="twitter:image" content={`${baseUrl}/assets/og-image.png`} />
+
+        {/* Structured data */}
         <script type="application/ld+json">
           {JSON.stringify(structuredData)}
         </script>
-        <script type="application/ld+json">
-          {JSON.stringify(pricingStructuredData)}
-        </script>
-        <link rel="canonical" href={baseUrl} />
+        {pagesStructuredData.map((data, index) => (
+          <script key={index} type="application/ld+json">
+            {JSON.stringify(data)}
+          </script>
+        ))}
       </Helmet>
 
       <NavigationBar />
@@ -246,6 +342,11 @@ const LandingPage = () => {
             <section id="features" className="features-section">
               <Element name="features">
                 <Features />
+                <div className="feature-cta">
+                  <RouterLink to="/pricing" className="cta-link">
+                    See our Pricing Plans
+                  </RouterLink>
+                </div>
               </Element>
             </section>
 
@@ -256,11 +357,26 @@ const LandingPage = () => {
             <section id="pricing" className="pricing-section">
               <Element name="pricing">
                 <PlanCards />
+                <div className="pricing-cta">
+                  <RouterLink to="/register" className="cta-link">
+                    Get Started Now
+                  </RouterLink>
+                </div>
               </Element>
             </section>
 
             <section className="get-started-section">
               <GetStarted />
+            </section>
+
+            <section className="demo-section">
+              <Element name="demo">
+                <div className="demo-cta">
+                  <RouterLink to="/live-demo" className="cta-link">
+                    Try Live Demo
+                  </RouterLink>
+                </div>
+              </Element>
             </section>
 
             <footer className="site-footer">
