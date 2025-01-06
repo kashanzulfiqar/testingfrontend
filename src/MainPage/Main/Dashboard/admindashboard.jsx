@@ -38,15 +38,23 @@ import { LoadingOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 
 const amountFormatter = (value) => {
-  if (value >= 1e9) {
-    return `${(value / 1e9).toFixed(1)}B`;
-  } else if (value >= 1e6) {
-    return `${(value / 1e6).toFixed(1)}M`;
-  } else if (value >= 1e3) {
-    return `${(value / 1e3).toFixed(1)}K`;
+  // Handle zero separately
+  if (value === 0) return "0";
+
+  // Get absolute value for easier comparison
+  const absValue = Math.abs(value);
+  // Format with B/M/K based on magnitude
+  let formattedValue;
+  if (absValue >= 1e9) {
+    formattedValue = `${(value / 1e9).toFixed(1)}B`;
+  } else if (absValue >= 1e6) {
+    formattedValue = `${(value / 1e6).toFixed(1)}M`;
+  } else if (absValue >= 1e3) {
+    formattedValue = `${(value / 1e3).toFixed(1)}K`;
   } else {
-    return value;
+    formattedValue = value.toLocaleString();
   }
+  return formattedValue;
 };
 
 const CustomLegend = () => (
@@ -73,7 +81,7 @@ const CustomLegend = () => (
           marginRight: "5px",
         }}
       ></div>
-      <span>Growth %</span>
+      <span>Growth Trend</span>
     </div>
     <div style={{ display: "flex", alignItems: "center" }}>
       <div
@@ -88,6 +96,67 @@ const CustomLegend = () => (
     </div>
   </div>
 );
+
+const getGrowthIndicator = (growthPercentage) => {
+  if (growthPercentage > 100) return 3; // Strong Growth
+  if (growthPercentage > 20) return 2; // Moderate Growth
+  if (growthPercentage > 0) return 1; // Slight Growth
+  if (growthPercentage > -20) return -1; // Slight Decline
+  if (growthPercentage > -60) return -2; // Moderate Decline
+  return -3; // Strong Decline
+};
+
+const getGrowthLabel = (indicator) => {
+  switch (indicator) {
+    case 3:
+      return "Strong Growth";
+    case 2:
+      return "Moderate Growth";
+    case 1:
+      return "Slight Growth";
+    case -1:
+      return "Slight Decline";
+    case -2:
+      return "Moderate Decline";
+    case -3:
+      return "Strong Decline";
+    default:
+      return "No Change";
+  }
+};
+
+const calculateGrowth = (data) => {
+  return data.map((item, index, arr) => {
+    if (index === 0) return { ...item, growth: 0, growthIndicator: 0 };
+    const previousYearRevenue = arr[index - 1].totalRevenue;
+    const growth = previousYearRevenue
+      ? ((item.totalRevenue - previousYearRevenue) / previousYearRevenue) * 100
+      : 0;
+    return {
+      ...item,
+      growth, // Keep original growth for tooltip
+      growthIndicator: getGrowthIndicator(growth), // Add normalized indicator
+    };
+  });
+};
+
+const getMonthName = (monthNumber) => {
+  const monthNames = {
+    1: "Jan",
+    2: "Feb",
+    3: "Mar",
+    4: "Apr",
+    5: "May",
+    6: "Jun",
+    7: "Jul",
+    8: "Aug",
+    9: "Sep",
+    10: "Oct",
+    11: "Nov",
+    12: "Dec",
+  };
+  return monthNames[monthNumber] || "";
+};
 
 const AdminDashboard = () => {
   const { t, i18n } = useTranslation();
@@ -136,94 +205,22 @@ const AdminDashboard = () => {
   });
   const [allCountries, setAllCountries] = useState([]);
   const [paginationDetail, setPaginationDetail] = useState();
-
-  useEffect(() => {
-    if (role1 === "admin" || permissions?.companyManagement) {
-      getDahsboardData();
-      // --------------------------
-      if (role1 === "admin" || permissions?.managePayrolls) {
-        getAllInvoices();
-        getAllPayments();
-        setPerm((prev) => {
-          return { ...prev, invoice: true, payment: true };
-        });
-      } else {
-        setPerm((prev) => {
-          return { ...prev, invoice: false, payment: false };
-        });
-        setTableLoader((prev) => {
-          return { ...prev, invoice: false, payment: false };
-        });
-      }
-      // --------------------------
-      if (role1 === "admin" || permissions?.clientManagement) {
-        getAllClients();
-        setPerm((prev) => {
-          return { ...prev, client: true };
-        });
-      } else {
-        setPerm((prev) => {
-          return { ...prev, client: false };
-        });
-        setTableLoader((prev) => {
-          return { ...prev, client: false };
-        });
-      }
-      // --------------------------
-      if (role1 === "admin" || permissions?.projectManagement) {
-        getAllProjects();
-        setPerm((prev) => {
-          return { ...prev, project: true };
-        });
-      } else {
-        setPerm((prev) => {
-          return { ...prev, project: false };
-        });
-        setTableLoader((prev) => {
-          return { ...prev, project: false };
-        });
-      }
-      // --------------------------
-      if (role1 === "admin" || permissions?.viewAllRequest) {
-        getAllRequests();
-        setPerm((prev) => {
-          return { ...prev, request: true };
-        });
-      } else {
-        setPerm((prev) => {
-          return { ...prev, request: false };
-        });
-        setTableLoader((prev) => {
-          return { ...prev, request: false };
-        });
-      }
-    } else {
-      nav(
-        `${
-          role1 === "client"
-            ? "/client/client-profile"
-            : role1 === "focalperson"
-            ? `/client/focal-profile`
-            : role1 === "admin"
-            ? `/main/dashboard`
-            : `/employee/dashboard`
-        }`
-      );
-    }
-  }, []);
+  const [graphLoader, setGraphLoader] = useState(true);
+  const [graphData, setGraphData] = useState([]);
+  const [allGraphsData, setAllGraphsData] = useState([]);
 
   const getDahsboardData = () => {
     setLoader(true);
-    apiServices("GET", "user/admin-dashboard", null, user_state)
+    return apiServices("GET", "user/admin-dashboard", null, user_state)
       .then((res) => {
         setAllData(res?.data);
-
         const d = res?.data?.revenue;
+
+        // Get latest year data for other purposes
         const latestYearData = d?.reduce(
           (max, obj) => (obj?.year > max?.year ? obj : max),
           d[0]
         );
-        monthHandler(latestYearData);
 
         const recentYear = Math.max(...d?.map((item) => item?.year));
         const sortedYears = d
@@ -243,6 +240,9 @@ const AdminDashboard = () => {
           ?.sort((a, b) => a?.year - b?.year);
         setTableYearData(sortedYears1);
         setLoader(false);
+
+        // Return success to indicate dashboard data is loaded
+        return true;
       })
       .catch((err) => {
         setLoader(false);
@@ -255,8 +255,77 @@ const AdminDashboard = () => {
               : t("aDash.errors.getDashboardDataError")
           }!`
         );
+        // Return false to indicate dashboard data failed to load
+        return false;
       });
   };
+
+  useEffect(() => {
+    const initializeDashboard = async () => {
+      if (role1 === "admin" || permissions?.companyManagement) {
+        try {
+          // Wait for dashboard data to load successfully before loading graph data
+          const dashboardSuccess = await getDahsboardData();
+          if (dashboardSuccess) {
+            await getAllGraphData();
+          }
+
+          if (role1 === "admin" || permissions?.managePayrolls) {
+            getAllInvoices();
+            getAllPayments();
+            setPerm((prev) => ({ ...prev, invoice: true, payment: true }));
+          } else {
+            setPerm((prev) => ({ ...prev, invoice: false, payment: false }));
+            setTableLoader((prev) => ({
+              ...prev,
+              invoice: false,
+              payment: false,
+            }));
+          }
+
+          if (role1 === "admin" || permissions?.clientManagement) {
+            getAllClients();
+            setPerm((prev) => ({ ...prev, client: true }));
+          } else {
+            setPerm((prev) => ({ ...prev, client: false }));
+            setTableLoader((prev) => ({ ...prev, client: false }));
+          }
+
+          if (role1 === "admin" || permissions?.projectManagement) {
+            getAllProjects();
+            setPerm((prev) => ({ ...prev, project: true }));
+          } else {
+            setPerm((prev) => ({ ...prev, project: false }));
+            setTableLoader((prev) => ({ ...prev, project: false }));
+          }
+
+          if (role1 === "admin" || permissions?.viewAllRequest) {
+            getAllRequests();
+            setPerm((prev) => ({ ...prev, request: true }));
+          } else {
+            setPerm((prev) => ({ ...prev, request: false }));
+            setTableLoader((prev) => ({ ...prev, request: false }));
+          }
+        } catch (error) {
+          console.error("Error initializing dashboard:", error);
+        }
+      } else {
+        nav(
+          `${
+            role1 === "client"
+              ? "/client/client-profile"
+              : role1 === "focalperson"
+              ? `/client/focal-profile`
+              : role1 === "admin"
+              ? `/main/dashboard`
+              : `/employee/dashboard`
+          }`
+        );
+      }
+    };
+
+    initializeDashboard();
+  }, []);
 
   const getAllInvoices = () => {
     apiServices("GET", `invoices?page=${1}&limit=${3}`, null, user_state)
@@ -417,42 +486,132 @@ const AdminDashboard = () => {
       });
   };
 
+  const getAllGraphData = async () => {
+    setGraphLoader(true);
+    try {
+      const res = await apiServices(
+        "GET",
+        "profit-loss/graph?rolling_months=6",
+        null,
+        user_state
+      );
+
+      if (res?.data?.success === true) {
+        // Step 1: Flatten all year/month combos into a single array
+        const allMonths = [];
+
+        res.data.profitLoss.forEach((yearData) => {
+          yearData.months.forEach((m) => {
+            allMonths.push({
+              ...m,
+              month: getMonthName(parseInt(m.month)), // Convert month number to name
+              year: yearData.year,
+              totalRevenue: m.totalRevenue || 0,
+            });
+          });
+        });
+
+        // Step 2: Sort ascending by year, then ascending by month
+        const monthToNumber = {
+          Jan: 1,
+          Feb: 2,
+          Mar: 3,
+          Apr: 4,
+          May: 5,
+          Jun: 6,
+          Jul: 7,
+          Aug: 8,
+          Sep: 9,
+          Oct: 10,
+          Nov: 11,
+          Dec: 12,
+        };
+
+        const sortedAsc = allMonths.sort((a, b) => {
+          if (a.year !== b.year) {
+            return a.year - b.year; // older year first
+          }
+          return monthToNumber[a.month] - monthToNumber[b.month]; // older month first
+        });
+
+        // Step 3: Extract ONLY the last 6 from that sorted array
+        const last6Months = sortedAsc.slice(-6).map((item) => ({
+          ...item,
+          monthYear: `${item.month} ${item.year}`,
+        }));
+
+        // Step 4: Update state so the BarChart sees the months from earliest to latest
+        setTableMonthData(last6Months);
+
+        // Keep these for reference if you use monthHandler, etc.
+        const rollingData = { year: "Last 6 Months", months: last6Months };
+        setGraphData(rollingData);
+        setYear("Last 6 Months");
+        setAllGraphsData(res?.data?.profitLoss);
+      }
+    } catch (err) {
+      message.error(
+        `${
+          err?.response?.data?.msg
+            ? err?.response?.data?.msg
+            : err?.response?.data?.validation?.body?.message
+            ? err?.response?.data?.validation?.body?.message
+            : t("finance.Profit&loss.getProfitLossGraphDataError")
+        }!`
+      );
+    } finally {
+      setGraphLoader(false);
+    }
+  };
+
   const monthHandler = (data) => {
-    const allMonths = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ];
+    if (!data?.months || !Array.isArray(data.months)) return;
 
-    function fillMissingMonths(data) {
-      const monthMap = {};
-      data?.forEach((item) => (monthMap[item?.month] = item));
+    // Get current date
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth() + 1; // 1-based month
 
-      const currentMonthIndex = new Date().getMonth(); // get the current month
+    // Generate last 6 months structure
+    const monthsStructure = [];
+    for (let i = 5; i >= 0; i--) {
+      let targetMonth = currentMonth - i;
+      let targetYear = currentYear;
 
-      const result = allMonths.map((month, index) => {
-        if (index <= currentMonthIndex) {
-          return monthMap[month] || { month, totalRevenue: 0 };
-        } else {
-          return { month, totalRevenue: null };
-        }
+      while (targetMonth <= 0) {
+        targetMonth = 12 + targetMonth;
+        targetYear--;
+      }
+
+      const monthNames = {
+        1: "Jan",
+        2: "Feb",
+        3: "Mar",
+        4: "Apr",
+        5: "May",
+        6: "Jun",
+        7: "Jul",
+        8: "Aug",
+        9: "Sep",
+        10: "Oct",
+        11: "Nov",
+        12: "Dec",
+      };
+
+      // Find matching data from API response
+      const monthData = data.months.find(
+        (m) => m.month === monthNames[targetMonth] && m.year === targetYear
+      );
+
+      monthsStructure.push({
+        month: monthNames[targetMonth],
+        year: targetYear,
+        totalRevenue: monthData?.totalRevenue || 0,
       });
-
-      return result;
     }
 
-    const filledData = fillMissingMonths(data?.months);
-    setTableMonthData(filledData);
-    setYear(data?.year);
+    setTableMonthData(monthsStructure);
+    setYear("Last 6 Months");
   };
 
   const formatDate = (inputDate) => {
@@ -486,19 +645,6 @@ const AdminDashboard = () => {
   const filteredYearData = tableYearData.filter(
     (item) => item.totalRevenue > 0
   );
-
-  // Calculate growth and add it to the data
-  const calculateGrowth = (data) => {
-    return data.map((item, index, arr) => {
-      if (index === 0) return { ...item, growth: 0 };
-      const previousYearRevenue = arr[index - 1].totalRevenue;
-      const growth = previousYearRevenue
-        ? ((item.totalRevenue - previousYearRevenue) / previousYearRevenue) *
-          100
-        : 0;
-      return { ...item, growth };
-    });
-  };
 
   const enrichedData = calculateGrowth(filteredYearData);
 
@@ -619,76 +765,135 @@ const AdminDashboard = () => {
                       </div>
                     ) : (
                       <>
-                        <ResponsiveContainer width="100%" height={300}>
-                          <ComposedChart
-                            data={enrichedData}
-                            margin={{
-                              top: 40,
-                              right: 5,
-                              left: 5,
-                              bottom: 20,
+                        <div style={{ height: "270px" }}>
+                          <ResponsiveContainer width="100%" height="100%">
+                            <ComposedChart
+                              data={enrichedData}
+                              margin={{
+                                top: 20,
+                                right: 50,
+                                left: 30,
+                                bottom: 5,
+                              }}
+                            >
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis dataKey="year" />
+                              <YAxis
+                                yAxisId="left"
+                                tickFormatter={amountFormatter}
+                                width={80}
+                              />
+                              <YAxis
+                                yAxisId="right"
+                                orientation="right"
+                                tickFormatter={(value) => `${value}%`}
+                                width={60}
+                              />
+                              <Tooltip
+                                labelFormatter={(value) =>
+                                  `${t("empProfile.year")} : ${value}`
+                                }
+                                formatter={(value, name) => {
+                                  if (name === "Growth %") {
+                                    return [`${value.toFixed(1)}%`, name];
+                                  }
+                                  return [amountFormatter(value), name];
+                                }}
+                                contentStyle={{ direction: i18n.dir() }}
+                              />
+                              <Bar
+                                yAxisId="left"
+                                dataKey="totalRevenue"
+                                name="Total Revenue"
+                                fill="#ff9b44"
+                                barSize={40}
+                              />
+                              <Line
+                                yAxisId="right"
+                                type="monotone"
+                                dataKey="growth"
+                                name="Growth %"
+                                stroke="#cc7a00"
+                                strokeWidth={2}
+                                dot={{ r: 3 }}
+                                activeDot={{ r: 7 }}
+                              />
+                              <Line
+                                yAxisId="left"
+                                type="monotone"
+                                dataKey="profit"
+                                name="Profit"
+                                stroke="#82ca9d"
+                                strokeWidth={2}
+                                dot={{ r: 3 }}
+                                activeDot={{ r: 7 }}
+                              />
+                              <ReferenceLine
+                                yAxisId="right"
+                                y={0}
+                                stroke="#666"
+                                strokeDasharray="3 3"
+                              />
+                            </ComposedChart>
+                          </ResponsiveContainer>
+                        </div>
+
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "center",
+                            marginTop: "10px",
+                            paddingBottom: "10px",
+                          }}
+                        >
+                          <div
+                            style={{
+                              marginRight: "20px",
+                              display: "flex",
+                              alignItems: "center",
                             }}
                           >
-                            <CartesianGrid />
-                            <XAxis dataKey="year" />
-                            <YAxis
-                              yAxisId="left"
-                              tickFormatter={amountFormatter}
-                            />
-                            <YAxis
-                              yAxisId="right"
-                              orientation="right"
-                              tickFormatter={(value) => `${value}%`}
-                            />
-                            <Tooltip
-                              labelFormatter={(value) =>
-                                `${t("empProfile.year")} : ${value}`
-                              }
-                              formatter={(value, name) => {
-                                if (name === "Growth %") {
-                                  return [`${value.toFixed(2)}%`, name];
-                                }
-                                return [value.toLocaleString(), name];
+                            <div
+                              style={{
+                                width: "10px",
+                                height: "10px",
+                                backgroundColor: "#ff9b44",
+                                marginRight: "5px",
                               }}
-                              contentStyle={{ direction: i18n.dir() }}
-                            />
-                            <Bar
-                              yAxisId="left"
-                              dataKey="totalRevenue"
-                              name="Total Revenue"
-                              fill="#ff9b44"
-                              barSize={20}
-                              minPointSize={1}
-                            />
-                            <ReferenceLine
-                              yAxisId="right"
-                              y={0}
-                              stroke="#666"
-                              strokeDasharray="3 3"
-                            />
-                            <Line
-                              yAxisId="right"
-                              type="basis"
-                              dataKey="growth"
-                              name="Growth %"
-                              stroke="#cc7a00"
-                              strokeWidth={3}
-                              dot={{ r: 3 }}
-                              activeDot={{ r: 7 }}
-                            />
-                            <Line
-                              yAxisId="left"
-                              type="monotone"
-                              dataKey="profit"
-                              name="Profit"
-                              stroke="#82ca9d"
-                              strokeWidth={3}
-                              dot={{ r: 3 }}
-                              activeDot={{ r: 7 }}
-                            />
-                          </ComposedChart>
-                        </ResponsiveContainer>
-                        <CustomLegend />
+                            ></div>
+                            <span>Total Revenue</span>
+                          </div>
+                          <div
+                            style={{
+                              marginRight: "20px",
+                              display: "flex",
+                              alignItems: "center",
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: "10px",
+                                height: "10px",
+                                backgroundColor: "#cc7a00",
+                                marginRight: "5px",
+                              }}
+                            ></div>
+                            <span>Growth %</span>
+                          </div>
+                          <div
+                            style={{ display: "flex", alignItems: "center" }}
+                          >
+                            <div
+                              style={{
+                                width: "10px",
+                                height: "10px",
+                                backgroundColor: "#82ca9d",
+                                marginRight: "5px",
+                              }}
+                            ></div>
+                            <span>Profit</span>
+                          </div>
+                        </div>
                       </>
                     )}
                   </div>
@@ -697,70 +902,49 @@ const AdminDashboard = () => {
               <div className="col-md-6 text-center">
                 <div className="card" dir="ltr" style={{ height: "400px" }}>
                   <div className="card-body">
-                    <h3 className="card-title">
-                      {t("aDash.monthlyRevenue")} {year ? ` - ${year}` : ""}
-                    </h3>
-                    {loader ? (
-                      <Spin
-                        style={{
-                          height: "300px",
-                          display: "grid",
-                          placeItems: "center",
-                        }}
-                      />
-                    ) : allData?.revenue?.length > 0 ? (
-                      <ResponsiveContainer width="100%" height={300}>
-                        <LineChart
-                          data={tableMonthData}
-                          margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
-                        >
-                          <CartesianGrid />
-                          <XAxis dataKey="month" interval={0} />
-                          <YAxis
-                            tickFormatter={(value) => {
-                              if (value >= 1e9) {
-                                return `${(value / 1e9).toFixed(1)}B`;
-                              } else if (value >= 1e6) {
-                                return `${(value / 1e6).toFixed(1)}M`;
-                              } else if (value >= 1e3) {
-                                return `${(value / 1e3).toFixed(1)}K`;
-                              } else {
-                                return value;
-                              }
-                            }}
-                          />
-                          <Tooltip
-                            formatter={(value) => (
-                              <label>
-                                {value === 0 ? "N/A" : value?.toLocaleString()}
-                              </label>
-                            )}
-                            contentStyle={{ direction: i18n.dir() }}
-                          />
-                          <Legend />
-                          <Line
-                            type="monotone"
-                            dataKey="totalRevenue"
-                            name={t("finance.Profit&loss.totalRevenue")}
-                            stroke="#ff9b44"
-                            fill="#00c5fb"
-                            strokeWidth={3}
-                            dot={{ r: 3 }}
-                            activeDot={{ r: 7 }}
-                          />
-                        </LineChart>
-                      </ResponsiveContainer>
+                    <h3 className="card-title">Last 6 Months Revenue</h3>
+                    {graphLoader ? (
+                      <div style={{ minHeight: "340px" }}>
+                        <Spin
+                          style={{
+                            height: "300px",
+                            display: "grid",
+                            placeItems: "center",
+                          }}
+                        />
+                      </div>
                     ) : (
-                      <label
-                        style={{
-                          height: "300px",
-                          display: "grid",
-                          placeItems: "center",
-                          color: "grey",
-                        }}
-                      >
-                        {t("aRequests.errors.noRecordFound")}
-                      </label>
+                      <div style={{ height: "340px" }}>
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart
+                            data={tableMonthData}
+                            margin={{
+                              top: 20,
+                              right: 30,
+                              left: 30,
+                              bottom: 20,
+                            }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="monthYear" type="category" />
+                            <YAxis tickFormatter={amountFormatter} width={80} />
+                            <Tooltip
+                              formatter={(value) => [
+                                `${amountFormatter(value)}`,
+                                "Revenue",
+                              ]}
+                              labelFormatter={(label) => label}
+                              contentStyle={{ direction: i18n.dir() }}
+                            />
+                            <Bar
+                              dataKey="totalRevenue"
+                              fill="#ff9b44"
+                              name="Revenue"
+                              barSize={40}
+                            />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
                     )}
                   </div>
                 </div>
