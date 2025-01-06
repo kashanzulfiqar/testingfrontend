@@ -30,6 +30,9 @@ jobs:
             echo "Changing to project directory..."
             cd ${{ secrets.DEPLOYMENT_PATH }}
             
+            echo "Marking the directory as safe..."
+            git config --global --add safe.directory $PWD
+      
             echo "Fetching and ensuring correct branch..."
             git fetch origin
             git checkout dev || git checkout -b dev origin/dev
@@ -45,7 +48,7 @@ jobs:
             
             echo "Deployment completed successfully!"
           '
-
+          
       - name: Send notification on failure
         if: failure()
         run: |
