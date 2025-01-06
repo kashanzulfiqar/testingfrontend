@@ -55,12 +55,31 @@ function TaskModal({data, viewModal, closeViewModal, getAllTasks}) {
     const [isEditing, setIsEditing] = useState(false);
     const [isEditingTag, setIsEditingTag] = useState(false);
     const [isEditingTitle, setIsEditingTitle] = useState(false);
+    const [selectedTeamMembers, setSelectedTeamMembers] = useState([]);
+    const [employees, setEmployees] = useState([]);
 
     useEffect(()=>{
       setDescription(data?.description);
       setTags(data?.tags);
-      setTitle(data?.title)
-    },[])
+      setTitle(data?.title);
+      setEmployees(task?.ProjectData?.assignedDevelopers || []);
+      setSelectedTeamMembers(task?.assignedDevelopers || []);
+    },[data])
+
+    const handleChange = (values) => {
+      const selectedEmployees = values?.map((value) =>
+        employees?.find((employee) => employee._id === value)
+      );
+      setSelectedTeamMembers(selectedEmployees);
+    }
+
+    const getTeamMemberOptions = () => {
+      return employees?.map((employee) => (
+        <Select.Option key={employee._id} value={employee._id}>
+          {employee.fullName}
+        </Select.Option>
+      ));
+    }
 
     const handleTitleClick = () => {
       setIsEditingTitle(true);
@@ -72,8 +91,9 @@ function TaskModal({data, viewModal, closeViewModal, getAllTasks}) {
       console.log("called title")
       const data = {
         ...values,
-        projectId: task?.ProjectData?._id,
-        _id: task?._id
+        [task?.ProjectData?.projectName ? 'projectId' : 'boardId']: task?.ProjectData?._id,
+        _id: task?._id,
+        assignedDevelopers: selectedTeamMembers.map(dev => dev._id)
       }
       apiServices("PUT", 'tasks', data, user_state)
         .then((res) => {
@@ -117,8 +137,9 @@ function TaskModal({data, viewModal, closeViewModal, getAllTasks}) {
       console.log("called tag")
       const data = {
         ...values,
-        projectId: task?.ProjectData?._id,
-        _id: task?._id
+        [task?.ProjectData?.projectName ? 'projectId' : 'boardId']: task?.ProjectData?._id,
+        _id: task?._id,
+        assignedDevelopers: selectedTeamMembers.map(dev => dev._id)
       }
       apiServices("PUT", 'tasks', data, user_state)
         .then((res) => {
@@ -158,31 +179,32 @@ function TaskModal({data, viewModal, closeViewModal, getAllTasks}) {
       console.log("called desc")
       const data = {
         ...values,
-        projectId: task?.ProjectData?._id,
-        _id: task?._id
-    }
-    apiServices("PUT", 'tasks', data, user_state)
-      .then((res) => {
-          if (res?.data?.success === true) {
-            message.success('Task details updated')
-            setLoader3(false)
-            setDescription(values?.description);
-            handleCancelClick();
-            getAllTasks(task?.ProjectData?._id);
-            }
-          })
-          .catch((err) => {
-        setLoader3(false)
-        message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
-              ? err?.response?.data?.validation?.body?.message
-              : t('Tasks.updateTaskError')
-          }!`
-        );
-      });
+        [task?.ProjectData?.projectName ? 'projectId' : 'boardId']: task?.ProjectData?._id,
+        _id: task?._id,
+        assignedDevelopers: selectedTeamMembers.map(dev => dev._id)
+      }
+      apiServices("PUT", 'tasks', data, user_state)
+        .then((res) => {
+            if (res?.data?.success === true) {
+              message.success('Task details updated')
+              setLoader3(false)
+              setDescription(values?.description);
+              handleCancelClick();
+              getAllTasks(task?.ProjectData?._id);
+              }
+            })
+            .catch((err) => {
+          setLoader3(false)
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : t('Tasks.updateTaskError')
+            }!`
+          );
+        });
     };
 
   return (
@@ -426,6 +448,125 @@ function TaskModal({data, viewModal, closeViewModal, getAllTasks}) {
                 </div>
               </div>
             </div>
+            
+            <div className="row">
+                  <div className="col-sm-6">
+                    <div className="form-group">
+                      <label>{t("projectScreen.Modal.addTeam")}{" "}</label>
+                      <div style={{ position: "relative" }} id="area">
+                        <Form.Item
+                          name="assignedDevelopers"
+                          className="addTeamHeight"
+                          
+                        >
+                          <Select
+                            showSearch
+                            onSearch={(val) => {
+                              showTeamSearch(val, "Team");
+                              // onTeamChange(val)
+                            }}
+                            filterOption={(input, option) =>
+                              option.children
+                                .toLowerCase()
+                                .indexOf(input.toLowerCase()) >= 0
+                            }
+                            optionFilterProp="children"
+                            notFoundContent={
+                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                            }
+                            dropdownRender={(menu) => <>{menu}</>}
+                            getPopupContainer={() =>
+                              document.getElementById("area")
+                            }
+                            className="customselect-height custom-select"
+                            mode="multiple"
+                            placeholder={t(
+                              "projectScreen.Modal.selectTeamMembers"
+                            )}
+                            
+                            onChange={handleChange}
+                          >
+                            {getTeamMemberOptions()}
+                          </Select>
+                        </Form.Item>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-sm-6">
+                    <div className="form-group">
+                      <label>{t("projectScreen.Modal.teamMembers")}</label>
+                      <div
+                        className="project-members"
+                        style={{ margin: "4px auto" }}
+                      >
+                        <ul
+                          className="team-members"
+                          style={{ minWidth: "max-content" }}
+                        >
+                          {selectedTeamMembers
+                            ?.slice(0, 4)
+                            .map((teamMember, index) => (
+                              <li key={index}>
+                                <Tooltip
+                                  title={teamMember?.fullName}
+                                >
+                                  <Avatar
+                                    style={{ cursor: "pointer" }}
+                                    src={
+                                      teamMember?.imageUrl || user_icon
+                                    }
+                                  />
+                                </Tooltip>
+                              </li>
+                            ))}
+                          {selectedTeamMembers?.length > 4 && (
+                            <li className="dropdown avatar-dropdown">
+                              <Link
+                                className="all-users dropdown-toggle projectTeamMember"
+                                style={{
+                                  display: "inline-flex",
+                                  height: "33px",
+                                  width: "33px",
+                                }}
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                              >
+                                +{selectedTeamMembers?.length - 4}
+                              </Link>
+                              {/* Dropdown menu for additional team members */}
+                              <div className="dropdown-menu dropdown-menu-right">
+                                <div className="avatar-group">
+                                  {selectedTeamMembers
+                                    ?.slice(4)
+                                    .map((teamMember, index) => (
+                                      <a
+                                        className="avatar avatar-xs projectTeamMember"
+                                        key={index}
+                                      >
+                                        <Tooltip
+                                          title={
+                                            teamMember?.fullName
+                                          }
+                                        >
+                                          <Avatar
+                                            src={
+                                              teamMember?.imageUrl ||
+                                              user_icon
+                                            }
+                                            style={{ cursor: "pointer" }}
+                                          />
+                                        </Tooltip>
+                                      </a>
+                                    ))}
+                                </div>
+                              </div>
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
           </div>
             </div>
         </div>
