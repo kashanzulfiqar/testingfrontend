@@ -8,7 +8,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Configure SSH
         env:
@@ -20,37 +20,35 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           echo -e "Host ec2\n\tHostName $SSH_HOST\n\tUser $SSH_USER\n\tIdentityFile ~/.ssh/deploy_key\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
-          
+
       - name: Deploy and Build on EC2
         run: |
           ssh ec2 '
             set -e
             echo "Starting deployment..."
-            
+
             echo "Setting up SSH agent and adding frontend deploy key..."
             eval "$(ssh-agent -s)"
             ssh-add ~/.ssh/${{ secrets.EC2_KEY_NAME }}
-            
+
             echo "Changing to project directory..."
             cd ${{ secrets.DEPLOYMENT_PATH }}
-            
+
+            echo "Ensuring correct permissions..."
+            sudo chown -R $USER:$USER .
+            chmod -R u+w .
+
             echo "Pulling latest code..."
-            git pull origin dev
-            
+            git pull origin dev || { echo "Git pull failed"; exit 1; }
+
             echo "Installing dependencies..."
             yarn install || { echo "Failed to install dependencies"; exit 1; }
-            
-            # echo "Removing old build..."
-            # rm -rf dist/
-            
+
             echo "Building project..."
             yarn build || { echo "Build failed"; exit 1; }
-            
-            # echo "Restarting nginx..."
-            # sudo systemctl restart nginx
-            
+
             echo "Deployment completed successfully!"
-            
+
             echo "Cleaning up SSH agent..."
             ssh-agent -k
           '
