@@ -461,8 +461,36 @@ const Sidebar = (props) => {
                     )}
                   </li>
                   <li className={pathname.includes("leads") ? "active" : ""}>
-                    <Link to="/app/employees/leads">
-                      <i className="la la-user-secret" /> <span>Leads</span>{" "}
+                    {user_state?.role === "client" ||
+                    user_state?.role === "focalperson" ? (
+                      <a
+                        href="javascript:"
+                        style={{ color: "#898989", cursor: "not-allowed" }}
+                      >
+                        <i className="la la-user-secret" />{" "}
+                        <span>{t("sideBar.leads")}</span>{" "}
+                      </a>
+                    ) : (
+                      (user_state?.role === "admin" ||
+                        permissions?.leadsManagement) && (
+                        <Link to="/leads">
+                          <i className="la la-user-secret" />{" "}
+                          <span>
+                            {t("sideBar.leads")}
+                            <span
+                              className="badge badge-pill bg-custom"
+                              style={{ marginLeft: "50px" }}
+                            >
+                              ADMIN
+                            </span>
+                          </span>{" "}
+                        </Link>
+                      )
+                    )}
+                  </li>
+                  <li className={pathname.includes("recruitment") ? "active" : ""}>
+                    <Link to="/recruitment/dashboard">
+                      <i className="la la-users" /> <span>Recruitment</span>
                     </Link>
                   </li>
                   <li
@@ -2290,7 +2318,11 @@ const Sidebar = (props) => {
                         </Link>
                       )
                     )}
-                    {/* <Link to="/app/employees/leads"><i className="la la-user-secret" /> <span>Leads</span> </Link> */}
+                  </li>
+                  <li className={pathname.includes("recruitment") ? "active" : ""}>
+                    <Link to="/recruitment/dashboard">
+                      <i className="la la-users" /> <span>Recruitment</span>
+                    </Link>
                   </li>
                   {/* <li className={pathname.includes('tickets') ? "active" : pathname.includes('ticket-view') ? "active" : ""}>
                 {
