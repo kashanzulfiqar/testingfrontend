@@ -262,7 +262,9 @@ const Jobs = () => {
       dataIndex: 'title',
       key: 'title',
       render: (text, record) => (
-        <Link to={`/recruitment/jobs/${record._id}`}>{text}</Link>
+        <Link to={`/recruitment/jobs/${record._id}`} className="text-primary">
+          {text}
+        </Link>
       ),
       sorter: true,
     },
@@ -341,10 +343,8 @@ const Jobs = () => {
       dataIndex: 'applicationCount',
       key: 'applicationCount',
       render: (count, record) => (
-        <Link to={`/recruitment/jobs/${record._id}/applications`}>
-          <Tag color="blue" style={{ cursor: 'pointer' }}>
-            {count || 0} applications
-          </Tag>
+        <Link to={`/recruitment/jobs/${record._id}/applications`} className="text-primary">
+          {count || 0} applications
         </Link>
       ),
       sorter: true,
@@ -375,7 +375,10 @@ const Jobs = () => {
                     okText: 'Yes, Delete',
                     okType: 'danger',
                     cancelText: 'No',
-                    onOk: () => handleDeleteJob(record._id)
+                    onOk: () => handleDeleteJob(record._id),
+                    okButtonProps: {
+                      loading: loading
+                    }
                   });
                 }}
               >
@@ -386,31 +389,24 @@ const Jobs = () => {
           trigger={['click']}
           placement="bottomRight"
         >
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center',
-            alignItems: 'center',
-            height: '100%'
-          }}>
-            <Button 
-              type="text" 
-              icon={<MoreOutlined style={{ 
-                transform: 'rotate(90deg)',
-                fontSize: '16px',
-                color: '#6C757D'
-              }} />}
-              style={{
-                width: '32px',
-                height: '32px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: 0,
-                border: 'none',
-                background: 'transparent'
-              }}
-            />
-          </div>
+          <Button 
+            type="text" 
+            icon={<MoreOutlined style={{ 
+              transform: 'rotate(90deg)',
+              fontSize: '16px',
+              color: '#6C757D'
+            }} />}
+            style={{
+              width: '32px',
+              height: '32px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 0,
+              border: 'none',
+              background: 'transparent'
+            }}
+          />
         </Dropdown>
       ),
     },

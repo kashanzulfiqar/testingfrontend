@@ -1,10 +1,16 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, Routes, Route, Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useTranslation } from "react-i18next";
 import Header from '../../initialpage/Sidebar/header';
+import Jobs from './Jobs';
+import JobDetails from './JobDetails';
+import EditJob from './EditJob';
+import Candidates from './Candidates';
+import CandidateDetails from './CandidateDetails';
+import EditCandidate from './EditCandidate';
 
-const RecruitmentLayout = ({ children }) => {
+const RecruitmentLayout = () => {
   const location = useLocation();
   const { t } = useTranslation();
   const pathname = location.pathname;
@@ -64,7 +70,15 @@ const RecruitmentLayout = ({ children }) => {
 
       {/* Main content */}
       <div className="page-wrapper">
-        {children}
+        <Routes>
+          <Route path="jobs" element={<Jobs />} />
+          <Route path="jobs/:jobId" element={<JobDetails />} />
+          <Route path="jobs/:jobId/edit" element={<EditJob />} />
+          <Route path="candidates" element={<Candidates />} />
+          <Route path="candidates/:id" element={<CandidateDetails />} />
+          <Route path="candidates/:id/edit" element={<EditCandidate />} />
+          <Route path="*" element={<Navigate to="jobs" replace />} />
+        </Routes>
       </div>
     </div>
   );
