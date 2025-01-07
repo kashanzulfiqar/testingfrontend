@@ -27,12 +27,12 @@ jobs:
             set -e
             echo "Starting deployment..."
             
+            echo "Setting up SSH agent and adding frontend deploy key..."
+            eval "$(ssh-agent -s)"
+            ssh-add ~/.ssh/${{ secrets.EC2_KEY_NAME }}
+            
             echo "Changing to project directory..."
             cd ${{ secrets.DEPLOYMENT_PATH }}
-            
-            echo "Fetching and ensuring correct branch..."
-            git fetch origin
-            git checkout dev || git checkout -b dev origin/dev
             
             echo "Pulling latest code..."
             git pull origin dev
@@ -40,10 +40,19 @@ jobs:
             echo "Installing dependencies..."
             yarn install || { echo "Failed to install dependencies"; exit 1; }
             
+            # echo "Removing old build..."
+            # rm -rf dist/
+            
             echo "Building project..."
             yarn build || { echo "Build failed"; exit 1; }
             
+            # echo "Restarting nginx..."
+            # sudo systemctl restart nginx
+            
             echo "Deployment completed successfully!"
+            
+            echo "Cleaning up SSH agent..."
+            ssh-agent -k
           '
 
       - name: Send notification on failure
