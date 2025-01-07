@@ -350,6 +350,11 @@ const TaskBoard = () => {
     return task ? task.title : "";
   };
 
+  const getTaskAssignedDevelopers = (taskId) => {
+    const task = allTasks.find((task) => task._id === taskId);
+    return task ? task.assignedDevelopers : [];
+  };
+
   const getTaskTags = (taskId) => {
     const task = allTasks.find((task) => task._id === taskId);
     return task ? task.tags : [];
@@ -363,7 +368,7 @@ const TaskBoard = () => {
   const getAllTasks = (id) => {
     apiServices(
       "GET",
-      `tasks?id=${id}&page=${1}&limit=${99999}`,
+      `tasks?id=${id}&page=${1}&limit=${99999}&isArchived=${BoardData?.board?.isArchived}`,
       null,
       user_state
     )
@@ -395,7 +400,7 @@ const TaskBoard = () => {
   const getTasksOptions = (id) => {
     apiServices(
       "GET",
-      `tasks?id=${id}&lane=empty&page=${1}&limit=${99999}`,
+      `tasks?id=${id}&lane=empty&page=${1}&limit=${99999}&isArchived=${BoardData?.board?.isArchived}`,
       null,
       user_state
     )
@@ -425,7 +430,7 @@ const TaskBoard = () => {
   const getTaskBoard = (id) => {
     apiServices(
       "GET",
-      `taskBoard/view-taskBoard?id=${id}`,
+      `taskBoard/view-taskBoard?id=${id}&isArchived=${BoardData?.board?.isArchived}`,
       null,
       user_state
     )
@@ -1057,7 +1062,7 @@ const onFinishEdit = (values) => {
                                                       <div className="kanban-box">
                                                         <div className="task-board-header">
                                                           <span className="status-title" 
-                                                          style={{ paddingRight: 'inherit' }}>
+                                                          style={{ paddingRight: 'inherit', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'space-between', width: '100%' }}>
                                                             <a 
                                                             style={{
                                                               wordBreak:'break-word'
@@ -1068,6 +1073,8 @@ const onFinishEdit = (values) => {
                                                               const tags = getTaskTags(task.taskId);
                                                               const description = getTaskDescription(task.taskId);
                                                               const status = column.title;
+                                                              const taskAssignedDevelopers = getTaskAssignedDevelopers(task.taskId);
+
                                                               setSelectedTask({
                                                                 _id: task.taskId,
                                                                 title,
@@ -1086,14 +1093,55 @@ const onFinishEdit = (values) => {
                                                                     project: null,
                                                                     assignedDevelopers: employees
                                                                   },
-                                                                status
+                                                                status,
+                                                                assignedDevelopers: taskAssignedDevelopers
                                                               });
                                                               setViewModal(true);
                                                             }}
                                                             >
                                                               {getTaskTitle(task.taskId)}
                                                             </a>
-                                                          </span>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                              <div className="project-members" style={{margin: '4px auto'}}>
+                                                                <ul className="team-members" style={{minWidth: 'max-content'}}>
+                                                                  {getTaskAssignedDevelopers(task.taskId)?.slice(0, 4).map((developer, index) => (
+                                                                    <li key={index}>
+                                                                      <Tooltip title={developer?.fullName}>
+                                                                        <Avatar size={24} style={{cursor: 'pointer'}} src={developer?.imageUrl || user_icon} />
+                                                                      </Tooltip>
+                                                                    </li>
+                                                                  ))}
+                                                                  {getTaskAssignedDevelopers(task.taskId)?.length > 4 && (
+                                                                    <li className="dropdown avatar-dropdown">
+                                                                      <Link
+                                                                        className="all-users dropdown-toggle projectTeamMember"
+                                                                        style={{display:'inline-flex', height: '24px', width: '24px', fontSize: '10px'}}
+                                                                        data-bs-toggle="dropdown"
+                                                                        aria-expanded="false"
+                                                                      >
+                                                                        +{getTaskAssignedDevelopers(task.taskId)?.length - 4}
+                                                                      </Link>
+                                                                      <div className="dropdown-menu dropdown-menu-right">
+                                                                        <div className="avatar-group">
+                                                                          {getTaskAssignedDevelopers(task.taskId)?.slice(4).map((developer, index) => (
+                                                                            <a
+                                                                              className="avatar avatar-xs projectTeamMember"
+                                                                              key={index}
+                                                                            >
+                                                                              <Tooltip title={developer?.fullName}>
+                                                                                <Avatar
+                                                                                  src={developer?.imageUrl || user_icon}
+                                                                                  style={{cursor: 'pointer'}}
+                                                                                />
+                                                                              </Tooltip>
+                                                                            </a>
+                                                                          ))}
+                                                                        </div>
+                                                                      </div>
+                                                                    </li>
+                                                                  )}
+                                                                </ul>
+                                                              </div>
                                                           <div className="dropdown kanban-task-action">
                                                             <a 
                                                             data-bs-toggle='dropdown'
@@ -1132,6 +1180,8 @@ const onFinishEdit = (values) => {
                                                               </a>
                                                             </div>
                                                           </div>
+                                                            </div>
+                                                          </span>
                                                         </div>
                                                         <div className="task-board-body">
                                                           <div className="kanban-footer">
@@ -1827,125 +1877,6 @@ const onFinishEdit = (values) => {
                         </Form.Item>
                         </div>
                     </div>
-                    
-                <div className="row">
-                  <div className="col-sm-6">
-                    <div className="form-group">
-                      <label>{t("projectScreen.Modal.addTeam")}{" "}</label>
-                      <div style={{ position: "relative" }} id="area">
-                        <Form.Item
-                          name="assignedDevelopers"
-                          className="addTeamHeight"
-                          
-                        >
-                          <Select
-                            showSearch
-                            onSearch={(val) => {
-                              showTeamSearch(val, "Team");
-                              // onTeamChange(val)
-                            }}
-                            filterOption={(input, option) =>
-                              option.children
-                                .toLowerCase()
-                                .indexOf(input.toLowerCase()) >= 0
-                            }
-                            optionFilterProp="children"
-                            notFoundContent={
-                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                            }
-                            dropdownRender={(menu) => <>{menu}</>}
-                            getPopupContainer={() =>
-                              document.getElementById("area")
-                            }
-                            className="customselect-height custom-select"
-                            mode="multiple"
-                            placeholder={t(
-                              "projectScreen.Modal.selectTeamMembers"
-                            )}
-                            
-                            onChange={handleChange}
-                          >
-                            {getTeamMemberOptions()}
-                          </Select>
-                        </Form.Item>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-sm-6">
-                    <div className="form-group">
-                      <label>{t("projectScreen.Modal.teamMembers")}</label>
-                      <div
-                        className="project-members"
-                        style={{ margin: "4px auto" }}
-                      >
-                        <ul
-                          className="team-members"
-                          style={{ minWidth: "max-content" }}
-                        >
-                          {selectedTeamMembers
-                            ?.slice(0, 4)
-                            .map((teamMember, index) => (
-                              <li key={index}>
-                                <Tooltip
-                                  title={teamMember?.fullName}
-                                >
-                                  <Avatar
-                                    style={{ cursor: "pointer" }}
-                                    src={
-                                      teamMember?.imageUrl || user_icon
-                                    }
-                                  />
-                                </Tooltip>
-                              </li>
-                            ))}
-                          {selectedTeamMembers?.length > 4 && (
-                            <li className="dropdown avatar-dropdown">
-                              <Link
-                                className="all-users dropdown-toggle projectTeamMember"
-                                style={{
-                                  display: "inline-flex",
-                                  height: "33px",
-                                  width: "33px",
-                                }}
-                                data-bs-toggle="dropdown"
-                                aria-expanded="false"
-                              >
-                                +{selectedTeamMembers?.length - 4}
-                              </Link>
-                              {/* Dropdown menu for additional team members */}
-                              <div className="dropdown-menu dropdown-menu-right">
-                                <div className="avatar-group">
-                                  {selectedTeamMembers
-                                    ?.slice(4)
-                                    .map((teamMember, index) => (
-                                      <a
-                                        className="avatar avatar-xs projectTeamMember"
-                                        key={index}
-                                      >
-                                        <Tooltip
-                                          title={
-                                            teamMember?.fullName
-                                          }
-                                        >
-                                          <Avatar
-                                            src={
-                                              teamMember?.imageUrl ||
-                                              user_icon
-                                            }
-                                            style={{ cursor: "pointer" }}
-                                          />
-                                        </Tooltip>
-                                      </a>
-                                    ))}
-                                </div>
-                              </div>
-                            </li>
-                          )}
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                </div>
                 </div>
                 <div className="submit-section">
                   <button type='submit' className="btn btn-primary submit-btn" disabled={loader}>

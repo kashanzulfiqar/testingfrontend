@@ -14,6 +14,7 @@ import {
   Pagination,
   Tooltip,
   Avatar,
+  Checkbox,
 } from "antd";
 import Modal from "@mui/material/Modal";
 import "antd/dist/antd.css";
@@ -65,14 +66,7 @@ const TaskBoardList = () => {
     total: 10,
   });
 
-  useEffect(() => {
-    if ($(".select").length > 0) {
-      $(".select").select2({
-        minimumResultsForSearch: -1,
-        width: "100%",
-      });
-    }
-  });
+  const [isArchived, setIsArchived] = useState(false);
 
   const [filters, setFilters] = useState({
     projectName: "",
@@ -87,6 +81,41 @@ const TaskBoardList = () => {
     projectDomain: "",
     costType: "",
   });
+
+  const [openDropdownId, setOpenDropdownId] = useState(null);
+  const [openTeamDropdownId, setOpenTeamDropdownId] = useState(null);
+
+  const handleDropdownClick = (e, id) => {
+    e.stopPropagation();
+    setOpenDropdownId(openDropdownId === id ? null : id);
+  };
+
+  const handleTeamDropdownClick = (e, id) => {
+    e.stopPropagation();
+    setOpenTeamDropdownId(openTeamDropdownId === id ? null : id);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setOpenDropdownId(null);
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setOpenTeamDropdownId(null);
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
 
   const handleFilterChange = (value, filterType) => {
     setSelectedFilters({
@@ -127,10 +156,37 @@ const TaskBoardList = () => {
   };
 
   useEffect(() => {
+    if ($(".select").length > 0) {
+      $(".select").select2({
+        minimumResultsForSearch: -1,
+        width: "100%",
+      });
+    }
+  });
+
+  // Initial load effect
+  useEffect(() => {
     setIsLoading(true);
     fetchEmployees();
-    GetListProjects();
-  }, [pagination.current, pagination.pageSize]);
+    GetListTaskBoards();
+  }, []); // Only run on mount
+
+  const handlePaginationChange = (page, pageSize) => {
+    setPagination({
+      ...pagination,
+      current: page,
+      pageSize: pageSize,
+    });
+    setIsLoading(true);
+    GetListTaskBoards(page, pageSize);
+  };
+
+  const handleArchivedChange = (e) => {
+    const isChecked = e.target.checked;
+    setIsArchived(isChecked);
+    setIsLoading(true);
+    GetListTaskBoards(1, pagination.pageSize, isChecked);
+  };
 
   const searchHandler = (val, type) => {
     let dropdownValues = []
@@ -230,19 +286,16 @@ const TaskBoardList = () => {
       })
   };
 
-  const GetListProjects = (page, pageSize) => {
-    //setLoader(true);
-
+  const GetListTaskBoards = (page, pageSize, archivedStatus = isArchived) => {
     const params = {
       ...filters,
       page: page || pagination.current,
-      limit: pageSize ? pageSize : pagination.pageSize,
+      limit: pageSize || pagination.pageSize,
     };
 
     apiServices(
       "GET",
-      `taskBoard/view-taskBoard/?page=${params.page}&limit=${params.limit}`,
-      // `project-management/?taskBoard=true&projectName=${filters.projectName}&employeeId=${(role === '' && !permissions?.projectManagement) ? employee_id : ''}&page=${params.page}&limit=${params.limit}`,
+      `taskBoard/view-taskBoard/?page=${params.page}&limit=${params.limit}&isArchived=${archivedStatus}`,
       null,
       user_state
     )
@@ -252,21 +305,15 @@ const TaskBoardList = () => {
           const taskBoards = res?.data?.taskBoards || [];
           setCategoryObj(taskBoards);
           setTableData(taskBoards);
- 
-          setIsLoading(false);
-          // setPagination({
-          //   ...pagination,
-          //   total: res.data.projects.totalDocs,
-          // });
-          //setFlag(true);
-          setPagination({
-            ...pagination,
+          setPagination(prev => ({
+            ...prev,
             current: res?.data?.currentPage,
             total: res?.data?.totalItems,
-          });
+          }));
           setPage(parseInt(params.page, 10));
           setSize(parseInt(params.limit, 10));
-      }
+        }
+        setIsLoading(false);
       })
       .catch((err) => {
         message.error(
@@ -279,7 +326,7 @@ const TaskBoardList = () => {
           }`
         );
         setIsLoading(false);
-      })
+      });
   };
 
   const handleClose = () => {
@@ -299,7 +346,7 @@ const TaskBoardList = () => {
         // console.log(res?.data);
         if (res?.data?.success === true) {
           handleClose();
-          GetListProjects();
+          GetListTaskBoards();
           message.success('Task board added successfully');
           setLoader(false);
         }
@@ -408,37 +455,34 @@ const TaskBoardList = () => {
           ),
         },
     {
-      title: t('holiday.actions'),
-      render: (record, row) => (
-        <div 
-          onClick={(e) => e.stopPropagation()} // Stop navigation on click
-          className="dropdown dropdown-action text-end"
-        >
+      title: t('Actions'),
+      render: (text, record) => (
+        <div className="dropdown dropdown-action text-end">
           <a
-            href="javascript:void(0)"
-            // className="action-icon dropdown-toggle"
-            // data-bs-toggle="dropdown"
-            // aria-expanded="false"
-            className={`action-icon dropdown-toggle ${role === "admin" || permissions.projectManagement ? '' : 'disabled'}`}
-            style={{ cursor: (role == "admin" || permissions.projectManagement) ? "pointer" : "not-allowed" }}
-            data-bs-toggle={(role === "admin" || permissions.projectManagement) ? 'dropdown' : ''}
-            aria-expanded={(role === "admin" || permissions.projectManagement) ? 'true' : 'false'}
+            href="#"
+            className="action-icon dropdown-toggle"
+            data-bs-toggle="dropdown"
+            aria-expanded={openDropdownId === record._id}
+            onClick={(e) => handleDropdownClick(e, record._id)}
           >
             <i className="material-icons">more_vert</i>
           </a>
-          <div className="dropdown-menu dropdown-menu-right">
+          <div className={`dropdown-menu dropdown-menu-right ${openDropdownId === record._id ? 'show' : ''}`}>
             <a
               className="dropdown-item"
-              href="javascript:void(0)"
-              onClick={() => {
+              href="#"
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpenDropdownId(null);
                 setOpen({
                   isAddOpen: false,
                   isDelOpen: true,
-                  data: row,
+                  data: record,
                 });
               }}
             >
-              <i className="fa fa-trash-o m-r-5" /> {t('holiday.delete')}
+              <i className={`fa ${record.isArchived ? 'fa-undo' : 'fa-archive'} m-r-5`} /> 
+              {record.isArchived ? t('Unarchive') : t('Archive')}
             </a>
           </div>
         </div>
@@ -450,25 +494,20 @@ const TaskBoardList = () => {
     setLoader(true);
     apiServices("DELETE", "taskBoard/delete-taskBoard", id, user_state)
       .then((res) => {
-        // console.log(res?.data);
         if (res?.data?.success === true) {
           handleClose();
           message.success('Task board deleted successfully');
           if(categoryObj?.docs?.length === 1){
-            //console.log(categoryObj.totalPages)
-            GetListProjects((categoryObj.totalPages-1),null);
+            GetListTaskBoards((categoryObj.totalPages-1),null);
           }
           else{
-            GetListProjects()
+            GetListTaskBoards();
           }
-          //setTableData(prevtable => prevtable.filter(proj=> proj._id !== id));
-          //viewCategory();
           setLoader(false);
         }
       })
       .catch((err) => {
         setLoader(false);
-        // console.log(err);
         message.error(
           `${
             err?.response?.data?.msg
@@ -562,7 +601,8 @@ const TaskBoardList = () => {
                   <h3 className="page-title">{t('Task Boards')}</h3>
                   
                 </div>
-                {(role === "admin" || permissions?.projectManagement) && (<div className="col-auto float-end ms-auto">
+                {(role === "admin" || permissions?.projectManagement) && (
+                <div className="col-auto float-end ms-auto">
                   <a
                     href="javascript:void(0)"
                     className="btn add-btn"
@@ -577,7 +617,16 @@ const TaskBoardList = () => {
                   >
                     <i className="fa fa-plus" /> {t('Add TaskBoard')}
                   </a>
-                </div>)}
+                  <div style={{ marginTop: '10px' }}>
+                    <Checkbox 
+                      checked={isArchived}
+                      onChange={handleArchivedChange}
+                    >
+                      {t('Show Archived Taskboards')}
+                    </Checkbox>
+                  </div>
+                </div>
+                )}
               </div>
             </div>
             {/* /Page Header */}
@@ -665,7 +714,7 @@ const TaskBoardList = () => {
                         }
                         pageSizeOptions={["20", "30", "40", "50"]}
                         showSizeChanger
-                        onChange={(page, pageSize) => setPagination({...pagination, current: page, pageSize: pageSize,})}
+                        onChange={handlePaginationChange}
                         itemRender={(current, type, originalElement) =>
                           itemRender(current, type, originalElement, t)
                         }
@@ -956,9 +1005,9 @@ const TaskBoardList = () => {
               }}
             >
               <div className="form-header">
-                <h3 style={{ marginBottom: "30px" }}>Delete TaskBoard</h3>
+                <h3 style={{ marginBottom: "30px" }}>{open?.data?.isArchived ? 'Unarchive TaskBoard' : 'Archive TaskBoard'}</h3>
                 <p>
-                  <span dangerouslySetInnerHTML={{ __html: t('holiday.confirmDelete', { holiday: open?.data?.projectName }) }} />
+                  <span dangerouslySetInnerHTML={{ __html: t(`Are you sure you want to <b>${open?.data?.isArchived ? 'un-archive' : 'archive'}</b>` ) }} />
                 </p>
               </div>
               <div className="modal-btn delete-action">
@@ -974,7 +1023,7 @@ const TaskBoardList = () => {
                       {loader ? (
                         <Spin size="small" indicator={antIcon} />
                       ) : (
-                        t('delete')
+                        open?.data?.isArchived ? t('Unarchive') : t('Archive')
                       )}
                     </Button>
                   </div>

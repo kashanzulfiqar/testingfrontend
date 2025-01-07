@@ -57,6 +57,8 @@ function TaskModal({data, viewModal, closeViewModal, getAllTasks}) {
     const [isEditingTitle, setIsEditingTitle] = useState(false);
     const [selectedTeamMembers, setSelectedTeamMembers] = useState([]);
     const [employees, setEmployees] = useState([]);
+    const [isEditingTeam, setIsEditingTeam] = useState(false);
+    const [tempSelectedTeamMembers, setTempSelectedTeamMembers] = useState([]);
 
     useEffect(()=>{
       setDescription(data?.description);
@@ -64,14 +66,54 @@ function TaskModal({data, viewModal, closeViewModal, getAllTasks}) {
       setTitle(data?.title);
       setEmployees(task?.ProjectData?.assignedDevelopers || []);
       setSelectedTeamMembers(task?.assignedDevelopers || []);
+      setTempSelectedTeamMembers(task?.assignedDevelopers || []);
     },[data])
 
     const handleChange = (values) => {
       const selectedEmployees = values?.map((value) =>
         employees?.find((employee) => employee._id === value)
       );
+      setTempSelectedTeamMembers(selectedEmployees);
       setSelectedTeamMembers(selectedEmployees);
+      setIsEditingTeam(true);
     }
+
+    const handleCancelTeam = () => {
+      const originalMembers = task?.assignedDevelopers || [];
+      setTempSelectedTeamMembers(originalMembers);
+      setSelectedTeamMembers(originalMembers);
+      setIsEditingTeam(false);
+    };
+
+    const handleSaveTeam = () => {
+      setLoader(true);
+      const data = {
+        [task?.ProjectData?.projectName ? 'projectId' : 'boardId']: task?.ProjectData?._id,
+        _id: task?._id,
+        assignedDevelopers: tempSelectedTeamMembers.map(dev => dev._id)
+      }
+      apiServices("PUT", 'tasks', data, user_state)
+        .then((res) => {
+            if (res?.data?.success === true) {
+              message.success('Team members updated')
+              setLoader(false)
+              setIsEditingTeam(false);
+              getAllTasks(task?.ProjectData?._id);
+            }
+        })
+        .catch((err) => {
+          setLoader(false)
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : t('Tasks.updateTaskError')
+            }!`
+          );
+        });
+    };
 
     const getTeamMemberOptions = () => {
       return employees?.map((employee) => (
@@ -463,7 +505,6 @@ function TaskModal({data, viewModal, closeViewModal, getAllTasks}) {
                             showSearch
                             onSearch={(val) => {
                               showTeamSearch(val, "Team");
-                              // onTeamChange(val)
                             }}
                             filterOption={(input, option) =>
                               option.children
@@ -483,11 +524,31 @@ function TaskModal({data, viewModal, closeViewModal, getAllTasks}) {
                             placeholder={t(
                               "projectScreen.Modal.selectTeamMembers"
                             )}
-                            
+                            value={tempSelectedTeamMembers.map(member => member._id)}
                             onChange={handleChange}
                           >
                             {getTeamMemberOptions()}
                           </Select>
+                          {isEditingTeam && (
+                            <div className="form-actions" style={{marginTop: '10px'}}>
+                              <Button 
+                                className="btn"
+                                style={{backgroundColor: 'lightgrey', color: 'white'}}
+                                onClick={handleCancelTeam}
+                              >
+                                {t("cancel")}
+                              </Button>
+                              <Button 
+                                className="btn btn-primary"
+                                type="primary"
+                                onClick={handleSaveTeam}
+                                disabled={loader}
+                                style={{marginLeft:'2%'}}
+                              >
+                                {t("save")}
+                              </Button>
+                            </div>
+                          )}
                         </Form.Item>
                       </div>
                     </div>
