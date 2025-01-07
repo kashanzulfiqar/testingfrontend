@@ -28,6 +28,11 @@ jobs:
           chmod 600 ~/.ssh/frontend_deploy_key
           ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
 
+      - name: Debug Secrets
+        run: |
+          echo "EC2_USER: ${{ secrets.EC2_USER }}"
+          echo "EC2_HOST: ${{ secrets.EC2_HOST }}"
+
       # Step 3: Deploy Frontend
       - name: Deploy Frontend to EC2
         env:
