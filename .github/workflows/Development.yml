@@ -38,6 +38,7 @@ jobs:
           ssh -i ~/.ssh/frontend_deploy_key $SSH_USER@$SSH_HOST '
             set -e
             echo "Navigating to frontend directory..."
+            echo $SSH_USER
             cd $DEPLOYMENT_PATH
 
             echo "Ensuring correct permissions..."
