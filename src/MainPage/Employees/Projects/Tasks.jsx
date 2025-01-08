@@ -1,7 +1,7 @@
 import React, { useState ,useEffect  } from 'react';
 import { Helmet } from "react-helmet";
 import { Link, useNavigate } from 'react-router-dom';
-import { Form, Table, Input, Pagination, Empty, Select, Spin, message, Button, Tag, Tooltip, Switch, Checkbox } from 'antd';
+import { Form, Table, Input, Pagination, Empty, Select, Spin, message, Button, Tag, Tooltip, Switch, Checkbox, Segmented } from 'antd';
 import 'antd/dist/antd.css';
 import {itemRender,onShowSizeChange} from "../../paginationfunction"
 import "../../antdstyle.css"
@@ -479,7 +479,7 @@ const onFinishEdit = (values) => {
                 form2.setFieldsValue({
                   ...record,
                   projectId: record?.projectId?._id,
-                  boardId: record?.boardId?._id
+                  boardId: record?.boardId
                 });
               }}
             >
@@ -565,19 +565,33 @@ const onFinishEdit = (values) => {
                 <h3 className="page-title">{t('Tasks.tasks')}</h3>
               </div>
               <div className="col-auto float-end ms-auto">
+              <div className="d-flex flex-wrap gap-2 justify-content-end">
+                <div style={{ minWidth: '180px' }}>
+                <Segmented
+                onChange={(val) => {
+                  const isArchivedValue = val === 'Archived';
+                  setIsArchived(isArchivedValue);
+                  getAllTasks('', 1, pageSize, isArchivedValue);
+                }}
+                value={isArchived ? 'Archived' : 'Active'} 
+                className='segmentStyle'
+                block
+                size="large"
+                options={[
+                {
+                    label: t('Active'),
+                    value: 'Active',
+                },
+                {
+                    label: t('Archived'),
+                    value: 'Archived', 
+                },
+                ]}
+                style={{ width: '100%' }}
+                />
+              </div>
                 <a href="javascript:void(0)" className="btn add-btn" onClick={() => { setOpen({ isAddOpen: true, data: '' }); }}><i className="fa fa-plus" /> {t('Tasks.addtask')}</a>
-                <div style={{ marginTop: '10px' }}>
-                  <Checkbox 
-                    checked={isArchived}
-                    onChange={(e) => {
-                      const isChecked = e.target.checked;
-                      setIsArchived(isChecked);
-                      getAllTasks('', 1, pageSize, isChecked);
-                    }}
-                  >
-                    {t('Show Archived Tasks')}
-                  </Checkbox>
-                </div>
+              </div>
               </div>
             </div>
           </div>
@@ -682,7 +696,7 @@ const onFinishEdit = (values) => {
                 onClick={() => {
                   form.resetFields();
                   setIsArchived(false);  // Reset archived state
-                  getAllTasks('', 1, pageSize);
+                  getAllTasks('', 1, pageSize, false);
                   setFilterValues(null);
                   setCurrentPage(1)
                 }}
@@ -727,7 +741,7 @@ const onFinishEdit = (values) => {
                       form2.setFieldsValue({ 
                         ...record, 
                         projectId: record?.projectId?._id,
-                        boardId: record?.boardId?._id
+                        boardId: record?.boardId
                       });
                     },
                     style: { cursor: 'pointer' }
@@ -788,7 +802,7 @@ const onFinishEdit = (values) => {
             <div className="modal-content">
                 <div className="modal-header">
                 <h5 className="modal-title">
-                  {open?.isViewMode ? t('View Task') : open?.data ? t('edit') : t('holiday.add')} {t('Timesheetemployee.task')}
+                  {open?.isViewMode ? t('View') : open?.data ? t('edit') : t('holiday.add')} {t('Timesheetemployee.task')}
                 </h5>
                 <button type="button" className="close" onClick={handleClose}>
                     <span aria-hidden="true">×</span>
@@ -840,7 +854,7 @@ const onFinishEdit = (values) => {
                             },
                             ]}
                         >
-                            <Input className='form-control' maxLength={50} disabled={open.isViewMode} />
+                            <Input className='form-control' maxLength={50} disabled={open.isViewMode} style={open.isViewMode ? { color: '#333333' } : {}} />
                         </Form.Item>
                         </div>
                     </div>
@@ -849,13 +863,19 @@ const onFinishEdit = (values) => {
                     <div className="col-12">
                         <div className="form-group">
                             <label>
-                                <span>{t('Associated with project')}</span>
-                                <Switch
-                                    checked={isProjectAssociated}
-                                    onChange={(checked) => setIsProjectAssociated(checked)}
-                                    style={{ marginLeft: '10px' }}
-                                />
+                                {t('Associate with')} <span className="text-danger">*</span>
                             </label>
+                            <Form.Item
+                            className="custom-border">
+                              <Select
+                                value={isProjectAssociated ? 'project' : 'taskboard'}
+                                onChange={(value) => setIsProjectAssociated(value === 'project')}
+                                className="custom-select custom-normal"
+                            >
+                                <Select.Option value="project">{t('Project')}</Select.Option>
+                                <Select.Option value="taskboard">{t('TaskBoard')}</Select.Option>
+                            </Select>
+                            </Form.Item>
                         </div>
                     </div>
                     )}
@@ -889,6 +909,7 @@ const onFinishEdit = (values) => {
                                             notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
                                             className="custom-select custom-normal"
                                             placeholder={t('Select Project')}
+                                            style={open.isViewMode ? { color: '#333333' } : {}}
                                         >
                                             {allProjects.map((project, index) => (
                                                 <Select.Option key={index} value={project._id}>
@@ -924,6 +945,7 @@ const onFinishEdit = (values) => {
                                             notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
                                             className="custom-select custom-normal"
                                             placeholder={t('Select Taskboard')}
+                                            style={open.isViewMode ? { color: '#333333' } : {}}
                                         >
                                             {allTaskboards.map((taskBoard, index) => (
                                                 <Select.Option key={index} value={taskBoard._id}>
@@ -959,6 +981,7 @@ const onFinishEdit = (values) => {
                                     getPopupContainer={() =>
                                         document.getElementById("area22")
                                     }
+                                    style={open.isViewMode ? { color: '#333333' } : {}}
                                 />
                         </Form.Item>
                         </div>
@@ -991,7 +1014,7 @@ const onFinishEdit = (values) => {
                             ]}
                             className="custom-border"
                         >
-                            <Input.TextArea rows={3} className='form-control' disabled={open.isViewMode} />
+                            <Input.TextArea rows={3} className='form-control' disabled={open.isViewMode} style={open.isViewMode ? { color: '#333333' } : {}} />
                         </Form.Item>
                         </div>
                     </div>

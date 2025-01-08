@@ -15,6 +15,7 @@ import {
   Tooltip,
   Avatar,
   Checkbox,
+  Segmented,
 } from "antd";
 import Modal from "@mui/material/Modal";
 import "antd/dist/antd.css";
@@ -179,13 +180,6 @@ const TaskBoardList = () => {
     });
     setIsLoading(true);
     GetListTaskBoards(page, pageSize);
-  };
-
-  const handleArchivedChange = (e) => {
-    const isChecked = e.target.checked;
-    setIsArchived(isChecked);
-    setIsLoading(true);
-    GetListTaskBoards(1, pagination.pageSize, isChecked);
   };
 
   const searchHandler = (val, type) => {
@@ -387,10 +381,32 @@ const TaskBoardList = () => {
             
           </a> */}
           {/* Show project name as a tag if project exists */}
-          {record?.project?.projectName && (
+          {!record?.project?.projectName && (
             <span
               style={{
                 marginLeft: "8px",
+                backgroundColor: "#7460EE",
+                color: "#fff",
+                padding: "2px 8px",
+                borderRadius: "12px",
+                fontSize: "12px",
+              }}
+            >
+              {t('Taskboard')}
+            </span>
+          )}
+        </div>
+      ),
+    },
+    {
+      title: t('Tasks.project'),
+      dataIndex: "project",
+      key: "project",
+      render: (text, record) => (
+        <div>
+          {record?.project?.projectName ? (
+            <span
+              style={{
                 backgroundColor: "#f0f0f0",
                 color: "#595959",
                 padding: "2px 8px",
@@ -400,6 +416,8 @@ const TaskBoardList = () => {
             >
               {record.project.projectName}
             </span>
+          ) : (
+            "-"
           )}
         </div>
       ),
@@ -482,7 +500,7 @@ const TaskBoardList = () => {
               }}
             >
               <i className={`fa ${record.isArchived ? 'fa-undo' : 'fa-archive'} m-r-5`} /> 
-              {record.isArchived ? t('Unarchive') : t('Archive')}
+              {record.isArchived ? t('Activate') : t('Archive')}
             </a>
           </div>
         </div>
@@ -599,34 +617,55 @@ const TaskBoardList = () => {
               <div className="row align-items-center">
                 <div className="col">
                   <h3 className="page-title">{t('Task Boards')}</h3>
-                  
                 </div>
-                {(role === "admin" || permissions?.projectManagement) && (
+                
                 <div className="col-auto float-end ms-auto">
-                  <a
-                    href="javascript:void(0)"
-                    className="btn add-btn"
-                    onClick={() => {
-                      getProjects();
-                      setOpen({
-                        isAddOpen: true,
-                        isDelOpen: false,
-                        data: "",
-                      });
-                    }}
-                  >
-                    <i className="fa fa-plus" /> {t('Add TaskBoard')}
-                  </a>
-                  <div style={{ marginTop: '10px' }}>
-                    <Checkbox 
-                      checked={isArchived}
-                      onChange={handleArchivedChange}
-                    >
-                      {t('Show Archived Taskboards')}
-                    </Checkbox>
+                  <div className="d-flex flex-wrap gap-2 justify-content-end">
+                    <div style={{ minWidth: '180px' }}>
+                      <Segmented
+                          onChange={(val) => {
+                            const isArchivedValue = val === 'Archived';
+                            setIsArchived(isArchivedValue);
+                            setIsLoading(true);
+                            GetListTaskBoards(1, pagination.pageSize, isArchivedValue);
+                          }}
+                          value={isArchived ? 'Archived' : 'Active'} 
+                          className='segmentStyle'
+                          block
+                          size="large"
+                          options={[
+                          {
+                              label: t('Active'),
+                              value: 'Active',
+                          },
+                          {
+                              label: t('Archived'),
+                              value: 'Archived', 
+                          },
+                          ]}
+                          style={{ width: '100%' }}
+                      />
+                    </div>
+                    {(role === "admin" || permissions?.projectManagement) && (
+                      <div>
+                        <a
+                          href="javascript:void(0)"
+                          className="btn add-btn"
+                          onClick={() => {
+                            getProjects();
+                            setOpen({
+                              isAddOpen: true,
+                              isDelOpen: false,
+                              data: "",
+                            });
+                          }}
+                        >
+                          <i className="fa fa-plus" /> {t('Add TaskBoard')}
+                        </a>
+                      </div>
+                    )}
                   </div>
                 </div>
-                )}
               </div>
             </div>
             {/* /Page Header */}
