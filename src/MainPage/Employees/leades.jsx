@@ -668,6 +668,7 @@ const Leads = () => {
       setSelectedRecord(record);
       setSelectedLostReason(null);
       setIsLostReasonModalVisible(true);
+      setActiveDropdown(null); // Close the dropdown after selecting
     } else {
       handleUpdateStatus(record, newStatus);
     }
@@ -687,16 +688,10 @@ const Leads = () => {
     handleUpdateStatus(selectedRecord, "Lost", selectedLostReason);
     setIsLostReasonModalVisible(false);
     setSelectedLostReason(null);
+    setActiveDropdown(null); // Close the dropdown after submitting
   };
   const handleUpdateStatus = async (record, newStatus, lostReason = null) => {
     try {
-      // Log the request details for debugging
-      console.log("Updating status with:", {
-        leadId: record._id,
-        status: newStatus,
-        lostReason: lostReason,
-      });
-
       const data = {
         status: newStatus,
       };
@@ -720,17 +715,8 @@ const Leads = () => {
         throw new Error(response?.data?.msg || "Error updating status");
       }
     } catch (err) {
-      console.error("Error updating status:", {
-        error: err,
-        response: err?.response?.data,
-        status: err?.response?.status,
-      });
-
-      let errorMessage = "Error updating status";
-      if (err?.response?.data?.msg) {
-        errorMessage = err.response.data.msg;
-      }
-      message.error(errorMessage);
+      console.error("Error updating status:", err);
+      message.error(err?.response?.data?.msg || "Error updating status");
     }
   };
   const closeDropDown = (e) => {
@@ -3193,28 +3179,63 @@ const Leads = () => {
       {/* /Page Content */}
 
       <Modal
-        title="Select Reason for Lost Status"
-        visible={isLostReasonModalVisible}
-        onOk={handleLostReasonSubmit}
-        onCancel={() => {
+        open={isLostReasonModalVisible}
+        onClose={() => {
           setIsLostReasonModalVisible(false);
           setSelectedLostReason(null);
+          setActiveDropdown(null);
         }}
-        okText="Submit"
-        cancelText="Cancel"
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+        disableRestoreFocus
+        BackdropProps={{
+          style: { backgroundColor: "rgb(0 0 0 / 87%)" },
+        }}
       >
-        <Radio.Group
-          value={selectedLostReason}
-          onChange={(e) => setSelectedLostReason(e.target.value)}
-        >
-          <Space direction="vertical">
-            {lostReasons.map((reason) => (
-              <Radio key={reason.value} value={reason.value}>
-                {reason.label}
-              </Radio>
-            ))}
-          </Space>
-        </Radio.Group>
+        <div className="modal-dialog modal-dialog-centered modal-md">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">Select Reason for Lost Status</h5>
+              <button
+                type="button"
+                className="close"
+                onClick={() => {
+                  setIsLostReasonModalVisible(false);
+                  setSelectedLostReason(null);
+                  setActiveDropdown(null);
+                }}
+              >
+                <span aria-hidden="true">×</span>
+              </button>
+            </div>
+            <div className="modal-body">
+              <Radio.Group
+                value={selectedLostReason}
+                onChange={(e) => setSelectedLostReason(e.target.value)}
+              >
+                <Space direction="vertical" style={{ width: "100%" }}>
+                  {lostReasons.map((reason) => (
+                    <Radio key={reason.value} value={reason.value}>
+                      {reason.label}
+                    </Radio>
+                  ))}
+                </Space>
+              </Radio.Group>
+            </div>
+            <div className="modal-footer">
+              <div className="submit-section">
+                <Button
+                  type="primary"
+                  onClick={handleLostReasonSubmit}
+                  className="btn btn-primary submit-btn"
+                  disabled={!selectedLostReason}
+                >
+                  Submit
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
       </Modal>
 
       {isReachOutModalOpen && (
