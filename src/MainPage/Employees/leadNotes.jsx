@@ -109,7 +109,7 @@ function LeadNotes({ openModal, closeModal, data, leadId, viewLeads, viewFiles, 
         leadId: leadId,
         files: docs,
       };
-      apiServices("PUT", "leads/addNote", updatedData, user_state)
+      apiServices("POST", "leads/addNote", updatedData, user_state)
         .then((res) => {
           if (res.data.success === true) {
             message.success('Note Added Successfully');

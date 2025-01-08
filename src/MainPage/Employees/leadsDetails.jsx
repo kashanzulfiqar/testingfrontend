@@ -14,7 +14,7 @@ import { MoreVertical } from "react-feather";
 import moment from "moment";
 import ReachOutModal from "./ReachOutModal";
 import LeadNotes from "./leadNotes";
-import { Button, Empty, message, Spin, Table } from "antd";
+import { Button, Empty, message, Spin, Table, Radio, Space, Modal } from "antd";
 import { useSelector } from "react-redux";
 import { apiServices } from "../../Services/apiServices";
 import {
@@ -26,7 +26,6 @@ import {
   LoadingOutlined,
 } from "@ant-design/icons";
 import EmptyTable from "../../files/Icons/EmptyTable.svg";
-import { Modal } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { acceptableFormats } from "./Projects/EditProjects";
 import { uploadFunction } from "./Projects/UploadAndDeleteFunc";
@@ -74,6 +73,9 @@ const LeadsDetails = () => {
   });
   const [page, setPage] = useState(1);
   const [size, setSize] = useState(20);
+  const [selectedLostReason, setSelectedLostReason] = useState(null);
+  const [isLostReasonModalVisible, setIsLostReasonModalVisible] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState(null);
 
   useEffect(() => {
     if ( role === 'admin' || permissions?.leadsManagement ) {
@@ -87,7 +89,7 @@ const LeadsDetails = () => {
     setIsLoading(true);
     apiServices(
       "GET",
-      `leads/view-files?leadId=${leadObject?._id}`,
+      `leads/viewfiles?leadId=${leadObject?._id}`,
       null,
       user_state
     )
@@ -453,54 +455,140 @@ const LeadsDetails = () => {
       });
   };
 
-  const handleUpdateStatus = (record, newStatus, type, reason) => {
-    const updatedData = {
-      _id: record?._id,
+  const handleUpdateStatus = async (record, newStatus) => {
+    if (newStatus === "Lost") {
+      setSelectedRecord(record);
+      setSelectedLostReason(null);
+      setIsLostReasonModalVisible(true);
+      return;
+    }
+
+    setLoadStatus(true);
+    try {
+      const data = {
+        status: newStatus
+      };
+
+      const response = await apiServices(
+        "PUT",
+        `leads/${record._id}/status`,
+        data,
+        user_state
+      );
+      
+      if (response?.data?.success === true) {
+        message.success("Status updated successfully");
+        viewLeads();
+      } else {
+        throw new Error(response?.data?.msg || "Error updating status");
+      }
+    } catch (err) {
+      console.error("Error updating status:", err);
+      message.error(err?.response?.data?.msg || "Error updating status");
+    } finally {
+      setLoadStatus(false);
+    }
+  };
+
+  const handleLostReasonSubmit = async () => {
+    if (!selectedLostReason) {
+      message.error("Please select a reason");
+      return;
+    }
+
+    setLoadStatus(true);
+    try {
+      const data = {
+        status: "Lost",
+        lost_reason: selectedLostReason
+      };
+
+      const response = await apiServices(
+        "PUT",
+        `leads/${selectedRecord._id}/status`,
+        data,
+        user_state
+      );
+
+      if (response?.data?.success === true) {
+        message.success("Status updated successfully");
+        viewLeads();
+        setIsLostReasonModalVisible(false);
+        setSelectedLostReason(null);
+      } else {
+        throw new Error(response?.data?.msg || "Error updating status");
+      }
+    } catch (err) {
+      console.error("Error updating status:", err);
+      message.error(err?.response?.data?.msg || "Error updating status");
+    } finally {
+      setLoadStatus(false);
+    }
+  };
+
+  const handleReasoningSubmit = (enteredReason) => {
+    setLoadStatus(true);
+    const data = {
+      status: "Lost",
+      lost_reason: enteredReason
     };
 
-    if (type == "projectType") {
-      updatedData.projectType = newStatus;
-    } else if (type == "status") {
-      updatedData.status = newStatus;
-      updatedData.reason = reason;
-      setLoadStatus(true)
-    } else if (type === "reasonOnly") {
-      updatedData.reason = reason; // Update only the reason
-      updatedData.status = newStatus;
-      setLoadReason(true)
-    }
-    apiServices("PUT", "leads", updatedData, user_state)
-      .then((res) => {
-        if (res.data.success === true) {
-          message.success(
-            type === "status"
-            ? "Status Updated Successfully"
-            : type === "projectType"
-            ? "Project Type Updated Successfully"
-            : type === "reasonOnly"
-            ? "Reason Updated Successfully"
-            : ""
-          );
+    apiServices(
+      "PUT",
+      `leads/${leadObject._id}/status`,
+      data,
+      user_state
+    )
+      .then((response) => {
+        if (response?.data?.success === true) {
+          message.success("Status updated successfully");
           viewLeads();
+          setOpen({ isAddReasoning: false });
+          setReason(enteredReason);
+        } else {
+          throw new Error(response?.data?.msg || "Error updating status");
         }
       })
-      .catch((error) => {
-        console.log("error", error);
-        message.error("Error updating status");
+      .catch((err) => {
+        console.error("Error updating status:", err);
+        message.error(err?.response?.data?.msg || "Error updating status");
+      })
+      .finally(() => {
+        setLoadStatus(false);
       });
   };
-  const handleReasoningSubmit = (enteredReason) => {
-    // Close the modal and update the status with the reason
-    handleUpdateStatus(leadObject, "Lost", "status", enteredReason);
-    handleUpdateStatus(leadObject, "Lost", "reasonOnly", enteredReason);
-    setOpen({ isAddReasoning: false ,isEditReasoning: false});
-    setReason(enteredReason); // Store the reason in the state
-  };
+
   const handleReasonUpdateSubmit = (enteredReason) => {
-    handleUpdateStatus(leadObject, "Lost", "reasonOnly", enteredReason);
-    setOpen({ isAddReasoning: false, isEditReasoning: false });
-    setReason(enteredReason); // Store the updated reason in state
+    setLoadStatus(true);
+    const data = {
+      lost_reason: enteredReason
+    };
+
+    apiServices(
+      "PUT",
+      `leads/${leadObject._id}/status`,
+      data,
+      user_state
+    )
+      .then((response) => {
+        if (response?.data?.success === true) {
+          message.success("Reason updated successfully");
+          viewLeads();
+          setOpen({ isEditReasoning: false });
+          setReason(enteredReason);
+        } else {
+          throw new Error(response?.data?.msg || "Error updating reason");
+        }
+      })
+      .catch((err) => {
+        console.error("Error updating reason:", err);
+        message.error(err?.response?.data?.msg || "Error updating reason");
+      })
+      .finally(() => {
+        setLoadStatus(false);
+      });
   };
+
   const handleClose = () => {
     setOpen({
       isAddReasoning:false,
@@ -830,12 +918,6 @@ const LeadsDetails = () => {
           <div className="row">
             {/* Contact User */}
             <div className="col-md-12">
-              {leadObject?.status === "Lost" && leadObject?.lost_reason && (
-                <div className="alert alert-danger d-flex align-items-center mb-3">
-                  <i className="fa fa-info-circle me-2" /> 
-                  <span>Lost Reason: {leadObject?.lost_reason}</span>
-                </div>
-              )}
               <div className="contact-wrap">
                 <div className="contact-profile">
                   <div
@@ -912,21 +994,21 @@ const LeadsDetails = () => {
                       <a
                         className={`dropdown-item ${leadObject?.status === "OnGoing" && "disabled"}`}
                         href="javascript:void(0)"
-                        onClick={() => handleUpdateStatus(leadObject, "OnGoing", "status")}
+                        onClick={() => handleUpdateStatus(leadObject, "OnGoing")}
                       >
                         <i className="fa fa-dot-circle-o text-info" /> Ongoing
                       </a>
                       <a
                         className={`dropdown-item ${leadObject?.status === "OnHold" && "disabled"}`}
                         href="javascript:void(0)"
-                        onClick={() => handleUpdateStatus(leadObject, "OnHold", "status")}
+                        onClick={() => handleUpdateStatus(leadObject, "OnHold")}
                       >
                         <i className="fa fa-dot-circle-o text-purple" /> On Hold
                       </a>
                       <a
                         className={`dropdown-item ${leadObject?.status === "Converted" && "disabled"}`}
                         href="javascript:void(0)"
-                        onClick={() => handleUpdateStatus(leadObject, "Converted", "status")}
+                        onClick={() => handleUpdateStatus(leadObject, "Converted")}
                       >
                         <i className="fa fa-dot-circle-o text-success" />{" "}
                         Converted
@@ -934,7 +1016,7 @@ const LeadsDetails = () => {
                       <a
                         className={`dropdown-item ${leadObject?.status === "Lost" && "disabled"}`}
                         href="javascript:void(0)"
-                        onClick={() => handleUpdateStatus(leadObject, "Lost", "status")}
+                        onClick={() => handleUpdateStatus(leadObject, "Lost")}
                       >
                         <i className="fa fa-dot-circle-o text-danger" /> Lost
                       </a>
@@ -977,6 +1059,16 @@ const LeadsDetails = () => {
                       <label className="other-title">Source</label>
                       <p style={{overflowWrap: "break-word", wordBreak: "break-word"}}>{leadObject?.source?.title}</p>
                     </li>
+                    {leadObject?.status === "Lost" && leadObject?.lost_reason && (
+                      <li>
+                        <label className="other-title">Lost Reason</label>
+                        <p style={{
+                          overflowWrap: "break-word", 
+                          wordBreak: "break-word",
+                          color: "#dc3545" // Red color for lost reason
+                        }}>{leadObject?.lost_reason}</p>
+                      </li>
+                    )}
                   </ul>
                   <div className="d-flex align-items-center justify-content-between flex-wrap">
                     <h5>
@@ -1311,78 +1403,62 @@ const LeadsDetails = () => {
       </div>
       {/* /Page Content */}
 
+      {/* Delete Confirmation Modal */}
       <Modal
+        title={`Delete ${
+          open.isDeleteNotes
+            ? "Note"
+            : open.isDeleteReachout
+            ? "Reach-out"
+            : open.isDelFileOpen
+            ? "File"
+            : ""
+        }`}
         open={open.isDeleteNotes || open.isDeleteReachout || open.isDelFileOpen}
-        onClose={handleClose}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
-        disableRestoreFocus
-        BackdropProps={{
-          style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
-        }}
+        onOk={() => onHandleDelete(open.isDelFileOpen ? open.data : open?.data?._id)}
+        onCancel={handleClose}
+        okText="Delete"
+        cancelText="Cancel"
+        centered
+        confirmLoading={loader}
       >
-        <div className="modal-dialog modal-dialog-centered">
-          <div className="modal-content" style={{ height: "280px" }}>
-            <div
-              className="modal-body"
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-              }}
-            >
-              <div className="form-header">
-                <h3 style={{ marginBottom: "30px" }}>
-                  Delete{" "}
-                  {open.isDeleteNotes
-                    ? "Note"
-                    : open.isDeleteReachout
-                    ? "Reach-out"
-                    : open.isDelFileOpen
-                    ? "File"
-                    : ""}
-                </h3>
-                {open.isDelFileOpen ? (
-                  <p>Are you sure you want to delete the file?</p>
-                ) : (
-                  <p>Are you sure you want to delete?</p>
-                )}
-              </div>
-              <div className="modal-btn delete-action">
-                <div className="row">
-                  <div className="col-6">
-                    <Button
-                      htmlType="submit"
-                      className="btn btn-primary continue-btn"
-                      onClick={() =>
-                        onHandleDelete(
-                          open.isDelFileOpen ? open.data : open?.data?._id
-                        )
-                      }
-                      disabled={loader}
-                      style={{ width: "100%" }}
-                    >
-                      {loader ? (
-                        <Spin size="small" indicator={antIcon} />
-                      ) : (
-                        t("delete")
-                      )}
-                    </Button>
-                  </div>
-                  <div className="col-6">
-                    <Button
-                      onClick={handleClose}
-                      className="btn btn-primary submit-btn"
-                      style={{ width: "100%" }}
-                    >
-                      {t("cancel")}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <p>
+          {open.isDelFileOpen
+            ? "Are you sure you want to delete the file?"
+            : "Are you sure you want to delete?"}
+        </p>
+      </Modal>
+
+      {/* Lost Reason Modal */}
+      <Modal
+        title="Select Lost Reason"
+        open={isLostReasonModalVisible}
+        onOk={handleLostReasonSubmit}
+        onCancel={() => {
+          setIsLostReasonModalVisible(false);
+          setSelectedLostReason(null);
+        }}
+        okText="Submit"
+        cancelText="Cancel"
+        centered
+        maskClosable={false}
+        confirmLoading={loadStatus}
+        destroyOnClose
+        width={400}
+        zIndex={1000}
+      >
+        <Radio.Group
+          onChange={(e) => setSelectedLostReason(e.target.value)}
+          value={selectedLostReason}
+        >
+          <Space direction="vertical">
+            <Radio value="Client Not Responding">Client Not Responding</Radio>
+            <Radio value="High Price">High Price</Radio>
+            <Radio value="Interview Failed">Interview Failed</Radio>
+            <Radio value="Assessment Task Failed">Assessment Task Failed</Radio>
+            <Radio value="Other">Other</Radio>
+          </Space>
+        </Radio.Group>
       </Modal>
 
       {open.isAddReachOut && (
