@@ -428,13 +428,18 @@ const EditCandidate = () => {
                       { required: true, message: 'Please enter current salary' },
                       { 
                         type: 'number',
-                        transform: (value) => Number(value),
+                        transform: (value) => {
+                          if (value === '' || value === null || value === undefined) return null;
+                          const num = Number(value);
+                          return isNaN(num) ? null : num;
+                        },
                         message: 'Please enter a valid number' 
                       },
                       { 
                         validator: (_, value) => {
-                          const numValue = Number(value);
-                          if (isNaN(numValue) || numValue < 0) {
+                          if (value === null || value === undefined) return Promise.resolve();
+                          const num = Number(value);
+                          if (num < 0) {
                             return Promise.reject('Salary cannot be negative');
                           }
                           return Promise.resolve();
@@ -459,18 +464,26 @@ const EditCandidate = () => {
                       { required: true, message: 'Please enter expected salary' },
                       { 
                         type: 'number',
-                        transform: (value) => Number(value),
+                        transform: (value) => {
+                          if (value === '' || value === null || value === undefined) return null;
+                          const num = Number(value);
+                          return isNaN(num) ? null : num;
+                        },
                         message: 'Please enter a valid number' 
                       },
                       { 
                         validator: (_, value) => {
-                          const numValue = Number(value);
-                          if (isNaN(numValue) || numValue < 0) {
+                          if (value === null || value === undefined) return Promise.resolve();
+                          const num = Number(value);
+                          if (num < 0) {
                             return Promise.reject('Salary cannot be negative');
                           }
                           const currentSalary = form.getFieldValue('currentSalary');
-                          if (numValue < Number(currentSalary)) {
-                            return Promise.reject('Expected salary must be greater than or equal to current salary');
+                          if (currentSalary !== null && currentSalary !== undefined) {
+                            const currentNum = Number(currentSalary);
+                            if (num < currentNum) {
+                              return Promise.reject('Expected salary must be greater than or equal to current salary');
+                            }
                           }
                           return Promise.resolve();
                         }

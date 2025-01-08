@@ -3,6 +3,7 @@ import { Link, useLocation, Routes, Route, Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useTranslation } from "react-i18next";
 import Header from '../../initialpage/Sidebar/header';
+import Dashboard from './Dashboard';
 import Jobs from './Jobs';
 import JobDetails from './JobDetails';
 import EditJob from './EditJob';
@@ -71,13 +72,15 @@ const RecruitmentLayout = () => {
       {/* Main content */}
       <div className="page-wrapper">
         <Routes>
+          <Route path="/" element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<Dashboard />} />
           <Route path="jobs" element={<Jobs />} />
           <Route path="jobs/:jobId" element={<JobDetails />} />
           <Route path="jobs/:jobId/edit" element={<EditJob />} />
           <Route path="candidates" element={<Candidates />} />
           <Route path="candidates/:id" element={<CandidateDetails />} />
           <Route path="candidates/:id/edit" element={<EditCandidate />} />
-          <Route path="*" element={<Navigate to="jobs" replace />} />
+          <Route path="*" element={<Navigate to="dashboard" replace />} />
         </Routes>
       </div>
     </div>

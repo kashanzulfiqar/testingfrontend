@@ -188,7 +188,7 @@ const CandidateDetails = () => {
                 </div>
               </div>
               <div className="profile-info text-center">
-                <Title level={4} style={{ margin: '12px 0 4px' }}>
+                <Title level={4} style={{ margin: '12px 0 4px', fontSize: '20px', color: '#333' }}>
                   {candidate.firstName} {candidate.lastName}
                 </Title>
                 <Tag color={candidate.status === 'NEW' ? 'blue' : 
@@ -201,60 +201,74 @@ const CandidateDetails = () => {
             </div>
 
             <div className="info-section">
-              <Title level={5}>Basic Information</Title>
+              <Title level={5} className="section-title">Basic Information</Title>
               <div className="info-item">
                 <MailOutlined className="info-icon" />
                 <div className="info-content">
-                  <Text type="secondary">Email</Text>
+                  <Text type="secondary" className="info-label">Email</Text>
                   <Text strong className="info-value">{candidate.email}</Text>
                 </div>
               </div>
               <div className="info-item">
                 <PhoneOutlined className="info-icon" />
                 <div className="info-content">
-                  <Text type="secondary">Phone</Text>
+                  <Text type="secondary" className="info-label">Phone</Text>
                   <Text strong className="info-value">{candidate.phoneNumber}</Text>
                 </div>
               </div>
               <div className="info-item">
                 <EnvironmentOutlined className="info-icon" />
                 <div className="info-content">
-                  <Text type="secondary">Location</Text>
+                  <Text type="secondary" className="info-label">Location</Text>
                   <Text strong className="info-value">Not specified</Text>
                 </div>
               </div>
             </div>
 
             <div className="info-section">
-              <Title level={5}>Other Information</Title>
+              <Title level={5} className="section-title">Other Information</Title>
               <div className="info-list">
-                <div className="info-row">
-                  <Text type="secondary">Applied for</Text>
-                  <Text strong>{candidate.appliedFor?.title}</Text>
+                <div className="info-item">
+                  <div className="info-content">
+                    <Text type="secondary" className="info-label">Applied for</Text>
+                    <Text strong className="info-value">{candidate.appliedFor?.title}</Text>
+                  </div>
                 </div>
-                <div className="info-row">
-                  <Text type="secondary">Applied on</Text>
-                  <Text strong>{moment(candidate.appliedDate).format('DD MMM YYYY')}</Text>
+                <div className="info-item">
+                  <div className="info-content">
+                    <Text type="secondary" className="info-label">Applied on</Text>
+                    <Text strong className="info-value">{moment(candidate.appliedDate).format('DD MMM YYYY')}</Text>
+                  </div>
                 </div>
-                <div className="info-row">
-                  <Text type="secondary">Department</Text>
-                  <Text strong>{candidate.appliedFor?.department || 'Not specified'}</Text>
+                <div className="info-item">
+                  <div className="info-content">
+                    <Text type="secondary" className="info-label">Department</Text>
+                    <Text strong className="info-value">{candidate.appliedFor?.department || 'Not specified'}</Text>
+                  </div>
                 </div>
-                <div className="info-row">
-                  <Text type="secondary">Experience</Text>
-                  <Text strong>{candidate.experience} Years</Text>
+                <div className="info-item">
+                  <div className="info-content">
+                    <Text type="secondary" className="info-label">Experience</Text>
+                    <Text strong className="info-value">{candidate.experience} Years</Text>
+                  </div>
                 </div>
-                <div className="info-row">
-                  <Text type="secondary">Notice Period</Text>
-                  <Text strong>{candidate.noticePeriod?.replace('_', ' ')}</Text>
+                <div className="info-item">
+                  <div className="info-content">
+                    <Text type="secondary" className="info-label">Notice Period</Text>
+                    <Text strong className="info-value">{candidate.noticePeriod?.replace('_', ' ').toLowerCase()}</Text>
+                  </div>
                 </div>
-                <div className="info-row">
-                  <Text type="secondary">Current Salary</Text>
-                  <Text strong>PKR {candidate.currentSalary?.toLocaleString()}</Text>
+                <div className="info-item">
+                  <div className="info-content">
+                    <Text type="secondary" className="info-label">Current Salary</Text>
+                    <Text strong className="info-value">PKR {candidate.currentSalary?.toLocaleString()}</Text>
+                  </div>
                 </div>
-                <div className="info-row">
-                  <Text type="secondary">Expected Salary</Text>
-                  <Text strong>PKR {candidate.expectedSalary?.toLocaleString()}</Text>
+                <div className="info-item">
+                  <div className="info-content">
+                    <Text type="secondary" className="info-label">Expected Salary</Text>
+                    <Text strong className="info-value">PKR {candidate.expectedSalary?.toLocaleString()}</Text>
+                  </div>
                 </div>
               </div>
             </div>
@@ -308,7 +322,9 @@ const CandidateDetails = () => {
 
       <style jsx>{`
         .info-card {
+          background: #fff;
           box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+          border-radius: 8px;
         }
         .profile-img {
           display: flex;
@@ -319,17 +335,24 @@ const CandidateDetails = () => {
           width: 80px;
           height: 80px;
           border-radius: 50%;
-          background: #f0f2f5;
+          background: #f5f5f5;
           display: flex;
           align-items: center;
           justify-content: center;
           font-size: 24px;
           font-weight: 500;
           color: #666;
+          border: 1px solid #e8e8e8;
+        }
+        .section-title {
+          color: #333;
+          font-size: 16px;
+          font-weight: 600;
+          margin-bottom: 16px;
         }
         .info-section {
           padding-top: 20px;
-          border-top: 1px solid #f0f0f0;
+          border-top: 1px solid #e8e8e8;
           margin-top: 20px;
         }
         .info-section:first-child {
@@ -340,27 +363,48 @@ const CandidateDetails = () => {
         .info-item {
           display: flex;
           align-items: flex-start;
-          margin-bottom: 16px;
+          margin-bottom: 12px;
         }
         .info-icon {
-          font-size: 18px;
+          font-size: 16px;
           margin-right: 12px;
           color: #666;
+          margin-top: 3px;
         }
         .info-content {
           flex: 1;
         }
+        .info-label {
+          display: block;
+          font-size: 12px;
+          margin-bottom: 4px;
+          color: #666;
+        }
         .info-value {
           display: block;
-          margin-top: 2px;
+          font-size: 14px;
+          color: #333;
+          font-weight: 500;
+          line-height: 1.4;
         }
-        .info-row {
+        .info-list {
           display: flex;
           flex-direction: column;
-          margin-bottom: 12px;
+          gap: 12px;
+        }
+        .info-row {
+          display: none;
         }
         .nav-tabs-custom .ant-tabs-nav {
           margin-bottom: 20px;
+        }
+        .nav-tabs-custom .ant-tabs-tab {
+          padding: 12px 0;
+          margin: 0 32px 0 0;
+          font-size: 15px;
+        }
+        .nav-tabs-custom .ant-tabs-tab-active {
+          font-weight: 600;
         }
         .timeline-item {
           padding-bottom: 20px;
@@ -377,7 +421,7 @@ const CandidateDetails = () => {
           width: 12px;
           height: 12px;
           border-radius: 50%;
-          background: #1890ff;
+          background: #f4a261;
         }
         .time {
           color: #666;
@@ -394,6 +438,7 @@ const CandidateDetails = () => {
           display: flex;
           align-items: center;
           justify-content: center;
+          color: #666;
         }
         .file-item {
           display: flex;
@@ -402,6 +447,13 @@ const CandidateDetails = () => {
           padding: 12px;
           background: #f9f9f9;
           border-radius: 4px;
+          border: 1px solid #e8e8e8;
+        }
+        .ant-tag {
+          border-radius: 4px;
+          padding: 2px 8px;
+          font-size: 12px;
+          font-weight: 500;
         }
       `}</style>
     </div>
