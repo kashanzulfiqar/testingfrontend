@@ -1065,6 +1065,9 @@ const Leads = () => {
               placeholder={t("requests.addModal.selectDate")}
               className="form-control"
               size="large"
+              disabledDate={(current) =>
+                current && current > moment().endOf("day")
+              }
             />
           </Form.Item>
         </div>
@@ -1398,33 +1401,24 @@ const Leads = () => {
 
   const onHandleDelete = (id) => {
     setLoader(true);
-    apiServices("DELETE", "leads", id, user_state)
+    const data = {
+      _id: id,
+    };
+    apiServices("DELETE", "leads", data, user_state)
       .then((res) => {
-        // console.log(res?.data);
         if (res?.data?.success === true) {
-          // console.log(data);
-          // setCategory([...category.filter((category) => category._id !== id)]);
-          // if(categoryObj?.docs?.length === 1){
-          //   console.log(categoryObj.totalPages)
-          //   viewCategory((categoryObj.totalPages-1),null);
-          // }
-          // else{
-          //}
           if (leadObj?.docs?.length === 1) {
-            //console.log(holidayObj.totalPages)
             viewLeads(leadObj.pages - 1, null);
           } else {
             viewLeads();
           }
           handleClose();
           message.success("Lead Deleted Successfully");
-          //viewCategory();
           setLoader(false);
         }
       })
       .catch((err) => {
         setLoader(false);
-        // console.log(err);
         message.error(
           `${
             err?.response?.data?.msg
@@ -2393,18 +2387,16 @@ const Leads = () => {
                             }
                             placeholder={t("projectScreen.Modal.selectStatus")}
                           >
-                            <Select.Option value="pending">
-                              Pending
+                            <Select.Option value="OnGoing">
+                              Ongoing
                             </Select.Option>
-                            <Select.Option value="onHold">
+                            <Select.Option value="OnHold">
                               On Hold
                             </Select.Option>
-                            <Select.Option value="converted">
+                            <Select.Option value="Converted">
                               Converted
                             </Select.Option>
-                            <Select.Option value="notConverted">
-                              Not Converted
-                            </Select.Option>
+                            <Select.Option value="Lost">Lost</Select.Option>
                           </Select>
                         </Form.Item>
                       </div>
@@ -2748,6 +2740,9 @@ const Leads = () => {
                                 className="form-control"
                                 placeholder="Enter reach-out date"
                                 size="large"
+                                disabledDate={(current) =>
+                                  current && current > moment().endOf("day")
+                                }
                               />
                             </Form.Item>
                           </div>
@@ -3012,22 +3007,6 @@ const Leads = () => {
                     </div>
 
                     <div className="submit-section">
-                      <Form.Item>
-                        <Button
-                          type="primary"
-                          onClick={() => handleAddReachOut(record)}
-                          className="btn btn-primary submit-btn btn-add"
-                          style={{
-                            fontSize: "14px",
-                            minWidth: "30px",
-                            height: "39px",
-                            lineHeight: "0px",
-                          }}
-                        >
-                          <i className="fa fa-plus m-r-5" />
-                          Add Reach Out
-                        </Button>
-                      </Form.Item>
                       <hr />
                     </div>
                   </>
