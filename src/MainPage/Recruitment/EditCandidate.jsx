@@ -47,14 +47,13 @@ const EditCandidate = () => {
 
       if (response?.data?.status) {
         const candidate = response.data.data;
-        setInitialValues({
+        const formattedCandidate = {
           ...candidate,
+          appliedFor: candidate.appliedFor?.title || candidate.appliedFor,
           appliedDate: moment(candidate.appliedDate)
-        });
-        form.setFieldsValue({
-          ...candidate,
-          appliedDate: moment(candidate.appliedDate)
-        });
+        };
+        setInitialValues(formattedCandidate);
+        form.setFieldsValue(formattedCandidate);
       } else {
         if (response?.data?.message === 'Invalid token') {
           message.error('Session expired. Please login again');
@@ -94,8 +93,12 @@ const EditCandidate = () => {
     try {
       setSubmitting(true);
       
+      // Convert salary values to numbers for comparison
+      const currentSalary = Number(values.currentSalary);
+      const expectedSalary = Number(values.expectedSalary);
+      
       // Validate salary
-      if (Number(values.expectedSalary) < Number(values.currentSalary)) {
+      if (expectedSalary < currentSalary) {
         message.error('Expected salary cannot be less than current salary');
         return;
       }
@@ -121,6 +124,8 @@ const EditCandidate = () => {
         } else if (values[key] !== initialValues[key]) {
           if (typeof values[key] === 'string') {
             formData.append(key, values[key].trim());
+          } else if (typeof values[key] === 'number') {
+            formData.append(key, values[key].toString());
           } else {
             formData.append(key, values[key]);
           }
@@ -383,9 +388,23 @@ const EditCandidate = () => {
                     label={<>Experience <span className="text-danger">*</span></>}
                     rules={[
                       { required: true, message: 'Please enter experience' },
-                      { type: 'number', message: 'Please enter a valid number' },
-                      { min: 0, message: 'Experience cannot be negative' },
-                      { max: 50, message: 'Experience cannot exceed 50 years' }
+                      { 
+                        type: 'number',
+                        transform: (value) => Number(value),
+                        message: 'Please enter a valid number' 
+                      },
+                      { 
+                        validator: (_, value) => {
+                          const numValue = Number(value);
+                          if (isNaN(numValue) || numValue < 0) {
+                            return Promise.reject('Experience cannot be negative');
+                          }
+                          if (numValue > 50) {
+                            return Promise.reject('Experience cannot exceed 50 years');
+                          }
+                          return Promise.resolve();
+                        }
+                      }
                     ]}
                   >
                     <InputNumber 
@@ -394,6 +413,7 @@ const EditCandidate = () => {
                       step={0.5}
                       min={0}
                       max={50}
+                      precision={1}
                     />
                   </Form.Item>
                 </div>
@@ -406,8 +426,20 @@ const EditCandidate = () => {
                     label={<>Current Salary <span className="text-danger">*</span></>}
                     rules={[
                       { required: true, message: 'Please enter current salary' },
-                      { type: 'number', message: 'Please enter a valid number' },
-                      { min: 0, message: 'Salary cannot be negative' }
+                      { 
+                        type: 'number',
+                        transform: (value) => Number(value),
+                        message: 'Please enter a valid number' 
+                      },
+                      { 
+                        validator: (_, value) => {
+                          const numValue = Number(value);
+                          if (isNaN(numValue) || numValue < 0) {
+                            return Promise.reject('Salary cannot be negative');
+                          }
+                          return Promise.resolve();
+                        }
+                      }
                     ]}
                   >
                     <InputNumber 
@@ -425,16 +457,24 @@ const EditCandidate = () => {
                     label={<>Expected Salary <span className="text-danger">*</span></>}
                     rules={[
                       { required: true, message: 'Please enter expected salary' },
-                      { type: 'number', message: 'Please enter a valid number' },
-                      { min: 0, message: 'Salary cannot be negative' },
-                      ({ getFieldValue }) => ({
-                        validator(_, value) {
-                          if (!value || getFieldValue('currentSalary') <= value) {
-                            return Promise.resolve();
+                      { 
+                        type: 'number',
+                        transform: (value) => Number(value),
+                        message: 'Please enter a valid number' 
+                      },
+                      { 
+                        validator: (_, value) => {
+                          const numValue = Number(value);
+                          if (isNaN(numValue) || numValue < 0) {
+                            return Promise.reject('Salary cannot be negative');
                           }
-                          return Promise.reject('Expected salary must be greater than or equal to current salary');
-                        },
-                      }),
+                          const currentSalary = form.getFieldValue('currentSalary');
+                          if (numValue < Number(currentSalary)) {
+                            return Promise.reject('Expected salary must be greater than or equal to current salary');
+                          }
+                          return Promise.resolve();
+                        }
+                      }
                     ]}
                   >
                     <InputNumber 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Table, Button, Select, Input, Modal, Form, message, Spin, Tag, DatePicker, Upload, InputNumber, Dropdown, Menu } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, MoreOutlined, UploadOutlined } from '@ant-design/icons';
+import { Table, Button, Select, Input, Modal, Form, message, Spin, Tag, DatePicker, Upload, InputNumber, Dropdown, Menu, Card, Row, Col } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, MoreOutlined, UploadOutlined, UnorderedListOutlined, AppstoreOutlined } from '@ant-design/icons';
 import { apiServices } from '../../Services/apiServices';
 import { useSelector } from 'react-redux';
 import moment from 'moment';
@@ -26,6 +26,7 @@ const Candidates = () => {
   const [resumeFile, setResumeFile] = useState(null);
   const [activeJobs, setActiveJobs] = useState([]);
   const [fileList, setFileList] = useState([]);
+  const [viewType, setViewType] = useState('list');
 
   useEffect(() => {
     const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
@@ -54,15 +55,10 @@ const Candidates = () => {
       const queryParams = {
         page: pagination.current,
         limit: pagination.pageSize,
-        name: filters.name,
-        appliedFor: filters.appliedFor,
-        status: filters.status,
+        ...(filters.name && { name: filters.name }),
+        ...(filters.appliedFor && { appliedFor: filters.appliedFor }),
+        ...(filters.status && { status: filters.status }),
       };
-
-      // Remove empty filters
-      Object.keys(queryParams).forEach(key => 
-        !queryParams[key] && delete queryParams[key]
-      );
 
       const response = await apiServices(
         "GET", 
@@ -80,30 +76,25 @@ const Candidates = () => {
       
       if (response?.data?.status) {
         const candidateData = response.data.data;
-        console.log('Full Candidate Response:', response.data);
-        console.log('Candidate Data:', candidateData.docs);
-        console.log('Active Jobs State:', activeJobs);
+        console.log('Candidates Response:', response.data);
         
-        // Map through candidates to check job IDs
-        const candidatesWithJobs = candidateData.docs.map(candidate => {
-          console.log('Checking candidate job:', candidate.jobId);
-          const matchedJob = activeJobs.find(job => job._id === candidate.jobId);
-          console.log('Matched job:', matchedJob);
-          return candidate;
-        });
-
-        setCandidates(candidatesWithJobs || []);
-        setPagination(prev => ({
-          ...prev,
-          total: candidateData.total || 0
-        }));
+        if (Array.isArray(candidateData.docs)) {
+          setCandidates(candidateData.docs);
+          setPagination(prev => ({
+            ...prev,
+            total: candidateData.totalDocs || 0
+          }));
+        } else {
+          message.error('Invalid data format received from server');
+          setCandidates([]);
+        }
       } else {
-        // Handle specific error cases
         if (response?.data?.message === 'Invalid token') {
           message.error('Session expired. Please login again');
           navigate('/login');
         } else {
           message.error(response?.data?.message || 'Failed to fetch candidates');
+          setCandidates([]);
         }
       }
     } catch (error) {
@@ -113,6 +104,7 @@ const Candidates = () => {
         navigate('/login');
       } else {
         message.error('Error fetching candidates. Please try again');
+        setCandidates([]);
       }
     } finally {
       setLoading(false);
@@ -172,11 +164,15 @@ const Candidates = () => {
   };
 
   const handleSearch = (values) => {
-    setPagination({
-      ...pagination,
+    setPagination(prev => ({
+      ...prev,
       current: 1 // Reset to first page when searching
+    }));
+    setFilters({
+      name: values.name || undefined,
+      appliedFor: values.appliedFor || undefined,
+      status: values.status || undefined
     });
-    setFilters(values);
   };
 
   const handleReset = () => {
@@ -492,6 +488,98 @@ const Candidates = () => {
     },
   ];
 
+  const renderGridView = () => {
+    return (
+      <Row gutter={[16, 16]} className="candidates-grid">
+        {candidates.map(candidate => (
+          <Col xs={24} sm={12} lg={8} key={candidate._id}>
+            <Card className="candidate-card">
+              <div className="candidate-header">
+                <div className="candidate-avatar">
+                  {candidate.firstName?.[0]}{candidate.lastName?.[0]}
+                </div>
+                <div className="candidate-info">
+                  <h3 className="candidate-name">
+                    <Link to={`/recruitment/candidates/${candidate._id}`}>
+                      {`${candidate.firstName} ${candidate.lastName}`}
+                    </Link>
+                  </h3>
+                  <p className="job-title">
+                    {candidate.appliedFor?.title || 'Position Not Specified'}
+                  </p>
+                </div>
+                <Dropdown
+                  overlay={
+                    <Menu>
+                      <Menu.Item key="edit" icon={<EditOutlined />}>
+                        Edit
+                      </Menu.Item>
+                      <Menu.Item key="delete" icon={<DeleteOutlined />} danger>
+                        Delete
+                      </Menu.Item>
+                    </Menu>
+                  }
+                  trigger={['click']}
+                  placement="bottomRight"
+                >
+                  <Button 
+                    type="text" 
+                    icon={<MoreOutlined style={{ transform: 'rotate(90deg)' }} />}
+                    className="more-options-btn"
+                  />
+                </Dropdown>
+              </div>
+
+              <div className="candidate-details">
+                <div className="detail-row">
+                  <span className="detail-icon">📧</span>
+                  <span className="detail-text">{candidate.email}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-icon">📱</span>
+                  <span className="detail-text">{candidate.phoneNumber}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-icon">📅</span>
+                  <span className="detail-text">
+                    {moment(candidate.appliedDate).format('DD MMM YYYY')}
+                  </span>
+                </div>
+              </div>
+
+              <div className="status-section">
+                <Tag className={`status-tag status-${candidate.status?.toLowerCase()}`}>
+                  {candidate.status?.charAt(0) + candidate.status?.slice(1).toLowerCase()}
+                </Tag>
+              </div>
+
+              <div className="additional-details">
+                <div className="detail-grid">
+                  <div className="detail-item">
+                    <label>Experience</label>
+                    <span>{candidate.experience} Years</span>
+                  </div>
+                  <div className="detail-item">
+                    <label>Notice Period</label>
+                    <span>{candidate.noticePeriod?.replace('_', ' ').toLowerCase()}</span>
+                  </div>
+                  <div className="detail-item">
+                    <label>Current Salary</label>
+                    <span>PKR {candidate.currentSalary?.toLocaleString()}</span>
+                  </div>
+                  <div className="detail-item">
+                    <label>Expected Salary</label>
+                    <span>PKR {candidate.expectedSalary?.toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+    );
+  };
+
   return (
     <div className="content container-fluid">
       {/* Page Header */}
@@ -504,7 +592,20 @@ const Candidates = () => {
               <li className="breadcrumb-item active">Candidates</li>
             </ul>
           </div>
-          <div className="col-auto float-end ms-auto">
+          <div className="col-auto float-end ms-auto d-flex align-items-center">
+            <div className="view-icons me-2">
+              <Button
+                type={viewType === 'list' ? 'primary' : 'default'}
+                icon={<UnorderedListOutlined />}
+                onClick={() => setViewType('list')}
+                className="me-1"
+              />
+              <Button
+                type={viewType === 'grid' ? 'primary' : 'default'}
+                icon={<AppstoreOutlined />}
+                onClick={() => setViewType('grid')}
+              />
+            </div>
             <Button
               className="btn add-btn"
               onClick={handleAddCandidate}
@@ -966,28 +1067,223 @@ const Candidates = () => {
         .upload-resume p {
           margin-bottom: 12px;
         }
+
+        .view-icons {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .view-icons .ant-btn {
+          padding: 4px 8px;
+          height: 32px;
+          background: #F4A261;
+          border: none;
+          color: white;
+        }
+
+        .view-icons .ant-btn:hover {
+          background: #E76F51;
+          color: white;
+        }
+
+        .view-icons .ant-btn.ant-btn-default {
+          background: #F8F9FA;
+          color: #4A5568;
+        }
+
+        .view-icons .ant-btn.ant-btn-default:hover {
+          background: #E2E8F0;
+          color: #2D3748;
+        }
+
+        .candidate-card {
+          background: #fff;
+          border-radius: 8px;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+          border: none;
+          height: 100%;
+          padding: 16px;
+        }
+
+        .candidate-card .ant-card-body {
+          padding: 0;
+        }
+
+        .candidate-header {
+          display: flex;
+          align-items: flex-start;
+          margin-bottom: 12px;
+        }
+
+        .candidate-avatar {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          margin-right: 12px;
+          flex-shrink: 0;
+          background: #f0f2f5;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 500;
+        }
+
+        .candidate-info {
+          flex: 1;
+          min-width: 0; /* For text truncation */
+        }
+
+        .candidate-name {
+          font-size: 16px;
+          font-weight: 600;
+          margin: 0;
+          line-height: 1.2;
+        }
+
+        .candidate-name a {
+          color: #333;
+          text-decoration: none;
+          transition: color 0.2s;
+        }
+
+        .candidate-name a:hover {
+          color: #f4a261;
+        }
+
+        .job-title {
+          font-size: 13px;
+          color: #666;
+          margin: 4px 0 0;
+          line-height: 1.2;
+        }
+
+        .candidate-details {
+          margin: 12px 0;
+        }
+
+        .detail-row {
+          display: flex;
+          align-items: center;
+          margin-bottom: 6px;
+          font-size: 13px;
+          line-height: 1.4;
+        }
+
+        .detail-row:last-child {
+          margin-bottom: 0;
+        }
+
+        .detail-icon {
+          width: 16px;
+          margin-right: 8px;
+          text-align: center;
+          flex-shrink: 0;
+        }
+
+        .detail-text {
+          color: #444;
+          flex: 1;
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .status-section {
+          margin: 12px 0;
+        }
+
+        .status-tag {
+          padding: 4px 12px;
+          border-radius: 4px;
+          font-size: 12px;
+          font-weight: 500;
+          display: inline-block;
+        }
+
+        .status-new { background: #e3f2fd; color: #1976d2; }
+        .status-screening { background: #fff3e0; color: #f57c00; }
+        .status-shortlisted { background: #e8f5e9; color: #2e7d32; }
+        .status-rejected { background: #ffebee; color: #c62828; }
+        .status-hired { background: #f3e5f5; color: #7b1fa2; }
+
+        .additional-details {
+          border-top: 1px solid #eee;
+          padding-top: 12px;
+          margin-top: 12px;
+        }
+
+        .detail-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 8px;
+        }
+
+        .detail-item {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .detail-item label {
+          font-size: 11px;
+          color: #666;
+          margin-bottom: 2px;
+          line-height: 1.2;
+        }
+
+        .detail-item span {
+          font-size: 13px;
+          color: #333;
+          font-weight: 500;
+          line-height: 1.2;
+        }
+
+        .more-options-btn {
+          position: absolute;
+          top: 12px;
+          right: 12px;
+          width: 28px;
+          height: 28px;
+          padding: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: none;
+          background: transparent;
+          color: #666;
+        }
+
+        .more-options-btn:hover {
+          background: #f5f5f5;
+          color: #333;
+        }
       `}</style>
 
-      {/* Candidates Table */}
+      {/* Candidates View */}
       <div className="row">
         <div className="col-md-12">
-          <div className="table-responsive">
-            <Spin spinning={loading}>
-              <Table 
-                className="table-striped"
-                columns={columns}
-                dataSource={candidates}
-                rowKey="_id"
-                pagination={{
-                  ...pagination,
-                  showSizeChanger: true,
-                  showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                  pageSizeOptions: ['10', '20', '50']
-                }}
-                onChange={handleTableChange}
-              />
-            </Spin>
-          </div>
+          <Spin spinning={loading}>
+            {viewType === 'list' ? (
+              <div className="table-responsive">
+                <Table 
+                  className="table-striped"
+                  columns={columns}
+                  dataSource={candidates}
+                  rowKey="_id"
+                  pagination={{
+                    ...pagination,
+                    showSizeChanger: true,
+                    showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+                    pageSizeOptions: ['10', '20', '50']
+                  }}
+                  onChange={handleTableChange}
+                />
+              </div>
+            ) : (
+              renderGridView()
+            )}
+          </Spin>
         </div>
       </div>
     </div>

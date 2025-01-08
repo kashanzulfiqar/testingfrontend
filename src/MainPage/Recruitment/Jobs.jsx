@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Table, Button, Select, Input, Modal, Form, message, Spin, Tag, InputNumber, Checkbox, Dropdown, Menu } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, MoreOutlined } from '@ant-design/icons';
+import { Table, Button, Select, Input, Modal, Form, message, Spin, Tag, InputNumber, Checkbox, Dropdown, Menu, Card, Row, Col } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, MoreOutlined, UnorderedListOutlined, AppstoreOutlined, UserAddOutlined } from '@ant-design/icons';
 import { apiServices } from '../../Services/apiServices';
 import { useSelector } from 'react-redux';
 import { isSessionExpired } from '../../utils/errorHandler';
+import { FaFacebook, FaLinkedin, FaInstagram } from 'react-icons/fa';
 
 const { TextArea } = Input;
 
@@ -23,6 +24,7 @@ const Jobs = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [modalForm] = Form.useForm();
   const [submitting, setSubmitting] = useState(false);
+  const [viewType, setViewType] = useState('list');
 
   const handleApiError = (error) => {
     console.error('API Error:', error);
@@ -412,6 +414,104 @@ const Jobs = () => {
     },
   ];
 
+  const renderGridView = () => {
+    return (
+      <Row gutter={[24, 24]}>
+        {jobs.map(job => (
+          <Col xs={24} sm={12} md={8} key={job._id}>
+            <Card
+              className="job-card"
+              extra={
+                <Dropdown
+                  overlay={
+                    <Menu>
+                      <Menu.Item 
+                        key="edit" 
+                        icon={<EditOutlined />}
+                        onClick={() => navigate(`/recruitment/jobs/${job._id}/edit`)}
+                      >
+                        Edit
+                      </Menu.Item>
+                      <Menu.Item
+                        key="delete"
+                        icon={<DeleteOutlined />}
+                        danger
+                        onClick={() => {
+                          Modal.confirm({
+                            title: 'Delete Job',
+                            content: 'Are you sure you want to delete this job?',
+                            okText: 'Yes, Delete',
+                            okType: 'danger',
+                            cancelText: 'No',
+                            onOk: () => handleDeleteJob(job._id)
+                          });
+                        }}
+                      >
+                        Delete
+                      </Menu.Item>
+                    </Menu>
+                  }
+                  trigger={['click']}
+                  placement="bottomRight"
+                >
+                  <Button 
+                    type="text" 
+                    icon={<MoreOutlined />}
+                    style={{ border: 'none', padding: 4 }}
+                  />
+                </Dropdown>
+              }
+            >
+              <div className="job-card-content">
+                <h3 className="job-title">
+                  <Link to={`/recruitment/jobs/${job._id}`}>{job.title}</Link>
+                </h3>
+                <p className="positions-count">{job.positions} open positions</p>
+                
+                <div className="job-details">
+                  <div className="detail-item">
+                    <span className="icon">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 12C14.7614 12 17 9.76142 17 7C17 4.23858 14.7614 2 12 2C9.23858 2 7 4.23858 7 7C7 9.76142 9.23858 12 12 12Z" fill="#4A5568"/>
+                        <path d="M12 14C7.58172 14 4 17.5817 4 22H20C20 17.5817 16.4183 14 12 14Z" fill="#4A5568"/>
+                      </svg>
+                    </span>
+                    <span className="detail-text">{job.department}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="icon">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19 4H5C3.89543 4 3 4.89543 3 6V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V6C21 4.89543 20.1046 4 19 4Z" fill="#4A5568"/>
+                        <path d="M16 2V6M8 2V6M3 10H21M8 14H8.01M12 14H12.01M16 14H16.01M8 18H8.01M12 18H12.01M16 18H16.01" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </span>
+                    <span className="detail-text">{new Date(job.createdAt).toLocaleDateString()}</span>
+                  </div>
+                </div>
+
+                <div className="card-footer">
+                  <div className="posted-on">
+                    <span>Posted on:</span>
+                    <div className="social-icons">
+                      <Link to="#" className="social-icon"><FaLinkedin /></Link>
+                      <Link to="#" className="social-icon"><FaInstagram /></Link>
+                      <Link to="#" className="social-icon"><FaFacebook /></Link>
+                    </div>
+                  </div>
+                  <div className="applications-count">
+                    <Link to={`/recruitment/jobs/${job._id}/applications`}>
+                      {job.applicationCount || 0} Applications
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+    );
+  };
+
   return (
     <div className="content container-fluid">
       {/* Page Header */}
@@ -424,13 +524,26 @@ const Jobs = () => {
               <li className="breadcrumb-item active">Jobs</li>
             </ul>
           </div>
-          <div className="col-auto float-end ms-auto">
+          <div className="col-auto float-end ms-auto d-flex align-items-center">
+            <div className="view-icons me-2">
+              <Button
+                type={viewType === 'list' ? 'primary' : 'default'}
+                icon={<UnorderedListOutlined />}
+                onClick={() => setViewType('list')}
+                className="me-1"
+              />
+              <Button
+                type={viewType === 'grid' ? 'primary' : 'default'}
+                icon={<AppstoreOutlined />}
+                onClick={() => setViewType('grid')}
+              />
+            </div>
             <Button
-              className="btn add-btn"
+              className="add-candidate-btn"
               onClick={handleAddJob}
-              icon={<PlusOutlined />}
+              icon={<UserAddOutlined />}
             >
-              Add Job
+              Add Candidate
             </Button>
           </div>
         </div>
@@ -440,56 +553,61 @@ const Jobs = () => {
       <Form 
         form={form}
         onFinish={handleSearch} 
-        className="row filter-row"
+        className="search-form"
         initialValues={filters}
       >
-        <div className="col-sm-6 col-md-3">
-          <Form.Item name="jobTitle">
-            <Input placeholder="Job Title" allowClear />
-          </Form.Item>
-        </div>
-        <div className="col-sm-6 col-md-3">
-          <Form.Item name="jobType">
-            <Select
-              style={{ width: '100%' }}
-              placeholder="Job Type"
-              allowClear
-              options={[
-                { value: 'FULL_TIME', label: 'Full Time' },
-                { value: 'PART_TIME', label: 'Part Time' },
-                { value: 'CONTRACT', label: 'Contract' },
-                { value: 'INTERNSHIP', label: 'Internship' },
-                { value: 'FREELANCE', label: 'Freelance' }
-              ]}
-            />
-          </Form.Item>
-        </div>
-        <div className="col-sm-6 col-md-3">
-          <Form.Item name="workSetup">
-            <Select
-              style={{ width: '100%' }}
-              placeholder="Work Setup"
-              allowClear
-              options={[
-                { value: 'ONSITE', label: 'On-Site' },
-                { value: 'REMOTE', label: 'Remote' },
-                { value: 'HYBRID', label: 'Hybrid' }
-              ]}
-            />
-          </Form.Item>
-        </div>
-        <div className="col-sm-6 col-md-3">
-          <Form.Item>
-            <div className="d-flex gap-2">
-              <Button type="primary" htmlType="submit" className="btn btn-success flex-grow-1">
+        <Row gutter={[12, 12]} align="middle">
+          <Col xs={24} sm={12} md={5}>
+            <Form.Item name="jobTitle" className="mb-0">
+              <Input placeholder="Job Name" allowClear />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={12} md={5}>
+            <Form.Item name="department" className="mb-0">
+              <Select
+                placeholder="Department"
+                allowClear
+                options={[
+                  { value: 'Engineering', label: 'Engineering' },
+                  { value: 'Marketing', label: 'Marketing' },
+                  { value: 'Sales', label: 'Sales' },
+                  { value: 'HR', label: 'HR' },
+                  { value: 'Finance', label: 'Finance' },
+                  { value: 'Operations', label: 'Operations' },
+                  { value: 'Design', label: 'Design' },
+                  { value: 'Product', label: 'Product' }
+                ]}
+              />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={12} md={5}>
+            <Form.Item name="jobType" className="mb-0">
+              <Select
+                placeholder="Job Type"
+                allowClear
+                options={[
+                  { value: 'FULL_TIME', label: 'Full Time' },
+                  { value: 'PART_TIME', label: 'Part Time' },
+                  { value: 'CONTRACT', label: 'Contract' },
+                  { value: 'INTERNSHIP', label: 'Internship' },
+                  { value: 'FREELANCE', label: 'Freelance' }
+                ]}
+              />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={12} md={5}>
+            <Form.Item name="location" className="mb-0">
+              <Input placeholder="Location" allowClear />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={12} md={4}>
+            <Form.Item className="mb-0">
+              <Button type="primary" htmlType="submit" className="search-btn" block>
                 Search
               </Button>
-              <Button onClick={handleReset} className="flex-grow-1">
-                Reset
-              </Button>
-            </div>
-          </Form.Item>
-        </div>
+            </Form.Item>
+          </Col>
+        </Row>
       </Form>
 
       {/* Add Job Modal */}
@@ -650,6 +768,33 @@ const Jobs = () => {
         </Form>
       </Modal>
 
+      {/* Jobs View */}
+      <div className="row">
+        <div className="col-md-12">
+          <Spin spinning={loading}>
+            {viewType === 'list' ? (
+              <div className="table-responsive">
+                <Table 
+                  className="table-striped"
+                  columns={columns}
+                  dataSource={jobs}
+                  rowKey="_id"
+                  pagination={{
+                    ...pagination,
+                    showSizeChanger: true,
+                    showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+                    pageSizeOptions: ['10', '20', '50']
+                  }}
+                  onChange={handleTableChange}
+                />
+              </div>
+            ) : (
+              renderGridView()
+            )}
+          </Spin>
+        </div>
+      </div>
+
       {/* Add some global styles */}
       <style jsx global>{`
         .custom-modal .ant-modal-header {
@@ -681,30 +826,148 @@ const Jobs = () => {
           height: auto;
           min-height: 120px;
         }
+        .view-icons {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .view-icons .ant-btn {
+          padding: 4px 8px;
+          height: 32px;
+          background: #F4A261;
+          border: none;
+          color: white;
+        }
+        .view-icons .ant-btn:hover {
+          background: #E76F51;
+          color: white;
+        }
+        .view-icons .ant-btn.ant-btn-default {
+          background: #F8F9FA;
+          color: #4A5568;
+        }
+        .view-icons .ant-btn.ant-btn-default:hover {
+          background: #E2E8F0;
+          color: #2D3748;
+        }
+        .search-form {
+          background: white;
+          padding: 16px;
+          border-radius: 8px;
+          margin-bottom: 16px;
+        }
+        .search-form .ant-form-item {
+          margin-bottom: 0;
+        }
+        .search-form .ant-select-selector,
+        .search-form .ant-input {
+          height: 36px;
+          display: flex;
+          align-items: center;
+        }
+        .search-btn {
+          background: #000;
+          border: none;
+          height: 36px;
+          width: 100%;
+        }
+        .search-btn:hover {
+          background: #333 !important;
+        }
+        .job-card {
+          background: #F8F9FA;
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+          border: none;
+        }
+        .job-card .ant-card-body {
+          padding: 16px;
+        }
+        .job-card-content {
+          padding: 0;
+        }
+        .job-title {
+          font-size: 16px;
+          font-weight: 600;
+          margin-bottom: 4px;
+        }
+        .job-title a {
+          color: #2D3748;
+        }
+        .positions-count {
+          color: #718096;
+          font-size: 13px;
+          margin-bottom: 12px;
+        }
+        .job-details {
+          margin-bottom: 12px;
+        }
+        .detail-item {
+          display: flex;
+          align-items: center;
+          margin-bottom: 6px;
+          color: #4A5568;
+          font-size: 13px;
+          line-height: 1;
+        }
+        .detail-item:last-child {
+          margin-bottom: 0;
+        }
+        .detail-item .icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 20px;
+          margin-right: 8px;
+          flex-shrink: 0;
+        }
+        .detail-item .icon svg {
+          display: block;
+        }
+        .detail-item .detail-text {
+          line-height: 1.2;
+        }
+        .card-footer {
+          border-top: 1px solid #E2E8F0;
+          padding-top: 12px;
+          margin-top: 12px;
+        }
+        .posted-on {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 8px;
+          color: #718096;
+          font-size: 13px;
+        }
+        .social-icons {
+          display: flex;
+          gap: 8px;
+        }
+        .social-icon {
+          color: #4A5568;
+          font-size: 14px;
+        }
+        .social-icon:hover {
+          color: #F4A261;
+        }
+        .applications-count {
+          text-align: right;
+        }
+        .applications-count a {
+          color: #F4A261;
+          font-weight: 600;
+          font-size: 14px;
+        }
+        .ant-row {
+          margin-right: -12px !important;
+          margin-left: -12px !important;
+        }
+        .ant-col {
+          padding-right: 12px !important;
+          padding-left: 12px !important;
+        }
       `}</style>
-
-      {/* Jobs Table */}
-      <div className="row">
-        <div className="col-md-12">
-          <div className="table-responsive">
-            <Spin spinning={loading}>
-              <Table 
-                className="table-striped"
-                columns={columns}
-                dataSource={jobs}
-                rowKey="_id"
-                pagination={{
-                  ...pagination,
-                  showSizeChanger: true,
-                  showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                  pageSizeOptions: ['10', '20', '50']
-                }}
-                onChange={handleTableChange}
-              />
-            </Spin>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

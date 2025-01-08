@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { Card, Row, Col, Button, Spin, message, Tag, Typography, Divider } from 'antd';
-import { LeftOutlined, DownloadOutlined, MailOutlined, PhoneOutlined, CalendarOutlined, DollarOutlined, ClockCircleOutlined, GlobalOutlined } from '@ant-design/icons';
+import { Card, Row, Col, Button, Spin, message, Tag, Typography, Tabs, Select, Space } from 'antd';
+import { MailOutlined, PhoneOutlined, EnvironmentOutlined, CalendarOutlined } from '@ant-design/icons';
 import { apiServices } from '../../Services/apiServices';
 import { useSelector } from 'react-redux';
 import moment from 'moment';
 
 const { Title, Text } = Typography;
+const { TabPane } = Tabs;
 
 const CandidateDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [candidate, setCandidate] = useState(null);
+  const [activeTab, setActiveTab] = useState('timeline');
   const authState = useSelector((state) => state.user.loginvalue);
 
   useEffect(() => {
@@ -103,21 +105,14 @@ const CandidateDetails = () => {
     return Boolean(resume && resume.length > 0);
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'NEW':
-        return 'blue';
-      case 'SCREENING':
-        return 'orange';
-      case 'SHORTLISTED':
-        return 'green';
-      case 'REJECTED':
-        return 'red';
-      case 'HIRED':
-        return 'purple';
-      default:
-        return 'default';
-    }
+  const handleStatusChange = (value) => {
+    // Implement status change logic here
+    message.success(`Status changed to ${value}`);
+  };
+
+  const handleSendOffer = () => {
+    // Implement send offer logic here
+    message.info('Send offer functionality to be implemented');
   };
 
   if (loading) {
@@ -130,7 +125,7 @@ const CandidateDetails = () => {
               <ul className="breadcrumb">
                 <li className="breadcrumb-item"><Link to="/recruitment/dashboard">Dashboard</Link></li>
                 <li className="breadcrumb-item"><Link to="/recruitment/candidates">Candidates</Link></li>
-                <li className="breadcrumb-item active">Details</li>
+                <li className="breadcrumb-item active">{candidate?.firstName} {candidate?.lastName}</li>
               </ul>
             </div>
           </div>
@@ -142,195 +137,205 @@ const CandidateDetails = () => {
     );
   }
 
-  if (!candidate) {
-    return null;
-  }
+  if (!candidate) return null;
 
   return (
     <div className="content container-fluid">
+      {/* Header Section */}
       <div className="page-header">
         <div className="row align-items-center">
           <div className="col">
-            <h3 className="page-title">Candidate Details</h3>
+            <h3 className="page-title">Candidate</h3>
             <ul className="breadcrumb">
               <li className="breadcrumb-item"><Link to="/recruitment/dashboard">Dashboard</Link></li>
               <li className="breadcrumb-item"><Link to="/recruitment/candidates">Candidates</Link></li>
-              <li className="breadcrumb-item active">Details</li>
+              <li className="breadcrumb-item active">{candidate.firstName} {candidate.lastName}</li>
             </ul>
           </div>
           <div className="col-auto float-end ms-auto">
-            <Button
-              onClick={() => navigate('/recruitment/candidates')}
-              icon={<LeftOutlined />}
-            >
-              Back to List
-            </Button>
+            <Space>
+              <Select
+                value={candidate.status}
+                onChange={handleStatusChange}
+                style={{ width: 140 }}
+              >
+                <Select.Option value="NEW">New</Select.Option>
+                <Select.Option value="SCREENING">Screening</Select.Option>
+                <Select.Option value="SHORTLISTED">Shortlisted</Select.Option>
+                <Select.Option value="REJECTED">Rejected</Select.Option>
+                <Select.Option value="HIRED">Hired</Select.Option>
+              </Select>
+              <Button 
+                type="primary" 
+                onClick={handleSendOffer}
+                style={{ background: '#FFA500', borderColor: '#FFA500' }}
+              >
+                Send Offer
+              </Button>
+            </Space>
           </div>
         </div>
       </div>
 
       <div className="row">
-        <div className="col-md-8">
-          <Card className="job-detail">
-            <div className="job-detail-header">
-              <div className="d-flex align-items-center justify-content-between mb-3">
-                <div>
-                  <Title level={3} style={{ margin: 0 }}>
-                    {candidate.firstName} {candidate.lastName}
-                  </Title>
-                  <Text type="secondary" className="d-block mt-1">
-                    Applied for: {candidate.appliedFor?.title} {candidate.appliedFor?.department ? `- ${candidate.appliedFor.department}` : ''}
-                  </Text>
+        {/* Left Panel - Basic Information */}
+        <div className="col-md-3">
+          <Card className="info-card">
+            <div className="candidate-profile mb-4">
+              <div className="profile-img">
+                <div className="profile-avatar">
+                  {candidate.firstName?.[0]}{candidate.lastName?.[0]}
                 </div>
-                <Tag color={getStatusColor(candidate.status)} style={{ fontSize: '14px', padding: '4px 12px' }}>
+              </div>
+              <div className="profile-info text-center">
+                <Title level={4} style={{ margin: '12px 0 4px' }}>
+                  {candidate.firstName} {candidate.lastName}
+                </Title>
+                <Tag color={candidate.status === 'NEW' ? 'blue' : 
+                         candidate.status === 'SCREENING' ? 'orange' :
+                         candidate.status === 'SHORTLISTED' ? 'green' :
+                         candidate.status === 'REJECTED' ? 'red' : 'purple'}>
                   {candidate.status?.charAt(0) + candidate.status?.slice(1).toLowerCase()}
                 </Tag>
               </div>
-              <Divider />
             </div>
 
-            <div className="job-detail-content">
+            <div className="info-section">
+              <Title level={5}>Basic Information</Title>
+              <div className="info-item">
+                <MailOutlined className="info-icon" />
+                <div className="info-content">
+                  <Text type="secondary">Email</Text>
+                  <Text strong className="info-value">{candidate.email}</Text>
+                </div>
+              </div>
+              <div className="info-item">
+                <PhoneOutlined className="info-icon" />
+                <div className="info-content">
+                  <Text type="secondary">Phone</Text>
+                  <Text strong className="info-value">{candidate.phoneNumber}</Text>
+                </div>
+              </div>
+              <div className="info-item">
+                <EnvironmentOutlined className="info-icon" />
+                <div className="info-content">
+                  <Text type="secondary">Location</Text>
+                  <Text strong className="info-value">Not specified</Text>
+                </div>
+              </div>
+            </div>
+
+            <div className="info-section">
+              <Title level={5}>Other Information</Title>
               <div className="info-list">
-                <Row gutter={[24, 24]}>
-                  <Col span={12}>
-                    <div className="info-item">
-                      <MailOutlined className="info-icon" />
-                      <div>
-                        <Text type="secondary">Email</Text>
-                        <Text strong className="d-block">
-                          <a href={`mailto:${candidate.email}`}>{candidate.email}</a>
-                        </Text>
-                      </div>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <div className="info-item">
-                      <PhoneOutlined className="info-icon" />
-                      <div>
-                        <Text type="secondary">Phone</Text>
-                        <Text strong className="d-block">
-                          <a href={`tel:${candidate.phoneNumber}`}>{candidate.phoneNumber}</a>
-                        </Text>
-                      </div>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <div className="info-item">
-                      <CalendarOutlined className="info-icon" />
-                      <div>
-                        <Text type="secondary">Experience</Text>
-                        <Text strong className="d-block">{candidate.experience} years</Text>
-                      </div>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <div className="info-item">
-                      <CalendarOutlined className="info-icon" />
-                      <div>
-                        <Text type="secondary">Applied Date</Text>
-                        <Text strong className="d-block">
-                          {moment(candidate.appliedDate).format('MMMM D, YYYY')}
-                        </Text>
-                      </div>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <div className="info-item">
-                      <DollarOutlined className="info-icon" />
-                      <div>
-                        <Text type="secondary">Current Salary</Text>
-                        <Text strong className="d-block">
-                          {candidate.currentSalary?.toLocaleString()}
-                        </Text>
-                      </div>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <div className="info-item">
-                      <DollarOutlined className="info-icon" />
-                      <div>
-                        <Text type="secondary">Expected Salary</Text>
-                        <Text strong className="d-block">
-                          {candidate.expectedSalary?.toLocaleString()}
-                        </Text>
-                      </div>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <div className="info-item">
-                      <ClockCircleOutlined className="info-icon" />
-                      <div>
-                        <Text type="secondary">Notice Period</Text>
-                        <Text strong className="d-block">
-                          {candidate.noticePeriod?.replace('_', ' ')}
-                        </Text>
-                      </div>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <div className="info-item">
-                      <GlobalOutlined className="info-icon" />
-                      <div>
-                        <Text type="secondary">Source</Text>
-                        <Text strong className="d-block">
-                          {candidate.source}
-                        </Text>
-                      </div>
-                    </div>
-                  </Col>
-                </Row>
+                <div className="info-row">
+                  <Text type="secondary">Applied for</Text>
+                  <Text strong>{candidate.appliedFor?.title}</Text>
+                </div>
+                <div className="info-row">
+                  <Text type="secondary">Applied on</Text>
+                  <Text strong>{moment(candidate.appliedDate).format('DD MMM YYYY')}</Text>
+                </div>
+                <div className="info-row">
+                  <Text type="secondary">Department</Text>
+                  <Text strong>{candidate.appliedFor?.department || 'Not specified'}</Text>
+                </div>
+                <div className="info-row">
+                  <Text type="secondary">Experience</Text>
+                  <Text strong>{candidate.experience} Years</Text>
+                </div>
+                <div className="info-row">
+                  <Text type="secondary">Notice Period</Text>
+                  <Text strong>{candidate.noticePeriod?.replace('_', ' ')}</Text>
+                </div>
+                <div className="info-row">
+                  <Text type="secondary">Current Salary</Text>
+                  <Text strong>PKR {candidate.currentSalary?.toLocaleString()}</Text>
+                </div>
+                <div className="info-row">
+                  <Text type="secondary">Expected Salary</Text>
+                  <Text strong>PKR {candidate.expectedSalary?.toLocaleString()}</Text>
+                </div>
               </div>
             </div>
           </Card>
         </div>
 
-        <div className="col-md-4">
+        {/* Main Content Area */}
+        <div className="col-md-9">
           <Card>
-            <div className="job-detail-sidebar">
-              <div className="job-action-btn mb-3">
-                <Button 
-                  type="primary" 
-                  icon={<DownloadOutlined />} 
-                  onClick={handleDownloadResume}
-                  disabled={!isValidResumeUrl(candidate?.resume)}
-                  block
-                  size="large"
-                >
-                  {candidate?.resume ? 'Download Resume' : 'No Resume Available'}
-                </Button>
-              </div>
-              <Divider />
-              <div className="job-overview">
-                <Title level={5}>Application Overview</Title>
-                <div className="job-overview-list">
-                  <div className="overview-item">
-                    <Text type="secondary">Status</Text>
-                    <Tag color={getStatusColor(candidate.status)}>
-                      {candidate.status?.charAt(0) + candidate.status?.slice(1).toLowerCase()}
-                    </Tag>
-                  </div>
-                  <div className="overview-item">
-                    <Text type="secondary">Applied Date</Text>
-                    <Text>{moment(candidate.appliedDate).format('MMMM D, YYYY')}</Text>
-                  </div>
-                  <div className="overview-item">
-                    <Text type="secondary">Position</Text>
-                    <Text>{candidate.appliedFor?.title}</Text>
-                  </div>
-                  <div className="overview-item">
-                    <Text type="secondary">Department</Text>
-                    <Text>{candidate.appliedFor?.department || 'N/A'}</Text>
+            <Tabs 
+              activeKey={activeTab} 
+              onChange={setActiveTab}
+              className="nav-tabs-custom"
+            >
+              <TabPane tab="Timeline" key="timeline">
+                <div className="timeline-content">
+                  <div className="timeline-item">
+                    <div className="time">
+                      {moment(candidate.appliedDate).format('DD MMM YYYY')}
+                    </div>
+                    <div className="event">
+                      <Tag color="blue">Application Received</Tag>
+                      <Text>Candidate applied for {candidate.appliedFor?.title}</Text>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
+              </TabPane>
+              <TabPane tab="Files" key="files">
+                <div className="files-content">
+                  {candidate.resume ? (
+                    <div className="file-item">
+                      <Text strong>Resume</Text>
+                      <Button type="link" onClick={handleDownloadResume}>
+                        Download
+                      </Button>
+                    </div>
+                  ) : (
+                    <Text type="secondary">No files available</Text>
+                  )}
+                </div>
+              </TabPane>
+              <TabPane tab="Interview" key="interview">
+                <div className="interview-content">
+                  <Text type="secondary">No interviews scheduled</Text>
+                </div>
+              </TabPane>
+            </Tabs>
           </Card>
         </div>
       </div>
 
       <style jsx>{`
-        .job-detail {
-          margin-bottom: 24px;
+        .info-card {
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .profile-img {
+          display: flex;
+          justify-content: center;
+          margin-bottom: 16px;
+        }
+        .profile-avatar {
+          width: 80px;
+          height: 80px;
+          border-radius: 50%;
+          background: #f0f2f5;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 24px;
+          font-weight: 500;
+          color: #666;
+        }
+        .info-section {
+          padding-top: 20px;
+          border-top: 1px solid #f0f0f0;
+          margin-top: 20px;
+        }
+        .info-section:first-child {
+          padding-top: 0;
+          border-top: none;
+          margin-top: 0;
         }
         .info-item {
           display: flex;
@@ -338,22 +343,65 @@ const CandidateDetails = () => {
           margin-bottom: 16px;
         }
         .info-icon {
-          font-size: 20px;
+          font-size: 18px;
           margin-right: 12px;
-          margin-top: 4px;
-          color: #1890ff;
+          color: #666;
         }
-        .job-overview-list {
-          margin-top: 16px;
+        .info-content {
+          flex: 1;
         }
-        .overview-item {
-          margin-bottom: 16px;
+        .info-value {
+          display: block;
+          margin-top: 2px;
+        }
+        .info-row {
           display: flex;
           flex-direction: column;
-          gap: 4px;
+          margin-bottom: 12px;
         }
-        .ant-card {
-          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        .nav-tabs-custom .ant-tabs-nav {
+          margin-bottom: 20px;
+        }
+        .timeline-item {
+          padding-bottom: 20px;
+          border-left: 2px solid #e8e8e8;
+          margin-left: 16px;
+          padding-left: 20px;
+          position: relative;
+        }
+        .timeline-item::before {
+          content: '';
+          position: absolute;
+          left: -7px;
+          top: 0;
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          background: #1890ff;
+        }
+        .time {
+          color: #666;
+          font-size: 13px;
+          margin-bottom: 8px;
+        }
+        .event {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .files-content, .interview-content {
+          min-height: 200px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .file-item {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 12px;
+          background: #f9f9f9;
+          border-radius: 4px;
         }
       `}</style>
     </div>
