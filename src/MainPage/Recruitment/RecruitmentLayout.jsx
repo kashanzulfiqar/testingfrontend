@@ -10,6 +10,7 @@ import EditJob from './EditJob';
 import Candidates from './Candidates';
 import CandidateDetails from './CandidateDetails';
 import EditCandidate from './EditCandidate';
+import Interviews from './Interviews';
 
 const RecruitmentLayout = () => {
   const location = useLocation();
@@ -80,6 +81,7 @@ const RecruitmentLayout = () => {
           <Route path="candidates" element={<Candidates />} />
           <Route path="candidates/:id" element={<CandidateDetails />} />
           <Route path="candidates/:id/edit" element={<EditCandidate />} />
+          <Route path="interviews" element={<Interviews />} />
           <Route path="*" element={<Navigate to="dashboard" replace />} />
         </Routes>
       </div>
