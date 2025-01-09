@@ -88,27 +88,19 @@ const TaskBoardList = () => {
 
   const handleDropdownClick = (e, id) => {
     e.stopPropagation();
+    setOpenTeamDropdownId(null);
     setOpenDropdownId(openDropdownId === id ? null : id);
   };
 
   const handleTeamDropdownClick = (e, id) => {
     e.stopPropagation();
+    setOpenDropdownId(null);
     setOpenTeamDropdownId(openTeamDropdownId === id ? null : id);
   };
 
   useEffect(() => {
     const handleClickOutside = () => {
       setOpenDropdownId(null);
-    };
-
-    document.addEventListener('click', handleClickOutside);
-    return () => {
-      document.removeEventListener('click', handleClickOutside);
-    };
-  }, []);
-
-  useEffect(() => {
-    const handleClickOutside = () => {
       setOpenTeamDropdownId(null);
     };
 
@@ -375,7 +367,7 @@ const TaskBoardList = () => {
       key: "boardTitle",
       render: (text, record) => (
         <div>
-          <label style={{cursor: 'pointer'}}>{text}</label>
+          <label>{text}</label>
           {/* <a
             onClick={() => nav(`/task-board/${record?._id}`, { state: record})}>
             
@@ -426,13 +418,17 @@ const TaskBoardList = () => {
           title: t('projectScreen.team'),
           dataIndex: "assignedDevelopers",
           key: "assignedDevelopers",
-          render: (assignedDevelopers) => (
+          render: (assignedDevelopers, record) => (
             <div className="project-members" style={{margin: '4px auto'}}>
             <ul className="team-members" style={{minWidth: 'max-content'}}>
               {assignedDevelopers?.slice(0, 4).map((developer, index) => (
                 <li key={index}>
                   <Tooltip title={developer?.fullName}>
-                    <Avatar style={{cursor: 'pointer'}} src={developer?.imageUrl || user_icon} />
+                    <Avatar 
+                      style={{cursor: 'pointer'}} 
+                      src={developer?.imageUrl || user_icon} 
+                      onClick={(e) => e.stopPropagation()}
+                    />
                   </Tooltip>
                 </li>
               ))}
@@ -442,24 +438,25 @@ const TaskBoardList = () => {
                     className="all-users dropdown-toggle projectTeamMember"
                     style={{display:'inline-flex', height: '33px', width: '33px'}}
                     data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                    onClick={(e) => e.stopPropagation()} // Stop propagation here
+                    aria-expanded={openTeamDropdownId === record._id}
+                    onClick={(e) => handleTeamDropdownClick(e, record._id)}
                   >
                     +{assignedDevelopers?.length - 4}
                   </Link>
                   {/* Dropdown menu for additional team members */}
-                  <div className="dropdown-menu dropdown-menu-right">
+                  <div className={`dropdown-menu dropdown-menu-right ${openTeamDropdownId === record._id ? 'show' : ''}`}>
                     <div className="avatar-group">
                       {assignedDevelopers?.slice(4).map((developer, index) => (
                         <a
                           className="avatar avatar-xs projectTeamMember"
-                          
                           key={index}
+                          onClick={(e) => e.stopPropagation()}
                         >
                           <Tooltip title={developer?.fullName}>
                             <Avatar
                               src={developer?.imageUrl || user_icon}
                               style={{cursor: 'pointer'}}
+                              onClick={(e) => e.stopPropagation()}
                             />
                           </Tooltip>
                         </a>
@@ -502,21 +499,43 @@ const TaskBoardList = () => {
               <i className={`fa ${record.isArchived ? 'fa-undo' : 'fa-archive'} m-r-5`} /> 
               {record.isArchived ? t('Activate') : t('Archive')}
             </a>
+            <a
+              className="dropdown-item"
+              href="#"
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpenDropdownId(null);
+                setOpen({
+                  isAddOpen: false,
+                  isDelOpen: true,
+                  data: { ...record, isDelete: true }, // Add isDelete flag to differentiate from archive action
+                });
+              }}
+            >
+              <i className="fa fa-trash-o m-r-5" /> {t('Delete')}
+            </a>
           </div>
         </div>
       ),
     },
   ];
 
-  const onHandleDelete = (id) => {
+  const onHandleDelete = (id, isDelete = false) => {
     setLoader(true);
-    apiServices("DELETE", "taskBoard/delete-taskBoard", id, user_state)
+    const endpoint = isDelete ? "taskBoard/delete-taskBoard" : "taskBoard/add-taskBoard";
+    const method = isDelete ? "DELETE" : "PUT";
+    const data = isDelete ? { _id: id } : { _id: id, isArchived: !open?.data?.isArchived };
+
+    apiServices(method, endpoint, data, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
           handleClose();
-          message.success('Task board deleted successfully');
+          message.success(
+            isDelete ? 'Task board deleted successfully' :
+            `Task board ${open?.data?.isArchived ? 'activated' : 'archived'} successfully`
+          );
           if(categoryObj?.docs?.length === 1){
-            GetListTaskBoards((categoryObj.totalPages-1),null);
+            GetListTaskBoards((categoryObj.totalPages-1), null);
           }
           else{
             GetListTaskBoards();
@@ -532,7 +551,7 @@ const TaskBoardList = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : 'Error deleting taskboard'
+              : isDelete ? 'Error deleting taskboard' : 'Error updating taskboard'
           }!`
         );
       });
@@ -728,7 +747,7 @@ const TaskBoardList = () => {
                   
                           // Return combined properties for the row
                           return {
-                              style: rowStyle, // Apply the style
+                              style: { ...rowStyle, cursor: 'pointer' },
                               onClick: () => {
                                   nav(`/task-board/${record._id}`, {
                                       state: { board: record},
@@ -1022,7 +1041,7 @@ const TaskBoardList = () => {
         </div>
       </Modal>
 
-      {/* delete modall */}
+      {/* Update the delete modal content to handle both archive and delete cases */}
       <Modal
         open={open.isDelOpen}
         onClose={handleClose}
@@ -1030,7 +1049,7 @@ const TaskBoardList = () => {
         aria-describedby="modal-modal-description"
         disableRestoreFocus
         BackdropProps={{
-          style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
+          style: { backgroundColor: "rgb(0 0 0 / 87%)" },
         }}
       >
         <div className="modal-dialog modal-dialog-centered">
@@ -1044,26 +1063,33 @@ const TaskBoardList = () => {
               }}
             >
               <div className="form-header">
-                <h3 style={{ marginBottom: "30px" }}>{open?.data?.isArchived ? 'Unarchive TaskBoard' : 'Archive TaskBoard'}</h3>
+                <h3 style={{ marginBottom: "30px" }}>
+                  {open?.data?.isDelete ? 'Delete TaskBoard' : 
+                    open?.data?.isArchived ? 'Activate TaskBoard' : 'Archive TaskBoard'}
+                </h3>
                 <p>
-                  <span dangerouslySetInnerHTML={{ __html: t(`Are you sure you want to <b>${open?.data?.isArchived ? 'un-archive' : 'archive'}</b>` ) }} />
+                  {open?.data?.isDelete ? (
+                    <span dangerouslySetInnerHTML={{ __html: t('Are you sure you want to <b>delete</b> this taskboard?') }} />
+                  ) : (
+                    <span dangerouslySetInnerHTML={{ __html: t(`Are you sure you want to <b>${open?.data?.isArchived ? 'activate' : 'archive'}</b>`) }} />
+                  )}
                 </p>
               </div>
               <div className="modal-btn delete-action">
                 <div className="row">
                   <div className="col-6">
-                  <Button
+                    <Button
                       htmlType="submit"
                       className="btn btn-primary continue-btn"
-                      onClick={() => onHandleDelete(open?.data?._id)}
+                      onClick={() => open?.data?.isDelete ? onHandleDelete(open?.data?._id, true) : onHandleDelete(open?.data?._id)}
                       disabled={loader}
                       style={{ width: "100%" }}
                     >
                       {loader ? (
                         <Spin size="small" indicator={antIcon} />
-                      ) : (
-                        open?.data?.isArchived ? t('Unarchive') : t('Archive')
-                      )}
+                      ) : open?.data?.isDelete ? t('Delete') :
+                          open?.data?.isArchived ? t('Activate') : t('Archive')
+                      }
                     </Button>
                   </div>
                   <div className="col-6">
