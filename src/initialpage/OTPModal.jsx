@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { apiServices } from "../Services/apiServices";
 import { useDispatch, useSelector } from 'react-redux';
 import { superAdmin } from "../Redux/Reducer/permissions/superAdminSlice";
-import { login } from "../Entryfile/features/users";
+import { loginStart, loginSuccess, loginFailure } from '../Entryfile/features/users';
 
 const OtpModal = ({ data, open, handleClose }) => {
 
@@ -111,7 +111,7 @@ const OtpModal = ({ data, open, handleClose }) => {
             console.log('admin',userData.superAdmin)
             console.log(res?.data?.result);
             //dispatch(getPermissionList({ roleId: res?.data?.result?.user?.roleId, athtoken: res?.data?.result?.access_token?.accessToken }))
-            dispatch(login(res?.data?.result));
+            dispatch(loginSuccess(res?.data?.result));
             dispatch(superAdmin(res?.data?.result?.user?.superAdmin))
             setOtp(["", "", "", "", "", ""]);
             handleClose();

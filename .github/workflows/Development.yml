@@ -8,8 +8,15 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
+      # Step 1: Checkout Code
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        with:
+          ref: dev
+
+      # Step 2: Configure SSH
       - name: Configure SSH
         env:
           SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY_FRONTEND }}
@@ -17,46 +24,35 @@ jobs:
           SSH_USER: ${{ secrets.EC2_USER }}
         run: |
           mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          echo -e "Host ec2\n\tHostName $SSH_HOST\n\tUser $SSH_USER\n\tIdentityFile ~/.ssh/deploy_key\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
-          
-      - name: Deploy and Build on EC2
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/frontend_deploy_key
+          chmod 600 ~/.ssh/frontend_deploy_key
+          ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
+
+      # Step 3: Deploy Frontend
+      - name: Deploy Frontend to EC2
+        env:
+          SSH_HOST: ${{ secrets.EC2_HOST }}
+          DEPLOYMENT_PATH: ${{ secrets.DEPLOYMENT_PATH }}
+          SSH_USER: ${{ secrets.EC2_USER }}
         run: |
-          ssh ec2 '
+          ssh -i ~/.ssh/frontend_deploy_key $SSH_USER@$SSH_HOST '
             set -e
-            echo "Starting deployment..."
-            
-            echo "Setting up SSH agent and adding frontend deploy key..."
-            eval "$(ssh-agent -s)"
-            ssh-add ~/.ssh/${{ secrets.EC2_KEY_NAME }}
-            
-            echo "Changing to project directory..."
-            cd ${{ secrets.DEPLOYMENT_PATH }}
-            
-            echo "Pulling latest code..."
+            echo "Navigating to frontend directory..."
+            echo $SSH_USER
+            cd $DEPLOYMENT_PATH
+
+            echo "Pulling latest code from dev branch..."
+            git checkout dev
             git pull origin dev
-            
+
             echo "Installing dependencies..."
-            yarn install || { echo "Failed to install dependencies"; exit 1; }
-            
-            # echo "Removing old build..."
-            # rm -rf dist/
-            
+            yarn install || { echo "Dependency installation failed"; exit 1; }
+
             echo "Building project..."
             yarn build || { echo "Build failed"; exit 1; }
-            
-            # echo "Restarting nginx..."
-            # sudo systemctl restart nginx
-            
-            echo "Deployment completed successfully!"
-            
-            echo "Cleaning up SSH agent..."
-            ssh-agent -k
-          '
 
-      - name: Send notification on failure
-        if: failure()
-        run: |
-          echo "Deployment failed! Check the logs above for details."
-          exit 1
+            echo "Restarting nginx server..."
+            sudo systemctl restart nginx || { echo "Nginx restart failed"; exit 1; }
+
+            echo "Deployment completed successfully!"
+          '

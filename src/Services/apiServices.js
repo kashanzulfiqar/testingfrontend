@@ -1,122 +1,91 @@
 import axios from "axios";
 import {store} from '../Entryfile/Main.js';
-import { login } from "../Entryfile/features/users.jsx";
+import { logout } from "../Entryfile/features/users.jsx";
 import { superAdmin } from "../Redux/Reducer/permissions/superAdminSlice.js";
 import { BASE_URL } from '../config/apiConfig';
 
-let location = window.location.origin
+let location = window.location.origin;
+
+// Create axios instance
+const axiosInstance = axios.create({
+  baseURL: BASE_URL
+});
+
+// Add request interceptor
+axiosInstance.interceptors.request.use(
+  (config) => {
+    // Try to get token from Redux store first
+    const state = store.getState();
+    let token = state?.user?.loginvalue?.access_token?.accessToken;
+    
+    // Fallback to localStorage if not in Redux store
+    if (!token) {
+      token = localStorage.getItem('token');
+    }
+    
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    config.headers['Content-Type'] = 'application/json';
+    config.headers.Accept = 'application/json';
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Add response interceptor
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // Check for authentication errors (401) or token expiration
+    if (
+      error?.response?.status === 401 || 
+      error?.response?.data?.error?.message === "jwt expired" || 
+      error?.response?.data?.err?.message === "jwt expired" ||
+      error?.response?.data?.message === "Invalid token" ||
+      error?.response?.data?.message === "Token is required"
+    ) {
+      console.log('Authentication failed - clearing session');
+      
+      // Clear all auth data
+      localStorage.removeItem('token');
+      localStorage.removeItem('languagePreference');
+      localStorage.removeItem('firstTimeLogin');
+      sessionStorage.clear();
+      
+      // Dispatch logout action to clear Redux state
+      store.dispatch(logout());
+      
+      // Redirect to login page
+      const loginPath = `${location}/login`;
+      if (window.location.pathname !== '/login') {
+        setTimeout(() => {
+          window.location.href = loginPath;
+        }, 100);
+      }
+    }
+    
+    return Promise.reject(error);
+  }
+);
 
 export const apiServices = async (type, endpoint, data, state) => {
-    
+  try {
+    const config = {
+      url: `/${endpoint}`,
+      method: type,
+      ...(data && { data }),
+      ...(endpoint.includes('payrolls/download-payroll') && { responseType: 'blob' })
+    };
 
-  let athtoken= state?.access_token?.accessToken;
-  let company_id = state?.user?.companyId
-    
-    if (type === "GET") {
-        try {
-            let result = axios({
-                url: `${BASE_URL}/${endpoint}`,
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: 'Bearer ' + athtoken,
-                    Accept: 'application/json',
-                },
-                responseType: `${endpoint.includes('payrolls/download-payroll') ? 'blob' : ''}`,
-            }).then((res) => res).catch(err => {
-                console.log("err",err)
-                if(err?.response?.data?.error?.message === "jwt expired"){
-                    console.log('access token expired====', err?.response?.data?.error?.message);
-                    localStorage.clear();
-                    sessionStorage.clear()
-                    setTimeout(() => {
-                        window.location.href = `${location}/login`
-                        store.dispatch(login(null));
-                      }, 500);
-                    // window.location.href = `${location}/login`
-                }
-                else if(err?.response?.data?.err?.message === "jwt expired"){
-                    console.log('access token expired====', err?.response?.data?.err?.message);
-                    localStorage.clear();
-                    sessionStorage.clear()
-                    setTimeout(() => {
-                        window.location.href = `${location}/admin-login`
-                        store.dispatch(login(null));
-                        store.dispatch(superAdmin(false));
-                      }, 500);
-                    // window.location.href = `${location}/login`
-                }
-            })
-            return (result)
-        } catch (error) {
-            console.error("GET API FAILED !");
-        }
-    }
-    else if (type === "PUT") {
-        try {
-            let result = axios({
-               url: `${BASE_URL}/${endpoint}`,
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: 'Bearer ' + athtoken,
-                    Accept: 'application/json',
-                },
-                data: data
-            }).then((res) => res)
-            return (result)
-        }
-        catch (error) {
+    const response = await axiosInstance(config);
+    return response;
+  } catch (error) {
+    console.error(`${type} API FAILED!`);
+    throw error;
+  }
+};
 
-            console.log("GET Api Failed")
-        }
-    }
-    else if (type === 'DELETE') {
-        try {
-            let result = axios({
-                url: `${BASE_URL}/${endpoint}`,
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: 'Bearer ' + athtoken,
-                    Accept: 'application/json'
-                },
-                data: endpoint === 'user/delete-user' ? data :
-                {
-                    '_id': data
-                }
-            }).then((res) => res)
-            return (result)
-        }
-        catch (error) {
-            console.log("Delete Api Failed")
-        }
-
-    }
-    else {
-        
-        try {
-            let result = axios({
-                url: `${BASE_URL}/${endpoint}`,
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: 'Bearer ' + athtoken,
-                    Accept: 'application/json',
-                    withCredentials: true
-                },
-                data:  data
-                // data:  {...data, companyID: company_id}
-            }).then((res) => res)
-            return (result)
-        } catch (error) {
-            console.error("POST API FAILED!");
-        }
-    }
-
-
-}
-
-export {
-    BASE_URL
-}
+export { BASE_URL };
