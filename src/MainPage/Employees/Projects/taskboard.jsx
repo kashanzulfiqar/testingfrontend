@@ -316,17 +316,16 @@ const TaskBoard = () => {
   };
 
   const closeNewTask = () => {
-    //setNewTaskModal(false);
     setAddTask({
       isAddOpen: false,
       isDelOpen: false,
       data: '',
       title: '',
     });
+    setSelectedTeamMembers([]); // Clear selected team members
     setEditId("");
     form2.resetFields();
     setLoader(false);
-    //setIsLoading(false)
   };
 
   const colors = [
@@ -588,12 +587,15 @@ const TaskBoard = () => {
       apiServices("PUT", "taskBoard/add-taskBoard", updated_data, user_state)
         .then((res) => {
           if (res?.data?.success === true) {
-            //const sortedData = res?.data?.Task?.docs?.slice().sort((a, b) => a.title.localeCompare(b.title));
-            //setAllTasks(sortedData);
+            // Update columns with server response
             setColumns(res?.data?.taskBoard?.columns);
+            
+            // Get fresh data for all tasks
+            getAllTasks(BoardData?.board?.project ? BoardData?.board?.project?._id : BoardData?.board?._id);
+            
             setIsLoading(false);
             setLoader(false);
-            message.success('Task added successfully')
+            message.success('Task added successfully');
             closeTaskModal();
           }
         })
@@ -610,15 +612,6 @@ const TaskBoard = () => {
           );
           setLoader(false);
         });
-      // const newTask = {
-      //   _id: Math.random().toString(36).substr(2, 9),
-      //   title: values.title,
-      //   color: values.color,
-      //   tasks: []
-      // };
-      // console.log(newTask)
-
-      // setColumns(prevTasks => [...prevTasks, newTask]);
     }
   };
 
@@ -664,8 +657,8 @@ const TaskBoard = () => {
     setLoader(true);
     apiServices("DELETE", "taskBoard/remove-task", updated_data, user_state)
       .then((res) => {
-        // console.log(res?.data);
         if (res?.data?.success === true) {
+          // Update columns to remove task
           setColumns((prevColumns) =>
             prevColumns?.map((column) => {
               if (column._id === columnId) {
@@ -674,15 +667,28 @@ const TaskBoard = () => {
               return column;
             })
           );
+
+          // Update allTasks to set empty developers array for the removed task
+          setAllTasks(prevTasks => 
+            prevTasks.map(task => {
+              if (task._id === id) {
+                return {
+                  ...task,
+                  assignedDevelopers: [] // Clear the developers array
+                };
+              }
+              return task;
+            })
+          );
+
           message.success("Task Removed Successfully");
           closeNewTask();
-          setColumnId('')
+          setColumnId('');
           setLoader(false);
         }
       })
       .catch((err) => {
         setLoader(false);
-        // console.log(err);
         message.error(
           `${
             err?.response?.data?.msg
@@ -741,13 +747,19 @@ const onFinishEdit = (values) => {
     .then((res) => {
         if (res?.data?.success === true) {
           closeNewTask();
+          // Get the full developer objects from employees array using the assignedDevelopers IDs
+          const updatedDevelopers = values.assignedDevelopers?.map(devId => 
+            employees?.find(emp => emp._id === devId)
+          ).filter(Boolean);
+
           const updatedOptTasks = allTasks?.map((task) => {
             if (task._id === addTask?.data?.taskId) {
                 return {
                     ...task,
                     title: values.title,
                     tags: values.tags,
-                    description: values.description
+                    description: values.description,
+                    assignedDevelopers: updatedDevelopers // Use the full developer objects
                 };
             }
             return task;
@@ -884,15 +896,16 @@ const onFinishEdit = (values) => {
   const handleBoardMembersChange = (values) => {
     const selectedEmployees = values?.map((value) =>
       allEmployees?.find((employee) => employee._id === value)
-    );
+    ).filter(Boolean); // Remove any undefined values
     
-    let updated_data = {
+    // Ensure the data is properly structured
+    const updated_data = {
       _id: boardId,
-      assignedDevelopers: values
+      assignedDevelopers: Array.isArray(values) ? values : []
     };
     
     setLoader(true);
-    apiServices("PUT", "taskBoard/add-taskBoard", updated_data, user_state)
+    apiServices("PUT", "taskBoard/add-taskBoard", JSON.parse(JSON.stringify(updated_data)), user_state)
       .then((res) => {
         if (res?.data?.success === true) {
           setEmployees(selectedEmployees);
@@ -1301,8 +1314,18 @@ const onFinishEdit = (values) => {
                                                                 const title = getTaskTitle(task.taskId);
                                                                 const tags = getTaskTags(task.taskId);
                                                                 const description = getTaskDescription(task.taskId);
+                                                                const assignedDevelopers = getTaskAssignedDevelopers(task.taskId);
+                                                                // Set the full developer objects for display
+                                                                setSelectedTeamMembers(assignedDevelopers);
+                                                                // Extract just the IDs for the form
+                                                                const developerIds = assignedDevelopers?.map(dev => dev._id);
                                                                 setAddTask({ isAddOpen: true, data: task });
-                                                                form2.setFieldsValue({ title, tags, description });
+                                                                form2.setFieldsValue({ 
+                                                                  title, 
+                                                                  tags, 
+                                                                  description, 
+                                                                  assignedDevelopers: developerIds 
+                                                                });
                                                                 setEditId(task.taskId);
                                                               }}
                                                               >
@@ -1716,9 +1739,10 @@ const onFinishEdit = (values) => {
                                     cursor: "pointer"
                             }}
                             onClick={() => {
+                              setSelectedTeamMembers([]); // Clear selected team members
+                              form2.resetFields(); // Reset form fields
                               setAddTask({ isAddOpen: true, data: '' });
                             }}
-                            //disabled={(role === "admin" || permissions.projectManagement) ? false : true}
                         >
                             Add New Task
                         </Button>
@@ -2096,7 +2120,126 @@ const onFinishEdit = (values) => {
                         </Form.Item>
                         </div>
                     </div>
-                </div>
+                    {addTask?.data ? (
+                      <div className="row">
+                        <div className="col-sm-6">
+                          <div className="form-group">
+                      <label>{t("projectScreen.Modal.addTeam")}{" "}</label>
+                      <div style={{ position: "relative" }} id="area">
+                        <Form.Item
+                          name="assignedDevelopers"
+                          className="addTeamHeight"
+                          
+                        >
+                          <Select
+                            showSearch
+                            onSearch={(val) => {
+                              showTeamSearch(val, "Team");
+                              // onTeamChange(val)
+                            }}
+                            filterOption={(input, option) =>
+                              option.children
+                                .toLowerCase()
+                                .indexOf(input.toLowerCase()) >= 0
+                            }
+                            optionFilterProp="children"
+                            notFoundContent={
+                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                            }
+                            dropdownRender={(menu) => <>{menu}</>}
+                            getPopupContainer={() =>
+                              document.getElementById("area")
+                            }
+                            className="customselect-height custom-select"
+                            mode="multiple"
+                            placeholder={t(
+                              "projectScreen.Modal.selectTeamMembers"
+                            )}
+                            
+                            onChange={handleChange}
+                          >
+                            {getTeamMemberOptions()}
+                          </Select>
+                        </Form.Item>
+                      </div>
+                    </div>
+                    </div>
+                  <div className="col-sm-6">
+                    <div className="form-group">
+                      <label>{t("projectScreen.Modal.teamMembers")}</label>
+                      <div
+                        className="project-members"
+                        style={{ margin: "4px auto" }}
+                      >
+                        <ul
+                          className="team-members"
+                          style={{ minWidth: "max-content" }}
+                        >
+                          {selectedTeamMembers
+                            ?.slice(0, 4)
+                            .map((teamMember, index) => (
+                              <li key={index}>
+                                <Tooltip
+                                  title={teamMember?.fullName}
+                                >
+                                  <Avatar
+                                    style={{ cursor: "pointer" }}
+                                    src={
+                                      teamMember?.imageUrl || user_icon
+                                    }
+                                  />
+                                </Tooltip>
+                              </li>
+                            ))}
+                          {selectedTeamMembers?.length > 4 && (
+                            <li className="dropdown avatar-dropdown">
+                              <Link
+                                className="all-users dropdown-toggle projectTeamMember"
+                                style={{
+                                  display: "inline-flex",
+                                  height: "33px",
+                                  width: "33px",
+                                }}
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                              >
+                                +{selectedTeamMembers?.length - 4}
+                              </Link>
+                              {/* Dropdown menu for additional team members */}
+                              <div className="dropdown-menu dropdown-menu-right">
+                                <div className="avatar-group">
+                                  {selectedTeamMembers
+                                    ?.slice(4)
+                                    .map((teamMember, index) => (
+                                      <a
+                                        className="avatar avatar-xs projectTeamMember"
+                                        key={index}
+                                      >
+                                        <Tooltip
+                                          title={
+                                            teamMember?.fullName
+                                          }
+                                        >
+                                          <Avatar
+                                            src={
+                                              teamMember?.imageUrl ||
+                                              user_icon
+                                            }
+                                            style={{ cursor: "pointer" }}
+                                          />
+                                        </Tooltip>
+                                      </a>
+                                    ))}
+                                </div>
+                              </div>
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div> ) : null} 
+                </div>  
                 <div className="submit-section">
                   <button type='submit' className="btn btn-primary submit-btn" disabled={loader}>
                   {
