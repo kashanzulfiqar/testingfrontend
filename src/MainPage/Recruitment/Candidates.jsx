@@ -6,6 +6,7 @@ import { apiServices } from '../../Services/apiServices';
 import { useSelector } from 'react-redux';
 import moment from 'moment';
 import { getCurrentStage } from './CandidateList';
+import CreateCandidateModal from './CreateCandidateModal';
 
 const { TextArea } = Input;
 
@@ -20,13 +21,9 @@ const Candidates = () => {
   });
   const [filters, setFilters] = useState({});
   const [form] = Form.useForm();
-  const [modalForm] = Form.useForm();
   const authState = useSelector((state) => state.user.loginvalue);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [resumeFile, setResumeFile] = useState(null);
   const [activeJobs, setActiveJobs] = useState([]);
-  const [fileList, setFileList] = useState([]);
   const [viewType, setViewType] = useState('list');
 
   useEffect(() => {
@@ -350,6 +347,19 @@ const Candidates = () => {
     },
   ];
 
+  const handleAddCandidate = () => {
+    setIsModalVisible(true);
+  };
+
+  const handleModalCancel = () => {
+    setIsModalVisible(false);
+  };
+
+  const handleModalSuccess = () => {
+    setIsModalVisible(false);
+    fetchCandidates();
+  };
+
   return (
     <div className="content container-fluid">
       {/* Header section */}
@@ -363,9 +373,13 @@ const Candidates = () => {
             </ul>
           </div>
           <div className="col-auto float-end ms-auto">
-            <Link to="/recruitment/candidate/add" className="btn add-btn">
-              <i className="fa fa-plus" /> Add Candidate
-            </Link>
+            <Button
+              className="add-btn"
+              onClick={handleAddCandidate}
+              icon={<PlusOutlined />}
+            >
+              Add Candidate
+            </Button>
           </div>
         </div>
       </div>
@@ -399,6 +413,13 @@ const Candidates = () => {
           />
         </div>
       </div>
+
+      {/* Create Candidate Modal */}
+      <CreateCandidateModal
+        visible={isModalVisible}
+        onCancel={handleModalCancel}
+        onSuccess={handleModalSuccess}
+      />
     </div>
   );
 };

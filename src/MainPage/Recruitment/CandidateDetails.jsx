@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Card, Row, Col, Button, Spin, message, Tag, Typography, Tabs, Select, Space, Avatar, Tooltip, Rate, Collapse } from 'antd';
-import { MailOutlined, PhoneOutlined, EnvironmentOutlined, CalendarOutlined, PlusOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { MailOutlined, PhoneOutlined, EnvironmentOutlined, CalendarOutlined, PlusOutlined, ArrowLeftOutlined, FilePdfOutlined, FileWordOutlined, EyeOutlined, DownloadOutlined } from '@ant-design/icons';
 import { apiServices } from '../../Services/apiServices';
 import { useSelector } from 'react-redux';
 import moment from 'moment';
@@ -103,24 +103,56 @@ const CandidateDetails = () => {
     }
   };
 
-  const handleDownloadResume = async () => {
-    console.log('Current candidate resume:', candidate?.resume);
-    
+  const getFileIcon = (fileUrl) => {
+    if (!fileUrl) return <FilePdfOutlined />;
+    const extension = fileUrl.split('.').pop().toLowerCase();
+    switch (extension) {
+      case 'pdf':
+        return <FilePdfOutlined style={{ fontSize: '24px', color: '#ff4d4f' }} />;
+      case 'doc':
+      case 'docx':
+        return <FileWordOutlined style={{ fontSize: '24px', color: '#1890ff' }} />;
+      default:
+        return <FilePdfOutlined style={{ fontSize: '24px', color: '#ff4d4f' }} />;
+    }
+  };
+
+  const getFileName = (fileUrl) => {
+    if (!fileUrl) return 'Resume';
+    const parts = fileUrl.split('/');
+    return parts[parts.length - 1];
+  };
+
+  const handlePreviewResume = () => {
     if (!candidate?.resume) {
-      message.error('No resume available for this candidate');
+      message.error('No resume available for preview');
+      return;
+    }
+
+    // Open resume in new tab
+    window.open(candidate.resume, '_blank');
+  };
+
+  const handleDownloadResume = async () => {
+    if (!candidate?.resume) {
+      message.error('No resume available for download');
       return;
     }
 
     try {
-      // Show loading message
-      message.loading('Downloading resume...', 0.5);
-      
-      // Attempt to open the resume URL
-      window.open(candidate.resume, '_blank');
-      message.success('Resume opened successfully');
+      const response = await fetch(candidate.resume);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = getFileName(candidate.resume);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error downloading resume:', error);
-      message.error('Failed to download resume. Please try again later.');
+      message.error('Failed to download resume');
     }
   };
 
@@ -897,6 +929,56 @@ const CandidateDetails = () => {
     );
   };
 
+  const renderFilesContent = () => {
+    if (!candidate?.resume) {
+      return (
+        <div className="no-files-message" style={{ textAlign: 'center', padding: '40px 0' }}>
+          <FilePdfOutlined style={{ fontSize: '48px', color: '#d9d9d9' }} />
+          <Typography.Text type="secondary" style={{ display: 'block', marginTop: '16px' }}>
+            No resume uploaded
+          </Typography.Text>
+        </div>
+      );
+    }
+
+    return (
+      <div className="files-content">
+        <Card className="file-card">
+          <div className="file-item">
+            <div className="file-info">
+              {getFileIcon(candidate.resume)}
+              <div className="file-details">
+                <Typography.Text strong style={{ fontSize: '16px' }}>
+                  {getFileName(candidate.resume)}
+                </Typography.Text>
+                <Typography.Text type="secondary" style={{ fontSize: '12px' }}>
+                  Uploaded on: {moment(candidate.updatedAt).format('DD MMM YYYY')}
+                </Typography.Text>
+              </div>
+            </div>
+            <div className="file-actions">
+              <Button
+                type="text"
+                icon={<EyeOutlined />}
+                onClick={handlePreviewResume}
+                style={{ marginRight: '8px' }}
+              >
+                Preview
+              </Button>
+              <Button
+                type="primary"
+                icon={<DownloadOutlined />}
+                onClick={handleDownloadResume}
+              >
+                Download
+              </Button>
+            </div>
+          </div>
+        </Card>
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="content container-fluid">
@@ -1135,18 +1217,7 @@ const CandidateDetails = () => {
                 </div>
               </TabPane>
               <TabPane tab="Files" key="files">
-                <div className="files-content">
-                  {candidate.resume ? (
-                    <div className="file-item">
-                      <Text strong>Resume</Text>
-                      <Button type="link" onClick={handleDownloadResume}>
-                        Download
-                      </Button>
-                    </div>
-                  ) : (
-                    <Text type="secondary">No files available</Text>
-                  )}
-                </div>
+                {renderFilesContent()}
               </TabPane>
               <TabPane tab="Interview" key="interview">
                 {renderInterviewContent()}
@@ -1529,6 +1600,38 @@ const CandidateDetails = () => {
           background-color: #fff1f0 !important;
           border-color: #ffa39e !important;
           color: #f5222d !important;
+        }
+
+        .file-card {
+          margin: 16px;
+        }
+
+        .file-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 16px;
+        }
+
+        .file-info {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+        }
+
+        .file-details {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .file-actions {
+          display: flex;
+          align-items: center;
+        }
+
+        .no-files-message {
+          text-align: center;
+          padding: 40px 0;
         }
       `}</style>
     </div>
