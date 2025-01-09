@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Table, Button, Select, Input, Modal, Form, message, Spin, Tag, Row, Col } from 'antd';
-import { UnorderedListOutlined, AppstoreOutlined } from '@ant-design/icons';
+import { UnorderedListOutlined, AppstoreOutlined, StarFilled } from '@ant-design/icons';
 import { apiServices } from '../../Services/apiServices';
 import { useSelector } from 'react-redux';
 import moment from 'moment';
@@ -61,11 +61,17 @@ const Interviews = () => {
         }
       );
       
-      if (response?.data?.status) {
-        setInterviews(response.data.data.docs || []);
+      if (response?.data?.success) {
+        const interviewsData = response.data.data;
+        console.log('Interviews Data with feedback:', interviewsData.docs.map(interview => ({
+          id: interview._id,
+          feedback: interview.feedback
+        })));
+        
+        setInterviews(interviewsData.docs || []);
         setPagination(prev => ({
           ...prev,
-          total: response.data.data.total || 0
+          total: interviewsData.totalDocs || 0
         }));
       } else {
         message.error(response?.data?.message || 'Failed to fetch interviews');
@@ -103,12 +109,38 @@ const Interviews = () => {
     });
   };
 
+  const calculateAverageRating = (feedbackArray) => {
+    if (!feedbackArray || feedbackArray.length === 0) {
+      return 0;
+    }
+
+    const totalRatings = feedbackArray.reduce((sum, feedback) => {
+      const ratings = feedback.ratings;
+      const ratingSum = (
+        ratings.technicalSkills1 +
+        ratings.behavior +
+        ratings.softSkills +
+        ratings.technicalSkills2 +
+        ratings.technicalSkills3
+      );
+      return sum + (ratingSum / 5); // Average of all skills for this feedback
+    }, 0);
+
+    return (totalRatings / feedbackArray.length).toFixed(1);
+  };
+
+  const getLatestDecision = (feedbackArray) => {
+    if (!feedbackArray || feedbackArray.length === 0) return '-';
+    return feedbackArray[feedbackArray.length - 1].recommendation || '-';
+  };
+
   const columns = [
     {
       title: 'Candidate Name',
       key: 'candidateName',
+      dataIndex: 'candidateName',
       render: (_, record) => (
-        <Link to={`/recruitment/candidates/${record.candidateId}`}>
+        <Link to={`/recruitment/candidates/${record.candidateId._id}`}>
           {record.candidateName}
         </Link>
       ),
@@ -118,6 +150,11 @@ const Interviews = () => {
       title: 'Interview Name',
       dataIndex: 'interviewName',
       key: 'interviewName',
+      render: (_, record) => (
+        <Link to={`/recruitment/interviews/${record._id}`}>
+          {record.interviewName}
+        </Link>
+      ),
       sorter: true,
     },
     {
@@ -132,9 +169,8 @@ const Interviews = () => {
     },
     {
       title: 'Interviewer',
-      dataIndex: 'interviewer',
       key: 'interviewer',
-      render: (interviewer) => interviewer?.name || 'N/A',
+      render: (_, record) => record.interviewerId?.fullName || 'N/A',
     },
     {
       title: 'Date & Time',
@@ -149,17 +185,59 @@ const Interviews = () => {
       sorter: true,
     },
     {
+      title: 'Decision',
+      key: 'decision',
+      render: (_, record) => {
+        return record.latestFeedback?.recommendation || '-';
+      }
+    },
+    {
+      title: 'Rating',
+      key: 'rating',
+      render: (_, record) => {
+        if (!record.feedback || record.feedback.length === 0) {
+          return (
+            <div className="d-flex align-items-center">
+              <StarFilled style={{ color: '#FFD700', marginRight: 4 }} />
+              <span>0</span>
+            </div>
+          );
+        }
+
+        const totalRatings = record.feedback.reduce((sum, feedback) => {
+          const ratings = feedback.ratings;
+          const ratingSum = (
+            ratings.technicalSkills1 +
+            ratings.behavior +
+            ratings.softSkills +
+            ratings.technicalSkills2 +
+            ratings.technicalSkills3
+          );
+          return sum + (ratingSum / 5);
+        }, 0);
+
+        const averageRating = (totalRatings / record.feedback.length).toFixed(1);
+
+        return (
+          <div className="d-flex align-items-center">
+            <StarFilled style={{ color: '#FFD700', marginRight: 4 }} />
+            <span>{averageRating}</span>
+          </div>
+        );
+      }
+    },
+    {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
       render: (status) => (
         <Tag color={
-          status === 'SCHEDULED' ? 'blue' :
-          status === 'COMPLETED' ? 'green' :
-          status === 'CANCELLED' ? 'red' :
+          status?.toLowerCase() === 'scheduled' ? 'blue' :
+          status?.toLowerCase() === 'completed' ? 'green' :
+          status?.toLowerCase() === 'cancelled' ? 'red' :
           'default'
         }>
-          {status?.charAt(0) + status?.slice(1).toLowerCase()}
+          {status?.charAt(0).toUpperCase() + status?.slice(1).toLowerCase()}
         </Tag>
       ),
     },
@@ -238,6 +316,7 @@ const Interviews = () => {
       <div className="row">
         <div className="col-md-12">
           <Spin spinning={loading}>
+            {console.log('Rendering interviews:', interviews)}
             <div className="table-responsive">
               <Table 
                 className="table-striped"
@@ -251,6 +330,10 @@ const Interviews = () => {
                   pageSizeOptions: ['10', '20', '50']
                 }}
                 onChange={handleTableChange}
+                onRow={(record) => ({
+                  onClick: () => navigate(`/recruitment/interviews/${record._id}`),
+                  style: { cursor: 'pointer' }
+                })}
               />
             </div>
           </Spin>
@@ -281,6 +364,22 @@ const Interviews = () => {
         .view-icons .ant-btn.ant-btn-default:hover {
           background: #E2E8F0;
           color: #2D3748;
+        }
+        .ant-table-tbody > tr:hover {
+          background-color: #f5f5f5;
+        }
+        .ant-table-tbody > tr > td {
+          transition: background 0.3s;
+        }
+        .ant-table-row {
+          cursor: pointer;
+        }
+        .ant-table-cell a {
+          color: inherit;
+          text-decoration: none;
+        }
+        .ant-table-cell a:hover {
+          color: #1890ff;
         }
       `}</style>
     </div>

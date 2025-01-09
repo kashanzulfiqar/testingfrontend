@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { Card, Row, Col, Button, Spin, message, Tag, Typography, Tabs, Select, Space, Modal, Form, Input, DatePicker, TimePicker, Empty, Avatar, Tooltip } from 'antd';
-import { MailOutlined, PhoneOutlined, EnvironmentOutlined, CalendarOutlined, CloseOutlined } from '@ant-design/icons';
+import { Card, Row, Col, Button, Spin, message, Tag, Typography, Tabs, Select, Space, Avatar, Tooltip, Rate, Collapse } from 'antd';
+import { MailOutlined, PhoneOutlined, EnvironmentOutlined, CalendarOutlined, PlusOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { apiServices } from '../../Services/apiServices';
 import { useSelector } from 'react-redux';
 import moment from 'moment';
+import CreateInterviewModal from './CreateInterviewModal';
+import CreateTaskModal from './CreateTaskModal';
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
+const { Panel } = Collapse;
 
 const CandidateDetails = () => {
   const { id } = useParams();
@@ -17,10 +20,12 @@ const CandidateDetails = () => {
   const [activeTab, setActiveTab] = useState('timeline');
   const authState = useSelector((state) => state.user.loginvalue);
   const [isInterviewModalVisible, setIsInterviewModalVisible] = useState(false);
-  const [interviewForm] = Form.useForm();
-  const [employees, setEmployees] = useState([]);
   const [interviews, setInterviews] = useState([]);
   const [loadingInterviews, setLoadingInterviews] = useState(false);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [isTaskModalVisible, setIsTaskModalVisible] = useState(false);
+  const [tasks, setTasks] = useState([]);
+  const [loadingTasks, setLoadingTasks] = useState(false);
 
   useEffect(() => {
     fetchCandidateDetails();
@@ -33,6 +38,12 @@ const CandidateDetails = () => {
   useEffect(() => {
     if (id && activeTab === 'interview') {
       fetchCandidateInterviews();
+    }
+  }, [id, activeTab]);
+
+  useEffect(() => {
+    if (id && activeTab === 'tasks') {
+      fetchCandidateTasks();
     }
   }, [id, activeTab]);
 
@@ -120,44 +131,7 @@ const CandidateDetails = () => {
     return Boolean(resume && resume.length > 0);
   };
 
-  const handleStatusChange = async (value) => {
-    try {
-      const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
-      
-      if (!token) {
-        message.error('Authentication required');
-        return;
-      }
-
-      const response = await apiServices(
-        "PATCH",
-        `candidate/${id}/status`,
-        { status: value },
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
-
-      if (response?.data?.status) {
-        message.success('Status updated successfully');
-        fetchCandidateDetails(); // Refresh the candidate data
-      } else {
-        message.error(response?.data?.message || 'Failed to update status');
-      }
-    } catch (error) {
-      console.error('Error updating status:', error);
-      message.error(error?.response?.data?.message || 'Error updating status');
-    }
-  };
-
-  const handleSendOffer = () => {
-    // Implement send offer logic here
-    message.info('Send offer functionality to be implemented');
-  };
-
-  const fetchEmployees = () => {
+  const handleStatusChange = async (newStatus) => {
     const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
     
     if (!token) {
@@ -165,117 +139,12 @@ const CandidateDetails = () => {
       return;
     }
 
-    const roles = ["employee", "interviewer", "admin"]; // Roles that can conduct interviews
-
-    apiServices(
-      "GET", 
-      `user/all-employees?roles=${JSON.stringify(roles)}`, 
-      null, 
-      {
-        access_token: {
-          accessToken: token
-        },
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      }
-    )
-      .then((res) => {
-        if (res.data.success === true) {
-          // Use the new response format and sort by fullName
-          const emps = res?.data?.data || [];
-          const sortedData = emps
-            .slice()
-            .sort((a, b) => a.fullName.localeCompare(b.fullName));
-          setEmployees(sortedData);
-        }
-      })
-      .catch((err) => {
-        message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
-              ? err?.response?.data?.validation?.body?.message
-              : "Error getting employees"
-          }`
-        );
-      });
-  };
-
-  const showTeamSearch = (val) => {
-    let dropdownValues = [];
-    employees.forEach((team) => {
-      dropdownValues.push(team.fullName.toLowerCase());
-    });
-  };
-
-  const handleCreateInterview = () => {
-    fetchEmployees(); // This will now fetch only eligible interviewers
-    interviewForm.setFieldsValue({
-      candidateName: `${candidate.firstName} ${candidate.lastName}`,
-      candidateEmail: candidate.email
-    });
-    setIsInterviewModalVisible(true);
-  };
-
-  const handleInterviewModalCancel = () => {
-    setIsInterviewModalVisible(false);
-    interviewForm.resetFields();
-  };
-
-  const handleInterviewSubmit = async (values) => {
     try {
-      const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
-      
-      if (!token) {
-        message.error('Authentication required');
-        return;
-      }
-
-      // Find the selected employee for interview name
-      const selectedEmployee = employees.find(emp => emp.fullName === values.interviewName);
-      if (!selectedEmployee) {
-        message.error('Selected interviewer not found');
-        return;
-      }
-
-      // Validate that interviewer is not in assignedTo
-      if (values.assignedTo.includes(selectedEmployee._id)) {
-        message.error('Main interviewer cannot be assigned as an additional interviewer');
-        return;
-      }
-
-      // Clean up the interview link if provided
-      const interviewLink = values.interviewLink ? 
-        values.interviewLink.startsWith('http') ? 
-          values.interviewLink : 
-          `https://${values.interviewLink}` 
-        : '';
-
-      // Validate interview link for online interviews
-      if (values.interviewType === 'ONLINE' && !interviewLink) {
-        message.error('Interview link is required for online interviews');
-        return;
-      }
-
-      const interviewData = {
-        candidateId: id,
-        candidateName: `${candidate.firstName} ${candidate.lastName}`,
-        candidateEmail: candidate.email,
-        interviewName: values.interviewName,
-        interviewerId: selectedEmployee._id,
-        interviewType: values.interviewType,
-        assignedTo: values.assignedTo,
-        interviewDate: values.interviewDate.format('YYYY-MM-DD'),
-        interviewTime: values.interviewTime.format('HH:mm'),
-        interviewLink: interviewLink
-      };
-
+      setUpdatingStatus(true);
       const response = await apiServices(
-        "POST",
-        'interview/create',
-        interviewData,
+        "PATCH",
+        `candidate/${id}/status`,
+        { status: newStatus },
         {
           access_token: {
             accessToken: token
@@ -287,27 +156,147 @@ const CandidateDetails = () => {
       );
 
       if (response?.data?.success) {
-        message.success('Interview created successfully');
-        setIsInterviewModalVisible(false);
-        interviewForm.resetFields();
-        fetchCandidateInterviews(); // Refresh the interviews list
+        message.success('Candidate status updated successfully');
+        setCandidate(prev => ({ ...prev, status: newStatus }));
       } else {
-        if (response?.data?.errors) {
-          const errorMessages = response.data.errors.map(err => `${err.field}: ${err.message}`).join('\n');
-          message.error(errorMessages);
-        } else {
-          message.error(response?.data?.message || 'Failed to create interview');
-        }
+        message.error(response?.data?.message || 'Failed to update status');
       }
     } catch (error) {
-      console.error('Error creating interview:', error);
-      if (error.response?.data?.errors) {
-        const errorMessages = error.response.data.errors.map(err => `${err.field}: ${err.message}`).join('\n');
-        message.error(errorMessages);
-      } else if (error.response?.data?.message) {
-        message.error(error.response.data.message);
+      console.error('Error updating candidate status:', error);
+      message.error('Error updating candidate status');
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
+  const handleSendOffer = () => {
+    // Implement send offer logic here
+    message.info('Send offer functionality to be implemented');
+  };
+
+  const fetchEmployees = async () => {
+    const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
+    
+    if (!token) {
+      message.error('Authentication required');
+      return;
+    }
+
+    const roles = ["employee", "interviewer", "admin"]; // Roles that can conduct interviews
+
+    try {
+      const response = await apiServices(
+        "GET", 
+        `user/all-employees?roles=${JSON.stringify(roles)}`, 
+        null, 
+        {
+          access_token: {
+            accessToken: token
+          },
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      if (response?.data?.success === true) {
+        // Use the new response format and sort by fullName
+        const emps = response?.data?.data || [];
+        const sortedData = emps
+          .slice()
+          .sort((a, b) => a.fullName.localeCompare(b.fullName));
+        setEmployees(sortedData);
       } else {
-        message.error('Error creating interview');
+        throw new Error(response?.data?.message || 'Failed to fetch employees');
+      }
+    } catch (error) {
+      console.error('Error fetching employees:', error);
+      message.error(
+        error?.response?.data?.message || 
+        error?.message || 
+        'Error getting employees'
+      );
+      throw error; // Re-throw to be caught by handleCreateInterview
+    }
+  };
+
+  const showTeamSearch = (val) => {
+    let dropdownValues = [];
+    employees.forEach((team) => {
+      dropdownValues.push(team.fullName.toLowerCase());
+    });
+  };
+
+  const handleCreateInterview = () => {
+    setIsInterviewModalVisible(true);
+  };
+
+  const handleInterviewModalCancel = () => {
+    setIsInterviewModalVisible(false);
+  };
+
+  const handleInterviewSubmit = async (values) => {
+    try {
+      const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
+      
+      if (!token) {
+        message.error('Authentication required');
+        return;
+      }
+
+      // Validate meeting link for online interviews
+      if (values.interviewType === 'ONLINE' && !values.meetingLink) {
+        message.error('Meeting link is required for online interviews');
+        return;
+      }
+
+      const formattedDate = moment(values.interviewDate).format('YYYY-MM-DD');
+      const formattedTime = moment(values.interviewTime).format('HH:mm');
+
+      const payload = {
+        candidateId: id,
+        interviewerId: values.assignedTo,     // ID of the employee selected in interviewer dropdown
+        interviewTitle: values.interviewTitle, // Value from interview title dropdown (Initial Interview, etc)
+        interviewType: values.interviewType,  // "ONLINE" or "IN_PERSON"
+        assignTo: values.assignTo,            // Array of additional interviewer IDs
+        interviewDate: formattedDate,         // YYYY-MM-DD
+        interviewTime: formattedTime,         // HH:mm
+        meetingLink: values.meetingLink || '' // Required for ONLINE interviews
+      };
+
+      console.log('Interview payload:', payload); // For debugging
+
+      const response = await apiServices(
+        "POST",
+        'interview/create',
+        payload,
+        {
+          access_token: {
+            accessToken: token
+          },
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      if (response?.data?.success) {
+        message.success('Interview scheduled successfully');
+        fetchCandidateInterviews();
+        handleInterviewModalCancel(); // Close the modal on success
+      } else {
+        throw new Error(response?.data?.message || 'Failed to schedule interview');
+      }
+    } catch (error) {
+      console.error('Error scheduling interview:', error);
+      // Handle validation errors specifically
+      if (error.response?.data?.errors) {
+        const errorMessages = error.response.data.errors
+          .map(err => `${err.field}: ${err.message}`)
+          .join('\n');
+        message.error(errorMessages);
+      } else {
+        message.error(error?.response?.data?.message || error?.message || 'Error scheduling interview');
       }
     }
   };
@@ -376,6 +365,7 @@ const CandidateDetails = () => {
       );
 
       if (response?.data?.success) {
+        console.log('Interview data:', response.data.data); // Debug log
         setInterviews(response.data.data);
       } else {
         if (response?.data?.message === 'Invalid interview ID format') {
@@ -397,6 +387,117 @@ const CandidateDetails = () => {
     }
   };
 
+  const handleCreateTask = () => {
+    setIsTaskModalVisible(true);
+  };
+
+  const handleTaskModalCancel = () => {
+    setIsTaskModalVisible(false);
+  };
+
+  const handleTaskSubmit = async (values) => {
+    const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
+    
+    if (!token) {
+      message.error('Authentication required');
+      return;
+    }
+
+    try {
+      // Create FormData for file upload
+      const formData = new FormData();
+      
+      // Add task file if exists
+      if (values.taskFile?.length > 0) {
+        formData.append('file', values.taskFile[0].originFileObj);
+      }
+
+      // Add all non-file fields
+      formData.append('candidateId', id);
+      formData.append('taskName', values.taskName);
+      formData.append('taskReviewers', JSON.stringify(values.taskReviewer));
+      formData.append('lastDateOfSubmission', moment(values.lastDateOfSubmission).format('YYYY-MM-DD'));
+      formData.append('taskDuration', values.taskDuration);
+      formData.append('description', values.description);
+
+      const response = await apiServices(
+        "POST",
+        'task/create',
+        formData,
+        {
+          access_token: {
+            accessToken: token
+          },
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+
+      if (response?.data?.success) {
+        message.success('Task created successfully');
+        setIsTaskModalVisible(false);
+        // Optionally fetch updated task list
+        if (activeTab === 'tasks') {
+          fetchCandidateTasks();
+        }
+      } else {
+        throw new Error(response?.data?.message || 'Failed to create task');
+      }
+    } catch (error) {
+      console.error('Error creating task:', error);
+      if (error.response?.status === 401) {
+        message.error('Session expired. Please login again');
+        navigate('/login');
+      } else if (error.response?.status === 413) {
+        message.error('File size too large. Maximum size is 5MB');
+      } else if (error.response?.status === 400) {
+        message.error(error.response?.data?.message || 'Invalid input data');
+      } else {
+        message.error('Error creating task. Please try again');
+      }
+    }
+  };
+
+  const fetchCandidateTasks = async () => {
+    setLoadingTasks(true);
+    try {
+      const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
+      
+      if (!token) {
+        message.error('Authentication required');
+        return;
+      }
+
+      const response = await apiServices(
+        "GET",
+        `task/candidate/${id}`,
+        null,
+        {
+          access_token: {
+            accessToken: token
+          },
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      if (response?.data?.success) {
+        console.log('Tasks data:', response.data.data);
+        setTasks(response.data.data);
+      } else {
+        message.error(response?.data?.message || 'Failed to fetch tasks');
+      }
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+      message.error('Error fetching tasks');
+    } finally {
+      setLoadingTasks(false);
+    }
+  };
+
   const renderInterviewContent = () => {
     if (loadingInterviews) {
       return (
@@ -409,79 +510,389 @@ const CandidateDetails = () => {
     return (
       <div className="interview-content">
         <div style={{ position: 'absolute', top: '16px', right: '24px' }}>
-          <Space size="middle">
-            <Button 
-              type="text" 
-              style={{ color: '#ff9b44' }}
-              icon={<CalendarOutlined />}
-              onClick={handleCreateInterview}
-            >
-              Create Interview
-            </Button>
-            <Button 
-              type="text"
-              style={{ color: '#ff9b44' }}
-              icon={<CalendarOutlined />}
-            >
-              Create Task
-            </Button>
-          </Space>
+          <Button 
+            type="text" 
+            style={{ color: '#ff9b44' }}
+            icon={<CalendarOutlined />}
+            onClick={handleCreateInterview}
+          >
+            Create Interview
+          </Button>
         </div>
         
-        {interviews.length > 0 ? (
-          <div style={{ marginTop: '60px' }}>
-            {interviews.map((interview) => (
-              <Card 
-                key={interview._id} 
-                style={{ marginBottom: '16px' }}
-                className="interview-card"
-              >
-                <Row gutter={16}>
-                  <Col span={16}>
-                    <h4>Interview with {interview.interviewName}</h4>
-                    <p>
-                      <CalendarOutlined /> {moment(interview.interviewDate).format('DD MMM YYYY')} at {interview.interviewTime}
-                    </p>
-                    <p>Type: {interview.interviewType === 'ONLINE' ? 'Online' : 'In Person'}</p>
-                    {interview.interviewLink && (
-                      <p>Link: <a href={interview.interviewLink} target="_blank" rel="noopener noreferrer">{interview.interviewLink}</a></p>
-                    )}
-                  </Col>
-                  <Col span={8} style={{ textAlign: 'right' }}>
-                    <Space direction="vertical">
+        <div style={{ marginTop: '60px' }}>
+          {interviews.length > 0 ? (
+            <div>
+              {interviews.map((interview) => (
+                <Card 
+                  key={interview._id} 
+                  style={{ marginBottom: '16px' }}
+                  className="interview-card"
+                >
+                  <Row gutter={16}>
+                    <Col span={16}>
+                      <h4 className="interview-title">
+                        {interview.interviewTitle || 'Untitled Interview'}
+                      </h4>
+                      <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                        <div>
+                          <Text type="secondary">Interview With:</Text>{' '}
+                          <Text strong>{interview.interviewerId?.fullName}</Text>
+                        </div>
+                        <div>
+                          <Text type="secondary">Date & Time:</Text>{' '}
+                          <Text>{moment(interview.interviewDate).format('DD MMM YYYY')} at {interview.interviewTime}</Text>
+                        </div>
+                        <div>
+                          <Text type="secondary">Type:</Text>{' '}
+                          <Text>{interview.interviewType === 'ONLINE' ? 'Online' : 'In Person'}</Text>
+                        </div>
+                        {interview.interviewType === 'ONLINE' && interview.interviewLink && (
+                          <div>
+                            <Text type="secondary">Meeting Link:</Text>{' '}
+                            <Button 
+                              type="link" 
+                              href={interview.interviewLink} 
+                              target="_blank"
+                              style={{ padding: 0 }}
+                            >
+                              Join Meeting
+                            </Button>
+                          </div>
+                        )}
+                      </Space>
+                    </Col>
+                    <Col span={8} style={{ textAlign: 'right' }}>
                       <Select
                         value={interview.status}
                         style={{ width: 120 }}
                         onChange={(value) => updateInterviewStatus(interview._id, value)}
+                        className={`status-${interview.status?.toLowerCase()}`}
                       >
                         <Select.Option value="scheduled">Scheduled</Select.Option>
                         <Select.Option value="completed">Completed</Select.Option>
                         <Select.Option value="cancelled">Cancelled</Select.Option>
                         <Select.Option value="rescheduled">Rescheduled</Select.Option>
                       </Select>
+                    </Col>
+                  </Row>
+
+                  {/* Additional Interviewers */}
+                  {interview.assignedTo?.length > 0 && (
+                    <div style={{ marginTop: '16px' }}>
+                      <Text type="secondary">Additional Interviewers:</Text>
+                      <div style={{ marginTop: '8px' }}>
+                        <Avatar.Group maxCount={3}>
+                          {interview.assignedTo?.map((interviewer) => (
+                            <Tooltip key={interviewer._id} title={interviewer.fullName}>
+                              <Avatar src={interviewer.imageUrl}>
+                                {interviewer.fullName?.split(' ').map(n => n[0]).join('')}
+                              </Avatar>
+                            </Tooltip>
+                          ))}
+                        </Avatar.Group>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Latest Feedback Section */}
+                  {interview.latestFeedback && (
+                    <div style={{ marginTop: '16px', borderTop: '1px solid #f0f0f0', paddingTop: '16px' }}>
+                      <div className="d-flex justify-content-between align-items-center mb-3">
+                        <Text strong>Latest Feedback</Text>
+                        <Tag 
+                          color={
+                            interview.latestFeedback.recommendation === 'Strong Yes' ? 'green' :
+                            interview.latestFeedback.recommendation === 'Yes' ? 'cyan' :
+                            interview.latestFeedback.recommendation === 'No' ? 'orange' :
+                            'red'
+                          }
+                        >
+                          {interview.latestFeedback.recommendation}
+                        </Tag>
+                      </div>
+                      <Card size="small">
+                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+                          <Avatar 
+                            src={interview.latestFeedback.submittedBy?.imageUrl}
+                            style={{ marginRight: '8px' }}
+                          >
+                            {interview.latestFeedback.submittedBy?.fullName?.split(' ').map(n => n[0]).join('')}
+                          </Avatar>
+                          <div>
+                            <Text strong>{interview.latestFeedback.submittedBy?.fullName}</Text>
+                            <br />
+                            <Text type="secondary">{moment(interview.latestFeedback.createdAt).format('DD MMM YYYY')}</Text>
+                          </div>
+                        </div>
+                        <Row gutter={[16, 16]}>
+                          <Col span={8}>
+                            <Text type="secondary">Technical Skills (Programming):</Text>
+                            <div><Rate disabled defaultValue={interview.latestFeedback.ratings.technicalSkills1} /></div>
+                          </Col>
+                          <Col span={8}>
+                            <Text type="secondary">Technical Skills (System Design):</Text>
+                            <div><Rate disabled defaultValue={interview.latestFeedback.ratings.technicalSkills2} /></div>
+                          </Col>
+                          <Col span={8}>
+                            <Text type="secondary">Technical Skills (Problem Solving):</Text>
+                            <div><Rate disabled defaultValue={interview.latestFeedback.ratings.technicalSkills3} /></div>
+                          </Col>
+                        </Row>
+                        <Row gutter={[16, 16]} style={{ marginTop: '8px' }}>
+                          <Col span={8}>
+                            <Text type="secondary">Behavior:</Text>
+                            <div><Rate disabled defaultValue={interview.latestFeedback.ratings.behavior} /></div>
+                          </Col>
+                          <Col span={8}>
+                            <Text type="secondary">Soft Skills:</Text>
+                            <div><Rate disabled defaultValue={interview.latestFeedback.ratings.softSkills} /></div>
+                          </Col>
+                        </Row>
+                      </Card>
+                    </div>
+                  )}
+
+                  {/* All Feedback Section */}
+                  {interview.feedback && interview.feedback.length > 1 && (
+                    <div style={{ marginTop: '16px' }}>
+                      <Collapse ghost>
+                        <Collapse.Panel header={`View All Feedback (${interview.feedback.length})`} key="1">
+                          {interview.feedback.slice(1).map((feedback, index) => (
+                            <Card key={index} size="small" style={{ marginTop: '8px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                                <Avatar 
+                                  src={feedback.submittedBy?.imageUrl}
+                                  style={{ marginRight: '8px' }}
+                                >
+                                  {feedback.submittedBy?.fullName?.split(' ').map(n => n[0]).join('')}
+                                </Avatar>
+                                <div>
+                                  <Text strong>{feedback.submittedBy?.fullName}</Text>
+                                  <br />
+                                  <Text type="secondary">{moment(feedback.createdAt).format('DD MMM YYYY')}</Text>
+                                </div>
+                                <Tag 
+                                  color={
+                                    feedback.recommendation === 'Strong Yes' ? 'green' :
+                                    feedback.recommendation === 'Yes' ? 'cyan' :
+                                    feedback.recommendation === 'No' ? 'orange' :
+                                    'red'
+                                  }
+                                  style={{ marginLeft: 'auto' }}
+                                >
+                                  {feedback.recommendation}
+                                </Tag>
+                              </div>
+                              <Row gutter={[16, 16]}>
+                                <Col span={8}>
+                                  <Text type="secondary">Technical Skills (Programming):</Text>
+                                  <div><Rate disabled defaultValue={feedback.ratings.technicalSkills1} /></div>
+                                </Col>
+                                <Col span={8}>
+                                  <Text type="secondary">Technical Skills (System Design):</Text>
+                                  <div><Rate disabled defaultValue={feedback.ratings.technicalSkills2} /></div>
+                                </Col>
+                                <Col span={8}>
+                                  <Text type="secondary">Technical Skills (Problem Solving):</Text>
+                                  <div><Rate disabled defaultValue={feedback.ratings.technicalSkills3} /></div>
+                                </Col>
+                              </Row>
+                              <Row gutter={[16, 16]} style={{ marginTop: '8px' }}>
+                                <Col span={8}>
+                                  <Text type="secondary">Behavior:</Text>
+                                  <div><Rate disabled defaultValue={feedback.ratings.behavior} /></div>
+                                </Col>
+                                <Col span={8}>
+                                  <Text type="secondary">Soft Skills:</Text>
+                                  <div><Rate disabled defaultValue={feedback.ratings.softSkills} /></div>
+                                </Col>
+                              </Row>
+                            </Card>
+                          ))}
+                        </Collapse.Panel>
+                      </Collapse>
+                    </div>
+                  )}
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div style={{ textAlign: 'center' }}>
+              <Text type="secondary">No interviews scheduled</Text>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const updateTaskStatus = async (taskId, newStatus) => {
+    try {
+      const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
+      
+      if (!token) {
+        message.error('Authentication required');
+        return;
+      }
+
+      const response = await apiServices(
+        "PATCH",
+        `task/${taskId}/status`,
+        { status: newStatus },
+        {
+          access_token: {
+            accessToken: token
+          },
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      if (response?.data?.success) {
+        message.success('Task status updated successfully');
+        fetchCandidateTasks(); // Refresh the tasks list
+      } else {
+        message.error(response?.data?.message || 'Failed to update task status');
+      }
+    } catch (error) {
+      console.error('Error updating task status:', error);
+      message.error('Error updating task status');
+    }
+  };
+
+  const renderTaskContent = () => {
+    if (loadingTasks) {
+      return (
+        <div style={{ textAlign: 'center', padding: '20px' }}>
+          <Spin />
+        </div>
+      );
+    }
+
+    return (
+      <div className="task-content">
+        <div style={{ position: 'absolute', top: '16px', right: '24px' }}>
+          <Button 
+            type="text" 
+            style={{ color: '#ff9b44' }}
+            icon={<PlusOutlined />}
+            onClick={handleCreateTask}
+          >
+            Create Task
+          </Button>
+        </div>
+        
+        <div style={{ marginTop: '60px' }}>
+          {tasks.length > 0 ? (
+            tasks.map((task) => (
+              <Card 
+                key={task._id} 
+                style={{ marginBottom: '16px' }}
+                className="task-card"
+              >
+                <Row gutter={16}>
+                  <Col span={16}>
+                    <h4 className="task-title">
+                      {task.taskName}
+                    </h4>
+                    <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                      <div>
+                        <Text type="secondary">Task Reviewers:</Text>{' '}
+                        <Avatar.Group maxCount={3}>
+                          {task.taskReviewers?.map((reviewer) => (
+                            <Tooltip key={reviewer._id} title={reviewer.fullName}>
+                              <Avatar src={reviewer.imageUrl}>
+                                {reviewer.fullName?.split(' ').map(n => n[0]).join('')}
+                              </Avatar>
+                            </Tooltip>
+                          ))}
+                        </Avatar.Group>
+                      </div>
+                      <div>
+                        <Text type="secondary">Due Date:</Text>{' '}
+                        <Text>{moment(task.lastDateOfSubmission).format('DD MMM YYYY')}</Text>
+                      </div>
+                      <div>
+                        <Text type="secondary">Duration:</Text>{' '}
+                        <Text>{task.taskDuration} days</Text>
+                      </div>
+                      {task.taskFile && (
+                        <div>
+                          <Text type="secondary">Task File:</Text>{' '}
+                          <Button 
+                            type="link" 
+                            href={task.taskFile.imageUrl} 
+                            target="_blank"
+                            style={{ padding: 0 }}
+                          >
+                            {task.taskFile.fileName}
+                          </Button>
+                        </div>
+                      )}
+                      {task.submittedFile && (
+                        <div>
+                          <Text type="secondary">Submitted File:</Text>{' '}
+                          <Button 
+                            type="link" 
+                            href={task.submittedFile.imageUrl} 
+                            target="_blank"
+                            style={{ padding: 0 }}
+                          >
+                            {task.submittedFile.fileName}
+                          </Button>
+                        </div>
+                      )}
                     </Space>
                   </Col>
+                  <Col span={8} style={{ textAlign: 'right' }}>
+                    <Select
+                      value={task.status}
+                      style={{ width: 120 }}
+                      onChange={(value) => updateTaskStatus(task._id, value)}
+                      className={`status-${task.status?.toLowerCase()}`}
+                    >
+                      <Select.Option value="PENDING">Pending</Select.Option>
+                      <Select.Option value="SUBMITTED">Submitted</Select.Option>
+                      <Select.Option value="COMPLETED">Completed</Select.Option>
+                      <Select.Option value="CANCELLED">Cancelled</Select.Option>
+                    </Select>
+                  </Col>
                 </Row>
-                <div style={{ marginTop: '16px' }}>
-                  <Text type="secondary">Additional Interviewers:</Text>
-                  <div style={{ marginTop: '8px' }}>
-                    <Avatar.Group maxCount={3}>
-                      {interview.assignedTo.map((interviewer) => (
-                        <Tooltip key={interviewer._id} title={interviewer.fullName}>
-                          <Avatar src={interviewer.imageUrl || user_icon} />
-                        </Tooltip>
-                      ))}
-                    </Avatar.Group>
+
+                {task.feedback && (
+                  <div style={{ marginTop: '16px', borderTop: '1px solid #f0f0f0', paddingTop: '16px' }}>
+                    <Text strong>Feedback</Text>
+                    <Card size="small" style={{ marginTop: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                        <Avatar 
+                          src={task.feedback.submittedBy?.imageUrl}
+                          style={{ marginRight: '8px' }}
+                        >
+                          {task.feedback.submittedBy?.fullName?.split(' ').map(n => n[0]).join('')}
+                        </Avatar>
+                        <div>
+                          <Text strong>{task.feedback.submittedBy?.fullName}</Text>
+                          <br />
+                          <Text type="secondary">{moment(task.feedback.createdAt).format('DD MMM YYYY')}</Text>
+                        </div>
+                      </div>
+                      <div>
+                        <Text type="secondary">Comments:</Text>
+                        <div style={{ marginTop: '4px' }}>{task.feedback.comments}</div>
+                      </div>
+                    </Card>
                   </div>
-                </div>
+                )}
               </Card>
-            ))}
-          </div>
-        ) : (
-          <div style={{ marginTop: '60px', textAlign: 'center' }}>
-            <Text type="secondary">No interviews scheduled</Text>
-          </div>
-        )}
+            ))
+          ) : (
+            <div style={{ textAlign: 'center' }}>
+              <Text type="secondary">No tasks found</Text>
+            </div>
+          )}
+        </div>
       </div>
     );
   };
@@ -512,28 +923,45 @@ const CandidateDetails = () => {
 
   return (
     <div className="content container-fluid">
-      {/* Header Section */}
+      {/* Header */}
       <div className="page-header">
         <div className="row align-items-center">
           <div className="col">
-            <h3 className="page-title">Candidate</h3>
-            <ul className="breadcrumb">
-              <li className="breadcrumb-item"><Link to="/recruitment/dashboard">Dashboard</Link></li>
-              <li className="breadcrumb-item"><Link to="/recruitment/candidates">Candidates</Link></li>
-              <li className="breadcrumb-item active">{candidate.firstName} {candidate.lastName}</li>
-            </ul>
+            <div className="d-flex align-items-center">
+              <Button 
+                icon={<ArrowLeftOutlined />} 
+                type="link" 
+                onClick={() => navigate('/recruitment/candidates')}
+                style={{ marginRight: '16px', padding: 0 }}
+              />
+              <div>
+                <h3 className="page-title mb-0">{candidate?.firstName} {candidate?.lastName}</h3>
+                <ul className="breadcrumb">
+                  <li className="breadcrumb-item"><Link to="/recruitment/dashboard">Dashboard</Link></li>
+                  <li className="breadcrumb-item"><Link to="/recruitment/candidates">Candidates</Link></li>
+                  <li className="breadcrumb-item active">{candidate?.firstName} {candidate?.lastName}</li>
+                </ul>
+              </div>
+            </div>
           </div>
           <div className="col-auto float-end ms-auto">
             <Space>
               <Select
-                defaultValue={candidate?.status}
                 value={candidate?.status}
                 onChange={handleStatusChange}
+                loading={updatingStatus}
                 style={{ 
-                  width: 'auto', 
-                  minWidth: '120px',
-                  fontSize: '13px'
+                  width: '150px',
+                  fontSize: '13px',
+                  background: candidate?.status?.toLowerCase() === 'screening' ? '#FFF7E6' : 'transparent'
                 }}
+                className={`status-${candidate?.status?.toLowerCase()}`}
+                dropdownStyle={{ 
+                  minWidth: '150px',
+                  borderRadius: '4px'
+                }}
+                dropdownMatchSelectWidth={false}
+                popupClassName="status-dropdown"
               >
                 <Select.Option value="NEW">New</Select.Option>
                 <Select.Option value="SCREENING">Screening</Select.Option>
@@ -543,8 +971,8 @@ const CandidateDetails = () => {
               </Select>
               <Button 
                 type="primary" 
-                onClick={handleSendOffer}
-                style={{ background: '#FFA500', borderColor: '#FFA500' }}
+                onClick={() => message.info('Send offer functionality coming soon')}
+                style={{ background: '#FF9B44', borderColor: '#FF9B44' }}
               >
                 Send Offer
               </Button>
@@ -723,233 +1151,31 @@ const CandidateDetails = () => {
               <TabPane tab="Interview" key="interview">
                 {renderInterviewContent()}
               </TabPane>
+              <TabPane tab="Tasks" key="tasks">
+                {renderTaskContent()}
+              </TabPane>
             </Tabs>
           </Card>
         </div>
       </div>
 
-      {/* Interview Modal */}
-      <Modal
-        title={
-          <div style={{ 
-            fontSize: '18px', 
-            fontWeight: '500',
-            marginBottom: '20px'
-          }}>
-            Add New Candidate
-            <Button 
-              type="text" 
-              icon={<CloseOutlined />} 
-              onClick={handleInterviewModalCancel}
-              style={{ 
-                position: 'absolute',
-                right: 20,
-                top: 20,
-                color: '#333'
-              }}
-            />
-          </div>
-        }
-        open={isInterviewModalVisible}
+      {/* Replace the old Modal with the new CreateInterviewModal component */}
+      <CreateInterviewModal
+        isVisible={isInterviewModalVisible}
         onCancel={handleInterviewModalCancel}
-        footer={null}
-        width={600}
-        className="interview-modal"
-      >
-        <Form
-          form={interviewForm}
-          layout="vertical"
-          onFinish={handleInterviewSubmit}
-        >
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                label={<span style={{ color: '#333' }}>Candidate Name <span style={{ color: 'red' }}>*</span></span>}
-                name="candidateName"
-                rules={[{ required: true, message: 'Please enter candidate name' }]}
-                initialValue={`${candidate?.firstName} ${candidate?.lastName}`}
-              >
-                <Input 
-                  placeholder="Enter Name" 
-                  disabled 
-                  style={{ backgroundColor: '#f9f9f9' }}
-                />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                label={<span style={{ color: '#333' }}>Candidate Email <span style={{ color: 'red' }}>*</span></span>}
-                name="candidateEmail"
-                rules={[{ required: true, message: 'Please enter candidate email' }]}
-                initialValue={candidate?.email}
-              >
-                <Input 
-                  placeholder="Enter Email" 
-                  disabled
-                  style={{ backgroundColor: '#f9f9f9' }}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
+        onSubmit={handleInterviewSubmit}
+        candidate={candidate}
+        authState={authState}
+      />
 
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                label={<span style={{ color: '#333' }}>Interview Name <span style={{ color: 'red' }}>*</span></span>}
-                name="interviewName"
-                rules={[{ required: true, message: 'Please select interviewer' }]}
-              >
-                <Select
-                  showSearch
-                  onSearch={(val) => {
-                    showTeamSearch(val);
-                  }}
-                  filterOption={(input, option) =>
-                    option.children
-                      ?.toLowerCase()
-                      ?.indexOf(input?.toLowerCase()) >= 0
-                  }
-                  optionFilterProp="children"
-                  notFoundContent={
-                    <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                  }
-                  dropdownRender={(menu) => <>{menu}</>}
-                  className="custom-select custom-normal"
-                  placeholder="Select interviewer"
-                >
-                  {employees?.map((employee) => (
-                    <Select.Option
-                      key={employee._id}
-                      value={employee.fullName}
-                    >
-                      {employee.fullName}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                label={<span style={{ color: '#333' }}>Interview Type <span style={{ color: 'red' }}>*</span></span>}
-                name="interviewType"
-                rules={[{ required: true, message: 'Please select interview type' }]}
-              >
-                <Select placeholder="Select interview type">
-                  <Select.Option value="ONLINE">Online</Select.Option>
-                  <Select.Option value="IN_PERSON">In Person</Select.Option>
-                </Select>
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                label={<span style={{ color: '#333' }}>Assign to <span style={{ color: 'red' }}>*</span></span>}
-                name="assignedTo"
-                rules={[{ required: true, message: 'Please assign interviewer' }]}
-              >
-                <Select
-                  showSearch
-                  onSearch={(val) => {
-                    showTeamSearch(val);
-                  }}
-                  filterOption={(input, option) => 
-                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                  }
-                  optionFilterProp="children"
-                  notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
-                  dropdownRender={(menu) => (
-                    <>{menu}</>
-                  )}
-                  mode="multiple"
-                  placeholder="Select interviewers"
-                  className="customselect-height custom-select"
-                >
-                  {employees?.map((employee) => (
-                    <Select.Option
-                      key={employee._id}
-                      value={employee._id}
-                    >
-                      {employee.fullName}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                label={<span style={{ color: '#333' }}>Interview Date <span style={{ color: 'red' }}>*</span></span>}
-                name="interviewDate"
-                rules={[
-                  { required: true, message: 'Please select date' },
-                  {
-                    validator: (_, value) => {
-                      if (value && value.isBefore(moment().startOf('day'))) {
-                        return Promise.reject('Interview date cannot be in the past');
-                      }
-                      return Promise.resolve();
-                    }
-                  }
-                ]}
-              >
-                <DatePicker 
-                  style={{ width: '100%' }} 
-                  placeholder="Select Date"
-                  disabledDate={(current) => {
-                    return current && current < moment().startOf('day');
-                  }}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                label={<span style={{ color: '#333' }}>Interview Time <span style={{ color: 'red' }}>*</span></span>}
-                name="interviewTime"
-                rules={[{ required: true, message: 'Please select time' }]}
-              >
-                <TimePicker 
-                  style={{ width: '100%' }} 
-                  placeholder="Select Status"
-                  format="HH:mm"
-                />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                label={<span style={{ color: '#333' }}>Interview Link</span>}
-                name="interviewLink"
-              >
-                <Input placeholder="www.zoom.com" />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'flex-end',
-            gap: '10px',
-            marginTop: '20px'
-          }}>
-            <Button onClick={handleInterviewModalCancel}>
-              Reset
-            </Button>
-            <Button 
-              type="primary" 
-              htmlType="submit"
-              style={{ 
-                background: '#ff9b44',
-                borderColor: '#ff9b44'
-              }}
-            >
-              Create Interview
-            </Button>
-          </div>
-        </Form>
-      </Modal>
+      {/* Add CreateTaskModal */}
+      <CreateTaskModal
+        visible={isTaskModalVisible}
+        onCancel={handleTaskModalCancel}
+        onSubmit={handleTaskSubmit}
+        candidate={candidate}
+        authState={authState}
+      />
 
       <style jsx>{`
         .info-card {
@@ -1155,6 +1381,154 @@ const CandidateDetails = () => {
         .ant-select-focused:not(.ant-select-disabled).ant-select:not(.ant-select-customize-input) .ant-select-selector {
           border-color: #ff9b44;
           box-shadow: 0 0 0 2px rgba(255, 155, 68, 0.2);
+        }
+
+        .status-scheduled .ant-select-selector {
+          background-color: #e6f7ff !important;
+          border-color: #91d5ff !important;
+          color: #1890ff !important;
+        }
+        
+        .status-completed .ant-select-selector {
+          background-color: #f6ffed !important;
+          border-color: #b7eb8f !important;
+          color: #52c41a !important;
+        }
+        
+        .status-cancelled .ant-select-selector {
+          background-color: #fff1f0 !important;
+          border-color: #ffa39e !important;
+          color: #f5222d !important;
+        }
+        
+        .status-rescheduled .ant-select-selector {
+          background-color: #fff7e6 !important;
+          border-color: #ffd591 !important;
+          color: #fa8c16 !important;
+        }
+
+        .status-new .ant-select-selector {
+          background-color: #e6f7ff !important;
+          border-color: #91d5ff !important;
+          color: #1890ff !important;
+        }
+        
+        .status-screening .ant-select-selector {
+          background-color: #fff7e6 !important;
+          border-color: #ffd591 !important;
+          color: #fa8c16 !important;
+        }
+        
+        .status-shortlisted .ant-select-selector {
+          background-color: #f6ffed !important;
+          border-color: #b7eb8f !important;
+          color: #52c41a !important;
+        }
+        
+        .status-hired .ant-select-selector {
+          background-color: #f9f0ff !important;
+          border-color: #d3adf7 !important;
+          color: #722ed1 !important;
+        }
+        
+        .status-rejected .ant-select-selector {
+          background-color: #fff1f0 !important;
+          border-color: #ffa39e !important;
+          color: #f5222d !important;
+        }
+
+        .status-dropdown {
+          padding: 8px;
+        }
+        
+        .status-dropdown .ant-select-item {
+          padding: 8px 12px;
+          border-radius: 4px;
+          margin-bottom: 4px;
+        }
+        
+        .status-dropdown .ant-select-item:hover {
+          background-color: #f5f5f5;
+        }
+        
+        .status-dropdown .ant-select-item-option-selected {
+          background-color: #e6f7ff;
+          font-weight: 500;
+        }
+        
+        .status-new .ant-select-selector {
+          background-color: #e6f7ff !important;
+          border-color: #91d5ff !important;
+          color: #1890ff !important;
+        }
+        
+        .status-screening .ant-select-selector {
+          background-color: #fff7e6 !important;
+          border-color: #ffd591 !important;
+          color: #fa8c16 !important;
+        }
+        
+        .status-shortlisted .ant-select-selector {
+          background-color: #f6ffed !important;
+          border-color: #b7eb8f !important;
+          color: #52c41a !important;
+        }
+        
+        .status-hired .ant-select-selector {
+          background-color: #f9f0ff !important;
+          border-color: #d3adf7 !important;
+          color: #722ed1 !important;
+        }
+        
+        .status-rejected .ant-select-selector {
+          background-color: #fff1f0 !important;
+          border-color: #ffa39e !important;
+          color: #f5222d !important;
+        }
+        
+        .ant-select-focused:not(.ant-select-disabled).ant-select:not(.ant-select-customize-input) .ant-select-selector {
+          border-color: #ff9b44 !important;
+          box-shadow: 0 0 0 2px rgba(255, 155, 68, 0.2) !important;
+        }
+        
+        .ant-select:not(.ant-select-disabled):hover .ant-select-selector {
+          border-color: #ff9b44 !important;
+        }
+
+        .task-card {
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+          border-radius: 8px;
+        }
+        
+        .task-card .task-title {
+          font-size: 16px;
+          font-weight: 600;
+          color: #333;
+          margin-bottom: 12px;
+        }
+
+        .status-pending .ant-select-selector {
+          background-color: #fff7e6 !important;
+          border-color: #ffd591 !important;
+          color: #fa8c16 !important;
+        }
+        
+        .status-submitted .ant-select-selector {
+          background-color: #e6f7ff !important;
+          border-color: #91d5ff !important;
+          color: #1890ff !important;
+        }
+        
+        .status-completed .ant-select-selector {
+          background-color: #f6ffed !important;
+          border-color: #b7eb8f !important;
+          color: #52c41a !important;
+        }
+        
+        .status-cancelled .ant-select-selector {
+          background-color: #fff1f0 !important;
+          border-color: #ffa39e !important;
+          color: #f5222d !important;
         }
       `}</style>
     </div>

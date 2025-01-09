@@ -288,25 +288,7 @@ const JobDetails = () => {
           )}
         </div>
       ),
-    },
-    {
-      key: 'interview',
-      label: (
-        <div style={{ padding: '8px 0' }}>
-          <span style={{ fontSize: '16px', fontWeight: 500 }}>Interview</span>
-        </div>
-      ),
-      children: <div>Interview schedule and details will be shown here</div>,
-    },
-    {
-      key: 'timeline',
-      label: (
-        <div style={{ padding: '8px 0' }}>
-          <span style={{ fontSize: '16px', fontWeight: 500 }}>Timeline</span>
-        </div>
-      ),
-      children: <div>Job timeline and updates will be shown here</div>,
-    },
+    }
   ];
 
   if (loading) {

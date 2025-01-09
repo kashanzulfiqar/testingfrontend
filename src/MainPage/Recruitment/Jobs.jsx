@@ -543,7 +543,7 @@ const Jobs = () => {
               onClick={handleAddJob}
               icon={<UserAddOutlined />}
             >
-              Add Candidate
+              Add Job
             </Button>
           </div>
         </div>
