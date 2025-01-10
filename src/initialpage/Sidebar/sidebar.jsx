@@ -11,7 +11,7 @@ import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 
 const Sidebar = (props) => {
-  const { t, i18n } = useTranslation(); 
+  const { t, i18n } = useTranslation();
   const location = useLocation();
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
   const pending_counter = useSelector(
@@ -26,7 +26,7 @@ const Sidebar = (props) => {
       sessionStorage.removeItem("active_setting");
     }
   }, [location]);
-  
+
   const MenuMore = () => {
     document.getElementById("more-menu-hidden").classList.toggle("hidden");
   };
@@ -45,7 +45,7 @@ const Sidebar = (props) => {
       setSideMenu(oldOpenMenu);
     }
   }, [props.barMenu]);
-  
+
   const mouseHandle = (type) => {
     if (document.body.classList.contains("mini-sidebar")) {
       document.body.classList.toggle("expand-menu");
@@ -76,7 +76,7 @@ const Sidebar = (props) => {
   // element.addEventListener('mouseover', function() {
   //   document.body.classList.toggle('expand-menu');
   // });
-  
+
   // element.addEventListener('mouseout', function() {
   //   document.body.classList.toggle('expand-menu');
   // });
@@ -86,7 +86,7 @@ const Sidebar = (props) => {
 
   const direction = i18n.dir() === "rtl" ? "-15px" : "0";
 
-// Inline style object
+  // Inline style object
   const scrollbarStyle = {
     marginLeft: direction,
     // Add more styles as needed
@@ -100,7 +100,7 @@ const Sidebar = (props) => {
         onMouseEnter={mouseHandle}
         onMouseLeave={() => mouseHandle("leave")}
         // style={{ right: i18n.dir() === 'rtl' ? '0' : '' }}
-        >
+      >
         <Scrollbars>
           <div className="sidebar-inner slimscroll">
             <div id="sidebar-menu" className="sidebar-menu">
@@ -206,7 +206,7 @@ const Sidebar = (props) => {
                                 >
                                   Voice Call
                                 </Link>
-                        </li>
+                              </li>
                               <li>
                                 <Link
                                   onClick={() =>
@@ -237,7 +237,7 @@ const Sidebar = (props) => {
                                   Incoming Call
                                 </Link>
                               </li>
-                      </ul>
+                            </ul>
                           ) : (
                             ""
                           )}
@@ -434,7 +434,7 @@ const Sidebar = (props) => {
                           >
                             Projects
                           </Link>
-                  </li>
+                        </li>
                         <li>
                           <Link
                             onClick={() =>
@@ -444,7 +444,7 @@ const Sidebar = (props) => {
                           >
                             Tasks
                           </Link>
-                  </li>
+                        </li>
                         <li>
                           <Link
                             className={
@@ -545,7 +545,7 @@ const Sidebar = (props) => {
                           >
                             Provident Fund
                           </Link>
-                  </li>
+                        </li>
                         <li>
                           <Link
                             className={
@@ -556,7 +556,7 @@ const Sidebar = (props) => {
                             Taxes
                           </Link>
                         </li>
-                </ul>
+                      </ul>
                     ) : (
                       ""
                     )}
@@ -597,7 +597,7 @@ const Sidebar = (props) => {
                           >
                             Categories
                           </Link>
-                  </li>
+                        </li>
                         <li>
                           <Link
                             className={
@@ -619,7 +619,7 @@ const Sidebar = (props) => {
                           >
                             Budget Expenses
                           </Link>
-                  </li>
+                        </li>
                         <li>
                           <Link
                             className={
@@ -837,7 +837,7 @@ const Sidebar = (props) => {
                             to="/lead-report"
                           >
                             {" "}
-                            Lead Report{" "}
+                            Leads Report{" "}
                           </Link>
                         </li>
                       </ul>
@@ -966,7 +966,7 @@ const Sidebar = (props) => {
                             {" "}
                             Training List{" "}
                           </Link>
-                  </li>
+                        </li>
                         <li>
                           <Link
                             className={
@@ -1059,7 +1059,7 @@ const Sidebar = (props) => {
                             {" "}
                             User Dasboard{" "}
                           </Link>
-                  </li>
+                        </li>
                         <li>
                           <Link
                             className={
@@ -1072,7 +1072,7 @@ const Sidebar = (props) => {
                             {" "}
                             Jobs Dasboard{" "}
                           </Link>
-                  </li>
+                        </li>
                         <li>
                           <Link
                             className={
@@ -1085,7 +1085,7 @@ const Sidebar = (props) => {
                             {" "}
                             Manage Jobs{" "}
                           </Link>
-                  </li>
+                        </li>
                         <li>
                           <Link
                             className={
@@ -1098,8 +1098,8 @@ const Sidebar = (props) => {
                             {" "}
                             Manage Resumes{" "}
                           </Link>
-                  </li>
-                  <li>
+                        </li>
+                        <li>
                           <Link
                             className={
                               pathname.includes("shortlist-candidates")
@@ -1703,13 +1703,13 @@ const Sidebar = (props) => {
               </nav>
               {!superAdmin && (
                 <ul className="sidebar-vertical" id="veritical-sidebar">
-                <li className="menu-title">
+                  <li className="menu-title">
                     <span>{t("main")}</span>
-                </li>
+                  </li>
 
                   {(user_state?.role === "admin" ||
                     permissions?.companyManagement) && (
-                  <li className="submenu">
+                    <li className="submenu">
                       {user_state?.role === "client" ||
                       user_state?.role === "focalperson" ? (
                         <a
@@ -1735,7 +1735,7 @@ const Sidebar = (props) => {
                           <span className="menu-arrow" />
                         </a>
                       )}
-                  {/* <a href="javascript:" className={isSideMenu == "dashboard" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "dashboard" ? "" : "dashboard")}><i className="la la-dashboard" /> <span> Dashboard</span> <span className="menu-arrow" /></a> */}
+                      {/* <a href="javascript:" className={isSideMenu == "dashboard" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "dashboard" ? "" : "dashboard")}><i className="la la-dashboard" /> <span> Dashboard</span> <span className="menu-arrow" /></a> */}
                       {isSideMenu == "dashboard" ? (
                         <ul>
                           {(user_state?.role === "admin" ||
@@ -1754,7 +1754,7 @@ const Sidebar = (props) => {
                                   ADMIN
                                 </span>
                               </Link>
-                </li>
+                            </li>
                           )}
                           <li>
                             <Link
@@ -1779,7 +1779,7 @@ const Sidebar = (props) => {
                     user_state?.role !== "client" &&
                     user_state?.role !== "focalperson" &&
                     !permissions?.companyManagement && (
-                    // { (user_state?.role === 'admin' || permissions?.addUser || permissions?.updateUser || permissions?.viewAllUsers || permissions?.updateStatusOfEmployee) &&
+                      // { (user_state?.role === 'admin' || permissions?.addUser || permissions?.updateUser || permissions?.viewAllUsers || permissions?.updateStatusOfEmployee) &&
                       <li
                         className={
                           pathname.includes("employee/dashboard")
@@ -1794,7 +1794,7 @@ const Sidebar = (props) => {
                       </li>
                     )}
 
-                {/* <li className="submenu">
+                  {/* <li className="submenu">
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
                   <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-cube" /> <span> {t('sideBar.apps')}</span> <span className="menu-arrow" /></a>
@@ -1824,9 +1824,9 @@ const Sidebar = (props) => {
                     : ""
                   }
                 </li> */}
-                <li className="menu-title">
+                  <li className="menu-title">
                     <span>{t("aDash.employees")}</span>
-                </li>
+                  </li>
 
                   {(user_state?.role === "admin" ||
                     permissions?.addUser ||
@@ -1848,7 +1848,7 @@ const Sidebar = (props) => {
                       </Link>
                     </li>
                   )}
-                    {/* ADMIN ATTENDANCE PANEL */}
+                  {/* ADMIN ATTENDANCE PANEL */}
                   {(user_state?.role === "admin" ||
                     permissions?.attendanceManagement) && (
                     <li className="submenu">
@@ -1879,10 +1879,10 @@ const Sidebar = (props) => {
                           <span className="menu-arrow" />
                         </a>
                       )}
-                  {/* <a href="javascript:" className={isSideMenu == "employee" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "employee" ? "" : "employee")}><i className="la la-user" /> <span className="noti-dot"> Employees</span> <span className="menu-arrow" /></a> */}
+                      {/* <a href="javascript:" className={isSideMenu == "employee" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "employee" ? "" : "employee")}><i className="la la-user" /> <span className="noti-dot"> Employees</span> <span className="menu-arrow" /></a> */}
                       {isSideMenu == "Attendance" ? (
                         <ul>
-                        {/* <li><Link className={pathname.includes('e-settings') ? "active" : ""} to="/app/employee/leave-settings">Leave Settings</Link></li> */}
+                          {/* <li><Link className={pathname.includes('e-settings') ? "active" : ""} to="/app/employee/leave-settings">Leave Settings</Link></li> */}
                           <Link
                             className={
                               pathname.includes("ce-employee") ? "active" : ""
@@ -1904,8 +1904,8 @@ const Sidebar = (props) => {
                                   ADMIN
                                 </span>
                               </Link>
-                  </li>
-                  }
+                            </li>
+                          }
                         </ul>
                       ) : (
                         ""
@@ -1953,7 +1953,7 @@ const Sidebar = (props) => {
                           <span className="menu-arrow" />
                         </a>
                       )}
-                  {/* <a href="javascript:" className={isSideMenu == "employee" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "employee" ? "" : "employee")}><i className="la la-user" /> <span className="noti-dot"> Employees</span> <span className="menu-arrow" /></a> */}
+                      {/* <a href="javascript:" className={isSideMenu == "employee" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "employee" ? "" : "employee")}><i className="la la-user" /> <span className="noti-dot"> Employees</span> <span className="menu-arrow" /></a> */}
                       {isSideMenu == "Requests" ? (
                         <ul>
                           <li>
@@ -1967,8 +1967,8 @@ const Sidebar = (props) => {
                             >
                               {t("requests.requests")}
                             </Link>
-                        </li>
-                        <li>
+                          </li>
+                          <li>
                             <Link
                               className={
                                 pathname.includes("request-admin")
@@ -1987,16 +1987,16 @@ const Sidebar = (props) => {
                                 ADMIN
                               </span>{" "}
                             </Link>
-                          
-                          {/* <Link className={pathname.includes('request-admin') ? "active" : ""} to="/employee/request-admin">Requests (Admin)</Link> */}
-                        </li>
+
+                            {/* <Link className={pathname.includes('request-admin') ? "active" : ""} to="/employee/request-admin">Requests (Admin)</Link> */}
+                          </li>
                         </ul>
                       ) : (
                         ""
                       )}
-                  </li>
+                    </li>
                   )}
-                  
+
                   {/* TIMESHEET ADMIN */}
                   {(user_state?.role === "admin" ||
                     permissions?.timesheetManagement) && (
@@ -2026,7 +2026,7 @@ const Sidebar = (props) => {
                           <span className="menu-arrow" />
                         </a>
                       )}
-                  {/* <a href="javascript:" className={isSideMenu == "employee" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "employee" ? "" : "employee")}><i className="la la-user" /> <span className="noti-dot"> Employees</span> <span className="menu-arrow" /></a> */}
+                      {/* <a href="javascript:" className={isSideMenu == "employee" ? "subdrop" : ""} onClick={() => toggleSidebar(isSideMenu == "employee" ? "" : "employee")}><i className="la la-user" /> <span className="noti-dot"> Employees</span> <span className="menu-arrow" /></a> */}
                       {isSideMenu == "Timesheet" ? (
                         <ul>
                           <li>
@@ -2040,7 +2040,7 @@ const Sidebar = (props) => {
                             >
                               {t("sideBar.timesheet")}
                             </Link>
-                  </li>
+                          </li>
 
                           <li>
                             <Link
@@ -2064,12 +2064,12 @@ const Sidebar = (props) => {
                     </li>
                   )}
 
-                {/* emp attendance */}
+                  {/* emp attendance */}
                   {user_state?.role !== "admin" &&
                     user_state?.role !== "client" &&
                     user_state?.role !== "focalperson" &&
                     !permissions?.attendanceManagement && (
-                    // { (user_state?.role === 'admin' || permissions?.addUser || permissions?.updateUser || permissions?.viewAllUsers || permissions?.updateStatusOfEmployee) &&
+                      // { (user_state?.role === 'admin' || permissions?.addUser || permissions?.updateUser || permissions?.viewAllUsers || permissions?.updateStatusOfEmployee) &&
                       <li
                         className={
                           pathname.includes("ce-employee") ? "active" : ""
@@ -2081,15 +2081,15 @@ const Sidebar = (props) => {
                         </Link>
                       </li>
                     )}
-                  
-                {/* EMP REQ */}
+
+                  {/* EMP REQ */}
                   {user_state?.role !== "admin" &&
                     user_state?.role !== "client" &&
                     user_state?.role !== "focalperson" &&
                     !permissions?.viewAllRequest &&
                     !permissions?.teamRequest &&
                     permissions?.viewSelfRequest && (
-                    // { (user_state?.role === 'admin' || permissions?.addUser || permissions?.updateUser || permissions?.viewAllUsers || permissions?.updateStatusOfEmployee) &&
+                      // { (user_state?.role === 'admin' || permissions?.addUser || permissions?.updateUser || permissions?.viewAllUsers || permissions?.updateStatusOfEmployee) &&
                       <li
                         className={
                           pathname.includes("employee/requests") ? "active" : ""
@@ -2102,12 +2102,12 @@ const Sidebar = (props) => {
                       </li>
                     )}
 
-                {/* Timesheet EMP */}
+                  {/* Timesheet EMP */}
                   {user_state?.role !== "admin" &&
                     user_state?.role !== "client" &&
                     user_state?.role !== "focalperson" &&
                     !permissions?.timesheetManagement && (
-                    // { (user_state?.role === 'admin' || permissions?.addUser || permissions?.updateUser || permissions?.viewAllUsers || permissions?.updateStatusOfEmployee) &&
+                      // { (user_state?.role === 'admin' || permissions?.addUser || permissions?.updateUser || permissions?.viewAllUsers || permissions?.updateStatusOfEmployee) &&
                       <li
                         className={
                           pathname.includes("employee-timesheet")
@@ -2121,11 +2121,11 @@ const Sidebar = (props) => {
                         </Link>
                       </li>
                     )}
-                  
+
                   {/* HOLIDAYS */}
                   {user_state?.role !== "client" &&
                     user_state?.role !== "focalperson" && (
-                    // { (user_state?.role === 'admin' || permissions?.addUser || permissions?.updateUser || permissions?.viewAllUsers || permissions?.updateStatusOfEmployee) &&
+                      // { (user_state?.role === 'admin' || permissions?.addUser || permissions?.updateUser || permissions?.viewAllUsers || permissions?.updateStatusOfEmployee) &&
 
                       <li
                         className={
@@ -2159,9 +2159,9 @@ const Sidebar = (props) => {
                       </Link>
                     </li>
                   )}
-                  
-                {/* PROJECTS */}
-                <li className="submenu">
+
+                  {/* PROJECTS */}
+                  <li className="submenu">
                     {user_state?.role === "client" ||
                     user_state?.role === "focalperson" ? (
                       <a
@@ -2188,9 +2188,9 @@ const Sidebar = (props) => {
                       </a>
                     )}
                     {isSideMenu == "projects" ? (
-                    <ul>
-                      {
-                        // (user_state?.role === 'admin' || permissions?.projectManagement) &&
+                      <ul>
+                        {
+                          // (user_state?.role === 'admin' || permissions?.projectManagement) &&
                           (user_state?.role !== "client" ||
                             user_state?.role !== "focalperson") && (
                             <li>
@@ -2210,9 +2210,9 @@ const Sidebar = (props) => {
                               </Link>
                             </li>
                           )
-                      }
-                      {/* <li><Link onClick={() => localStorage.setItem("minheight", "true")} to="/tasks/tasks">Tasks</Link></li> */}
-                      {/* <li><Link onClick={() => localStorage.setItem("minheight", "true")} to="/projects/tasks">Tasks</Link></li> */}
+                        }
+                        {/* <li><Link onClick={() => localStorage.setItem("minheight", "true")} to="/tasks/tasks">Tasks</Link></li> */}
+                        {/* <li><Link onClick={() => localStorage.setItem("minheight", "true")} to="/projects/tasks">Tasks</Link></li> */}
                         {(user_state?.role !== "client" ||
                           user_state?.role !== "focalperson") && (
                           <li>
@@ -2229,7 +2229,7 @@ const Sidebar = (props) => {
                             >
                               {t("Tasks.tasks")}
                             </Link>
-                        </li>
+                          </li>
                         )}
                         <li>
                           <Link
@@ -2256,7 +2256,7 @@ const Sidebar = (props) => {
                             <Link to="/employee/resource-allocation">
                               Resource Allocation
                             </Link>
-                </li>
+                          </li>
                         )}
                       </ul>
                     ) : (
@@ -2290,9 +2290,9 @@ const Sidebar = (props) => {
                         </Link>
                       )
                     )}
-                  {/* <Link to="/app/employees/leads"><i className="la la-user-secret" /> <span>Leads</span> </Link> */}
-                </li>
-                {/* <li className={pathname.includes('tickets') ? "active" : pathname.includes('ticket-view') ? "active" : ""}>
+                    {/* <Link to="/app/employees/leads"><i className="la la-user-secret" /> <span>Leads</span> </Link> */}
+                  </li>
+                  {/* <li className={pathname.includes('tickets') ? "active" : pathname.includes('ticket-view') ? "active" : ""}>
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
                   <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-ticket" /> <span>{t('sideBar.tickets')}</span> </a>
@@ -2300,10 +2300,10 @@ const Sidebar = (props) => {
                   <Link to="/app/employees/tickets"><i className="la la-ticket" /> <span>{t('sideBar.tickets')}</span> </Link>
                 }
                 </li> */}
-                <li className="menu-title">
-                  <span>HR</span>
-                </li>
-                <li className="submenu">
+                  <li className="menu-title">
+                    <span>HR</span>
+                  </li>
+                  <li className="submenu">
                     {user_state?.role === "client" ||
                     user_state?.role === "focalperson" ? (
                       <a
@@ -2333,8 +2333,8 @@ const Sidebar = (props) => {
                       <ul>
                         {(user_state?.role === "admin" ||
                           permissions?.managePayrolls) && (
-                        <>
-                          {/* <li><Link className={pathname.includes('estimates') ? "active" : ""} to="/app/sales/estimates">{t('sideBar.estimates')}</Link></li> */}
+                          <>
+                            {/* <li><Link className={pathname.includes('estimates') ? "active" : ""} to="/app/sales/estimates">{t('sideBar.estimates')}</Link></li> */}
                             <li>
                               <Link
                                 className={
@@ -2355,9 +2355,9 @@ const Sidebar = (props) => {
                                 {t("sideBar.payments")}
                               </Link>
                             </li>
-                          {/* <li><Link className={pathname.includes('provident-fund') ? "active" : ""} to="/app/sales/provident-fund">{t('sideBar.providentFund')}</Link></li>
+                            {/* <li><Link className={pathname.includes('provident-fund') ? "active" : ""} to="/app/sales/provident-fund">{t('sideBar.providentFund')}</Link></li>
                           <li><Link className={pathname.includes('taxes') ? "active" : ""} to="/app/sales/taxes">{t('sideBar.taxes')}</Link></li> */}
-                        </>
+                          </>
                         )}
                         {(user_state?.role === "admin" ||
                           permissions?.expenseManagement) && (
@@ -2374,12 +2374,12 @@ const Sidebar = (props) => {
                             </li>
                           </>
                         )}
-                    </ul>
+                      </ul>
                     ) : (
                       ""
                     )}
-                </li>
-                {/* <li className="submenu">
+                  </li>
+                  {/* <li className="submenu">
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
                   <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-files-o" /> <span> {t('sideBar.accounting')}</span> <span className="menu-arrow" /></a>
@@ -2396,7 +2396,7 @@ const Sidebar = (props) => {
                     : ""
                   }
                 </li> */}
-                <li className="submenu">
+                  <li className="submenu">
                     {user_state?.role === "client" ||
                     user_state?.role === "focalperson" ? (
                       <a
@@ -2467,7 +2467,7 @@ const Sidebar = (props) => {
                               {" "}
                               {t("sideBar.payrollHistory")}{" "}
                             </Link>
-                </li>
+                          </li>
                         )}
                       </ul>
                     ) : (
@@ -2490,8 +2490,8 @@ const Sidebar = (props) => {
                         <span>{t("sideBar.policies")}</span>{" "}
                       </Link>
                     )}
-                </li>
-                <li className="submenu">
+                  </li>
+                  <li className="submenu">
                     {user_state?.role === "client" ||
                     user_state?.role === "focalperson" ? (
                       <a
@@ -2521,8 +2521,8 @@ const Sidebar = (props) => {
                       )
                     )}
                     {isSideMenu == "reports" ? (
-                    <ul>
-                      {/* <li><Link className={pathname.includes('expense-') ? "active" : ""} to="/app/reports/expense-reports"> Expense Report </Link></li>
+                      <ul>
+                        {/* <li><Link className={pathname.includes('expense-') ? "active" : ""} to="/app/reports/expense-reports"> Expense Report </Link></li>
                       <li><Link className={pathname.includes('invoice-') ? "active" : ""} to="/app/reports/invoice-reports"> Invoice Report </Link></li>
                       <li><Link className={pathname.includes('payments-') ? "active" : ""} to="/app/reports/payments-reports"> Payments Report </Link></li>
                       <li><Link className={pathname.includes('project-') ? "active" : ""} to="/app/reports/project-reports"> Project Report </Link></li>
@@ -2541,7 +2541,7 @@ const Sidebar = (props) => {
                             {t("sideBar.employeeReport")}{" "}
                           </Link>
                         </li>
-                      {/* <li><Link className={pathname.includes('payslip-') ? "active" : ""} to="/app/reports/payslip-reports"> Payslip Report </Link></li> */}
+                        {/* <li><Link className={pathname.includes('payslip-') ? "active" : ""} to="/app/reports/payslip-reports"> Payslip Report </Link></li> */}
                         <li>
                           <Link
                             className={
@@ -2568,7 +2568,7 @@ const Sidebar = (props) => {
                             </Link>
                           </li>
                         )}
-                      {/* <li><Link className={pathname.includes('leave-') ? "active" : ""} to="/app/reports/leave-reports"> Leave Report </Link></li>
+                        {/* <li><Link className={pathname.includes('leave-') ? "active" : ""} to="/app/reports/leave-reports"> Leave Report </Link></li>
                       <li><Link className={pathname.includes('daily-') ? "active" : ""} to="/app/reports/daily-reports"> Daily Report </Link></li> */}
                         <li>
                           <Link
@@ -2578,15 +2578,15 @@ const Sidebar = (props) => {
                             to="/lead-report"
                           >
                             {" "}
-                            Lead Report{" "}
+                            Leads Report{" "}
                           </Link>
                         </li>
                       </ul>
                     ) : (
                       ""
                     )}
-                </li>
-                {/* <li className="menu-title">
+                  </li>
+                  {/* <li className="menu-title">
                   <span>{t('sideBar.performance')}</span>
                 </li>
                 <li className="submenu">
@@ -2605,7 +2605,7 @@ const Sidebar = (props) => {
                     : ""
                   }
                 </li> */}
-                {/* <li className="submenu">
+                  {/* <li className="submenu">
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
                   <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-crosshairs" /> <span> {t('sideBar.goals')}</span> <span className="menu-arrow" /></a>
@@ -2660,10 +2660,10 @@ const Sidebar = (props) => {
                   <Link to="/app/performance/termination"><i className="la la-times-circle" /> <span>{t('sideBar.termination')}</span> </Link>
                 }
                 </li> */}
-                <li className="menu-title">
+                  <li className="menu-title">
                     <span>{t("sideBar.administration")}</span>
-                </li>
-                {/* <li className={pathname.includes('assets') ? "active" : ""}>
+                  </li>
+                  {/* <li className={pathname.includes('assets') ? "active" : ""}>
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
                   <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-object-ungroup" /> <span>{t('sideBar.assets')}</span> </a>
@@ -2671,7 +2671,7 @@ const Sidebar = (props) => {
                   <Link to="/app/administrator/assets"><i className="la la-object-ungroup" /> <span>{t('sideBar.assets')}</span> </Link>
                 }
                 </li> */}
-                <li className="submenu">
+                  <li className="submenu">
                     {user_state?.role === "client" ||
                     user_state?.role === "focalperson" ? (
                       <a
@@ -2721,8 +2721,8 @@ const Sidebar = (props) => {
                     ) : (
                       ""
                     )}
-                </li>
-                {/* <li className={pathname.includes('knowledgebase') ? "active" : ""}>
+                  </li>
+                  {/* <li className={pathname.includes('knowledgebase') ? "active" : ""}>
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
                   <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-question" /> <span>{t('sideBar.knowledgebase')}</span> </a>
@@ -2730,7 +2730,7 @@ const Sidebar = (props) => {
                   <Link to="/help"><i className="la la-question" /> <span>Help</span> </Link>
                 }
                 </li> */}
-                {/* <li className={pathname.includes('activities') ? "active" : ""}>
+                  {/* <li className={pathname.includes('activities') ? "active" : ""}>
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
                   <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-bell" /> <span>{t('sideBar.activities')}</span> </a>
@@ -2738,7 +2738,7 @@ const Sidebar = (props) => {
                   <Link to="/app/administrator/activities"><i className="la la-bell" /> <span>{t('sideBar.activities')}</span> </Link>
                 }
                 </li> */}
-                {/* <li className={pathname.includes('administrator/users') ? "active" : ""}>
+                  {/* <li className={pathname.includes('administrator/users') ? "active" : ""}>
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
                   <a href="javascript:" style={{color: '#898989', cursor: 'not-allowed'}}><i className="la la-user-plus" /> <span>{t('sideBar.users')}</span> </a>
@@ -2755,16 +2755,16 @@ const Sidebar = (props) => {
                         <i className="la la-cog" />{" "}
                         <span>{t("sideBar.settings")}</span>
                       </Link>
-                  </li>
+                    </li>
                   )}
-              </ul>
+                </ul>
               )}
 
               {superAdmin && (
                 <ul className="sidebar-vertical" id="veritical-sidebar">
-                <li className="menu-title">
+                  <li className="menu-title">
                     <span>{t("main")}</span>
-                </li>
+                  </li>
 
                   <li
                     className={
@@ -2775,11 +2775,11 @@ const Sidebar = (props) => {
                       <i className="la la-dashboard" />{" "}
                       <span>Admin Dashboard</span>{" "}
                     </Link>
-                </li>
-                
-                <li className="menu-title">
+                  </li>
+
+                  <li className="menu-title">
                     <span>{t("sideBar.administration")}</span>
-                </li>
+                  </li>
                   <li
                     className={
                       pathname.includes("disabled-companies") ? "active" : ""
@@ -2789,9 +2789,9 @@ const Sidebar = (props) => {
                       <i className="la la-briefcase" />{" "}
                       <span>Disabled Companies</span>{" "}
                     </Link>
-                
-                  {/* <Link to="/app/employees/leads"><i className="la la-user-secret" /> <span>Leads</span> </Link> */}
-                </li>
+
+                    {/* <Link to="/app/employees/leads"><i className="la la-user-secret" /> <span>Leads</span> </Link> */}
+                  </li>
                 </ul>
               )}
               {/* <label className='brandStyle'><a target='_blank' href='https://devgate.ca'>Powered By Devgate</a></label> */}
@@ -2812,7 +2812,7 @@ const Sidebar = (props) => {
                     </span>
                   </Link>
                 </li>
-            </ul>
+              </ul>
             </div>
           </div>
         </Scrollbars>
@@ -3520,7 +3520,7 @@ const Sidebar = (props) => {
                     role="tabpanel"
                     aria-labelledby="v-pills-dashboard-tab"
                   >
-                    <p>Dashboard</p> 
+                    <p>Dashboard</p>
                     <ul>
                       <li>
                         <Link
@@ -3554,7 +3554,7 @@ const Sidebar = (props) => {
                     role="tabpanel"
                     aria-labelledby="v-pills-apps-tab"
                   >
-                    <p>Apps</p> 
+                    <p>Apps</p>
                     <ul>
                       <li>
                         <Link
@@ -3774,7 +3774,7 @@ const Sidebar = (props) => {
                     role="tabpanel"
                     aria-labelledby="v-pills-clients-tab"
                   >
-                    <p>Clients</p> 
+                    <p>Clients</p>
                     <ul>
                       <li
                         className={pathname.includes("clients") ? "active" : ""}
@@ -3795,7 +3795,7 @@ const Sidebar = (props) => {
                     role="tabpanel"
                     aria-labelledby="v-pills-projects-tab"
                   >
-                    <p>Projects</p> 
+                    <p>Projects</p>
                     <ul>
                       <li>
                         <Link
@@ -4222,7 +4222,7 @@ const Sidebar = (props) => {
                           to="/lead-report"
                         >
                           {" "}
-                          Lead Report{" "}
+                          Leads Report{" "}
                         </Link>
                       </li>
                     </ul>
@@ -4461,7 +4461,7 @@ const Sidebar = (props) => {
                     role="tabpanel"
                     aria-labelledby="v-pills-jobs-tab"
                   >
-                    <p>Jobs</p> 
+                    <p>Jobs</p>
                     <ul>
                       <li>
                         <Link
