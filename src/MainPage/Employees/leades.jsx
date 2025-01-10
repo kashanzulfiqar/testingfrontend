@@ -32,6 +32,7 @@ import {
   Tooltip,
   message,
   Radio,
+  Typography,
 } from "antd";
 import { Modal } from "@mui/material";
 import "antd/dist/antd.css";
@@ -53,6 +54,9 @@ import { getAllISOCodes } from "iso-country-currency";
 import PhoneNoInput from "../../Components/PhoneNoInput";
 import ReasoningModal from "./ReasoningModal";
 import ReachOutModal from "./ReachOutModal";
+import LostReasonModal from "./LostReasonModal";
+import ConversionDateModal from "./ConversionDateModal";
+import { LOST_REASONS } from "../../constants";
 
 const Leads = () => {
   const { t, i18n } = useTranslation();
@@ -72,6 +76,8 @@ const Leads = () => {
   const [reason, setReason] = useState(""); // State to hold the reason
   const [selectedRecord, setSelectedRecord] = useState(null); // To store the selected record
   const [searchValue, setSearchValue] = useState("");
+  const [sourceSearchValue, setSourceSearchValue] = useState("");
+  const [mediumSearchValue, setMediumSearchValue] = useState("");
   const [flag, setFlag] = useState(true);
   const [activeDropdown, setActiveDropdown] = useState(null); // To track active dropdown
   const [page, setPage] = useState(1);
@@ -135,19 +141,26 @@ const Leads = () => {
 
   const [isLostReasonModalVisible, setIsLostReasonModalVisible] =
     useState(false);
-  const [selectedLostReason, setSelectedLostReason] = useState(null);
+  const [isConversionDateModalVisible, setIsConversionDateModalVisible] =
+    useState(false);
 
   const [isReachOutModalOpen, setIsReachOutModalOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState(null);
   const [loadReachOut, setLoadReachOut] = useState(false);
+  const [selectedLostReason, setSelectedLostReason] = useState(null);
+  const [loadStatus, setLoadStatus] = useState(false);
+  const [statusValue, setStatusValue] = useState(null);
 
-  const lostReasons = [
-    { value: "Client Not Responding", label: "Client Not Responding" },
-    { value: "High Price", label: "High Price" },
-    { value: "Interview Failed", label: "Interview Failed" },
-    { value: "Assessment Task Failed", label: "Assessment Task Failed" },
-    { value: "Other", label: "Other" },
-  ];
+  useEffect(() => {
+    // Watch for status changes
+    const status = form.getFieldValue("status");
+    setStatusValue(status);
+
+    // Reset lost_reason when status is not Lost
+    if (status !== "Lost") {
+      form.setFieldsValue({ lost_reason: undefined });
+    }
+  }, [form.getFieldValue("status")]);
 
   const handleOk = () => {
     setLoader(true);
@@ -542,6 +555,24 @@ const Leads = () => {
         return reachOut;
       });
     }
+
+    // Format conversion date if present
+    if (values?.conversion_date) {
+      values.conversion_date = moment(values.conversion_date).format(
+        "YYYY-MM-DD"
+      );
+    }
+
+    // Remove lost_reason if status is not Lost
+    if (values.status !== "Lost") {
+      delete values.lost_reason;
+    }
+
+    // Remove conversion_date if status is not Converted
+    if (values.status !== "Converted") {
+      delete values.conversion_date;
+    }
+
     if (info) {
       let updated_data = {
         ...values,
@@ -664,11 +695,10 @@ const Leads = () => {
       });
   };
   const handleStatusChange = (record, newStatus) => {
-    if (newStatus === "Lost") {
+    if (newStatus === "Converted") {
       setSelectedRecord(record);
-      setSelectedLostReason(null);
-      setIsLostReasonModalVisible(true);
-      setActiveDropdown(null); // Close the dropdown after selecting
+      setIsConversionDateModalVisible(true);
+      setActiveDropdown(null);
     } else {
       handleUpdateStatus(record, newStatus);
     }
@@ -679,26 +709,31 @@ const Leads = () => {
     setOpen({ isReasoning: false });
     setReason(enteredReason); // Store the reason in the state
   };
-  const handleLostReasonSubmit = () => {
-    if (!selectedLostReason) {
-      message.error("Please select a reason");
-      return;
-    }
-
-    handleUpdateStatus(selectedRecord, "Lost", selectedLostReason);
+  const handleLostReasonSubmit = (lostReason) => {
+    handleUpdateStatus(selectedRecord, "Lost", lostReason);
     setIsLostReasonModalVisible(false);
-    setSelectedLostReason(null);
-    setActiveDropdown(null); // Close the dropdown after submitting
   };
-  const handleUpdateStatus = async (record, newStatus, lostReason = null) => {
+  const handleConversionDateSubmit = (conversionDate) => {
+    handleUpdateStatus(selectedRecord, "Converted", null, conversionDate);
+    setIsConversionDateModalVisible(false);
+  };
+  const handleUpdateStatus = async (
+    record,
+    newStatus,
+    lostReason = null,
+    conversionDate = null
+  ) => {
     try {
       const data = {
         status: newStatus,
       };
 
-      // Only add lost_reason if status is Lost and reason is provided
       if (newStatus === "Lost" && lostReason) {
         data.lost_reason = lostReason;
+      }
+
+      if (newStatus === "Converted" && conversionDate) {
+        data.conversion_date = conversionDate;
       }
 
       const response = await apiServices(
@@ -934,6 +969,9 @@ const Leads = () => {
                   accountManager: record?.accountManager?._id,
                   source: record?.source?._id,
                   communicationMedium: record?.communicationMedium,
+                  conversion_date: record?.conversion_date
+                    ? moment(record?.conversion_date, "YYYY-MM-DD")
+                    : null,
                   reachOuts: record?.reachOuts?.map((reachOut) => ({
                     ...reachOut,
                     communicationMedium: reachOut?.communicationMedium?._id,
@@ -1078,10 +1116,12 @@ const Leads = () => {
             <Select
               showSearch
               onSearch={(val) => {
-                setSearchValue(val);
-                showTeamSearch(val, "medium");
-                // onTeamChange(val)
+                if (val.length <= 50) {
+                  setMediumSearchValue(val);
+                  showTeamSearch(val, "medium");
+                }
               }}
+              searchValue={mediumSearchValue}
               filterOption={(input, option) =>
                 option.children[0]
                   ?.toLowerCase()
@@ -1094,12 +1134,13 @@ const Leads = () => {
               dropdownRender={(menu) => (
                 <>
                   {menu}
-                  {searchValue &&
+                  {mediumSearchValue &&
                     !mediumOptions?.some(
                       (option) =>
                         option?.title?.toLowerCase() ===
-                        searchValue?.toLowerCase()
-                    ) && (
+                        mediumSearchValue?.toLowerCase()
+                    ) &&
+                    mediumSearchValue.length <= 50 && (
                       <>
                         <Divider style={{ margin: "5px 0" }} />
                         <Button
@@ -1119,9 +1160,9 @@ const Leads = () => {
                             justifyContent: "center",
                             alignItems: "center",
                           }}
-                          onClick={() => handleAddMedium(searchValue)}
+                          onClick={() => handleAddMedium(mediumSearchValue)}
                         >
-                          {`Add "${searchValue}"`}
+                          {`Add "${mediumSearchValue}"`}
                         </Button>
                       </>
                     )}
@@ -1278,6 +1319,10 @@ const Leads = () => {
   ];
 
   const handleAddMedium = (values) => {
+    if (values.length > 50) {
+      message.error("Medium name cannot exceed 50 characters");
+      return;
+    }
     setLoader(true);
     let data = {
       title: values,
@@ -1313,6 +1358,10 @@ const Leads = () => {
   };
 
   const handleAddSource = (values) => {
+    if (values.length > 50) {
+      message.error("Source name cannot exceed 50 characters");
+      return;
+    }
     setLoader(true);
     let data = {
       title: values,
@@ -2206,6 +2255,17 @@ const Leads = () => {
               <Form
                 form={form}
                 onFinish={(val) => onFinish(val, open?.data)}
+                onValuesChange={(changedValues) => {
+                  if ("status" in changedValues) {
+                    setStatusValue(changedValues.status);
+                    if (changedValues.status !== "Lost") {
+                      form.setFieldsValue({ lost_reason: undefined });
+                    }
+                    if (changedValues.status !== "Converted") {
+                      form.setFieldsValue({ conversion_date: undefined });
+                    }
+                  }
+                }}
                 onFinishFailed={({ errorFields }) => {
                   const phoneErrorExists = errorFields.find((field) =>
                     field.errors
@@ -2389,6 +2449,79 @@ const Leads = () => {
                     </div>
                   </div>
 
+                  {statusValue === "Lost" && (
+                    <div className="col-sm-6">
+                      <div className="form-group">
+                        <label>
+                          Lost Reason <span className="text-danger">*</span>
+                        </label>
+                        <div style={{ position: "relative" }} id="area">
+                          <Form.Item
+                            name="lost_reason"
+                            className="custom-border"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Please select a lost reason",
+                              },
+                            ]}
+                          >
+                            <Select
+                              className="custom-select custom-normal"
+                              getPopupContainer={() =>
+                                document.getElementById("area")
+                              }
+                              placeholder="Select Lost Reason"
+                            >
+                              {LOST_REASONS.map((reason) => (
+                                <Select.Option
+                                  key={reason.value}
+                                  value={reason.value}
+                                >
+                                  {reason.label}
+                                </Select.Option>
+                              ))}
+                            </Select>
+                          </Form.Item>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {statusValue === "Converted" && (
+                    <div className="col-sm-6">
+                      <div className="form-group">
+                        <label>
+                          Conversion Date <span className="text-danger">*</span>
+                        </label>
+                        <div style={{ position: "relative" }} id="area">
+                          <Form.Item
+                            name="conversion_date"
+                            className="custom-border"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Please select conversion date",
+                              },
+                            ]}
+                          >
+                            <DatePicker
+                              className="form-control"
+                              getPopupContainer={() =>
+                                document.getElementById("area")
+                              }
+                              placeholder="Select conversion date"
+                              style={{ width: "100%" }}
+                              disabledDate={(current) =>
+                                current && current > moment().endOf("day")
+                              }
+                            />
+                          </Form.Item>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>
@@ -2447,10 +2580,12 @@ const Leads = () => {
                         <Select
                           showSearch
                           onSearch={(val) => {
-                            setSearchValue(val);
-                            showTeamSearch(val, "source");
-                            // onTeamChange(val)
+                            if (val.length <= 50) {
+                              setSourceSearchValue(val);
+                              showTeamSearch(val, "source");
+                            }
                           }}
+                          searchValue={sourceSearchValue}
                           filterOption={(input, option) =>
                             option.children[0]
                               ?.toLowerCase()
@@ -2465,12 +2600,13 @@ const Leads = () => {
                           dropdownRender={(menu) => (
                             <>
                               {menu}
-                              {searchValue &&
+                              {sourceSearchValue &&
                                 !sourceOptions?.some(
                                   (option) =>
                                     option?.title?.toLowerCase() ===
-                                    searchValue?.toLowerCase()
-                                ) && (
+                                    sourceSearchValue?.toLowerCase()
+                                ) &&
+                                sourceSearchValue.length <= 50 && (
                                   <>
                                     <Divider style={{ margin: "5px 0" }} />
                                     <Button
@@ -2494,46 +2630,13 @@ const Leads = () => {
                                         alignItems: "center",
                                       }}
                                       onClick={() =>
-                                        handleAddSource(searchValue)
+                                        handleAddSource(sourceSearchValue)
                                       }
                                     >
-                                      {`Add "${searchValue}"`}
+                                      {`Add "${sourceSearchValue}"`}
                                     </Button>
                                   </>
                                 )}
-                              {/* {
-                                <>
-                                  <Divider
-                                    style={{
-                                      margin: "5px 0",
-                                    }}
-                                  />
-                                  <Button
-                                    type="button"
-                                    icon={
-                                      <PlusOutlined
-                                        style={{
-                                          fontSize: "20px",
-                                          marginRight: "5px",
-                                        }}
-                                      />
-                                    }
-                                    className="addButtonStyles"
-                                    style={{
-                                      width: "100%",
-                                      height: "40px",
-                                      background: "#efefef",
-                                      borderColor: "#efefef",
-                                      display: "flex",
-                                      justifyContent: "center",
-                                      alignItems: "center",
-                                    }}
-                                    onClick={() => setAddSource(true)}
-                                  >
-                                    Add Source
-                                  </Button>
-                                </>
-                              } */}
                             </>
                           )}
                           style={{
@@ -2638,23 +2741,33 @@ const Leads = () => {
                         dependencies={["currency"]}
                         rules={[
                           {
-                            validator: validateProjectWorth,
+                            validator: (_, value) => {
+                              if (value && value < 0) {
+                                return Promise.reject(
+                                  "Project worth cannot be negative"
+                                );
+                              }
+                              if (form.getFieldValue("currency") && !value) {
+                                return Promise.reject("Enter a project worth");
+                              }
+                              return Promise.resolve();
+                            },
                           },
                         ]}
-                        validateTrigger="onFinish"
                       >
-                        {/* <Input type="number" className="form-control" /> */}
                         <InputNumber
                           placeholder={"Enter a cost"}
                           className="form-control"
+                          min={0}
                           formatter={(value) => {
-                            return `${value}`.replace(
-                              /\B(?=(\d{3})+(?!\d))/g,
-                              ","
-                            );
+                            return value
+                              ? `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                              : "";
                           }}
                           parser={(value) => {
-                            return value.replace(/\$\s?|(,*)/g, "");
+                            return value
+                              ? value.replace(/\$\s?|(,*)/g, "")
+                              : "";
                           }}
                         />
                       </Form.Item>
@@ -2755,10 +2868,12 @@ const Leads = () => {
                               <Select
                                 showSearch
                                 onSearch={(val) => {
-                                  setSearchValue(val);
-                                  showTeamSearch(val, "medium");
-                                  // onTeamChange(val)
+                                  if (val.length <= 50) {
+                                    setMediumSearchValue(val);
+                                    showTeamSearch(val, "medium");
+                                  }
                                 }}
+                                searchValue={mediumSearchValue}
                                 filterOption={(input, option) =>
                                   option.children[0]
                                     ?.toLowerCase()
@@ -2773,12 +2888,13 @@ const Leads = () => {
                                 dropdownRender={(menu) => (
                                   <>
                                     {menu}
-                                    {searchValue &&
+                                    {mediumSearchValue &&
                                       !mediumOptions?.some(
                                         (option) =>
                                           option?.title?.toLowerCase() ===
-                                          searchValue?.toLowerCase()
-                                      ) && (
+                                          mediumSearchValue?.toLowerCase()
+                                      ) &&
+                                      mediumSearchValue.length <= 50 && (
                                         <>
                                           <Divider
                                             style={{ margin: "5px 0" }}
@@ -2804,46 +2920,13 @@ const Leads = () => {
                                               alignItems: "center",
                                             }}
                                             onClick={() =>
-                                              handleAddMedium(searchValue)
+                                              handleAddMedium(mediumSearchValue)
                                             }
                                           >
-                                            {`Add "${searchValue}"`}
+                                            {`Add "${mediumSearchValue}"`}
                                           </Button>
                                         </>
                                       )}
-                                    {/* {
-                                  <>
-                                    <Divider
-                                      style={{
-                                        margin: "5px 0",
-                                      }}
-                                    />
-                                    <Button
-                                      type="button"
-                                      icon={
-                                        <PlusOutlined
-                                          style={{
-                                            fontSize: "20px",
-                                            marginRight: "5px",
-                                          }}
-                                        />
-                                      }
-                                      className="addButtonStyles"
-                                      style={{
-                                        width: "100%",
-                                        height: "40px",
-                                        background: "#efefef",
-                                        borderColor: "#efefef",
-                                        display: "flex",
-                                        justifyContent: "center",
-                                        alignItems: "center",
-                                      }}
-                                      onClick={() => setAddMedium(true)}
-                                    >
-                                      Add Medium
-                                    </Button>
-                                  </>
-                                } */}
                                   </>
                                 )}
                                 style={{
@@ -2946,27 +3029,17 @@ const Leads = () => {
 
                 {open?.data && (
                   <>
-                    <h4
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-evenly",
-                        alignItems: "center",
-                      }}
+                    <h4 style={{ marginBottom: "15px" }}>Reach Outs</h4>
+                    <div
+                      className="table-responsive"
+                      style={{ maxHeight: "320px", overflowY: "auto" }}
                     >
-                      Reach Outs
-                    </h4>
-                    <hr
-                      className="developer-dividerdddd"
-                      style={{ opacity: "0", marginTop: "0px" }}
-                    />
-                    <div className="table-responsive">
                       <Table
                         dataSource={reachOuts}
                         columns={reachOutColumns}
                         rowKey={(record, index) => index}
                         pagination={false}
                         bordered
-                        style={{ overflowX: "auto", height: "320px" }}
                         components={
                           i18n.dir() === "rtl"
                             ? {
@@ -2984,22 +3057,18 @@ const Leads = () => {
                           i18n.dir() === "rtl"
                             ? (record, rowIndex) => {
                                 return {
-                                  style: { textAlign: "right" }, // Align table data to the right
+                                  style: { textAlign: "right" },
                                 };
                               }
                             : null
                         }
                       />
                     </div>
-
-                    <div className="submit-section">
-                      <hr />
-                    </div>
                   </>
                 )}
 
-                <div className="submit-section">
-                  <Form.Item>
+                <div className="submit-section" style={{ marginTop: "20px" }}>
+                  <Form.Item style={{ marginBottom: 0 }}>
                     <Button
                       type="primary"
                       htmlType="submit"
@@ -3178,65 +3247,27 @@ const Leads = () => {
       )} */}
       {/* /Page Content */}
 
-      <Modal
-        open={isLostReasonModalVisible}
-        onClose={() => {
-          setIsLostReasonModalVisible(false);
-          setSelectedLostReason(null);
-          setActiveDropdown(null);
-        }}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
-        disableRestoreFocus
-        BackdropProps={{
-          style: { backgroundColor: "rgb(0 0 0 / 87%)" },
-        }}
-      >
-        <div className="modal-dialog modal-dialog-centered modal-md">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title">Select Reason for Lost Status</h5>
-              <button
-                type="button"
-                className="close"
-                onClick={() => {
-                  setIsLostReasonModalVisible(false);
-                  setSelectedLostReason(null);
-                  setActiveDropdown(null);
-                }}
-              >
-                <span aria-hidden="true">×</span>
-              </button>
-            </div>
-            <div className="modal-body">
-              <Radio.Group
-                value={selectedLostReason}
-                onChange={(e) => setSelectedLostReason(e.target.value)}
-              >
-                <Space direction="vertical" style={{ width: "100%" }}>
-                  {lostReasons.map((reason) => (
-                    <Radio key={reason.value} value={reason.value}>
-                      {reason.label}
-                    </Radio>
-                  ))}
-                </Space>
-              </Radio.Group>
-            </div>
-            <div className="modal-footer">
-              <div className="submit-section">
-                <Button
-                  type="primary"
-                  onClick={handleLostReasonSubmit}
-                  className="btn btn-primary submit-btn"
-                  disabled={!selectedLostReason}
-                >
-                  Submit
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Modal>
+      {isLostReasonModalVisible && (
+        <LostReasonModal
+          openModal={isLostReasonModalVisible}
+          closeModal={() => {
+            setIsLostReasonModalVisible(false);
+            setSelectedLostReason(null);
+          }}
+          onSubmit={handleLostReasonSubmit}
+        />
+      )}
+
+      {isConversionDateModalVisible && (
+        <ConversionDateModal
+          openModal={isConversionDateModalVisible}
+          closeModal={() => {
+            setIsConversionDateModalVisible(false);
+            setActiveDropdown(null);
+          }}
+          onSubmit={handleConversionDateSubmit}
+        />
+      )}
 
       {isReachOutModalOpen && (
         <ReachOutModal

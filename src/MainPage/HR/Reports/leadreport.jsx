@@ -32,7 +32,22 @@ const LeadReport = () => {
   const [availableYears, setAvailableYears] = useState([]);
   const user_state = useSelector((state) => state.user.loginvalue);
 
-  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8", "#82ca9d", "#ffc658", "#8884d8", "#83a6ed", "#8dd1e1"];
+  useEffect(() => {
+    document.title = "Leads Report";
+  }, []);
+
+  const COLORS = [
+    "#0088FE",
+    "#00C49F",
+    "#FFBB28",
+    "#FF8042",
+    "#8884d8",
+    "#82ca9d",
+    "#ffc658",
+    "#8884d8",
+    "#83a6ed",
+    "#8dd1e1",
+  ];
 
   useEffect(() => {
     // First fetch all leads to get available years
@@ -40,9 +55,9 @@ const LeadReport = () => {
       .then((res) => {
         if (res.data.success === true) {
           const leads = res.data.Lead.docs;
-          // Get unique years from leads
+          // Get unique years from leads using reachOut instead of createdAt
           const years = [
-            ...new Set(leads.map((lead) => moment(lead.createdAt).year())),
+            ...new Set(leads.map((lead) => moment(lead.reachOut).year())),
           ].sort((a, b) => b - a); // Sort in descending order
 
           setAvailableYears(years);
@@ -73,10 +88,12 @@ const LeadReport = () => {
       .then((res) => {
         if (res.data.success === true) {
           const leads = res.data.Lead.docs;
-          
-          // Filter leads by selected month if any
-          const filteredLeads = selectedMonth 
-            ? leads.filter(lead => moment(lead.createdAt).format("MMM") === selectedMonth)
+
+          // Filter leads by selected month if any, using reachOut instead of createdAt
+          const filteredLeads = selectedMonth
+            ? leads.filter(
+                (lead) => moment(lead.reachOut).format("MMM") === selectedMonth
+              )
             : leads;
 
           // Calculate stats for the cards using filtered leads
@@ -136,10 +153,10 @@ const LeadReport = () => {
           filteredLeads.forEach((lead) => {
             if (lead.accountManager?.fullName) {
               const fullName = lead.accountManager.fullName;
-              const firstName = fullName.split(' ')[0];
+              const firstName = fullName.split(" ")[0];
               accountManagerData[fullName] = {
                 count: (accountManagerData[fullName]?.count || 0) + 1,
-                firstName
+                firstName,
               };
             }
           });
@@ -158,10 +175,11 @@ const LeadReport = () => {
           filteredLeads.forEach((lead) => {
             if (lead.projectType) {
               const projectTitle = lead.projectType
-                .replace(/([A-Z])/g, ' $1')
-                .replace(/^./, str => str.toUpperCase())
+                .replace(/([A-Z])/g, " $1")
+                .replace(/^./, (str) => str.toUpperCase())
                 .trim();
-              projectTypeData[projectTitle] = (projectTypeData[projectTitle] || 0) + 1;
+              projectTypeData[projectTitle] =
+                (projectTypeData[projectTitle] || 0) + 1;
             }
           });
 
@@ -170,7 +188,7 @@ const LeadReport = () => {
             .map(([name, value]) => ({
               name,
               value,
-              percentage: ((value / filteredLeads.length) * 100).toFixed(1)
+              percentage: ((value / filteredLeads.length) * 100).toFixed(1),
             }))
             .sort((a, b) => b.value - a.value);
 
@@ -179,7 +197,7 @@ const LeadReport = () => {
             .map(([name, value]) => ({
               name,
               value,
-              percentage: ((value / filteredLeads.length) * 100).toFixed(1)
+              percentage: ((value / filteredLeads.length) * 100).toFixed(1),
             }))
             .sort((a, b) => b.value - a.value);
 
@@ -189,11 +207,13 @@ const LeadReport = () => {
               name: fullName,
               firstName: data.firstName,
               value: data.count,
-              percentage: ((data.count / filteredLeads.length) * 100).toFixed(1)
+              percentage: ((data.count / filteredLeads.length) * 100).toFixed(
+                1
+              ),
             }))
             .sort((a, b) => b.value - a.value);
 
-          // Process monthly data
+          // Process monthly data using reachOut instead of createdAt
           const monthlyData = {};
           const monthlyConverted = {};
           const monthlyLost = {};
@@ -206,9 +226,9 @@ const LeadReport = () => {
             monthlyLost[monthKey] = 0;
           });
 
-          // Count leads for each month
+          // Count leads for each month using reachOut
           leads.forEach((lead) => {
-            const month = moment(lead.createdAt).format("MMM");
+            const month = moment(lead.reachOut).format("MMM");
             monthlyData[month] = (monthlyData[month] || 0) + 1;
 
             // Track converted and lost leads
@@ -228,17 +248,26 @@ const LeadReport = () => {
 
             return {
               month: monthKey,
-              count: selectedMonth && monthKey !== selectedMonth ? 0 : totalMonthLeads,
+              count:
+                selectedMonth && monthKey !== selectedMonth
+                  ? 0
+                  : totalMonthLeads,
               converted:
-                totalMonthLeads > 0 && (!selectedMonth || monthKey === selectedMonth)
+                totalMonthLeads > 0 &&
+                (!selectedMonth || monthKey === selectedMonth)
                   ? (convertedLeads / totalMonthLeads) * 100
                   : 0,
               lost:
-                totalMonthLeads > 0 && (!selectedMonth || monthKey === selectedMonth)
+                totalMonthLeads > 0 &&
+                (!selectedMonth || monthKey === selectedMonth)
                   ? (lostLeads / totalMonthLeads) * 100
                   : 0,
-              convertedCount: selectedMonth && monthKey !== selectedMonth ? 0 : convertedLeads,
-              lostCount: selectedMonth && monthKey !== selectedMonth ? 0 : lostLeads,
+              convertedCount:
+                selectedMonth && monthKey !== selectedMonth
+                  ? 0
+                  : convertedLeads,
+              lostCount:
+                selectedMonth && monthKey !== selectedMonth ? 0 : lostLeads,
             };
           });
 
@@ -285,14 +314,21 @@ const LeadReport = () => {
           <div className="row align-items-center">
             <div className="col">
               <div className="d-flex align-items-center">
-                <h3 className="page-title">Lead Reports</h3>
+                <h3 className="page-title">Leads Report</h3>
                 {selectedMonth && (
-                  <div className="alert alert-info mb-0 ml-4 py-1 px-2" style={{ display: 'inline-flex', alignItems: 'center', marginLeft: '25px' }}>
+                  <div
+                    className="alert alert-info mb-0 ml-4 py-1 px-2"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      marginLeft: "25px",
+                    }}
+                  >
                     Showing data for {selectedMonth} {selectedYear}
-                    <button 
-                      className="btn btn-link p-0 ml-2" 
+                    <button
+                      className="btn btn-link p-0 ml-2"
                       onClick={() => setSelectedMonth(null)}
-                      style={{ fontSize: '14px' }}
+                      style={{ fontSize: "14px" }}
                     >
                       Clear Filter
                     </button>
@@ -339,11 +375,7 @@ const LeadReport = () => {
               />
             </Col>
             <Col xs={24} sm={12} md={6}>
-              <StatCard
-                title="Lost"
-                value={stats.lostLeads}
-                color="#ff4d4f"
-              />
+              <StatCard title="Lost" value={stats.lostLeads} color="#ff4d4f" />
             </Col>
           </Row>
         )}
@@ -356,7 +388,14 @@ const LeadReport = () => {
                   <h4 className="card-title mb-0">Monthly Lead Distribution</h4>
                 </div>
                 {isLoading ? (
-                  <div style={{ height: "400px", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                  <div
+                    style={{
+                      height: "400px",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
                     <Spin size="large" />
                   </div>
                 ) : monthlyLeadsData.length > 0 ? (
@@ -383,9 +422,7 @@ const LeadReport = () => {
                                 : props.payload.lostCount;
                             return [
                               `${value.toFixed(1)}% (${count} leads)`,
-                              name === "converted"
-                                ? "Converted"
-                                : "Lost",
+                              name === "converted" ? "Converted" : "Lost",
                             ];
                           }}
                           contentStyle={{
@@ -399,10 +436,10 @@ const LeadReport = () => {
                           layout="horizontal"
                           wrapperStyle={{
                             paddingBottom: "20px",
-                            fontSize: "14px"
+                            fontSize: "14px",
                           }}
                           formatter={(value) => {
-                            switch(value) {
+                            switch (value) {
                               case "count":
                                 return "Total Leads";
                               case "converted":
@@ -414,12 +451,12 @@ const LeadReport = () => {
                             }
                           }}
                         />
-                        <Bar 
-                          dataKey="count" 
-                          fill="#1890ff" 
+                        <Bar
+                          dataKey="count"
+                          fill="#1890ff"
                           name="count"
                           onClick={(data) => handleMonthClick(data)}
-                          style={{ cursor: 'pointer' }}
+                          style={{ cursor: "pointer" }}
                         />
                         <Line
                           yAxisId="right"
@@ -443,7 +480,14 @@ const LeadReport = () => {
                     </ResponsiveContainer>
                   </div>
                 ) : (
-                  <div style={{ height: "400px", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                  <div
+                    style={{
+                      height: "400px",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
                     No leads data available
                   </div>
                 )}
@@ -457,10 +501,19 @@ const LeadReport = () => {
             <div className="card">
               <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center mb-3">
-                  <h4 className="card-title mb-0">Leads by Communication Medium</h4>
+                  <h4 className="card-title mb-0">
+                    Leads by Communication Medium
+                  </h4>
                 </div>
                 {isLoading ? (
-                  <div style={{ height: "400px", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                  <div
+                    style={{
+                      height: "400px",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
                     <Spin size="large" />
                   </div>
                 ) : communicationData.length > 0 ? (
@@ -473,12 +526,15 @@ const LeadReport = () => {
                           textAnchor="middle"
                           dominantBaseline="middle"
                           style={{
-                            fontSize: '24px',
-                            fontWeight: 'bold',
-                            fill: '#333'
+                            fontSize: "24px",
+                            fontWeight: "bold",
+                            fill: "#333",
                           }}
                         >
-                          {communicationData.reduce((sum, item) => sum + item.value, 0)}
+                          {communicationData.reduce(
+                            (sum, item) => sum + item.value,
+                            0
+                          )}
                         </text>
                         <text
                           x="50%"
@@ -486,8 +542,8 @@ const LeadReport = () => {
                           textAnchor="middle"
                           dominantBaseline="middle"
                           style={{
-                            fontSize: '14px',
-                            fill: '#666'
+                            fontSize: "14px",
+                            fill: "#666",
                           }}
                         >
                           Total Reach Outs
@@ -505,12 +561,22 @@ const LeadReport = () => {
                             stroke: "#999",
                             strokeWidth: 1,
                             strokeDasharray: "2 2",
-                            offsetRadius: 10
+                            offsetRadius: 20,
+                            length: 30,
                           }}
-                          label={({ name, value }) => `${name}: ${value}`}
+                          label={({ name, value, percent }) => {
+                            const shortenedName =
+                              name.length > 25
+                                ? name.substring(0, 22) + "..."
+                                : name;
+                            return `${shortenedName}: ${value}`;
+                          }}
                         >
                           {communicationData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={COLORS[index % COLORS.length]}
+                            />
                           ))}
                         </Pie>
                         <Tooltip
@@ -523,7 +589,7 @@ const LeadReport = () => {
                             border: "1px solid #ccc",
                             whiteSpace: "normal",
                             wordWrap: "break-word",
-                            maxWidth: "200px"
+                            maxWidth: "200px",
                           }}
                         />
                         <Legend
@@ -535,16 +601,22 @@ const LeadReport = () => {
                             fontSize: "13px",
                             maxHeight: "300px",
                             overflowY: "auto",
-                            width: "180px"
+                            width: "180px",
                           }}
                           formatter={(value, entry) => {
                             return (
-                              <span style={{ 
-                                display: "inline-block", 
-                                wordWrap: "break-word",
-                                whiteSpace: "normal",
-                                lineHeight: "1.2em"
-                              }}>
+                              <span
+                                style={{
+                                  display: "inline-block",
+                                  wordWrap: "break-word",
+                                  whiteSpace: "nowrap",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  maxWidth: "150px",
+                                  lineHeight: "1.2em",
+                                }}
+                                title={`${value}: ${entry.payload.value} reach outs`}
+                              >
                                 {value}: {entry.payload.value} reach outs
                               </span>
                             );
@@ -554,7 +626,14 @@ const LeadReport = () => {
                     </ResponsiveContainer>
                   </div>
                 ) : (
-                  <div style={{ height: "400px", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                  <div
+                    style={{
+                      height: "400px",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
                     No communication data available
                   </div>
                 )}
@@ -569,7 +648,14 @@ const LeadReport = () => {
                   <h4 className="card-title mb-0">Leads by Account Manager</h4>
                 </div>
                 {isLoading ? (
-                  <div style={{ height: "400px", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                  <div
+                    style={{
+                      height: "400px",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
                     <Spin size="large" />
                   </div>
                 ) : accountManagerData.length > 0 ? (
@@ -582,12 +668,15 @@ const LeadReport = () => {
                           textAnchor="middle"
                           dominantBaseline="middle"
                           style={{
-                            fontSize: '24px',
-                            fontWeight: 'bold',
-                            fill: '#333'
+                            fontSize: "24px",
+                            fontWeight: "bold",
+                            fill: "#333",
                           }}
                         >
-                          {accountManagerData.reduce((sum, item) => sum + item.value, 0)}
+                          {accountManagerData.reduce(
+                            (sum, item) => sum + item.value,
+                            0
+                          )}
                         </text>
                         <text
                           x="50%"
@@ -595,8 +684,8 @@ const LeadReport = () => {
                           textAnchor="middle"
                           dominantBaseline="middle"
                           style={{
-                            fontSize: '14px',
-                            fill: '#666'
+                            fontSize: "14px",
+                            fill: "#666",
                           }}
                         >
                           Total Leads
@@ -614,14 +703,22 @@ const LeadReport = () => {
                             stroke: "#999",
                             strokeWidth: 1,
                             strokeDasharray: "2 2",
-                            offsetRadius: 10
+                            offsetRadius: 20,
+                            length: 30,
                           }}
-                          label={({ firstName, value }) => {
-                            return `${firstName}: ${value}`;
+                          label={({ firstName, value, percent }) => {
+                            const shortenedName =
+                              firstName.length > 25
+                                ? firstName.substring(0, 22) + "..."
+                                : firstName;
+                            return `${shortenedName}: ${value}`;
                           }}
                         >
                           {accountManagerData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={COLORS[index % COLORS.length]}
+                            />
                           ))}
                         </Pie>
                         <Tooltip
@@ -634,7 +731,7 @@ const LeadReport = () => {
                             border: "1px solid #ccc",
                             whiteSpace: "normal",
                             wordWrap: "break-word",
-                            maxWidth: "200px"
+                            maxWidth: "200px",
                           }}
                         />
                         <Legend
@@ -646,17 +743,24 @@ const LeadReport = () => {
                             fontSize: "13px",
                             maxHeight: "300px",
                             overflowY: "auto",
-                            width: "180px"
+                            width: "180px",
                           }}
                           formatter={(value, entry) => {
                             return (
-                              <span style={{ 
-                                display: "inline-block", 
-                                wordWrap: "break-word",
-                                whiteSpace: "normal",
-                                lineHeight: "1.2em"
-                              }}>
-                                {entry.payload.firstName}: {entry.payload.value} leads
+                              <span
+                                style={{
+                                  display: "inline-block",
+                                  wordWrap: "break-word",
+                                  whiteSpace: "nowrap",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  maxWidth: "150px",
+                                  lineHeight: "1.2em",
+                                }}
+                                title={`${entry.payload.firstName}: ${entry.payload.value} leads`}
+                              >
+                                {entry.payload.firstName}: {entry.payload.value}{" "}
+                                leads
                               </span>
                             );
                           }}
@@ -665,7 +769,14 @@ const LeadReport = () => {
                     </ResponsiveContainer>
                   </div>
                 ) : (
-                  <div style={{ height: "400px", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                  <div
+                    style={{
+                      height: "400px",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
                     No account manager data available
                   </div>
                 )}
@@ -682,7 +793,14 @@ const LeadReport = () => {
                   <h4 className="card-title mb-0">Leads by Source</h4>
                 </div>
                 {isLoading ? (
-                  <div style={{ height: "400px", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                  <div
+                    style={{
+                      height: "400px",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
                     <Spin size="large" />
                   </div>
                 ) : sourceData.length > 0 ? (
@@ -695,12 +813,15 @@ const LeadReport = () => {
                           textAnchor="middle"
                           dominantBaseline="middle"
                           style={{
-                            fontSize: '24px',
-                            fontWeight: 'bold',
-                            fill: '#333'
+                            fontSize: "24px",
+                            fontWeight: "bold",
+                            fill: "#333",
                           }}
                         >
-                          {sourceData.reduce((sum, item) => sum + item.value, 0)}
+                          {sourceData.reduce(
+                            (sum, item) => sum + item.value,
+                            0
+                          )}
                         </text>
                         <text
                           x="50%"
@@ -708,8 +829,8 @@ const LeadReport = () => {
                           textAnchor="middle"
                           dominantBaseline="middle"
                           style={{
-                            fontSize: '14px',
-                            fill: '#666'
+                            fontSize: "14px",
+                            fill: "#666",
                           }}
                         >
                           Total Leads
@@ -727,14 +848,22 @@ const LeadReport = () => {
                             stroke: "#999",
                             strokeWidth: 1,
                             strokeDasharray: "2 2",
-                            offsetRadius: 10
+                            offsetRadius: 20,
+                            length: 30,
                           }}
-                          label={({ name, value }) => {
-                            return `${name}: ${value}`;
+                          label={({ name, value, percent }) => {
+                            const shortenedName =
+                              name.length > 25
+                                ? name.substring(0, 22) + "..."
+                                : name;
+                            return `${shortenedName}: ${value}`;
                           }}
                         >
                           {sourceData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={COLORS[index % COLORS.length]}
+                            />
                           ))}
                         </Pie>
                         <Tooltip
@@ -747,7 +876,7 @@ const LeadReport = () => {
                             border: "1px solid #ccc",
                             whiteSpace: "normal",
                             wordWrap: "break-word",
-                            maxWidth: "200px"
+                            maxWidth: "200px",
                           }}
                         />
                         <Legend
@@ -759,16 +888,22 @@ const LeadReport = () => {
                             fontSize: "13px",
                             maxHeight: "300px",
                             overflowY: "auto",
-                            width: "180px"
+                            width: "180px",
                           }}
                           formatter={(value, entry) => {
                             return (
-                              <span style={{ 
-                                display: "inline-block", 
-                                wordWrap: "break-word",
-                                whiteSpace: "normal",
-                                lineHeight: "1.2em"
-                              }}>
+                              <span
+                                style={{
+                                  display: "inline-block",
+                                  wordWrap: "break-word",
+                                  whiteSpace: "nowrap",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  maxWidth: "150px",
+                                  lineHeight: "1.2em",
+                                }}
+                                title={`${value}: ${entry.payload.value} leads`}
+                              >
                                 {value}: {entry.payload.value} leads
                               </span>
                             );
@@ -778,7 +913,14 @@ const LeadReport = () => {
                     </ResponsiveContainer>
                   </div>
                 ) : (
-                  <div style={{ height: "400px", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                  <div
+                    style={{
+                      height: "400px",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
                     No source data available
                   </div>
                 )}
@@ -793,7 +935,14 @@ const LeadReport = () => {
                   <h4 className="card-title mb-0">Leads by Project Type</h4>
                 </div>
                 {isLoading ? (
-                  <div style={{ height: "400px", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                  <div
+                    style={{
+                      height: "400px",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
                     <Spin size="large" />
                   </div>
                 ) : projectTypeData.length > 0 ? (
@@ -806,12 +955,15 @@ const LeadReport = () => {
                           textAnchor="middle"
                           dominantBaseline="middle"
                           style={{
-                            fontSize: '24px',
-                            fontWeight: 'bold',
-                            fill: '#333'
+                            fontSize: "24px",
+                            fontWeight: "bold",
+                            fill: "#333",
                           }}
                         >
-                          {projectTypeData.reduce((sum, item) => sum + item.value, 0)}
+                          {projectTypeData.reduce(
+                            (sum, item) => sum + item.value,
+                            0
+                          )}
                         </text>
                         <text
                           x="50%"
@@ -819,8 +971,8 @@ const LeadReport = () => {
                           textAnchor="middle"
                           dominantBaseline="middle"
                           style={{
-                            fontSize: '14px',
-                            fill: '#666'
+                            fontSize: "14px",
+                            fill: "#666",
                           }}
                         >
                           Total Leads
@@ -838,14 +990,22 @@ const LeadReport = () => {
                             stroke: "#999",
                             strokeWidth: 1,
                             strokeDasharray: "2 2",
-                            offsetRadius: 10
+                            offsetRadius: 20,
+                            length: 30,
                           }}
-                          label={({ name, value }) => {
-                            return `${name}: ${value}`;
+                          label={({ name, value, percent }) => {
+                            const shortenedName =
+                              name.length > 25
+                                ? name.substring(0, 22) + "..."
+                                : name;
+                            return `${shortenedName}: ${value}`;
                           }}
                         >
                           {projectTypeData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={COLORS[index % COLORS.length]}
+                            />
                           ))}
                         </Pie>
                         <Tooltip
@@ -858,7 +1018,7 @@ const LeadReport = () => {
                             border: "1px solid #ccc",
                             whiteSpace: "normal",
                             wordWrap: "break-word",
-                            maxWidth: "200px"
+                            maxWidth: "200px",
                           }}
                         />
                         <Legend
@@ -870,16 +1030,22 @@ const LeadReport = () => {
                             fontSize: "13px",
                             maxHeight: "300px",
                             overflowY: "auto",
-                            width: "180px"
+                            width: "180px",
                           }}
                           formatter={(value, entry) => {
                             return (
-                              <span style={{ 
-                                display: "inline-block", 
-                                wordWrap: "break-word",
-                                whiteSpace: "normal",
-                                lineHeight: "1.2em"
-                              }}>
+                              <span
+                                style={{
+                                  display: "inline-block",
+                                  wordWrap: "break-word",
+                                  whiteSpace: "nowrap",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  maxWidth: "150px",
+                                  lineHeight: "1.2em",
+                                }}
+                                title={`${value}: ${entry.payload.value} leads`}
+                              >
                                 {value}: {entry.payload.value} leads
                               </span>
                             );
@@ -889,7 +1055,14 @@ const LeadReport = () => {
                     </ResponsiveContainer>
                   </div>
                 ) : (
-                  <div style={{ height: "400px", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                  <div
+                    style={{
+                      height: "400px",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
                     No project type data available
                   </div>
                 )}

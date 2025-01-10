@@ -30,6 +30,8 @@ import { useTranslation } from "react-i18next";
 import { acceptableFormats } from "./Projects/EditProjects";
 import { uploadFunction } from "./Projects/UploadAndDeleteFunc";
 import ReasoningModal from "./ReasoningModal";
+import LostReasonModal from "./LostReasonModal";
+import ConversionDateModal from "./ConversionDateModal";
 
 const LeadsDetails = () => {
   const nav = useNavigate();
@@ -41,6 +43,9 @@ const LeadsDetails = () => {
   const location = useLocation();
   // const locationLead = location.state;
   // console.log(leadObject);
+  const LABEL_MIN_WIDTH = "120px";
+  const SIDEBAR_WIDTH = "3"; // Column width out of 12 (Bootstrap grid)
+  const CONTENT_WIDTH = "9"; // Remaining width for content
   const [activeTab, setActiveTab] = useState("notes");
   const recentlyViewd = [
     { value: "Sort By Alphabet", label: "Sort By Alphabet" },
@@ -53,6 +58,7 @@ const LeadsDetails = () => {
   const [loadReactOut, setLoadReachOut] = useState(false);
   const [loadStatus, setLoadStatus] = useState(false);
   const [loadReason, setLoadReason] = useState(false);
+  const [loadProjectType, setLoadProjectType] = useState(false);
 
   const [leadObject, setLeadObject] = useState(location?.state?.lead);
   const [leadFiles, setLeadFiles] = useState([]);
@@ -60,8 +66,8 @@ const LeadsDetails = () => {
   const [newFiles, setNewFiles] = useState([]);
   const [reason, setReason] = useState(""); // State to hold the reason
   const [open, setOpen] = useState({
-    isAddReasoning:false,
-    isEditReasoning:false,
+    isAddReasoning: false,
+    isEditReasoning: false,
     isAddReachOut: false,
     isEditReachout: false,
     isDeleteReachout: false,
@@ -74,15 +80,18 @@ const LeadsDetails = () => {
   const [page, setPage] = useState(1);
   const [size, setSize] = useState(20);
   const [selectedLostReason, setSelectedLostReason] = useState(null);
-  const [isLostReasonModalVisible, setIsLostReasonModalVisible] = useState(false);
+  const [isLostReasonModalVisible, setIsLostReasonModalVisible] =
+    useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
+  const [isConversionDateModalVisible, setIsConversionDateModalVisible] =
+    useState(false);
 
   useEffect(() => {
-    if ( role === 'admin' || permissions?.leadsManagement ) {
+    if (role === "admin" || permissions?.leadsManagement) {
       viewFiles();
-      } else {
-        nav('/restricted', { state: { unAuthorize: true}})
-      }
+    } else {
+      nav("/restricted", { state: { unAuthorize: true } });
+    }
   }, []);
 
   const viewFiles = () => {
@@ -117,16 +126,16 @@ const LeadsDetails = () => {
     apiServices("GET", `leads?leadId=${leadObject?._id}`, null, user_state)
       .then((res) => {
         if (res.data.success === true) {
-          const updatedLeads = res?.data?.Lead?.docs[0]
+          const updatedLeads = res?.data?.Lead?.docs[0];
           setLeadObject(updatedLeads);
-          nav(location.pathname, { 
-            state: {...location.state, lead: updatedLeads} ,
-            replace: true
-          }); 
-          setLoadNotes(false)
-          setLoadReachOut(false)
-          setLoadStatus(false)
-          setLoadReason(false)
+          nav(location.pathname, {
+            state: { ...location.state, lead: updatedLeads },
+            replace: true,
+          });
+          setLoadNotes(false);
+          setLoadReachOut(false);
+          setLoadStatus(false);
+          setLoadReason(false);
         }
       })
       .catch((err) => {
@@ -141,8 +150,8 @@ const LeadsDetails = () => {
         );
         setLoadNotes(false);
         setLoadReachOut(false);
-        setLoadStatus(false)
-        setLoadReason(false)
+        setLoadStatus(false);
+        setLoadReason(false);
       });
   };
 
@@ -184,10 +193,10 @@ const LeadsDetails = () => {
         throw new Error(`Failed to fetch file: ${response.statusText}`);
       }
       const blob = await response.blob();
-  
+
       // Create an object URL for the Blob
       const objectUrl = window.URL.createObjectURL(blob);
-  
+
       // Create an anchor element and trigger the download
       const anchor = document.createElement("a");
       anchor.href = objectUrl;
@@ -195,7 +204,7 @@ const LeadsDetails = () => {
       document.body.appendChild(anchor); // Append to DOM
       anchor.click(); // Trigger click
       document.body.removeChild(anchor); // Clean up
-  
+
       // Release the object URL
       window.URL.revokeObjectURL(objectUrl);
     } catch (error) {
@@ -305,8 +314,9 @@ const LeadsDetails = () => {
                       // target="_blank"
                       // rel="noopener noreferrer"
                       // download
-                      
-                      onClick={(e) => {e.stopPropagation()
+
+                      onClick={(e) => {
+                        e.stopPropagation();
                         downloadFile(downloadLink, file?.fileName); // Use original file name
                       }} // Prevent parent click event
                     >
@@ -324,8 +334,8 @@ const LeadsDetails = () => {
 
   const renderReachOuts = () => {
     const sortedReachOuts = leadObject?.reachOuts
-    ?.slice() // Create a shallow copy to avoid mutating the original array
-    ?.sort((a, b) => new Date(b.date) - new Date(a.date));
+      ?.slice() // Create a shallow copy to avoid mutating the original array
+      ?.sort((a, b) => new Date(b.date) - new Date(a.date));
 
     return sortedReachOuts?.map((reachOut) => {
       return (
@@ -366,7 +376,7 @@ const LeadsDetails = () => {
                   className="dropdown-item"
                   href="javascript:void(0)"
                   onClick={(e) => {
-                    e.stopPropagation()
+                    e.stopPropagation();
                     setOpen({
                       isDeleteReachout: true,
                       data: reachOut,
@@ -378,12 +388,14 @@ const LeadsDetails = () => {
               </div>
             </div>
           </div>
-          {reachOut.comments && <p className="your-text-class">{reachOut.comments}</p>}
+          {reachOut.comments && (
+            <p className="your-text-class">{reachOut.comments}</p>
+          )}
         </div>
       );
     });
   };
-  
+
   const onHandleDelete = (val) => {
     setLoader(true);
     let data = {
@@ -397,10 +409,10 @@ const LeadsDetails = () => {
       data.noteId = val?.noteId;
     }
 
-    if(open.isDeleteNotes){
-      setLoadNotes(true)
-    }else if(open.isDeleteReachout){
-      setLoadReachOut(true)
+    if (open.isDeleteNotes) {
+      setLoadNotes(true);
+    } else if (open.isDeleteReachout) {
+      setLoadReachOut(true);
     }
 
     let apiUrl = open.isDeleteNotes
@@ -423,7 +435,7 @@ const LeadsDetails = () => {
           // else{
           //}
           viewLeads();
-          (open.isDeleteNotes || open.isDelFileOpen) ? viewFiles() : null;
+          open.isDeleteNotes || open.isDelFileOpen ? viewFiles() : null;
           message.success(
             open.isDeleteNotes
               ? "Note deleted successfully"
@@ -458,15 +470,20 @@ const LeadsDetails = () => {
   const handleUpdateStatus = async (record, newStatus) => {
     if (newStatus === "Lost") {
       setSelectedRecord(record);
-      setSelectedLostReason(null);
       setIsLostReasonModalVisible(true);
+      return;
+    }
+
+    if (newStatus === "Converted") {
+      setSelectedRecord(record);
+      setIsConversionDateModalVisible(true);
       return;
     }
 
     setLoadStatus(true);
     try {
       const data = {
-        status: newStatus
+        status: newStatus,
       };
 
       const response = await apiServices(
@@ -475,7 +492,7 @@ const LeadsDetails = () => {
         data,
         user_state
       );
-      
+
       if (response?.data?.success === true) {
         message.success("Status updated successfully");
         viewLeads();
@@ -490,17 +507,12 @@ const LeadsDetails = () => {
     }
   };
 
-  const handleLostReasonSubmit = async () => {
-    if (!selectedLostReason) {
-      message.error("Please select a reason");
-      return;
-    }
-
+  const handleLostReasonSubmit = async (selectedReason) => {
     setLoadStatus(true);
     try {
       const data = {
         status: "Lost",
-        lost_reason: selectedLostReason
+        lost_reason: selectedReason,
       };
 
       const response = await apiServices(
@@ -514,7 +526,36 @@ const LeadsDetails = () => {
         message.success("Status updated successfully");
         viewLeads();
         setIsLostReasonModalVisible(false);
-        setSelectedLostReason(null);
+      } else {
+        throw new Error(response?.data?.msg || "Error updating status");
+      }
+    } catch (err) {
+      console.error("Error updating status:", err);
+      message.error(err?.response?.data?.msg || "Error updating status");
+    } finally {
+      setLoadStatus(false);
+    }
+  };
+
+  const handleConversionDateSubmit = async (conversionDate) => {
+    setLoadStatus(true);
+    try {
+      const data = {
+        status: "Converted",
+        conversion_date: conversionDate,
+      };
+
+      const response = await apiServices(
+        "PUT",
+        `leads/${selectedRecord._id}/status`,
+        data,
+        user_state
+      );
+
+      if (response?.data?.success === true) {
+        message.success("Status updated successfully");
+        viewLeads();
+        setIsConversionDateModalVisible(false);
       } else {
         throw new Error(response?.data?.msg || "Error updating status");
       }
@@ -530,15 +571,10 @@ const LeadsDetails = () => {
     setLoadStatus(true);
     const data = {
       status: "Lost",
-      lost_reason: enteredReason
+      lost_reason: enteredReason,
     };
 
-    apiServices(
-      "PUT",
-      `leads/${leadObject._id}/status`,
-      data,
-      user_state
-    )
+    apiServices("PUT", `leads/${leadObject._id}/status`, data, user_state)
       .then((response) => {
         if (response?.data?.success === true) {
           message.success("Status updated successfully");
@@ -561,15 +597,10 @@ const LeadsDetails = () => {
   const handleReasonUpdateSubmit = (enteredReason) => {
     setLoadStatus(true);
     const data = {
-      lost_reason: enteredReason
+      lost_reason: enteredReason,
     };
 
-    apiServices(
-      "PUT",
-      `leads/${leadObject._id}/status`,
-      data,
-      user_state
-    )
+    apiServices("PUT", `leads/${leadObject._id}/status`, data, user_state)
       .then((response) => {
         if (response?.data?.success === true) {
           message.success("Reason updated successfully");
@@ -591,8 +622,8 @@ const LeadsDetails = () => {
 
   const handleClose = () => {
     setOpen({
-      isAddReasoning:false,
-      isEditReasoning:false,
+      isAddReasoning: false,
+      isEditReasoning: false,
       isAddNotes: false,
       isAddReachOut: false,
       isEditReachout: false,
@@ -773,7 +804,8 @@ const LeadsDetails = () => {
             <a
               className="dropdown-item"
               href="javascript:void(0)"
-              onClick={(e) => {e.stopPropagation()
+              onClick={(e) => {
+                e.stopPropagation();
                 const downloadLink = record?.imageUrl?.replace(
                   "/upload/",
                   "/upload/fl_attachment/"
@@ -889,6 +921,30 @@ const LeadsDetails = () => {
     />
   );
 
+  const handleUpdateProjectType = async (newProjectType) => {
+    setLoadProjectType(true);
+    try {
+      const data = {
+        ...leadObject,
+        projectType: newProjectType,
+      };
+
+      const response = await apiServices("PUT", "leads", data, user_state);
+
+      if (response?.data?.success === true) {
+        message.success("Project type updated successfully");
+        viewLeads();
+      } else {
+        throw new Error(response?.data?.msg || "Error updating project type");
+      }
+    } catch (err) {
+      console.error("Error updating project type:", err);
+      message.error(err?.response?.data?.msg || "Error updating project type");
+    } finally {
+      setLoadProjectType(false);
+    }
+  };
+
   return (
     <>
       {/* Page Wrapper */}
@@ -978,43 +1034,58 @@ const LeadsDetails = () => {
                         }`}
                       />{" "}
                       {loadStatus ? (
-                    <Spin size="small" />
-                  ) : (
-                    <>
-                      {leadObject?.status === "OnGoing"
-                        ? "Ongoing"
-                        : leadObject?.status === "Converted"
-                        ? "Converted"
-                        : leadObject?.status === "Lost"
-                        ? "Lost"
-                        : ""}
-                    </>)}
+                        <Spin size="small" />
+                      ) : (
+                        <>
+                          {leadObject?.status === "OnGoing"
+                            ? "Ongoing"
+                            : leadObject?.status === "OnHold"
+                            ? "On Hold"
+                            : leadObject?.status === "Converted"
+                            ? "Converted"
+                            : leadObject?.status === "Lost"
+                            ? "Lost"
+                            : ""}
+                        </>
+                      )}
                     </a>
                     <div className="dropdown-menu dropdown-menu-right">
                       <a
-                        className={`dropdown-item ${leadObject?.status === "OnGoing" && "disabled"}`}
+                        className={`dropdown-item ${
+                          leadObject?.status === "OnGoing" && "disabled"
+                        }`}
                         href="javascript:void(0)"
-                        onClick={() => handleUpdateStatus(leadObject, "OnGoing")}
+                        onClick={() =>
+                          handleUpdateStatus(leadObject, "OnGoing")
+                        }
                       >
                         <i className="fa fa-dot-circle-o text-info" /> Ongoing
                       </a>
                       <a
-                        className={`dropdown-item ${leadObject?.status === "OnHold" && "disabled"}`}
+                        className={`dropdown-item ${
+                          leadObject?.status === "OnHold" && "disabled"
+                        }`}
                         href="javascript:void(0)"
                         onClick={() => handleUpdateStatus(leadObject, "OnHold")}
                       >
                         <i className="fa fa-dot-circle-o text-purple" /> On Hold
                       </a>
                       <a
-                        className={`dropdown-item ${leadObject?.status === "Converted" && "disabled"}`}
+                        className={`dropdown-item ${
+                          leadObject?.status === "Converted" && "disabled"
+                        }`}
                         href="javascript:void(0)"
-                        onClick={() => handleUpdateStatus(leadObject, "Converted")}
+                        onClick={() =>
+                          handleUpdateStatus(leadObject, "Converted")
+                        }
                       >
                         <i className="fa fa-dot-circle-o text-success" />{" "}
                         Converted
                       </a>
                       <a
-                        className={`dropdown-item ${leadObject?.status === "Lost" && "disabled"}`}
+                        className={`dropdown-item ${
+                          leadObject?.status === "Lost" && "disabled"
+                        }`}
                         href="javascript:void(0)"
                         onClick={() => handleUpdateStatus(leadObject, "Lost")}
                       >
@@ -1027,7 +1098,7 @@ const LeadsDetails = () => {
             </div>
             {/* /Contact User */}
             {/* Contact Sidebar */}
-            <div className="col-xl-3">
+            <div className={`col-xl-${SIDEBAR_WIDTH}`}>
               <div className="stickybar">
                 <div className="card contact-sidebar">
                   <h5>
@@ -1035,11 +1106,21 @@ const LeadsDetails = () => {
                   </h5>
                   <ul className="other-info">
                     <li>
-                      <label className="other-title">Date Created</label>
+                      <label
+                        className="other-title"
+                        style={{ minWidth: LABEL_MIN_WIDTH }}
+                      >
+                        Date Created
+                      </label>
                       <label>{formatDateWithTime(leadObject?.createdAt)}</label>
                     </li>
                     <li>
-                      <label className="other-title">Value</label>
+                      <label
+                        className="other-title"
+                        style={{ minWidth: LABEL_MIN_WIDTH }}
+                      >
+                        Value
+                      </label>
                       <label>
                         {leadObject?.projectWorth
                           ? `${leadObject?.projectWorth?.replace(
@@ -1050,25 +1131,72 @@ const LeadsDetails = () => {
                       </label>
                     </li>
                     <li>
-                      <label className="other-title">Last Follow Up</label>
+                      <label
+                        className="other-title"
+                        style={{ minWidth: LABEL_MIN_WIDTH }}
+                      >
+                        Last Follow Up
+                      </label>
                       <label>
                         {formatDateWithoutTime(leadObject?.lastReachOut)}
                       </label>
                     </li>
                     <li>
-                      <label className="other-title">Source</label>
-                      <p style={{overflowWrap: "break-word", wordBreak: "break-word"}}>{leadObject?.source?.title}</p>
-                    </li>
-                    {leadObject?.status === "Lost" && leadObject?.lost_reason && (
-                      <li>
-                        <label className="other-title">Lost Reason</label>
-                        <p style={{
-                          overflowWrap: "break-word", 
+                      <label
+                        className="other-title"
+                        style={{ minWidth: LABEL_MIN_WIDTH }}
+                      >
+                        Source
+                      </label>
+                      <p
+                        style={{
+                          overflowWrap: "break-word",
                           wordBreak: "break-word",
-                          color: "#dc3545" // Red color for lost reason
-                        }}>{leadObject?.lost_reason}</p>
-                      </li>
-                    )}
+                        }}
+                      >
+                        {leadObject?.source?.title}
+                      </p>
+                    </li>
+                    {leadObject?.status === "Lost" &&
+                      leadObject?.lost_reason && (
+                        <li>
+                          <label
+                            className="other-title"
+                            style={{ minWidth: LABEL_MIN_WIDTH }}
+                          >
+                            Lost Reason
+                          </label>
+                          <p
+                            style={{
+                              overflowWrap: "break-word",
+                              wordBreak: "break-word",
+                              color: "#dc3545", // Red color for lost reason
+                            }}
+                          >
+                            {leadObject?.lost_reason}
+                          </p>
+                        </li>
+                      )}
+                    {leadObject?.status === "Converted" &&
+                      leadObject?.conversion_date && (
+                        <li>
+                          <label
+                            className="other-title"
+                            style={{ minWidth: LABEL_MIN_WIDTH }}
+                          >
+                            Conversion Date
+                          </label>
+                          <p
+                            style={{
+                              overflowWrap: "break-word",
+                              wordBreak: "break-word",
+                              color: "#28a745", // Green color for conversion date
+                            }}
+                          >
+                            {formatDateWithoutTime(leadObject?.conversion_date)}
+                          </p>
+                        </li>
+                      )}
                   </ul>
                   <div className="d-flex align-items-center justify-content-between flex-wrap">
                     <h5>
@@ -1104,8 +1232,7 @@ const LeadsDetails = () => {
                           aria-expanded="false"
                         >
                           <label>
-                            {formatProjectType(leadObject?.projectType)}{" "}
-                            {/* Display the current project type */}
+                            {formatProjectType(leadObject?.projectType)}
                           </label>
                           <i className="las la-angle-down ms-1" />
                         </a>
@@ -1124,12 +1251,7 @@ const LeadsDetails = () => {
                               }`}
                               onClick={() => {
                                 if (leadObject.projectType !== type) {
-                                  handleUpdateStatus(
-                                    leadObject,
-                                    type,
-                                    "projectType"
-                                  );
-                                  console.log(`Selected project type: ${type}`);
+                                  handleUpdateProjectType(type);
                                 }
                               }}
                             >
@@ -1141,27 +1263,38 @@ const LeadsDetails = () => {
                     </li>
                   </ul>
 
-                  {leadObject?.reason && 
-                  <>
-                  <div className="d-flex align-items-center justify-content-between flex-wrap">
-                    <h5>
-                      <label>Conversion Reason</label>
-                    </h5>
-                    <h3 style={{marginLeft:'1%'}}>
-                    <a onClick={() => setOpen({ isEditReasoning: true, data: leadObject?.reason})}><i className="fa fa-pencil ml-2" /></a>
-                    </h3>
-                  </div>
-                  <ul className="other-info">
-                    <li>
-                    {loadReason ? (
-                    <Spin size="small" />
-                  ) : (<label style={{lineBreak:"anywhere"}}>
-                        {leadObject?.reason}
-                      </label>)}
-                    </li>
-                  </ul>
-                  </>
-                  }
+                  {leadObject?.reason && (
+                    <>
+                      <div className="d-flex align-items-center justify-content-between flex-wrap">
+                        <h5>
+                          <label>Conversion Reason</label>
+                        </h5>
+                        <h3 style={{ marginLeft: "1%" }}>
+                          <a
+                            onClick={() =>
+                              setOpen({
+                                isEditReasoning: true,
+                                data: leadObject?.reason,
+                              })
+                            }
+                          >
+                            <i className="fa fa-pencil ml-2" />
+                          </a>
+                        </h3>
+                      </div>
+                      <ul className="other-info">
+                        <li>
+                          {loadReason ? (
+                            <Spin size="small" />
+                          ) : (
+                            <label style={{ lineBreak: "anywhere" }}>
+                              {leadObject?.reason}
+                            </label>
+                          )}
+                        </li>
+                      </ul>
+                    </>
+                  )}
 
                   <ul className="other-info">
                     <li>
@@ -1185,7 +1318,7 @@ const LeadsDetails = () => {
             </div>
             {/* /Contact Sidebar */}
             {/* Contact Details */}
-            <div className="col-xl-9">
+            <div className={`col-xl-${CONTENT_WIDTH}`}>
               <div className="contact-tab-wrap">
                 <ul className="contact-nav nav">
                   <li>
@@ -1273,7 +1406,17 @@ const LeadsDetails = () => {
                     </div>
                     <div className="notes-activity">
                       {leadObject?.notes && leadObject.notes.length > 0 ? (
-                        loadNotes ? <Spin size="large" style={{display: "flex", justifyContent:"center"}}/> : renderNotes() // Pass the required data
+                        loadNotes ? (
+                          <Spin
+                            size="large"
+                            style={{
+                              display: "flex",
+                              justifyContent: "center",
+                            }}
+                          />
+                        ) : (
+                          renderNotes()
+                        ) // Pass the required data
                       ) : (
                         <p>No Notes Added Yet.</p>
                       )}
@@ -1304,7 +1447,17 @@ const LeadsDetails = () => {
                     <div className="calls-activity">
                       {leadObject?.reachOuts &&
                       leadObject.reachOuts.length > 0 ? (
-                        loadReactOut ? <Spin size="large" style={{display: "flex", justifyContent:"center"}}/> : renderReachOuts() // Pass the required data
+                        loadReactOut ? (
+                          <Spin
+                            size="large"
+                            style={{
+                              display: "flex",
+                              justifyContent: "center",
+                            }}
+                          />
+                        ) : (
+                          renderReachOuts()
+                        ) // Pass the required data
                       ) : (
                         <p>No communication records available.</p>
                       )}
@@ -1362,7 +1515,7 @@ const LeadsDetails = () => {
                           locale={{
                             emptyText: isLoading ? null : customEmptyText,
                           }}
-                          style={{ overflowX: "auto"}}
+                          style={{ overflowX: "auto" }}
                           loading={isLoading}
                           pagination={false}
                           columns={fileColumns}
@@ -1415,7 +1568,9 @@ const LeadsDetails = () => {
             : ""
         }`}
         open={open.isDeleteNotes || open.isDeleteReachout || open.isDelFileOpen}
-        onOk={() => onHandleDelete(open.isDelFileOpen ? open.data : open?.data?._id)}
+        onOk={() =>
+          onHandleDelete(open.isDelFileOpen ? open.data : open?.data?._id)
+        }
         onCancel={handleClose}
         okText="Delete"
         cancelText="Cancel"
@@ -1430,36 +1585,22 @@ const LeadsDetails = () => {
       </Modal>
 
       {/* Lost Reason Modal */}
-      <Modal
-        title="Select Lost Reason"
-        open={isLostReasonModalVisible}
-        onOk={handleLostReasonSubmit}
-        onCancel={() => {
-          setIsLostReasonModalVisible(false);
-          setSelectedLostReason(null);
-        }}
-        okText="Submit"
-        cancelText="Cancel"
-        centered
-        maskClosable={false}
-        confirmLoading={loadStatus}
-        destroyOnClose
-        width={400}
-        zIndex={1000}
-      >
-        <Radio.Group
-          onChange={(e) => setSelectedLostReason(e.target.value)}
-          value={selectedLostReason}
-        >
-          <Space direction="vertical">
-            <Radio value="Client Not Responding">Client Not Responding</Radio>
-            <Radio value="High Price">High Price</Radio>
-            <Radio value="Interview Failed">Interview Failed</Radio>
-            <Radio value="Assessment Task Failed">Assessment Task Failed</Radio>
-            <Radio value="Other">Other</Radio>
-          </Space>
-        </Radio.Group>
-      </Modal>
+      {isLostReasonModalVisible && (
+        <LostReasonModal
+          openModal={isLostReasonModalVisible}
+          closeModal={() => setIsLostReasonModalVisible(false)}
+          onSubmit={handleLostReasonSubmit}
+        />
+      )}
+
+      {/* Conversion Date Modal */}
+      {isConversionDateModalVisible && (
+        <ConversionDateModal
+          openModal={isConversionDateModalVisible}
+          closeModal={() => setIsConversionDateModalVisible(false)}
+          onSubmit={handleConversionDateSubmit}
+        />
+      )}
 
       {open.isAddReachOut && (
         <ReachOutModal
@@ -1505,7 +1646,7 @@ const LeadsDetails = () => {
           setLoadNotes={setLoadNotes}
         />
       )}
-      {open.isAddReasoning &&(
+      {open.isAddReasoning && (
         <ReasoningModal
           openModal={open.isAddReasoning}
           closeModal={handleClose}
@@ -1513,15 +1654,15 @@ const LeadsDetails = () => {
           onSubmit={handleReasoningSubmit} // Pass the submit handler
         />
       )}
-      {open.isEditReasoning &&(
+      {open.isEditReasoning && (
         <>
-        {console.log("Data being passed to ReasoningModal:", open?.data)}
-        <ReasoningModal
-          openModal={open.isEditReasoning}
-          closeModal={handleClose}
-          data={open?.data}
-          onSubmit={handleReasonUpdateSubmit} // Pass the submit handler
-        />
+          {console.log("Data being passed to ReasoningModal:", open?.data)}
+          <ReasoningModal
+            openModal={open.isEditReasoning}
+            closeModal={handleClose}
+            data={open?.data}
+            onSubmit={handleReasonUpdateSubmit} // Pass the submit handler
+          />
         </>
       )}
     </>
