@@ -561,9 +561,16 @@ const LeadReport = () => {
                             stroke: "#999",
                             strokeWidth: 1,
                             strokeDasharray: "2 2",
-                            offsetRadius: 10,
+                            offsetRadius: 20,
+                            length: 30,
                           }}
-                          label={({ name, value }) => `${name}: ${value}`}
+                          label={({ name, value, percent }) => {
+                            const shortenedName =
+                              name.length > 25
+                                ? name.substring(0, 22) + "..."
+                                : name;
+                            return `${shortenedName}: ${value}`;
+                          }}
                         >
                           {communicationData.map((entry, index) => (
                             <Cell
@@ -602,9 +609,13 @@ const LeadReport = () => {
                                 style={{
                                   display: "inline-block",
                                   wordWrap: "break-word",
-                                  whiteSpace: "normal",
+                                  whiteSpace: "nowrap",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  maxWidth: "150px",
                                   lineHeight: "1.2em",
                                 }}
+                                title={`${value}: ${entry.payload.value} reach outs`}
                               >
                                 {value}: {entry.payload.value} reach outs
                               </span>
@@ -692,10 +703,15 @@ const LeadReport = () => {
                             stroke: "#999",
                             strokeWidth: 1,
                             strokeDasharray: "2 2",
-                            offsetRadius: 10,
+                            offsetRadius: 20,
+                            length: 30,
                           }}
-                          label={({ firstName, value }) => {
-                            return `${firstName}: ${value}`;
+                          label={({ firstName, value, percent }) => {
+                            const shortenedName =
+                              firstName.length > 25
+                                ? firstName.substring(0, 22) + "..."
+                                : firstName;
+                            return `${shortenedName}: ${value}`;
                           }}
                         >
                           {accountManagerData.map((entry, index) => (
@@ -735,9 +751,13 @@ const LeadReport = () => {
                                 style={{
                                   display: "inline-block",
                                   wordWrap: "break-word",
-                                  whiteSpace: "normal",
+                                  whiteSpace: "nowrap",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  maxWidth: "150px",
                                   lineHeight: "1.2em",
                                 }}
+                                title={`${entry.payload.firstName}: ${entry.payload.value} leads`}
                               >
                                 {entry.payload.firstName}: {entry.payload.value}{" "}
                                 leads
@@ -828,10 +848,15 @@ const LeadReport = () => {
                             stroke: "#999",
                             strokeWidth: 1,
                             strokeDasharray: "2 2",
-                            offsetRadius: 10,
+                            offsetRadius: 20,
+                            length: 30,
                           }}
-                          label={({ name, value }) => {
-                            return `${name}: ${value}`;
+                          label={({ name, value, percent }) => {
+                            const shortenedName =
+                              name.length > 25
+                                ? name.substring(0, 22) + "..."
+                                : name;
+                            return `${shortenedName}: ${value}`;
                           }}
                         >
                           {sourceData.map((entry, index) => (
@@ -871,9 +896,13 @@ const LeadReport = () => {
                                 style={{
                                   display: "inline-block",
                                   wordWrap: "break-word",
-                                  whiteSpace: "normal",
+                                  whiteSpace: "nowrap",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  maxWidth: "150px",
                                   lineHeight: "1.2em",
                                 }}
+                                title={`${value}: ${entry.payload.value} leads`}
                               >
                                 {value}: {entry.payload.value} leads
                               </span>
@@ -961,10 +990,15 @@ const LeadReport = () => {
                             stroke: "#999",
                             strokeWidth: 1,
                             strokeDasharray: "2 2",
-                            offsetRadius: 10,
+                            offsetRadius: 20,
+                            length: 30,
                           }}
-                          label={({ name, value }) => {
-                            return `${name}: ${value}`;
+                          label={({ name, value, percent }) => {
+                            const shortenedName =
+                              name.length > 25
+                                ? name.substring(0, 22) + "..."
+                                : name;
+                            return `${shortenedName}: ${value}`;
                           }}
                         >
                           {projectTypeData.map((entry, index) => (
@@ -1004,9 +1038,13 @@ const LeadReport = () => {
                                 style={{
                                   display: "inline-block",
                                   wordWrap: "break-word",
-                                  whiteSpace: "normal",
+                                  whiteSpace: "nowrap",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  maxWidth: "150px",
                                   lineHeight: "1.2em",
                                 }}
+                                title={`${value}: ${entry.payload.value} leads`}
                               >
                                 {value}: {entry.payload.value} leads
                               </span>
