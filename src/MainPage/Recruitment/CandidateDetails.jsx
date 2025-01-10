@@ -1,12 +1,40 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
-import { Card, Row, Col, Button, Spin, message, Tag, Typography, Tabs, Select, Space, Avatar, Tooltip, Rate, Collapse, Empty } from 'antd';
-import { MailOutlined, PhoneOutlined, EnvironmentOutlined, CalendarOutlined, PlusOutlined, ArrowLeftOutlined, FilePdfOutlined, FileWordOutlined, EyeOutlined, DownloadOutlined } from '@ant-design/icons';
-import { apiServices } from '../../Services/apiServices';
-import { useSelector } from 'react-redux';
-import moment from 'moment';
-import CreateInterviewModal from './CreateInterviewModal';
-import CreateTaskModal from './CreateTaskModal';
+import React, { useState, useEffect } from "react";
+import { Link, useParams, useNavigate } from "react-router-dom";
+import {
+  Card,
+  Row,
+  Col,
+  Button,
+  Spin,
+  message,
+  Tag,
+  Typography,
+  Tabs,
+  Select,
+  Space,
+  Avatar,
+  Tooltip,
+  Rate,
+  Collapse,
+  Empty,
+} from "antd";
+import {
+  MailOutlined,
+  PhoneOutlined,
+  EnvironmentOutlined,
+  CalendarOutlined,
+  PlusOutlined,
+  ArrowLeftOutlined,
+  FilePdfOutlined,
+  FileWordOutlined,
+  EyeOutlined,
+  DownloadOutlined,
+} from "@ant-design/icons";
+import { apiServices } from "../../Services/apiServices";
+import { useSelector } from "react-redux";
+import moment from "moment";
+import CreateInterviewModal from "./CreateInterviewModal";
+import CreateTaskModal from "./CreateTaskModal";
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
@@ -17,7 +45,7 @@ const CandidateDetails = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [candidate, setCandidate] = useState(null);
-  const [activeTab, setActiveTab] = useState('timeline');
+  const [activeTab, setActiveTab] = useState("timeline");
   const authState = useSelector((state) => state.user.loginvalue);
   const [isInterviewModalVisible, setIsInterviewModalVisible] = useState(false);
   const [interviews, setInterviews] = useState([]);
@@ -30,73 +58,71 @@ const CandidateDetails = () => {
   useEffect(() => {
     fetchCandidateDetails();
     // Initialize Bootstrap dropdowns
-    if (typeof window !== 'undefined') {
-      require('bootstrap/js/dist/dropdown');
+    if (typeof window !== "undefined") {
+      require("bootstrap/js/dist/dropdown");
     }
   }, [id]);
 
   useEffect(() => {
-    if (id && activeTab === 'interview') {
+    if (id && activeTab === "interview") {
       fetchCandidateInterviews();
     }
   }, [id, activeTab]);
 
   useEffect(() => {
-    if (id && activeTab === 'tasks') {
+    if (id && activeTab === "tasks") {
       fetchCandidateTasks();
     }
   }, [id, activeTab]);
 
   const fetchCandidateDetails = async () => {
-    const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
-    
+    const token =
+      localStorage.getItem("token") || authState?.access_token?.accessToken;
+
     if (!token) {
-      message.error('Authentication required');
-      navigate('/login');
+      message.error("Authentication required");
+      navigate("/login");
       return;
     }
 
     try {
       setLoading(true);
-      const response = await apiServices(
-        "GET",
-        `candidate/${id}`,
-        null,
-        {
-          access_token: {
-            accessToken: token
-          },
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
+      const response = await apiServices("GET", `candidate/${id}`, null, {
+        access_token: {
+          accessToken: token,
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (response?.data?.status) {
-        console.log('Candidate Details Response:', response.data.data);
-        console.log('Resume field value:', response.data.data.resume);
+        console.log("Candidate Details Response:", response.data.data);
+        console.log("Resume URL:", response.data.data.resume);
         setCandidate(response.data.data);
       } else {
-        if (response?.data?.message === 'Invalid token') {
-          message.error('Session expired. Please login again');
-          navigate('/login');
-        } else if (response?.data?.message === 'Candidate not found') {
-          message.error('Candidate not found');
-          navigate('/recruitment/candidates');
+        if (response?.data?.message === "Invalid token") {
+          message.error("Session expired. Please login again");
+          navigate("/login");
+        } else if (response?.data?.message === "Candidate not found") {
+          message.error("Candidate not found");
+          navigate("/recruitment/candidates");
         } else {
-          message.error(response?.data?.message || 'Failed to fetch candidate details');
+          message.error(
+            response?.data?.message || "Failed to fetch candidate details"
+          );
         }
       }
     } catch (error) {
-      console.error('Error fetching candidate details:', error);
+      console.error("Error fetching candidate details:", error);
       if (error.response?.status === 401) {
-        message.error('Session expired. Please login again');
-        navigate('/login');
+        message.error("Session expired. Please login again");
+        navigate("/login");
       } else if (error.response?.status === 404) {
-        message.error('Candidate not found');
-        navigate('/recruitment/candidates');
+        message.error("Candidate not found");
+        navigate("/recruitment/candidates");
       } else {
-        message.error('Error fetching candidate details');
+        message.error("Error fetching candidate details");
       }
     } finally {
       setLoading(false);
@@ -105,37 +131,43 @@ const CandidateDetails = () => {
 
   const getFileIcon = (fileUrl) => {
     if (!fileUrl) return <FilePdfOutlined />;
-    const extension = fileUrl.split('.').pop().toLowerCase();
+    const extension = fileUrl.split(".").pop().toLowerCase();
     switch (extension) {
-      case 'pdf':
-        return <FilePdfOutlined style={{ fontSize: '24px', color: '#ff4d4f' }} />;
-      case 'doc':
-      case 'docx':
-        return <FileWordOutlined style={{ fontSize: '24px', color: '#1890ff' }} />;
+      case "pdf":
+        return (
+          <FilePdfOutlined style={{ fontSize: "24px", color: "#ff4d4f" }} />
+        );
+      case "doc":
+      case "docx":
+        return (
+          <FileWordOutlined style={{ fontSize: "24px", color: "#1890ff" }} />
+        );
       default:
-        return <FilePdfOutlined style={{ fontSize: '24px', color: '#ff4d4f' }} />;
+        return (
+          <FilePdfOutlined style={{ fontSize: "24px", color: "#ff4d4f" }} />
+        );
     }
   };
 
   const getFileName = (fileUrl) => {
-    if (!fileUrl) return 'Resume';
-    const parts = fileUrl.split('/');
+    if (!fileUrl) return "Resume";
+    const parts = fileUrl.split("/");
     return parts[parts.length - 1];
   };
 
   const handlePreviewResume = () => {
     if (!candidate?.resume) {
-      message.error('No resume available for preview');
+      message.error("No resume available for preview");
       return;
     }
 
     // Open resume in new tab
-    window.open(candidate.resume, '_blank');
+    window.open(candidate.resume, "_blank");
   };
 
   const handleDownloadResume = async () => {
     if (!candidate?.resume) {
-      message.error('No resume available for download');
+      message.error("No resume available for download");
       return;
     }
 
@@ -143,7 +175,7 @@ const CandidateDetails = () => {
       const response = await fetch(candidate.resume);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
       link.download = getFileName(candidate.resume);
       document.body.appendChild(link);
@@ -151,23 +183,24 @@ const CandidateDetails = () => {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Error downloading resume:', error);
-      message.error('Failed to download resume');
+      console.error("Error downloading resume:", error);
+      message.error("Failed to download resume");
     }
   };
 
   // Helper function to check if resume URL is valid
   const isValidResumeUrl = (resume) => {
-    console.log('Checking resume URL:', resume);
+    console.log("Checking resume URL:", resume);
     // Check if resume exists and is not empty
     return Boolean(resume && resume.length > 0);
   };
 
   const handleStatusChange = async (newStatus) => {
-    const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
-    
+    const token =
+      localStorage.getItem("token") || authState?.access_token?.accessToken;
+
     if (!token) {
-      message.error('Authentication required');
+      message.error("Authentication required");
       return;
     }
 
@@ -179,23 +212,23 @@ const CandidateDetails = () => {
         { status: newStatus },
         {
           access_token: {
-            accessToken: token
+            accessToken: token,
           },
           headers: {
-            'Authorization': `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
       if (response?.data?.success) {
-        message.success('Candidate status updated successfully');
-        setCandidate(prev => ({ ...prev, status: newStatus }));
+        message.success("Candidate status updated successfully");
+        setCandidate((prev) => ({ ...prev, status: newStatus }));
       } else {
-        message.error(response?.data?.message || 'Failed to update status');
+        message.error(response?.data?.message || "Failed to update status");
       }
     } catch (error) {
-      console.error('Error updating candidate status:', error);
-      message.error('Error updating candidate status');
+      console.error("Error updating candidate status:", error);
+      message.error("Error updating candidate status");
     } finally {
       setUpdatingStatus(false);
     }
@@ -203,14 +236,15 @@ const CandidateDetails = () => {
 
   const handleSendOffer = () => {
     // Implement send offer logic here
-    message.info('Send offer functionality to be implemented');
+    message.info("Send offer functionality to be implemented");
   };
 
   const fetchEmployees = async () => {
-    const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
-    
+    const token =
+      localStorage.getItem("token") || authState?.access_token?.accessToken;
+
     if (!token) {
-      message.error('Authentication required');
+      message.error("Authentication required");
       return;
     }
 
@@ -218,16 +252,16 @@ const CandidateDetails = () => {
 
     try {
       const response = await apiServices(
-        "GET", 
-        `user/all-employees?roles=${JSON.stringify(roles)}`, 
-        null, 
+        "GET",
+        `user/all-employees?roles=${JSON.stringify(roles)}`,
+        null,
         {
           access_token: {
-            accessToken: token
+            accessToken: token,
           },
           headers: {
-            'Authorization': `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
@@ -239,14 +273,14 @@ const CandidateDetails = () => {
           .sort((a, b) => a.fullName.localeCompare(b.fullName));
         setEmployees(sortedData);
       } else {
-        throw new Error(response?.data?.message || 'Failed to fetch employees');
+        throw new Error(response?.data?.message || "Failed to fetch employees");
       }
     } catch (error) {
-      console.error('Error fetching employees:', error);
+      console.error("Error fetching employees:", error);
       message.error(
-        error?.response?.data?.message || 
-        error?.message || 
-        'Error getting employees'
+        error?.response?.data?.message ||
+          error?.message ||
+          "Error getting employees"
       );
       throw error; // Re-throw to be caught by handleCreateInterview
     }
@@ -269,76 +303,79 @@ const CandidateDetails = () => {
 
   const handleInterviewSubmit = async (values) => {
     try {
-      const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
-      
+      const token =
+        localStorage.getItem("token") || authState?.access_token?.accessToken;
+
       if (!token) {
-        message.error('Authentication required');
+        message.error("Authentication required");
         return;
       }
 
       // Validate meeting link for online interviews
-      if (values.interviewType === 'ONLINE' && !values.meetingLink) {
-        message.error('Meeting link is required for online interviews');
+      if (values.interviewType === "ONLINE" && !values.meetingLink) {
+        message.error("Meeting link is required for online interviews");
         return;
       }
 
-      const formattedDate = moment(values.interviewDate).format('YYYY-MM-DD');
-      const formattedTime = moment(values.interviewTime).format('HH:mm');
+      const formattedDate = moment(values.interviewDate).format("YYYY-MM-DD");
+      const formattedTime = moment(values.interviewTime).format("HH:mm");
 
       const payload = {
         candidateId: id,
-        interviewerId: values.assignedTo,     // ID of the employee selected in interviewer dropdown
+        interviewerId: values.assignedTo, // ID of the employee selected in interviewer dropdown
         interviewTitle: values.interviewTitle, // Value from interview title dropdown (Initial Interview, etc)
-        interviewType: values.interviewType,  // "ONLINE" or "IN_PERSON"
-        assignTo: values.assignTo,            // Array of additional interviewer IDs
-        interviewDate: formattedDate,         // YYYY-MM-DD
-        interviewTime: formattedTime,         // HH:mm
-        meetingLink: values.meetingLink || '' // Required for ONLINE interviews
+        interviewType: values.interviewType, // "ONLINE" or "IN_PERSON"
+        assignTo: values.assignTo, // Array of additional interviewer IDs
+        interviewDate: formattedDate, // YYYY-MM-DD
+        interviewTime: formattedTime, // HH:mm
+        meetingLink: values.meetingLink || "", // Required for ONLINE interviews
       };
 
-      console.log('Interview payload:', payload); // For debugging
+      console.log("Interview payload:", payload); // For debugging
 
-      const response = await apiServices(
-        "POST",
-        'interview/create',
-        payload,
-        {
-          access_token: {
-            accessToken: token
-          },
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
+      const response = await apiServices("POST", "interview/create", payload, {
+        access_token: {
+          accessToken: token,
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (response?.data?.success) {
-        message.success('Interview scheduled successfully');
+        message.success("Interview scheduled successfully");
         fetchCandidateInterviews();
         handleInterviewModalCancel(); // Close the modal on success
       } else {
-        throw new Error(response?.data?.message || 'Failed to schedule interview');
+        throw new Error(
+          response?.data?.message || "Failed to schedule interview"
+        );
       }
     } catch (error) {
-      console.error('Error scheduling interview:', error);
+      console.error("Error scheduling interview:", error);
       // Handle validation errors specifically
       if (error.response?.data?.errors) {
         const errorMessages = error.response.data.errors
-          .map(err => `${err.field}: ${err.message}`)
-          .join('\n');
+          .map((err) => `${err.field}: ${err.message}`)
+          .join("\n");
         message.error(errorMessages);
       } else {
-        message.error(error?.response?.data?.message || error?.message || 'Error scheduling interview');
+        message.error(
+          error?.response?.data?.message ||
+            error?.message ||
+            "Error scheduling interview"
+        );
       }
     }
   };
 
   const updateInterviewStatus = async (interviewId, newStatus) => {
     try {
-      const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
-      
+      const token =
+        localStorage.getItem("token") || authState?.access_token?.accessToken;
+
       if (!token) {
-        message.error('Authentication required');
+        message.error("Authentication required");
         return;
       }
 
@@ -348,26 +385,28 @@ const CandidateDetails = () => {
         { status: newStatus },
         {
           access_token: {
-            accessToken: token
+            accessToken: token,
           },
           headers: {
-            'Authorization': `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
       if (response?.data?.success) {
-        message.success('Interview status updated successfully');
+        message.success("Interview status updated successfully");
         fetchCandidateInterviews(); // Refresh the interviews list
       } else {
-        message.error(response?.data?.message || 'Failed to update interview status');
+        message.error(
+          response?.data?.message || "Failed to update interview status"
+        );
       }
     } catch (error) {
-      console.error('Error updating interview status:', error);
+      console.error("Error updating interview status:", error);
       if (error.response?.data?.message) {
         message.error(error.response.data.message);
       } else {
-        message.error('Error updating interview status');
+        message.error("Error updating interview status");
       }
     }
   };
@@ -375,10 +414,11 @@ const CandidateDetails = () => {
   const fetchCandidateInterviews = async () => {
     setLoadingInterviews(true);
     try {
-      const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
-      
+      const token =
+        localStorage.getItem("token") || authState?.access_token?.accessToken;
+
       if (!token) {
-        message.error('Authentication required');
+        message.error("Authentication required");
         return;
       }
 
@@ -388,31 +428,33 @@ const CandidateDetails = () => {
         null,
         {
           access_token: {
-            accessToken: token
+            accessToken: token,
           },
           headers: {
-            'Authorization': `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
       if (response?.data?.success) {
-        console.log('Interview data:', response.data.data); // Debug log
+        console.log("Interview data:", response.data.data); // Debug log
         setInterviews(response.data.data);
       } else {
-        if (response?.data?.message === 'Invalid interview ID format') {
-          console.error('Invalid candidate ID format:', id);
-          message.error('Invalid candidate ID format');
+        if (response?.data?.message === "Invalid interview ID format") {
+          console.error("Invalid candidate ID format:", id);
+          message.error("Invalid candidate ID format");
         } else {
-          message.error(response?.data?.message || 'Failed to fetch interviews');
+          message.error(
+            response?.data?.message || "Failed to fetch interviews"
+          );
         }
       }
     } catch (error) {
-      console.error('Error fetching interviews:', error);
+      console.error("Error fetching interviews:", error);
       if (error.response?.data?.message) {
         message.error(error.response.data.message);
       } else {
-        message.error('Error fetching interviews');
+        message.error("Error fetching interviews");
       }
     } finally {
       setLoadingInterviews(false);
@@ -428,66 +470,65 @@ const CandidateDetails = () => {
   };
 
   const handleTaskSubmit = async (values) => {
-    const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
-    
+    const token =
+      localStorage.getItem("token") || authState?.access_token?.accessToken;
+
     if (!token) {
-      message.error('Authentication required');
+      message.error("Authentication required");
       return;
     }
 
     try {
       // Create FormData for file upload
       const formData = new FormData();
-      
+
       // Add task file if exists
       if (values.taskFile?.length > 0) {
-        formData.append('file', values.taskFile[0].originFileObj);
+        formData.append("file", values.taskFile[0].originFileObj);
       }
 
       // Add all non-file fields
-      formData.append('candidateId', id);
-      formData.append('taskName', values.taskName);
-      formData.append('taskReviewers', JSON.stringify(values.taskReviewer));
-      formData.append('lastDateOfSubmission', moment(values.lastDateOfSubmission).format('YYYY-MM-DD'));
-      formData.append('taskDuration', values.taskDuration);
-      formData.append('description', values.description);
-
-      const response = await apiServices(
-        "POST",
-        'task/create',
-        formData,
-        {
-          access_token: {
-            accessToken: token
-          },
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
-          }
-        }
+      formData.append("candidateId", id);
+      formData.append("taskName", values.taskName);
+      formData.append("taskReviewers", JSON.stringify(values.taskReviewer));
+      formData.append(
+        "lastDateOfSubmission",
+        moment(values.lastDateOfSubmission).format("YYYY-MM-DD")
       );
+      formData.append("taskDuration", values.taskDuration);
+      formData.append("description", values.description);
+
+      const response = await apiServices("POST", "task/create", formData, {
+        access_token: {
+          accessToken: token,
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       if (response?.data?.success) {
-        message.success('Task created successfully');
+        message.success("Task created successfully");
         setIsTaskModalVisible(false);
         // Optionally fetch updated task list
-        if (activeTab === 'tasks') {
+        if (activeTab === "tasks") {
           fetchCandidateTasks();
         }
       } else {
-        throw new Error(response?.data?.message || 'Failed to create task');
+        throw new Error(response?.data?.message || "Failed to create task");
       }
     } catch (error) {
-      console.error('Error creating task:', error);
+      console.error("Error creating task:", error);
       if (error.response?.status === 401) {
-        message.error('Session expired. Please login again');
-        navigate('/login');
+        message.error("Session expired. Please login again");
+        navigate("/login");
       } else if (error.response?.status === 413) {
-        message.error('File size too large. Maximum size is 5MB');
+        message.error("File size too large. Maximum size is 5MB");
       } else if (error.response?.status === 400) {
-        message.error(error.response?.data?.message || 'Invalid input data');
+        message.error(error.response?.data?.message || "Invalid input data");
       } else {
-        message.error('Error creating task. Please try again');
+        message.error("Error creating task. Please try again");
       }
     }
   };
@@ -495,36 +536,32 @@ const CandidateDetails = () => {
   const fetchCandidateTasks = async () => {
     setLoadingTasks(true);
     try {
-      const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
-      
+      const token =
+        localStorage.getItem("token") || authState?.access_token?.accessToken;
+
       if (!token) {
-        message.error('Authentication required');
+        message.error("Authentication required");
         return;
       }
 
-      const response = await apiServices(
-        "GET",
-        `task/candidate/${id}`,
-        null,
-        {
-          access_token: {
-            accessToken: token
-          },
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
+      const response = await apiServices("GET", `task/candidate/${id}`, null, {
+        access_token: {
+          accessToken: token,
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (response?.data?.success) {
-        console.log('Tasks data:', response.data.data);
+        console.log("Tasks data:", response.data.data);
         setTasks(response.data.data);
       } else {
-        message.error(response?.data?.message || 'Failed to fetch tasks');
+        message.error(response?.data?.message || "Failed to fetch tasks");
       }
     } catch (error) {
-      console.error('Error fetching tasks:', error);
-      message.error('Error fetching tasks');
+      console.error("Error fetching tasks:", error);
+      message.error("Error fetching tasks");
     } finally {
       setLoadingTasks(false);
     }
@@ -533,7 +570,7 @@ const CandidateDetails = () => {
   const renderInterviewContent = () => {
     if (loadingInterviews) {
       return (
-        <div style={{ textAlign: 'center', padding: '20px' }}>
+        <div style={{ textAlign: "center", padding: "20px" }}>
           <Spin />
         </div>
       );
@@ -541,84 +578,116 @@ const CandidateDetails = () => {
 
     return (
       <div className="interview-content">
-        <div style={{ position: 'absolute', top: '16px', right: '24px' }}>
-          <Button 
-            type="text" 
-            style={{ color: '#ff9b44' }}
+        <div style={{ position: "absolute", top: "16px", right: "24px" }}>
+          <Button
+            type="text"
+            style={{ color: "#ff9b44" }}
             icon={<CalendarOutlined />}
             onClick={handleCreateInterview}
           >
             Create Interview
           </Button>
         </div>
-        
-        <div style={{ marginTop: '60px' }}>
+
+        <div style={{ marginTop: "60px" }}>
           {interviews.length > 0 ? (
             <div>
               {interviews.map((interview) => (
-                <Card 
-                  key={interview._id} 
-                  style={{ marginBottom: '16px' }}
+                <Card
+                  key={interview._id}
+                  style={{ marginBottom: "16px" }}
                   className="interview-card"
                 >
                   <Row gutter={16}>
                     <Col span={16}>
                       <h4 className="interview-title">
-                        {interview.interviewTitle || 'Untitled Interview'}
+                        {interview.interviewTitle || "Untitled Interview"}
                       </h4>
-                      <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                      <Space
+                        direction="vertical"
+                        size="small"
+                        style={{ width: "100%" }}
+                      >
                         <div>
-                          <Text type="secondary">Interview With:</Text>{' '}
-                          <Text strong>{interview.interviewerId?.fullName}</Text>
+                          <Text type="secondary">Interview With:</Text>{" "}
+                          <Text strong>
+                            {interview.interviewerId?.fullName}
+                          </Text>
                         </div>
                         <div>
-                          <Text type="secondary">Date & Time:</Text>{' '}
-                          <Text>{moment(interview.interviewDate).format('DD MMM YYYY')} at {interview.interviewTime}</Text>
+                          <Text type="secondary">Date & Time:</Text>{" "}
+                          <Text>
+                            {moment(interview.interviewDate).format(
+                              "DD MMM YYYY"
+                            )}{" "}
+                            at {interview.interviewTime}
+                          </Text>
                         </div>
                         <div>
-                          <Text type="secondary">Type:</Text>{' '}
-                          <Text>{interview.interviewType === 'ONLINE' ? 'Online' : 'In Person'}</Text>
+                          <Text type="secondary">Type:</Text>{" "}
+                          <Text>
+                            {interview.interviewType === "ONLINE"
+                              ? "Online"
+                              : "In Person"}
+                          </Text>
                         </div>
-                        {interview.interviewType === 'ONLINE' && interview.interviewLink && (
-                          <div>
-                            <Text type="secondary">Meeting Link:</Text>{' '}
-                            <Button 
-                              type="link" 
-                              href={interview.interviewLink} 
-                              target="_blank"
-                              style={{ padding: 0 }}
-                            >
-                              Join Meeting
-                            </Button>
-                          </div>
-                        )}
+                        {interview.interviewType === "ONLINE" &&
+                          interview.interviewLink && (
+                            <div>
+                              <Text type="secondary">Meeting Link:</Text>{" "}
+                              <Button
+                                type="link"
+                                href={interview.interviewLink}
+                                target="_blank"
+                                style={{ padding: 0 }}
+                              >
+                                Join Meeting
+                              </Button>
+                            </div>
+                          )}
                       </Space>
                     </Col>
-                    <Col span={8} style={{ textAlign: 'right' }}>
+                    <Col span={8} style={{ textAlign: "right" }}>
                       <Select
                         value={interview.status}
                         style={{ width: 120 }}
-                        onChange={(value) => updateInterviewStatus(interview._id, value)}
+                        onChange={(value) =>
+                          updateInterviewStatus(interview._id, value)
+                        }
                         className={`status-${interview.status?.toLowerCase()}`}
                       >
-                        <Select.Option value="scheduled">Scheduled</Select.Option>
-                        <Select.Option value="completed">Completed</Select.Option>
-                        <Select.Option value="cancelled">Cancelled</Select.Option>
-                        <Select.Option value="rescheduled">Rescheduled</Select.Option>
+                        <Select.Option value="scheduled">
+                          Scheduled
+                        </Select.Option>
+                        <Select.Option value="completed">
+                          Completed
+                        </Select.Option>
+                        <Select.Option value="cancelled">
+                          Cancelled
+                        </Select.Option>
+                        <Select.Option value="rescheduled">
+                          Rescheduled
+                        </Select.Option>
                       </Select>
                     </Col>
                   </Row>
 
                   {/* Additional Interviewers */}
                   {interview.assignedTo?.length > 0 && (
-                    <div style={{ marginTop: '16px' }}>
+                    <div style={{ marginTop: "16px" }}>
                       <Text type="secondary">Additional Interviewers:</Text>
-                      <div style={{ marginTop: '8px' }}>
+                      <div style={{ marginTop: "8px" }}>
                         <Avatar.Group maxCount={3}>
                           {interview.assignedTo?.map((interviewer) => (
-                            <Tooltip key={interviewer._id} title={interviewer.fullName}>
+                            <Tooltip
+                              key={interviewer._id}
+                              title={interviewer.fullName}
+                            >
                               <Avatar src={interviewer.imageUrl}>
-                                {interviewer.fullName?.split(' ').map(n => n[0]).join('')}
+                                {interviewer.fullName
+                                  ?.split(" ")
+                                  .map((n) => n[0])
+                                  .join("")}
                               </Avatar>
                             </Tooltip>
                           ))}
@@ -629,56 +698,126 @@ const CandidateDetails = () => {
 
                   {/* Latest Feedback Section */}
                   {interview.latestFeedback && (
-                    <div style={{ marginTop: '16px', borderTop: '1px solid #f0f0f0', paddingTop: '16px' }}>
+                    <div
+                      style={{
+                        marginTop: "16px",
+                        borderTop: "1px solid #f0f0f0",
+                        paddingTop: "16px",
+                      }}
+                    >
                       <div className="d-flex justify-content-between align-items-center mb-3">
                         <Text strong>Latest Feedback</Text>
-                        <Tag 
+                        <Tag
                           color={
-                            interview.latestFeedback.recommendation === 'Strong Yes' ? 'green' :
-                            interview.latestFeedback.recommendation === 'Yes' ? 'cyan' :
-                            interview.latestFeedback.recommendation === 'No' ? 'orange' :
-                            'red'
+                            interview.latestFeedback.recommendation ===
+                            "Strong Yes"
+                              ? "green"
+                              : interview.latestFeedback.recommendation ===
+                                "Yes"
+                              ? "cyan"
+                              : interview.latestFeedback.recommendation === "No"
+                              ? "orange"
+                              : "red"
                           }
                         >
                           {interview.latestFeedback.recommendation}
                         </Tag>
                       </div>
                       <Card size="small">
-                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-                          <Avatar 
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            marginBottom: "12px",
+                          }}
+                        >
+                          <Avatar
                             src={interview.latestFeedback.submittedBy?.imageUrl}
-                            style={{ marginRight: '8px' }}
+                            style={{ marginRight: "8px" }}
                           >
-                            {interview.latestFeedback.submittedBy?.fullName?.split(' ').map(n => n[0]).join('')}
+                            {interview.latestFeedback.submittedBy?.fullName
+                              ?.split(" ")
+                              .map((n) => n[0])
+                              .join("")}
                           </Avatar>
                           <div>
-                            <Text strong>{interview.latestFeedback.submittedBy?.fullName}</Text>
+                            <Text strong>
+                              {interview.latestFeedback.submittedBy?.fullName}
+                            </Text>
                             <br />
-                            <Text type="secondary">{moment(interview.latestFeedback.createdAt).format('DD MMM YYYY')}</Text>
+                            <Text type="secondary">
+                              {moment(
+                                interview.latestFeedback.createdAt
+                              ).format("DD MMM YYYY")}
+                            </Text>
                           </div>
                         </div>
                         <Row gutter={[16, 16]}>
                           <Col span={8}>
-                            <Text type="secondary">Technical Skills (Programming):</Text>
-                            <div><Rate disabled defaultValue={interview.latestFeedback.ratings.technicalSkills1} /></div>
+                            <Text type="secondary">
+                              Technical Skills (Programming):
+                            </Text>
+                            <div>
+                              <Rate
+                                disabled
+                                defaultValue={
+                                  interview.latestFeedback.ratings
+                                    .technicalSkills1
+                                }
+                              />
+                            </div>
                           </Col>
                           <Col span={8}>
-                            <Text type="secondary">Technical Skills (System Design):</Text>
-                            <div><Rate disabled defaultValue={interview.latestFeedback.ratings.technicalSkills2} /></div>
+                            <Text type="secondary">
+                              Technical Skills (System Design):
+                            </Text>
+                            <div>
+                              <Rate
+                                disabled
+                                defaultValue={
+                                  interview.latestFeedback.ratings
+                                    .technicalSkills2
+                                }
+                              />
+                            </div>
                           </Col>
                           <Col span={8}>
-                            <Text type="secondary">Technical Skills (Problem Solving):</Text>
-                            <div><Rate disabled defaultValue={interview.latestFeedback.ratings.technicalSkills3} /></div>
+                            <Text type="secondary">
+                              Technical Skills (Problem Solving):
+                            </Text>
+                            <div>
+                              <Rate
+                                disabled
+                                defaultValue={
+                                  interview.latestFeedback.ratings
+                                    .technicalSkills3
+                                }
+                              />
+                            </div>
                           </Col>
                         </Row>
-                        <Row gutter={[16, 16]} style={{ marginTop: '8px' }}>
+                        <Row gutter={[16, 16]} style={{ marginTop: "8px" }}>
                           <Col span={8}>
                             <Text type="secondary">Behavior:</Text>
-                            <div><Rate disabled defaultValue={interview.latestFeedback.ratings.behavior} /></div>
+                            <div>
+                              <Rate
+                                disabled
+                                defaultValue={
+                                  interview.latestFeedback.ratings.behavior
+                                }
+                              />
+                            </div>
                           </Col>
                           <Col span={8}>
                             <Text type="secondary">Soft Skills:</Text>
-                            <div><Rate disabled defaultValue={interview.latestFeedback.ratings.softSkills} /></div>
+                            <div>
+                              <Rate
+                                disabled
+                                defaultValue={
+                                  interview.latestFeedback.ratings.softSkills
+                                }
+                              />
+                            </div>
                           </Col>
                         </Row>
                       </Card>
@@ -687,61 +826,130 @@ const CandidateDetails = () => {
 
                   {/* All Feedback Section */}
                   {interview.feedback && interview.feedback.length > 1 && (
-                    <div style={{ marginTop: '16px' }}>
+                    <div style={{ marginTop: "16px" }}>
                       <Collapse ghost>
-                        <Collapse.Panel header={`View All Feedback (${interview.feedback.length})`} key="1">
-                          {interview.feedback.slice(1).map((feedback, index) => (
-                            <Card key={index} size="small" style={{ marginTop: '8px' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                                <Avatar 
-                                  src={feedback.submittedBy?.imageUrl}
-                                  style={{ marginRight: '8px' }}
+                        <Collapse.Panel
+                          header={`View All Feedback (${interview.feedback.length})`}
+                          key="1"
+                        >
+                          {interview.feedback
+                            .slice(1)
+                            .map((feedback, index) => (
+                              <Card
+                                key={index}
+                                size="small"
+                                style={{ marginTop: "8px" }}
+                              >
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    marginBottom: "8px",
+                                  }}
                                 >
-                                  {feedback.submittedBy?.fullName?.split(' ').map(n => n[0]).join('')}
-                                </Avatar>
-                                <div>
-                                  <Text strong>{feedback.submittedBy?.fullName}</Text>
-                                  <br />
-                                  <Text type="secondary">{moment(feedback.createdAt).format('DD MMM YYYY')}</Text>
+                                  <Avatar
+                                    src={feedback.submittedBy?.imageUrl}
+                                    style={{ marginRight: "8px" }}
+                                  >
+                                    {feedback.submittedBy?.fullName
+                                      ?.split(" ")
+                                      .map((n) => n[0])
+                                      .join("")}
+                                  </Avatar>
+                                  <div>
+                                    <Text strong>
+                                      {feedback.submittedBy?.fullName}
+                                    </Text>
+                                    <br />
+                                    <Text type="secondary">
+                                      {moment(feedback.createdAt).format(
+                                        "DD MMM YYYY"
+                                      )}
+                                    </Text>
+                                  </div>
+                                  <Tag
+                                    color={
+                                      feedback.recommendation === "Strong Yes"
+                                        ? "green"
+                                        : feedback.recommendation === "Yes"
+                                        ? "cyan"
+                                        : feedback.recommendation === "No"
+                                        ? "orange"
+                                        : "red"
+                                    }
+                                    style={{ marginLeft: "auto" }}
+                                  >
+                                    {feedback.recommendation}
+                                  </Tag>
                                 </div>
-                                <Tag 
-                                  color={
-                                    feedback.recommendation === 'Strong Yes' ? 'green' :
-                                    feedback.recommendation === 'Yes' ? 'cyan' :
-                                    feedback.recommendation === 'No' ? 'orange' :
-                                    'red'
-                                  }
-                                  style={{ marginLeft: 'auto' }}
+                                <Row gutter={[16, 16]}>
+                                  <Col span={8}>
+                                    <Text type="secondary">
+                                      Technical Skills (Programming):
+                                    </Text>
+                                    <div>
+                                      <Rate
+                                        disabled
+                                        defaultValue={
+                                          feedback.ratings.technicalSkills1
+                                        }
+                                      />
+                                    </div>
+                                  </Col>
+                                  <Col span={8}>
+                                    <Text type="secondary">
+                                      Technical Skills (System Design):
+                                    </Text>
+                                    <div>
+                                      <Rate
+                                        disabled
+                                        defaultValue={
+                                          feedback.ratings.technicalSkills2
+                                        }
+                                      />
+                                    </div>
+                                  </Col>
+                                  <Col span={8}>
+                                    <Text type="secondary">
+                                      Technical Skills (Problem Solving):
+                                    </Text>
+                                    <div>
+                                      <Rate
+                                        disabled
+                                        defaultValue={
+                                          feedback.ratings.technicalSkills3
+                                        }
+                                      />
+                                    </div>
+                                  </Col>
+                                </Row>
+                                <Row
+                                  gutter={[16, 16]}
+                                  style={{ marginTop: "8px" }}
                                 >
-                                  {feedback.recommendation}
-                                </Tag>
-                              </div>
-                              <Row gutter={[16, 16]}>
-                                <Col span={8}>
-                                  <Text type="secondary">Technical Skills (Programming):</Text>
-                                  <div><Rate disabled defaultValue={feedback.ratings.technicalSkills1} /></div>
-                                </Col>
-                                <Col span={8}>
-                                  <Text type="secondary">Technical Skills (System Design):</Text>
-                                  <div><Rate disabled defaultValue={feedback.ratings.technicalSkills2} /></div>
-                                </Col>
-                                <Col span={8}>
-                                  <Text type="secondary">Technical Skills (Problem Solving):</Text>
-                                  <div><Rate disabled defaultValue={feedback.ratings.technicalSkills3} /></div>
-                                </Col>
-                              </Row>
-                              <Row gutter={[16, 16]} style={{ marginTop: '8px' }}>
-                                <Col span={8}>
-                                  <Text type="secondary">Behavior:</Text>
-                                  <div><Rate disabled defaultValue={feedback.ratings.behavior} /></div>
-                                </Col>
-                                <Col span={8}>
-                                  <Text type="secondary">Soft Skills:</Text>
-                                  <div><Rate disabled defaultValue={feedback.ratings.softSkills} /></div>
-                                </Col>
-                              </Row>
-                            </Card>
-                          ))}
+                                  <Col span={8}>
+                                    <Text type="secondary">Behavior:</Text>
+                                    <div>
+                                      <Rate
+                                        disabled
+                                        defaultValue={feedback.ratings.behavior}
+                                      />
+                                    </div>
+                                  </Col>
+                                  <Col span={8}>
+                                    <Text type="secondary">Soft Skills:</Text>
+                                    <div>
+                                      <Rate
+                                        disabled
+                                        defaultValue={
+                                          feedback.ratings.softSkills
+                                        }
+                                      />
+                                    </div>
+                                  </Col>
+                                </Row>
+                              </Card>
+                            ))}
                         </Collapse.Panel>
                       </Collapse>
                     </div>
@@ -750,7 +958,7 @@ const CandidateDetails = () => {
               ))}
             </div>
           ) : (
-            <div style={{ textAlign: 'center' }}>
+            <div style={{ textAlign: "center" }}>
               <Text type="secondary">No interviews scheduled</Text>
             </div>
           )}
@@ -761,14 +969,15 @@ const CandidateDetails = () => {
 
   const updateTaskStatus = async (taskId, newStatus) => {
     try {
-      const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
-      
+      const token =
+        localStorage.getItem("token") || authState?.access_token?.accessToken;
+
       if (!token) {
-        message.error('Authentication required');
+        message.error("Authentication required");
         return;
       }
 
-      console.log('Updating task status:', { taskId, newStatus, token });
+      console.log("Updating task status:", { taskId, newStatus, token });
 
       const response = await apiServices(
         "PATCH",
@@ -776,34 +985,38 @@ const CandidateDetails = () => {
         { status: newStatus },
         {
           headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         }
       );
 
-      console.log('Update task status response:', response);
+      console.log("Update task status response:", response);
 
       if (response?.data?.success) {
-        message.success('Task status updated successfully');
+        message.success("Task status updated successfully");
         fetchCandidateTasks(); // Refresh the tasks list
       } else {
-        console.error('Failed to update task status:', response?.data);
-        message.error(response?.data?.message || 'Failed to update task status');
+        console.error("Failed to update task status:", response?.data);
+        message.error(
+          response?.data?.message || "Failed to update task status"
+        );
       }
     } catch (error) {
-      console.error('Error updating task status:', error);
-      console.error('Error response:', error.response);
-      
+      console.error("Error updating task status:", error);
+      console.error("Error response:", error.response);
+
       if (error.response?.status === 401) {
-        message.error('Unauthorized access. Please login again.');
-        navigate('/login');
+        message.error("Unauthorized access. Please login again.");
+        navigate("/login");
       } else if (error.response?.status === 403) {
-        message.error('You are not authorized to update this task status');
+        message.error("You are not authorized to update this task status");
       } else if (error.response?.status === 404) {
-        message.error('Task not found');
+        message.error("Task not found");
       } else {
-        message.error(error.response?.data?.message || 'Error updating task status');
+        message.error(
+          error.response?.data?.message || "Error updating task status"
+        );
       }
     }
   };
@@ -811,7 +1024,7 @@ const CandidateDetails = () => {
   const renderTaskContent = () => {
     if (loadingTasks) {
       return (
-        <div style={{ textAlign: 'center', padding: '20px' }}>
+        <div style={{ textAlign: "center", padding: "20px" }}>
           <Spin />
         </div>
       );
@@ -819,55 +1032,67 @@ const CandidateDetails = () => {
 
     return (
       <div className="task-content">
-        <div style={{ position: 'absolute', top: '16px', right: '24px' }}>
-          <Button 
-            type="text" 
-            style={{ color: '#ff9b44' }}
+        <div style={{ position: "absolute", top: "16px", right: "24px" }}>
+          <Button
+            type="text"
+            style={{ color: "#ff9b44" }}
             icon={<PlusOutlined />}
             onClick={handleCreateTask}
           >
             Create Task
           </Button>
         </div>
-        
-        <div style={{ marginTop: '60px' }}>
+
+        <div style={{ marginTop: "60px" }}>
           {tasks.length > 0 ? (
             tasks.map((task) => (
-              <Card 
-                key={task._id} 
-                style={{ marginBottom: '16px' }}
+              <Card
+                key={task._id}
+                style={{ marginBottom: "16px" }}
                 className="task-card"
                 onClick={() => navigate(`/recruitment/tasks/${task._id}`)}
               >
                 <Row gutter={16}>
                   <Col span={16}>
-                    <h4 className="task-title">
-                      {task.taskName}
-                    </h4>
-                    <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                    <h4 className="task-title">{task.taskName}</h4>
+                    <Space
+                      direction="vertical"
+                      size="small"
+                      style={{ width: "100%" }}
+                    >
                       <div>
-                        <Text type="secondary">Task Reviewers:</Text>{' '}
+                        <Text type="secondary">Task Reviewers:</Text>{" "}
                         <Avatar.Group maxCount={3}>
                           {task.taskReviewers?.map((reviewer) => (
-                            <Tooltip key={reviewer._id} title={reviewer.fullName}>
+                            <Tooltip
+                              key={reviewer._id}
+                              title={reviewer.fullName}
+                            >
                               <Avatar src={reviewer.imageUrl}>
-                                {reviewer.fullName?.split(' ').map(n => n[0]).join('')}
+                                {reviewer.fullName
+                                  ?.split(" ")
+                                  .map((n) => n[0])
+                                  .join("")}
                               </Avatar>
                             </Tooltip>
                           ))}
                         </Avatar.Group>
                       </div>
                       <div>
-                        <Text type="secondary">Due Date:</Text>{' '}
-                        <Text>{moment(task.lastDateOfSubmission).format('DD MMM YYYY')}</Text>
+                        <Text type="secondary">Due Date:</Text>{" "}
+                        <Text>
+                          {moment(task.lastDateOfSubmission).format(
+                            "DD MMM YYYY"
+                          )}
+                        </Text>
                       </div>
                       <div>
-                        <Text type="secondary">Duration:</Text>{' '}
+                        <Text type="secondary">Duration:</Text>{" "}
                         <Text>{task.taskDuration} days</Text>
                       </div>
                     </Space>
                   </Col>
-                  <Col span={8} style={{ textAlign: 'right' }}>
+                  <Col span={8} style={{ textAlign: "right" }}>
                     <Select
                       value={task.status}
                       style={{ width: 120 }}
@@ -889,8 +1114,8 @@ const CandidateDetails = () => {
               </Card>
             ))
           ) : (
-            <Empty 
-              description="No tasks found" 
+            <Empty
+              description="No tasks found"
               image={Empty.PRESENTED_IMAGE_SIMPLE}
             />
           )}
@@ -902,9 +1127,15 @@ const CandidateDetails = () => {
   const renderFilesContent = () => {
     if (!candidate?.resume) {
       return (
-        <div className="no-files-message" style={{ textAlign: 'center', padding: '40px 0' }}>
-          <FilePdfOutlined style={{ fontSize: '48px', color: '#d9d9d9' }} />
-          <Typography.Text type="secondary" style={{ display: 'block', marginTop: '16px' }}>
+        <div
+          className="no-files-message"
+          style={{ textAlign: "center", padding: "40px 0" }}
+        >
+          <FilePdfOutlined style={{ fontSize: "48px", color: "#d9d9d9" }} />
+          <Typography.Text
+            type="secondary"
+            style={{ display: "block", marginTop: "16px" }}
+          >
             No resume uploaded
           </Typography.Text>
         </div>
@@ -918,11 +1149,12 @@ const CandidateDetails = () => {
             <div className="file-info">
               {getFileIcon(candidate.resume)}
               <div className="file-details">
-                <Typography.Text strong style={{ fontSize: '16px' }}>
+                <Typography.Text strong style={{ fontSize: "16px" }}>
                   {getFileName(candidate.resume)}
                 </Typography.Text>
-                <Typography.Text type="secondary" style={{ fontSize: '12px' }}>
-                  Uploaded on: {moment(candidate.updatedAt).format('DD MMM YYYY')}
+                <Typography.Text type="secondary" style={{ fontSize: "12px" }}>
+                  Uploaded on:{" "}
+                  {moment(candidate.updatedAt).format("DD MMM YYYY")}
                 </Typography.Text>
               </div>
             </div>
@@ -931,7 +1163,7 @@ const CandidateDetails = () => {
                 type="text"
                 icon={<EyeOutlined />}
                 onClick={handlePreviewResume}
-                style={{ marginRight: '8px' }}
+                style={{ marginRight: "8px" }}
               >
                 Preview
               </Button>
@@ -957,14 +1189,23 @@ const CandidateDetails = () => {
             <div className="col">
               <h3 className="page-title">Candidate Details</h3>
               <ul className="breadcrumb">
-                <li className="breadcrumb-item"><Link to="/recruitment/dashboard">Dashboard</Link></li>
-                <li className="breadcrumb-item"><Link to="/recruitment/candidates">Candidates</Link></li>
-                <li className="breadcrumb-item active">{candidate?.firstName} {candidate?.lastName}</li>
+                <li className="breadcrumb-item">
+                  <Link to="/recruitment/dashboard">Dashboard</Link>
+                </li>
+                <li className="breadcrumb-item">
+                  <Link to="/recruitment/candidates">Candidates</Link>
+                </li>
+                <li className="breadcrumb-item active">
+                  {candidate?.firstName} {candidate?.lastName}
+                </li>
               </ul>
             </div>
           </div>
         </div>
-        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '400px' }}>
+        <div
+          className="d-flex justify-content-center align-items-center"
+          style={{ minHeight: "400px" }}
+        >
           <Spin size="large" />
         </div>
       </div>
@@ -980,18 +1221,26 @@ const CandidateDetails = () => {
         <div className="row align-items-center">
           <div className="col">
             <div className="d-flex align-items-center">
-              <Button 
-                icon={<ArrowLeftOutlined />} 
-                type="link" 
-                onClick={() => navigate('/recruitment/candidates')}
-                style={{ marginRight: '16px', padding: 0 }}
+              <Button
+                icon={<ArrowLeftOutlined />}
+                type="link"
+                onClick={() => navigate("/recruitment/candidates")}
+                style={{ marginRight: "16px", padding: 0 }}
               />
               <div>
-                <h3 className="page-title mb-0">{candidate?.firstName} {candidate?.lastName}</h3>
+                <h3 className="page-title mb-0">
+                  {candidate?.firstName} {candidate?.lastName}
+                </h3>
                 <ul className="breadcrumb">
-                  <li className="breadcrumb-item"><Link to="/recruitment/dashboard">Dashboard</Link></li>
-                  <li className="breadcrumb-item"><Link to="/recruitment/candidates">Candidates</Link></li>
-                  <li className="breadcrumb-item active">{candidate?.firstName} {candidate?.lastName}</li>
+                  <li className="breadcrumb-item">
+                    <Link to="/recruitment/dashboard">Dashboard</Link>
+                  </li>
+                  <li className="breadcrumb-item">
+                    <Link to="/recruitment/candidates">Candidates</Link>
+                  </li>
+                  <li className="breadcrumb-item active">
+                    {candidate?.firstName} {candidate?.lastName}
+                  </li>
                 </ul>
               </div>
             </div>
@@ -1002,15 +1251,18 @@ const CandidateDetails = () => {
                 value={candidate?.status}
                 onChange={handleStatusChange}
                 loading={updatingStatus}
-                style={{ 
-                  width: '150px',
-                  fontSize: '13px',
-                  background: candidate?.status?.toLowerCase() === 'screening' ? '#FFF7E6' : 'transparent'
+                style={{
+                  width: "150px",
+                  fontSize: "13px",
+                  background:
+                    candidate?.status?.toLowerCase() === "screening"
+                      ? "#FFF7E6"
+                      : "transparent",
                 }}
                 className={`status-${candidate?.status?.toLowerCase()}`}
-                dropdownStyle={{ 
-                  minWidth: '150px',
-                  borderRadius: '4px'
+                dropdownStyle={{
+                  minWidth: "150px",
+                  borderRadius: "4px",
                 }}
                 dropdownMatchSelectWidth={false}
                 popupClassName="status-dropdown"
@@ -1021,10 +1273,12 @@ const CandidateDetails = () => {
                 <Select.Option value="HIRED">Hired</Select.Option>
                 <Select.Option value="REJECTED">Rejected</Select.Option>
               </Select>
-              <Button 
-                type="primary" 
-                onClick={() => message.info('Send offer functionality coming soon')}
-                style={{ background: '#FF9B44', borderColor: '#FF9B44' }}
+              <Button
+                type="primary"
+                onClick={() =>
+                  message.info("Send offer functionality coming soon")
+                }
+                style={{ background: "#FF9B44", borderColor: "#FF9B44" }}
               >
                 Send Offer
               </Button>
@@ -1040,90 +1294,152 @@ const CandidateDetails = () => {
             <div className="candidate-profile mb-4">
               <div className="profile-img">
                 <div className="profile-avatar">
-                  {candidate.firstName?.[0]}{candidate.lastName?.[0]}
+                  {candidate.firstName?.[0]}
+                  {candidate.lastName?.[0]}
                 </div>
               </div>
               <div className="profile-info text-center">
-                <Title level={4} style={{ margin: '12px 0 4px', fontSize: '20px', color: '#333' }}>
+                <Title
+                  level={4}
+                  style={{
+                    margin: "12px 0 4px",
+                    fontSize: "20px",
+                    color: "#333",
+                  }}
+                >
                   {candidate.firstName} {candidate.lastName}
                 </Title>
-                <Tag color={candidate.status === 'NEW' ? 'blue' : 
-                         candidate.status === 'SCREENING' ? 'orange' :
-                         candidate.status === 'SHORTLISTED' ? 'green' :
-                         candidate.status === 'REJECTED' ? 'red' : 'purple'}>
-                  {candidate.status?.charAt(0) + candidate.status?.slice(1).toLowerCase()}
+                <Tag
+                  color={
+                    candidate.status === "NEW"
+                      ? "blue"
+                      : candidate.status === "SCREENING"
+                      ? "orange"
+                      : candidate.status === "SHORTLISTED"
+                      ? "green"
+                      : candidate.status === "REJECTED"
+                      ? "red"
+                      : "purple"
+                  }
+                >
+                  {candidate.status?.charAt(0) +
+                    candidate.status?.slice(1).toLowerCase()}
                 </Tag>
               </div>
             </div>
 
             <div className="info-section">
-              <Title level={5} className="section-title">Basic Information</Title>
+              <Title level={5} className="section-title">
+                Basic Information
+              </Title>
               <div className="info-item">
                 <MailOutlined className="info-icon" />
                 <div className="info-content">
-                  <Text type="secondary" className="info-label">Email</Text>
-                  <Text strong className="info-value">{candidate.email}</Text>
+                  <Text type="secondary" className="info-label">
+                    Email
+                  </Text>
+                  <Text strong className="info-value">
+                    {candidate.email}
+                  </Text>
                 </div>
               </div>
               <div className="info-item">
                 <PhoneOutlined className="info-icon" />
                 <div className="info-content">
-                  <Text type="secondary" className="info-label">Phone</Text>
-                  <Text strong className="info-value">{candidate.phoneNumber}</Text>
+                  <Text type="secondary" className="info-label">
+                    Phone
+                  </Text>
+                  <Text strong className="info-value">
+                    {candidate.phoneNumber}
+                  </Text>
                 </div>
               </div>
               <div className="info-item">
                 <EnvironmentOutlined className="info-icon" />
                 <div className="info-content">
-                  <Text type="secondary" className="info-label">Location</Text>
-                  <Text strong className="info-value">Not specified</Text>
+                  <Text type="secondary" className="info-label">
+                    Location
+                  </Text>
+                  <Text strong className="info-value">
+                    Not specified
+                  </Text>
                 </div>
               </div>
             </div>
 
             <div className="info-section">
-              <Title level={5} className="section-title">Other Information</Title>
+              <Title level={5} className="section-title">
+                Other Information
+              </Title>
               <div className="info-list">
                 <div className="info-item">
                   <div className="info-content">
-                    <Text type="secondary" className="info-label">Applied for</Text>
-                    <Text strong className="info-value">{candidate.appliedFor?.title}</Text>
+                    <Text type="secondary" className="info-label">
+                      Applied for
+                    </Text>
+                    <Text strong className="info-value">
+                      {candidate.appliedFor?.title}
+                    </Text>
                   </div>
                 </div>
                 <div className="info-item">
                   <div className="info-content">
-                    <Text type="secondary" className="info-label">Applied on</Text>
-                    <Text strong className="info-value">{moment(candidate.appliedDate).format('DD MMM YYYY')}</Text>
+                    <Text type="secondary" className="info-label">
+                      Applied on
+                    </Text>
+                    <Text strong className="info-value">
+                      {moment(candidate.appliedDate).format("DD MMM YYYY")}
+                    </Text>
                   </div>
                 </div>
                 <div className="info-item">
                   <div className="info-content">
-                    <Text type="secondary" className="info-label">Department</Text>
-                    <Text strong className="info-value">{candidate.appliedFor?.department || 'Not specified'}</Text>
+                    <Text type="secondary" className="info-label">
+                      Department
+                    </Text>
+                    <Text strong className="info-value">
+                      {candidate.appliedFor?.department || "Not specified"}
+                    </Text>
                   </div>
                 </div>
                 <div className="info-item">
                   <div className="info-content">
-                    <Text type="secondary" className="info-label">Experience</Text>
-                    <Text strong className="info-value">{candidate.experience} Years</Text>
+                    <Text type="secondary" className="info-label">
+                      Experience
+                    </Text>
+                    <Text strong className="info-value">
+                      {candidate.experience} Years
+                    </Text>
                   </div>
                 </div>
                 <div className="info-item">
                   <div className="info-content">
-                    <Text type="secondary" className="info-label">Notice Period</Text>
-                    <Text strong className="info-value">{candidate.noticePeriod?.replace('_', ' ').toLowerCase()}</Text>
+                    <Text type="secondary" className="info-label">
+                      Notice Period
+                    </Text>
+                    <Text strong className="info-value">
+                      {candidate.noticePeriod?.replace("_", " ").toLowerCase()}
+                    </Text>
                   </div>
                 </div>
                 <div className="info-item">
                   <div className="info-content">
-                    <Text type="secondary" className="info-label">Current Salary</Text>
-                    <Text strong className="info-value">PKR {candidate.currentSalary?.toLocaleString()}</Text>
+                    <Text type="secondary" className="info-label">
+                      Current Salary
+                    </Text>
+                    <Text strong className="info-value">
+                      PKR {candidate.currentSalary?.toLocaleString()}
+                    </Text>
                   </div>
                 </div>
                 <div className="info-item">
                   <div className="info-content">
-                    <Text type="secondary" className="info-label">Expected Salary</Text>
-                    <Text strong className="info-value">PKR {candidate.expectedSalary?.toLocaleString()}</Text>
+                    <Text type="secondary" className="info-label">
+                      Expected Salary
+                    </Text>
+                    <Text strong className="info-value">
+                      PKR {candidate.expectedSalary?.toLocaleString()}
+                    </Text>
                   </div>
                 </div>
               </div>
@@ -1134,8 +1450,8 @@ const CandidateDetails = () => {
         {/* Main Content Area */}
         <div className="col-md-9">
           <Card>
-            <Tabs 
-              activeKey={activeTab} 
+            <Tabs
+              activeKey={activeTab}
               onChange={setActiveTab}
               className="nav-tabs-custom"
             >
@@ -1144,11 +1460,13 @@ const CandidateDetails = () => {
                   {/* Application Event */}
                   <div className="timeline-item">
                     <div className="time">
-                      {moment(candidate.appliedDate).format('DD MMM YYYY')}
+                      {moment(candidate.appliedDate).format("DD MMM YYYY")}
                     </div>
                     <div className="event">
                       <Tag color="blue">Application Received</Tag>
-                      <Text>Candidate applied for {candidate.appliedFor?.title}</Text>
+                      <Text>
+                        Candidate applied for {candidate.appliedFor?.title}
+                      </Text>
                     </div>
                   </div>
 
@@ -1156,30 +1474,38 @@ const CandidateDetails = () => {
                   {interviews.map((interview) => (
                     <div key={interview._id} className="timeline-item">
                       <div className="time">
-                        {moment(interview.createdAt).format('DD MMM YYYY')}
+                        {moment(interview.createdAt).format("DD MMM YYYY")}
                       </div>
                       <div className="event">
                         <Tag color="green">Interview Scheduled</Tag>
                         <Text>
-                          Interview scheduled with {interview.interviewName} for{' '}
-                          {moment(interview.interviewDate).format('DD MMM YYYY')} at {interview.interviewTime}
-                          {interview.interviewType === 'ONLINE' ? ' (Online)' : ' (In Person)'}
+                          Interview scheduled with {interview.interviewName} for{" "}
+                          {moment(interview.interviewDate).format(
+                            "DD MMM YYYY"
+                          )}{" "}
+                          at {interview.interviewTime}
+                          {interview.interviewType === "ONLINE"
+                            ? " (Online)"
+                            : " (In Person)"}
                         </Text>
                       </div>
-                      {interview.status !== 'scheduled' && (
-                        <div className="event" style={{ marginTop: '8px' }}>
-                          <Tag 
+                      {interview.status !== "scheduled" && (
+                        <div className="event" style={{ marginTop: "8px" }}>
+                          <Tag
                             color={
-                              interview.status === 'completed' ? 'green' :
-                              interview.status === 'cancelled' ? 'red' :
-                              interview.status === 'rescheduled' ? 'orange' : 'blue'
+                              interview.status === "completed"
+                                ? "green"
+                                : interview.status === "cancelled"
+                                ? "red"
+                                : interview.status === "rescheduled"
+                                ? "orange"
+                                : "blue"
                             }
                           >
-                            {interview.status.charAt(0).toUpperCase() + interview.status.slice(1)}
+                            {interview.status.charAt(0).toUpperCase() +
+                              interview.status.slice(1)}
                           </Tag>
-                          <Text>
-                            Interview {interview.status}
-                          </Text>
+                          <Text>Interview {interview.status}</Text>
                         </div>
                       )}
                     </div>
@@ -1221,7 +1547,7 @@ const CandidateDetails = () => {
       <style jsx>{`
         .info-card {
           background: #fff;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
           border-radius: 8px;
         }
         .profile-img {
@@ -1312,7 +1638,7 @@ const CandidateDetails = () => {
           position: relative;
         }
         .timeline-item::before {
-          content: '';
+          content: "";
           position: absolute;
           left: -7px;
           top: 0;
@@ -1331,7 +1657,8 @@ const CandidateDetails = () => {
           align-items: center;
           gap: 8px;
         }
-        .files-content, .interview-content {
+        .files-content,
+        .interview-content {
           min-height: 200px;
           display: flex;
           align-items: center;
@@ -1357,33 +1684,33 @@ const CandidateDetails = () => {
           border-radius: 3px;
           overflow: hidden;
         }
-        
+
         .interview-modal .ant-modal-header {
           padding: 20px 24px;
           border-bottom: 1px solid #f0f0f0;
         }
-        
+
         .interview-modal .ant-modal-body {
           padding: 24px;
         }
-        
+
         .interview-modal .ant-form-item-label > label {
           font-weight: 500;
         }
-        
+
         .interview-modal .ant-input,
         .interview-modal .ant-select-selector,
         .interview-modal .ant-picker {
           border-radius: 3px;
           border-color: #e3e3e3;
         }
-        
+
         .interview-modal .ant-input::placeholder,
         .interview-modal .ant-select-selection-placeholder,
         .interview-modal .ant-picker-input > input::placeholder {
           color: #999;
         }
-        
+
         .interview-modal .ant-tag {
           margin-right: 3px;
           background: #f4f4f4;
@@ -1414,12 +1741,15 @@ const CandidateDetails = () => {
         .ant-select-dropdown {
           z-index: 1050;
         }
-        
+
         .ant-select:not(.ant-select-disabled):hover .ant-select-selector {
           border-color: #ff9b44;
         }
-        
-        .ant-select-focused:not(.ant-select-disabled).ant-select:not(.ant-select-customize-input) .ant-select-selector {
+
+        .ant-select-focused:not(.ant-select-disabled).ant-select:not(
+            .ant-select-customize-input
+          )
+          .ant-select-selector {
           border-color: #ff9b44;
           box-shadow: 0 0 0 2px rgba(255, 155, 68, 0.2);
         }
@@ -1429,19 +1759,19 @@ const CandidateDetails = () => {
           border-color: #91d5ff !important;
           color: #1890ff !important;
         }
-        
+
         .status-completed .ant-select-selector {
           background-color: #f6ffed !important;
           border-color: #b7eb8f !important;
           color: #52c41a !important;
         }
-        
+
         .status-cancelled .ant-select-selector {
           background-color: #fff1f0 !important;
           border-color: #ffa39e !important;
           color: #f5222d !important;
         }
-        
+
         .status-rescheduled .ant-select-selector {
           background-color: #fff7e6 !important;
           border-color: #ffd591 !important;
@@ -1453,25 +1783,25 @@ const CandidateDetails = () => {
           border-color: #91d5ff !important;
           color: #1890ff !important;
         }
-        
+
         .status-screening .ant-select-selector {
           background-color: #fff7e6 !important;
           border-color: #ffd591 !important;
           color: #fa8c16 !important;
         }
-        
+
         .status-shortlisted .ant-select-selector {
           background-color: #f6ffed !important;
           border-color: #b7eb8f !important;
           color: #52c41a !important;
         }
-        
+
         .status-hired .ant-select-selector {
           background-color: #f9f0ff !important;
           border-color: #d3adf7 !important;
           color: #722ed1 !important;
         }
-        
+
         .status-rejected .ant-select-selector {
           background-color: #fff1f0 !important;
           border-color: #ffa39e !important;
@@ -1481,66 +1811,69 @@ const CandidateDetails = () => {
         .status-dropdown {
           padding: 8px;
         }
-        
+
         .status-dropdown .ant-select-item {
           padding: 8px 12px;
           border-radius: 4px;
           margin-bottom: 4px;
         }
-        
+
         .status-dropdown .ant-select-item:hover {
           background-color: #f5f5f5;
         }
-        
+
         .status-dropdown .ant-select-item-option-selected {
           background-color: #e6f7ff;
           font-weight: 500;
         }
-        
+
         .status-new .ant-select-selector {
           background-color: #e6f7ff !important;
           border-color: #91d5ff !important;
           color: #1890ff !important;
         }
-        
+
         .status-screening .ant-select-selector {
           background-color: #fff7e6 !important;
           border-color: #ffd591 !important;
           color: #fa8c16 !important;
         }
-        
+
         .status-shortlisted .ant-select-selector {
           background-color: #f6ffed !important;
           border-color: #b7eb8f !important;
           color: #52c41a !important;
         }
-        
+
         .status-hired .ant-select-selector {
           background-color: #f9f0ff !important;
           border-color: #d3adf7 !important;
           color: #722ed1 !important;
         }
-        
+
         .status-rejected .ant-select-selector {
           background-color: #fff1f0 !important;
           border-color: #ffa39e !important;
           color: #f5222d !important;
         }
-        
-        .ant-select-focused:not(.ant-select-disabled).ant-select:not(.ant-select-customize-input) .ant-select-selector {
+
+        .ant-select-focused:not(.ant-select-disabled).ant-select:not(
+            .ant-select-customize-input
+          )
+          .ant-select-selector {
           border-color: #ff9b44 !important;
           box-shadow: 0 0 0 2px rgba(255, 155, 68, 0.2) !important;
         }
-        
+
         .ant-select:not(.ant-select-disabled):hover .ant-select-selector {
           border-color: #ff9b44 !important;
         }
 
         .task-card {
-          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
           border-radius: 8px;
         }
-        
+
         .task-card .task-title {
           font-size: 16px;
           font-weight: 600;
@@ -1553,19 +1886,19 @@ const CandidateDetails = () => {
           border-color: #ffd591 !important;
           color: #fa8c16 !important;
         }
-        
+
         .status-submitted .ant-select-selector {
           background-color: #e6f7ff !important;
           border-color: #91d5ff !important;
           color: #1890ff !important;
         }
-        
+
         .status-completed .ant-select-selector {
           background-color: #f6ffed !important;
           border-color: #b7eb8f !important;
           color: #52c41a !important;
         }
-        
+
         .status-cancelled .ant-select-selector {
           background-color: #fff1f0 !important;
           border-color: #ffa39e !important;
@@ -1608,4 +1941,4 @@ const CandidateDetails = () => {
   );
 };
 
-export default CandidateDetails; 
+export default CandidateDetails;
