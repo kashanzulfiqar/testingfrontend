@@ -405,7 +405,7 @@ const onFinishEdit = (values) => {
         <div className="dropdown action-label text-center" onClick={(e) => e.stopPropagation()}>
           <a
             className="btn btn-white btn-sm btn-rounded dropdown-toggle"
-            href="#"
+            href="javascript:void(0)"
             onClick={(e) => handleStatusDropdownClick(e, record._id)}
             aria-expanded={openStatusDropdownId === record._id}
           >
@@ -425,6 +425,7 @@ const onFinishEdit = (values) => {
                 onClick={(e) => {
                   e.preventDefault();
                   handleUpdateStatus(record?.boardId, record?._id, record?.columnId, option.columnId);
+                  setOpenStatusDropdownId(null); // Close the dropdown
                 }}
               >
                 <i className={`fa fa-dot-circle-o text-${option.color}`} /> {option.title}

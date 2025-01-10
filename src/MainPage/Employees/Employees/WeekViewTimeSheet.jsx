@@ -10,7 +10,7 @@ import { itemRender } from '../../paginationfunction';
 import { useTranslation } from 'react-i18next';
 
 
-function WeekViewTimeSheet({ tableStartDate, setTableStartDate, selectedDate, setSelectedDate, open, setOpen, allProjects, getAllProjects, currentWeekDates, setShowCalendar }) {
+function WeekViewTimeSheet({ tableStartDate, setTableStartDate, selectedDate, setSelectedDate, open, setOpen, allProjects, getAllProjects, allTaskboards, getAllTaskBoards, currentWeekDates, setShowCalendar }) {
   const { t, i18n } = useTranslation();
     const moment = require('moment');
 
@@ -36,6 +36,7 @@ function WeekViewTimeSheet({ tableStartDate, setTableStartDate, selectedDate, se
     const [updatedDuration, setUpdatedDuration] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
+    const [isProjectAssociated, setIsProjectAssociated] = useState(false);
     const [paginationDetail, setPaginationDetail] = useState();
     const [showCard, setShowCard] = useState({
       isShown: false,
@@ -91,10 +92,19 @@ function WeekViewTimeSheet({ tableStartDate, setTableStartDate, selectedDate, se
     // const filteredData = t_data.filter(item => currentWeekDates.includes(item.date));
     // setAllData(filteredData);
   }
-
+  const handleSelectionChange = (value) => {
+    setIsProjectAssociated(value === 'project')
+    if (!isProjectAssociated) {
+      setAllTasks([])
+      form2.setFieldsValue({taskId: '', projectId: ''})
+  } else {
+      setAllTasks([])
+      form2.setFieldsValue({taskId: '', boardId: ''})
+  }
+  }
   const getAllTasks = (id) => {
     setTaskLoader(true);
-    apiServices("GET", `tasks?projectId=${id}&page=${1}&limit=${99999}`, null, user_state)
+    apiServices("GET", `tasks?id=${id}&page=${1}&limit=${99999}`, null, user_state)
       .then((res) => {
           if (res?.data?.success === true) {
               const sortedData = res?.data?.Task?.docs?.slice().sort((a, b) => a.title.localeCompare(b.title));
@@ -455,7 +465,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
         dataIndex: '',
         key: day,
         render: (text, record, index2) => {
-            if(record?.projectId){
+            if(record?.projectId || record?.boardId){
               // console.log(record, new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index).toISOString().split('T')[0]);
             // const d = record?.data?.filter(rec => rec?.date === new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index).toISOString().split('T')[0])
             const d = record?.data?.filter(rec => moment(rec?.date).format('YYYY-MM-DD') === moment(new Date(weekStartDate.getTime() + 24 * 60 * 60 * 1000 * index)).format('YYYY-MM-DD'))
@@ -702,6 +712,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
         const key = `${item?.projectId?._id}-${item?.taskId?._id}`;
         if (!result[key]) {
           result[key] = {
+            boardId: item?.boardId,
             projectId: item?.projectId,
             // projectId: item.projectId.projectName,
             taskId: item?.taskId,
@@ -719,6 +730,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
         const [hours, minutes] = duration?.split(":").map(Number)
         return hours * 60 + minutes || 0;
       }
+      console.log("grouped Data :: ",groupedData);
       
       // const rows = Object.values(groupedData);
       const rows1 = Object.values(groupedData);
@@ -732,7 +744,18 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
           key: "Title",
           render: (text, record) => (
             <>
-              <label onClick={() => console.log(record)} style={{textWrap: 'nowrap', fontWeight: '500'}}>{record?.projectId?.projectName}</label>
+              {record?.projectId?.projectName  ? <label onClick={() => console.log(record?.data)} style={{textWrap: 'nowrap', fontWeight: '500'}}>{record?.projectId?.projectName}</label> : record?.boardId?.boardTitle ? <label onClick={() => console.log(record)} style={{textWrap: 'nowrap', fontWeight: '500'}}>{record?.boardId?.boardTitle} <span
+              style={{
+                marginLeft: "8px",
+                backgroundColor: "#7460EE",
+                color: "#fff",
+                padding: "2px 8px",
+                borderRadius: "12px",
+                fontSize: "12px",
+              }}
+            >
+              {t('Taskboard')}
+            </span></label> : null}
               <br />
               <label style={{textWrap: 'no-wrap', color: '#0409217D', fontWeight: '450'}}>{record?.taskId?.title}</label>
             </>
@@ -744,7 +767,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
           dataIndex: "Total",
           key: "Total",
           render: (text, record) => {
-            if(record?.projectId){
+            if(record?.projectId || record?.boardId){
               const hours = Math.floor(record?.totalDuration / 60) || 0;
               const remainingMinutes = record?.totalDuration % 60 || 0;
 
@@ -1109,8 +1132,28 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
                 autoComplete='off'
                 >
                 <div className="row">
+                  <div className="col-12">
+                    <div className="form-group">
+                        <label>
+                            {t('Associate with')} <span className="text-danger">*</span>
+                        </label>
+                        <Form.Item
+                        className="custom-border">
+                          <Select
+                            value={isProjectAssociated ? 'project' : 'taskboard'}
+                            onChange={(value) => handleSelectionChange(value)}
+                            className="custom-select custom-normal"
+                        >
+                            <Select.Option value="project">{t('Project')}</Select.Option>
+                            <Select.Option value="taskboard">{t('TaskBoard')}</Select.Option>
+                        </Select>
+                        </Form.Item>
+                    </div>
+                </div>
                     <div className="col-12">
                         <div className="form-group">
+                          {isProjectAssociated ? (
+                                <>
                         <label>
                             Project <span className="text-danger">*</span>
                         </label>
@@ -1140,6 +1183,7 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
                                       </>
                                     )}
                                     onChange={(val) => {
+                                      setAllTasks([])
                                         getAllTasks(val);
                                         form2.setFieldsValue({taskId: ''})
                                     }}
@@ -1159,6 +1203,59 @@ const Dayscolumns = daysOfWeek.map((day, index) => {
                                 </Select>
                         </Form.Item>
                         </div>
+                        </>
+                        ) : (
+                          <>
+                          <label>
+                        {t('TaskBoard')} <span className="text-danger">*</span>
+                        </label>
+                        <div style={{ position: "relative" }} id="area">
+                        <Form.Item
+                            name='boardId'
+                            className='custom-border'
+                            rules={[
+                            {
+                                whitespace: true,
+                                required: true,
+                                message: t('please select taskboard'),
+                            },
+                            ]}
+                        >
+                                <Select
+                                    showSearch
+                                    onSearch={(val) => {
+                                      searchHandler(val, 'taskboard')
+                                    }}
+                                    filterOption={(input, option) => option.children?.toLowerCase().indexOf(input?.toLowerCase()) >= 0}
+                                    optionFilterProp="children"
+                                    notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                                    dropdownRender={(menu) => (
+                                      <>
+                                        {menu}
+                                      </>
+                                    )}
+                                    onChange={(val) => {
+                                      setAllTasks([])
+                                        getAllTasks(val);
+                                        form2.setFieldsValue({taskId: ''})
+                                    }}
+                                    className="custom-select custom-normal"
+                                    getPopupContainer={() =>
+                                        document.getElementById("area")
+                                    }
+                                    placeholder={t('Select Taskboard')}
+                                    >
+                                    {
+                                        allTaskboards.map((taskBoard, index) => (
+                                          <Select.Option key={index} value={taskBoard._id}>
+                                              {taskBoard.boardTitle}
+                                          </Select.Option>
+                                      ))
+                                    }
+                                </Select>
+                        </Form.Item>
+                        </div>
+                        </>)}
                         </div>
                     </div>
                     <div className="col-12">

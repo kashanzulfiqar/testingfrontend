@@ -31,6 +31,7 @@ const EmployeeTimesheet = () => {
 
   const [allTasks, setAllTasks] = useState([]);
   const [allProjects, setAllProjects] = useState([]);
+  const [allTaskboards, setAllTaskboards] = useState([]);
   const [tableLoader, setTableLoader] = useState(true);
   const [open, setOpen] = useState({
     isAddOpen: false,
@@ -105,6 +106,32 @@ const EmployeeTimesheet = () => {
         );
       });
   }
+  const getAllTaskBoards = () => {
+    setTableLoader(true);
+
+    apiServices("GET", `taskBoard/view-taskBoard/?employeeId=${employee_id}&page=${1}&limit=${99999}`, null, user_state)
+      .then((res) => {
+        if (res.data.success === true) {
+          console.log("taskboards", res?.data?.taskBoards);
+          const taskBoards = res?.data?.taskBoards.filter((taskBoard) => !taskBoard.project) || [];
+          setAllTaskboards(taskBoards);
+          console.log("AllTask Boards,,", taskBoards);
+          
+      }
+      })
+      .catch((err) => {
+        setTableLoader(false);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : t('projectScreen.errors.getEmployeeProjectsError')
+          }`
+        );
+      })
+  };
 
   const handleCalendarClick = () => {
     setShowCalendar(!showCalendar);
@@ -221,9 +248,9 @@ const EmployeeTimesheet = () => {
                 />
                 {
                   view === 'Day' ?
-                  <a href="javascript:void(0)" className="btn add-btn" onClick={() => { setOpen({ isAddOpen: true, data: '' }); form2.setFieldsValue({date: moment(selectedDate, 'YYYY-MM-DD')}); getAllProjects(); setShowCalendar(false); }}><i className="fa fa-plus" /> {t('Timesheetemployee.addentry')}</a>
+                  <a href="javascript:void(0)" className="btn add-btn" onClick={() => { setOpen({ isAddOpen: true, data: '' }); form2.setFieldsValue({date: moment(selectedDate, 'YYYY-MM-DD')}); getAllProjects(); getAllTaskBoards(); setShowCalendar(false); }}><i className="fa fa-plus" /> {t('Timesheetemployee.addentry')}</a>
                   :
-                  <a href="javascript:void(0)" className="btn add-btn" onClick={() => { setOpen({ isAddWeekOpen: true, data: '' }); getAllProjects(); setShowCalendar(false); }}><i className="fa fa-plus" /> {t('Timesheetemployee.addrow')}</a>
+                  <a href="javascript:void(0)" className="btn add-btn" onClick={() => { setOpen({ isAddWeekOpen: true, data: '' }); getAllProjects(); getAllTaskBoards(); setShowCalendar(false); }}><i className="fa fa-plus" /> {t('Timesheetemployee.addrow')}</a>
                 }
               </div>
             </div>
@@ -318,6 +345,8 @@ const EmployeeTimesheet = () => {
                   form2={form2}
                   allProjects={allProjects}
                   getAllProjects={getAllProjects}
+                  allTaskboards={allTaskboards}
+                  getAllTaskBoards={getAllTaskBoards}
                   setShowCalendar={setShowCalendar}
                 />
               }
@@ -333,6 +362,8 @@ const EmployeeTimesheet = () => {
                   setOpen={setOpen}
                   allProjects={allProjects}
                   getAllProjects={getAllProjects}
+                  allTaskboards={allTaskboards}
+                  getAllTaskBoards={getAllTaskBoards}
                   currentWeekDates={currentWeekDates}
                   setShowCalendar={setShowCalendar}
                 />

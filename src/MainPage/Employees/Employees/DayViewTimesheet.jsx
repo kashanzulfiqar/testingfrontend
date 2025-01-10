@@ -10,7 +10,7 @@ import { useSelector } from 'react-redux';
 import { itemRender } from '../../paginationfunction';
 import { useTranslation } from 'react-i18next';
 
-function DayViewTimesheet({ tableStartDate, setTableStartDate, selectedDate, setSelectedDate, open, setOpen, form2, allProjects, getAllProjects, setShowCalendar }) {
+function DayViewTimesheet({ tableStartDate, setTableStartDate, selectedDate, setSelectedDate, open, setOpen, form2, allProjects, getAllProjects, allTaskboards, getAllTaskBoards, setShowCalendar }) {
   const { t, i18n } = useTranslation();
     const moment = require('moment');
 
@@ -135,9 +135,19 @@ useEffect(() => {
     // setAllData(filtered);
   }
 
+  const handleSelectionChange = (value) => {
+    setIsProjectAssociated(value === 'project')
+    if (!isProjectAssociated) {
+      setAllTasks([])
+      form2.setFieldsValue({taskId: '', projectId: ''})
+  } else {
+      setAllTasks([])
+      form2.setFieldsValue({taskId: '', boardId: ''})
+  }
+  }
   const getAllTasks = (id) => {
     setTaskLoader(true);
-    apiServices("GET", `tasks?projectId=${id}&page=${1}&limit=${99999}`, null, user_state)
+    apiServices("GET", `tasks?id=${id}&page=${1}&limit=${99999}`, null, user_state)
       .then((res) => {
           if (res?.data?.success === true) {
               const sortedData = res?.data?.Task?.docs?.slice().sort((a, b) => a.title.localeCompare(b.title));
@@ -217,6 +227,8 @@ useEffect(() => {
   }
 
   const onFinishEdit = (values) => {
+    console.log("values on edit :", values);
+    
     let updated_data = {
         ...values,
         _id: open?.data?._id,
@@ -231,7 +243,7 @@ useEffect(() => {
     apiServices("PUT", 'timesheet', updated_data, user_state)
       .then((res) => {
           if (res?.data?.success === true) {
-              // getData(currentPage, pageSize);
+              getData(currentPage, pageSize);
               setAllData(
                 allData.map((data) => {
                     if (data._id === open?.data?._id) {
@@ -523,7 +535,18 @@ useEffect(() => {
                               <h4 className="project-title" style={{color: '#333', display: 'flex', alignItems: 'center', gap: '13px'}}>
                                   {/* <Link to={`/projects/projects-view/${project?._id}`}> */}
                                   <img src={folderOpenIcon} width='29px' />
-                                  <label>{record?.projectId?.projectName}</label>
+                                  {record?.projectId?.projectName  ? <label>{record?.projectId?.projectName}</label>  : <label>{record?.boardId?.boardTitle} <span
+              style={{
+                marginLeft: "8px",
+                backgroundColor: "#7460EE",
+                color: "#fff",
+                padding: "2px 8px",
+                borderRadius: "12px",
+                fontSize: "12px",
+              }}
+            >
+              {t('Taskboard')}
+            </span></label>}
                                   {/* </Link> */}
                               </h4>
                               <h4 className="project-title" style={{color: '#333', display: 'flex', alignItems: 'center', gap: '18px'}}>
@@ -548,17 +571,22 @@ useEffect(() => {
                                 <div className="dropdown-menu dropdown-menu-right">
                                     <a className="dropdown-item" href="javascript:void(0)"
                                         onClick={() => {
-                                            setOpen({ isAddOpen: true, data: record });
+                                            
+                                            console.log("recORDing",record);
                                             getAllProjects()
-                                            getAllTasks(record?.projectId?._id)
+                                            getAllTaskBoards()
+                                            getAllTasks(record?.projectId?._id ? record?.projectId?._id : record?.boardId?._id)
                                             let data = {
                                                 ...record,
+                                                boardId: record?.boardId?._id,
                                                 projectId: record?.projectId?._id,
                                                 taskId: record?.taskId?._id,
                                                 hoursWorked: record?.hoursWorked ? moment(record?.hoursWorked, 'HH:mm') : '',
                                                 date: moment(record?.date, 'YYYY-MM-DD')
                                             }
                                             form2.setFieldsValue(data);
+                                            setOpen({ isAddOpen: true, data: record });
+                                            setAllTasks([])
                                             setDescLength(record?.notes?.length)
                                         }}
                                     >
@@ -590,7 +618,7 @@ useEffect(() => {
                 :
                 <div style={{background: '#fff',color: '#6C757D', border: '1px solid #DEE2E6', borderRadius: '7px', display: 'flex', placeContent: 'center', placeItems: 'center', fontSize: '17px', height: '200px'}}>
                     <label>
-                    {t('Timesheetemployee.emptytimesheet')} <label style={{color: '#FF9B44', textDecoration: 'underline', cursor: 'pointer', fontWeight: '700'}} onClick={() => { getAllProjects(); setOpen({ isAddOpen: true, data: '' }); form2.setFieldsValue({date: moment(selectedDate, 'YYYY-MM-DD')}); setShowCalendar(false) }}>{t('Timesheetemployee.addentry')}</label>
+                    {t('Timesheetemployee.emptytimesheet')} <label style={{color: '#FF9B44', textDecoration: 'underline', cursor: 'pointer', fontWeight: '700'}} onClick={() => { getAllTaskBoards(); getAllProjects(); setOpen({ isAddOpen: true, data: '' }); form2.setFieldsValue({date: moment(selectedDate, 'YYYY-MM-DD')}); setShowCalendar(false) }}>{t('Timesheetemployee.addentry')}</label>
                     </label>
                 </div>
             }
@@ -777,7 +805,7 @@ useEffect(() => {
                         className="custom-border">
                           <Select
                             value={isProjectAssociated ? 'project' : 'taskboard'}
-                            onChange={(value) => setIsProjectAssociated(value === 'project')}
+                            onChange={(value) => handleSelectionChange(value)}
                             className="custom-select custom-normal"
                         >
                             <Select.Option value="project">{t('Project')}</Select.Option>
