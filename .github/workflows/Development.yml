@@ -35,11 +35,11 @@ jobs:
           DEPLOYMENT_PATH: ${{ secrets.DEPLOYMENT_PATH }}
           SSH_USER: ${{ secrets.EC2_USER }}
         run: |
-          ssh -i ~/.ssh/frontend_deploy_key $SSH_USER@$SSH_HOST '
+          ssh -i ~/.ssh/frontend_deploy_key $SSH_USER@$SSH_HOST bash -s <<'EOF'
             set -e
 
             echo "Switching to deploy user..."
-            sudo su - deploy <<EOF
+            sudo su - deploy <<'INNER_EOF'
 
             echo "Starting SSH agent..."
             eval "$(ssh-agent -s)"
@@ -64,5 +64,5 @@ jobs:
             sudo systemctl restart nginx || { echo "Nginx restart failed"; exit 1; }
 
             echo "Deployment completed successfully!"
-            EOF
-          '
+            INNER_EOF
+          EOF
