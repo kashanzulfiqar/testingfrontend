@@ -335,7 +335,10 @@ function WeekViewTimeSheet({ tableStartDate, setTableStartDate, selectedDate, se
 
     const onHandleDelete = (id) => {
       setLoader(true)
-    apiServices("DELETE", "timesheet", id, user_state)
+      const data = {
+        _id: id,
+      };
+    apiServices("DELETE", "timesheet", data, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
           // setData([...data.filter((designation) => designation._id !== id)]);

@@ -33,6 +33,7 @@ function DayViewTimesheet({ tableStartDate, setTableStartDate, selectedDate, set
   const [tableLoader, setTableLoader] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
+  const [isProjectAssociated, setIsProjectAssociated] = useState(false);
   const [paginationDetail, setPaginationDetail] = useState();
 
 let t_data = [
@@ -79,6 +80,23 @@ let t_data = [
         notes: "lkklklj33310000"
     },
 ]
+useEffect(() => {
+  if (open?.isAddOpen) {
+      // Reset toggle state when modal is opened
+      if (open?.data) {
+          // Editing mode
+          if (open.data.projectId) {
+              setIsProjectAssociated(true); // Task is associated with a project
+              form2.setFieldsValue({ boardId: undefined }); // Reset taskboard field
+          } else if (open.data.boardId) {
+              setIsProjectAssociated(false); // Task is associated with a task board
+          }
+      } else {
+          // Adding mode
+          setIsProjectAssociated(false); // Default to task board
+      }
+  }
+}, [open]);
 
   useEffect(() => {
     getData();
@@ -251,8 +269,11 @@ let t_data = [
 
   const onHandleDelete = (id) => {
     // console.log(id);
+    const data = {
+      _id: id,
+    };
     setLoader(true)
-    apiServices("DELETE", "timesheet", id, user_state)
+    apiServices("DELETE", "timesheet", data, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
           // setData([...data.filter((designation) => designation._id !== id)]);
@@ -747,8 +768,28 @@ let t_data = [
                 autoComplete='off'
                 >
                 <div className="row">
+                  <div className="col-12">
+                    <div className="form-group">
+                        <label>
+                            {t('Associate with')} <span className="text-danger">*</span>
+                        </label>
+                        <Form.Item
+                        className="custom-border">
+                          <Select
+                            value={isProjectAssociated ? 'project' : 'taskboard'}
+                            onChange={(value) => setIsProjectAssociated(value === 'project')}
+                            className="custom-select custom-normal"
+                        >
+                            <Select.Option value="project">{t('Project')}</Select.Option>
+                            <Select.Option value="taskboard">{t('TaskBoard')}</Select.Option>
+                        </Select>
+                        </Form.Item>
+                    </div>
+                </div>
                     <div className="col-12">
                         <div className="form-group">
+                        {isProjectAssociated ? (
+                                <>
                         <label>
                         {t('Timesheetemployee.project')} <span className="text-danger">*</span>
                         </label>
@@ -797,6 +838,58 @@ let t_data = [
                                 </Select>
                         </Form.Item>
                         </div>
+                        </>
+                        ) : (
+                          <>
+                          <label>
+                        {t('TaskBoard')} <span className="text-danger">*</span>
+                        </label>
+                        <div style={{ position: "relative" }} id="area">
+                        <Form.Item
+                            name='boardId'
+                            className='custom-border'
+                            rules={[
+                            {
+                                whitespace: true,
+                                required: true,
+                                message: t('please select taskboard'),
+                            },
+                            ]}
+                        >
+                                <Select
+                                    showSearch
+                                    onSearch={(val) => {
+                                      searchHandler(val, 'taskboard')
+                                    }}
+                                    filterOption={(input, option) => option.children?.toLowerCase().indexOf(input?.toLowerCase()) >= 0}
+                                    optionFilterProp="children"
+                                    notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                                    dropdownRender={(menu) => (
+                                      <>
+                                        {menu}
+                                      </>
+                                    )}
+                                    onChange={(val) => {
+                                        getAllTasks(val);
+                                        form2.setFieldsValue({taskId: ''})
+                                    }}
+                                    className="custom-select custom-normal"
+                                    getPopupContainer={() =>
+                                        document.getElementById("area")
+                                    }
+                                    placeholder={t('Select Taskboard')}
+                                    >
+                                    {
+                                        allTaskboards.map((taskBoard, index) => (
+                                          <Select.Option key={index} value={taskBoard._id}>
+                                              {taskBoard.boardTitle}
+                                          </Select.Option>
+                                      ))
+                                    }
+                                </Select>
+                        </Form.Item>
+                        </div>
+                        </>)}
                         </div>
                     </div>
                     <div className="col-12">
