@@ -21,7 +21,6 @@ jobs:
         env:
           SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY_FRONTEND }}
           SSH_HOST: ${{ secrets.EC2_HOST }}
-          SSH_USER: ${{ secrets.EC2_USER }}
         run: |
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/frontend_deploy_key
@@ -32,23 +31,17 @@ jobs:
       - name: Deploy Frontend to EC2
         env:
           SSH_HOST: ${{ secrets.EC2_HOST }}
-          DEPLOYMENT_PATH: ${{ secrets.DEPLOYMENT_PATH }}
-          SSH_USER: ${{ secrets.EC2_USER }}
         run: |
-          ssh -i ~/.ssh/frontend_deploy_key $SSH_USER@$SSH_HOST bash -s <<'EOF'
+          ssh -i ~/.ssh/frontend_deploy_key deploy@$SSH_HOST '
             set -e
-
-            echo "Switching to deploy user..."
-            sudo su - deploy <<'INNER_EOF'
+            echo "Navigating to frontend directory..."
+            cd /var/www/daftarpro-frontend/daftarpro-web-frontend
 
             echo "Starting SSH agent..."
             eval "$(ssh-agent -s)"
 
             echo "Adding SSH key..."
             ssh-add ~/.ssh/frontend_deploy_key
-
-            echo "Navigating to frontend directory..."
-            cd $DEPLOYMENT_PATH
 
             echo "Pulling latest code from dev branch..."
             git checkout dev
@@ -64,5 +57,4 @@ jobs:
             sudo systemctl restart nginx || { echo "Nginx restart failed"; exit 1; }
 
             echo "Deployment completed successfully!"
-            INNER_EOF
-          EOF
+          '
