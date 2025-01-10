@@ -12,6 +12,8 @@ import CandidateDetails from './CandidateDetails';
 import EditCandidate from './EditCandidate';
 import Interviews from './Interviews';
 import InterviewDetails from './InterviewDetails';
+import Tasks from './Tasks';
+import TaskDetails from './TaskDetails';
 
 const RecruitmentLayout = () => {
   const location = useLocation();
@@ -55,6 +57,12 @@ const RecruitmentLayout = () => {
                 </Link>
               </li>
 
+              <li className={pathname.includes("/recruitment/tasks") ? "active" : ""}>
+                <Link to="/recruitment/tasks">
+                  <i className="la la-tasks" /> <span>Tasks</span>
+                </Link>
+              </li>
+
               <li className={pathname.includes("/recruitment/offers") ? "active" : ""}>
                 <Link to="/recruitment/offers">
                   <i className="la la-file-text" /> <span>Offers</span>
@@ -84,6 +92,8 @@ const RecruitmentLayout = () => {
           <Route path="candidates/:id/edit" element={<EditCandidate />} />
           <Route path="interviews" element={<Interviews />} />
           <Route path="interviews/:id" element={<InterviewDetails />} />
+          <Route path="tasks" element={<Tasks />} />
+          <Route path="tasks/:id" element={<TaskDetails />} />
           <Route path="*" element={<Navigate to="dashboard" replace />} />
         </Routes>
       </div>

@@ -6,7 +6,7 @@ import moment from 'moment';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
-const CreateCandidateModal = ({ visible, onCancel, onSuccess }) => {
+const CreateCandidateModal = ({ visible, onCancel, onSuccess, initialValues }) => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [submitting, setSubmitting] = useState(false);
@@ -18,8 +18,12 @@ const CreateCandidateModal = ({ visible, onCancel, onSuccess }) => {
   useEffect(() => {
     if (visible) {
       fetchActiveJobs();
+      // Set initial values when modal becomes visible
+      if (initialValues) {
+        form.setFieldsValue(initialValues);
+      }
     }
-  }, [visible]);
+  }, [visible, initialValues, form]);
 
   const fetchActiveJobs = async () => {
     const token = localStorage.getItem('token') || authState?.access_token?.accessToken;

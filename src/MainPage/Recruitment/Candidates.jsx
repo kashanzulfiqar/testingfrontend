@@ -112,8 +112,8 @@ const Candidates = () => {
   };
 
   const handleSearch = (value) => {
-    setFilters(prev => ({
-      ...prev,
+      setFilters(prev => ({
+        ...prev,
       name: value
     }));
     setPagination(prev => ({
@@ -142,9 +142,9 @@ const Candidates = () => {
     try {
       setLoading(true);
       const response = await apiServices(
-        "DELETE",
+        "DELETE", 
         `candidate/${candidateId}`,
-        null,
+        null, 
         {
           access_token: {
             accessToken: token
@@ -157,13 +157,13 @@ const Candidates = () => {
 
       if (response?.data?.status) {
         message.success('Candidate deleted successfully');
-        fetchCandidates();
-      } else {
-        message.error(response?.data?.message || 'Failed to delete candidate');
+          fetchCandidates();
+        } else {
+          message.error(response?.data?.message || 'Failed to delete candidate');
       }
     } catch (error) {
       console.error('Error deleting candidate:', error);
-      message.error('Error deleting candidate. Please try again');
+        message.error('Error deleting candidate. Please try again');
     } finally {
       setLoading(false);
     }
@@ -373,7 +373,7 @@ const Candidates = () => {
             </ul>
           </div>
           <div className="col-auto float-end ms-auto">
-            <Button
+              <Button
               className="add-btn"
               onClick={handleAddCandidate}
               icon={<PlusOutlined />}
@@ -389,30 +389,30 @@ const Candidates = () => {
         <div className="col-sm-6 col-md-3">
           <Input.Search
             placeholder="Search candidates..."
-            allowClear
+              allowClear
             onSearch={handleSearch}
-            style={{ width: '100%' }}
+              style={{ width: '100%' }}
           />
         </div>
-      </div>
+            </div>
 
       {/* Table section */}
       <div className="row">
         <div className="col-md-12">
-          <Table
-            columns={columns}
-            dataSource={candidates}
+                <Table 
+                  columns={columns}
+                  dataSource={candidates}
             loading={loading}
             onChange={handleTableChange}
-            pagination={{
-              ...pagination,
-              showSizeChanger: true,
+                  pagination={{
+                    ...pagination,
+                    showSizeChanger: true,
               showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} candidates`
-            }}
+                  }}
             rowKey="_id"
-          />
+                />
+              </div>
         </div>
-      </div>
 
       {/* Create Candidate Modal */}
       <CreateCandidateModal

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Tabs, Spin, message, Tag, Button, Modal, Form, Input, DatePicker, InputNumber, Select, Upload } from 'antd';
+import { Tabs, Spin, message, Tag, Button, Modal } from 'antd';
 import { apiServices } from '../../Services/apiServices';
 import { useSelector } from 'react-redux';
 import { 
@@ -13,12 +13,10 @@ import {
   TeamOutlined,
   CalendarOutlined,
   DollarOutlined,
-  UserOutlined,
-  UploadOutlined
+  UserOutlined
 } from '@ant-design/icons';
 import moment from 'moment';
-
-const { TextArea } = Input;
+import CreateCandidateModal from './CreateCandidateModal';
 
 const JobDetails = () => {
   const { jobId } = useParams();
@@ -28,10 +26,6 @@ const JobDetails = () => {
   const [candidates, setCandidates] = useState([]);
   const authState = useSelector((state) => state.user.loginvalue);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [modalForm] = Form.useForm();
-  const [submitting, setSubmitting] = useState(false);
-  const [resumeFile, setResumeFile] = useState(null);
-  const [fileList, setFileList] = useState([]);
 
   console.log('JobDetails component mounted with jobId:', jobId);
 
@@ -90,10 +84,10 @@ const JobDetails = () => {
     }
 
     try {
-      console.log('Making API request to fetch job candidates...');
+      console.log('Making API request to fetch job candidates for jobId:', jobId);
       const response = await apiServices(
         "GET",
-        `candidate/list?appliedFor=${jobId}`,
+        `candidate/list?appliedFor=${jobId}&page=1&limit=50`,
         null,
         {
           access_token: {
@@ -105,11 +99,16 @@ const JobDetails = () => {
       console.log('Job candidates API response:', response);
 
       if (response?.data?.status) {
-        console.log('Job candidates fetched successfully:', response.data.data.docs);
-        setCandidates(response.data.data.docs || []);
+        const candidatesList = response.data.data.docs || [];
+        console.log('Job candidates fetched successfully:', candidatesList);
+        setCandidates(candidatesList);
+      } else {
+        console.error('Failed to fetch candidates:', response?.data);
+        message.error('Failed to fetch candidates');
       }
     } catch (error) {
       console.error('Error fetching job candidates:', error);
+      message.error('Failed to load candidates');
     }
   };
 
@@ -118,111 +117,12 @@ const JobDetails = () => {
   };
 
   const handleModalCancel = () => {
-    modalForm.resetFields();
-    setResumeFile(null);
-    setFileList([]);
     setIsModalVisible(false);
   };
 
-  const handleModalSubmit = async (values) => {
-    const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
-    
-    if (!token) {
-      message.error('Authentication required');
-      navigate('/login');
-      return;
-    }
-
-    try {
-      setSubmitting(true);
-      
-      // Validate salary
-      if (Number(values.expectedSalary) < Number(values.currentSalary)) {
-        message.error('Expected salary cannot be less than current salary');
-        return;
-      }
-
-      // Validate applied date
-      const appliedDate = values.appliedDate.toDate();
-      const today = new Date();
-      if (appliedDate > today) {
-        message.error('Applied date cannot be in the future');
-        return;
-      }
-
-      const formData = new FormData();
-      
-      // Set the jobId to the current job
-      const formValues = {
-        ...values,
-        jobId: jobId, // Use the current job's ID
-      };
-
-      // Add all non-file fields
-      Object.keys(formValues).forEach(key => {
-        if (key !== 'resume') {
-          if (key === 'appliedDate') {
-            formData.append(key, formValues[key].format('YYYY-MM-DD'));
-          } else {
-            formData.append(key, formValues[key]);
-          }
-        }
-      });
-
-      // Add resume file if it exists
-      if (values.resume?.length > 0) {
-        const file = values.resume[0].originFileObj;
-        formData.append('resume', file);
-      }
-
-      const response = await apiServices(
-        "POST",
-        'candidate/create',
-        formData,
-        {
-          access_token: {
-            accessToken: token
-          },
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
-          }
-        }
-      );
-
-      if (response?.data?.status) {
-        message.success('Candidate added successfully');
-        modalForm.resetFields();
-        setResumeFile(null);
-        setFileList([]);
-        setIsModalVisible(false);
-        fetchJobCandidates(); // Refresh the candidates list
-      } else {
-        if (response?.data?.message === 'Email already exists') {
-          message.error('A candidate with this email already exists');
-        } else if (response?.data?.errors) {
-          const errors = response.data.errors;
-          const errorMessages = Object.values(errors).join(', ');
-          message.error(`Validation failed: ${errorMessages}`);
-        } else {
-          message.error(response?.data?.message || 'Failed to add candidate');
-        }
-      }
-    } catch (error) {
-      console.error('Error adding candidate:', error);
-      if (error.response?.status === 401) {
-        message.error('Session expired. Please login again');
-        navigate('/login');
-      } else if (error.response?.status === 409) {
-        message.error('A candidate with this email already exists');
-      } else if (error.response?.status === 400) {
-        message.error(error.response?.data?.message || 'Invalid input data');
-      } else {
-        message.error('Error adding candidate. Please try again');
-      }
-    } finally {
-      setSubmitting(false);
-    }
+  const handleModalSuccess = () => {
+    setIsModalVisible(false);
+    fetchJobCandidates();
   };
 
   const items = [
@@ -407,254 +307,15 @@ const JobDetails = () => {
       </div>
 
       {/* Add Candidate Modal */}
-      <Modal
-        title="Add New Candidate"
+      <CreateCandidateModal
         visible={isModalVisible}
         onCancel={handleModalCancel}
-        footer={null}
-        width={800}
-        className="custom-modal"
-      >
-        <Form
-          form={modalForm}
-          layout="vertical"
-          onFinish={handleModalSubmit}
-          initialValues={{
-            appliedDate: moment(),
-          }}
-        >
-          <div className="upload-resume mb-4">
-            <p>If you have a resume, upload the resume first. We will automatically pickup all the details.</p>
-            <Form.Item
-              name="resume"
-              valuePropName="fileList"
-              getValueFromEvent={(e) => {
-                if (Array.isArray(e)) {
-                  return e;
-                }
-                return e?.fileList || [];
-              }}
-            >
-              <Upload
-                name="resume"
-                maxCount={1}
-                beforeUpload={(file) => {
-                  // Validate file size (5MB)
-                  if (file.size > 5 * 1024 * 1024) {
-                    message.error('Resume file size should not exceed 5MB');
-                    return false;
-                  }
-                  
-                  // Validate file type
-                  const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-                  if (!allowedTypes.includes(file.type)) {
-                    message.error('Only PDF, DOC, and DOCX files are allowed');
-                    return false;
-                  }
-                  
-                  setResumeFile(file);
-                  return false;
-                }}
-                onRemove={() => {
-                  setResumeFile(null);
-                  return true;
-                }}
-                fileList={fileList}
-                onChange={({ fileList: newFileList }) => {
-                  setFileList(newFileList);
-                }}
-              >
-                <Button icon={<UploadOutlined />} disabled={fileList.length > 0}>
-                  Upload Resume
-                </Button>
-              </Upload>
-            </Form.Item>
-          </div>
-
-          <div className="row">
-            <div className="col-md-6">
-              <Form.Item
-                name="firstName"
-                label={<>First Name <span className="text-danger">*</span></>}
-                rules={[
-                  { required: true, message: 'Please enter first name' },
-                  { min: 2, message: 'First name must be at least 2 characters' },
-                  { max: 50, message: 'First name cannot exceed 50 characters' },
-                  { pattern: /^[a-zA-Z\s-]+$/, message: 'First name can only contain letters, spaces and hyphens' }
-                ]}
-              >
-                <Input placeholder="Enter Name" />
-              </Form.Item>
-            </div>
-            <div className="col-md-6">
-              <Form.Item
-                name="lastName"
-                label={<>Last Name <span className="text-danger">*</span></>}
-                rules={[
-                  { required: true, message: 'Please enter last name' },
-                  { min: 2, message: 'Last name must be at least 2 characters' },
-                  { max: 50, message: 'Last name cannot exceed 50 characters' },
-                  { pattern: /^[a-zA-Z\s-]+$/, message: 'Last name can only contain letters, spaces and hyphens' }
-                ]}
-              >
-                <Input placeholder="Enter last name" />
-              </Form.Item>
-            </div>
-          </div>
-
-          <div className="row">
-            <div className="col-md-6">
-              <Form.Item
-                name="email"
-                label={<>Email <span className="text-danger">*</span></>}
-                rules={[
-                  { required: true, message: 'Please enter email' },
-                  { type: 'email', message: 'Please enter a valid email' }
-                ]}
-              >
-                <Input placeholder="Enter Email" />
-              </Form.Item>
-            </div>
-            <div className="col-md-6">
-              <Form.Item
-                name="phoneNumber"
-                label={<>Phone Number <span className="text-danger">*</span></>}
-                rules={[
-                  { required: true, message: 'Please enter phone number' },
-                  { min: 10, message: 'Phone number must be at least 10 digits' },
-                  { max: 15, message: 'Phone number cannot exceed 15 digits' },
-                  { pattern: /^[0-9+\-\s()]+$/, message: 'Please enter a valid phone number' }
-                ]}
-              >
-                <Input placeholder="Enter Number" />
-              </Form.Item>
-            </div>
-          </div>
-
-          <div className="row">
-            <div className="col-md-6">
-              <Form.Item
-                name="appliedDate"
-                label={<>Applied Date <span className="text-danger">*</span></>}
-                rules={[
-                  { required: true, message: 'Please select date' },
-                  { 
-                    validator: (_, value) => {
-                      if (value && value.isAfter(moment())) {
-                        return Promise.reject('Applied date cannot be in the future');
-                      }
-                      return Promise.resolve();
-                    }
-                  }
-                ]}
-              >
-                <DatePicker style={{ width: '100%' }} placeholder="Select Date" disabledDate={date => date.isAfter(moment())} />
-              </Form.Item>
-            </div>
-            <div className="col-md-6">
-              <Form.Item
-                name="experience"
-                label={<>Experience (Years) <span className="text-danger">*</span></>}
-                rules={[
-                  { required: true, message: 'Please enter experience' },
-                  { type: 'number', min: 0, message: 'Experience cannot be negative' }
-                ]}
-              >
-                <InputNumber style={{ width: '100%' }} placeholder="Enter Experience" min={0} precision={1} />
-              </Form.Item>
-            </div>
-          </div>
-
-          <div className="row">
-            <div className="col-md-6">
-              <Form.Item
-                name="currentSalary"
-                label={<>Current Salary <span className="text-danger">*</span></>}
-                rules={[
-                  { required: true, message: 'Please enter current salary' },
-                  { type: 'number', min: 0, message: 'Salary cannot be negative' }
-                ]}
-              >
-                <InputNumber style={{ width: '100%' }} placeholder="Enter Current Salary" min={0} />
-              </Form.Item>
-            </div>
-            <div className="col-md-6">
-              <Form.Item
-                name="expectedSalary"
-                label={<>Expected Salary <span className="text-danger">*</span></>}
-                rules={[
-                  { required: true, message: 'Please enter expected salary' },
-                  { type: 'number', min: 0, message: 'Salary cannot be negative' }
-                ]}
-              >
-                <InputNumber style={{ width: '100%' }} placeholder="Enter Expected Salary" min={0} />
-              </Form.Item>
-            </div>
-          </div>
-
-          <div className="row">
-            <div className="col-md-6">
-              <Form.Item
-                name="noticePeriod"
-                label={<>Notice Period <span className="text-danger">*</span></>}
-                rules={[{ required: true, message: 'Please select notice period' }]}
-              >
-                <Select placeholder="Select Notice Period">
-                  <Select.Option value="IMMEDIATE">Immediate</Select.Option>
-                  <Select.Option value="15_DAYS">15 Days</Select.Option>
-                  <Select.Option value="30_DAYS">30 Days</Select.Option>
-                  <Select.Option value="60_DAYS">60 Days</Select.Option>
-                  <Select.Option value="90_DAYS">90 Days</Select.Option>
-                </Select>
-              </Form.Item>
-            </div>
-            <div className="col-md-6">
-              <Form.Item
-                name="source"
-                label={<>Source <span className="text-danger">*</span></>}
-                rules={[{ required: true, message: 'Please select source' }]}
-              >
-                <Select placeholder="Select source">
-                  <Select.Option value="LINKEDIN">LinkedIn</Select.Option>
-                  <Select.Option value="WEBSITE">Website</Select.Option>
-                  <Select.Option value="REFERRAL">Referral</Select.Option>
-                  <Select.Option value="OTHER">Other</Select.Option>
-                </Select>
-              </Form.Item>
-            </div>
-          </div>
-
-          <Form.Item className="text-end mt-3">
-            <Button 
-              onClick={handleModalCancel} 
-              style={{ 
-                marginRight: 12,
-                padding: '6px 24px',
-                height: '40px',
-                borderRadius: '20px',
-                background: '#F8F9FA',
-                border: 'none'
-              }}
-            >
-              Reset
-            </Button>
-            <Button 
-              type="primary" 
-              htmlType="submit" 
-              loading={submitting}
-              style={{ 
-                padding: '6px 24px',
-                height: '40px',
-                borderRadius: '20px',
-                background: '#F4A261',
-                border: 'none'
-              }}
-            >
-              Add Candidate
-            </Button>
-          </Form.Item>
-        </Form>
-      </Modal>
+        onSuccess={handleModalSuccess}
+        initialValues={{
+          appliedFor: jobId,
+          appliedDate: moment()
+        }}
+      />
 
       <style jsx global>{`
         .job-details-tabs .ant-tabs-nav {

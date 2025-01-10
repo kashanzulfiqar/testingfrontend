@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { Card, Row, Col, Button, Spin, message, Tag, Typography, Tabs, Select, Space, Avatar, Tooltip, Rate, Collapse } from 'antd';
+import { Card, Row, Col, Button, Spin, message, Tag, Typography, Tabs, Select, Space, Avatar, Tooltip, Rate, Collapse, Empty } from 'antd';
 import { MailOutlined, PhoneOutlined, EnvironmentOutlined, CalendarOutlined, PlusOutlined, ArrowLeftOutlined, FilePdfOutlined, FileWordOutlined, EyeOutlined, DownloadOutlined } from '@ant-design/icons';
 import { apiServices } from '../../Services/apiServices';
 import { useSelector } from 'react-redux';
@@ -768,29 +768,43 @@ const CandidateDetails = () => {
         return;
       }
 
+      console.log('Updating task status:', { taskId, newStatus, token });
+
       const response = await apiServices(
         "PATCH",
         `task/${taskId}/status`,
         { status: newStatus },
         {
-          access_token: {
-            accessToken: token
-          },
           headers: {
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
           }
         }
       );
+
+      console.log('Update task status response:', response);
 
       if (response?.data?.success) {
         message.success('Task status updated successfully');
         fetchCandidateTasks(); // Refresh the tasks list
       } else {
+        console.error('Failed to update task status:', response?.data);
         message.error(response?.data?.message || 'Failed to update task status');
       }
     } catch (error) {
       console.error('Error updating task status:', error);
-      message.error('Error updating task status');
+      console.error('Error response:', error.response);
+      
+      if (error.response?.status === 401) {
+        message.error('Unauthorized access. Please login again.');
+        navigate('/login');
+      } else if (error.response?.status === 403) {
+        message.error('You are not authorized to update this task status');
+      } else if (error.response?.status === 404) {
+        message.error('Task not found');
+      } else {
+        message.error(error.response?.data?.message || 'Error updating task status');
+      }
     }
   };
 
@@ -823,6 +837,7 @@ const CandidateDetails = () => {
                 key={task._id} 
                 style={{ marginBottom: '16px' }}
                 className="task-card"
+                onClick={() => navigate(`/recruitment/tasks/${task._id}`)}
               >
                 <Row gutter={16}>
                   <Col span={16}>
@@ -850,39 +865,18 @@ const CandidateDetails = () => {
                         <Text type="secondary">Duration:</Text>{' '}
                         <Text>{task.taskDuration} days</Text>
                       </div>
-                      {task.taskFile && (
-                        <div>
-                          <Text type="secondary">Task File:</Text>{' '}
-                          <Button 
-                            type="link" 
-                            href={task.taskFile.imageUrl} 
-                            target="_blank"
-                            style={{ padding: 0 }}
-                          >
-                            {task.taskFile.fileName}
-                          </Button>
-                        </div>
-                      )}
-                      {task.submittedFile && (
-                        <div>
-                          <Text type="secondary">Submitted File:</Text>{' '}
-                          <Button 
-                            type="link" 
-                            href={task.submittedFile.imageUrl} 
-                            target="_blank"
-                            style={{ padding: 0 }}
-                          >
-                            {task.submittedFile.fileName}
-                          </Button>
-                        </div>
-                      )}
                     </Space>
                   </Col>
                   <Col span={8} style={{ textAlign: 'right' }}>
                     <Select
                       value={task.status}
                       style={{ width: 120 }}
-                      onChange={(value) => updateTaskStatus(task._id, value)}
+                      onChange={(value) => {
+                        // Prevent card click when changing status
+                        event.stopPropagation();
+                        updateTaskStatus(task._id, value);
+                      }}
+                      onClick={(event) => event.stopPropagation()}
                       className={`status-${task.status?.toLowerCase()}`}
                     >
                       <Select.Option value="PENDING">Pending</Select.Option>
@@ -892,37 +886,13 @@ const CandidateDetails = () => {
                     </Select>
                   </Col>
                 </Row>
-
-                {task.feedback && (
-                  <div style={{ marginTop: '16px', borderTop: '1px solid #f0f0f0', paddingTop: '16px' }}>
-                    <Text strong>Feedback</Text>
-                    <Card size="small" style={{ marginTop: '8px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                        <Avatar 
-                          src={task.feedback.submittedBy?.imageUrl}
-                          style={{ marginRight: '8px' }}
-                        >
-                          {task.feedback.submittedBy?.fullName?.split(' ').map(n => n[0]).join('')}
-                        </Avatar>
-                        <div>
-                          <Text strong>{task.feedback.submittedBy?.fullName}</Text>
-                          <br />
-                          <Text type="secondary">{moment(task.feedback.createdAt).format('DD MMM YYYY')}</Text>
-                        </div>
-                      </div>
-                      <div>
-                        <Text type="secondary">Comments:</Text>
-                        <div style={{ marginTop: '4px' }}>{task.feedback.comments}</div>
-                      </div>
-                    </Card>
-                  </div>
-                )}
               </Card>
             ))
           ) : (
-            <div style={{ textAlign: 'center' }}>
-              <Text type="secondary">No tasks found</Text>
-            </div>
+            <Empty 
+              description="No tasks found" 
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+            />
           )}
         </div>
       </div>
