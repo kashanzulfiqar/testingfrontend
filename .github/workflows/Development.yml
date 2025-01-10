@@ -37,8 +37,17 @@ jobs:
         run: |
           ssh -i ~/.ssh/frontend_deploy_key $SSH_USER@$SSH_HOST '
             set -e
+
+            echo "Switching to deploy user..."
+            sudo su - deploy <<EOF
+
+            echo "Starting SSH agent..."
+            eval "$(ssh-agent -s)"
+
+            echo "Adding SSH key..."
+            ssh-add ~/.ssh/frontend_deploy_key
+
             echo "Navigating to frontend directory..."
-            echo $SSH_USER
             cd $DEPLOYMENT_PATH
 
             echo "Pulling latest code from dev branch..."
@@ -55,4 +64,5 @@ jobs:
             sudo systemctl restart nginx || { echo "Nginx restart failed"; exit 1; }
 
             echo "Deployment completed successfully!"
+            EOF
           '
