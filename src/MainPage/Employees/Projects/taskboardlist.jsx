@@ -12,6 +12,10 @@ import {
   Spin,
   Empty,
   Pagination,
+  Tooltip,
+  Avatar,
+  Checkbox,
+  Segmented,
 } from "antd";
 import Modal from "@mui/material/Modal";
 import "antd/dist/antd.css";
@@ -24,11 +28,14 @@ import { apiServices } from "../../../Services/apiServices";
 import { LoadingOutlined } from "@ant-design/icons";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { useTranslation } from "react-i18next";
+import { user_icon } from "../../../Entryfile/imagepath";
 
 const TaskBoardList = () => {
   const { t, i18n } = useTranslation();
   const [menu, setMenu] = useState(false);
-
+  const [loadingEmployee, setLoadingEmployee] = useState(false);
+  const [employees, setEmployees] = useState([]);
+  const [selectedTeamMembers, setSelectedTeamMembers] = useState([]);
   const moment = require("moment");
   const [form] = Form.useForm();
   const nav = useNavigate();
@@ -60,14 +67,7 @@ const TaskBoardList = () => {
     total: 10,
   });
 
-  useEffect(() => {
-    if ($(".select").length > 0) {
-      $(".select").select2({
-        minimumResultsForSearch: -1,
-        width: "100%",
-      });
-    }
-  });
+  const [isArchived, setIsArchived] = useState(false);
 
   const [filters, setFilters] = useState({
     projectName: "",
@@ -82,6 +82,33 @@ const TaskBoardList = () => {
     projectDomain: "",
     costType: "",
   });
+
+  const [openDropdownId, setOpenDropdownId] = useState(null);
+  const [openTeamDropdownId, setOpenTeamDropdownId] = useState(null);
+
+  const handleDropdownClick = (e, id) => {
+    e.stopPropagation();
+    setOpenTeamDropdownId(null);
+    setOpenDropdownId(openDropdownId === id ? null : id);
+  };
+
+  const handleTeamDropdownClick = (e, id) => {
+    e.stopPropagation();
+    setOpenDropdownId(null);
+    setOpenTeamDropdownId(openTeamDropdownId === id ? null : id);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setOpenDropdownId(null);
+      setOpenTeamDropdownId(null);
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
 
   const handleFilterChange = (value, filterType) => {
     setSelectedFilters({
@@ -122,9 +149,30 @@ const TaskBoardList = () => {
   };
 
   useEffect(() => {
+    if ($(".select").length > 0) {
+      $(".select").select2({
+        minimumResultsForSearch: -1,
+        width: "100%",
+      });
+    }
+  });
+
+  // Initial load effect
+  useEffect(() => {
     setIsLoading(true);
-    GetListProjects();
-  }, [pagination.current, pagination.pageSize]);
+    fetchEmployees();
+    GetListTaskBoards();
+  }, []); // Only run on mount
+
+  const handlePaginationChange = (page, pageSize) => {
+    setPagination({
+      ...pagination,
+      current: page,
+      pageSize: pageSize,
+    });
+    setIsLoading(true);
+    GetListTaskBoards(page, pageSize);
+  };
 
   const searchHandler = (val, type) => {
     let dropdownValues = []
@@ -148,6 +196,48 @@ const TaskBoardList = () => {
     }
   }
 
+  const fetchEmployees = () => {
+      setLoadingEmployee(true)
+      apiServices("GET", `user/all-employees`, null, user_state)
+        .then((res) => {
+          if (res.data.success === true) {
+            const emps = res?.data?.User;
+            const sortedData = emps
+              .slice()
+              .sort((a, b) => a.fullName.localeCompare(b.fullName));
+            setEmployees(sortedData);
+            setLoadingEmployee(false)
+          }
+        })
+        .catch((err) => {
+          setLoadingEmployee(false)
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : t("aAttend.errors.getEmployeesError")
+            }`
+          );
+        });
+    };
+
+    const getTeamMemberOptions = () => {
+        return employees?.map((employee) => (
+          <Select.Option key={employee._id} value={employee._id}>
+            {employee.fullName}
+          </Select.Option>
+        ));
+      }
+
+      const handleChange = (values) => {
+
+        const selectedEmployees = values?.map((value) =>
+          employees?.find((employee) => employee._id === value)
+        );
+        setSelectedTeamMembers(selectedEmployees);
+      }
   const getProjects = (page, pageSize) => {
     //setLoader(true);
 
@@ -162,6 +252,8 @@ const TaskBoardList = () => {
         if (res.data.success === true) {
           //setCategoryObj(res?.data?.projects);
           const sortedData = res?.data?.projects?.docs?.slice().sort((a, b) => a.projectName.localeCompare(b.projectName));
+          console.log("project in taskboard dropdown:",sortedData);
+          
           setAllProjects(sortedData);
           setIsLoading(false);          
       }
@@ -180,41 +272,34 @@ const TaskBoardList = () => {
       })
   };
 
-  const GetListProjects = (page, pageSize) => {
-    //setLoader(true);
-
+  const GetListTaskBoards = (page, pageSize, archivedStatus = isArchived) => {
     const params = {
       ...filters,
       page: page || pagination.current,
-      limit: pageSize ? pageSize : pagination.pageSize,
+      limit: pageSize || pagination.pageSize,
     };
 
     apiServices(
       "GET",
-      // `project-management/?clientName=${filters.clientName}&projectName=${filters.projectName}&page=${params.page}&limit=${params.limit}`,
-      `project-management/?taskBoard=true&projectName=${filters.projectName}&employeeId=${(role === '' && !permissions?.projectManagement) ? employee_id : ''}&page=${params.page}&limit=${params.limit}`,
+      `taskBoard/view-taskBoard/?page=${params.page}&limit=${params.limit}&isArchived=${archivedStatus}`,
       null,
       user_state
     )
       .then((res) => {
         if (res.data.success === true) {
-          setCategoryObj(res?.data?.projects);
-          setTableData(res?.data?.projects?.docs);
- 
-          setIsLoading(false);
-          // setPagination({
-          //   ...pagination,
-          //   total: res.data.projects.totalDocs,
-          // });
-          //setFlag(true);
-          setPagination({
-            ...pagination,
-            current : res.data.projects.page,
-            total: res.data.projects.totalDocs,
-          });
-          setPage(parseInt(res?.data?.projects?.page, 10));
-          setSize(parseInt(res?.data?.projects?.limit, 10));
-      }
+          console.log("taskboards", res?.data?.taskBoards);
+          const taskBoards = res?.data?.taskBoards || [];
+          setCategoryObj(taskBoards);
+          setTableData(taskBoards);
+          setPagination(prev => ({
+            ...prev,
+            current: res?.data?.currentPage,
+            total: res?.data?.totalItems,
+          }));
+          setPage(parseInt(params.page, 10));
+          setSize(parseInt(params.limit, 10));
+        }
+        setIsLoading(false);
       })
       .catch((err) => {
         message.error(
@@ -227,10 +312,11 @@ const TaskBoardList = () => {
           }`
         );
         setIsLoading(false);
-      })
+      });
   };
 
   const handleClose = () => {
+    setSelectedTeamMembers([])
     setOpen({ isAddOpen: false, isDelOpen: false, data: "" });
     setLoader(false);
   };
@@ -246,7 +332,7 @@ const TaskBoardList = () => {
         // console.log(res?.data);
         if (res?.data?.success === true) {
           handleClose();
-          GetListProjects();
+          GetListTaskBoards();
           message.success('Task board added successfully');
           setLoader(false);
         }
@@ -276,58 +362,157 @@ const TaskBoardList = () => {
         (page - 1) * size + index + 1,
     },
     {
-      title: t('Project Name'),
-      dataIndex: "projectName",
-      key: "projectName",
+      title: t('TaskBoard Name'),
+      dataIndex: "boardTitle",
+      key: "boardTitle",
       render: (text, record) => (
-        <a
-        onClick={() => nav(`/task-board/${record?._id}`, { state: record})} 
-      >
-        <label style={{cursor: 'pointer'}}>{text}</label>
-      </a>
+        <div>
+          <label>{text}</label>
+          {/* <a
+            onClick={() => nav(`/task-board/${record?._id}`, { state: record})}>
+            
+          </a> */}
+          {/* Show project name as a tag if project exists */}
+          {!record?.project?.projectName && (
+            <span
+              style={{
+                marginLeft: "8px",
+                backgroundColor: "#7460EE",
+                color: "#fff",
+                padding: "2px 8px",
+                borderRadius: "12px",
+                fontSize: "12px",
+              }}
+            >
+              {t('Taskboard')}
+            </span>
+          )}
+        </div>
       ),
     },
-    // {
-    //   title: t('holiday.date'),
-    //   dataIndex: "holidayDate",
-    //   key: "holidayDate",
-    //   render: (text) => moment(text).format("D MMM YYYY"),
-    // },
-    // {
-    //   title: t('holiday.day'),
-    //   dataIndex: "holidayDate",
-    //   key: "holidayDate",
-    //   render: (text) => moment(text).format("dddd"),
-    // },
     {
-      title: t('holiday.actions'),
-      render: (record, row) => (
+      title: t('Tasks.project'),
+      dataIndex: "project",
+      key: "project",
+      render: (text, record) => (
+        <div>
+          {record?.project?.projectName ? (
+            <span
+              style={{
+                backgroundColor: "#f0f0f0",
+                color: "#595959",
+                padding: "2px 8px",
+                borderRadius: "12px",
+                fontSize: "12px",
+              }}
+            >
+              {record.project.projectName}
+            </span>
+          ) : (
+            "-"
+          )}
+        </div>
+      ),
+    },
+    {
+          title: t('projectScreen.team'),
+          dataIndex: "assignedDevelopers",
+          key: "assignedDevelopers",
+          render: (assignedDevelopers, record) => (
+            <div className="project-members" style={{margin: '4px auto'}}>
+            <ul className="team-members" style={{minWidth: 'max-content'}}>
+              {assignedDevelopers?.slice(0, 4).map((developer, index) => (
+                <li key={index}>
+                  <Tooltip title={developer?.fullName}>
+                    <Avatar 
+                      style={{cursor: 'pointer'}} 
+                      src={developer?.imageUrl || user_icon} 
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </Tooltip>
+                </li>
+              ))}
+              {assignedDevelopers?.length > 4 && (
+                <li className="dropdown avatar-dropdown">
+                  <Link
+                    className="all-users dropdown-toggle projectTeamMember"
+                    style={{display:'inline-flex', height: '33px', width: '33px'}}
+                    data-bs-toggle="dropdown"
+                    aria-expanded={openTeamDropdownId === record._id}
+                    onClick={(e) => handleTeamDropdownClick(e, record._id)}
+                  >
+                    +{assignedDevelopers?.length - 4}
+                  </Link>
+                  {/* Dropdown menu for additional team members */}
+                  <div className={`dropdown-menu dropdown-menu-right ${openTeamDropdownId === record._id ? 'show' : ''}`}>
+                    <div className="avatar-group">
+                      {assignedDevelopers?.slice(4).map((developer, index) => (
+                        <a
+                          className="avatar avatar-xs projectTeamMember"
+                          key={index}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Tooltip title={developer?.fullName}>
+                            <Avatar
+                              src={developer?.imageUrl || user_icon}
+                              style={{cursor: 'pointer'}}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          </Tooltip>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                </li>
+              )}
+            </ul>
+            </div>
+          ),
+        },
+    {
+      title: t('Actions'),
+      render: (text, record) => (
         <div className="dropdown dropdown-action text-end">
           <a
-            href="javascript:void(0)"
-            // className="action-icon dropdown-toggle"
-            // data-bs-toggle="dropdown"
-            // aria-expanded="false"
-            className={`action-icon dropdown-toggle ${role === "admin" || permissions.projectManagement ? '' : 'disabled'}`}
-            style={{ cursor: (role == "admin" || permissions.projectManagement) ? "pointer" : "not-allowed" }}
-            data-bs-toggle={(role === "admin" || permissions.projectManagement) ? 'dropdown' : ''}
-            aria-expanded={(role === "admin" || permissions.projectManagement) ? 'true' : 'false'}
+            href="#"
+            className="action-icon dropdown-toggle"
+            data-bs-toggle="dropdown"
+            aria-expanded={openDropdownId === record._id}
+            onClick={(e) => handleDropdownClick(e, record._id)}
           >
             <i className="material-icons">more_vert</i>
           </a>
-          <div className="dropdown-menu dropdown-menu-right">
+          <div className={`dropdown-menu dropdown-menu-right ${openDropdownId === record._id ? 'show' : ''}`}>
             <a
               className="dropdown-item"
-              href="javascript:void(0)"
-              onClick={() => {
+              href="#"
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpenDropdownId(null);
                 setOpen({
                   isAddOpen: false,
                   isDelOpen: true,
-                  data: row,
+                  data: record,
                 });
               }}
             >
-              <i className="fa fa-trash-o m-r-5" /> {t('holiday.delete')}
+              <i className={`fa ${record.isArchived ? 'fa-undo' : 'fa-archive'} m-r-5`} /> 
+              {record.isArchived ? t('Activate') : t('Archive')}
+            </a>
+            <a
+              className="dropdown-item"
+              href="#"
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpenDropdownId(null);
+                setOpen({
+                  isAddOpen: false,
+                  isDelOpen: true,
+                  data: { ...record, isDelete: true }, // Add isDelete flag to differentiate from archive action
+                });
+              }}
+            >
+              <i className="fa fa-trash-o m-r-5" /> {t('Delete')}
             </a>
           </div>
         </div>
@@ -335,36 +520,38 @@ const TaskBoardList = () => {
     },
   ];
 
-  const onHandleDelete = (id) => {
+  const onHandleDelete = (id, isDelete = false) => {
     setLoader(true);
-    apiServices("DELETE", "taskBoard/delete-taskBoard", id, user_state)
+    const endpoint = isDelete ? "taskBoard/delete-taskBoard" : "taskBoard/add-taskBoard";
+    const method = isDelete ? "DELETE" : "PUT";
+    const data = isDelete ? { _id: id } : { _id: id, isArchived: !open?.data?.isArchived };
+
+    apiServices(method, endpoint, data, user_state)
       .then((res) => {
-        // console.log(res?.data);
         if (res?.data?.success === true) {
           handleClose();
-          message.success('Task board deleted successfully');
+          message.success(
+            isDelete ? 'Task board deleted successfully' :
+            `Task board ${open?.data?.isArchived ? 'activated' : 'archived'} successfully`
+          );
           if(categoryObj?.docs?.length === 1){
-            //console.log(categoryObj.totalPages)
-            GetListProjects((categoryObj.totalPages-1),null);
+            GetListTaskBoards((categoryObj.totalPages-1), null);
           }
           else{
-            GetListProjects()
+            GetListTaskBoards();
           }
-          //setTableData(prevtable => prevtable.filter(proj=> proj._id !== id));
-          //viewCategory();
           setLoader(false);
         }
       })
       .catch((err) => {
         setLoader(false);
-        // console.log(err);
         message.error(
           `${
             err?.response?.data?.msg
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : 'Error deleting taskboard'
+              : isDelete ? 'Error deleting taskboard' : 'Error updating taskboard'
           }!`
         );
       });
@@ -449,24 +636,55 @@ const TaskBoardList = () => {
               <div className="row align-items-center">
                 <div className="col">
                   <h3 className="page-title">{t('Task Boards')}</h3>
-                  
                 </div>
-                {(role === "admin" || permissions?.projectManagement) && (<div className="col-auto float-end ms-auto">
-                  <a
-                    href="javascript:void(0)"
-                    className="btn add-btn"
-                    onClick={() => {
-                      getProjects();
-                      setOpen({
-                        isAddOpen: true,
-                        isDelOpen: false,
-                        data: "",
-                      });
-                    }}
-                  >
-                    <i className="fa fa-plus" /> {t('Add TaskBoard')}
-                  </a>
-                </div>)}
+                
+                <div className="col-auto float-end ms-auto">
+                  <div className="d-flex flex-wrap gap-2 justify-content-end">
+                    <div style={{ minWidth: '180px' }}>
+                      <Segmented
+                          onChange={(val) => {
+                            const isArchivedValue = val === 'Archived';
+                            setIsArchived(isArchivedValue);
+                            setIsLoading(true);
+                            GetListTaskBoards(1, pagination.pageSize, isArchivedValue);
+                          }}
+                          value={isArchived ? 'Archived' : 'Active'} 
+                          className='segmentStyle'
+                          block
+                          size="large"
+                          options={[
+                          {
+                              label: t('Active'),
+                              value: 'Active',
+                          },
+                          {
+                              label: t('Archived'),
+                              value: 'Archived', 
+                          },
+                          ]}
+                          style={{ width: '100%' }}
+                      />
+                    </div>
+                    {(role === "admin" || permissions?.projectManagement) && (
+                      <div>
+                        <a
+                          href="javascript:void(0)"
+                          className="btn add-btn"
+                          onClick={() => {
+                            getProjects();
+                            setOpen({
+                              isAddOpen: true,
+                              isDelOpen: false,
+                              data: "",
+                            });
+                          }}
+                        >
+                          <i className="fa fa-plus" /> {t('Add TaskBoard')}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
             {/* /Page Header */}
@@ -514,14 +732,30 @@ const TaskBoardList = () => {
                     } :
                     null
                     }
-                    onRow={ i18n.dir()==="rtl" ?
+                    // onRow={ i18n.dir()==="rtl" ?
+                    //   (record, rowIndex) => {
+                    //   return {
+                    //     style: { textAlign: 'right' }, // Align table data to the right
+                    //   };
+                    // } :
+                    // null
+                    // }
+                    onRow={
                       (record, rowIndex) => {
-                      return {
-                        style: { textAlign: 'right' }, // Align table data to the right
-                      };
-                    } :
-                    null
-                    }
+                          // Add conditional styles based on i18n direction
+                          const rowStyle = i18n.dir() === "rtl" ? { textAlign: "right" } : {};
+                  
+                          // Return combined properties for the row
+                          return {
+                              style: { ...rowStyle, cursor: 'pointer' },
+                              onClick: () => {
+                                  nav(`/task-board/${record._id}`, {
+                                      state: { board: record},
+                                  });
+                              }, // Add click handler
+                          };
+                      }
+                  }
                 // onChange={this.handleTableChange}
               />
             </div>
@@ -538,7 +772,7 @@ const TaskBoardList = () => {
                         }
                         pageSizeOptions={["20", "30", "40", "50"]}
                         showSizeChanger
-                        onChange={(page, pageSize) => setPagination({...pagination, current: page, pageSize: pageSize,})}
+                        onChange={handlePaginationChange}
                         itemRender={(current, type, originalElement) =>
                           itemRender(current, type, originalElement, t)
                         }
@@ -589,9 +823,23 @@ const TaskBoardList = () => {
                 }}
                 autoComplete="off"
               >
+              <div className="form-group">
+                <label>
+                  {t("Title")} <span className="text-danger">*</span>
+                </label>
+                <Form.Item
+                  name="boardTitle"
+                  rules={[{ required: true, message: t("Please enter a Title") }]}
+                >
+                  <Input
+                    className="form-control"
+                    placeholder="Enter Title for your Taskboard"
+                  />
+                </Form.Item>
+              </div>
                 <div className="form-group">
                         <label>
-                        {t('Tasks.project')} <span className="text-danger">*</span>
+                        {t('Tasks.project')} {/* <span className="text-danger">*</span> */}
                         </label>
                         <div style={{ position: "relative" }} id="area">
                         <Form.Item
@@ -600,7 +848,7 @@ const TaskBoardList = () => {
                             rules={[
                             {
                                 whitespace: true,
-                                required: true,
+                                // required: true,
                                 message: t('Tasks.pleaseselectproject'),
                             },
                             ]}
@@ -635,6 +883,141 @@ const TaskBoardList = () => {
                         </Form.Item>
                         </div>
                         </div>
+                        <div className="row">
+                  <div className="col-sm-6">
+                    <div className="form-group">
+                      <label>{t("projectScreen.Modal.addTeam")}{" "}
+                      <span className="text-danger">*</span></label>
+                      <div style={{ position: "relative" }} id="area">
+                        <Form.Item
+                          name="assignedDevelopers"
+                          className="addTeamHeight"
+                          rules={[
+                            {
+                              required: true,
+                              message: t(
+                                "projectScreen.Modal.teamCannotBeEmpty"
+                              ),
+                            },
+                          ]}
+                        >
+                          <Select
+                            showSearch
+                            onSearch={(val) => {
+                              showTeamSearch(val, "Team");
+                              // onTeamChange(val)
+                            }}
+                            filterOption={(input, option) =>
+                              option.children
+                                .toLowerCase()
+                                .indexOf(input.toLowerCase()) >= 0
+                            }
+                            optionFilterProp="children"
+                            notFoundContent={
+                              loadingEmployee ? (
+                                <Spin style={{
+                                  height: "38px",
+                                  width: "100%",
+                                  display: "flex",
+                                  justifyContent: "center",
+                                  alignItems: "center",
+                                }} />
+                              ) : (
+                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                              )}
+                            dropdownRender={(menu) => <>{menu}</>}
+                            getPopupContainer={() =>
+                              document.getElementById("area")
+                            }
+                            className="customselect-height custom-select"
+                            mode="multiple"
+                            placeholder={t(
+                              "projectScreen.Modal.selectTeamMembers"
+                            )}
+                            
+                            onChange={handleChange}
+                          >
+                            {getTeamMemberOptions()}
+                          </Select>
+                        </Form.Item>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-sm-6">
+                    <div className="form-group">
+                      <label>{t("projectScreen.Modal.teamMembers")}</label>
+                      <div
+                        className="project-members"
+                        style={{ margin: "4px auto" }}
+                      >
+                        <ul
+                          className="team-members"
+                          style={{ minWidth: "max-content" }}
+                        >
+                          {selectedTeamMembers
+                            ?.slice(0, 4)
+                            .map((teamMember, index) => (
+                              <li key={index}>
+                                <Tooltip
+                                  title={teamMember?.fullName}
+                                >
+                                  <Avatar
+                                    style={{ cursor: "pointer" }}
+                                    src={
+                                      teamMember?.imageUrl || user_icon
+                                    }
+                                  />
+                                </Tooltip>
+                              </li>
+                            ))}
+                          {selectedTeamMembers?.length > 4 && (
+                            <li className="dropdown avatar-dropdown">
+                              <Link
+                                className="all-users dropdown-toggle projectTeamMember"
+                                style={{
+                                  display: "inline-flex",
+                                  height: "33px",
+                                  width: "33px",
+                                }}
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                              >
+                                +{selectedTeamMembers?.length - 4}
+                              </Link>
+                              {/* Dropdown menu for additional team members */}
+                              <div className="dropdown-menu dropdown-menu-right">
+                                <div className="avatar-group">
+                                  {selectedTeamMembers
+                                    ?.slice(4)
+                                    .map((teamMember, index) => (
+                                      <a
+                                        className="avatar avatar-xs projectTeamMember"
+                                        key={index}
+                                      >
+                                        <Tooltip
+                                          title={
+                                            teamMember?.fullName
+                                          }
+                                        >
+                                          <Avatar
+                                            src={
+                                              teamMember?.imageUrl ||
+                                              user_icon
+                                            }
+                                            style={{ cursor: "pointer" }}
+                                          />
+                                        </Tooltip>
+                                      </a>
+                                    ))}
+                                </div>
+                              </div>
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 <div className="submit-section">
                   <Form.Item>
                     <Button
@@ -658,7 +1041,7 @@ const TaskBoardList = () => {
         </div>
       </Modal>
 
-      {/* delete modall */}
+      {/* Update the delete modal content to handle both archive and delete cases */}
       <Modal
         open={open.isDelOpen}
         onClose={handleClose}
@@ -666,7 +1049,7 @@ const TaskBoardList = () => {
         aria-describedby="modal-modal-description"
         disableRestoreFocus
         BackdropProps={{
-          style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
+          style: { backgroundColor: "rgb(0 0 0 / 87%)" },
         }}
       >
         <div className="modal-dialog modal-dialog-centered">
@@ -680,26 +1063,33 @@ const TaskBoardList = () => {
               }}
             >
               <div className="form-header">
-                <h3 style={{ marginBottom: "30px" }}>Delete TaskBoard</h3>
+                <h3 style={{ marginBottom: "30px" }}>
+                  {open?.data?.isDelete ? 'Delete TaskBoard' : 
+                    open?.data?.isArchived ? 'Activate TaskBoard' : 'Archive TaskBoard'}
+                </h3>
                 <p>
-                  <span dangerouslySetInnerHTML={{ __html: t('holiday.confirmDelete', { holiday: open?.data?.projectName }) }} />
+                  {open?.data?.isDelete ? (
+                    <span dangerouslySetInnerHTML={{ __html: t('Are you sure you want to <b>delete</b> this taskboard?') }} />
+                  ) : (
+                    <span dangerouslySetInnerHTML={{ __html: t(`Are you sure you want to <b>${open?.data?.isArchived ? 'activate' : 'archive'}</b>`) }} />
+                  )}
                 </p>
               </div>
               <div className="modal-btn delete-action">
                 <div className="row">
                   <div className="col-6">
-                  <Button
+                    <Button
                       htmlType="submit"
                       className="btn btn-primary continue-btn"
-                      onClick={() => onHandleDelete(open?.data?._id)}
+                      onClick={() => open?.data?.isDelete ? onHandleDelete(open?.data?._id, true) : onHandleDelete(open?.data?._id)}
                       disabled={loader}
                       style={{ width: "100%" }}
                     >
                       {loader ? (
                         <Spin size="small" indicator={antIcon} />
-                      ) : (
-                        t('delete')
-                      )}
+                      ) : open?.data?.isDelete ? t('Delete') :
+                          open?.data?.isArchived ? t('Activate') : t('Archive')
+                      }
                     </Button>
                   </div>
                   <div className="col-6">

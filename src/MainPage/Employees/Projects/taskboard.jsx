@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet";
 import { Link, useLocation } from "react-router-dom";
-import { Avatar_12 } from "../../../Entryfile/imagepath";
+import { Avatar_12, user_icon } from "../../../Entryfile/imagepath";
 import Offcanvas from "../../../Entryfile/offcanvance";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import {
+  Avatar,
   Button,
   DatePicker,
   Divider,
@@ -60,6 +61,10 @@ const TaskBoard = () => {
   const [disableDrag, setDisableDrag] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedProjectName, setEditedProjectName] = useState('');
+  const [selectedTeamMembers, setSelectedTeamMembers] = useState([]);
+  const [employees, setEmployees] = useState([]);
+  const [allEmployees, setAllEmployees] = useState([]);
+  const [loadingAllEmployees, setLoadingAllEmployees] = useState(false);
 
   const handleEditClick = () => {
     setIsEditing(true);
@@ -98,7 +103,7 @@ const TaskBoard = () => {
   const handleCancel = () => {
     // Revert to original project name
     console.log("called")
-    setBoardTitle(ProjectData?.projectName);
+    setBoardTitle(BoardData?.board?.boardTitle);
     setIsEditing(false);
   };
 
@@ -123,8 +128,8 @@ const TaskBoard = () => {
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
   const role = user_state?.user?.role;
 
-  const ProjectData = location?.state;
-  console.log(ProjectData);
+  const BoardData = location?.state;
+  console.log("data from previous screen",BoardData);
   const onDragEnd = (result) => {
     // Dropped outside the droppable area
     if (!result.destination) {
@@ -304,23 +309,23 @@ const TaskBoard = () => {
   };
   
   const closeTaskModal = () => {
+    setSelectedTeamMembers([])
     setTaskModal(false);
     setColumnId('');
     //setIsLoading(false)
   };
 
   const closeNewTask = () => {
-    //setNewTaskModal(false);
     setAddTask({
       isAddOpen: false,
       isDelOpen: false,
       data: '',
       title: '',
     });
+    setSelectedTeamMembers([]); // Clear selected team members
     setEditId("");
     form2.resetFields();
     setLoader(false);
-    //setIsLoading(false)
   };
 
   const colors = [
@@ -346,6 +351,11 @@ const TaskBoard = () => {
     return task ? task.title : "";
   };
 
+  const getTaskAssignedDevelopers = (taskId) => {
+    const task = allTasks.find((task) => task._id === taskId);
+    return task ? task.assignedDevelopers : [];
+  };
+
   const getTaskTags = (taskId) => {
     const task = allTasks.find((task) => task._id === taskId);
     return task ? task.tags : [];
@@ -359,7 +369,7 @@ const TaskBoard = () => {
   const getAllTasks = (id) => {
     apiServices(
       "GET",
-      `tasks?projectId=${id}&page=${1}&limit=${99999}`,
+      `tasks?id=${id}&page=${1}&limit=${99999}&isArchived=${BoardData?.board?.isArchived}`,
       null,
       user_state
     )
@@ -391,7 +401,7 @@ const TaskBoard = () => {
   const getTasksOptions = (id) => {
     apiServices(
       "GET",
-      `tasks?projectId=${id}&lane=empty&page=${1}&limit=${99999}`,
+      `tasks?id=${id}&lane=empty&page=${1}&limit=${99999}&isArchived=${BoardData?.board?.isArchived}`,
       null,
       user_state
     )
@@ -421,7 +431,7 @@ const TaskBoard = () => {
   const getTaskBoard = (id) => {
     apiServices(
       "GET",
-      `taskBoard/view-taskBoard?projectId=${id}`,
+      `taskBoard/view-taskBoard?id=${id}&isArchived=${BoardData?.board?.isArchived}`,
       null,
       user_state
     )
@@ -431,7 +441,8 @@ const TaskBoard = () => {
           //setAllTasks(sortedData);
           res?.data?.taskBoards?.map((board) => {
             setBoardId(board?._id);
-            setBoardTitle(board?.boardTitle ? board?.boardTitle : ProjectData?.projectName);
+            setBoardTitle(board?.boardTitle ? board?.boardTitle : BoardData?.board?.boardTitle ? BoardData?.board?.boardTitle : BoardData?.board?.project?.projectName);
+            setEmployees(board?.assignedDevelopers);
             setColumns(board?.columns);
           });
           setIsLoading(false);
@@ -451,11 +462,26 @@ const TaskBoard = () => {
       });
   };
 
+  const handleChange = (values) => {
+
+    const selectedEmployees = values?.map((value) =>
+      employees?.find((employee) => employee._id === value)
+    );
+    setSelectedTeamMembers(selectedEmployees);
+  }
+
+  const getTeamMemberOptions = () => {
+    return employees?.map((employee) => (
+      <Select.Option key={employee._id} value={employee._id}>
+        {employee.fullName}
+      </Select.Option>
+    ));
+  }
   useEffect(() => {
     setIsLoading(true);
     setIsTaskLoading(true);
-    getAllTasks(ProjectData?._id);
-    getTaskBoard(ProjectData?._id);
+    getAllTasks(BoardData?.board?.project ? BoardData?.board?.project?._id : BoardData?.board?._id);
+    getTaskBoard(BoardData?.board?.project ? BoardData?.board?.project?._id : BoardData?.board?._id);
   }, []);
 
   const onFinish = (values, info) => {
@@ -561,12 +587,15 @@ const TaskBoard = () => {
       apiServices("PUT", "taskBoard/add-taskBoard", updated_data, user_state)
         .then((res) => {
           if (res?.data?.success === true) {
-            //const sortedData = res?.data?.Task?.docs?.slice().sort((a, b) => a.title.localeCompare(b.title));
-            //setAllTasks(sortedData);
+            // Update columns with server response
             setColumns(res?.data?.taskBoard?.columns);
+            
+            // Get fresh data for all tasks
+            getAllTasks(BoardData?.board?.project ? BoardData?.board?.project?._id : BoardData?.board?._id);
+            
             setIsLoading(false);
             setLoader(false);
-            message.success('Task added successfully')
+            message.success('Task added successfully');
             closeTaskModal();
           }
         })
@@ -583,15 +612,6 @@ const TaskBoard = () => {
           );
           setLoader(false);
         });
-      // const newTask = {
-      //   _id: Math.random().toString(36).substr(2, 9),
-      //   title: values.title,
-      //   color: values.color,
-      //   tasks: []
-      // };
-      // console.log(newTask)
-
-      // setColumns(prevTasks => [...prevTasks, newTask]);
     }
   };
 
@@ -637,8 +657,8 @@ const TaskBoard = () => {
     setLoader(true);
     apiServices("DELETE", "taskBoard/remove-task", updated_data, user_state)
       .then((res) => {
-        // console.log(res?.data);
         if (res?.data?.success === true) {
+          // Update columns to remove task
           setColumns((prevColumns) =>
             prevColumns?.map((column) => {
               if (column._id === columnId) {
@@ -647,15 +667,28 @@ const TaskBoard = () => {
               return column;
             })
           );
+
+          // Update allTasks to set empty developers array for the removed task
+          setAllTasks(prevTasks => 
+            prevTasks.map(task => {
+              if (task._id === id) {
+                return {
+                  ...task,
+                  assignedDevelopers: [] // Clear the developers array
+                };
+              }
+              return task;
+            })
+          );
+
           message.success("Task Removed Successfully");
           closeNewTask();
-          setColumnId('')
+          setColumnId('');
           setLoader(false);
         }
       })
       .catch((err) => {
         setLoader(false);
-        // console.log(err);
         message.error(
           `${
             err?.response?.data?.msg
@@ -671,7 +704,9 @@ const TaskBoard = () => {
   const onFinishAdd = (values) => {
     let updated_data = {
       ...values,
-      projectId: ProjectData?._id
+      ...(BoardData?.board?.project 
+        ? { projectId: BoardData?.board?.project?._id } 
+        : { boardId: BoardData?.board?._id }),
     }
     setLoader(true)
     apiServices("POST", 'tasks', updated_data, user_state)
@@ -701,7 +736,9 @@ const TaskBoard = () => {
 const onFinishEdit = (values) => {
   const data = {
       ...values,
-      projectId: ProjectData?._id,
+      ...(BoardData?.board?.project 
+        ? { projectId: BoardData?.board?.project?._id } 
+        : { boardId: BoardData?.board?._id }),
       _id: addTask?.data?.taskId
   }
 
@@ -710,13 +747,19 @@ const onFinishEdit = (values) => {
     .then((res) => {
         if (res?.data?.success === true) {
           closeNewTask();
+          // Get the full developer objects from employees array using the assignedDevelopers IDs
+          const updatedDevelopers = values.assignedDevelopers?.map(devId => 
+            employees?.find(emp => emp._id === devId)
+          ).filter(Boolean);
+
           const updatedOptTasks = allTasks?.map((task) => {
             if (task._id === addTask?.data?.taskId) {
                 return {
                     ...task,
                     title: values.title,
                     tags: values.tags,
-                    description: values.description
+                    description: values.description,
+                    assignedDevelopers: updatedDevelopers // Use the full developer objects
                 };
             }
             return task;
@@ -850,6 +893,92 @@ const onFinishEdit = (values) => {
     />
   );
 
+  const handleBoardMembersChange = (values) => {
+    const selectedEmployees = values?.map((value) =>
+      allEmployees?.find((employee) => employee._id === value)
+    ).filter(Boolean); // Remove any undefined values
+    
+    // Ensure the data is properly structured
+    const updated_data = {
+      _id: boardId,
+      assignedDevelopers: Array.isArray(values) ? values : []
+    };
+    
+    setLoader(true);
+    apiServices("PUT", "taskBoard/add-taskBoard", JSON.parse(JSON.stringify(updated_data)), user_state)
+      .then((res) => {
+        if (res?.data?.success === true) {
+          setEmployees(selectedEmployees);
+          message.success('Board members updated successfully');
+          closeTaskModal();
+          getAllTasks(BoardData?.board?.project ? BoardData?.board?.project?._id : BoardData?.board?._id);
+          setLoader(false);
+        }
+      })
+      .catch((err) => {
+        setLoader(false);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : 'Error updating board members'
+          }!`
+        );
+      });
+  }
+
+  const fetchAllEmployees = () => {
+    setLoadingAllEmployees(true);
+    apiServices("GET", `user/all-employees`, null, user_state)
+      .then((res) => {
+        if (res.data.success === true) {
+          const emps = res?.data?.User;
+          const sortedData = emps
+            .slice()
+            .sort((a, b) => a.fullName.localeCompare(b.fullName));
+          setAllEmployees(sortedData);
+          setLoadingAllEmployees(false);
+        }
+      })
+      .catch((err) => {
+        setLoadingAllEmployees(false);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : t("aAttend.errors.getEmployeesError")
+          }`
+        );
+      });
+  };
+
+  const getAllEmployeeOptions = () => {
+    return allEmployees?.map((employee) => (
+      <Select.Option key={employee._id} value={employee._id}>
+        {employee.fullName}
+      </Select.Option>
+    ));
+  };
+
+  const showEmployeeSearch = (val) => {
+    let dropdownValues = [];
+    allEmployees.forEach((emp) => {
+      dropdownValues.push(emp.fullName.toLowerCase());
+    });
+
+    if (val !== "") {
+      dropdownValues.some((name) => {
+        if (name.includes(val.toLowerCase())) {
+          return true;
+        }
+      });
+    }
+  };
+
   return (
     <>
       <div className="page-wrapper">
@@ -893,7 +1022,7 @@ const onFinishEdit = (values) => {
           ) : (
             <div style={{display:'flex', flexDirection:'row', alignItems:'center'}}>
             <h3 className="page-title" >
-              {boardTitle ? boardTitle : ProjectData?.projectName}
+              {boardTitle ? boardTitle : BoardData?.board?.boardTitle ? BoardData?.board?.boardTitle : BoardData?.board?.project?.projectName}
             </h3>
             {(role === "admin" || permissions?.projectManagement) &&
             (<h3 style={{marginLeft:'1%'}}>
@@ -921,14 +1050,69 @@ const onFinishEdit = (values) => {
                 
               </div>
               <div className="col-auto float-end ms-auto">
-                <a
-                  className="btn add-btn"
-                  onClick={() => {
-                    setOpen({ isAddOpen: true, isEditOpen: true, data: "" });
-                  }}
-                >
-                  <i className="fa fa-plus" /> Add Column
-                </a>
+                <div className="d-flex gap-2 align-items-center">
+                  <div className="project-members mr-3">
+                    <ul className="team-members" style={{minWidth: 'max-content', marginBottom: 0}}>
+                      {employees?.slice(0, 4).map((developer, index) => (
+                        <li key={index}>
+                          <Tooltip title={developer?.fullName}>
+                            <Avatar size={24} style={{cursor: 'pointer'}} src={developer?.imageUrl || user_icon} />
+                          </Tooltip>
+                        </li>
+                      ))}
+                      {employees?.length > 4 && (
+                        <li className="dropdown avatar-dropdown">
+                          <Link
+                            className="all-users dropdown-toggle projectTeamMember"
+                            style={{display:'inline-flex', height: '24px', width: '24px', fontSize: '10px'}}
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                          >
+                            +{employees?.length - 4}
+                          </Link>
+                          <div className="dropdown-menu dropdown-menu-right">
+                            <div className="avatar-group">
+                              {employees?.slice(4).map((developer, index) => (
+                                <a
+                                  className="avatar avatar-xs projectTeamMember"
+                                  key={index}
+                                >
+                                  <Tooltip title={developer?.fullName}>
+                                    <Avatar
+                                      src={developer?.imageUrl || user_icon}
+                                      style={{cursor: 'pointer'}}
+                                    />
+                                  </Tooltip>
+                                </a>
+                              ))}
+                            </div>
+                          </div>
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                  {(role === "admin" || permissions?.projectManagement) && (
+                      <a
+                        className="btn add-btn mr-3"
+                        onClick={() => {
+                          fetchAllEmployees();
+                          setTaskModal(true);
+                          setColumnId('');
+                        }}
+                      >
+                        <i className="fa fa-pencil ml-2" />
+                        Edit Members
+                      </a>
+                  )}
+                  <a
+                    className="btn add-btn"
+                    onClick={() => {
+                      setOpen({ isAddOpen: true, isEditOpen: true, data: "" });
+                    }}
+                  >
+                    <i className="fa fa-plus" /> Add Column
+                  </a>
+                </div>
               </div>
             </div>
           </div>
@@ -1033,7 +1217,7 @@ const onFinishEdit = (values) => {
                                                       <div className="kanban-box">
                                                         <div className="task-board-header">
                                                           <span className="status-title" 
-                                                          style={{ paddingRight: 'inherit' }}>
+                                                          style={{ paddingRight: 'inherit', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'space-between', width: '100%' }}>
                                                             <a 
                                                             style={{
                                                               wordBreak:'break-word'
@@ -1044,20 +1228,75 @@ const onFinishEdit = (values) => {
                                                               const tags = getTaskTags(task.taskId);
                                                               const description = getTaskDescription(task.taskId);
                                                               const status = column.title;
+                                                              const taskAssignedDevelopers = getTaskAssignedDevelopers(task.taskId);
+
                                                               setSelectedTask({
                                                                 _id: task.taskId,
                                                                 title,
                                                                 tags,
                                                                 description,
-                                                                ProjectData,
-                                                                status
+                                                                ProjectData: BoardData?.board?.project ? 
+                                                                  {
+                                                                    projectName: BoardData?.board?.project?.projectName,
+                                                                    _id: BoardData?.board?.project?._id,
+                                                                    assignedDevelopers: employees
+                                                                  } 
+                                                                  : 
+                                                                  {
+                                                                    boardTitle: BoardData?.board?.boardTitle,
+                                                                    _id: BoardData?.board?._id,
+                                                                    project: null,
+                                                                    assignedDevelopers: employees
+                                                                  },
+                                                                status,
+                                                                assignedDevelopers: taskAssignedDevelopers
                                                               });
                                                               setViewModal(true);
                                                             }}
                                                             >
                                                               {getTaskTitle(task.taskId)}
                                                             </a>
-                                                          </span>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                              <div className="project-members" style={{margin: '4px auto'}}>
+                                                                <ul className="team-members" style={{minWidth: 'max-content'}}>
+                                                                  {getTaskAssignedDevelopers(task.taskId)?.slice(0, 4).map((developer, index) => (
+                                                                    <li key={index}>
+                                                                      <Tooltip title={developer?.fullName}>
+                                                                        <Avatar size={24} style={{cursor: 'pointer'}} src={developer?.imageUrl || user_icon} />
+                                                                      </Tooltip>
+                                                                    </li>
+                                                                  ))}
+                                                                  {getTaskAssignedDevelopers(task.taskId)?.length > 4 && (
+                                                                    <li className="dropdown avatar-dropdown">
+                                                                      <Link
+                                                                        className="all-users dropdown-toggle projectTeamMember"
+                                                                        style={{display:'inline-flex', height: '24px', width: '24px', fontSize: '10px'}}
+                                                                        data-bs-toggle="dropdown"
+                                                                        aria-expanded="false"
+                                                                      >
+                                                                        +{getTaskAssignedDevelopers(task.taskId)?.length - 4}
+                                                                      </Link>
+                                                                      <div className="dropdown-menu dropdown-menu-right">
+                                                                        <div className="avatar-group">
+                                                                          {getTaskAssignedDevelopers(task.taskId)?.slice(4).map((developer, index) => (
+                                                                            <a
+                                                                              className="avatar avatar-xs projectTeamMember"
+                                                                              key={index}
+                                                                            >
+                                                                              <Tooltip title={developer?.fullName}>
+                                                                                <Avatar
+                                                                                  src={developer?.imageUrl || user_icon}
+                                                                                  style={{cursor: 'pointer'}}
+                                                                                />
+                                                                              </Tooltip>
+                                                                            </a>
+                                                                          ))}
+                                                                        </div>
+                                                                      </div>
+                                                                    </li>
+                                                                  )}
+                                                                </ul>
+                                                              </div>
                                                           <div className="dropdown kanban-task-action">
                                                             <a 
                                                             data-bs-toggle='dropdown'
@@ -1075,8 +1314,18 @@ const onFinishEdit = (values) => {
                                                                 const title = getTaskTitle(task.taskId);
                                                                 const tags = getTaskTags(task.taskId);
                                                                 const description = getTaskDescription(task.taskId);
+                                                                const assignedDevelopers = getTaskAssignedDevelopers(task.taskId);
+                                                                // Set the full developer objects for display
+                                                                setSelectedTeamMembers(assignedDevelopers);
+                                                                // Extract just the IDs for the form
+                                                                const developerIds = assignedDevelopers?.map(dev => dev._id);
                                                                 setAddTask({ isAddOpen: true, data: task });
-                                                                form2.setFieldsValue({ title, tags, description });
+                                                                form2.setFieldsValue({ 
+                                                                  title, 
+                                                                  tags, 
+                                                                  description, 
+                                                                  assignedDevelopers: developerIds 
+                                                                });
                                                                 setEditId(task.taskId);
                                                               }}
                                                               >
@@ -1096,6 +1345,8 @@ const onFinishEdit = (values) => {
                                                               </a>
                                                             </div>
                                                           </div>
+                                                            </div>
+                                                          </span>
                                                         </div>
                                                         <div className="task-board-body">
                                                           <div className="kanban-footer">
@@ -1147,7 +1398,7 @@ const onFinishEdit = (values) => {
                                     //   }
                                     // }}
                                     onClick={() => {
-                                      getTasksOptions(ProjectData?._id);
+                                      getTasksOptions(BoardData?.board?.project ? BoardData?.board?.project?._id : BoardData?.board?._id);
                                       setTaskModal(true);
                                       setColumnId(column._id);
                                     }}
@@ -1425,14 +1676,14 @@ const onFinishEdit = (values) => {
         <div className="modal-dialog modal-dialog-centered" role="document">
           <div className="modal-content">
             <div className="modal-header">
-              <h5 className="modal-title">Add Task</h5>
+              <h5 className="modal-title">{columnId ? "Add Task" : "Edit Board Members"}</h5>
               <button type="button" className="close" onClick={closeTaskModal}>
                 <span aria-hidden="true">×</span>
               </button>
             </div>
+            {columnId ? (
             <div className="modal-body">
               <Form
-                // form={form}
                 name="control-hooks"
                 onFinish={(val) => onFinishTask(val, null)}
                 onFinishFailed={({ errorFields }) => {
@@ -1445,12 +1696,6 @@ const onFinishEdit = (values) => {
                     message.error(t("allEmp.errors.fillRequiredFields"));
                   }
                 }}
-                initialValues={
-                  {
-                    // holidayTitle: open?.data ? open?.data?.holidayTitle : "",
-                    // holidayDate: open?.data ? moment(open?.data.holidayDate, "YYYY-MM-DD") : "",
-                  }
-                }
                 autoComplete="off"
               >
                 <div className="form-group">
@@ -1494,9 +1739,10 @@ const onFinishEdit = (values) => {
                                     cursor: "pointer"
                             }}
                             onClick={() => {
+                              setSelectedTeamMembers([]); // Clear selected team members
+                              form2.resetFields(); // Reset form fields
                               setAddTask({ isAddOpen: true, data: '' });
                             }}
-                            //disabled={(role === "admin" || permissions.projectManagement) ? false : true}
                         >
                             Add New Task
                         </Button>
@@ -1512,6 +1758,206 @@ const onFinishEdit = (values) => {
                             {task.title}
                           </Select.Option>
                         ))}
+                      </Select>
+                    </Form.Item>
+                  </div>
+                </div>
+                <div className="row">
+                  <div className="col-sm-6">
+                    <div className="form-group">
+                      <label>{t("projectScreen.Modal.addTeam")}{" "}</label>
+                      <div style={{ position: "relative" }} id="area">
+                        <Form.Item
+                          name="assignedDevelopers"
+                          className="addTeamHeight"
+                          
+                        >
+                          <Select
+                            showSearch
+                            onSearch={(val) => {
+                              showTeamSearch(val, "Team");
+                              // onTeamChange(val)
+                            }}
+                            filterOption={(input, option) =>
+                              option.children
+                                .toLowerCase()
+                                .indexOf(input.toLowerCase()) >= 0
+                            }
+                            optionFilterProp="children"
+                            notFoundContent={
+                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                            }
+                            dropdownRender={(menu) => <>{menu}</>}
+                            getPopupContainer={() =>
+                              document.getElementById("area")
+                            }
+                            className="customselect-height custom-select"
+                            mode="multiple"
+                            placeholder={t(
+                              "projectScreen.Modal.selectTeamMembers"
+                            )}
+                            
+                            onChange={handleChange}
+                          >
+                            {getTeamMemberOptions()}
+                          </Select>
+                        </Form.Item>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-sm-6">
+                    <div className="form-group">
+                      <label>{t("projectScreen.Modal.teamMembers")}</label>
+                      <div
+                        className="project-members"
+                        style={{ margin: "4px auto" }}
+                      >
+                        <ul
+                          className="team-members"
+                          style={{ minWidth: "max-content" }}
+                        >
+                          {selectedTeamMembers
+                            ?.slice(0, 4)
+                            .map((teamMember, index) => (
+                              <li key={index}>
+                                <Tooltip
+                                  title={teamMember?.fullName}
+                                >
+                                  <Avatar
+                                    style={{ cursor: "pointer" }}
+                                    src={
+                                      teamMember?.imageUrl || user_icon
+                                    }
+                                  />
+                                </Tooltip>
+                              </li>
+                            ))}
+                          {selectedTeamMembers?.length > 4 && (
+                            <li className="dropdown avatar-dropdown">
+                              <Link
+                                className="all-users dropdown-toggle projectTeamMember"
+                                style={{
+                                  display: "inline-flex",
+                                  height: "33px",
+                                  width: "33px",
+                                }}
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                              >
+                                +{selectedTeamMembers?.length - 4}
+                              </Link>
+                              {/* Dropdown menu for additional team members */}
+                              <div className="dropdown-menu dropdown-menu-right">
+                                <div className="avatar-group">
+                                  {selectedTeamMembers
+                                    ?.slice(4)
+                                    .map((teamMember, index) => (
+                                      <a
+                                        className="avatar avatar-xs projectTeamMember"
+                                        key={index}
+                                      >
+                                        <Tooltip
+                                          title={
+                                            teamMember?.fullName
+                                          }
+                                        >
+                                          <Avatar
+                                            src={
+                                              teamMember?.imageUrl ||
+                                              user_icon
+                                            }
+                                            style={{ cursor: "pointer" }}
+                                          />
+                                        </Tooltip>
+                                      </a>
+                                    ))}
+                                </div>
+                              </div>
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="submit-section">
+                  <Form.Item>
+                    <Button
+                      htmlType="submit"
+                      className="btn btn-primary submit-btn"
+                      disabled={loader}
+                    >
+                      {loader ? (
+                        <Spin size="small" indicator={antIcon} />
+                      ) : (
+                        t("submit")
+                      )}
+                    </Button>
+                  </Form.Item>
+                </div>
+              </Form>
+            </div>
+            ) : (
+            <div className="modal-body">
+              <Form
+                name="board-members-form"
+                onFinish={(values) => handleBoardMembersChange(values.assignedDevelopers)}
+                initialValues={{
+                  assignedDevelopers: employees?.map(emp => emp._id)
+                }}
+                autoComplete="off"
+              >
+                <div className="form-group">
+                  <label>
+                    {t("projectScreen.Modal.addTeam")}{" "}
+                    <span className="text-danger">*</span>
+                  </label>
+                  <div style={{ position: "relative" }} id="board-members-area">
+                    <Form.Item
+                      name="assignedDevelopers"
+                      className="addTeamHeight"
+                      rules={[
+                        {
+                          required: true,
+                          message: 'Please select at least one team member'
+                        }
+                      ]}
+                    >
+                      <Select
+                        showSearch
+                        onSearch={(val) => {
+                          showEmployeeSearch(val);
+                        }}
+                        filterOption={(input, option) =>
+                          option.children
+                            .toLowerCase()
+                            .indexOf(input.toLowerCase()) >= 0
+                        }
+                        optionFilterProp="children"
+                        notFoundContent={
+                          loadingAllEmployees ? (
+                            <Spin style={{
+                              height: "38px",
+                              width: "100%",
+                              display: "flex",
+                              justifyContent: "center",
+                              alignItems: "center",
+                            }} />
+                          ) : (
+                            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                          )
+                        }
+                        dropdownRender={(menu) => <>{menu}</>}
+                        getPopupContainer={() =>
+                          document.getElementById("board-members-area")
+                        }
+                        className="customselect-height custom-select"
+                        mode="multiple"
+                        placeholder={t(
+                          "projectScreen.Modal.selectTeamMembers"
+                        )}
+                      >
+                        {getAllEmployeeOptions()}
                       </Select>
                     </Form.Item>
                   </div>
@@ -1533,6 +1979,7 @@ const onFinishEdit = (values) => {
                 </div>
               </Form>
             </div>
+            )}
           </div>
         </div>
       </Modal>
@@ -1673,7 +2120,126 @@ const onFinishEdit = (values) => {
                         </Form.Item>
                         </div>
                     </div>
-                </div>
+                    {addTask?.data ? (
+                      <div className="row">
+                        <div className="col-sm-6">
+                          <div className="form-group">
+                      <label>{t("projectScreen.Modal.addTeam")}{" "}</label>
+                      <div style={{ position: "relative" }} id="area">
+                        <Form.Item
+                          name="assignedDevelopers"
+                          className="addTeamHeight"
+                          
+                        >
+                          <Select
+                            showSearch
+                            onSearch={(val) => {
+                              showTeamSearch(val, "Team");
+                              // onTeamChange(val)
+                            }}
+                            filterOption={(input, option) =>
+                              option.children
+                                .toLowerCase()
+                                .indexOf(input.toLowerCase()) >= 0
+                            }
+                            optionFilterProp="children"
+                            notFoundContent={
+                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                            }
+                            dropdownRender={(menu) => <>{menu}</>}
+                            getPopupContainer={() =>
+                              document.getElementById("area")
+                            }
+                            className="customselect-height custom-select"
+                            mode="multiple"
+                            placeholder={t(
+                              "projectScreen.Modal.selectTeamMembers"
+                            )}
+                            
+                            onChange={handleChange}
+                          >
+                            {getTeamMemberOptions()}
+                          </Select>
+                        </Form.Item>
+                      </div>
+                    </div>
+                    </div>
+                  <div className="col-sm-6">
+                    <div className="form-group">
+                      <label>{t("projectScreen.Modal.teamMembers")}</label>
+                      <div
+                        className="project-members"
+                        style={{ margin: "4px auto" }}
+                      >
+                        <ul
+                          className="team-members"
+                          style={{ minWidth: "max-content" }}
+                        >
+                          {selectedTeamMembers
+                            ?.slice(0, 4)
+                            .map((teamMember, index) => (
+                              <li key={index}>
+                                <Tooltip
+                                  title={teamMember?.fullName}
+                                >
+                                  <Avatar
+                                    style={{ cursor: "pointer" }}
+                                    src={
+                                      teamMember?.imageUrl || user_icon
+                                    }
+                                  />
+                                </Tooltip>
+                              </li>
+                            ))}
+                          {selectedTeamMembers?.length > 4 && (
+                            <li className="dropdown avatar-dropdown">
+                              <Link
+                                className="all-users dropdown-toggle projectTeamMember"
+                                style={{
+                                  display: "inline-flex",
+                                  height: "33px",
+                                  width: "33px",
+                                }}
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                              >
+                                +{selectedTeamMembers?.length - 4}
+                              </Link>
+                              {/* Dropdown menu for additional team members */}
+                              <div className="dropdown-menu dropdown-menu-right">
+                                <div className="avatar-group">
+                                  {selectedTeamMembers
+                                    ?.slice(4)
+                                    .map((teamMember, index) => (
+                                      <a
+                                        className="avatar avatar-xs projectTeamMember"
+                                        key={index}
+                                      >
+                                        <Tooltip
+                                          title={
+                                            teamMember?.fullName
+                                          }
+                                        >
+                                          <Avatar
+                                            src={
+                                              teamMember?.imageUrl ||
+                                              user_icon
+                                            }
+                                            style={{ cursor: "pointer" }}
+                                          />
+                                        </Tooltip>
+                                      </a>
+                                    ))}
+                                </div>
+                              </div>
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div> ) : null} 
+                </div>  
                 <div className="submit-section">
                   <button type='submit' className="btn btn-primary submit-btn" disabled={loader}>
                   {
