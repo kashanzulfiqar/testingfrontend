@@ -103,7 +103,7 @@ const TaskBoard = () => {
   const handleCancel = () => {
     // Revert to original project name
     console.log("called")
-    setBoardTitle(BoardData?.board?.boardTitle);
+    setBoardTitle(BoardData?._id ? BoardData?.projectName : BoardData?.board?.boardTitle);
     setIsEditing(false);
   };
 
@@ -441,7 +441,7 @@ const TaskBoard = () => {
           //setAllTasks(sortedData);
           res?.data?.taskBoards?.map((board) => {
             setBoardId(board?._id);
-            setBoardTitle(board?.boardTitle ? board?.boardTitle : BoardData?.board?.boardTitle ? BoardData?.board?.boardTitle : BoardData?.board?.project?.projectName);
+            setBoardTitle(board?.boardTitle ? board?.boardTitle : BoardData?.board?.boardTitle ? BoardData?.board?.boardTitle : BoardData?.board?.project?.projectName ? BoardData?.board?.project?.projectName : BoardData?.projectName);
             setEmployees(board?.assignedDevelopers);
             setColumns(board?.columns);
           });
@@ -480,8 +480,8 @@ const TaskBoard = () => {
   useEffect(() => {
     setIsLoading(true);
     setIsTaskLoading(true);
-    getAllTasks(BoardData?.board?.project ? BoardData?.board?.project?._id : BoardData?.board?._id);
-    getTaskBoard(BoardData?.board?.project ? BoardData?.board?.project?._id : BoardData?.board?._id);
+    getAllTasks(BoardData?._id ? BoardData?._id : BoardData?.board?.project ? BoardData?.board?.project?._id : BoardData?.board?._id);
+    getTaskBoard(BoardData?._id ? BoardData?._id : BoardData?.board?.project ? BoardData?.board?.project?._id : BoardData?.board?._id);
   }, []);
 
   const onFinish = (values, info) => {
@@ -591,7 +591,7 @@ const TaskBoard = () => {
             setColumns(res?.data?.taskBoard?.columns);
             
             // Get fresh data for all tasks
-            getAllTasks(BoardData?.board?.project ? BoardData?.board?.project?._id : BoardData?.board?._id);
+            getAllTasks(BoardData?._id ? BoardData?._id : BoardData?.board?.project ? BoardData?.board?.project?._id : BoardData?.board?._id);
             
             setIsLoading(false);
             setLoader(false);
@@ -706,6 +706,8 @@ const TaskBoard = () => {
       ...values,
       ...(BoardData?.board?.project 
         ? { projectId: BoardData?.board?.project?._id } 
+        : BoardData?._id
+        ? { projectId: BoardData?._id}
         : { boardId: BoardData?.board?._id }),
     }
     setLoader(true)
@@ -737,7 +739,9 @@ const onFinishEdit = (values) => {
   const data = {
       ...values,
       ...(BoardData?.board?.project 
-        ? { projectId: BoardData?.board?.project?._id } 
+        ? { projectId: BoardData?.board?.project?._id }
+        : BoardData?._id
+        ? { projectId: BoardData?._id}
         : { boardId: BoardData?.board?._id }),
       _id: addTask?.data?.taskId
   }
@@ -911,7 +915,7 @@ const onFinishEdit = (values) => {
           setEmployees(selectedEmployees);
           message.success('Board members updated successfully');
           closeTaskModal();
-          getAllTasks(BoardData?.board?.project ? BoardData?.board?.project?._id : BoardData?.board?._id);
+          getAllTasks(BoardData?._id ? BoardData?._id : BoardData?.board?.project ? BoardData?.board?.project?._id : BoardData?.board?._id);
           setLoader(false);
         }
       })
@@ -1022,7 +1026,7 @@ const onFinishEdit = (values) => {
           ) : (
             <div style={{display:'flex', flexDirection:'row', alignItems:'center'}}>
             <h3 className="page-title" >
-              {boardTitle ? boardTitle : BoardData?.board?.boardTitle ? BoardData?.board?.boardTitle : BoardData?.board?.project?.projectName}
+              {boardTitle ? boardTitle : BoardData?.board?.boardTitle ? BoardData?.board?.boardTitle : BoardData?._id ? BoardData?.projectName : BoardData?.board?.project?.projectName}
             </h3>
             {(role === "admin" || permissions?.projectManagement) &&
             (<h3 style={{marginLeft:'1%'}}>
@@ -1235,7 +1239,13 @@ const onFinishEdit = (values) => {
                                                                 title,
                                                                 tags,
                                                                 description,
-                                                                ProjectData: BoardData?.board?.project ? 
+                                                                ProjectData: BoardData?._id ? 
+                                                                  {
+                                                                    projectName: BoardData?.projectName,
+                                                                    _id: BoardData?._id,
+                                                                    assignedDevelopers: employees
+                                                                  } 
+                                                                  : BoardData?.board?.project ? 
                                                                   {
                                                                     projectName: BoardData?.board?.project?.projectName,
                                                                     _id: BoardData?.board?.project?._id,
@@ -1398,7 +1408,7 @@ const onFinishEdit = (values) => {
                                     //   }
                                     // }}
                                     onClick={() => {
-                                      getTasksOptions(BoardData?.board?.project ? BoardData?.board?.project?._id : BoardData?.board?._id);
+                                      getTasksOptions(BoardData?._id ? BoardData?._id : BoardData?.board?.project ? BoardData?.board?.project?._id : BoardData?.board?._id);
                                       setTaskModal(true);
                                       setColumnId(column._id);
                                     }}

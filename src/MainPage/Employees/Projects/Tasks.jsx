@@ -402,11 +402,11 @@ const onFinishEdit = (values) => {
       title: "Status",
       dataIndex: 'lane',
       render: (text, record) => (
-        <div className="dropdown action-label text-center" onClick={(e) => e.stopPropagation()}>
+        <div className="dropdown action-label text-center">
           <a
             className="btn btn-white btn-sm btn-rounded dropdown-toggle"
             href="javascript:void(0)"
-            onClick={(e) => handleStatusDropdownClick(e, record._id)}
+            onClick={(e) => {e.stopPropagation(), handleStatusDropdownClick(e, record._id)}}
             aria-expanded={openStatusDropdownId === record._id}
           >
               <i
@@ -423,7 +423,7 @@ const onFinishEdit = (values) => {
                 // className={`dropdown-item ${text === option.title && "disabled"}`}
                 href="javascript:void(0)"
                 onClick={(e) => {
-                  e.preventDefault();
+                  e.stopPropagation();
                   handleUpdateStatus(record?.boardId, record?._id, record?.columnId, option.columnId);
                   setOpenStatusDropdownId(null); // Close the dropdown
                 }}
