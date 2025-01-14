@@ -55,13 +55,13 @@ const Candidates = () => {
   useEffect(() => {
     const token =
       localStorage.getItem("token") || authState?.access_token?.accessToken;
-
+    
     if (!token) {
       message.error("Please login again to continue");
       navigate("/login");
       return;
     }
-
+    
     fetchCandidates();
     // Fetch active jobs initially
     fetchActiveJobs();
@@ -77,7 +77,7 @@ const Candidates = () => {
   const fetchCandidates = async () => {
     const token =
       localStorage.getItem("token") || authState?.access_token?.accessToken;
-
+    
     if (!token) {
       message.error("Authentication required");
       navigate("/login");
@@ -97,9 +97,9 @@ const Candidates = () => {
       };
 
       const response = await apiServices(
-        "GET",
-        `candidate/list?${new URLSearchParams(queryParams).toString()}`,
-        null,
+        "GET", 
+        `candidate/list?${new URLSearchParams(queryParams).toString()}`, 
+        null, 
         {
           access_token: {
             accessToken: token,
@@ -109,11 +109,11 @@ const Candidates = () => {
           },
         }
       );
-
+      
       if (response?.data?.status) {
         const candidateData = response.data.data;
         console.log("Candidates Response:", response.data);
-
+        
         if (Array.isArray(candidateData.docs)) {
           setCandidates(candidateData.docs);
           setPagination((prev) => ({
@@ -151,7 +151,7 @@ const Candidates = () => {
 
   const handleSearch = (value) => {
     setFilters((prev) => ({
-      ...prev,
+        ...prev,
       name: value,
     }));
     setPagination((prev) => ({
@@ -171,7 +171,7 @@ const Candidates = () => {
   const handleDeleteCandidate = async (candidateId) => {
     const token =
       localStorage.getItem("token") || authState?.access_token?.accessToken;
-
+    
     if (!token) {
       message.error("Authentication required");
       navigate("/login");
@@ -181,9 +181,9 @@ const Candidates = () => {
     try {
       setLoading(true);
       const response = await apiServices(
-        "DELETE",
+        "DELETE", 
         `candidate/${candidateId}`,
-        null,
+        null, 
         {
           access_token: {
             accessToken: token,
@@ -216,10 +216,10 @@ const Candidates = () => {
 
     try {
       const response = await apiServices("GET", "job/active", null, {
-        access_token: {
+          access_token: {
           accessToken: token,
-        },
-        headers: {
+          },
+          headers: {
           Authorization: `Bearer ${token}`,
         },
       });
@@ -234,11 +234,11 @@ const Candidates = () => {
         if (Array.isArray(jobs)) {
           setActiveJobs(jobs);
           console.log("Active jobs set successfully:", jobs.length, "jobs");
-        } else {
+      } else {
           console.error("Jobs data is not an array:", jobs);
           setActiveJobs([]);
         }
-      } else {
+        } else {
         console.error("Failed to fetch active jobs:", response?.data);
         setActiveJobs([]);
       }
@@ -360,8 +360,8 @@ const Candidates = () => {
         <Dropdown
           overlay={
             <Menu>
-              <Menu.Item
-                key="edit"
+              <Menu.Item 
+                key="edit" 
                 icon={<EditOutlined />}
                 onClick={() =>
                   navigate(`/recruitment/candidates/${record._id}/edit`)
@@ -395,11 +395,11 @@ const Candidates = () => {
           trigger={["click"]}
           placement="bottomRight"
         >
-          <Button
-            type="text"
+          <Button 
+            type="text" 
             icon={
               <MoreOutlined
-                style={{
+            style={{
                   transform: "rotate(90deg)",
                   fontSize: "16px",
                   color: "#6C757D",
@@ -450,7 +450,7 @@ const Candidates = () => {
             </ul>
           </div>
           <div className="col-auto float-end ms-auto">
-            <Button
+              <Button
               className="add-btn"
               onClick={handleAddCandidate}
               icon={<PlusOutlined />}
@@ -466,31 +466,31 @@ const Candidates = () => {
         <div className="col-sm-6 col-md-3">
           <Input.Search
             placeholder="Search candidates..."
-            allowClear
+              allowClear
             onSearch={handleSearch}
             style={{ width: "100%" }}
           />
         </div>
-      </div>
+            </div>
 
       {/* Table section */}
       <div className="row">
         <div className="col-md-12">
-          <Table
-            columns={columns}
-            dataSource={candidates}
+                <Table 
+                  columns={columns}
+                  dataSource={candidates}
             loading={loading}
             onChange={handleTableChange}
-            pagination={{
-              ...pagination,
-              showSizeChanger: true,
+                  pagination={{
+                    ...pagination,
+                    showSizeChanger: true,
               showTotal: (total, range) =>
                 `${range[0]}-${range[1]} of ${total} candidates`,
-            }}
+                  }}
             rowKey="_id"
-          />
+                />
+              </div>
         </div>
-      </div>
 
       {/* Create Candidate Modal */}
       <CreateCandidateModal
@@ -503,4 +503,4 @@ const Candidates = () => {
   );
 };
 
-export default Candidates;
+export default Candidates; 

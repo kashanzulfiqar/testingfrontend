@@ -97,6 +97,7 @@ import Jobs from '../MainPage/Recruitment/Jobs';
 import JobDetails from "../MainPage/Recruitment/JobDetails";
 import EditJob from "../MainPage/Recruitment/EditJob";
 import Interviews from '../MainPage/Recruitment/Interviews';
+import PublicInterviewPage from '../MainPage/Recruitment/PublicInterviewPage';
 
 const App = () => {
   const loginState = useSelector((state) => state.user.loginvalue);
@@ -185,9 +186,10 @@ const App = () => {
         <Route path="/reset/:token" element={<AdminResetPassword />} />
         <Route path="/register" element={<RegistrationPage />} />
 
-        {/* <Route path="/app/*" element={<DefaultLayout />} /> */}
+        {/* Public Interview Page - No authentication required */}
+        <Route path="/interview/public/:token" element={<PublicInterviewPage />} />
 
-        {/* <Route element={<Layout />}> */}
+        {/* Protected Routes */}
         <Route
           path="/"
           element={

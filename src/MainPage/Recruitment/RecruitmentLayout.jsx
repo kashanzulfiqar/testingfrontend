@@ -14,6 +14,8 @@ import Interviews from './Interviews';
 import InterviewDetails from './InterviewDetails';
 import Tasks from './Tasks';
 import TaskDetails from './TaskDetails';
+import HiredCandidates from './HiredCandidates';
+import BlacklistedCandidates from './BlacklistedCandidates';
 
 const RecruitmentLayout = () => {
   const location = useLocation();
@@ -45,10 +47,23 @@ const RecruitmentLayout = () => {
                 </Link>
               </li>
 
-              <li className={pathname.includes("/recruitment/candidates") ? "active" : ""}>
-                <Link to="/recruitment/candidates">
-                  <i className="la la-user-plus" /> <span>Candidates</span>
-                </Link>
+              <li className={pathname.includes("/recruitment/candidates") ? "active submenu" : "submenu"}>
+                <a href="#" onClick={(e) => e.preventDefault()}>
+                  <i className="la la-user-plus" /> 
+                  <span>Candidates</span>
+                  <span className="menu-arrow" />
+                </a>
+                <ul style={{ display: pathname.includes("/recruitment/candidates") ? "block" : "none" }}>
+                  <li className={pathname === "/recruitment/candidates/processing" ? "active" : ""}>
+                    <Link to="/recruitment/candidates/processing">Under Processing</Link>
+                  </li>
+                  <li className={pathname === "/recruitment/candidates/hired" ? "active" : ""}>
+                    <Link to="/recruitment/candidates/hired">Hired Resource</Link>
+                  </li>
+                  <li className={pathname === "/recruitment/candidates/blacklist" ? "active" : ""}>
+                    <Link to="/recruitment/candidates/blacklist">Blacklist</Link>
+                  </li>
+                </ul>
               </li>
 
               <li className={pathname.includes("/recruitment/interviews") ? "active" : ""}>
@@ -87,7 +102,9 @@ const RecruitmentLayout = () => {
           <Route path="jobs" element={<Jobs />} />
           <Route path="jobs/:jobId" element={<JobDetails />} />
           <Route path="jobs/:jobId/edit" element={<EditJob />} />
-          <Route path="candidates" element={<Candidates />} />
+          <Route path="candidates/processing" element={<Candidates />} />
+          <Route path="candidates/hired" element={<HiredCandidates />} />
+          <Route path="candidates/blacklist" element={<BlacklistedCandidates />} />
           <Route path="candidates/:id" element={<CandidateDetails />} />
           <Route path="candidates/:id/edit" element={<EditCandidate />} />
           <Route path="interviews" element={<Interviews />} />
