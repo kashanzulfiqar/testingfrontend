@@ -450,6 +450,7 @@ const TaskBoardList = () => {
                 </Link>
                 {/* Dropdown menu for additional team members */}
                 <div
+                  onClick={(e) => e.stopPropagation()}
                   className={`dropdown-menu dropdown-menu-right ${
                     openTeamDropdownId === record._id ? "show" : ""
                   }`}
@@ -823,11 +824,13 @@ const TaskBoardList = () => {
             open={open.isAddOpen}
             onClose={handleClose}
             aria-labelledby="modal-modal-title"
+            className="modalScroll"
             aria-describedby="modal-modal-description"
             disableRestoreFocus
             BackdropProps={{
               style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
             }}
+            sx={{ overflowY: "auto" }}
           >
             <div className="modal-dialog modal-dialog-centered" role="document">
               <div className="modal-content">
