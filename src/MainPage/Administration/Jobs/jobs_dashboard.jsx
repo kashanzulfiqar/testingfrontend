@@ -2,12 +2,12 @@
  * Signin Firebase
  */
 
- import React from 'react';
- import { Helmet } from "react-helmet"; 
- import { Link } from 'react-router-dom';
-import { Avatar_02,Avatar_09,Avatar_10  } from "../../../Entryfile/imagepath";
+import React, { useState, useEffect } from 'react';
+import { Helmet } from "react-helmet"; 
+import { Link } from 'react-router-dom';
+import { Avatar_02, Avatar_09, Avatar_10 } from "../../../Entryfile/imagepath";
 import { Line } from "react-chartjs-2";
- import {
+import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
@@ -16,21 +16,22 @@ import { Line } from "react-chartjs-2";
   Title,
   Tooltip,
   Legend,
-  } from 'chart.js';
+} from 'chart.js';
 import Offcanvas from '../../../Entryfile/offcanvance';
+import { useSelector } from 'react-redux';
+import { apiServices } from '../../../Services/apiServices';
+import { message, Spin } from 'antd';
 
-  ChartJS.register(
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    
-    );
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+);
 
-
- const JobsDashboard = () => {
+const JobsDashboard = () => {
   const data = {
     labels: ["Jan", "Feb", "Mar", "Apr", "May"],
     legend: {
@@ -69,6 +70,39 @@ import Offcanvas from '../../../Entryfile/offcanvance';
     ]
     
   };
+
+  const [latestJobs, setLatestJobs] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const authState = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    fetchLatestJobs();
+  }, []);
+
+  const fetchLatestJobs = async () => {
+    try {
+      setLoading(true);
+      const response = await apiServices(
+        "GET",
+        "job/list?page=1&limit=5",
+        null,
+        {
+          access_token: {
+            accessToken: authState.token
+          }
+        }
+      );
+
+      if (response?.data?.success) {
+        setLatestJobs(response.data.data.jobs);
+      }
+    } catch (error) {
+      message.error('Failed to fetch latest jobs');
+    } finally {
+      setLoading(false);
+    }
+  };
+
        return ( 
          <>
          {/* Page Wrapper */}
@@ -154,13 +188,18 @@ import Offcanvas from '../../../Entryfile/offcanvance';
                      <div className="card flex-fill">
                        <div className="card-body">
                          <h3 className="card-title text-center">Latest Jobs</h3>
-                         <ul className="list-group">
-                           <li className="list-group-item list-group-item-action">UI Developer <span className="float-end text-sm text-muted">1 Hours ago</span></li>
-                           <li className="list-group-item list-group-item-action">Android Developer <span className="float-end text-sm text-muted">1 Days ago</span></li>
-                           <li className="list-group-item list-group-item-action">IOS Developer<span className="float-end text-sm text-muted">2 Days ago</span></li>
-                           <li className="list-group-item list-group-item-action">PHP Developer<span className="float-end text-sm text-muted">3 Days ago</span></li>
-                           <li className="list-group-item list-group-item-action">UI Developer<span className="float-end text-sm text-muted">3 Days ago</span></li>
-                         </ul>
+                         <Spin spinning={loading}>
+                           <ul className="list-group">
+                             {latestJobs.map(job => (
+                               <li key={job._id} className="list-group-item list-group-item-action">
+                                 {job.title}
+                                 <span className="float-end text-sm text-muted">
+                                   {new Date(job.createdAt).toLocaleDateString()}
+                                 </span>
+                               </li>
+                             ))}
+                           </ul>
+                         </Spin>
                        </div>
                      </div>
                    </div>

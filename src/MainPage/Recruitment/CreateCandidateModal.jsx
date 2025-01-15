@@ -1,0 +1,543 @@
+import React, { useState, useEffect } from "react";
+import {
+  Modal,
+  Form,
+  Input,
+  Button,
+  Select,
+  DatePicker,
+  InputNumber,
+  Upload,
+  message,
+} from "antd";
+import { UploadOutlined } from "@ant-design/icons";
+import { apiServices } from "../../Services/apiServices";
+import moment from "moment";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { uploadFunction } from "../Employees/Projects/UploadAndDeleteFunc";
+
+const CreateCandidateModal = ({
+  visible,
+  onCancel,
+  onSuccess,
+  activeJobs = [],
+}) => {
+  const [form] = Form.useForm();
+  const navigate = useNavigate();
+  const [submitting, setSubmitting] = useState(false);
+  const [resumeFile, setResumeFile] = useState(null);
+  const [fileList, setFileList] = useState([]);
+  const authState = useSelector((state) => state.user.loginvalue);
+
+  // Debug log when activeJobs changes
+  useEffect(() => {
+    console.log("CreateCandidateModal - activeJobs prop:", activeJobs);
+  }, [activeJobs]);
+
+  // Reset form when modal becomes visible
+  useEffect(() => {
+    if (visible) {
+      form.resetFields();
+      setResumeFile(null);
+      setFileList([]);
+    }
+  }, [visible, form]);
+
+  const handleSubmit = async (values) => {
+    try {
+      setSubmitting(true);
+
+      // Step 1: Upload resume if exists
+      let resumeData = null;
+      if (resumeFile) {
+        console.log("Step 1: Uploading resume file:", resumeFile);
+        const uploadResult = await uploadFunction([resumeFile]);
+        console.log("Upload result:", uploadResult);
+
+        if (
+          Array.isArray(uploadResult) &&
+          uploadResult.length > 0 &&
+          uploadResult[0].imageUrl
+        ) {
+          resumeData = {
+            url: uploadResult[0].imageUrl,
+            fileName: uploadResult[0].fileName,
+            asset_id: uploadResult[0].asset_id,
+            public_id: uploadResult[0].public_id,
+            resource_type: uploadResult[0].resource_type,
+          };
+          console.log("Resume uploaded successfully:", resumeData);
+        } else {
+          console.error("Invalid upload result:", uploadResult);
+          message.error("Failed to upload resume");
+          setSubmitting(false);
+          return;
+        }
+      }
+
+      // Step 2: Create candidate with resume data
+      console.log("Step 2: Creating candidate with resume data:", resumeData);
+      const formattedValues = {
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        phoneNumber: values.phoneNumber,
+        appliedFor: values.appliedFor,
+        appliedDate: values.appliedDate.format("YYYY-MM-DD"),
+        experience: values.experience,
+        currentSalary: values.currentSalary,
+        expectedSalary: values.expectedSalary,
+        noticePeriod: values.noticePeriod,
+        source: values.source,
+        resume: resumeData,
+      };
+
+      console.log("Creating candidate with payload:", formattedValues);
+
+      const token =
+        localStorage.getItem("token") || authState?.access_token?.accessToken;
+      const response = await apiServices(
+        "POST",
+        "candidate/create",
+        formattedValues,
+        {
+          access_token: {
+            accessToken: token,
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response?.data?.status) {
+        message.success("Candidate created successfully");
+        form.resetFields();
+        setFileList([]);
+        setResumeFile(null);
+        onSuccess();
+      } else {
+        throw new Error(
+          response?.data?.message || "Failed to create candidate"
+        );
+      }
+    } catch (error) {
+      console.error("Error in submission:", error);
+      message.error(error.message || "Error creating candidate");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleCancel = () => {
+    form.resetFields();
+    setResumeFile(null);
+    setFileList([]);
+    onCancel();
+  };
+
+  return (
+    <Modal
+      title="Add New Candidate"
+      visible={visible}
+      onCancel={handleCancel}
+      footer={null}
+      width={800}
+      className="custom-modal"
+    >
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleSubmit}
+        initialValues={{
+          appliedDate: moment(),
+        }}
+      >
+        <div className="upload-resume mb-4">
+          <p>
+            If you have a resume, upload the resume first. We will automatically
+            pickup all the details.
+          </p>
+          <Upload
+            name="resume"
+            maxCount={1}
+            beforeUpload={(file) => {
+              // Validate file size (5MB)
+              if (file.size > 5 * 1024 * 1024) {
+                message.error("Resume file size should not exceed 5MB");
+                return false;
+              }
+
+              // Validate file type
+              const allowedTypes = [
+                "application/pdf",
+                "application/msword",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+              ];
+              if (!allowedTypes.includes(file.type)) {
+                message.error("Only PDF, DOC, and DOCX files are allowed");
+                return false;
+              }
+
+              setResumeFile(file);
+              return false;
+            }}
+            onRemove={() => {
+              setResumeFile(null);
+              setFileList([]);
+              return true;
+            }}
+            fileList={fileList}
+            onChange={({ fileList: newFileList }) => {
+              setFileList(newFileList);
+            }}
+          >
+            <Button icon={<UploadOutlined />} disabled={fileList.length > 0}>
+              Upload Resume
+            </Button>
+          </Upload>
+        </div>
+
+        <div className="row">
+          <div className="col-md-6">
+            <Form.Item
+              name="firstName"
+              label={
+                <>
+                  First Name <span className="text-danger">*</span>
+                </>
+              }
+              rules={[
+                { required: true, message: "Please enter first name" },
+                { min: 2, message: "First name must be at least 2 characters" },
+                { max: 50, message: "First name cannot exceed 50 characters" },
+                {
+                  pattern: /^[a-zA-Z\s-]+$/,
+                  message:
+                    "First name can only contain letters, spaces and hyphens",
+                },
+              ]}
+            >
+              <Input placeholder="Enter Name" />
+            </Form.Item>
+          </div>
+          <div className="col-md-6">
+            <Form.Item
+              name="lastName"
+              label={
+                <>
+                  Last Name <span className="text-danger">*</span>
+                </>
+              }
+              rules={[
+                { required: true, message: "Please enter last name" },
+                { min: 2, message: "Last name must be at least 2 characters" },
+                { max: 50, message: "Last name cannot exceed 50 characters" },
+                {
+                  pattern: /^[a-zA-Z\s-]+$/,
+                  message:
+                    "Last name can only contain letters, spaces and hyphens",
+                },
+              ]}
+            >
+              <Input placeholder="Enter last name" />
+            </Form.Item>
+          </div>
+        </div>
+
+        <div className="row">
+          <div className="col-md-6">
+            <Form.Item
+              name="email"
+              label={
+                <>
+                  Email <span className="text-danger">*</span>
+                </>
+              }
+              rules={[
+                { required: true, message: "Please enter email" },
+                { type: "email", message: "Please enter a valid email" },
+              ]}
+            >
+              <Input placeholder="Enter Email" />
+            </Form.Item>
+          </div>
+          <div className="col-md-6">
+            <Form.Item
+              name="phoneNumber"
+              label={
+                <>
+                  Phone Number <span className="text-danger">*</span>
+                </>
+              }
+              rules={[
+                { required: true, message: "Please enter phone number" },
+                { min: 10, message: "Phone number must be at least 10 digits" },
+                { max: 15, message: "Phone number cannot exceed 15 digits" },
+                {
+                  pattern: /^[0-9+\-\s()]+$/,
+                  message: "Please enter a valid phone number",
+                },
+              ]}
+            >
+              <Input placeholder="Enter Number" />
+            </Form.Item>
+          </div>
+        </div>
+
+        <div className="row">
+          <div className="col-md-6">
+            <Form.Item
+              name="appliedFor"
+              label={
+                <>
+                  Applied For <span className="text-danger">*</span>
+                </>
+              }
+              rules={[
+                { required: true, message: "Please select job position" },
+              ]}
+            >
+              <Select
+                placeholder="Select Job Position"
+                showSearch
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
+                  0
+                }
+                notFoundContent={
+                  activeJobs.length === 0 ? "No active jobs available" : null
+                }
+              >
+                {Array.isArray(activeJobs) &&
+                  activeJobs.map((job) => (
+                    <Select.Option key={job._id} value={job._id}>
+                      {job.title} {job.department ? `- ${job.department}` : ""}
+                    </Select.Option>
+                  ))}
+              </Select>
+            </Form.Item>
+          </div>
+          <div className="col-md-6">
+            <Form.Item
+              name="appliedDate"
+              label={
+                <>
+                  Applied Date <span className="text-danger">*</span>
+                </>
+              }
+              rules={[
+                { required: true, message: "Please select date" },
+                {
+                  validator: (_, value) => {
+                    if (value && value.isAfter(moment())) {
+                      return Promise.reject(
+                        "Applied date cannot be in the future"
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
+              ]}
+            >
+              <DatePicker
+                style={{ width: "100%" }}
+                placeholder="Select Date"
+                disabledDate={(date) => date.isAfter(moment())}
+              />
+            </Form.Item>
+          </div>
+        </div>
+
+        <div className="row">
+          <div className="col-md-6">
+            <Form.Item
+              name="experience"
+              label={
+                <>
+                  Experience (Years) <span className="text-danger">*</span>
+                </>
+              }
+              rules={[
+                { required: true, message: "Please enter experience" },
+                {
+                  type: "number",
+                  min: 0,
+                  message: "Experience cannot be negative",
+                },
+              ]}
+            >
+              <InputNumber
+                style={{ width: "100%" }}
+                placeholder="Enter Experience"
+                min={0}
+                precision={1}
+              />
+            </Form.Item>
+          </div>
+          <div className="col-md-6">
+            <Form.Item
+              name="currentSalary"
+              label={
+                <>
+                  Current Salary <span className="text-danger">*</span>
+                </>
+              }
+              rules={[
+                { required: true, message: "Please enter current salary" },
+                {
+                  type: "number",
+                  min: 0,
+                  message: "Salary cannot be negative",
+                },
+              ]}
+            >
+              <InputNumber
+                style={{ width: "100%" }}
+                placeholder="Enter Current Salary"
+                min={0}
+              />
+            </Form.Item>
+          </div>
+        </div>
+
+        <div className="row">
+          <div className="col-md-6">
+            <Form.Item
+              name="expectedSalary"
+              label={
+                <>
+                  Expected Salary <span className="text-danger">*</span>
+                </>
+              }
+              rules={[
+                { required: true, message: "Please enter expected salary" },
+                {
+                  type: "number",
+                  min: 0,
+                  message: "Salary cannot be negative",
+                },
+              ]}
+            >
+              <InputNumber
+                style={{ width: "100%" }}
+                placeholder="Enter Expected Salary"
+                min={0}
+              />
+            </Form.Item>
+          </div>
+          <div className="col-md-6">
+            <Form.Item
+              name="noticePeriod"
+              label={
+                <>
+                  Notice Period <span className="text-danger">*</span>
+                </>
+              }
+              rules={[
+                { required: true, message: "Please select notice period" },
+              ]}
+            >
+              <Select placeholder="Select Notice Period">
+                <Select.Option value="IMMEDIATE">Immediate</Select.Option>
+                <Select.Option value="15_DAYS">15 Days</Select.Option>
+                <Select.Option value="30_DAYS">30 Days</Select.Option>
+                <Select.Option value="60_DAYS">60 Days</Select.Option>
+                <Select.Option value="90_DAYS">90 Days</Select.Option>
+              </Select>
+            </Form.Item>
+          </div>
+        </div>
+
+        <div className="row">
+          <div className="col-md-6">
+            <Form.Item
+              name="source"
+              label={
+                <>
+                  Source <span className="text-danger">*</span>
+                </>
+              }
+              rules={[{ required: true, message: "Please select source" }]}
+            >
+              <Select placeholder="Select source">
+                <Select.Option value="LINKEDIN">LinkedIn</Select.Option>
+                <Select.Option value="WEBSITE">Website</Select.Option>
+                <Select.Option value="REFERRAL">Referral</Select.Option>
+                <Select.Option value="OTHER">Other</Select.Option>
+              </Select>
+            </Form.Item>
+          </div>
+        </div>
+
+        <Form.Item className="text-end mt-3">
+          <Button
+            onClick={handleCancel}
+            style={{
+              marginRight: 12,
+              padding: "6px 24px",
+              height: "40px",
+              borderRadius: "20px",
+              background: "#F8F9FA",
+              border: "none",
+            }}
+          >
+            Reset
+          </Button>
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={submitting}
+            style={{
+              padding: "6px 24px",
+              height: "40px",
+              borderRadius: "20px",
+              background: "#F4A261",
+              border: "none",
+            }}
+          >
+            Add Candidate
+          </Button>
+        </Form.Item>
+      </Form>
+
+      <style jsx global>{`
+        .custom-modal .ant-modal-header {
+          border-bottom: none;
+          padding: 24px 24px 0;
+        }
+        .custom-modal .ant-modal-title {
+          font-size: 24px;
+          font-weight: 600;
+        }
+        .custom-modal .ant-form-item-label > label {
+          font-weight: 500;
+        }
+        .custom-modal .ant-input,
+        .custom-modal .ant-select-selector,
+        .custom-modal .ant-picker,
+        .custom-modal .ant-input-number {
+          border-radius: 8px;
+          padding: 8px 12px;
+          height: 40px;
+        }
+        .custom-modal .ant-select-selection-placeholder,
+        .custom-modal .ant-input::placeholder {
+          color: #6c757d;
+        }
+        .upload-resume {
+          background: #f8f9fa;
+          padding: 16px;
+          border-radius: 8px;
+        }
+        .upload-resume p {
+          margin-bottom: 12px;
+        }
+      `}</style>
+    </Modal>
+  );
+};
+
+export default CreateCandidateModal;
