@@ -908,7 +908,7 @@ const TaskBoardList = () => {
                       <div className="form-group">
                         <label>
                           {t("Tasks.project")}{" "}
-                          {/* <span className="text-danger">*</span> */}
+                          <span className="text-danger">*</span>
                         </label>
                         <div style={{ position: "relative" }} id="area">
                           <Form.Item
@@ -916,8 +916,7 @@ const TaskBoardList = () => {
                             className="custom-border"
                             rules={[
                               {
-                                whitespace: true,
-                                // required: true,
+                                required: true,
                                 message: t("Tasks.pleaseselectproject"),
                               },
                             ]}
@@ -952,142 +951,147 @@ const TaskBoardList = () => {
                           </Form.Item>
                         </div>
                       </div>
-                    ) : null}
-                    <div className="row">
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>
-                            {t("projectScreen.Modal.addTeam")}{" "}
-                            <span className="text-danger">*</span>
-                          </label>
-                          <div style={{ position: "relative" }} id="area">
-                            <Form.Item
-                              name="assignedDevelopers"
-                              className="addTeamHeight"
-                              rules={[
-                                {
-                                  required: true,
-                                  message: t(
-                                    "projectScreen.Modal.teamCannotBeEmpty"
-                                  ),
-                                },
-                              ]}
-                            >
-                              <Select
-                                showSearch
-                                onSearch={(val) => {
-                                  showTeamSearch(val, "Team");
-                                  // onTeamChange(val)
-                                }}
-                                filterOption={(input, option) =>
-                                  option.children
-                                    .toLowerCase()
-                                    .indexOf(input.toLowerCase()) >= 0
-                                }
-                                optionFilterProp="children"
-                                notFoundContent={
-                                  loadingEmployee ? (
-                                    <Spin
-                                      style={{
-                                        height: "38px",
-                                        width: "100%",
-                                        display: "flex",
-                                        justifyContent: "center",
-                                        alignItems: "center",
-                                      }}
-                                    />
-                                  ) : (
-                                    <Empty
-                                      image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                    />
-                                  )
-                                }
-                                dropdownRender={(menu) => <>{menu}</>}
-                                getPopupContainer={() =>
-                                  document.getElementById("area")
-                                }
-                                className="customselect-height custom-select"
-                                mode="multiple"
-                                placeholder={t(
-                                  "projectScreen.Modal.selectTeamMembers"
-                                )}
-                                onChange={handleChange}
+                    ) : (
+                      <div className="row">
+                        <div className="col-sm-6">
+                          <div className="form-group">
+                            <label>
+                              {t("projectScreen.Modal.addTeam")}{" "}
+                              <span className="text-danger">*</span>
+                            </label>
+                            <div style={{ position: "relative" }} id="area">
+                              <Form.Item
+                                name="assignedDevelopers"
+                                className="addTeamHeight"
+                                rules={[
+                                  {
+                                    required: true,
+                                    message: t(
+                                      "projectScreen.Modal.teamCannotBeEmpty"
+                                    ),
+                                  },
+                                ]}
                               >
-                                {getTeamMemberOptions()}
-                              </Select>
-                            </Form.Item>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>{t("projectScreen.Modal.teamMembers")}</label>
-                          <div
-                            className="project-members"
-                            style={{ margin: "4px auto" }}
-                          >
-                            <ul
-                              className="team-members"
-                              style={{ minWidth: "max-content" }}
-                            >
-                              {selectedTeamMembers
-                                ?.slice(0, 4)
-                                .map((teamMember, index) => (
-                                  <li key={index}>
-                                    <Tooltip title={teamMember?.fullName}>
-                                      <Avatar
-                                        style={{ cursor: "pointer" }}
-                                        src={teamMember?.imageUrl || user_icon}
+                                <Select
+                                  showSearch
+                                  onSearch={(val) => {
+                                    showTeamSearch(val, "Team");
+                                    // onTeamChange(val)
+                                  }}
+                                  filterOption={(input, option) =>
+                                    option.children
+                                      .toLowerCase()
+                                      .indexOf(input.toLowerCase()) >= 0
+                                  }
+                                  optionFilterProp="children"
+                                  notFoundContent={
+                                    loadingEmployee ? (
+                                      <Spin
+                                        style={{
+                                          height: "38px",
+                                          width: "100%",
+                                          display: "flex",
+                                          justifyContent: "center",
+                                          alignItems: "center",
+                                        }}
                                       />
-                                    </Tooltip>
-                                  </li>
-                                ))}
-                              {selectedTeamMembers?.length > 4 && (
-                                <li className="dropdown avatar-dropdown">
-                                  <Link
-                                    className="all-users dropdown-toggle projectTeamMember"
-                                    style={{
-                                      display: "inline-flex",
-                                      height: "33px",
-                                      width: "33px",
-                                    }}
-                                    data-bs-toggle="dropdown"
-                                    aria-expanded="false"
-                                  >
-                                    +{selectedTeamMembers?.length - 4}
-                                  </Link>
-                                  {/* Dropdown menu for additional team members */}
-                                  <div className="dropdown-menu dropdown-menu-right">
-                                    <div className="avatar-group">
-                                      {selectedTeamMembers
-                                        ?.slice(4)
-                                        .map((teamMember, index) => (
-                                          <a
-                                            className="avatar avatar-xs projectTeamMember"
-                                            key={index}
-                                          >
-                                            <Tooltip
-                                              title={teamMember?.fullName}
+                                    ) : (
+                                      <Empty
+                                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                      />
+                                    )
+                                  }
+                                  dropdownRender={(menu) => <>{menu}</>}
+                                  getPopupContainer={() =>
+                                    document.getElementById("area")
+                                  }
+                                  className="customselect-height custom-select"
+                                  mode="multiple"
+                                  placeholder={t(
+                                    "projectScreen.Modal.selectTeamMembers"
+                                  )}
+                                  onChange={handleChange}
+                                >
+                                  {getTeamMemberOptions()}
+                                </Select>
+                              </Form.Item>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="col-sm-6">
+                          <div className="form-group">
+                            <label>
+                              {t("projectScreen.Modal.teamMembers")}
+                            </label>
+                            <div
+                              className="project-members"
+                              style={{ margin: "4px auto" }}
+                            >
+                              <ul
+                                className="team-members"
+                                style={{ minWidth: "max-content" }}
+                              >
+                                {selectedTeamMembers
+                                  ?.slice(0, 4)
+                                  .map((teamMember, index) => (
+                                    <li key={index}>
+                                      <Tooltip title={teamMember?.fullName}>
+                                        <Avatar
+                                          style={{ cursor: "pointer" }}
+                                          src={
+                                            teamMember?.imageUrl || user_icon
+                                          }
+                                        />
+                                      </Tooltip>
+                                    </li>
+                                  ))}
+                                {selectedTeamMembers?.length > 4 && (
+                                  <li className="dropdown avatar-dropdown">
+                                    <Link
+                                      className="all-users dropdown-toggle projectTeamMember"
+                                      style={{
+                                        display: "inline-flex",
+                                        height: "33px",
+                                        width: "33px",
+                                      }}
+                                      data-bs-toggle="dropdown"
+                                      aria-expanded="false"
+                                    >
+                                      +{selectedTeamMembers?.length - 4}
+                                    </Link>
+                                    {/* Dropdown menu for additional team members */}
+                                    <div className="dropdown-menu dropdown-menu-right">
+                                      <div className="avatar-group">
+                                        {selectedTeamMembers
+                                          ?.slice(4)
+                                          .map((teamMember, index) => (
+                                            <a
+                                              className="avatar avatar-xs projectTeamMember"
+                                              key={index}
                                             >
-                                              <Avatar
-                                                src={
-                                                  teamMember?.imageUrl ||
-                                                  user_icon
-                                                }
-                                                style={{ cursor: "pointer" }}
-                                              />
-                                            </Tooltip>
-                                          </a>
-                                        ))}
+                                              <Tooltip
+                                                title={teamMember?.fullName}
+                                              >
+                                                <Avatar
+                                                  src={
+                                                    teamMember?.imageUrl ||
+                                                    user_icon
+                                                  }
+                                                  style={{ cursor: "pointer" }}
+                                                />
+                                              </Tooltip>
+                                            </a>
+                                          ))}
+                                      </div>
                                     </div>
-                                  </div>
-                                </li>
-                              )}
-                            </ul>
+                                  </li>
+                                )}
+                              </ul>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
+                    )}
                     <div className="submit-section">
                       <Form.Item>
                         <Button

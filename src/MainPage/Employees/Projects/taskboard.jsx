@@ -43,7 +43,11 @@ const TaskBoard = () => {
     title: "",
     tags:[],
     description: "",
-    ProjectData: {}
+    ProjectData: {},
+    columnId: "",
+    columnName: "",
+    columnColor: "",
+    allColumns: []
   });
   const [columnId, setColumnId] = useState("");
   const [editId, setEditId] = useState("");
@@ -1280,7 +1284,16 @@ const TaskBoard = () => {
                                                                     assignedDevelopers: employees
                                                                   },
                                                                 status,
-                                                                assignedDevelopers: taskAssignedDevelopers
+                                                                boardId: boardId,
+                                                                columnId: column._id,
+                                                                columnName: column.title,
+                                                                assignedDevelopers: taskAssignedDevelopers,
+                                                                columnColor: column.color || 'primary', // Add column color
+                                                                allColumns: columns.map(col => ({ // Add all columns data
+                                                                  id: col._id,
+                                                                  title: col.title,
+                                                                  color: col.color || 'primary'
+                                                                }))
                                                               });
                                                               setViewModal(true);
                                                             }}
@@ -1345,19 +1358,46 @@ const TaskBoard = () => {
                                                                 const title = getTaskTitle(task.taskId);
                                                                 const tags = getTaskTags(task.taskId);
                                                                 const description = getTaskDescription(task.taskId);
-                                                                const assignedDevelopers = getTaskAssignedDevelopers(task.taskId);
-                                                                // Set the full developer objects for display
-                                                                setSelectedTeamMembers(assignedDevelopers);
-                                                                // Extract just the IDs for the form
-                                                                const developerIds = assignedDevelopers?.map(dev => dev._id);
-                                                                setAddTask({ isAddOpen: true, data: task });
-                                                                form2.setFieldsValue({ 
-                                                                  title, 
-                                                                  tags, 
-                                                                  description, 
-                                                                  assignedDevelopers: developerIds 
+                                                                const status = column.title;
+                                                                const taskAssignedDevelopers = getTaskAssignedDevelopers(task.taskId);
+
+                                                                setSelectedTask({
+                                                                  _id: task.taskId,
+                                                                  title,
+                                                                  tags,
+                                                                  description,
+                                                                  ProjectData: BoardData?._id ? 
+                                                                    {
+                                                                      projectName: BoardData?.projectName,
+                                                                      _id: BoardData?._id,
+                                                                      assignedDevelopers: employees
+                                                                    } 
+                                                                    : BoardData?.board?.project ? 
+                                                                    {
+                                                                      projectName: BoardData?.board?.project?.projectName,
+                                                                      _id: BoardData?.board?.project?._id,
+                                                                      assignedDevelopers: employees
+                                                                    } 
+                                                                    : 
+                                                                    {
+                                                                      boardTitle: BoardData?.board?.boardTitle,
+                                                                      _id: BoardData?.board?._id,
+                                                                      project: null,
+                                                                      assignedDevelopers: employees
+                                                                    },
+                                                                  status,
+                                                                  boardId: boardId,
+                                                                  columnId: column._id,
+                                                                  columnName: column.title,
+                                                                  assignedDevelopers: taskAssignedDevelopers,
+                                                                  columnColor: column.color || 'primary',
+                                                                  allColumns: columns.map(col => ({
+                                                                    id: col._id,
+                                                                    title: col.title,
+                                                                    color: col.color || 'primary'
+                                                                  }))
                                                                 });
-                                                                setEditId(task.taskId);
+                                                                setViewModal(true);
                                                               }}
                                                               >
                                                                 Edit
@@ -2304,6 +2344,7 @@ const TaskBoard = () => {
             viewModal={viewModal}
             closeViewModal={closeViewModal}
             getAllTasks={getAllTasks}
+            getTaskBoard={getTaskBoard}
           />
         )}
     </>
