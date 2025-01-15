@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation, Routes, Route, Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useTranslation } from "react-i18next";
@@ -21,6 +21,15 @@ const RecruitmentLayout = () => {
   const location = useLocation();
   const { t } = useTranslation();
   const pathname = location.pathname;
+  const [openMenus, setOpenMenus] = useState([]);
+
+  const toggleSubmenu = (menu) => {
+    if (openMenus.includes(menu)) {
+      setOpenMenus(openMenus.filter(item => item !== menu));
+    } else {
+      setOpenMenus([...openMenus, menu]);
+    }
+  };
 
   return (
     <div className="main-wrapper">
@@ -47,21 +56,33 @@ const RecruitmentLayout = () => {
                 </Link>
               </li>
 
-              <li className={pathname.includes("/recruitment/candidates") ? "active submenu" : "submenu"}>
-                <a href="#" onClick={(e) => e.preventDefault()}>
+              <li className={`submenu ${pathname.includes("/recruitment/candidates") || openMenus.includes('candidates') ? "active" : ""}`}>
+                <a href="#" onClick={(e) => {
+                  e.preventDefault();
+                  toggleSubmenu('candidates');
+                }}>
                   <i className="la la-user-plus" /> 
                   <span>Candidates</span>
-                  <span className="menu-arrow" />
+                  <span className={`menu-arrow ${openMenus.includes('candidates') ? 'active' : ''}`} />
                 </a>
-                <ul style={{ display: pathname.includes("/recruitment/candidates") ? "block" : "none" }}>
-                  <li className={pathname === "/recruitment/candidates/processing" ? "active" : ""}>
-                    <Link to="/recruitment/candidates/processing">Under Processing</Link>
+                <ul style={{ 
+                  display: pathname.includes("/recruitment/candidates") || openMenus.includes('candidates') ? "block" : "none",
+                  paddingLeft: "34px"
+                }}>
+                  <li className={pathname.includes("/recruitment/candidates/processing") ? "active" : ""}>
+                    <Link to="/recruitment/candidates/processing">
+                      <span>Processing</span>
+                    </Link>
                   </li>
-                  <li className={pathname === "/recruitment/candidates/hired" ? "active" : ""}>
-                    <Link to="/recruitment/candidates/hired">Hired Resource</Link>
+                  <li className={pathname.includes("/recruitment/candidates/hired") ? "active" : ""}>
+                    <Link to="/recruitment/candidates/hired">
+                      <span>Offered</span>
+                    </Link>
                   </li>
-                  <li className={pathname === "/recruitment/candidates/blacklist" ? "active" : ""}>
-                    <Link to="/recruitment/candidates/blacklist">Blacklist</Link>
+                  <li className={pathname.includes("/recruitment/candidates/blacklist") ? "active" : ""}>
+                    <Link to="/recruitment/candidates/blacklist">
+                      <span>Blacklist</span>
+                    </Link>
                   </li>
                 </ul>
               </li>

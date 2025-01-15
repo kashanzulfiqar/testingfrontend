@@ -17,6 +17,11 @@ import {
   Rate,
   Collapse,
   Empty,
+  Modal,
+  Form,
+  Input,
+  DatePicker,
+  Upload,
 } from "antd";
 import {
   MailOutlined,
@@ -29,12 +34,15 @@ import {
   FileWordOutlined,
   EyeOutlined,
   DownloadOutlined,
+  InboxOutlined,
 } from "@ant-design/icons";
 import { apiServices } from "../../Services/apiServices";
 import { useSelector } from "react-redux";
 import moment from "moment";
 import CreateInterviewModal from "./CreateInterviewModal";
 import CreateTaskModal from "./CreateTaskModal";
+import SendOfferModal from './SendOfferModal';
+import { apiUploadToS3 } from "../../Services/uploadImage";
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
@@ -54,6 +62,13 @@ const CandidateDetails = () => {
   const [isTaskModalVisible, setIsTaskModalVisible] = useState(false);
   const [tasks, setTasks] = useState([]);
   const [loadingTasks, setLoadingTasks] = useState(false);
+  const [isOfferModalVisible, setIsOfferModalVisible] = useState(false);
+  const [submittingOffer, setSubmittingOffer] = useState(false);
+  const [offer, setOffer] = useState(null);
+
+  useEffect(() => {
+    console.log('isOfferModalVisible changed:', isOfferModalVisible);
+  }, [isOfferModalVisible]);
 
   useEffect(() => {
     fetchCandidateDetails();
@@ -74,6 +89,12 @@ const CandidateDetails = () => {
       fetchCandidateTasks();
     }
   }, [id, activeTab]);
+
+  useEffect(() => {
+    if (id) {
+      fetchOfferDetails();
+    }
+  }, [id]);
 
   const fetchCandidateDetails = async () => {
     const token =
@@ -223,6 +244,8 @@ const CandidateDetails = () => {
       if (response?.data?.success) {
         message.success("Candidate status updated successfully");
         setCandidate((prev) => ({ ...prev, status: newStatus }));
+        // Refresh the page to ensure the status is updated
+        window.location.reload();
       } else {
         message.error(response?.data?.message || "Failed to update status");
       }
@@ -234,9 +257,143 @@ const CandidateDetails = () => {
     }
   };
 
-  const handleSendOffer = () => {
-    // Implement send offer logic here
-    message.info("Send offer functionality to be implemented");
+  const fetchOfferDetails = async () => {
+    try {
+      const token = authState?.access_token?.accessToken || localStorage.getItem("token");
+      
+      if (!token) return;
+
+      const response = await apiServices(
+        'GET',
+        `candidate/${id}/offer`,
+        null,
+        {
+          access_token: {
+            accessToken: token,
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response?.data?.success) {
+        setOffer(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching offer details:', error);
+    }
+  };
+
+  const handleSendOffer = async (formData) => {
+    try {
+      setSubmittingOffer(true);
+      const token = authState?.access_token?.accessToken || localStorage.getItem("token");
+      
+      if (!token) {
+        message.error("Authentication required");
+        return;
+      }
+
+      // First upload the contract file
+      const contractFile = formData.get('contract');
+      if (contractFile) {
+        try {
+          const uploadResponse = await apiUploadToS3(contractFile);
+          if (uploadResponse?.data?.result?.secure_url) {
+            // Replace the file with the secure URL in the formData
+            formData.delete('contract');
+            formData.append('contract', uploadResponse.data.result.secure_url);
+          }
+        } catch (error) {
+          console.error('Error uploading contract:', error);
+          message.error('Failed to upload contract file');
+          return;
+        }
+      }
+
+      const response = await apiServices(
+        'POST',
+        'candidate/send-offer',
+        formData,
+        {
+          access_token: {
+            accessToken: token,
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+
+      if (response?.data?.status) {
+        message.success('Offer sent successfully');
+        setIsOfferModalVisible(false);
+        
+        // Update candidate status to OFFERED
+        await handleStatusChange('OFFERED');
+        
+        // Fetch updated offer details
+        await fetchOfferDetails();
+        
+        // Redirect to offered candidates list
+        navigate('/recruitment/candidates/offered');
+      } else {
+        throw new Error(response?.data?.message || 'Failed to send offer');
+      }
+    } catch (error) {
+      console.error('Error sending offer:', error);
+      message.error(error.message || 'Error sending offer');
+    } finally {
+      setSubmittingOffer(false);
+    }
+  };
+
+  const handleUpdateOfferStatus = async (offerId, status) => {
+    try {
+      const token = authState?.access_token?.accessToken || localStorage.getItem("token");
+      
+      if (!token) {
+        message.error("Authentication required");
+        return;
+      }
+
+      const response = await apiServices(
+        'PATCH',
+        `candidate/offer/${offerId}/status`,
+        { status },
+        {
+          access_token: {
+            accessToken: token,
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response?.data?.success) {
+        message.success('Offer status updated successfully');
+        await fetchOfferDetails();
+      } else {
+        throw new Error(response?.data?.message || 'Failed to update offer status');
+      }
+    } catch (error) {
+      console.error('Error updating offer status:', error);
+      message.error(error.message || 'Error updating offer status');
+    }
+  };
+
+  const handleSendOfferClick = () => {
+    console.log('Send Offer button clicked');
+    setIsOfferModalVisible(true);
+  };
+
+  const handleContractUpload = ({ file }) => {
+    if (file.status === 'done') {
+      setUploadedContract(file.originFileObj);
+    }
   };
 
   const fetchEmployees = async () => {
@@ -1258,6 +1415,8 @@ const CandidateDetails = () => {
                     candidate?.status?.toLowerCase() === "screening"
                       ? "#FFF7E6"
                       : "transparent",
+                  zIndex: 1000,
+                  position: 'relative',
                 }}
                 className={`status-${candidate?.status?.toLowerCase()}`}
                 dropdownStyle={{
@@ -1275,10 +1434,13 @@ const CandidateDetails = () => {
               </Select>
               <Button
                 type="primary"
-                onClick={() =>
-                  message.info("Send offer functionality coming soon")
-                }
-                style={{ background: "#FF9B44", borderColor: "#FF9B44" }}
+                onClick={handleSendOfferClick}
+                style={{
+                  background: "#FF9B44",
+                  borderColor: "#FF9B44",
+                  zIndex: 1000,
+                  position: 'relative',
+                }}
               >
                 Send Offer
               </Button>
@@ -1543,6 +1705,79 @@ const CandidateDetails = () => {
         candidate={candidate}
         authState={authState}
       />
+
+      {/* Send Offer Modal */}
+      <SendOfferModal
+        visible={isOfferModalVisible}
+        onCancel={() => {
+          console.log('Modal cancel triggered');
+          setIsOfferModalVisible(false);
+        }}
+        onSubmit={handleSendOffer}
+        loading={submittingOffer}
+        candidate={candidate}
+        existingOffer={offer}
+      />
+
+      {offer && (
+        <div className="info-section">
+          <Title level={5} className="section-title">
+            Offer Details
+          </Title>
+          <div className="info-list">
+            <div className="info-item">
+              <div className="info-content">
+                <Text type="secondary" className="info-label">
+                  Offered Salary
+                </Text>
+                <Text strong className="info-value">
+                  {offer.currency} {offer.salary?.toLocaleString()}
+                </Text>
+              </div>
+            </div>
+            <div className="info-item">
+              <div className="info-content">
+                <Text type="secondary" className="info-label">
+                  Joining Date
+                </Text>
+                <Text strong className="info-value">
+                  {moment(offer.joiningDate).format('DD MMM YYYY')}
+                </Text>
+              </div>
+            </div>
+            <div className="info-item">
+              <div className="info-content">
+                <Text type="secondary" className="info-label">
+                  Offer Status
+                </Text>
+                <Tag color={
+                  offer.status === 'SENT' ? 'blue' :
+                  offer.status === 'ACCEPTED' ? 'green' :
+                  'red'
+                }>
+                  {offer.status}
+                </Tag>
+              </div>
+            </div>
+            {offer.contractUrl && (
+              <div className="info-item">
+                <div className="info-content">
+                  <Text type="secondary" className="info-label">
+                    Contract Document
+                  </Text>
+                  <Button 
+                    type="link" 
+                    icon={<DownloadOutlined />}
+                    onClick={() => window.open(offer.contractUrl, '_blank')}
+                  >
+                    Download Contract
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         .info-card {
@@ -1935,6 +2170,82 @@ const CandidateDetails = () => {
         .no-files-message {
           text-align: center;
           padding: 40px 0;
+        }
+
+        /* Offer Modal Styles */
+        :global(.offer-modal .ant-modal-content) {
+          border-radius: 8px;
+          overflow: hidden;
+        }
+
+        :global(.offer-modal .ant-modal-header) {
+          padding: 20px 24px;
+          border-bottom: 1px solid #f0f0f0;
+        }
+
+        :global(.offer-modal .ant-modal-body) {
+          padding: 24px;
+        }
+
+        :global(.offer-modal .ant-form-item-label > label) {
+          font-weight: 500;
+        }
+
+        :global(.offer-modal .ant-input),
+        :global(.offer-modal .ant-select-selector),
+        :global(.offer-modal .ant-picker) {
+          border-radius: 4px;
+          border-color: #e3e3e3;
+        }
+
+        :global(.offer-modal .ant-input:hover),
+        :global(.offer-modal .ant-select-selector:hover),
+        :global(.offer-modal .ant-picker:hover) {
+          border-color: #ff9b44;
+        }
+
+        :global(.offer-modal .ant-input:focus),
+        :global(.offer-modal .ant-select-selector:focus),
+        :global(.offer-modal .ant-picker-focused) {
+          border-color: #ff9b44;
+          box-shadow: 0 0 0 2px rgba(255, 155, 68, 0.2);
+        }
+
+        :global(.offer-modal .ant-upload-drag) {
+          border: 2px dashed #e3e3e3;
+          border-radius: 4px;
+          background: #fafafa;
+          transition: all 0.3s;
+        }
+
+        :global(.offer-modal .ant-upload-drag:hover) {
+          border-color: #ff9b44;
+        }
+
+        :global(.offer-modal .ant-upload-drag-icon) {
+          color: #ff9b44;
+          font-size: 48px;
+          margin-bottom: 16px;
+        }
+
+        :global(.offer-modal .ant-upload-text) {
+          color: #666;
+          font-size: 16px;
+          margin-bottom: 8px;
+        }
+
+        :global(.offer-modal .ant-upload-hint) {
+          color: #999;
+        }
+
+        :global(.offer-modal .ant-btn-primary) {
+          background: #ff9b44;
+          border-color: #ff9b44;
+        }
+
+        :global(.offer-modal .ant-btn-primary:hover) {
+          background: #ff8629;
+          border-color: #ff8629;
         }
       `}</style>
     </div>

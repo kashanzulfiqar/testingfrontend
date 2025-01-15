@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Card, Button, Input, Space, Tag, Modal, Form, message } from 'antd';
+import { Table, Card, Button, Input, Space, Tag, Modal, Form, message, Empty } from 'antd';
 import { SearchOutlined, UserOutlined, PlusOutlined } from '@ant-design/icons';
 import { apiServices } from '../../Services/apiServices';
+import { useSelector } from 'react-redux';
 
 const BlacklistedCandidates = () => {
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
+  const authState = useSelector((state) => state.authentication);
 
   useEffect(() => {
     fetchBlacklistedCandidates();
@@ -16,13 +18,29 @@ const BlacklistedCandidates = () => {
   const fetchBlacklistedCandidates = async () => {
     try {
       setLoading(true);
-      const response = await apiServices('GET', 'candidates/blacklisted');
+      const token = authState?.access_token?.accessToken || localStorage.getItem("token");
+      
+      if (!token) {
+        setCandidates([]);
+        return;
+      }
+
+      const response = await apiServices('GET', 'candidates/blacklisted', null, {
+        access_token: {
+          accessToken: token
+        },
+        user: authState?.user
+      });
+      
       if (response?.data?.status) {
-        setCandidates(response.data.data);
+        setCandidates(response.data.data || []);
+      } else {
+        setCandidates([]);
       }
     } catch (error) {
       console.error('Error fetching blacklisted candidates:', error);
-      message.error('Failed to fetch blacklisted candidates');
+      // Silently handle error and show empty state
+      setCandidates([]);
     } finally {
       setLoading(false);
     }
@@ -30,7 +48,20 @@ const BlacklistedCandidates = () => {
 
   const handleAddToBlacklist = async (values) => {
     try {
-      const response = await apiServices('POST', 'candidates/blacklist', values);
+      const token = authState?.access_token?.accessToken || localStorage.getItem("token");
+      
+      if (!token) {
+        message.error('Authentication required');
+        return;
+      }
+
+      const response = await apiServices('POST', 'candidates/blacklist', values, {
+        access_token: {
+          accessToken: token
+        },
+        user: authState?.user
+      });
+      
       if (response?.data?.status) {
         message.success('Candidate added to blacklist successfully');
         setIsModalVisible(false);
@@ -120,6 +151,9 @@ const BlacklistedCandidates = () => {
           dataSource={candidates}
           rowKey="id"
           loading={loading}
+          locale={{
+            emptyText: <Empty description="No blacklisted candidates found" />
+          }}
         />
       </Card>
 

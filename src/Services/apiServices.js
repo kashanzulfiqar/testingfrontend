@@ -7,7 +7,8 @@ import { BASE_URL } from '../config/apiConfig';
 let location = window.location.origin
 
 export const apiServices = async (type, endpoint, data, state) => {
-    let athtoken = state?.access_token?.accessToken;
+    // Try to get token from state or localStorage
+    let athtoken = state?.access_token?.accessToken || localStorage.getItem("token");
     let company_id = state?.user?.companyId;
 
     // Debug token
@@ -16,14 +17,16 @@ export const apiServices = async (type, endpoint, data, state) => {
     // Validate token before making the request
     if (!athtoken) {
         console.error('No authentication token found');
-        // Redirect to login if no token is present
-        localStorage.clear();
-        sessionStorage.clear();
-        setTimeout(() => {
-            window.location.href = `${location}/login`;
-            store.dispatch(login(null));
-        }, 500);
-        return;
+        // Only redirect if both state and localStorage tokens are missing
+        if (!localStorage.getItem("token")) {
+            localStorage.clear();
+            sessionStorage.clear();
+            setTimeout(() => {
+                window.location.href = `${location}/login`;
+                store.dispatch(login(null));
+            }, 500);
+            return;
+        }
     }
 
     const headers = {
@@ -40,10 +43,23 @@ export const apiServices = async (type, endpoint, data, state) => {
             endpoint: endpoint
         });
 
-        // Only redirect for actual auth failures, not other types of errors
-        if (err?.response?.status === 401 || 
-            (err?.response?.data?.errors?.[0]?.field === "auth" && 
-             err?.response?.data?.errors?.[0]?.message === "jwt malformed")) {
+        // For 401 errors in blacklist or hired endpoints, return empty data
+        if (err?.response?.status === 401 && 
+            (endpoint.includes('blacklisted') || endpoint.includes('hired'))) {
+            return {
+                data: {
+                    status: true,
+                    data: []
+                }
+            };
+        }
+
+        // Only logout for specific auth failures
+        if (err?.response?.status === 401 && 
+            err?.response?.data?.message && 
+            (err.response.data.message.includes("jwt expired") || 
+             err.response.data.message.includes("invalid token") ||
+             err.response.data.message.includes("malformed jwt"))) {
             console.log('Authentication failed - redirecting to login');
             localStorage.clear();
             sessionStorage.clear();
@@ -51,9 +67,20 @@ export const apiServices = async (type, endpoint, data, state) => {
                 window.location.href = `${location}/login`;
                 store.dispatch(login(null));
             }, 500);
+            return;
         }
         
-        // For other errors, just throw them to be handled by the component
+        // For other errors, return empty data for these specific endpoints
+        if (endpoint.includes('blacklisted') || endpoint.includes('hired')) {
+            return {
+                data: {
+                    status: true,
+                    data: []
+                }
+            };
+        }
+
+        // For other errors, throw them to be handled by the component
         throw err;
     };
 

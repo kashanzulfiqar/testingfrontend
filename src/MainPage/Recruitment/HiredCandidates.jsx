@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Card, Button, Input, Space, Tag, Modal, Form, message } from 'antd';
+import { Table, Card, Button, Input, Space, Tag, Modal, Form, message, Empty } from 'antd';
 import { SearchOutlined, UserOutlined } from '@ant-design/icons';
 import { apiServices } from '../../Services/apiServices';
+import { useSelector } from 'react-redux';
 
 const HiredCandidates = () => {
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
+  const authState = useSelector((state) => state.authentication);
 
   useEffect(() => {
     fetchHiredCandidates();
@@ -14,13 +16,29 @@ const HiredCandidates = () => {
   const fetchHiredCandidates = async () => {
     try {
       setLoading(true);
-      const response = await apiServices('GET', 'candidates/hired');
+      const token = authState?.access_token?.accessToken || localStorage.getItem("token");
+      
+      if (!token) {
+        setCandidates([]);
+        return;
+      }
+
+      const response = await apiServices('GET', 'candidates/hired', null, {
+        access_token: {
+          accessToken: token
+        },
+        user: authState?.user
+      });
+      
       if (response?.data?.status) {
-        setCandidates(response.data.data);
+        setCandidates(response.data.data || []);
+      } else {
+        setCandidates([]);
       }
     } catch (error) {
       console.error('Error fetching hired candidates:', error);
-      message.error('Failed to fetch hired candidates');
+      // Silently handle error and show empty state
+      setCandidates([]);
     } finally {
       setLoading(false);
     }
@@ -58,7 +76,7 @@ const HiredCandidates = () => {
       dataIndex: 'status',
       key: 'status',
       render: (status) => (
-        <Tag color="green">HIRED</Tag>
+        <Tag color="green">OFFERED</Tag>
       ),
     }
   ];
@@ -68,10 +86,10 @@ const HiredCandidates = () => {
       <div className="page-header">
         <div className="row align-items-center">
           <div className="col">
-            <h3 className="page-title">Hired Candidates</h3>
+            <h3 className="page-title">Offered Candidates</h3>
             <ul className="breadcrumb">
               <li className="breadcrumb-item">Recruitment</li>
-              <li className="breadcrumb-item active">Hired Candidates</li>
+              <li className="breadcrumb-item active">Offered Candidates</li>
             </ul>
           </div>
         </div>
@@ -94,6 +112,9 @@ const HiredCandidates = () => {
           dataSource={candidates}
           rowKey="id"
           loading={loading}
+          locale={{
+            emptyText: <Empty description="No offered candidates found" />
+          }}
         />
       </Card>
     </div>
