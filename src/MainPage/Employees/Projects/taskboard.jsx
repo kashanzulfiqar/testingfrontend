@@ -1120,7 +1120,7 @@ const TaskBoard = () => {
                       )}
                     </ul>
                   </div>
-                  {(role === "admin" || permissions?.projectManagement) && (
+                  {(role === "admin" || permissions?.projectManagement) && !BoardData?._id && !BoardData?.board?.project && (
                       <a
                         className="btn add-btn mr-3"
                         onClick={() => {
@@ -1345,12 +1345,12 @@ const TaskBoard = () => {
                                                             <a 
                                                             data-bs-toggle='dropdown'
                                                             aria-expanded='true'
-                                                            style={{ cursor: "pointer" }}
+                                                            style={{ cursor: "pointer", padding: '5px'}}
                                                             >
                                                               <i className="fa fa-angle-down" />
                                                             </a>
                                                             <div className="dropdown-menu dropdown-menu-right">
-                                                            {(role === "admin" || permissions?.projectManagement) && (
+                                                            {/* {(role === "admin" || permissions?.projectManagement) && ( */}
                                                               <a 
                                                               className="dropdown-item" 
                                                               onClick={() => 
@@ -1402,7 +1402,7 @@ const TaskBoard = () => {
                                                               >
                                                                 Edit
                                                               </a>
-                                                            )}
+                                                            {/* )} */}
                                                               <a 
                                                               className="dropdown-item"
                                                               onClick={() => 
@@ -2060,13 +2060,13 @@ const TaskBoard = () => {
         open={openUser}
         onClose={closeTaskModal}
         aria-labelledby="modal-modal-title"
-        // className="modalScroll"
+        className="modalScroll"
         aria-describedby="modal-modal-description"
         disableRestoreFocus
         BackdropProps={{
           style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
         }}
-        // sx={{ overflowY: "auto" }}
+        sx={{ overflowY: "auto" }}
       >
         <div className="modal-dialog modal-dialog-centered" role="document">
           <div className="modal-content">
@@ -2122,13 +2122,6 @@ const TaskBoard = () => {
                   </div>
                 </div>
 
-                <div style={{
-    maxHeight: "300px", // Limit the height of the list
-    overflowY: "auto", // Add vertical scrolling when content exceeds height
-    padding: "8px", // Add some padding for better spacing
-    border: "1px solid #ccc", // Optional: Add a border for better visuals
-    borderRadius: "4px", // Optional: Rounded corners
-  }}>
                     <ul className="chat-user-list">
                     {selectedDevelopers?.map((developerId) => (
                       <li>
@@ -2163,7 +2156,6 @@ const TaskBoard = () => {
                       </li>
                     ))}
                   </ul>
-                </div>
 
                 <div className="submit-section">
                   <Form.Item>

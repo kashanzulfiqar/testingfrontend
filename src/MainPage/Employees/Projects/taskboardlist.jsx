@@ -321,6 +321,7 @@ const TaskBoardList = () => {
   const handleClose = () => {
     setSelectedTeamMembers([]);
     setOpen({ isAddOpen: false, isDelOpen: false, data: "" });
+    setIsProjectAssociated(false);
     setLoader(false);
   };
 
@@ -1147,7 +1148,8 @@ const TaskBoardList = () => {
                         <span
                           dangerouslySetInnerHTML={{
                             __html: t(
-                              "Are you sure you want to <b>delete</b> this taskboard?"
+                              "Are you sure you want to <b>delete</b> this taskboard?<br/> deleting this taskboard will delete all the tasks associated with it."
+                              
                             ),
                           }}
                         />
