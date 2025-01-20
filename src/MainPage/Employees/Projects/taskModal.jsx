@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import {
-  user_icon,
-} from "../../../Entryfile/imagepath";
+import { user_icon } from "../../../Entryfile/imagepath";
 import Editproject from "../../../_components/modelbox/Editproject";
 import { useSelector } from "react-redux";
 import {
@@ -32,222 +30,162 @@ import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { getAllISOCodes } from "iso-country-currency";
 import { useTranslation } from "react-i18next";
 
-function TaskModal({data, viewModal, closeViewModal, getAllTasks}) {
-    const [form] = Form.useForm();
-    const [form2] = Form.useForm();
-    const [form3] = Form.useForm();
-    const { t, i18n } = useTranslation();
-    const user_state = useSelector((state) => state.user.loginvalue);
-    const employee_id = user_state?.user?._id;
-    const role = user_state?.user?.role;
-    const permissions = useSelector((state) => state?.permissionsSlice?.data);
-    //console.log(permissions,user_state)
-    const nav = useNavigate();  
-    console.log(data)
-    const task = data;
+function TaskModal({ data, viewModal, closeViewModal, getAllTasks, getTaskBoard }) {
+  const [form] = Form.useForm();
+  const { t, i18n } = useTranslation();
+  const user_state = useSelector((state) => state.user.loginvalue);
+  const employee_id = user_state?.user?._id;
+  const role = user_state?.user?.role;
+  const permissions = useSelector((state) => state?.permissionsSlice?.data);
+  const nav = useNavigate();
+  console.log(data);
+  const task = data;
+
+  const [description, setDescription] = useState("");
+  const [title, setTitle] = useState("");
+  const [tags, setTags] = useState([]);
+  const [loader, setLoader] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [selectedTeamMembers, setSelectedTeamMembers] = useState([]);
+  const [employees, setEmployees] = useState([]);
+  const [tempSelectedTeamMembers, setTempSelectedTeamMembers] = useState([]);
+  const [openStatusDropdown, setOpenStatusDropdown] = useState(false);
+
+  useEffect(() => {
+    setDescription(data?.description);
+    setTags(data?.tags);
+    setTitle(data?.title);
+    setEmployees(task?.ProjectData?.assignedDevelopers || []);
+    setSelectedTeamMembers(task?.assignedDevelopers || []);
+    setTempSelectedTeamMembers(task?.assignedDevelopers || []);
     
-    const [description, setDescription] = useState('');
-    const [title, setTitle] = useState('');
-    const [tags, setTags] = useState([]);
-    const [loader, setLoader] = useState(false);
-    const [loader2, setLoader2] = useState(false);
-    const [loader3, setLoader3] = useState(false);
-    const [isEditing, setIsEditing] = useState(false);
-    const [isEditingTag, setIsEditingTag] = useState(false);
-    const [isEditingTitle, setIsEditingTitle] = useState(false);
-    const [selectedTeamMembers, setSelectedTeamMembers] = useState([]);
-    const [employees, setEmployees] = useState([]);
-    const [isEditingTeam, setIsEditingTeam] = useState(false);
-    const [tempSelectedTeamMembers, setTempSelectedTeamMembers] = useState([]);
+    // Initialize form with current values
+    form.setFieldsValue({
+      title: data?.title,
+      description: data?.description,
+      tags: data?.tags,
+      assignedDevelopers: task?.assignedDevelopers?.map(dev => dev._id)
+    });
+  }, [data, form]);
 
-    useEffect(()=>{
-      setDescription(data?.description);
-      setTags(data?.tags);
-      setTitle(data?.title);
-      setEmployees(task?.ProjectData?.assignedDevelopers || []);
-      setSelectedTeamMembers(task?.assignedDevelopers || []);
-      setTempSelectedTeamMembers(task?.assignedDevelopers || []);
-    },[data])
-
-    const handleChange = (values) => {
-      const selectedEmployees = values?.map((value) =>
-        employees?.find((employee) => employee._id === value)
-      );
-      setTempSelectedTeamMembers(selectedEmployees);
-      setSelectedTeamMembers(selectedEmployees);
-      setIsEditingTeam(true);
-    }
-
-    const handleCancelTeam = () => {
-      const originalMembers = task?.assignedDevelopers || [];
-      setTempSelectedTeamMembers(originalMembers);
-      setSelectedTeamMembers(originalMembers);
-      setIsEditingTeam(false);
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setOpenStatusDropdown(false);
     };
 
-    const handleSaveTeam = () => {
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
+
+  const handleChange = (values) => {
+    const selectedEmployees = values?.map((value) =>
+      employees?.find((employee) => employee._id === value)
+    );
+    setTempSelectedTeamMembers(selectedEmployees);
+    setSelectedTeamMembers(selectedEmployees);
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    // Reset all fields to original values
+    setDescription(data?.description);
+    setTags(data?.tags);
+    setTitle(data?.title);
+    setSelectedTeamMembers(task?.assignedDevelopers || []);
+    setTempSelectedTeamMembers(task?.assignedDevelopers || []);
+    form.setFieldsValue({
+      title: data?.title,
+      description: data?.description,
+      tags: data?.tags,
+      assignedDevelopers: task?.assignedDevelopers?.map(dev => dev._id)
+    });
+  };
+
+  const handleSave = async () => {
+    try {
+      const values = await form.validateFields();
       setLoader(true);
       const data = {
-        [task?.ProjectData?.projectName ? 'projectId' : 'boardId']: task?.ProjectData?._id,
+        ...values,
+        [task?.ProjectData?.projectName ? "projectId" : "boardId"]: task?.ProjectData?._id,
         _id: task?._id,
-        assignedDevelopers: tempSelectedTeamMembers.map(dev => dev._id)
-      }
-      apiServices("PUT", 'tasks', data, user_state)
+        assignedDevelopers: tempSelectedTeamMembers.map((dev) => dev._id),
+      };
+      
+      apiServices("PUT", "tasks", data, user_state)
         .then((res) => {
-            if (res?.data?.success === true) {
-              message.success('Team members updated')
-              setLoader(false)
-              setIsEditingTeam(false);
-              getAllTasks(task?.ProjectData?._id);
-            }
+          if (res?.data?.success === true) {
+            message.success("Task details updated");
+            setLoader(false);
+            setIsEditing(false);
+            setTitle(values?.title);
+            setDescription(values?.description);
+            setTags(values?.tags);
+            getAllTasks(task?.ProjectData?._id);
+            closeViewModal();
+          }
         })
         .catch((err) => {
-          setLoader(false)
+          setLoader(false);
           message.error(
             `${
               err?.response?.data?.msg
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : t('Tasks.updateTaskError')
+                : t("Tasks.updateTaskError")
             }!`
           );
         });
-    };
-
-    const getTeamMemberOptions = () => {
-      return employees?.map((employee) => (
-        <Select.Option key={employee._id} value={employee._id}>
-          {employee.fullName}
-        </Select.Option>
-      ));
+    } catch (error) {
+      console.error('Validation failed:', error);
     }
+  };
 
-    const handleTitleClick = () => {
-      setIsEditingTitle(true);
-      form3.setFieldsValue({ title: title });
+  const handleUpdateStatus = (boardId, taskId, sourceId, destinationId) => {
+    setLoader(true);
+    let updated_data = {
+      _id: boardId,
+      columnId: destinationId,
+      prevColumn: sourceId,
+      taskId: taskId
     };
+    console.log("updated_data", updated_data);
+    apiServices("PUT", "taskBoard/add-taskBoard", updated_data, user_state)
+      .then((res) => {
+        if (res?.data?.success === true) {
+          message.success('Task status updated successfully');
+          getAllTasks(task?.ProjectData?._id);
+          getTaskBoard(task?.ProjectData?._id);
+          setLoader(false);
+          setOpenStatusDropdown(false);
+          closeViewModal();
+        }
+      })
+      .catch((err) => {
+        setLoader(false);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Error updating status"
+          }!`
+        );
+      });
+  };
 
-    const handleSaveTitle = (values) => {
-      setLoader(true);
-      console.log("called title")
-      const data = {
-        ...values,
-        [task?.ProjectData?.projectName ? 'projectId' : 'boardId']: task?.ProjectData?._id,
-        _id: task?._id,
-        assignedDevelopers: selectedTeamMembers.map(dev => dev._id)
-      }
-      apiServices("PUT", 'tasks', data, user_state)
-        .then((res) => {
-            if (res?.data?.success === true) {
-              message.success('Task details updated')
-              setLoader(false)
-              setTitle(values?.title);
-              handleCancelTitle();
-              getAllTasks(task?.ProjectData?._id);
-              }
-            })
-            .catch((err) => {
-          setLoader(false)
-          message.error(
-            `${
-              err?.response?.data?.msg
-                ? err?.response?.data?.msg
-                : err?.response?.data?.validation?.body?.message
-                ? err?.response?.data?.validation?.body?.message
-                : t('Tasks.updateTaskError')
-            }!`
-          );
-        });
-    };
-
-    const handleTagClick = () => {
-      setIsEditingTag(true);
-      form2.setFieldsValue({ tags: tags });
-    };
-  
-    const handleCancelTitle = () => {
-      setIsEditingTitle(false);
-    };
-
-    const handleCancelTag = () => {
-      setIsEditingTag(false);
-    };
-  
-    const handleSaveTag = (values) => {
-      setLoader2(true);
-      console.log("called tag")
-      const data = {
-        ...values,
-        [task?.ProjectData?.projectName ? 'projectId' : 'boardId']: task?.ProjectData?._id,
-        _id: task?._id,
-        assignedDevelopers: selectedTeamMembers.map(dev => dev._id)
-      }
-      apiServices("PUT", 'tasks', data, user_state)
-        .then((res) => {
-            if (res?.data?.success === true) {
-              message.success('Task details updated')
-              setLoader2(false)
-              setTags(values?.tags);
-              handleCancelTag();
-              getAllTasks(task?.ProjectData?._id);
-              }
-            })
-            .catch((err) => {
-          setLoader2(false)
-          message.error(
-            `${
-              err?.response?.data?.msg
-                ? err?.response?.data?.msg
-                : err?.response?.data?.validation?.body?.message
-                ? err?.response?.data?.validation?.body?.message
-                : t('Tasks.updateTaskError')
-            }!`
-          );
-        });
-    };
-
-    const handleEditClick = () => {
-      setIsEditing(true);
-      form.setFieldsValue({ description: description });
-    };
-  
-    const handleCancelClick = () => {
-      setIsEditing(false);
-    };
-  
-    const handleSaveClick = (values) => {
-      setLoader3(true);
-      console.log("called desc")
-      const data = {
-        ...values,
-        [task?.ProjectData?.projectName ? 'projectId' : 'boardId']: task?.ProjectData?._id,
-        _id: task?._id,
-        assignedDevelopers: selectedTeamMembers.map(dev => dev._id)
-      }
-      apiServices("PUT", 'tasks', data, user_state)
-        .then((res) => {
-            if (res?.data?.success === true) {
-              message.success('Task details updated')
-              setLoader3(false)
-              setDescription(values?.description);
-              handleCancelClick();
-              getAllTasks(task?.ProjectData?._id);
-              }
-            })
-            .catch((err) => {
-          setLoader3(false)
-          message.error(
-            `${
-              err?.response?.data?.msg
-                ? err?.response?.data?.msg
-                : err?.response?.data?.validation?.body?.message
-                ? err?.response?.data?.validation?.body?.message
-                : t('Tasks.updateTaskError')
-            }!`
-          );
-        });
-    };
+  const getTeamMemberOptions = () => {
+    return employees?.map((employee) => (
+      <Select.Option key={employee._id} value={employee._id}>
+        {employee.fullName}
+      </Select.Option>
+    ));
+  };
 
   return (
     <Modal
@@ -258,378 +196,320 @@ function TaskModal({data, viewModal, closeViewModal, getAllTasks}) {
       aria-describedby="modal-modal-description"
       disableRestoreFocus
       BackdropProps={{
-        style: { backgroundColor: "rgb(0 0 0 / 70%)" }, // Set the backdrop color here
+        style: { backgroundColor: "rgb(0 0 0 / 70%)" },
       }}
       sx={{ overflowY: "auto" }}
     >
-      <div
-        className="modal-dialog modal-dialog-centered modal-xl"
-        role="document"
-      >
+      <div className="modal-dialog modal-dialog-centered modal-xl" role="document">
         <div className="modal-content">
-          <div className="modal-header" style={{display:'flex', flexDirection:'row', alignItems:'flex-start'}}> 
-          {
-            isEditingTitle 
-            ? 
-            <Form form={form3} onFinish={handleSaveTitle} style={{display:'flex', flexDirection:'row', alignItems:'flex-start'}}>
-              <Form.Item
-                    name="title"
-                    className="custom-border"
-                    rules={[
-                      {
-                        validator: (_, value) => {
-                          if (/\s{2,}/.test(value)) {
-                            return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
-                          }
-                          return Promise.resolve();
-                        },
-                      },
-                      { 
-                        required: true, 
-                        message: "Please enter a title" 
-                      }
-                    ]}
-                  >
-                    <Input className='form-control' placeholder={t('Tasks.title')} maxLength={50}/>
-                  </Form.Item>
-              <div className="form-actions" style={{marginLeft:'2%', display:'flex', flexDirection:'row'}}>
-                <Button 
-                className="btn"
-                style={{backgroundColor: 'lightgrey', color: 'white'}}
-                onClick={handleCancelTitle}>
-                  {t("cancel")}
-                </Button>
-                <Button 
-                  className="btn btn-primary"
-                  type="primary"
-                  htmlType="submit" 
-                  disabled={loader}
-                  style={{marginLeft:'3%'}}
-                >
-                  {t("save")}
-                </Button>
+          <div className="modal-header" style={{ flexDirection: 'column', position: 'relative', borderBottom: '1px solid #dee2e6', paddingBottom: '15px' }}>
+          <h3 style={{ 
+              display: "block",
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+              width: '100%', 
+              textAlign: 'center', 
+              margin: '0',
+              fontWeight: '500',
+              color: '#1f1f1f',
+              fontSize: '22px',
+              paddingRight: '20px'
+            }}>
+              {task?.title}
+            </h3>
+            <Form 
+              form={form} 
+              layout="vertical" 
+              className="w-100"
+              initialValues={{
+                title: title || task?.title,
+                description: description || task?.description,
+                tags: tags || task?.tags,
+                assignedDevelopers: selectedTeamMembers?.map(dev => dev._id)
+              }}
+            >
+              <div className="modal-body px-0">
+                <div className="row">
+                  <div className="col-lg-8 col-xl-8">
+                    <div className="card">
+                      <div className="card-body">
+                        <div className="project-title">
+                          <h5 className="card-title">Title</h5>
+                        </div>
+                        {isEditing ? (
+                          <Form.Item
+                            name="title"
+                            className="custom-border mb-4"
+                            rules={[
+                              {
+                                validator: (_, value) => {
+                                  if (/\s{2,}/.test(value)) {
+                                    return Promise.reject(t("allEmp.errors.removeConsecutiveSpaces2"));
+                                  }
+                                  return Promise.resolve();
+                                },
+                              },
+                              {
+                                required: true,
+                                message: "Please enter a title",
+                              },
+                            ]}
+                          >
+                            <Input className="form-control" placeholder={t("Tasks.title")} maxLength={50} />
+                          </Form.Item>
+                        ) : (
+                          <label 
+                            style={{ 
+                              display: "block",
+                              padding: '10px',
+                              marginBottom: '20px',
+                              backgroundColor: '#f9f9f9',
+                              borderRadius: '4px'
+                            }}
+                          >
+                            {title || task?.title}
+                          </label>
+                        )}
+                        <div className="project-title">
+                          <h5 className="card-title">Description</h5>
+                        </div>
+                        {isEditing ? (
+                          <Form.Item
+                            name="description"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Please enter description",
+                              },
+                            ]}
+                          >
+                            <Input.TextArea 
+                              rows={4}
+                              style={{ 
+                                whiteSpace: 'pre-wrap',
+                                wordBreak: 'break-word'
+                              }}
+                            />
+                          </Form.Item>
+                        ) : (
+                          <label 
+                            style={{ 
+                              display: "block",
+                              whiteSpace: 'pre-wrap',
+                              wordBreak: 'break-word',
+                              maxHeight: '300px',
+                              overflowY: 'auto',
+                              padding: '10px',
+                              backgroundColor: '#f9f9f9',
+                              borderRadius: '4px'
+                            }}
+                          >
+                            {description || task?.description}
+                          </label>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="col-lg-4 col-xl-4">
+                    <div className="card">
+                      <div className="card-body">
+                        <h6 className="card-title m-b-15">Task Details</h6>
+                        <div className="table-responsive">
+                          <table className="table table-striped table-border">
+                            <tbody>
+                              <tr>
+                                <td>Project:</td>
+                                <td className="text-start">
+                                  {task?.ProjectData?.projectName}
+                                </td>
+                              </tr>
+                              <tr>
+                                <td>Task Status:</td>
+                                <td className="text-start">
+                                  <div className="dropdown action-label text-center">
+                                    <a
+                                      className="btn btn-white btn-sm btn-rounded dropdown-toggle"
+                                      href="javascript:void(0)"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        setOpenStatusDropdown(!openStatusDropdown);
+                                      }}
+                                      aria-expanded={openStatusDropdown}
+                                    >
+                                      <i className={`fa fa-dot-circle-o text-${task?.columnColor}`} />{" "}
+                                      {task?.columnName}
+                                    </a>
+                                    <div className={`dropdown-menu dropdown-menu-right ${openStatusDropdown ? 'show' : ''}`}>
+                                      {(task?.allColumns && task?.allColumns.length > 0) ? (
+                                        task?.allColumns?.map(column => (
+                                          <a
+                                            key={column.id}
+                                            className={`dropdown-item ${task?.columnId === column.id ? 'disabled' : ''}`}
+                                            href="javascript:void(0)"
+                                            onClick={(e) => {
+                                              e.preventDefault();
+                                              e.stopPropagation();
+                                              if (task?.columnId !== column.id) { 
+                                                handleUpdateStatus(task?.boardId, task?._id, task?.columnId, column.id);
+                                              }
+                                            }}
+                                          >
+                                            <i className={`fa fa-dot-circle-o text-${column.color}`} /> {column.title}
+                                          </a>
+                                        ))
+                                      ) : (
+                                        <div className="dropdown-item disabled">
+                                          Task not added in Board
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                          <div>
+                            <h4>Tags</h4>
+                            {isEditing ? (
+                              <Form.Item
+                                name="tags"
+                                className="addTeamHeight"
+                                rules={[
+                                  {
+                                    required: true,
+                                    message: t("Tasks.pleaseentertags"),
+                                  },
+                                ]}
+                              >
+                                <Select
+                                  mode="tags"
+                                  className="custom-select customselect-height"
+                                  getPopupContainer={() => document.getElementById("area22")}
+                                />
+                              </Form.Item>
+                            ) : (
+                              <span className="text-end tag-container">
+                                {(tags || task?.tags)?.map((tag) => (
+                                  <Tag key={tag} style={{ marginBottom: "4px" }}>
+                                    {tag}
+                                  </Tag>
+                                ))}
+                              </span>
+                            )}
+                          </div>
+                          <div className="mt-4">
+                            <h4>{t("projectScreen.Modal.teamMembers")}</h4>
+                            <div style={{ position: "relative" }} id="area">
+                              {isEditing ? (
+                                <Form.Item name="assignedDevelopers" className="addTeamHeight">
+                                  <Select
+                                    showSearch
+                                    filterOption={(input, option) =>
+                                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                    }
+                                    optionFilterProp="children"
+                                    notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                                    dropdownRender={(menu) => <>{menu}</>}
+                                    getPopupContainer={() => document.getElementById("area")}
+                                    className="customselect-height custom-select"
+                                    mode="multiple"
+                                    placeholder={t("projectScreen.Modal.selectTeamMembers")}
+                                    onChange={handleChange}
+                                  >
+                                    {getTeamMemberOptions()}
+                                  </Select>
+                                </Form.Item>
+                              ) : (
+                                <div className="project-members">
+                                  <ul className="team-members" style={{ minWidth: "max-content", paddingLeft: 0 }}>
+                                    {selectedTeamMembers?.slice(0, 4).map((teamMember, index) => (
+                                      <li key={index}>
+                                        <Tooltip title={teamMember?.fullName}>
+                                          <Avatar
+                                            style={{ cursor: "pointer" }}
+                                            src={teamMember?.imageUrl || user_icon}
+                                          />
+                                        </Tooltip>
+                                      </li>
+                                    ))}
+                                    {selectedTeamMembers?.length > 4 && (
+                                      <li className="dropdown avatar-dropdown">
+                                        <Link
+                                          className="all-users dropdown-toggle projectTeamMember"
+                                          style={{
+                                            display: "inline-flex",
+                                            height: "33px",
+                                            width: "33px",
+                                          }}
+                                          data-bs-toggle="dropdown"
+                                          aria-expanded="false"
+                                        >
+                                          +{selectedTeamMembers?.length - 4}
+                                        </Link>
+                                        <div className="dropdown-menu dropdown-menu-right">
+                                          <div className="avatar-group">
+                                            {selectedTeamMembers?.slice(4).map((teamMember, index) => (
+                                              <a className="avatar avatar-xs projectTeamMember" key={index}>
+                                                <Tooltip title={teamMember?.fullName}>
+                                                  <Avatar
+                                                    src={teamMember?.imageUrl || user_icon}
+                                                    style={{ cursor: "pointer" }}
+                                                  />
+                                                </Tooltip>
+                                              </a>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      </li>
+                                    )}
+                                  </ul>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </Form>
-            :
-            <h5 className="modal-title">{title ? title : task?.title}</h5>
-            }
-
-            {!isEditingTitle && (<h3 style={{marginLeft:'1%'}}>
-            <a onClick={handleTitleClick}><i className="fa fa-pencil ml-2" /></a>
-            </h3>)}
-
             <button type="button" className="close" onClick={closeViewModal}>
               <span aria-hidden="true">×</span>
             </button>
           </div>
-          <div className="modal-body">
-          <div className="row">
-            <div className="col-lg-8 col-xl-8">
-              <div className="card">
-                <div className="card-body">
-                {!isEditing && (<div className="dropdown dropdown-action profile-action">
-                  <a
-                    className="action-icon dropdown-toggle"
-                    data-bs-toggle='dropdown'
-                    aria-expanded='true'
-                    style={{ cursor: "pointer" }}
-                  >
-                    <i className="material-icons">more_vert</i>
-                  </a>
-                  <div className="dropdown-menu dropdown-menu-right">
-                    <button
-                      className="dropdown-item"
-                      onClick={handleEditClick}
-                    >
-                      <i className={`fa fa-pencil ${i18n.dir() === "rtl" ? "m-l-5" : "m-r-5"}`} />
-                      {t('edit')}
-                    </button>
-                  </div>
-                </div>)}
-                  <div className="project-title">
-                    <h5 className="card-title">Description</h5>
-                  </div>
-                  {isEditing ? (
-                    <Form form={form} onFinish={handleSaveClick} layout="vertical">
-                      <Form.Item
-                        name="description"
-                        rules={[{ required: true, message: "Please enter description" }]}
-                      >
-                        <Input.TextArea rows={4} />
-                      </Form.Item>
-                      <div className="form-actions">
-                        <Button className="btn"
-                        style={{backgroundColor: 'lightgrey', color: 'white'}}
-                        onClick={handleCancelClick}>
-                          {t("cancel")}
-                        </Button>
-                        <Button 
-                          className="btn btn-primary"
-                          type="primary"
-                          htmlType="submit" 
-                          disabled={loader3}
-                          style={{marginLeft:'2%'}}
-                        >
-                          {t("save")}
-                        </Button>
-                      </div>
-                    </Form>
-                  ) : (
-                    <label style={{ display: "block" }}>{description ? description : task?.description}</label>
-                  )}
-                </div>
-              </div>
-
-            </div>
-
-            <div className="col-lg-4 col-xl-4">
-              <div className="card">
-                <div className="card-body">
-                  <h6 className="card-title m-b-15">Task Details</h6>
-                  <div className="table-responsive">
-                    <table className="table table-striped table-border">
-                      <tbody>
-                        <tr>
-                          <td>Project:</td>
-                          <td className="text-start">
-                            {task?.ProjectData?.projectName}
-                          </td>
-                        </tr>
-                        {/* <tr>
-                          <td>{t('viewProject.startDate')}:</td>
-                          <td className="text-end">
-                            {moment(task?.startDate).format("YYYY-MM-DD")}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>{t('viewProject.deadline')}:</td>
-                          <td className="text-end">
-                            {moment(task?.endDate).format("YYYY-MM-DD")}
-                          </td>
-                        </tr> */}
-                        <tr>
-                          <td>Task Status:</td>
-                          <td className="text-start">
-                          {task?.status}
-                            </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                          <div style={{display:'flex', flexDirection:'row', justifyContent:'space-between', alignItems:'center'}}><h4>Tags</h4>
-                            {!isEditingTag && (<h5>
-                            <a onClick={handleTagClick}><i className="fa fa-pencil ml-2" /></a>
-                            </h5>)}
-                          </div>
-                          {isEditingTag ? (
-                            <Form form={form2} onFinish={handleSaveTag} layout="vertical">
-                              <Form.Item
-                                name='tags'
-                                className='addTeamHeight'
-                                rules={[
-                                {
-                                    // whitespace: true,
-                                    required: true,
-                                    message: t('Tasks.pleaseentertags'),
-                                },
-                                ]}
-                              >
-                                <Select
-                                    mode="tags"
-                                    // className="custom-select custom-normal"
-                                    className="custom-select customselect-height"
-                                    getPopupContainer={() =>
-                                        document.getElementById("area22")
-                                    }
-                                />
-                              </Form.Item>
-                              <div className="form-actions">
-                                <Button className="btn"
-                                style={{backgroundColor: 'lightgrey', color: 'white'}}
-                                onClick={handleCancelTag}>
-                                  {t("cancel")}
-                                </Button>
-                                <Button 
-                                  className="btn btn-primary"
-                                  type="primary"
-                                  htmlType="submit" 
-                                  disabled={loader2}
-                                  style={{marginLeft:'2%'}}
-                                >
-                                  {t("save")}
-                                </Button>
-                              </div>
-                            </Form>
-                          )
-                          :
-                          <span className="text-end tag-container">
-                            {(tags ? tags : task?.tags)?.map((tag)=>(
-                            <Tag
-                              key={tag}
-                              //color={colorMapping[column.color]}
-                              style={{ marginBottom: "4px" }}
-                            >
-                              {tag}
-
-                            </Tag>
-                          ))}
-                          </span>
-                          }
-                  </div>
-                  {/* <p className="m-b-5">
-                    Progress <span className="text-success float-end">40%</span>
-                  </p>
-                  <div className="progress progress-xs mb-0">
-                    <div
-                      className="progress-bar bg-success"
-                      role="progressbar"
-                      data-bs-toggle="tooltip"
-                      title="40%"
-                      style={{ width: "40%" }}
-                    />
-                  </div> */}
-                </div>
-              </div>
-            </div>
-            
-            <div className="row">
-                  <div className="col-sm-6">
-                    <div className="form-group">
-                      <label>{t("projectScreen.Modal.addTeam")}{" "}</label>
-                      <div style={{ position: "relative" }} id="area">
-                        <Form.Item
-                          name="assignedDevelopers"
-                          className="addTeamHeight"
-                          
-                        >
-                          <Select
-                            showSearch
-                            onSearch={(val) => {
-                              showTeamSearch(val, "Team");
-                            }}
-                            filterOption={(input, option) =>
-                              option.children
-                                .toLowerCase()
-                                .indexOf(input.toLowerCase()) >= 0
-                            }
-                            optionFilterProp="children"
-                            notFoundContent={
-                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                            }
-                            dropdownRender={(menu) => <>{menu}</>}
-                            getPopupContainer={() =>
-                              document.getElementById("area")
-                            }
-                            className="customselect-height custom-select"
-                            mode="multiple"
-                            placeholder={t(
-                              "projectScreen.Modal.selectTeamMembers"
-                            )}
-                            value={tempSelectedTeamMembers.map(member => member._id)}
-                            onChange={handleChange}
-                          >
-                            {getTeamMemberOptions()}
-                          </Select>
-                          {isEditingTeam && (
-                            <div className="form-actions" style={{marginTop: '10px'}}>
-                              <Button 
-                                className="btn"
-                                style={{backgroundColor: 'lightgrey', color: 'white'}}
-                                onClick={handleCancelTeam}
-                              >
-                                {t("cancel")}
-                              </Button>
-                              <Button 
-                                className="btn btn-primary"
-                                type="primary"
-                                onClick={handleSaveTeam}
-                                disabled={loader}
-                                style={{marginLeft:'2%'}}
-                              >
-                                {t("save")}
-                              </Button>
-                            </div>
-                          )}
-                        </Form.Item>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-sm-6">
-                    <div className="form-group">
-                      <label>{t("projectScreen.Modal.teamMembers")}</label>
-                      <div
-                        className="project-members"
-                        style={{ margin: "4px auto" }}
-                      >
-                        <ul
-                          className="team-members"
-                          style={{ minWidth: "max-content" }}
-                        >
-                          {selectedTeamMembers
-                            ?.slice(0, 4)
-                            .map((teamMember, index) => (
-                              <li key={index}>
-                                <Tooltip
-                                  title={teamMember?.fullName}
-                                >
-                                  <Avatar
-                                    style={{ cursor: "pointer" }}
-                                    src={
-                                      teamMember?.imageUrl || user_icon
-                                    }
-                                  />
-                                </Tooltip>
-                              </li>
-                            ))}
-                          {selectedTeamMembers?.length > 4 && (
-                            <li className="dropdown avatar-dropdown">
-                              <Link
-                                className="all-users dropdown-toggle projectTeamMember"
-                                style={{
-                                  display: "inline-flex",
-                                  height: "33px",
-                                  width: "33px",
-                                }}
-                                data-bs-toggle="dropdown"
-                                aria-expanded="false"
-                              >
-                                +{selectedTeamMembers?.length - 4}
-                              </Link>
-                              {/* Dropdown menu for additional team members */}
-                              <div className="dropdown-menu dropdown-menu-right">
-                                <div className="avatar-group">
-                                  {selectedTeamMembers
-                                    ?.slice(4)
-                                    .map((teamMember, index) => (
-                                      <a
-                                        className="avatar avatar-xs projectTeamMember"
-                                        key={index}
-                                      >
-                                        <Tooltip
-                                          title={
-                                            teamMember?.fullName
-                                          }
-                                        >
-                                          <Avatar
-                                            src={
-                                              teamMember?.imageUrl ||
-                                              user_icon
-                                            }
-                                            style={{ cursor: "pointer" }}
-                                          />
-                                        </Tooltip>
-                                      </a>
-                                    ))}
-                                </div>
-                              </div>
-                            </li>
-                          )}
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+          
+          <div className="modal-footer">
+            {isEditing ? (
+              <>
+                <Button
+                  className="btn"
+                  style={{ backgroundColor: "lightgrey", color: "white" }}
+                  onClick={handleCancel}
+                >
+                  {t("cancel")}
+                </Button>
+                <Button
+                  className="btn btn-primary"
+                  type="primary"
+                  onClick={handleSave}
+                  disabled={loader}
+                >
+                  {t("save")}
+                </Button>
+              </>
+            ) : (
+              <Button
+                className="btn btn-primary"
+                type="primary"
+                onClick={() => setIsEditing(true)}
+              >
+                {t("edit")}
+              </Button>
+            )}
           </div>
-            </div>
         </div>
       </div>
     </Modal>
