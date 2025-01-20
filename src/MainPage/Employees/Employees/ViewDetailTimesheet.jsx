@@ -271,7 +271,7 @@ const ViewDetailTimesheet = () => {
           ),
         },
         {
-          title: t('Timesheetadmin.project'),
+          title: t('Project / Taskboard'),
           dataIndex: 'projectId',
           key: 'projectId',
           render: (text, record) => {
@@ -283,7 +283,21 @@ const ViewDetailTimesheet = () => {
                     <div style={{display: 'flex', alignItems: 'center', marginBottom: '10px'}}>
                     {item?.projectId?.projectName ? <label key={index} className="projectTitleLongDesc">
                         {item?.projectId?.projectName}
-                      </label> : <span style={{ color: '#666666' }}>-</span>}
+                      </label> : <label key={index} className="projectTitleLongDesc">
+                        {item?.boardId?.boardTitle}{" "}
+                        <span
+                          style={{
+                            marginLeft: "8px",
+                            backgroundColor: "#7460EE",
+                            color: "#fff",
+                            padding: "2px 8px",
+                            borderRadius: "12px",
+                            fontSize: "12px",
+                          }}
+                        >
+                          {t("Taskboard")}
+                        </span>
+                      </label>}
                     </div>
                       {/* {index < record?.mergeObjects?.length - 1 && <br />} */}
                     </>
