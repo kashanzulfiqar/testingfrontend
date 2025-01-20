@@ -191,24 +191,30 @@ function WeekViewTimeSheet({
 
   const onFinishAdd = (values) => {
     console.log("values on finish add", values);
+    
+    // Check if selectedId is a project
+    const isProject = allProjects?.some(proj => proj?._id === values?.selectedId);
+    
     let d = {
-      projectId: {
+      projectId: isProject ? {
         _id: values?.selectedId,
         projectName: allProjects?.find(
           (proj) => proj?._id === values?.selectedId
         )?.projectName,
-      },
-      boardId: {
+      } : null,
+      boardId: !isProject ? {
         _id: values?.selectedId,
         boardTitle: allTaskboards?.find(
           (taskBoard) => taskBoard?._id === values?.selectedId
         )?.boardTitle,
-      },
+      } : null,
       taskId: {
         _id: values?.taskId,
         title: allTasks?.find((task) => task?._id === values?.taskId)?.title,
       },
     };
+    console.log("d", d);
+    
     // when table is empty
     if (allData.length === 0) {
       setAllData([d, ...allData]);
@@ -221,8 +227,7 @@ function WeekViewTimeSheet({
       const boardId = item?.boardId?._id;
       const taskId = item?.taskId?._id;
 
-      if (projectId === values?.selectedId || boardId === values?.selectedId && taskId === values?.taskId) {
-        // message.error('Data Already Exist for this Project & Task!');
+      if ((isProject ? projectId === values?.selectedId : boardId === values?.selectedId) && taskId === values?.taskId) {
         foundMatch = true;
         break;
       }
@@ -235,41 +240,6 @@ function WeekViewTimeSheet({
       handleClose();
       formduration.resetFields();
     }
-
-    // let data = {
-    //     ...values,
-    // }
-    // setLoader(true);
-
-    // currentWeekDates.map((date, index) => {
-    //   let new_data = {
-    //     ...data,
-    //     date
-    //   }
-    //   apiServices("POST", 'timesheet', new_data, user_state)
-    //     .then((res) => {
-    //         if (res?.data?.success === true) {
-    //             if(index === 6){
-    //               getData(currentPage, pageSize);
-    //               handleClose();
-    //               message.success('Timesheet Added Successfully!');
-    //               setLoader(false);
-    //             }
-    //           }
-    //         })
-    //         .catch((err) => {
-    //       setLoader(false);
-    //       message.error(
-    //         `${
-    //           err?.response?.data?.msg
-    //             ? err?.response?.data?.msg
-    //             : err?.response?.data?.validation?.body?.message
-    //             ? err?.response?.data?.validation?.body?.message
-    //             : "Add Timesheet Error"
-    //         }!`
-    //       );
-    //     });
-    // })
   };
 
   const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -333,7 +303,7 @@ function WeekViewTimeSheet({
       submittedForApproval: false,
       status: "No-Status",
     };
-
+    console.log("u_data", u_data);
     setLoader(true);
     apiServices("PUT", "timesheet", u_data, user_state)
       .then((res) => {
@@ -358,10 +328,12 @@ function WeekViewTimeSheet({
       });
   };
   const handleCreate = () => {
+    console.log("showCard", showCard?.data);
     let c_data = {
       // ...showCard?.data,
       date: showCard?.data?.date,
       projectId: showCard?.data?.projectId?._id,
+      boardId: showCard?.data?.boardId?._id,
       taskId: showCard?.data?.taskId?._id,
       hoursWorked: updatedDuration,
       notes: cardReason,
@@ -604,7 +576,7 @@ function WeekViewTimeSheet({
                         setOldDurationValue(specific_date_data?.hoursWorked);
                         handleCancel();
                         formduration.resetFields();
-                        // console.log(specific_date_data);
+                        console.log("specific_date_data", specific_date_data);
                         setSaveButton(true);
                       }
                     }}
@@ -658,6 +630,10 @@ function WeekViewTimeSheet({
                               projectId: {
                                 _id: record?.projectId?._id,
                                 projectName: record?.projectId?.projectName,
+                              },
+                              boardId: {
+                                _id: record?.boardId?._id,
+                                boardTitle: record?.boardId?.boardTitle,
                               },
                               taskId: {
                                 _id: record?.taskId?._id,
@@ -1602,7 +1578,7 @@ function WeekViewTimeSheet({
                       {/* {isProjectAssociated ? ( */}
                         <>
                           <label>
-                            Project <span className="text-danger">*</span>
+                            Associate with <span className="text-danger">*</span>
                           </label>
                           <div style={{ position: "relative" }} id="area">
                             <Form.Item
@@ -1642,20 +1618,32 @@ function WeekViewTimeSheet({
                                 }
                                 placeholder={t("select project or taskboard")}
                               >
-                                {allProjects.map((project, index) => (
+                                {allProjects.map((project) => (
                                   <Select.Option
-                                    key={index}
+                                    key={`project-${project._id}`}
                                     value={project._id}
                                   >
                                     {project.projectName}
                                   </Select.Option>
                                 ))}
-                                {allTaskboards.map((taskBoard, index) => (
+                                {allTaskboards.map((taskBoard) => (
                                   <Select.Option
-                                    key={index}
+                                    key={`taskboard-${taskBoard._id}`}
                                     value={taskBoard._id}
                                   >
-                                    {taskBoard.boardTitle}
+                                    {taskBoard.boardTitle}{" "}
+                                    <span
+                                      style={{
+                                        marginLeft: "8px",
+                                        backgroundColor: "#7460EE",
+                                        color: "#fff",
+                                        padding: "2px 8px",
+                                        borderRadius: "12px",
+                                        fontSize: "12px",
+                                      }}
+                                    >
+                                      {t("Taskboard")}
+                                    </span>
                                   </Select.Option>
                                 ))}
                               </Select>

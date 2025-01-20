@@ -39,6 +39,8 @@ function DayViewTimesheet({
   getAllTaskBoards,
   setShowCalendar,
 }) {
+  console.log("allProjects ooooooo", allProjects);
+  console.log("allTaskboards ooooooo", allTaskboards);
   const { t, i18n } = useTranslation();
   const moment = require("moment");
 
@@ -248,7 +250,7 @@ function DayViewTimesheet({
       hoursWorked: moment(values?.hoursWorked).format("HH:mm"),
       date: moment(values?.date).format("YYYY-MM-DD"),
     };
-
+    console.log("data", data);
     setLoader(true);
     apiServices("POST", "timesheet", data, user_state)
       .then((res) => {
@@ -1249,31 +1251,34 @@ function DayViewTimesheet({
                               }
                               placeholder={t("select project or taskboard")}
                             >
-                              {allProjects.map((project, index) => (
-                                <Select.Option key={index} value={project._id}>
-                                  {project.projectName}
-                                </Select.Option>
-                              ))}
-                              {allTaskboards.map((taskBoard, index) => (
-                                <Select.Option
-                                  key={index}
-                                  value={taskBoard._id}
+                            {allProjects.map((project) => (
+                              <Select.Option
+                                key={`project-${project._id}`}
+                                value={project._id}
+                              >
+                                {project.projectName}
+                              </Select.Option>
+                            ))}
+                            {allTaskboards.map((taskBoard) => (
+                              <Select.Option
+                                key={`taskboard-${taskBoard._id}`}
+                                value={taskBoard._id}
+                              >
+                                {taskBoard.boardTitle}{" "}
+                                <span
+                                  style={{
+                                    marginLeft: "8px",
+                                    backgroundColor: "#7460EE",
+                                    color: "#fff",
+                                    padding: "2px 8px",
+                                    borderRadius: "12px",
+                                    fontSize: "12px",
+                                  }}
                                 >
-                                  {taskBoard.boardTitle}{" "}
-                                  <span
-                                    style={{
-                                      marginLeft: "8px",
-                                      backgroundColor: "#7460EE",
-                                      color: "#fff",
-                                      padding: "2px 8px",
-                                      borderRadius: "12px",
-                                      fontSize: "12px",
-                                    }}
-                                  >
-                                    {t("Taskboard")}
-                                  </span>
-                                </Select.Option>
-                              ))}
+                                  {t("Taskboard")}
+                                </span>
+                              </Select.Option>
+                            ))}
                             </Select>
                           </Form.Item>
                         </div>

@@ -81,6 +81,7 @@ useEffect(() => {
     apiServices("GET", `tasks?${values === '' ? '' : values?.projectId === '' ? '' : values?.projectId ? `projectId=${values?.projectId}` : filterValues?.projectId ? `projectId=${filterValues?.projectId}` : ''}${values === '' ? '' : values?.title === '' ? '' : values?.title ? `&title=${values?.title}` : filterValues?.title ? `&title=${filterValues?.title}` : ''}${values === '' ? '' : values?.tag === '' ? '' : values?.tag ? `&tag=${values?.tag}` : filterValues?.tag ? `&tag=${filterValues?.tag}` : ''}&page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}&isArchived=${archivedStatus}`, null, user_state)
       .then((res) => {
           if (res?.data?.success === true) {
+              console.log("res", res?.data?.Task);
               setAllTasks(res?.data?.Task?.docs);
               setPaginationDetail(res?.data?.Task)
               setTableLoader(false);
@@ -360,7 +361,7 @@ const onFinishEdit = (values) => {
       ),
     }, 
     {
-      title: t('Tasks.projectName'),
+      title: t('Project / Task Board'),
       dataIndex: 'projectId',
       render: (text, record) => (
         record?.projectId ? (
@@ -376,9 +377,21 @@ const onFinishEdit = (values) => {
           </Link>
         ) : (
           // If projectId is null, show a dash
-          <span style={{ color: '#666666' }}>
-            -
-          </span>
+          <label style={{ cursor: 'pointer' }} className="longText">
+              {record?.boardId?.boardTitle}{" "}
+              <span
+                style={{
+                  marginLeft: "8px",
+                  backgroundColor: "#7460EE",
+                  color: "#fff",
+                  padding: "2px 8px",
+                  borderRadius: "12px",
+                  fontSize: "12px",
+                }}
+              >
+                {t("Taskboard")}
+              </span>
+            </label>
         )
       ),
     },       
