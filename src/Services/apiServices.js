@@ -1,91 +1,129 @@
 import axios from "axios";
 import {store} from '../Entryfile/Main.js';
-import { logout } from "../Entryfile/features/users.jsx";
+import { login } from "../Entryfile/features/users.jsx";
 import { superAdmin } from "../Redux/Reducer/permissions/superAdminSlice.js";
 import { BASE_URL } from '../config/apiConfig';
 
-let location = window.location.origin;
-
-// Create axios instance
-const axiosInstance = axios.create({
-  baseURL: BASE_URL
-});
-
-// Add request interceptor
-axiosInstance.interceptors.request.use(
-  (config) => {
-    // Try to get token from Redux store first
-    const state = store.getState();
-    let token = state?.user?.loginvalue?.access_token?.accessToken;
-    
-    // Fallback to localStorage if not in Redux store
-    if (!token) {
-      token = localStorage.getItem('token');
-    }
-    
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    config.headers['Content-Type'] = 'application/json';
-    config.headers.Accept = 'application/json';
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// Add response interceptor
-axiosInstance.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    // Check for authentication errors (401) or token expiration
-    if (
-      error?.response?.status === 401 || 
-      error?.response?.data?.error?.message === "jwt expired" || 
-      error?.response?.data?.err?.message === "jwt expired" ||
-      error?.response?.data?.message === "Invalid token" ||
-      error?.response?.data?.message === "Token is required"
-    ) {
-      console.log('Authentication failed - clearing session');
-      
-      // Clear all auth data
-      localStorage.removeItem('token');
-      localStorage.removeItem('languagePreference');
-      localStorage.removeItem('firstTimeLogin');
-      sessionStorage.clear();
-      
-      // Dispatch logout action to clear Redux state
-      store.dispatch(logout());
-      
-      // Redirect to login page
-      const loginPath = `${location}/login`;
-      if (window.location.pathname !== '/login') {
-        setTimeout(() => {
-          window.location.href = loginPath;
-        }, 100);
-      }
-    }
-    
-    return Promise.reject(error);
-  }
-);
+let location = window.location.origin
 
 export const apiServices = async (type, endpoint, data, state) => {
-  try {
-    const config = {
-      url: `/${endpoint}`,
-      method: type,
-      ...(data && { data }),
-      ...(endpoint.includes('payrolls/download-payroll') && { responseType: 'blob' })
+    // Try to get token from state or localStorage
+    let athtoken = state?.access_token?.accessToken || localStorage.getItem("token");
+    let company_id = state?.user?.companyId;
+
+    // Debug token
+    console.log('Token being used:', athtoken ? 'Token exists' : 'No token');
+
+    // Validate token before making the request
+    if (!athtoken) {
+        console.error('No authentication token found');
+        // Only redirect if both state and localStorage tokens are missing
+        if (!localStorage.getItem("token")) {
+            localStorage.clear();
+            sessionStorage.clear();
+            setTimeout(() => {
+                window.location.href = `${location}/login`;
+                store.dispatch(login(null));
+            }, 500);
+            return;
+        }
+    }
+
+    const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${athtoken}`,
+        'Accept': 'application/json'
     };
 
-    const response = await axiosInstance(config);
-    return response;
-  } catch (error) {
-    console.error(`${type} API FAILED!`);
-    throw error;
-  }
+    // Common error handler
+    const handleError = (err) => {
+        console.error("API Error Details:", {
+            status: err?.response?.status,
+            data: err?.response?.data,
+            endpoint: endpoint
+        });
+
+        // For 401 errors in blacklist or hired endpoints, return empty data
+        if (err?.response?.status === 401 && 
+            (endpoint.includes('blacklisted') || endpoint.includes('hired'))) {
+            return {
+                data: {
+                    status: true,
+                    data: []
+                }
+            };
+        }
+
+        // Only logout for specific auth failures
+        if (err?.response?.status === 401 && 
+            err?.response?.data?.message && 
+            (err.response.data.message.includes("jwt expired") || 
+             err.response.data.message.includes("invalid token") ||
+             err.response.data.message.includes("malformed jwt"))) {
+            console.log('Authentication failed - redirecting to login');
+            localStorage.clear();
+            sessionStorage.clear();
+            setTimeout(() => {
+                window.location.href = `${location}/login`;
+                store.dispatch(login(null));
+            }, 500);
+            return;
+        }
+        
+        // For other errors, return empty data for these specific endpoints
+        if (endpoint.includes('blacklisted') || endpoint.includes('hired')) {
+            return {
+                data: {
+                    status: true,
+                    data: []
+                }
+            };
+        }
+
+        // For other errors, throw them to be handled by the component
+        throw err;
+    };
+
+    try {
+        let response;
+        const config = {
+            url: `${BASE_URL}/${endpoint}`,
+            headers,
+            data
+        };
+
+        switch (type) {
+            case "GET":
+                config.method = 'GET';
+                config.responseType = endpoint.includes('payrolls/download-payroll') ? 'blob' : '';
+                break;
+            case "PUT":
+                config.method = 'PUT';
+                break;
+            case "PATCH":
+                config.method = 'PATCH';
+                break;
+            case "DELETE":
+                config.method = 'DELETE';
+                config.data = endpoint === 'user/delete-user' ? data : { '_id': data };
+                break;
+            default: // POST
+                config.method = 'POST';
+                config.headers = { ...headers, withCredentials: true };
+        }
+
+        try {
+            response = await axios(config);
+            return response;
+        } catch (err) {
+            return handleError(err);
+        }
+    } catch (error) {
+        console.error(`${type} API FAILED:`, error);
+        throw error;
+    }
 };
 
-export { BASE_URL };
+export {
+    BASE_URL
+}
