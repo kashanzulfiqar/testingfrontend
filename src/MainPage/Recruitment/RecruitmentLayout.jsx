@@ -16,6 +16,7 @@ import Tasks from './Tasks';
 import TaskDetails from './TaskDetails';
 import HiredCandidates from './HiredCandidates';
 import BlacklistedCandidates from './BlacklistedCandidates';
+import OfferedCandidates from './OfferedCandidates';
 
 const RecruitmentLayout = () => {
   const location = useLocation();
@@ -74,9 +75,14 @@ const RecruitmentLayout = () => {
                       <span>Processing</span>
                     </Link>
                   </li>
+                  <li className={pathname.includes("/recruitment/candidates/offered") ? "active" : ""}>
+                    <Link to="/recruitment/candidates/offered">
+                      <span>Offered</span>
+                    </Link>
+                  </li>
                   <li className={pathname.includes("/recruitment/candidates/hired") ? "active" : ""}>
                     <Link to="/recruitment/candidates/hired">
-                      <span>Offered</span>
+                      <span>Hired</span>
                     </Link>
                   </li>
                   <li className={pathname.includes("/recruitment/candidates/blacklist") ? "active" : ""}>
@@ -125,6 +131,7 @@ const RecruitmentLayout = () => {
           <Route path="jobs/:jobId/edit" element={<EditJob />} />
           <Route path="candidates/processing" element={<Candidates />} />
           <Route path="candidates/hired" element={<HiredCandidates />} />
+          <Route path="candidates/offered" element={<OfferedCandidates />} />
           <Route path="candidates/blacklist" element={<BlacklistedCandidates />} />
           <Route path="candidates/:id" element={<CandidateDetails />} />
           <Route path="candidates/:id/edit" element={<EditCandidate />} />

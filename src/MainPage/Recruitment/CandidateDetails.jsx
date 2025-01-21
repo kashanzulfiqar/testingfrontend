@@ -277,10 +277,15 @@ const CandidateDetails = () => {
         }
       );
 
-      if (response?.data?.success) {
+      if (response?.data?.status) {
         setOffer(response.data.data);
       }
     } catch (error) {
+      // Silently handle 404 - it's an expected case when no offer exists
+      if (error.response?.status === 404) {
+        setOffer(null);
+        return;
+      }
       console.error('Error fetching offer details:', error);
     }
   };
@@ -331,11 +336,14 @@ const CandidateDetails = () => {
         message.success('Offer sent successfully');
         setIsOfferModalVisible(false);
         
-        // Update candidate status to OFFERED
-        await handleStatusChange('OFFERED');
+        // Update candidate status to "Offer Sent"
+        await handleStatusChange('OFFER_SENT');
         
         // Fetch updated offer details
         await fetchOfferDetails();
+        
+        // Fetch updated candidate details to refresh the page
+        await fetchCandidateDetails();
         
         // Redirect to offered candidates list
         navigate('/recruitment/candidates/offered');
@@ -1429,6 +1437,7 @@ const CandidateDetails = () => {
                 <Select.Option value="NEW">New</Select.Option>
                 <Select.Option value="SCREENING">Screening</Select.Option>
                 <Select.Option value="SHORTLISTED">Shortlisted</Select.Option>
+                <Select.Option value="OFFER_SENT">Offer Sent</Select.Option>
                 <Select.Option value="HIRED">Hired</Select.Option>
                 <Select.Option value="REJECTED">Rejected</Select.Option>
               </Select>
@@ -1772,6 +1781,18 @@ const CandidateDetails = () => {
                   >
                     Download Contract
                   </Button>
+                </div>
+              </div>
+            )}
+            {!offer.contractUrl && (
+              <div className="info-item">
+                <div className="info-content">
+                  <Text type="secondary" className="info-label">
+                    Contract Document
+                  </Text>
+                  <Text type="secondary" italic>
+                    No contract uploaded
+                  </Text>
                 </div>
               </div>
             )}

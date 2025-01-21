@@ -40,17 +40,9 @@ const SendOfferModal = ({
     formData.append('currency', values.currency);
     formData.append('joiningDate', values.joiningDate.format('YYYY-MM-DD'));
     
-    // Append contract file if uploaded
+    // Only append contract if one is uploaded or exists
     if (uploadedContract) {
       formData.append('contract', uploadedContract);
-    } else if (existingOffer?.contract) {
-      // If updating and no new contract uploaded, keep existing
-      formData.append('contract', existingOffer.contract);
-    }
-
-    // If updating existing offer, append offerId
-    if (existingOffer?._id) {
-      formData.append('offerId', existingOffer._id);
     }
 
     onSubmit(formData);
@@ -147,14 +139,16 @@ const SendOfferModal = ({
             style={{ width: '100%' }} 
             format="DD-MM-YYYY"
             disabledDate={(current) => current && current < moment().startOf('day')}
-            onChange={() => form.validateFields(['joiningDate'])}
           />
         </Form.Item>
 
         <Form.Item
           name="contract"
-          label="Contract Document"
-          rules={[{ required: !existingOffer, message: 'Please upload contract document' }]}
+          label={
+            <span>
+              Contract Document <span style={{ color: '#888' }}>(Optional)</span>
+            </span>
+          }
           extra="Supported formats: PDF, DOC, DOCX. Max file size: 5MB"
         >
           <Upload.Dragger
@@ -170,7 +164,7 @@ const SendOfferModal = ({
             </p>
             <p className="ant-upload-text">Click or drag contract document to upload</p>
             <p className="ant-upload-hint">
-              {existingOffer ? 'Upload new contract or keep existing' : 'Upload contract document'}
+              {existingOffer ? 'Upload new contract or keep existing' : 'Upload contract document (optional)'}
             </p>
           </Upload.Dragger>
         </Form.Item>
