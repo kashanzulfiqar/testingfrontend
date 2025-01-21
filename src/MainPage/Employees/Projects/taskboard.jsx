@@ -330,6 +330,9 @@ const TaskBoard = () => {
       data: '',
       title: '',
     });
+    closeTaskModal();
+    getAllTasks(BoardData?._id ? BoardData?._id : BoardData?.board?.project ? BoardData?.board?.project?._id : BoardData?.board?._id);
+    getTaskBoard(BoardData?._id ? BoardData?._id : BoardData?.board?.project ? BoardData?.board?.project?._id : BoardData?.board?._id);
     setSelectedTeamMembers([]); // Clear selected team members
     setEditId("");
     form2.resetFields();
@@ -1303,14 +1306,14 @@ const TaskBoard = () => {
                                                             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                                               <div className="project-members" style={{margin: '4px auto'}}>
                                                                 <ul className="team-members" style={{minWidth: 'max-content'}}>
-                                                                  {getTaskAssignedDevelopers(task.taskId)?.slice(0, 4).map((developer, index) => (
+                                                                  {getTaskAssignedDevelopers(task.taskId)?.slice(0, 2).map((developer, index) => (
                                                                     <li key={index}>
                                                                       <Tooltip title={developer?.fullName}>
                                                                         <Avatar size={24} style={{cursor: 'pointer'}} src={developer?.imageUrl || user_icon} />
                                                                       </Tooltip>
                                                                     </li>
                                                                   ))}
-                                                                  {getTaskAssignedDevelopers(task.taskId)?.length > 4 && (
+                                                                  {getTaskAssignedDevelopers(task.taskId)?.length > 2 && (
                                                                     <li className="dropdown avatar-dropdown">
                                                                       <Link
                                                                         className="all-users dropdown-toggle projectTeamMember"
@@ -1318,11 +1321,11 @@ const TaskBoard = () => {
                                                                         data-bs-toggle="dropdown"
                                                                         aria-expanded="false"
                                                                       >
-                                                                        +{getTaskAssignedDevelopers(task.taskId)?.length - 4}
+                                                                        +{getTaskAssignedDevelopers(task.taskId)?.length - 2}
                                                                       </Link>
                                                                       <div className="dropdown-menu dropdown-menu-right">
                                                                         <div className="avatar-group">
-                                                                          {getTaskAssignedDevelopers(task.taskId)?.slice(4).map((developer, index) => (
+                                                                          {getTaskAssignedDevelopers(task.taskId)?.slice(2).map((developer, index) => (
                                                                             <a
                                                                               className="avatar avatar-xs projectTeamMember"
                                                                               key={index}
