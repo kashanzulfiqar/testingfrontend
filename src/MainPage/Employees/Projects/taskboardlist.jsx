@@ -880,6 +880,7 @@ const TaskBoardList = () => {
                         ]}
                       >
                         <Input
+                          maxLength={50}
                           className="form-control"
                           placeholder="Enter Title for your Taskboard"
                         />
