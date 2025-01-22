@@ -3,47 +3,101 @@ import { Table, Card, Button, Input, Space, Tag, Modal, Form, message, Empty } f
 import { SearchOutlined, UserOutlined, PlusOutlined } from '@ant-design/icons';
 import { apiServices } from '../../Services/apiServices';
 import { useSelector } from 'react-redux';
+import moment from 'moment';
 
 const BlacklistedCandidates = () => {
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
-  const authState = useSelector((state) => state.authentication);
+  const authState = useSelector((state) => state.user.loginvalue);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0
+  });
 
   useEffect(() => {
     fetchBlacklistedCandidates();
   }, []);
 
-  const fetchBlacklistedCandidates = async () => {
+  const fetchBlacklistedCandidates = async (page = 1, limit = 10) => {
     try {
       setLoading(true);
       const token = authState?.access_token?.accessToken || localStorage.getItem("token");
       
       if (!token) {
+        console.log('No token found');
         setCandidates([]);
         return;
       }
 
-      const response = await apiServices('GET', 'candidates/blacklisted', null, {
-        access_token: {
-          accessToken: token
-        },
-        user: authState?.user
+      const url = `candidate/list?status=BLACKLISTED&page=${page}&limit=${limit}`;
+      console.log('Making API call to:', url);
+      console.log('Request headers:', {
+        Authorization: `Bearer ${token}`,
+      });
+
+      const response = await apiServices(
+        'GET', 
+        url, 
+        null, 
+        {
+          access_token: {
+            accessToken: token
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      
+      console.log('API Response:', {
+        status: response?.data?.status,
+        message: response?.data?.message,
+        data: response?.data?.data,
+        pagination: response?.data?.pagination
       });
       
       if (response?.data?.status) {
-        setCandidates(response.data.data || []);
+        const blacklistedCandidates = response.data.data || [];
+        console.log('Setting candidates:', blacklistedCandidates);
+        setCandidates(blacklistedCandidates);
+        setPagination({
+          ...pagination,
+          current: response.data.pagination?.page || 1,
+          total: response.data.pagination?.total || 0,
+          pageSize: limit
+        });
       } else {
+        console.log('No candidates found or error in response');
         setCandidates([]);
       }
     } catch (error) {
-      console.error('Error fetching blacklisted candidates:', error);
-      // Silently handle error and show empty state
+      console.error('Error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      message.error('Failed to fetch blacklisted candidates');
       setCandidates([]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleTableChange = (newPagination) => {
+    fetchBlacklistedCandidates(newPagination.current, newPagination.pageSize);
+  };
+
+  const handleSearch = (value) => {
+    // Reset pagination when searching
+    setPagination(prev => ({
+      ...prev,
+      current: 1
+    }));
+    // TODO: Implement search functionality
+    console.log('Search value:', value);
   };
 
   const handleAddToBlacklist = async (values) => {
@@ -55,34 +109,49 @@ const BlacklistedCandidates = () => {
         return;
       }
 
-      const response = await apiServices('POST', 'candidates/blacklist', values, {
-        access_token: {
-          accessToken: token
-        },
-        user: authState?.user
-      });
+      // Format the request body according to the API requirements
+      const requestBody = {
+        candidateName: values.name,
+        email: values.email,
+        blacklistReason: values.reason
+      };
+
+      const response = await apiServices(
+        'POST', 
+        'candidate/blacklist', 
+        requestBody,
+        {
+          access_token: {
+            accessToken: token
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       
       if (response?.data?.status) {
         message.success('Candidate added to blacklist successfully');
         setIsModalVisible(false);
         form.resetFields();
         fetchBlacklistedCandidates();
+      } else {
+        throw new Error(response?.data?.message || 'Failed to add candidate to blacklist');
       }
     } catch (error) {
       console.error('Error adding candidate to blacklist:', error);
-      message.error('Failed to add candidate to blacklist');
+      message.error(error.message || 'Failed to add candidate to blacklist');
     }
   };
 
   const columns = [
     {
       title: 'Name',
-      dataIndex: 'name',
       key: 'name',
-      render: (text, record) => (
+      render: (_, record) => (
         <Space>
           <UserOutlined />
-          {text}
+          {`${record.firstName} ${record.lastName}`}
         </Space>
       ),
     },
@@ -92,18 +161,22 @@ const BlacklistedCandidates = () => {
       key: 'email',
     },
     {
-      title: 'Reason',
-      dataIndex: 'reason',
+      title: 'Position',
+      key: 'position',
+      render: (_, record) => record.appliedFor?.title || 'N/A',
+    },
+    {
+      title: 'Blacklist Reason',
       key: 'reason',
+      render: (_, record) => record.blacklistReason || record.reason || 'N/A',
     },
     {
       title: 'Blacklisted Date',
-      dataIndex: 'blacklistedDate',
       key: 'blacklistedDate',
+      render: (_, record) => moment(record.updatedAt).format('DD MMM YYYY'),
     },
     {
       title: 'Status',
-      dataIndex: 'status',
       key: 'status',
       render: () => (
         <Tag color="red">BLACKLISTED</Tag>
@@ -140,7 +213,7 @@ const BlacklistedCandidates = () => {
             <Input
               placeholder="Search Candidates"
               prefix={<SearchOutlined />}
-              onChange={(e) => console.log(e.target.value)}
+              onChange={(e) => handleSearch(e.target.value)}
             />
           </div>
         </div>
@@ -149,8 +222,15 @@ const BlacklistedCandidates = () => {
           className="mt-4"
           columns={columns}
           dataSource={candidates}
-          rowKey="id"
+          rowKey="_id"
           loading={loading}
+          pagination={{
+            ...pagination,
+            showSizeChanger: true,
+            showTotal: (total, range) =>
+              `${range[0]}-${range[1]} of ${total} candidates`,
+          }}
+          onChange={handleTableChange}
           locale={{
             emptyText: <Empty description="No blacklisted candidates found" />
           }}
@@ -195,7 +275,12 @@ const BlacklistedCandidates = () => {
             label="Reason for Blacklisting"
             rules={[{ required: true, message: 'Please enter reason for blacklisting' }]}
           >
-            <Input.TextArea rows={4} placeholder="Enter reason for blacklisting" />
+            <Input.TextArea 
+              rows={4} 
+              placeholder="Enter reason for blacklisting"
+              maxLength={500}
+              showCount
+            />
           </Form.Item>
 
           <Form.Item className="mb-0">

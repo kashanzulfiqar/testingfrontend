@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { Card, Avatar, Tag, Button, Input, Form, message, Spin, Row, Col, Tooltip, Dropdown } from 'antd';
+import { Card, Avatar, Tag, Button, Input, Form, message, Spin, Row, Col, Tooltip, Dropdown, Select } from 'antd';
 import { 
   ArrowLeftOutlined, 
   VideoCameraOutlined, 
@@ -138,6 +138,7 @@ const InterviewDetails = () => {
     const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
     
     try {
+      // First submit the feedback
       const response = await apiServices(
         "POST",
         `interview/${id}/feedback`,
@@ -160,15 +161,42 @@ const InterviewDetails = () => {
       );
 
       if (response?.data?.success) {
-        message.success('Feedback submitted successfully');
+        // If feedback submission is successful, update the status to completed
+        try {
+          const statusResponse = await apiServices(
+            "PATCH",
+            `interview/${id}/status`,
+            { status: "completed" },
+            {
+              access_token: {
+                accessToken: token
+              }
+            }
+          );
+
+          if (statusResponse?.data?.success) {
+            message.success('Feedback submitted and interview marked as completed');
+          } else {
+            console.error('Status update failed:', statusResponse?.data);
+            message.success('Feedback submitted successfully');
+          }
+        } catch (statusError) {
+          console.error('Error updating status:', statusError);
+          message.success('Feedback submitted successfully');
+        }
+        
         setIsFeedbackModalVisible(false);
-        fetchInterviewDetails(); // Refresh interview details to show new feedback
+        fetchInterviewDetails(); // Refresh interview details to show new feedback and updated status
       } else {
-        message.error(response?.data?.message || 'Failed to submit feedback');
+        throw new Error(response?.data?.message || 'Failed to submit feedback');
       }
     } catch (error) {
       console.error('Error submitting feedback:', error);
-      message.error('Error submitting feedback');
+      if (error.response?.data?.errors) {
+        message.error(error.response.data.errors[0].message || 'Error submitting feedback');
+      } else {
+        message.error(error.message || 'Error submitting feedback');
+      }
     }
   };
 
@@ -190,6 +218,14 @@ const InterviewDetails = () => {
     }, 0);
 
     return (totalRatings / interview.feedback.length).toFixed(1);
+  };
+
+  // Add new function to check if user has already submitted feedback
+  const hasUserSubmittedFeedback = () => {
+    if (!interview?.feedback || !loggedInUser?._id) return false;
+    return interview.feedback.some(feedback => 
+      feedback.submittedBy?._id === loggedInUser._id
+    );
   };
 
   if (loading) {
@@ -232,6 +268,33 @@ const InterviewDetails = () => {
         label: 'Download',
       },
     ],
+  };
+
+  const handleStatusChange = async (newStatus) => {
+    const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
+    
+    try {
+      const response = await apiServices(
+        "PATCH",
+        `interview/${id}/status`,
+        { status: newStatus },
+        {
+          access_token: {
+            accessToken: token
+          }
+        }
+      );
+
+      if (response?.data?.success) {
+        message.success('Interview status updated successfully');
+        fetchInterviewDetails(); // Refresh the interview details
+      } else {
+        message.error(response?.data?.message || 'Failed to update interview status');
+      }
+    } catch (error) {
+      console.error('Error updating interview status:', error);
+      message.error('Failed to update interview status');
+    }
   };
 
   return (
@@ -295,7 +358,20 @@ const InterviewDetails = () => {
             <div className="d-flex justify-content-between align-items-start mb-4">
               <div>
                 <h3 className="mb-2">{interview?.interviewName}</h3>
-                <Tag>{interview?.status}</Tag>
+                <div className="d-flex align-items-center gap-2">
+                  <Tag color={getStatusColor(interview?.status)}>{interview?.status}</Tag>
+                  <Select
+                    value={interview?.status?.toLowerCase()}
+                    style={{ width: 150 }}
+                    onChange={handleStatusChange}
+                    placeholder="Change Status"
+                  >
+                    <Select.Option value="scheduled">Scheduled</Select.Option>
+                    <Select.Option value="completed">Completed</Select.Option>
+                    <Select.Option value="cancelled">Cancelled</Select.Option>
+                    <Select.Option value="rescheduled">Rescheduled</Select.Option>
+                  </Select>
+                </div>
               </div>
               <div className="d-flex gap-3">
                 {interview?.candidateId?.resume && (
@@ -310,6 +386,8 @@ const InterviewDetails = () => {
                   icon={<PlusOutlined />}
                   style={{ background: '#FF9B44', borderColor: '#FF9B44' }}
                   onClick={() => setIsFeedbackModalVisible(true)}
+                  disabled={hasUserSubmittedFeedback()}
+                  title={hasUserSubmittedFeedback() ? "You have already submitted feedback for this interview" : ""}
                 >
                   Add Feedback
                 </Button>

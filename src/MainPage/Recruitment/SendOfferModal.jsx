@@ -40,9 +40,12 @@ const SendOfferModal = ({
     formData.append('currency', values.currency);
     formData.append('joiningDate', values.joiningDate.format('YYYY-MM-DD'));
     
-    // Only append contract if one is uploaded or exists
+    // Only append contract if one is uploaded
     if (uploadedContract) {
       formData.append('contract', uploadedContract);
+    } else if (existingOffer?.contract) {
+      // If no new contract uploaded but existing offer has one, keep the existing contract
+      formData.append('contract', existingOffer.contract);
     }
 
     onSubmit(formData);
@@ -88,7 +91,7 @@ const SendOfferModal = ({
       {existingOffer && (
         <Alert
           message="Updating Existing Offer"
-          description="You are updating an existing offer. The candidate will be notified of these changes."
+          description="You are updating an existing offer. The candidate will be notified of these changes and their status will be reset to 'OFFERED'."
           type="info"
           showIcon
           style={{ marginBottom: 24 }}

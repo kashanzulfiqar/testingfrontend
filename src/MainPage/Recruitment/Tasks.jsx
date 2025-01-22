@@ -138,7 +138,7 @@ const Tasks = () => {
       title: 'Reviewer',
       key: 'reviewer',
       render: (_, record) => {
-        const reviewers = record.taskReviewer || [];
+        const reviewers = record.taskReviewers || [];
         return reviewers.map(reviewer => reviewer.fullName).join(', ') || 'N/A';
       },
     },
@@ -177,14 +177,30 @@ const Tasks = () => {
       title: 'Score',
       key: 'score',
       render: (_, record) => {
-        if (!record.feedback) {
+        if (!record.feedback || record.feedback.length === 0) {
           return '-';
         }
+        const latestFeedback = record.feedback[0];
         return (
           <div className="d-flex align-items-center">
             <CheckCircleFilled style={{ color: '#52c41a', marginRight: 4 }} />
-            <span>{record.feedback.score || '-'}/10</span>
+            <span>{latestFeedback.rating || '-'}/5</span>
           </div>
+        );
+      }
+    },
+    {
+      title: 'Decision',
+      key: 'decision',
+      render: (_, record) => {
+        if (!record.feedback || record.feedback.length === 0) {
+          return '-';
+        }
+        const latestFeedback = record.feedback[0];
+        return (
+          <Tag color={latestFeedback.decision === 'PASS' ? 'success' : 'error'}>
+            {latestFeedback.decision}
+          </Tag>
         );
       }
     }
@@ -270,6 +286,7 @@ const Tasks = () => {
                 columns={columns}
                 dataSource={tasks}
                 rowKey="_id"
+                scroll={{ x: 1200 }}
                 pagination={{
                   ...pagination,
                   showSizeChanger: true,

@@ -104,18 +104,6 @@ const RecruitmentLayout = () => {
                   <i className="la la-tasks" /> <span>Tasks</span>
                 </Link>
               </li>
-
-              <li className={pathname.includes("/recruitment/offers") ? "active" : ""}>
-                <Link to="/recruitment/offers">
-                  <i className="la la-file-text" /> <span>Offers</span>
-                </Link>
-              </li>
-
-              <li className={pathname.includes("/recruitment/settings") ? "active" : ""}>
-                <Link to="/recruitment/settings">
-                  <i className="la la-cog" /> <span>Settings</span>
-                </Link>
-              </li>
             </ul>
           </div>
         </div>

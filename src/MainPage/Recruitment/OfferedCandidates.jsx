@@ -50,7 +50,7 @@ const OfferedCandidates = () => {
 
       const payload = {
         status: newStatus,
-        ...(rejectionReason && { rejectionReason })
+        ...(rejectionReason && { reason: rejectionReason })
       };
 
       const response = await apiServices(
@@ -235,7 +235,7 @@ const OfferedCandidates = () => {
               disabled={updatingStatus}
             >
               <Option value="OFFERED">OFFERED</Option>
-              <Option value="ACCEPTED">ACCEPTED</Option>
+              <Option value="HIRED">HIRED</Option>
               <Option value="OFFER_REJECTED">OFFER_REJECTED</Option>
             </Select>
           )}
@@ -350,13 +350,15 @@ const OfferedCandidates = () => {
             rules={[
               {
                 required: true,
-                message: 'Please provide a reason for rejection',
+                message: 'Please provide a reason for rejecting the offer',
               },
             ]}
           >
             <Input.TextArea
               rows={4}
-              placeholder="Enter the reason for rejection"
+              placeholder="Enter the reason for rejecting the offer"
+              maxLength={500}
+              showCount
             />
           </Form.Item>
           <Form.Item className="mb-0 text-right">

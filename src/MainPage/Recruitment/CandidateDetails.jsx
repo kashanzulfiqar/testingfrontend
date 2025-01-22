@@ -65,6 +65,8 @@ const CandidateDetails = () => {
   const [isOfferModalVisible, setIsOfferModalVisible] = useState(false);
   const [submittingOffer, setSubmittingOffer] = useState(false);
   const [offer, setOffer] = useState(null);
+  const [selectedStatus, setSelectedStatus] = useState(null);
+  const [isReasonModalVisible, setIsReasonModalVisible] = useState(false);
 
   useEffect(() => {
     console.log('isOfferModalVisible changed:', isOfferModalVisible);
@@ -217,18 +219,24 @@ const CandidateDetails = () => {
   };
 
   const handleStatusChange = async (newStatus) => {
-    const token =
-      localStorage.getItem("token") || authState?.access_token?.accessToken;
-
-    if (!token) {
-      message.error("Authentication required");
+    if (newStatus === 'BLACKLISTED') {
+      // Show modal to get blacklist reason
+      setSelectedStatus(newStatus);
+      setIsReasonModalVisible(true);
       return;
     }
 
     try {
       setUpdatingStatus(true);
+      const token = authState?.access_token?.accessToken || localStorage.getItem("token");
+      
+      if (!token) {
+        message.error("Authentication required");
+        return;
+      }
+
       const response = await apiServices(
-        "PATCH",
+        'PATCH',
         `candidate/${id}/status`,
         { status: newStatus },
         {
@@ -241,17 +249,64 @@ const CandidateDetails = () => {
         }
       );
 
-      if (response?.data?.success) {
-        message.success("Candidate status updated successfully");
-        setCandidate((prev) => ({ ...prev, status: newStatus }));
-        // Refresh the page to ensure the status is updated
-        window.location.reload();
+      if (response?.data?.status) {
+        message.success('Status updated successfully');
+        await fetchCandidateDetails();
       } else {
-        message.error(response?.data?.message || "Failed to update status");
+        throw new Error(response?.data?.message || 'Failed to update status');
       }
     } catch (error) {
-      console.error("Error updating candidate status:", error);
-      message.error("Error updating candidate status");
+      console.error('Error updating status:', error);
+      message.error(error.message || 'Error updating status');
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
+  const handleReasonSubmit = async (values) => {
+    try {
+      setUpdatingStatus(true);
+      const token = authState?.access_token?.accessToken || localStorage.getItem("token");
+      
+      if (!token) {
+        message.error("Authentication required");
+        return;
+      }
+
+      const payload = {
+        status: selectedStatus,
+        reason: values.reason || values.blacklistReason, // Use reason or blacklistReason as the general reason
+      };
+
+      // Add specific reason field based on status
+      if (selectedStatus === 'BLACKLISTED') {
+        payload.blacklistReason = values.blacklistReason;
+      }
+
+      const response = await apiServices(
+        'PATCH',
+        `candidate/${id}/status`,
+        payload,
+        {
+          access_token: {
+            accessToken: token,
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response?.data?.status) {
+        message.success('Status updated successfully');
+        setIsReasonModalVisible(false);
+        await fetchCandidateDetails();
+      } else {
+        throw new Error(response?.data?.message || 'Failed to update status');
+      }
+    } catch (error) {
+      console.error('Error updating status:', error);
+      message.error(error.message || 'Error updating status');
     } finally {
       setUpdatingStatus(false);
     }
@@ -317,6 +372,11 @@ const CandidateDetails = () => {
         }
       }
 
+      // Add flag to indicate this is an offer update if an offer exists
+      if (offer) {
+        formData.append('isUpdate', 'true');
+      }
+
       const response = await apiServices(
         'POST',
         'candidate/send-offer',
@@ -333,11 +393,11 @@ const CandidateDetails = () => {
       );
 
       if (response?.data?.status) {
-        message.success('Offer sent successfully');
+        message.success(offer ? 'Offer updated successfully' : 'Offer sent successfully');
         setIsOfferModalVisible(false);
         
-        // Update candidate status to "Offer Sent"
-        await handleStatusChange('OFFER_SENT');
+        // Always update candidate status to "OFFERED" and clear any previous status/reasons
+        await handleStatusChange('OFFERED');
         
         // Fetch updated offer details
         await fetchOfferDetails();
@@ -1220,24 +1280,14 @@ const CandidateDetails = () => {
                 <Row gutter={16}>
                   <Col span={16}>
                     <h4 className="task-title">{task.taskName}</h4>
-                    <Space
-                      direction="vertical"
-                      size="small"
-                      style={{ width: "100%" }}
-                    >
+                    <Space direction="vertical" size="small" style={{ width: "100%" }}>
                       <div>
                         <Text type="secondary">Task Reviewers:</Text>{" "}
                         <Avatar.Group maxCount={3}>
                           {task.taskReviewers?.map((reviewer) => (
-                            <Tooltip
-                              key={reviewer._id}
-                              title={reviewer.fullName}
-                            >
+                            <Tooltip key={reviewer._id} title={reviewer.fullName}>
                               <Avatar src={reviewer.imageUrl}>
-                                {reviewer.fullName
-                                  ?.split(" ")
-                                  .map((n) => n[0])
-                                  .join("")}
+                                {reviewer.fullName?.split(" ").map((n) => n[0]).join("")}
                               </Avatar>
                             </Tooltip>
                           ))}
@@ -1245,16 +1295,21 @@ const CandidateDetails = () => {
                       </div>
                       <div>
                         <Text type="secondary">Due Date:</Text>{" "}
-                        <Text>
-                          {moment(task.lastDateOfSubmission).format(
-                            "DD MMM YYYY"
-                          )}
-                        </Text>
+                        <Text>{moment(task.lastDateOfSubmission).format("DD MMM YYYY")}</Text>
                       </div>
                       <div>
                         <Text type="secondary">Duration:</Text>{" "}
                         <Text>{task.taskDuration} days</Text>
                       </div>
+                      {task.feedback && task.feedback.length > 0 && (
+                        <div>
+                          <Text type="secondary">Latest Feedback:</Text>{" "}
+                          <Rate disabled defaultValue={task.feedback[0].rating} style={{ fontSize: 12 }} />
+                          <Tag color={task.feedback[0].decision === "PASS" ? "success" : "error"} style={{ marginLeft: 8 }}>
+                            {task.feedback[0].decision}
+                          </Tag>
+                        </div>
+                      )}
                     </Space>
                   </Col>
                   <Col span={8} style={{ textAlign: "right" }}>
@@ -1262,7 +1317,6 @@ const CandidateDetails = () => {
                       value={task.status}
                       style={{ width: 120 }}
                       onChange={(value) => {
-                        // Prevent card click when changing status
                         event.stopPropagation();
                         updateTaskStatus(task._id, value);
                       }}
@@ -1276,6 +1330,57 @@ const CandidateDetails = () => {
                     </Select>
                   </Col>
                 </Row>
+                {task.feedback && task.feedback.length > 0 && (
+                  <div style={{ marginTop: "16px", borderTop: "1px solid #f0f0f0", paddingTop: "16px" }}>
+                    <Card size="small">
+                      <div style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
+                        <Avatar src={task.feedback[0].reviewerId?.imageUrl} style={{ marginRight: "8px" }}>
+                          {task.feedback[0].reviewerId?.fullName?.split(" ").map((n) => n[0]).join("")}
+                        </Avatar>
+                        <div>
+                          <Text strong>{task.feedback[0].reviewerId?.fullName}</Text>
+                          <br />
+                          <Text type="secondary">{moment(task.feedback[0].evaluationDate).format("DD MMM YYYY")}</Text>
+                        </div>
+                      </div>
+                      <div style={{ marginTop: "8px" }}>
+                        <Text>{task.feedback[0].comment}</Text>
+                      </div>
+                    </Card>
+                  </div>
+                )}
+                {task.feedback && task.feedback.length > 1 && (
+                  <div style={{ marginTop: "8px" }}>
+                    <Collapse ghost>
+                      <Collapse.Panel header={`View All Feedback (${task.feedback.length})`} key="1">
+                        {task.feedback.slice(1).map((feedback, index) => (
+                          <Card key={index} size="small" style={{ marginTop: "8px" }}>
+                            <div style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
+                              <Avatar src={feedback.reviewerId?.imageUrl} style={{ marginRight: "8px" }}>
+                                {feedback.reviewerId?.fullName?.split(" ").map((n) => n[0]).join("")}
+                              </Avatar>
+                              <div>
+                                <Text strong>{feedback.reviewerId?.fullName}</Text>
+                                <br />
+                                <Text type="secondary">{moment(feedback.evaluationDate).format("DD MMM YYYY")}</Text>
+                              </div>
+                              <Tag color={feedback.decision === "PASS" ? "success" : "error"} style={{ marginLeft: "auto" }}>
+                                {feedback.decision}
+                              </Tag>
+                            </div>
+                            <div>
+                              <Rate disabled defaultValue={feedback.rating} style={{ fontSize: 12 }} />
+                              <Text style={{ marginLeft: 8 }}>({feedback.rating}/5)</Text>
+                            </div>
+                            <div style={{ marginTop: "8px" }}>
+                              <Text>{feedback.comment}</Text>
+                            </div>
+                          </Card>
+                        ))}
+                      </Collapse.Panel>
+                    </Collapse>
+                  </div>
+                )}
               </Card>
             ))
           ) : (
@@ -1440,6 +1545,7 @@ const CandidateDetails = () => {
                 <Select.Option value="OFFER_SENT">Offer Sent</Select.Option>
                 <Select.Option value="HIRED">Hired</Select.Option>
                 <Select.Option value="REJECTED">Rejected</Select.Option>
+                <Select.Option value="BLACKLISTED">Blacklisted</Select.Option>
               </Select>
               <Button
                 type="primary"
@@ -1451,7 +1557,7 @@ const CandidateDetails = () => {
                   position: 'relative',
                 }}
               >
-                Send Offer
+                {offer ? 'Edit Offer' : 'Send Offer'}
               </Button>
             </Space>
           </div>
@@ -1727,6 +1833,55 @@ const CandidateDetails = () => {
         candidate={candidate}
         existingOffer={offer}
       />
+
+      {/* Status Change Reason Modal */}
+      <Modal
+        title="Provide Reason"
+        visible={isReasonModalVisible}
+        onCancel={() => {
+          setIsReasonModalVisible(false);
+          setSelectedStatus(null);
+        }}
+        footer={null}
+      >
+        <Form
+          onFinish={handleReasonSubmit}
+          layout="vertical"
+        >
+          <Form.Item
+            name="blacklistReason"
+            label="Reason for Blacklisting"
+            rules={[
+              {
+                required: true,
+                message: 'Please provide a reason for blacklisting the candidate',
+              },
+            ]}
+          >
+            <Input.TextArea
+              rows={4}
+              placeholder="Enter the reason for blacklisting the candidate"
+              maxLength={500}
+              showCount
+            />
+          </Form.Item>
+
+          <Form.Item className="mb-0 text-right">
+            <Button
+              style={{ marginRight: 8 }}
+              onClick={() => {
+                setIsReasonModalVisible(false);
+                setSelectedStatus(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button type="primary" htmlType="submit" loading={updatingStatus}>
+              Submit
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
 
       {offer && (
         <div className="info-section">
@@ -2032,55 +2187,6 @@ const CandidateDetails = () => {
           background-color: #fff7e6 !important;
           border-color: #ffd591 !important;
           color: #fa8c16 !important;
-        }
-
-        .status-new .ant-select-selector {
-          background-color: #e6f7ff !important;
-          border-color: #91d5ff !important;
-          color: #1890ff !important;
-        }
-
-        .status-screening .ant-select-selector {
-          background-color: #fff7e6 !important;
-          border-color: #ffd591 !important;
-          color: #fa8c16 !important;
-        }
-
-        .status-shortlisted .ant-select-selector {
-          background-color: #f6ffed !important;
-          border-color: #b7eb8f !important;
-          color: #52c41a !important;
-        }
-
-        .status-hired .ant-select-selector {
-          background-color: #f9f0ff !important;
-          border-color: #d3adf7 !important;
-          color: #722ed1 !important;
-        }
-
-        .status-rejected .ant-select-selector {
-          background-color: #fff1f0 !important;
-          border-color: #ffa39e !important;
-          color: #f5222d !important;
-        }
-
-        .status-dropdown {
-          padding: 8px;
-        }
-
-        .status-dropdown .ant-select-item {
-          padding: 8px 12px;
-          border-radius: 4px;
-          margin-bottom: 4px;
-        }
-
-        .status-dropdown .ant-select-item:hover {
-          background-color: #f5f5f5;
-        }
-
-        .status-dropdown .ant-select-item-option-selected {
-          background-color: #e6f7ff;
-          font-weight: 500;
         }
 
         .status-new .ant-select-selector {
