@@ -46,7 +46,7 @@ function TaskModal({
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
   const nav = useNavigate();
   console.log(data);
-  const task = data;
+  const [taskData, setTaskData] = useState(data);
 
   const [description, setDescription] = useState("");
   const [title, setTitle] = useState("");
@@ -62,18 +62,18 @@ function TaskModal({
     setDescription(data?.description);
     setTags(data?.tags);
     setTitle(data?.title);
-    setEmployees(task?.ProjectData?.assignedDevelopers || []);
-    setSelectedTeamMembers(task?.assignedDevelopers || []);
-    setTempSelectedTeamMembers(task?.assignedDevelopers || []);
+    setEmployees(taskData?.ProjectData?.assignedDevelopers || []);
+    setSelectedTeamMembers(taskData?.assignedDevelopers || data?.assignedDevelopers || []);
+    setTempSelectedTeamMembers(taskData?.assignedDevelopers || []);
 
     // Initialize form with current values
     form.setFieldsValue({
       title: data?.title,
       description: data?.description,
       tags: data?.tags,
-      assignedDevelopers: task?.assignedDevelopers?.map((dev) => dev._id),
+      assignedDevelopers: taskData?.assignedDevelopers?.map((dev) => dev._id),
     });
-  }, [data, form]);
+  }, [data, form, taskData]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -101,13 +101,13 @@ function TaskModal({
     setDescription(data?.description);
     setTags(data?.tags);
     setTitle(data?.title);
-    setSelectedTeamMembers(task?.assignedDevelopers || []);
-    setTempSelectedTeamMembers(task?.assignedDevelopers || []);
+    setSelectedTeamMembers(taskData?.assignedDevelopers || []);
+    setTempSelectedTeamMembers(taskData?.assignedDevelopers || []);
     form.setFieldsValue({
       title: data?.title,
       description: data?.description,
       tags: data?.tags,
-      assignedDevelopers: task?.assignedDevelopers?.map((dev) => dev._id),
+      assignedDevelopers: taskData?.assignedDevelopers?.map((dev) => dev._id),
     });
   };
 
@@ -117,9 +117,9 @@ function TaskModal({
       setLoader(true);
       const data = {
         ...values,
-        [task?.ProjectData?.projectName ? "projectId" : "boardId"]:
-          task?.ProjectData?._id,
-        _id: task?._id,
+        [taskData?.ProjectData?.projectName ? "projectId" : "boardId"]:
+          taskData?.ProjectData?._id,
+        _id: taskData?._id,
         assignedDevelopers: tempSelectedTeamMembers.map((dev) => dev._id),
       };
 
@@ -132,7 +132,7 @@ function TaskModal({
             setTitle(values?.title);
             setDescription(values?.description);
             setTags(values?.tags);
-            getAllTasks(task?.ProjectData?._id);
+            getAllTasks(taskData?.ProjectData?._id);
             closeViewModal();
           }
         })
@@ -155,22 +155,35 @@ function TaskModal({
 
   const handleUpdateStatus = (boardId, taskId, sourceId, destinationId) => {
     setLoader(true);
+    setOpenStatusDropdown(false);
     let updated_data = {
       _id: boardId,
       columnId: destinationId,
       prevColumn: sourceId,
-      taskId: taskId,
+      taskId: taskId
     };
-    console.log("updated_data", updated_data);
+    
     apiServices("PUT", "taskBoard/add-taskBoard", updated_data, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
-          message.success("Task status updated successfully");
-          getAllTasks(task?.ProjectData?._id);
-          getTaskBoard(task?.ProjectData?._id);
-          setLoader(false);
-          setOpenStatusDropdown(false);
-          closeViewModal();
+          // Find the new column details from allColumns
+          const newColumn = taskData?.allColumns?.find(col => col.id === destinationId);
+          if (newColumn) {
+            // Update the task data with new status
+            const updatedTask = {
+              ...taskData,
+              columnId: destinationId,
+              columnColor: newColumn.color,
+              columnName: newColumn.title,
+              lane: newColumn.title
+            };
+            setTaskData(updatedTask);
+            message.success('Task status updated successfully');
+            setLoader(false);
+            
+            getAllTasks(taskData?.ProjectData?._id);
+            getTaskBoard(taskData?.ProjectData?._id);
+          }
         }
       })
       .catch((err) => {
@@ -236,16 +249,16 @@ function TaskModal({
                 paddingRight: "20px",
               }}
             >
-              {task?.title}
+              {taskData?.title || data?.title}
             </h3>
             <Form
               form={form}
               layout="vertical"
               className="w-100"
               initialValues={{
-                title: title || task?.title,
-                description: description || task?.description,
-                tags: tags || task?.tags,
+                title: title || taskData?.title,
+                description: description || taskData?.description,
+                tags: tags || taskData?.tags,
                 assignedDevelopers: selectedTeamMembers?.map((dev) => dev._id),
               }}
             >
@@ -296,7 +309,7 @@ function TaskModal({
                               borderRadius: "4px",
                             }}
                           >
-                            {title || task?.title}
+                            {title || taskData?.title}
                           </label>
                         )}
                         <div className="project-title">
@@ -333,7 +346,7 @@ function TaskModal({
                               borderRadius: "4px",
                             }}
                           >
-                            {description || task?.description}
+                            {description || taskData?.description}
                           </label>
                         )}
                       </div>
@@ -347,7 +360,7 @@ function TaskModal({
                         <div className="table-responsive">
                           <table className="table table-striped table-border">
                             <tbody>
-                              {task?.ProjectData?.projectName ? (
+                              {taskData?.ProjectData?.projectName ? (
                                 <tr>
                                   <td style={{ display: "flex", alignItems: "flex-start" }}>
                                     <span style={{ whiteSpace: "nowrap" }}>Project:</span>
@@ -357,11 +370,11 @@ function TaskModal({
                                       marginLeft: "4px",
                                       flex: 1
                                   }}>
-                                    {task?.ProjectData?.projectName}
+                                    {taskData?.ProjectData?.projectName}
                                     </span>
                                   </td>
                                 </tr>
-                              ) : task?.projectId?.projectName ? (
+                              ) : data?.projectId?.projectName ? (
                                 <tr>
                                   <td style={{ display: "flex", alignItems: "flex-start" }}>
                                     <span style={{ whiteSpace: "nowrap" }}>Project:</span>
@@ -371,7 +384,7 @@ function TaskModal({
                                       marginLeft: "4px",
                                       flex: 1
                                   }}>
-                                    {task?.projectId?.projectName}
+                                    {data?.projectId?.projectName}
                                     </span>
                                   </td>
                                 </tr>
@@ -385,7 +398,7 @@ function TaskModal({
                                       marginLeft: "4px",
                                       flex: 1
                                   }}>
-                                    {task?.ProjectData?.boardTitle || task?.boardId?.boardTitle}
+                                    {taskData?.ProjectData?.boardTitle || data?.boardId?.boardTitle}
                                     </span>
                                   </td>
                                 </tr>
@@ -394,8 +407,8 @@ function TaskModal({
                                 <td style={{ whiteSpace: "nowrap" }}>Task Status:
                                   {isFromTasksPage ? (
                                     <span style={{ display: "inline-block", marginLeft: "4px" }}>
-                                      <i className={`fa fa-dot-circle-o text-${task?.columnColor}`} />{" "}
-                                      {task?.columnName || task?.lane ? task?.lane : "No Status"}
+                                      <i className={`fa fa-dot-circle-o text-${taskData?.columnColor || data?.columnColor}`} />{" "}
+                                      {taskData?.columnName || data?.lane ? data?.lane : "No Status"}
                                     </span>
                                   ) : (
                                     <span className="dropdown action-label" style={{ display: "inline-block", marginLeft: "4px" }}>
@@ -409,26 +422,26 @@ function TaskModal({
                                         }}
                                         aria-expanded={openStatusDropdown}
                                       >
-                                        <i className={`fa fa-dot-circle-o text-${task?.columnColor}`} />{" "}
-                                        {task?.columnName || task?.lane}
+                                        <i className={`fa fa-dot-circle-o text-${taskData?.columnColor}`} />{" "}
+                                        {taskData?.columnName || taskData?.lane}
                                       </a>
                                       <div
                                         className={`dropdown-menu dropdown-menu-right ${openStatusDropdown ? "show" : ""}`}
                                       >
-                                        {task?.allColumns && task?.allColumns.length > 0 ? (
-                                          task?.allColumns?.map((column) => (
+                                        {taskData?.allColumns && taskData?.allColumns.length > 0 ? (
+                                          taskData?.allColumns?.map((column) => (
                                             <a
                                               key={column.id}
-                                              className={`dropdown-item ${task?.columnId === column.id ? "disabled" : ""}`}
+                                              className={`dropdown-item ${taskData?.columnId === column.id ? "disabled" : ""}`}
                                               href="javascript:void(0)"
                                               onClick={(e) => {
                                                 e.preventDefault();
                                                 e.stopPropagation();
-                                                if (task?.columnId !== column.id) {
+                                                if (taskData?.columnId !== column.id) {
                                                   handleUpdateStatus(
-                                                    task?.boardId,
-                                                    task?._id,
-                                                    task?.columnId,
+                                                    taskData?.boardId,
+                                                    taskData?._id,
+                                                    taskData?.columnId,
                                                     column.id
                                                   );
                                                 }
@@ -473,7 +486,7 @@ function TaskModal({
                               </Form.Item>
                             ) : (
                               <span className="text-end tag-container">
-                                {(tags || task?.tags)?.slice(0, 4).map((tag) => (
+                                {(tags || taskData?.tags)?.slice(0, 4).map((tag) => (
                                   <Tooltip key={tag} title={tag}>
                                     <Tag
                                       style={{
@@ -487,10 +500,10 @@ function TaskModal({
                                     </Tag>
                                   </Tooltip>
                                 ))}
-                                {(tags || task?.tags)?.length > 4 && (
+                                {(tags || taskData?.tags)?.length > 4 && (
                                   <Tooltip 
                                     title={
-                                      (tags || task?.tags)?.slice(4).join(", ")
+                                      (tags || taskData?.tags)?.slice(4).join(", ")
                                     }
                                   >
                                     <Tag
@@ -499,7 +512,7 @@ function TaskModal({
                                         cursor: "pointer"
                                       }}
                                     >
-                                      +{(tags || task?.tags)?.length - 4}
+                                      +{(tags || taskData?.tags)?.length - 4}
                                     </Tag>
                                   </Tooltip>
                                 )}

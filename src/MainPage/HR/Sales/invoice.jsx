@@ -1,4 +1,3 @@
-
 import React, { useState,useEffect } from 'react';
 import { Helmet } from "react-helmet";
 import { Link, useNavigate } from 'react-router-dom';
@@ -115,9 +114,9 @@ const Invoices = () => {
     }
   }
 
-  const onHandleDelete = (id) => {
+  const onHandleDelete = (data) => {
     setDeleteLoader(true);
-    apiServices("DELETE", "invoices", id, user_state)
+    apiServices("DELETE", "invoices", data , user_state)
       .then((res) => {
         if (res?.data?.success === true) {
           getAllInvoices(filterValues,currentPage, pageSize);
@@ -827,7 +826,7 @@ const onFinish = (values) => {
                     <Button
                       htmlType="submit"
                       className="btn btn-primary continue-btn"
-                      onClick={() => onHandleDelete(open?.data?._id)}
+                      onClick={() => onHandleDelete(open?.data)}
                       disabled={deleteLoader}
                       style={{ width: "100%" }}
                     >

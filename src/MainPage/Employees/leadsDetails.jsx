@@ -503,7 +503,7 @@ const LeadsDetails = () => {
       console.error("Error updating status:", err);
       message.error(err?.response?.data?.msg || "Error updating status");
     } finally {
-      setLoadStatus(false);
+      // setLoadStatus(false);
     }
   };
 
