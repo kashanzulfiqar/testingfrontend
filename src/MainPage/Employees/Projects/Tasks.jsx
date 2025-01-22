@@ -534,7 +534,8 @@ const onFinishEdit = (values) => {
                 form2.setFieldsValue({
                   ...record,
                   projectId: record?.projectId?._id,
-                  boardId: record?.boardId
+                  boardId: record?.boardId?._id,
+                  associateWith: record?.projectId ? 'project' : 'taskboard'
                 });
               }}
             >
@@ -955,9 +956,18 @@ const onFinishEdit = (values) => {
                                 {t('Associate with')} <span className="text-danger">*</span>
                             </label>
                             <Form.Item
-                            className="custom-border">
+                            name="associateWith"
+                            // initialValue={open?.data ? (open?.data?.projectId ? 'project' : 'taskboard') : undefined}
+                            className="custom-border"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: t('please select associate with'),
+                                },
+                            ]}
+                            >
                               <Select
-                                value={isProjectAssociated ? 'project' : 'taskboard'}
+                                placeholder={t('please select associate with')}
                                 onChange={(value) => setIsProjectAssociated(value === 'project')}
                                 className="custom-select custom-normal"
                             >
