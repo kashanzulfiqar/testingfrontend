@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
+import { Helmet } from "react-helmet";
 import Navbar from "./Navbar";
-// import BackgroundSVG from "./BackgroundSVG";
-// import image9 from "./image9.png";
 import "./landingstyles.css";
 import { Input, Button, Divider, message } from "antd";
 import im1 from "./assets/im1.png";
 import im2 from "./assets/im2.png";
 import im3 from "./assets/im3.png";
 import im4 from "./assets/im4.png";
-import { Link, Element, scroller } from "react-scroll";
+import { Link as ScrollLink, Element, scroller } from "react-scroll";
+import { Link as RouterLink } from "react-router-dom";
 import { RightOutlined } from "@ant-design/icons";
 import { Carousel, Modal } from "antd";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -25,40 +25,109 @@ import BottomPortion from "./bottomPortion";
 
 const LandingPage = () => {
   const nav = useNavigate();
-
   const isLogin = useSelector((state) => state.user.loginvalue);
   const role = isLogin?.user?.role;
   const location = useLocation();
+  const baseUrl = window.location.origin;
+
+  // JSON-LD structured data for main website
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "DaftarPro",
+    url: baseUrl,
+    description: "All-in-One Business Management Platform",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${baseUrl}/search?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
+    sameAs: [
+      "https://www.facebook.com/daftarpro",
+      "https://twitter.com/daftarpro",
+      "https://www.linkedin.com/company/daftarpro",
+    ],
+  };
+
+  // JSON-LD structured data for key pages
+  const pagesStructuredData = [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      name: "Register on DaftarPro",
+      url: `${baseUrl}/register`,
+      description:
+        "Register with DaftarPro and unlock your business's full potential. Start managing your projects, HR, and finances in one place today!",
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      name: "DaftarPro Login",
+      url: `${baseUrl}/login`,
+      description:
+        "Securely log in to your DaftarPro account and access your business management dashboard.",
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      name: "Checkout Live Demo",
+      url: `${baseUrl}/live-demo`,
+      description:
+        "Experience DaftarPro in action with our interactive live demo. See how our platform can transform your business operations.",
+    },
+  ];
+
+  // Navigation links for key pages
+  const navigationLinks = [
+    {
+      path: "/register",
+      label: "Register",
+      description:
+        "Register with DaftarPro and unlock your business's full potential. Start managing your projects, HR, and finances in one place today!",
+    },
+    {
+      path: "/login",
+      label: "Login",
+      description:
+        "Securely log in to your DaftarPro account and access your business management dashboard.",
+    },
+    {
+      path: "/live-demo",
+      label: "Live Demo",
+      description:
+        "Experience DaftarPro in action with our interactive live demo. See how our platform can transform your business operations.",
+    },
+  ];
 
   useEffect(() => {
-    console.log(location.state)
+    console.log(location.state);
     if (!location.state) {
       return; // If there's no state, do nothing
     }
 
     if (location.state?.scrollToHome) {
-      console.log("In homes")
+      console.log("In homes");
       // Scroll to Contact Us section when navigation state is set
       scroller.scrollTo("home", {
         //smooth: true,
         duration: 500,
       });
-    }
-    else if (location.state?.scrollToFeatures) {
+    } else if (location.state?.scrollToFeatures) {
       // Scroll to Contact Us section when navigation state is set
       scroller.scrollTo("features", {
         //smooth: true,
         duration: 500,
       });
-    }
-    else if (location.state?.scrollToPricing) {
+    } else if (location.state?.scrollToPricing) {
       // Scroll to Contact Us section when navigation state is set
       scroller.scrollTo("pricing", {
         //smooth: true,
         duration: 500,
       });
     }
-
   }, [location]);
 
   const images = [
@@ -137,27 +206,75 @@ const LandingPage = () => {
 
   return (
     <div className="my-scope">
+      <Helmet>
+        <title>DaftarPro - All-in-One Business Management Platform</title>
+        <meta
+          name="description"
+          content="Manage your entire business in one place! Streamline projects, HR, finances, and more with DaftarPro - the ultimate solution for businesses of all sizes."
+        />
+        <meta
+          name="keywords"
+          content="business management software, HR management system, project management tool, employee management, payroll software, attendance tracking, leave management, resource allocation, timesheet management, employee dashboard, client management, lead management, lead tracking, sales pipeline, invoice management, expense tracking, profit loss tracking, task management, team collaboration, business analytics, performance tracking, employee attendance, salary management, project tracking, client portal, focal person management, document management, business reports, employee reports, attendance reports, lead reports, business automation, enterprise resource planning, ERP software, HR automation, project planning, task assignment, team management, remote work management, business productivity, workforce management, business efficiency, cloud-based business software, integrated business solution, business process management, BPM software, all-in-one business platform, SME software, enterprise management system, company management software, staff management, human resource software, project portfolio management, business reporting tools, financial management software"
+        />
+        <link rel="canonical" href={baseUrl} />
+
+        {/* Open Graph tags for social sharing */}
+        <meta
+          property="og:title"
+          content="DaftarPro - All-in-One Business Management Platform"
+        />
+        <meta
+          property="og:description"
+          content="Manage your entire business in one place! Streamline projects, HR, finances, and more with DaftarPro - the ultimate solution for businesses of all sizes."
+        />
+        <meta property="og:image" content={`${baseUrl}/assets/og-image.png`} />
+        <meta property="og:url" content={baseUrl} />
+        <meta property="og:type" content="website" />
+
+        {/* Twitter Card tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta
+          name="twitter:title"
+          content="DaftarPro - All-in-One Business Management Platform"
+        />
+        <meta
+          name="twitter:description"
+          content="Manage your entire business in one place! Streamline projects, HR, finances, and more with DaftarPro."
+        />
+        <meta name="twitter:image" content={`${baseUrl}/assets/og-image.png`} />
+
+        {/* Structured data */}
+        <script type="application/ld+json">
+          {JSON.stringify(structuredData)}
+        </script>
+        {pagesStructuredData.map((data, index) => (
+          <script key={index} type="application/ld+json">
+            {JSON.stringify(data)}
+          </script>
+        ))}
+      </Helmet>
+
       <NavigationBar />
-      <div className="main-wrapper">
+
+      <main className="main-wrapper">
         <div className="page-wrapper landingClass">
           <div
             className="content container-fluid Landing"
             style={{ backgroundColor: "white" }}
           >
-            <div className="top-container">
+            <section className="top-container">
               <Element name="home" className="landing-header-text-container">
-                <p className="landing-heading2">
+                <h1 className="landing-heading2">
                   Your All-in-One Business Management Platform
-                </p>
+                </h1>
                 <p className="landing-description2 mt-2">
-                Manage your entire business in one place! <br />
-                Streamline projects, HR, finances, and more with DaftarPro - the ultimate solution for businesses of all sizes.{" "}
+                  Manage your entire business in one place! <br />
+                  Streamline projects, HR, finances, and more with DaftarPro -
+                  the ultimate solution for businesses of all sizes.
                 </p>
                 <div className="ButtonAndTrial">
-                  <button
-                    onClick={() => {
-                      nav("/register");
-                    }}
+                  <RouterLink
+                    to="/register"
                     className="primary-landing-button primary-landing-button2 mb-2"
                     style={{
                       fontFamily: "Montserrat",
@@ -167,20 +284,22 @@ const LandingPage = () => {
                       width: "220px",
                       padding: "14px, 28px, 14px, 28px",
                       color: "#FF9B44",
+                      display: "inline-block",
+                      textDecoration: "none",
                     }}
                   >
                     Register Now
-                  </button>
-
+                  </RouterLink>
                   <img
                     className="freeTrial"
                     src={Trial}
-                    alt="SVG Illustration"
+                    alt="Free Trial Available"
                   />
                 </div>
               </Element>
-            </div>
-            <div style={{ marginTop: "4%" }}>
+            </section>
+
+            <section className="gallery-section" style={{ marginTop: "4%" }}>
               <ImageGallery
                 items={images}
                 autoPlay={true}
@@ -190,24 +309,35 @@ const LandingPage = () => {
                 showThumbnails={false}
                 showBullets={true}
               />
-            </div>
+            </section>
 
-            <Element name="features">
-              <Features />
-            </Element>
+            <section id="features" className="features-section">
+              <Element name="features">
+                <Features />
+              </Element>
+            </section>
 
-            <ModuleCards />
+            <section className="modules-section">
+              <ModuleCards />
+            </section>
 
-            <Element name="pricing">
-              <PlanCards />
-            </Element>
+            <section id="pricing" className="pricing-section">
+              <Element name="pricing">
+                <PlanCards />
+              </Element>
+            </section>
 
-            <GetStarted />
+            <section className="get-started-section">
+              <GetStarted />
+            </section>
 
-            <BottomPortion />
+            <footer className="site-footer">
+              <BottomPortion />
+            </footer>
           </div>
         </div>
-      </div>
+      </main>
+
       <Modal
         open={isModalOpen}
         onCancel={handleCancel}
@@ -220,7 +350,7 @@ const LandingPage = () => {
             fontFamily: "Lato",
             fontWeight: "600",
             fontSize: "20px",
-            extAlign: "center",
+            textAlign: "center",
             height: "90px",
             display: "flex",
             justifyContent: "center",
