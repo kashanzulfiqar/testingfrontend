@@ -485,7 +485,7 @@ function TaskModal({
                                 />
                               </Form.Item>
                             ) : (
-                              <span className="text-end tag-container">
+                              <span className="text-end tag-container" style={{padding: "0px 8px"}}>
                                 {(tags || taskData?.tags)?.slice(0, 4).map((tag) => (
                                   <Tooltip key={tag} title={tag}>
                                     <Tag
@@ -555,7 +555,7 @@ function TaskModal({
                                   </Select>
                                 </Form.Item>
                               ) : (
-                                <div className="project-members">
+                                <div className="project-members" style={{padding: "0px 8px"}}>
                                   <ul
                                     className="team-members"
                                     style={{

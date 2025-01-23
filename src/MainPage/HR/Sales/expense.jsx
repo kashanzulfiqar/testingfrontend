@@ -113,9 +113,9 @@ const Expenses = () => {
     }
   }
 
-  const onHandleDelete = (id) => {
+  const onHandleDelete = (data) => {
     setLoader(true);
-    apiServices("DELETE", "expenses", id, user_state)
+    apiServices("DELETE", "expenses", data, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
           getAllExpenses(filterValues,currentPage, pageSize);
@@ -690,7 +690,7 @@ const formatDate = (inputDate) => {
                       <Button
                         htmlType="submit"
                         className="btn btn-primary continue-btn"
-                        onClick={() => onHandleDelete(open?.data?._id)}
+                        onClick={() => onHandleDelete(open?.data)}
                         disabled={loader}
                         style={{width: '100%'}}
                       >

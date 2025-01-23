@@ -89,9 +89,9 @@ const ClientsList = () => {
         });
     }
   
-    const onFinishDelete = (id) => {
+    const onFinishDelete = (data) => {
       setLoader(true)
-      apiServices("DELETE", "client/delete-client", id, user_state)
+      apiServices("DELETE", "client/delete-client", data, user_state)
         .then((res) => {
           if (res?.data?.success === true) {
             getAllClients(filterValues, currentPage, pageSize);
@@ -463,7 +463,7 @@ const getAllCountries = () => {
                         <Button
                           htmlType="submit"
                           className="btn btn-primary continue-btn"
-                          onClick={() => onFinishDelete(open?.data?._id)}
+                          onClick={() => onFinishDelete(open?.data)}
                           disabled={loader}
                           style={{width: '100%'}}
                         >

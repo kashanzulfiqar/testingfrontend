@@ -3100,7 +3100,7 @@ const Leads = () => {
           style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
         }}
       >
-        <div className="modal-dialog modal-dialog-centered modal-lg">
+        <div className="modal-dialog modal-dialog-centered">
           <div className="modal-content" style={{ height: "280px" }}>
             <div
               className="modal-body"

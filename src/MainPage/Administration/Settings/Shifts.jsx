@@ -72,14 +72,14 @@ const Shifts = () => {
     setOpen({ isAddOpen: false, isDelOpen: false, data: "" });
   };
 
-  const onHandleDelete = (id) => {
+  const onHandleDelete = (Data) => {
     setLoader(true);
-    apiServices("DELETE", "shift", id, user_state)
+    apiServices("DELETE", "shift", Data, user_state)
       .then((res) => {
         // console.log(res?.data);
         if (res?.data?.success === true) {
           // console.log(data);
-          setData([...data.filter((shift) => shift._id !== id)]);
+          setData([...data.filter((shift) => shift._id !== Data?._id)]);
           handleClose();
           message.success(t('settings.shift.shiftDeletedSuccessfully'));
           setLoader(false);
@@ -683,7 +683,7 @@ const Shifts = () => {
                     <Button
                       htmlType="submit"
                       className="btn btn-primary continue-btn"
-                      onClick={() => onHandleDelete(open?.data?._id)}
+                      onClick={() => onHandleDelete(open?.data)}
                       disabled={loader}
                       style={{ width: "100%" }}
                     >
