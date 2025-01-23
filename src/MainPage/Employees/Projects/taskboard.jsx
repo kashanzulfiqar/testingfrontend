@@ -642,6 +642,8 @@ const TaskBoard = () => {
           );
           message.success("Column Deleted Successfully");
           handleClose();
+          getAllTasks(BoardData?._id ? BoardData?._id : BoardData?.board?.project ? BoardData?.board?.project?._id : BoardData?.board?._id);
+          getTaskBoard(BoardData?._id ? BoardData?._id : BoardData?.board?.project ? BoardData?.board?.project?._id : BoardData?.board?._id);
           setLoader(false);
         }
       })

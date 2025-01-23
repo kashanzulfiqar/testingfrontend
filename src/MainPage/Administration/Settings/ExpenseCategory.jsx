@@ -101,9 +101,9 @@ const ExpenseCategory = () => {
       });
   };
 
-  const onHandleDelete = (id) => {
+  const onHandleDelete = (Data) => {
     setLoader(true);
-    apiServices("DELETE", "expenses-category", id, user_state)
+    apiServices("DELETE", "expenses-category", Data, user_state)
       .then((res) => {
         // console.log(res?.data);
         if (res?.data?.success === true) {
@@ -561,7 +561,7 @@ const ExpenseCategory = () => {
                   <Button
                       htmlType="submit"
                       className="btn btn-primary continue-btn"
-                      onClick={() => onHandleDelete(open?.data?._id)}
+                      onClick={() => onHandleDelete(open?.data)}
                       disabled={loader}
                       style={{ width: "100%" }}
                     >

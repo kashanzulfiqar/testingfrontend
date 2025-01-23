@@ -14,7 +14,7 @@ import { MoreVertical } from "react-feather";
 import moment from "moment";
 import ReachOutModal from "./ReachOutModal";
 import LeadNotes from "./leadNotes";
-import { Button, Empty, message, Spin, Table, Radio, Space, Modal } from "antd";
+import { Button, Empty, message, Spin, Table, Radio, Space} from "antd";
 import { useSelector } from "react-redux";
 import { apiServices } from "../../Services/apiServices";
 import {
@@ -32,6 +32,7 @@ import { uploadFunction } from "./Projects/UploadAndDeleteFunc";
 import ReasoningModal from "./ReasoningModal";
 import LostReasonModal from "./LostReasonModal";
 import ConversionDateModal from "./ConversionDateModal";
+import { Modal } from "@mui/material";
 
 const LeadsDetails = () => {
   const nav = useNavigate();
@@ -1558,30 +1559,58 @@ const LeadsDetails = () => {
 
       {/* Delete Confirmation Modal */}
       <Modal
-        title={`Delete ${
-          open.isDeleteNotes
-            ? "Note"
-            : open.isDeleteReachout
-            ? "Reach-out"
-            : open.isDelFileOpen
-            ? "File"
-            : ""
-        }`}
         open={open.isDeleteNotes || open.isDeleteReachout || open.isDelFileOpen}
-        onOk={() =>
-          onHandleDelete(open.isDelFileOpen ? open.data : open?.data?._id)
-        }
-        onCancel={handleClose}
-        okText="Delete"
-        cancelText="Cancel"
-        centered
-        confirmLoading={loader}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+        disableRestoreFocus
+        BackdropProps={{
+          style: { backgroundColor: "rgb(0 0 0 / 87%)" },
+        }}
       >
-        <p>
-          {open.isDelFileOpen
-            ? "Are you sure you want to delete the file?"
-            : "Are you sure you want to delete?"}
-        </p>
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content" style={{ height: "280px" }}>
+            <div
+              className="modal-body"
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+              }}
+            >
+              <div className="form-header">
+                <h3 style={{ marginBottom: "30px" }}>
+                  Delete {open.isDeleteNotes ? "Note" : open.isDeleteReachout ? "Reach-out" : "File"}
+                </h3>
+                <p>Are you sure you want to delete{open.isDeleteNotes ? "Note" : open.isDeleteReachout ? "Reach-out" : "File"}?</p>
+              </div>
+              <div className="modal-btn delete-action">
+                <div className="row">
+                  <div className="col-6">
+                    <Button
+                      htmlType="submit"
+                      className="btn btn-primary continue-btn"
+                      onClick={() => onHandleDelete(open.isDelFileOpen ? open.data : open?.data?._id)}
+                      disabled={loader}
+                      style={{width: '100%'}}
+                    >
+                      {loader ? <Spin size="small" indicator={antIcon} /> : "Delete"}
+                    </Button>
+                  </div>
+                  <div className="col-6">
+                    <Button
+                      onClick={handleClose}
+                      className="btn btn-primary submit-btn"
+                      style={{width: '100%'}}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </Modal>
 
       {/* Lost Reason Modal */}
