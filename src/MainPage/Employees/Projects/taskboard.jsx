@@ -1184,7 +1184,8 @@ const TaskBoard = () => {
                                     <label className="status-title longText3">
                                       {column.title}
                                       </label>
-                                    <div className="dropdown kanban-action">
+                                      {column.title !== "Backlog" && (
+                                        <div className="dropdown kanban-action">
                                       <a
                                         data-bs-toggle='dropdown'
                                         aria-expanded='true'
@@ -1219,6 +1220,7 @@ const TaskBoard = () => {
                                         </a>
                                       </div>
                                     </div>
+                                    )}
                                   </div>
                                   <Droppable droppableId={column._id} type="task">
                                     {(provided) => (

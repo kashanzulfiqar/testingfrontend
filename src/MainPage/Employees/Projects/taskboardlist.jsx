@@ -26,7 +26,7 @@ import Sidebar from "../../../initialpage/Sidebar/sidebar";
 import Offcanvas from "../../../Entryfile/offcanvance";
 import { useSelector } from "react-redux";
 import { apiServices } from "../../../Services/apiServices";
-import { LoadingOutlined } from "@ant-design/icons";
+import { LoadingOutlined, MinusCircleFilled } from "@ant-design/icons";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { useTranslation } from "react-i18next";
 import { user_icon } from "../../../Entryfile/imagepath";
@@ -51,6 +51,7 @@ const TaskBoardList = () => {
   const [holidayObj, setHolidayObj] = useState();
   const [tableData, setTableData] = useState([]);
   const [holidays, setHolidays] = useState([]);
+  const [selectValue, setSelectValue] = useState(undefined);
   const [isProjectAssociated, setIsProjectAssociated] = useState(false);
 
   const [open, setOpen] = useState({
@@ -224,13 +225,23 @@ const TaskBoardList = () => {
   };
 
   const getTeamMemberOptions = () => {
-    return employees?.map((employee) => (
+    return employees?.filter((emp) => !selectedTeamMembers.some((selected) => selected._id === emp._id))
+    ?.map((employee) => (
       <Select.Option key={employee._id} value={employee._id}>
         {employee.fullName}
       </Select.Option>
     ));
   };
+  const handleSelectDeveloper = (value) => {
+    const developer = employees?.find((emp) => emp._id === value);
+    setSelectedTeamMembers([...selectedTeamMembers, developer]);
+    setSelectValue(undefined);
+  };
 
+  const handleRemoveDeveloper = (developerId) => {
+    setSelectedTeamMembers(selectedTeamMembers.filter((dev) => dev._id !== developerId));
+    setSelectValue(undefined);
+  };
   const handleChange = (values) => {
     const selectedEmployees = values?.map((value) =>
       employees?.find((employee) => employee._id === value)
@@ -320,6 +331,7 @@ const TaskBoardList = () => {
 
   const handleClose = () => {
     setSelectedTeamMembers([]);
+    setSelectValue(undefined);
     setOpen({ isAddOpen: false, isDelOpen: false, data: "" });
     setIsProjectAssociated(false);
     setLoader(false);
@@ -955,142 +967,103 @@ const TaskBoardList = () => {
                       </div>
                     ) : (
                       <div className="row">
-                        <div className="col-sm-6">
-                          <div className="form-group">
-                            <label>
-                              {t("projectScreen.Modal.addTeam")}{" "}
-                              <span className="text-danger">*</span>
-                            </label>
-                            <div style={{ position: "relative" }} id="area">
-                              <Form.Item
-                                name="assignedDevelopers"
-                                className="addTeamHeight"
-                                rules={[
-                                  {
-                                    required: true,
-                                    message: t(
-                                      "projectScreen.Modal.teamCannotBeEmpty"
-                                    ),
-                                  },
-                                ]}
-                              >
-                                <Select
-                                  showSearch
-                                  onSearch={(val) => {
-                                    showTeamSearch(val, "Team");
-                                    // onTeamChange(val)
-                                  }}
-                                  filterOption={(input, option) =>
-                                    option.children
-                                      .toLowerCase()
-                                      .indexOf(input.toLowerCase()) >= 0
-                                  }
-                                  optionFilterProp="children"
-                                  notFoundContent={
-                                    loadingEmployee ? (
-                                      <Spin
-                                        style={{
-                                          height: "38px",
-                                          width: "100%",
-                                          display: "flex",
-                                          justifyContent: "center",
-                                          alignItems: "center",
-                                        }}
-                                      />
-                                    ) : (
-                                      <Empty
-                                        image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                      />
-                                    )
-                                  }
-                                  dropdownRender={(menu) => <>{menu}</>}
-                                  getPopupContainer={() =>
-                                    document.getElementById("area")
-                                  }
-                                  className="customselect-height custom-select"
-                                  mode="multiple"
-                                  placeholder={t(
-                                    "projectScreen.Modal.selectTeamMembers"
-                                  )}
-                                  onChange={handleChange}
-                                >
-                                  {getTeamMemberOptions()}
-                                </Select>
-                              </Form.Item>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="col-sm-6">
-                          <div className="form-group">
-                            <label>
-                              {t("projectScreen.Modal.teamMembers")}
-                            </label>
-                            <div
-                              className="project-members"
-                              style={{ margin: "4px auto" }}
+                        <div className="form-group">
+                          <label>
+                            {t("projectScreen.Modal.addTeam")}{" "}
+                            <span className="text-danger">*</span>
+                          </label>
+                          <div style={{ position: "relative" }} id="area">
+                            <Form.Item
+                              name="assignedDevelopers"
+                              className="custom-border"
+                              // rules={[
+                              //   {
+                              //     required: true,
+                              //     message: t(
+                              //       "projectScreen.Modal.teamCannotBeEmpty"
+                              //     ),
+                              //   },
+                              // ]}
                             >
-                              <ul
-                                className="team-members"
-                                style={{ minWidth: "max-content" }}
-                              >
-                                {selectedTeamMembers
-                                  ?.slice(0, 4)
-                                  .map((teamMember, index) => (
-                                    <li key={index}>
-                                      <Tooltip title={teamMember?.fullName}>
-                                        <Avatar
-                                          style={{ cursor: "pointer" }}
-                                          src={
-                                            teamMember?.imageUrl || user_icon
-                                          }
-                                        />
-                                      </Tooltip>
-                                    </li>
-                                  ))}
-                                {selectedTeamMembers?.length > 4 && (
-                                  <li className="dropdown avatar-dropdown">
-                                    <Link
-                                      className="all-users dropdown-toggle projectTeamMember"
+                              <Select
+                                showSearch
+                                onSearch={(val) => {
+                                  showTeamSearch(val, "Team");
+                                  // onTeamChange(val)
+                                }}
+                                filterOption={(input, option) =>
+                                  option.children
+                                    .toLowerCase()
+                                    .indexOf(input.toLowerCase()) >= 0
+                                }
+                                optionFilterProp="children"
+                                notFoundContent={
+                                  loadingEmployee ? (
+                                    <Spin
                                       style={{
-                                        display: "inline-flex",
-                                        height: "33px",
-                                        width: "33px",
+                                        height: "38px",
+                                        width: "100%",
+                                        display: "flex",
+                                        justifyContent: "center",
+                                        alignItems: "center",
                                       }}
-                                      data-bs-toggle="dropdown"
-                                      aria-expanded="false"
-                                    >
-                                      +{selectedTeamMembers?.length - 4}
-                                    </Link>
-                                    {/* Dropdown menu for additional team members */}
-                                    <div className="dropdown-menu dropdown-menu-right">
-                                      <div className="avatar-group">
-                                        {selectedTeamMembers
-                                          ?.slice(4)
-                                          .map((teamMember, index) => (
-                                            <a
-                                              className="avatar avatar-xs projectTeamMember"
-                                              key={index}
-                                            >
-                                              <Tooltip
-                                                title={teamMember?.fullName}
-                                              >
-                                                <Avatar
-                                                  src={
-                                                    teamMember?.imageUrl ||
-                                                    user_icon
-                                                  }
-                                                  style={{ cursor: "pointer" }}
-                                                />
-                                              </Tooltip>
-                                            </a>
-                                          ))}
-                                      </div>
-                                    </div>
-                                  </li>
+                                    />
+                                  ) : (
+                                    <Empty
+                                      image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                    />
+                                  )
+                                }
+                                dropdownRender={(menu) => <>{menu}</>}
+                                getPopupContainer={() =>
+                                  document.getElementById("area")
+                                }
+                                className="custom-select custom-normal"
+                                placeholder={t(
+                                  "projectScreen.Modal.selectTeamMembers"
                                 )}
-                              </ul>
-                            </div>
+                                onSelect={handleSelectDeveloper}
+                              >
+                                {getTeamMemberOptions()}
+                              </Select>
+                            </Form.Item>
                           </div>
+                          <ul className="chat-user-list">
+                            {selectedTeamMembers?.map((developer) => (
+                              <li key={developer._id}>
+                                <div
+                                  className="employee-selection"
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                  }}
+                                >
+                                  <div>
+                                    <img
+                                      alt=""
+                                      className="avatar"
+                                      src={developer?.imageUrl || user_icon}
+                                    />
+                                    <span className="employee-name">
+                                      {developer?.fullName}
+                                    </span>
+                                  </div>
+
+                                  <MinusCircleFilled
+                                    style={{ color: "red", cursor: "pointer" }}
+                                    onClick={() =>
+                                      handleRemoveDeveloper(developer?._id)
+                                    }
+                                  />
+                                </div>
+                                <hr
+                                  className="developer-divider"
+                                  style={{ opacity: "0.1" }}
+                                />
+                              </li>
+                            ))}
+                          </ul>
                         </div>
                       </div>
                     )}
@@ -1150,7 +1123,6 @@ const TaskBoardList = () => {
                           dangerouslySetInnerHTML={{
                             __html: t(
                               "Are you sure you want to <b>delete</b> this taskboard?<br/> deleting this taskboard will delete all the tasks associated with it."
-                              
                             ),
                           }}
                         />
