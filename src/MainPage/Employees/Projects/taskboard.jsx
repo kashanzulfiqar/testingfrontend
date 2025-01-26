@@ -19,7 +19,11 @@ import {
   Tooltip,
   message,
 } from "antd";
-import { LoadingOutlined, MinusCircleFilled, PlusOutlined } from "@ant-design/icons";
+import {
+  LoadingOutlined,
+  MinusCircleFilled,
+  PlusOutlined,
+} from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { Modal } from "@mui/material";
 import { apiServices } from "../../../Services/apiServices";
@@ -27,7 +31,6 @@ import { useSelector } from "react-redux";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { useForm } from "react-hook-form";
 import TaskModal from "./taskModal";
-
 
 const TaskBoard = () => {
   const [form] = Form.useForm();
@@ -41,13 +44,13 @@ const TaskBoard = () => {
   const [selectedTask, setSelectedTask] = useState({
     _id: "",
     title: "",
-    tags:[],
+    tags: [],
     description: "",
     ProjectData: {},
     columnId: "",
     columnName: "",
     columnColor: "",
-    allColumns: []
+    allColumns: [],
   });
   const [columnId, setColumnId] = useState("");
   const [editId, setEditId] = useState("");
@@ -62,12 +65,11 @@ const TaskBoard = () => {
     title: "",
   });
 
-
   const [openUser, setOpenUser] = useState(false);
   const [selectedDevelopers, setSelectedDevelopers] = useState([]);
   const [disableDrag, setDisableDrag] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [editedProjectName, setEditedProjectName] = useState('');
+  const [editedProjectName, setEditedProjectName] = useState("");
   const [selectedTeamMembers, setSelectedTeamMembers] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [allEmployees, setAllEmployees] = useState([]);
@@ -78,18 +80,17 @@ const TaskBoard = () => {
   };
 
   const handleSave = () => {
-  
-    if (boardTitle?.trim() === '') {
-      return
+    if (boardTitle?.trim() === "") {
+      return;
     }
     let updated_data = {
       _id: boardId,
-      boardTitle: boardTitle
+      boardTitle: boardTitle,
     };
     apiServices("PUT", "taskBoard/add-taskBoard", updated_data, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
-          console.log("Name changed ")
+          console.log("Name changed ");
         }
       })
       .catch((err) => {
@@ -99,18 +100,20 @@ const TaskBoard = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : 'Error editing name'
+              : "Error editing name"
           }!`
         );
-      })
+      });
     console.log("Save edited project name:", boardTitle);
     setIsEditing(false);
   };
 
   const handleCancel = () => {
     // Revert to original project name
-    console.log("called")
-    setBoardTitle(BoardData?._id ? BoardData?.projectName : BoardData?.board?.boardTitle);
+    console.log("called");
+    setBoardTitle(
+      BoardData?._id ? BoardData?.projectName : BoardData?.board?.boardTitle
+    );
     setIsEditing(false);
   };
 
@@ -125,7 +128,7 @@ const TaskBoard = () => {
       handleCancel();
     }
   };
-  
+
   const [form2] = Form.useForm();
 
   const { t, i18n } = useTranslation();
@@ -136,7 +139,7 @@ const TaskBoard = () => {
   const role = user_state?.user?.role;
 
   const BoardData = location?.state;
-  console.log("data from previous screen",BoardData);
+  console.log("data from previous screen", BoardData);
   const onDragEnd = (result) => {
     // Dropped outside the droppable area
     if (!result.destination) {
@@ -144,15 +147,14 @@ const TaskBoard = () => {
     }
     setDisableDrag(true);
     const { source, destination, type } = result;
-    if (type === 'column') {
+    if (type === "column") {
       const newColumns = Array.from(columns);
       const [movedColumn] = newColumns.splice(source.index, 1);
       newColumns.splice(destination.index, 0, movedColumn);
 
-
       let updated_data = {
         _id: boardId,
-        columns:newColumns
+        columns: newColumns,
       };
       apiServices("PUT", "taskBoard/add-taskBoard", updated_data, user_state)
         .then((res) => {
@@ -182,21 +184,24 @@ const TaskBoard = () => {
           //setLoader(false);
         });
 
-  
       setColumns(newColumns);
-    }
-    else {
-      const sourceColumn = columns.find((column) => column._id === source.droppableId);
-      const destinationColumn = columns.find((column) => column._id === destination.droppableId);
+    } else {
+      const sourceColumn = columns.find(
+        (column) => column._id === source.droppableId
+      );
+      const destinationColumn = columns.find(
+        (column) => column._id === destination.droppableId
+      );
 
-      const draggedTask = sourceColumn.tasks.find((task) => task.taskId === result.draggableId);
+      const draggedTask = sourceColumn.tasks.find(
+        (task) => task.taskId === result.draggableId
+      );
 
       if (source.droppableId === destination.droppableId) {
-        
         const updatedTasks = Array.from(sourceColumn.tasks);
         updatedTasks.splice(source.index, 1);
         updatedTasks.splice(destination.index, 0, draggedTask);
-    
+
         const updatedColumn = { ...sourceColumn, tasks: updatedTasks };
         console.log(updatedTasks);
         let updated_data = {
@@ -233,16 +238,16 @@ const TaskBoard = () => {
           });
         // Update the state with the updated column
         setColumns((prevColumns) =>
-          prevColumns.map((column) => (column._id === updatedColumn._id ? updatedColumn : column))
+          prevColumns.map((column) =>
+            column._id === updatedColumn._id ? updatedColumn : column
+          )
         );
-      }
-      else{
-
+      } else {
         let updated_data = {
           _id: boardId,
           columnId: destination.droppableId,
           prevColumn: source.droppableId,
-          taskId: result.draggableId
+          taskId: result.draggableId,
         };
         apiServices("PUT", "taskBoard/add-taskBoard", updated_data, user_state)
           .then((res) => {
@@ -272,29 +277,40 @@ const TaskBoard = () => {
             //setLoader(false);
           });
 
-      const updatedSourceTasks = sourceColumn.tasks.filter((task) => task.taskId !== result.draggableId);
+        const updatedSourceTasks = sourceColumn.tasks.filter(
+          (task) => task.taskId !== result.draggableId
+        );
 
-      const updatedSourceColumn = { ...sourceColumn, tasks: updatedSourceTasks };
+        const updatedSourceColumn = {
+          ...sourceColumn,
+          tasks: updatedSourceTasks,
+        };
 
-      const updatedDestinationTasks = [...destinationColumn.tasks, draggedTask];
-      const updatedDestinationColumn = { ...destinationColumn, tasks: updatedDestinationTasks };
+        const updatedDestinationTasks = [
+          ...destinationColumn.tasks,
+          draggedTask,
+        ];
+        const updatedDestinationColumn = {
+          ...destinationColumn,
+          tasks: updatedDestinationTasks,
+        };
 
-      setColumns((prevColumns) => {
-        const updatedColumns = prevColumns.map((column) => {
-          if (column._id === updatedSourceColumn._id) {
-            return updatedSourceColumn;
-          }
-          if (column._id === updatedDestinationColumn._id) {
-            return updatedDestinationColumn;
-          }
-          return column;
+        setColumns((prevColumns) => {
+          const updatedColumns = prevColumns.map((column) => {
+            if (column._id === updatedSourceColumn._id) {
+              return updatedSourceColumn;
+            }
+            if (column._id === updatedDestinationColumn._id) {
+              return updatedDestinationColumn;
+            }
+            return column;
+          });
+          return updatedColumns;
         });
-        return updatedColumns;
-      });
+      }
     }
-  }
   };
-  
+
   const [loader, setLoader] = useState(false);
 
   const [descLength, setDescLength] = useState(0);
@@ -311,15 +327,15 @@ const TaskBoard = () => {
   };
 
   const closeViewModal = () => {
-    console.log("hello")
-    setViewModal(false)
+    console.log("hello");
+    setViewModal(false);
   };
-  
+
   const closeTaskModal = () => {
-    setSelectedTeamMembers([])
+    setSelectedTeamMembers([]);
     setTaskModal(false);
     setOpenUser(false);
-    setColumnId('');
+    setColumnId("");
     //setIsLoading(false)
   };
 
@@ -327,12 +343,24 @@ const TaskBoard = () => {
     setAddTask({
       isAddOpen: false,
       isDelOpen: false,
-      data: '',
-      title: '',
+      data: "",
+      title: "",
     });
     closeTaskModal();
-    getAllTasks(BoardData?._id ? BoardData?._id : BoardData?.board?.project ? BoardData?.board?.project?._id : BoardData?.board?._id);
-    getTaskBoard(BoardData?._id ? BoardData?._id : BoardData?.board?.project ? BoardData?.board?.project?._id : BoardData?.board?._id);
+    getAllTasks(
+      BoardData?._id
+        ? BoardData?._id
+        : BoardData?.board?.project
+        ? BoardData?.board?.project?._id
+        : BoardData?.board?._id
+    );
+    getTaskBoard(
+      BoardData?._id
+        ? BoardData?._id
+        : BoardData?.board?.project
+        ? BoardData?.board?.project?._id
+        : BoardData?.board?._id
+    );
     setSelectedTeamMembers([]); // Clear selected team members
     setEditId("");
     form2.resetFields();
@@ -380,7 +408,9 @@ const TaskBoard = () => {
   const getAllTasks = (id) => {
     apiServices(
       "GET",
-      `tasks?id=${id}&page=${1}&limit=${99999}&isArchived=${BoardData?.board?.isArchived}`,
+      `tasks?id=${id}&page=${1}&limit=${99999}&isArchived=${
+        BoardData?.board?.isArchived
+      }`,
       null,
       user_state
     )
@@ -412,7 +442,9 @@ const TaskBoard = () => {
   const getTasksOptions = (id) => {
     apiServices(
       "GET",
-      `tasks?id=${id}&lane=empty&page=${1}&limit=${99999}&isArchived=${BoardData?.board?.isArchived}`,
+      `tasks?id=${id}&lane=empty&page=${1}&limit=${99999}&isArchived=${
+        BoardData?.board?.isArchived
+      }`,
       null,
       user_state
     )
@@ -452,7 +484,15 @@ const TaskBoard = () => {
           //setAllTasks(sortedData);
           res?.data?.taskBoards?.map((board) => {
             setBoardId(board?._id);
-            setBoardTitle(board?.boardTitle ? board?.boardTitle : BoardData?.board?.boardTitle ? BoardData?.board?.boardTitle : BoardData?.board?.project?.projectName ? BoardData?.board?.project?.projectName : BoardData?.projectName);
+            setBoardTitle(
+              board?.boardTitle
+                ? board?.boardTitle
+                : BoardData?.board?.boardTitle
+                ? BoardData?.board?.boardTitle
+                : BoardData?.board?.project?.projectName
+                ? BoardData?.board?.project?.projectName
+                : BoardData?.projectName
+            );
             setEmployees(board?.assignedDevelopers);
             setSelectedDevelopers(board?.assignedDevelopers);
             setColumns(board?.columns);
@@ -468,32 +508,43 @@ const TaskBoard = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : 'Error getting taskboard data'
+              : "Error getting taskboard data"
           }!`
         );
       });
   };
-// used in add new task & onclick edit task ticket
+  // used in add new task & onclick edit task ticket
   const handleChange = (values) => {
-
     const selectedEmployees = values?.map((value) =>
       employees?.find((employee) => employee._id === value)
     );
     setSelectedTeamMembers(selectedEmployees);
-  }
-// used in add new task & onclick edit task ticket
+  };
+  // used in add new task & onclick edit task ticket
   const getTeamMemberOptions = () => {
     return employees?.map((employee) => (
       <Select.Option key={employee._id} value={employee._id}>
         {employee.fullName}
       </Select.Option>
     ));
-  }
+  };
   useEffect(() => {
     setIsLoading(true);
     setIsTaskLoading(true);
-    getAllTasks(BoardData?._id ? BoardData?._id : BoardData?.board?.project ? BoardData?.board?.project?._id : BoardData?.board?._id);
-    getTaskBoard(BoardData?._id ? BoardData?._id : BoardData?.board?.project ? BoardData?.board?.project?._id : BoardData?.board?._id);
+    getAllTasks(
+      BoardData?._id
+        ? BoardData?._id
+        : BoardData?.board?.project
+        ? BoardData?.board?.project?._id
+        : BoardData?.board?._id
+    );
+    getTaskBoard(
+      BoardData?._id
+        ? BoardData?._id
+        : BoardData?.board?.project
+        ? BoardData?.board?.project?._id
+        : BoardData?.board?._id
+    );
   }, []);
 
   const onFinish = (values, info) => {
@@ -512,7 +563,7 @@ const TaskBoard = () => {
             setColumns(res?.data?.taskBoard?.columns);
             setIsLoading(false);
             setLoader(false);
-            message.success('Column Updated Successfully')
+            message.success("Column Updated Successfully");
             handleClose();
           }
         })
@@ -524,11 +575,12 @@ const TaskBoard = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : 'Error updating column'
+                : "Error updating column"
             }!`
           );
           setLoader(false);
-        }).finally(() => {
+        })
+        .finally(() => {
           setLoader(false);
         });
       // setColumns(prevTasks =>
@@ -538,8 +590,8 @@ const TaskBoard = () => {
     } else {
       let updated_data = {
         _id: boardId,
-        color: !(values.color) ? 'primary' : values.color,
-        title: values.title
+        color: !values.color ? "primary" : values.color,
+        title: values.title,
       };
       apiServices("PUT", "taskBoard/add-taskBoard", updated_data, user_state)
         .then((res) => {
@@ -549,7 +601,7 @@ const TaskBoard = () => {
             setColumns(res?.data?.taskBoard?.columns);
             setIsLoading(false);
             setLoader(false);
-            message.success('Column Added Successfully')
+            message.success("Column Added Successfully");
             handleClose();
           }
         })
@@ -561,11 +613,12 @@ const TaskBoard = () => {
                 ? err?.response?.data?.msg
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
-                : 'Error adding column'
+                : "Error adding column"
             }!`
           );
           setLoader(false);
-        }).finally(() => {
+        })
+        .finally(() => {
           setLoader(false);
         });
       // const newTask = {
@@ -601,13 +654,19 @@ const TaskBoard = () => {
           if (res?.data?.success === true) {
             // Update columns with server response
             setColumns(res?.data?.taskBoard?.columns);
-            
+
             // Get fresh data for all tasks
-            getAllTasks(BoardData?._id ? BoardData?._id : BoardData?.board?.project ? BoardData?.board?.project?._id : BoardData?.board?._id);
-            
+            getAllTasks(
+              BoardData?._id
+                ? BoardData?._id
+                : BoardData?.board?.project
+                ? BoardData?.board?.project?._id
+                : BoardData?.board?._id
+            );
+
             setIsLoading(false);
             setLoader(false);
-            message.success('Task added successfully');
+            message.success("Task added successfully");
             closeTaskModal();
           }
         })
@@ -642,8 +701,20 @@ const TaskBoard = () => {
           );
           message.success("Column Deleted Successfully");
           handleClose();
-          getAllTasks(BoardData?._id ? BoardData?._id : BoardData?.board?.project ? BoardData?.board?.project?._id : BoardData?.board?._id);
-          getTaskBoard(BoardData?._id ? BoardData?._id : BoardData?.board?.project ? BoardData?.board?.project?._id : BoardData?.board?._id);
+          getAllTasks(
+            BoardData?._id
+              ? BoardData?._id
+              : BoardData?.board?.project
+              ? BoardData?.board?.project?._id
+              : BoardData?.board?._id
+          );
+          getTaskBoard(
+            BoardData?._id
+              ? BoardData?._id
+              : BoardData?.board?.project
+              ? BoardData?.board?.project?._id
+              : BoardData?.board?._id
+          );
           setLoader(false);
         }
       })
@@ -676,19 +747,21 @@ const TaskBoard = () => {
           setColumns((prevColumns) =>
             prevColumns?.map((column) => {
               if (column._id === columnId) {
-                column.tasks = column?.tasks?.filter(task => task.taskId !== id);
+                column.tasks = column?.tasks?.filter(
+                  (task) => task.taskId !== id
+                );
               }
               return column;
             })
           );
 
           // Update allTasks to set empty developers array for the removed task
-          setAllTasks(prevTasks => 
-            prevTasks.map(task => {
+          setAllTasks((prevTasks) =>
+            prevTasks.map((task) => {
               if (task._id === id) {
                 return {
                   ...task,
-                  assignedDevelopers: [] // Clear the developers array
+                  assignedDevelopers: [], // Clear the developers array
                 };
               }
               return task;
@@ -697,7 +770,7 @@ const TaskBoard = () => {
 
           message.success("Task Removed Successfully");
           closeNewTask();
-          setColumnId('');
+          setColumnId("");
           setLoader(false);
         }
       })
@@ -718,90 +791,90 @@ const TaskBoard = () => {
   const onFinishAdd = (values) => {
     let updated_data = {
       ...values,
-      ...(BoardData?.board?.project 
-        ? { projectId: BoardData?.board?.project?._id } 
+      ...(BoardData?.board?.project
+        ? { projectId: BoardData?.board?.project?._id }
         : BoardData?._id
-        ? { projectId: BoardData?._id}
+        ? { projectId: BoardData?._id }
         : { boardId: BoardData?.board?._id }),
-    }
-    setLoader(true)
-    apiServices("POST", 'tasks', updated_data, user_state)
+    };
+    setLoader(true);
+    apiServices("POST", "tasks", updated_data, user_state)
       .then((res) => {
-          if (res?.data?.success === true) {
-              closeNewTask();
-              setOptTasks(prev => [...prev, res?.data?.Task])
-              setAllTasks(prev => [...prev, res?.data?.Task])
-              message.success(t('Tasks.addTaskSuccess'))
-              setLoader(false)
-            }
-          })
-          .catch((err) => {
-        setLoader(false)
+        if (res?.data?.success === true) {
+          closeNewTask();
+          setOptTasks((prev) => [...prev, res?.data?.Task]);
+          setAllTasks((prev) => [...prev, res?.data?.Task]);
+          message.success(t("Tasks.addTaskSuccess"));
+          setLoader(false);
+        }
+      })
+      .catch((err) => {
+        setLoader(false);
         message.error(
           `${
             err?.response?.data?.msg
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : t('Tasks.addTaskError')
+              : t("Tasks.addTaskError")
           }!`
         );
       });
-}
-// used in edit task ticket
-// const onFinishEdit = (values) => {
-//   const data = {
-//       ...values,
-//       ...(BoardData?.board?.project 
-//         ? { projectId: BoardData?.board?.project?._id }
-//         : BoardData?._id
-//         ? { projectId: BoardData?._id}
-//         : { boardId: BoardData?.board?._id }),
-//       _id: addTask?.data?.taskId
-//   }
+  };
+  // used in edit task ticket
+  // const onFinishEdit = (values) => {
+  //   const data = {
+  //       ...values,
+  //       ...(BoardData?.board?.project
+  //         ? { projectId: BoardData?.board?.project?._id }
+  //         : BoardData?._id
+  //         ? { projectId: BoardData?._id}
+  //         : { boardId: BoardData?.board?._id }),
+  //       _id: addTask?.data?.taskId
+  //   }
 
-//   setLoader(true)
-//   apiServices("PUT", 'tasks', data, user_state)
-//     .then((res) => {
-//         if (res?.data?.success === true) {
-//           closeNewTask();
-//           // Get the full developer objects from employees array using the assignedDevelopers IDs
-//           const updatedDevelopers = values.assignedDevelopers?.map(devId => 
-//             employees?.find(emp => emp._id === devId)
-//           ).filter(Boolean);
+  //   setLoader(true)
+  //   apiServices("PUT", 'tasks', data, user_state)
+  //     .then((res) => {
+  //         if (res?.data?.success === true) {
+  //           closeNewTask();
+  //           // Get the full developer objects from employees array using the assignedDevelopers IDs
+  //           const updatedDevelopers = values.assignedDevelopers?.map(devId =>
+  //             employees?.find(emp => emp._id === devId)
+  //           ).filter(Boolean);
 
-//           const updatedOptTasks = allTasks?.map((task) => {
-//             if (task._id === addTask?.data?.taskId) {
-//                 return {
-//                     ...task,
-//                     title: values.title,
-//                     tags: values.tags,
-//                     description: values.description,
-//                     assignedDevelopers: updatedDevelopers // Use the full developer objects
-//                 };
-//             }
-//             return task;
-//           });
+  //           const updatedOptTasks = allTasks?.map((task) => {
+  //             if (task._id === addTask?.data?.taskId) {
+  //                 return {
+  //                     ...task,
+  //                     title: values.title,
+  //                     tags: values.tags,
+  //                     description: values.description,
+  //                     assignedDevelopers: updatedDevelopers // Use the full developer objects
+  //                 };
+  //             }
+  //             return task;
+  //           });
 
-//           setAllTasks(updatedOptTasks);
-//           // setAllTasks(prev => [...prev, res?.data?.Task])
-//           message.success(t('Tasks.updateTaskSuccess'))
-//           setLoader(false)
-//           }
-//         })
-//         .catch((err) => {
-//       setLoader(false)
-//       message.error(
-//         `${
-//           err?.response?.data?.msg
-//             ? err?.response?.data?.msg
-//             : err?.response?.data?.validation?.body?.message
-//             ? err?.response?.data?.validation?.body?.message
-//             : t('Tasks.updateTaskError')
-//         }!`
-//       );
-//     });
-// }
+  //           setAllTasks(updatedOptTasks);
+  //           // setAllTasks(prev => [...prev, res?.data?.Task])
+  //           message.success(t('Tasks.updateTaskSuccess'))
+  //           setLoader(false)
+  //           }
+  //         })
+  //         .catch((err) => {
+  //       setLoader(false)
+  //       message.error(
+  //         `${
+  //           err?.response?.data?.msg
+  //             ? err?.response?.data?.msg
+  //             : err?.response?.data?.validation?.body?.message
+  //             ? err?.response?.data?.validation?.body?.message
+  //             : t('Tasks.updateTaskError')
+  //         }!`
+  //       );
+  //     });
+  // }
 
   const customEmptyText = (
     <Empty
@@ -912,24 +985,37 @@ const TaskBoard = () => {
   );
 
   const handleBoardMembersChange = () => {
-    const selectedEmployees = selectedDevelopers?.map((value) =>
-      allEmployees?.find((employee) => employee._id === value._id)
-    ).filter(Boolean); // Remove any undefined values
-    
+    const selectedEmployees = selectedDevelopers
+      ?.map((value) =>
+        allEmployees?.find((employee) => employee._id === value._id)
+      )
+      .filter(Boolean); // Remove any undefined values
+
     // Ensure the data is properly structured
     const updated_data = {
       _id: boardId,
-      assignedDevelopers: selectedDevelopers?.map((dev) => dev?._id)
+      assignedDevelopers: selectedDevelopers?.map((dev) => dev?._id),
     };
-    
+
     setLoader(true);
-    apiServices("PUT", "taskBoard/add-taskBoard", JSON.parse(JSON.stringify(updated_data)), user_state)
+    apiServices(
+      "PUT",
+      "taskBoard/add-taskBoard",
+      JSON.parse(JSON.stringify(updated_data)),
+      user_state
+    )
       .then((res) => {
         if (res?.data?.success === true) {
           setEmployees(selectedEmployees);
-          message.success('Board members updated successfully');
+          message.success("Board members updated successfully");
           closeTaskModal();
-          getAllTasks(BoardData?._id ? BoardData?._id : BoardData?.board?.project ? BoardData?.board?.project?._id : BoardData?.board?._id);
+          getAllTasks(
+            BoardData?._id
+              ? BoardData?._id
+              : BoardData?.board?.project
+              ? BoardData?.board?.project?._id
+              : BoardData?.board?._id
+          );
           setLoader(false);
         }
       })
@@ -941,11 +1027,11 @@ const TaskBoard = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : 'Error updating board members'
+              : "Error updating board members"
           }!`
         );
       });
-  }
+  };
 
   const fetchAllEmployees = () => {
     setLoadingAllEmployees(true);
@@ -982,7 +1068,9 @@ const TaskBoard = () => {
   };
 
   const handleSelectDeveloper = (value) => {
-    const selectedEmployee = allEmployees.find(employee => employee._id === value);
+    const selectedEmployee = allEmployees.find(
+      (employee) => employee._id === value
+    );
     setSelectedDevelopers([...selectedDevelopers, selectedEmployee]);
     form.resetFields(); // Clear the selection in the form
   };
@@ -990,12 +1078,15 @@ const TaskBoard = () => {
   const getAllEmployeeOptions = () => {
     const selectedEmployeeIds = [...selectedDevelopers];
     return allEmployees
-    .filter((employee) => !selectedEmployeeIds.some((selected) => selected._id === employee._id))
-    .map((employee) => (
-      <Select.Option key={employee._id} value={employee._id}>
-        {employee.fullName}
-      </Select.Option>
-    ));
+      .filter(
+        (employee) =>
+          !selectedEmployeeIds.some((selected) => selected._id === employee._id)
+      )
+      .map((employee) => (
+        <Select.Option key={employee._id} value={employee._id}>
+          {employee.fullName}
+        </Select.Option>
+      ));
   };
 
   const showEmployeeSearch = (val) => {
@@ -1026,71 +1117,100 @@ const TaskBoard = () => {
           <div className="page-header">
             <div className="row align-items-center">
               <div className="col">
-              
                 {isEditing ? (
-                <React.Fragment>
-                  <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-            <input
-              type="text"
-              className="form-control"
-              value={boardTitle}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              onBlur={handleCancel}
-              autoFocus
-              style={{width:'300px'}}
-              required
-              maxLength={50}
-            />
-            <a
-              className="btn btn-primary"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={handleSave}
-              style={{ marginLeft: '10px', height:'42px', textAlign:'center' }}
-            >
-              Save
-            </a>
-            </div>
-            {boardTitle?.trim() === '' && <p className="text-danger">Board title cannot be empty.</p>}
-            </React.Fragment>
-          ) : (
-            <div style={{display:'flex', flexDirection:'row', alignItems:'center'}}>
-            <h3 className="page-title" >
-              {boardTitle ? boardTitle : BoardData?.board?.boardTitle ? BoardData?.board?.boardTitle : BoardData?._id ? BoardData?.projectName : BoardData?.board?.project?.projectName}
-            </h3>
-            {(role === "admin" || permissions?.projectManagement) &&
-            (<h3 style={{marginLeft:'1%'}}>
-            <a onClick={handleEditClick}><i className="fa fa-pencil ml-2" /></a>
-            </h3>
-          )}
-            </div>
-          )}{/* <h3 className="page-title">
+                  <React.Fragment>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        alignItems: "center",
+                      }}
+                    >
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={boardTitle}
+                        onChange={handleInputChange}
+                        onKeyDown={handleKeyDown}
+                        onBlur={handleCancel}
+                        autoFocus
+                        style={{ width: "300px" }}
+                        required
+                        maxLength={50}
+                      />
+                      <a
+                        className="btn btn-primary"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={handleSave}
+                        style={{
+                          marginLeft: "10px",
+                          height: "42px",
+                          textAlign: "center",
+                        }}
+                      >
+                        Save
+                      </a>
+                    </div>
+                    {boardTitle?.trim() === "" && (
+                      <p className="text-danger">
+                        Board title cannot be empty.
+                      </p>
+                    )}
+                  </React.Fragment>
+                ) : (
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "center",
+                    }}
+                  >
+                    <h3 className="page-title">
+                      {boardTitle
+                        ? boardTitle
+                        : BoardData?.board?.boardTitle
+                        ? BoardData?.board?.boardTitle
+                        : BoardData?._id
+                        ? BoardData?.projectName
+                        : BoardData?.board?.project?.projectName}
+                    </h3>
+                    {(role === "admin" || permissions?.projectManagement) && (
+                      <h3 style={{ marginLeft: "1%" }}>
+                        <a onClick={handleEditClick}>
+                          <i className="fa fa-pencil ml-2" />
+                        </a>
+                      </h3>
+                    )}
+                  </div>
+                )}
+                {/* <h3 className="page-title">
                   {`${ProjectData?.projectName}`} - Task Board
                 </h3> */}
                 <ul className="breadcrumb">
                   <li className="breadcrumb-item">
-                    <Link
-                      to={
-                        "/task-board"
-                      }
-                    >
+                    <Link to={"/task-board"}>
                       <span className="arrow_routes"></span>
-                      {t('Task Boards')}
+                      {t("Task Boards")}
                     </Link>
                   </li>
                   <li className="breadcrumb-item active">Board</li>
                 </ul>
-                
-                
               </div>
               <div className="col-auto float-end ms-auto">
                 <div className="d-flex gap-2 align-items-center">
                   <div className="project-members mr-3">
-                    <ul className="team-members" style={{minWidth: 'max-content', marginBottom: 0}}>
+                    <ul
+                      className="team-members"
+                      style={{ minWidth: "max-content", marginBottom: 0 }}
+                    >
                       {employees?.slice(0, 4).map((developer, index) => (
                         <li key={index}>
                           <Tooltip title={developer?.fullName}>
-                            <Avatar size={24} style={{cursor: 'pointer'}} src={developer?.imageUrl || user_icon} />
+                            <Avatar
+                              size={24}
+                              style={{ cursor: "pointer" }}
+                              src={developer?.imageUrl || user_icon}
+                            />
                           </Tooltip>
                         </li>
                       ))}
@@ -1098,7 +1218,12 @@ const TaskBoard = () => {
                         <li className="dropdown avatar-dropdown">
                           <Link
                             className="all-users dropdown-toggle projectTeamMember"
-                            style={{display:'inline-flex', height: '24px', width: '24px', fontSize: '10px'}}
+                            style={{
+                              display: "inline-flex",
+                              height: "24px",
+                              width: "24px",
+                              fontSize: "10px",
+                            }}
                             data-bs-toggle="dropdown"
                             aria-expanded="false"
                           >
@@ -1114,7 +1239,7 @@ const TaskBoard = () => {
                                   <Tooltip title={developer?.fullName}>
                                     <Avatar
                                       src={developer?.imageUrl || user_icon}
-                                      style={{cursor: 'pointer'}}
+                                      style={{ cursor: "pointer" }}
                                     />
                                   </Tooltip>
                                 </a>
@@ -1125,19 +1250,21 @@ const TaskBoard = () => {
                       )}
                     </ul>
                   </div>
-                  {(role === "admin" || permissions?.projectManagement) && !BoardData?._id && !BoardData?.board?.project && (
+                  {(role === "admin" || permissions?.projectManagement) &&
+                    !BoardData?._id &&
+                    !BoardData?.board?.project && (
                       <a
                         className="btn add-btn mr-3"
                         onClick={() => {
                           fetchAllEmployees();
                           setOpenUser(true);
-                          setColumnId('');
+                          setColumnId("");
                         }}
                       >
                         <i className="fa fa-pencil ml-2" />
                         Edit Members
                       </a>
-                  )}
+                    )}
                   <a
                     className="btn add-btn"
                     onClick={() => {
@@ -1152,19 +1279,32 @@ const TaskBoard = () => {
           </div>
           {/* /Page Header */}
           <DragDropContext onDragEnd={onDragEnd}>
-            <Droppable droppableId="all-columns" direction="horizontal" type="column">
+            <Droppable
+              droppableId="all-columns"
+              direction="horizontal"
+              type="column"
+            >
               {(provided) => (
-                <div className="kanban-board card mb-0" {...provided.droppableProps} ref={provided.innerRef}>
+                <div
+                  className="kanban-board card mb-0"
+                  {...provided.droppableProps}
+                  ref={provided.innerRef}
+                >
                   {isLoading ? (
                     <div className="col-md-12 text-center">
                       <Spin size="large" tip="Loading..." />
                     </div>
-                  ) : 
-                  columns?.length > 0 ? (
+                  ) : columns?.length > 0 ? (
                     <div className="card-body">
                       <div className="kanban-cont">
                         {columns.map((column, index) => (
-                          <Draggable key={column._id} draggableId={column._id} index={index} type="column" isDragDisabled={disableDrag}>
+                          <Draggable
+                            key={column._id}
+                            draggableId={column._id}
+                            index={index}
+                            type="column"
+                            isDragDisabled={disableDrag}
+                          >
                             {(provided) => (
                               <div
                                 className="kanban-list-container"
@@ -1176,310 +1316,654 @@ const TaskBoard = () => {
                                     column.color ? column.color : "primary"
                                   }`}
                                   style={{
-                                     marginRight:'10px'
-                                     }}
+                                    marginRight: "10px",
+                                  }}
                                 >
-                                  <div className="kanban-header"
-                                   {...provided.dragHandleProps}>
+                                  <div
+                                    className="kanban-header"
+                                    {...provided.dragHandleProps}
+                                  >
                                     <label className="status-title longText3">
                                       {column.title}
-                                      </label>
-                                      {column.title !== "Backlog" && (
-                                        <div className="dropdown kanban-action">
-                                      <a
-                                        data-bs-toggle='dropdown'
-                                        aria-expanded='true'
-                                        style={{ cursor: "pointer" }}>
-                                        <i className="fa fa-ellipsis-v " />
-                                      </a>
-                                      <div className="dropdown-menu dropdown-menu-right">
+                                    </label>
+                                    {column.title !== "Backlog" && (
+                                      <div className="dropdown kanban-action">
                                         <a
-                                          className="dropdown-item"
-                                          onClick={() => {
-                                            setOpen({
-                                              isAddOpen: true,
-                                              data: column,
-                                            });
-                                            console.log(column);
-                                          }}
+                                          data-bs-toggle="dropdown"
+                                          aria-expanded="true"
+                                          style={{ cursor: "pointer" }}
                                         >
-                                          Edit
+                                          <i className="fa fa-ellipsis-v " />
                                         </a>
-                                        <a
-                                          className="dropdown-item"
-                                          onClick={() => {
-                                            setOpen({
-                                              isAddOpen: false,
-                                              isDelOpen: true,
-                                              data: column,
-                                            });
-                                            console.log(column);
-                                          }}
-                                        >
-                                          Delete
-                                        </a>
+                                        <div className="dropdown-menu dropdown-menu-right">
+                                          <a
+                                            className="dropdown-item"
+                                            onClick={() => {
+                                              setOpen({
+                                                isAddOpen: true,
+                                                data: column,
+                                              });
+                                              console.log(column);
+                                            }}
+                                          >
+                                            Edit
+                                          </a>
+                                          <a
+                                            className="dropdown-item"
+                                            onClick={() => {
+                                              setOpen({
+                                                isAddOpen: false,
+                                                isDelOpen: true,
+                                                data: column,
+                                              });
+                                              console.log(column);
+                                            }}
+                                          >
+                                            Delete
+                                          </a>
+                                        </div>
                                       </div>
-                                    </div>
                                     )}
                                   </div>
-                                  <Droppable droppableId={column._id} type="task">
+                                  <Droppable
+                                    droppableId={column._id}
+                                    type="task"
+                                  >
                                     {(provided) => (
-                                      <div className="kanban-wrap" style={{ height: "365px", overflowY: "auto", padding: 5 }} ref={provided.innerRef} {...provided.droppableProps}>
-                                        {
-                                          isTaskLoading ? (
-                                            <div className="col-md-12 text-center">
-                                              <Spin size="medium" tip="Loading..." />
-                                            </div>
-                                          ) : 
-                                        (
-                                          column?.tasks?.length > 0 ? (
-                                            column.tasks.map((task, index) => (
-                                              <Draggable
-                                                key={task.taskId}
-                                                draggableId={task.taskId}
-                                                index={index} 
-                                                isDragDisabled={disableDrag}
-                                                >
-                                                {(provided) => (
-                                                  <div
-                                                  {...provided.draggableProps} 
-                                                  {...provided.dragHandleProps} 
+                                      <div
+                                        className="kanban-wrap"
+                                        style={{
+                                          height: "365px",
+                                          overflowY: "auto",
+                                          padding: 5,
+                                        }}
+                                        ref={provided.innerRef}
+                                        {...provided.droppableProps}
+                                      >
+                                        {isTaskLoading ? (
+                                          <div className="col-md-12 text-center">
+                                            <Spin
+                                              size="medium"
+                                              tip="Loading..."
+                                            />
+                                          </div>
+                                        ) : column?.tasks?.length > 0 ? (
+                                          column.tasks.map((task, index) => (
+                                            <Draggable
+                                              key={task.taskId}
+                                              draggableId={task.taskId}
+                                              index={index}
+                                              isDragDisabled={disableDrag}
+                                            >
+                                              {(provided) => (
+                                                <div
+                                                  {...provided.draggableProps}
+                                                  {...provided.dragHandleProps}
                                                   ref={provided.innerRef}
+                                                >
+                                                  <div
+                                                    className="card panel"
+                                                    style={{
+                                                      marginBottom: "5px",
+                                                    }}
                                                   >
-                                                    <div className="card panel" 
-                                                    style={{ 
-                                                      marginBottom: '5px' 
-                                                      }}>
-                                                      <div className="kanban-box">
-                                                        <div className="task-board-header">
-                                                          <span className="status-title" 
-                                                          style={{ paddingRight: 'inherit', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'space-between', width: '100%' }}>
-                                                            <a 
+                                                    <div
+                                                      className="kanban-box"
+                                                      onClick={() => {
+                                                        const title =
+                                                          getTaskTitle(
+                                                            task.taskId
+                                                          );
+                                                        const tags =
+                                                          getTaskTags(
+                                                            task.taskId
+                                                          );
+                                                        const description =
+                                                          getTaskDescription(
+                                                            task.taskId
+                                                          );
+                                                        const status =
+                                                          column.title;
+                                                        const taskAssignedDevelopers =
+                                                          getTaskAssignedDevelopers(
+                                                            task.taskId
+                                                          );
+
+                                                        setSelectedTask({
+                                                          _id: task.taskId,
+                                                          title,
+                                                          tags,
+                                                          description,
+                                                          ProjectData:
+                                                            BoardData?._id
+                                                              ? {
+                                                                  projectName:
+                                                                    BoardData?.projectName,
+                                                                  _id: BoardData?._id,
+                                                                  assignedDevelopers:
+                                                                    employees,
+                                                                }
+                                                              : BoardData?.board
+                                                                  ?.project
+                                                              ? {
+                                                                  projectName:
+                                                                    BoardData
+                                                                      ?.board
+                                                                      ?.project
+                                                                      ?.projectName,
+                                                                  _id: BoardData
+                                                                    ?.board
+                                                                    ?.project
+                                                                    ?._id,
+                                                                  assignedDevelopers:
+                                                                    employees,
+                                                                }
+                                                              : {
+                                                                  boardTitle:
+                                                                    BoardData
+                                                                      ?.board
+                                                                      ?.boardTitle,
+                                                                  _id: BoardData
+                                                                    ?.board
+                                                                    ?._id,
+                                                                  project: null,
+                                                                  assignedDevelopers:
+                                                                    employees,
+                                                                },
+                                                          status,
+                                                          boardId: boardId,
+                                                          columnId: column._id,
+                                                          columnName:
+                                                            column.title,
+                                                          assignedDevelopers:
+                                                            taskAssignedDevelopers,
+                                                          columnColor:
+                                                            column.color ||
+                                                            "primary", // Add column color
+                                                          allColumns:
+                                                            columns.map(
+                                                              (col) => ({
+                                                                // Add all columns data
+                                                                id: col._id,
+                                                                title:
+                                                                  col.title,
+                                                                color:
+                                                                  col.color ||
+                                                                  "primary",
+                                                              })
+                                                            ),
+                                                        });
+                                                        setViewModal(true);
+                                                      }}
+                                                    >
+                                                      <div className="task-board-header">
+                                                        <span
+                                                          className="status-title"
+                                                          style={{
+                                                            paddingRight:
+                                                              "inherit",
+                                                            display: "flex",
+                                                            alignItems:
+                                                              "center",
+                                                            gap: "8px",
+                                                            justifyContent:
+                                                              "space-between",
+                                                            width: "100%",
+                                                          }}
+                                                        >
+                                                          <a
                                                             style={{
-                                                              wordBreak:'break-word'
+                                                              wordBreak:
+                                                                "break-word",
                                                             }}
-                                                            onClick={() => 
-                                                              {
-                                                              const title = getTaskTitle(task.taskId);
-                                                              const tags = getTaskTags(task.taskId);
-                                                              const description = getTaskDescription(task.taskId);
-                                                              const status = column.title;
-                                                              const taskAssignedDevelopers = getTaskAssignedDevelopers(task.taskId);
+                                                            // onClick={() => {
+                                                            //   const title =
+                                                            //     getTaskTitle(
+                                                            //       task.taskId
+                                                            //     );
+                                                            //   const tags =
+                                                            //     getTaskTags(
+                                                            //       task.taskId
+                                                            //     );
+                                                            //   const description =
+                                                            //     getTaskDescription(
+                                                            //       task.taskId
+                                                            //     );
+                                                            //   const status =
+                                                            //     column.title;
+                                                            //   const taskAssignedDevelopers =
+                                                            //     getTaskAssignedDevelopers(
+                                                            //       task.taskId
+                                                            //     );
 
-                                                              setSelectedTask({
-                                                                _id: task.taskId,
-                                                                title,
-                                                                tags,
-                                                                description,
-                                                                ProjectData: BoardData?._id ? 
-                                                                  {
-                                                                    projectName: BoardData?.projectName,
-                                                                    _id: BoardData?._id,
-                                                                    assignedDevelopers: employees
-                                                                  } 
-                                                                  : BoardData?.board?.project ? 
-                                                                  {
-                                                                    projectName: BoardData?.board?.project?.projectName,
-                                                                    _id: BoardData?.board?.project?._id,
-                                                                    assignedDevelopers: employees
-                                                                  } 
-                                                                  : 
-                                                                  {
-                                                                    boardTitle: BoardData?.board?.boardTitle,
-                                                                    _id: BoardData?.board?._id,
-                                                                    project: null,
-                                                                    assignedDevelopers: employees
-                                                                  },
-                                                                status,
-                                                                boardId: boardId,
-                                                                columnId: column._id,
-                                                                columnName: column.title,
-                                                                assignedDevelopers: taskAssignedDevelopers,
-                                                                columnColor: column.color || 'primary', // Add column color
-                                                                allColumns: columns.map(col => ({ // Add all columns data
-                                                                  id: col._id,
-                                                                  title: col.title,
-                                                                  color: col.color || 'primary'
-                                                                }))
-                                                              });
-                                                              setViewModal(true);
+                                                            //   setSelectedTask({
+                                                            //     _id: task.taskId,
+                                                            //     title,
+                                                            //     tags,
+                                                            //     description,
+                                                            //     ProjectData:
+                                                            //       BoardData?._id
+                                                            //         ? {
+                                                            //             projectName:
+                                                            //               BoardData?.projectName,
+                                                            //             _id: BoardData?._id,
+                                                            //             assignedDevelopers:
+                                                            //               employees,
+                                                            //           }
+                                                            //         : BoardData
+                                                            //             ?.board
+                                                            //             ?.project
+                                                            //         ? {
+                                                            //             projectName:
+                                                            //               BoardData
+                                                            //                 ?.board
+                                                            //                 ?.project
+                                                            //                 ?.projectName,
+                                                            //             _id: BoardData
+                                                            //               ?.board
+                                                            //               ?.project
+                                                            //               ?._id,
+                                                            //             assignedDevelopers:
+                                                            //               employees,
+                                                            //           }
+                                                            //         : {
+                                                            //             boardTitle:
+                                                            //               BoardData
+                                                            //                 ?.board
+                                                            //                 ?.boardTitle,
+                                                            //             _id: BoardData
+                                                            //               ?.board
+                                                            //               ?._id,
+                                                            //             project:
+                                                            //               null,
+                                                            //             assignedDevelopers:
+                                                            //               employees,
+                                                            //           },
+                                                            //     status,
+                                                            //     boardId:
+                                                            //       boardId,
+                                                            //     columnId:
+                                                            //       column._id,
+                                                            //     columnName:
+                                                            //       column.title,
+                                                            //     assignedDevelopers:
+                                                            //       taskAssignedDevelopers,
+                                                            //     columnColor:
+                                                            //       column.color ||
+                                                            //       "primary", // Add column color
+                                                            //     allColumns:
+                                                            //       columns.map(
+                                                            //         (col) => ({
+                                                            //           // Add all columns data
+                                                            //           id: col._id,
+                                                            //           title:
+                                                            //             col.title,
+                                                            //           color:
+                                                            //             col.color ||
+                                                            //             "primary",
+                                                            //         })
+                                                            //       ),
+                                                            //   });
+                                                            //   setViewModal(
+                                                            //     true
+                                                            //   );
+                                                            // }}
+                                                          >
+                                                            {getTaskTitle(
+                                                              task.taskId
+                                                            )}
+                                                          </a>
+                                                          <div
+                                                            style={{
+                                                              display: "flex",
+                                                              alignItems:
+                                                                "center",
+                                                              gap: "4px",
                                                             }}
-                                                            >
-                                                              {getTaskTitle(task.taskId)}
-                                                            </a>
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                              <div className="project-members" style={{margin: '4px auto'}}>
-                                                                <ul className="team-members" style={{minWidth: 'max-content'}}>
-                                                                  {getTaskAssignedDevelopers(task.taskId)?.slice(0, 2).map((developer, index) => (
-                                                                    <li key={index}>
-                                                                      <Tooltip title={developer?.fullName}>
-                                                                        <Avatar size={24} style={{cursor: 'pointer'}} src={developer?.imageUrl || user_icon} />
-                                                                      </Tooltip>
-                                                                    </li>
-                                                                  ))}
-                                                                  {getTaskAssignedDevelopers(task.taskId)?.length > 2 && (
-                                                                    <li className="dropdown avatar-dropdown">
-                                                                      <Link
-                                                                        className="all-users dropdown-toggle projectTeamMember"
-                                                                        style={{display:'inline-flex', height: '24px', width: '24px', fontSize: '10px'}}
-                                                                        data-bs-toggle="dropdown"
-                                                                        aria-expanded="false"
-                                                                      >
-                                                                        +{getTaskAssignedDevelopers(task.taskId)?.length - 2}
-                                                                      </Link>
-                                                                      <div className="dropdown-menu dropdown-menu-right">
-                                                                        <div className="avatar-group">
-                                                                          {getTaskAssignedDevelopers(task.taskId)?.slice(2).map((developer, index) => (
-                                                                            <a
-                                                                              className="avatar avatar-xs projectTeamMember"
-                                                                              key={index}
-                                                                            >
-                                                                              <Tooltip title={developer?.fullName}>
-                                                                                <Avatar
-                                                                                  src={developer?.imageUrl || user_icon}
-                                                                                  style={{cursor: 'pointer'}}
-                                                                                />
-                                                                              </Tooltip>
-                                                                            </a>
-                                                                          ))}
-                                                                        </div>
-                                                                      </div>
-                                                                    </li>
-                                                                  )}
-                                                                </ul>
-                                                              </div>
-                                                          <div className="dropdown kanban-task-action">
-                                                            <a 
-                                                            data-bs-toggle='dropdown'
-                                                            aria-expanded='true'
-                                                            style={{ cursor: "pointer", padding: '5px'}}
-                                                            >
-                                                              <i className="fa fa-angle-down" />
-                                                            </a>
-                                                            <div className="dropdown-menu dropdown-menu-right">
-                                                            {/* {(role === "admin" || permissions?.projectManagement) && ( */}
-                                                              <a 
-                                                              className="dropdown-item" 
-                                                              onClick={() => 
-                                                                {
-                                                                const title = getTaskTitle(task.taskId);
-                                                                const tags = getTaskTags(task.taskId);
-                                                                const description = getTaskDescription(task.taskId);
-                                                                const status = column.title;
-                                                                const taskAssignedDevelopers = getTaskAssignedDevelopers(task.taskId);
-
-                                                                setSelectedTask({
-                                                                  _id: task.taskId,
-                                                                  title,
-                                                                  tags,
-                                                                  description,
-                                                                  ProjectData: BoardData?._id ? 
-                                                                    {
-                                                                      projectName: BoardData?.projectName,
-                                                                      _id: BoardData?._id,
-                                                                      assignedDevelopers: employees
-                                                                    } 
-                                                                    : BoardData?.board?.project ? 
-                                                                    {
-                                                                      projectName: BoardData?.board?.project?.projectName,
-                                                                      _id: BoardData?.board?.project?._id,
-                                                                      assignedDevelopers: employees
-                                                                    } 
-                                                                    : 
-                                                                    {
-                                                                      boardTitle: BoardData?.board?.boardTitle,
-                                                                      _id: BoardData?.board?._id,
-                                                                      project: null,
-                                                                      assignedDevelopers: employees
-                                                                    },
-                                                                  status,
-                                                                  boardId: boardId,
-                                                                  columnId: column._id,
-                                                                  columnName: column.title,
-                                                                  assignedDevelopers: taskAssignedDevelopers,
-                                                                  columnColor: column.color || 'primary',
-                                                                  allColumns: columns.map(col => ({
-                                                                    id: col._id,
-                                                                    title: col.title,
-                                                                    color: col.color || 'primary'
-                                                                  }))
-                                                                });
-                                                                setViewModal(true);
+                                                          >
+                                                            <div
+                                                              className="project-members"
+                                                              style={{
+                                                                margin:
+                                                                  "4px auto",
                                                               }}
+                                                            >
+                                                              <ul
+                                                                className="team-members"
+                                                                style={{
+                                                                  minWidth:
+                                                                    "max-content",
+                                                                }}
                                                               >
-                                                                Edit
-                                                              </a>
-                                                            {/* )} */}
-                                                              <a 
-                                                              className="dropdown-item"
-                                                              onClick={() => 
-                                                                {
-                                                                const title = getTaskTitle(task.taskId);
-                                                                setAddTask({ isDelOpen: true, isAddOpen: false, data: task, title: title });
-                                                                setColumnId(column._id);
-                                                              }}
-                                                              >
-                                                                Remove
-                                                              </a>
-                                                            </div>
-                                                          </div>
-                                                            </div>
-                                                          </span>
-                                                        </div>
-                                                        <div className="task-board-body">
-                                                          <div className="kanban-footer">
-                                                            <span className="task-info-cont" style={{ maxHeight: "4em", overflow: "hidden" }}>
-                                                              <span className="task-date">
-                                                                {" "}
-                                                                {getTaskTags(
+                                                                {getTaskAssignedDevelopers(
                                                                   task.taskId
-                                                                )?.map((tag) => (
-                                                                  <Tag 
-                                                                  key={tag}
-                                                                  color={colorMapping[column.color]} 
-                                                                  style={{ marginBottom: "4px" }}
-                                                                  >
-                                                                    {tag}
-                                                                  </Tag>
-                                                                ))}
-                                                              </span>
-                                                            </span>
+                                                                )
+                                                                  ?.slice(0, 2)
+                                                                  .map(
+                                                                    (
+                                                                      developer,
+                                                                      index
+                                                                    ) => (
+                                                                      <li
+                                                                        key={
+                                                                          index
+                                                                        }
+                                                                      >
+                                                                        <Tooltip
+                                                                          title={
+                                                                            developer?.fullName
+                                                                          }
+                                                                        >
+                                                                          <Avatar
+                                                                            size={
+                                                                              24
+                                                                            }
+                                                                            style={{
+                                                                              cursor:
+                                                                                "pointer",
+                                                                            }}
+                                                                            src={
+                                                                              developer?.imageUrl ||
+                                                                              user_icon
+                                                                            }
+                                                                          />
+                                                                        </Tooltip>
+                                                                      </li>
+                                                                    )
+                                                                  )}
+                                                                {getTaskAssignedDevelopers(
+                                                                  task.taskId
+                                                                )?.length >
+                                                                  2 && (
+                                                                  <li className="dropdown avatar-dropdown">
+                                                                    <Link
+                                                                      className="all-users dropdown-toggle projectTeamMember"
+                                                                      style={{
+                                                                        display:
+                                                                          "inline-flex",
+                                                                        height:
+                                                                          "24px",
+                                                                        width:
+                                                                          "24px",
+                                                                        fontSize:
+                                                                          "10px",
+                                                                      }}
+                                                                      data-bs-toggle="dropdown"
+                                                                      aria-expanded="false"
+                                                                    >
+                                                                      +
+                                                                      {getTaskAssignedDevelopers(
+                                                                        task.taskId
+                                                                      )
+                                                                        ?.length -
+                                                                        2}
+                                                                    </Link>
+                                                                    <div className="dropdown-menu dropdown-menu-right">
+                                                                      <div className="avatar-group">
+                                                                        {getTaskAssignedDevelopers(
+                                                                          task.taskId
+                                                                        )
+                                                                          ?.slice(
+                                                                            2
+                                                                          )
+                                                                          .map(
+                                                                            (
+                                                                              developer,
+                                                                              index
+                                                                            ) => (
+                                                                              <a
+                                                                                className="avatar avatar-xs projectTeamMember"
+                                                                                key={
+                                                                                  index
+                                                                                }
+                                                                              >
+                                                                                <Tooltip
+                                                                                  title={
+                                                                                    developer?.fullName
+                                                                                  }
+                                                                                >
+                                                                                  <Avatar
+                                                                                    src={
+                                                                                      developer?.imageUrl ||
+                                                                                      user_icon
+                                                                                    }
+                                                                                    style={{
+                                                                                      cursor:
+                                                                                        "pointer",
+                                                                                    }}
+                                                                                  />
+                                                                                </Tooltip>
+                                                                              </a>
+                                                                            )
+                                                                          )}
+                                                                      </div>
+                                                                    </div>
+                                                                  </li>
+                                                                )}
+                                                              </ul>
+                                                            </div>
+                                                            <div className="dropdown kanban-task-action" onClick={(e) => e.stopPropagation()}>
+                                                              <a
+                                                                data-bs-toggle="dropdown"
+                                                                aria-expanded="true"
+                                                                style={{
+                                                                  cursor:
+                                                                    "pointer",
+                                                                  padding:
+                                                                    "5px",
+                                                                }}
+                                                              >
+                                                                <i className="fa fa-angle-down" />
+                                                              </a>
+                                                              <div className="dropdown-menu dropdown-menu-right">
+                                                                {/* {(role === "admin" || permissions?.projectManagement) && ( */}
+                                                                <a
+                                                                  className="dropdown-item"
+                                                                  onClick={() => {
+                                                                    const title =
+                                                                      getTaskTitle(
+                                                                        task.taskId
+                                                                      );
+                                                                    const tags =
+                                                                      getTaskTags(
+                                                                        task.taskId
+                                                                      );
+                                                                    const description =
+                                                                      getTaskDescription(
+                                                                        task.taskId
+                                                                      );
+                                                                    const status =
+                                                                      column.title;
+                                                                    const taskAssignedDevelopers =
+                                                                      getTaskAssignedDevelopers(
+                                                                        task.taskId
+                                                                      );
+
+                                                                    setSelectedTask(
+                                                                      {
+                                                                        _id: task.taskId,
+                                                                        title,
+                                                                        tags,
+                                                                        description,
+                                                                        ProjectData:
+                                                                          BoardData?._id
+                                                                            ? {
+                                                                                projectName:
+                                                                                  BoardData?.projectName,
+                                                                                _id: BoardData?._id,
+                                                                                assignedDevelopers:
+                                                                                  employees,
+                                                                              }
+                                                                            : BoardData
+                                                                                ?.board
+                                                                                ?.project
+                                                                            ? {
+                                                                                projectName:
+                                                                                  BoardData
+                                                                                    ?.board
+                                                                                    ?.project
+                                                                                    ?.projectName,
+                                                                                _id: BoardData
+                                                                                  ?.board
+                                                                                  ?.project
+                                                                                  ?._id,
+                                                                                assignedDevelopers:
+                                                                                  employees,
+                                                                              }
+                                                                            : {
+                                                                                boardTitle:
+                                                                                  BoardData
+                                                                                    ?.board
+                                                                                    ?.boardTitle,
+                                                                                _id: BoardData
+                                                                                  ?.board
+                                                                                  ?._id,
+                                                                                project:
+                                                                                  null,
+                                                                                assignedDevelopers:
+                                                                                  employees,
+                                                                              },
+                                                                        status,
+                                                                        boardId:
+                                                                          boardId,
+                                                                        columnId:
+                                                                          column._id,
+                                                                        columnName:
+                                                                          column.title,
+                                                                        assignedDevelopers:
+                                                                          taskAssignedDevelopers,
+                                                                        columnColor:
+                                                                          column.color ||
+                                                                          "primary",
+                                                                        allColumns:
+                                                                          columns.map(
+                                                                            (
+                                                                              col
+                                                                            ) => ({
+                                                                              id: col._id,
+                                                                              title:
+                                                                                col.title,
+                                                                              color:
+                                                                                col.color ||
+                                                                                "primary",
+                                                                            })
+                                                                          ),
+                                                                          isEditing: true,
+                                                                      }
+                                                                    );
+                                                                    setViewModal(
+                                                                      true
+                                                                    );
+                                                                  }}
+                                                                >
+                                                                  Edit
+                                                                </a>
+                                                                {/* )} */}
+                                                                <a
+                                                                  className="dropdown-item"
+                                                                  onClick={() => {
+                                                                    const title =
+                                                                      getTaskTitle(
+                                                                        task.taskId
+                                                                      );
+                                                                    setAddTask({
+                                                                      isDelOpen: true,
+                                                                      isAddOpen: false,
+                                                                      data: task,
+                                                                      title:
+                                                                        title,
+                                                                    });
+                                                                    setColumnId(
+                                                                      column._id
+                                                                    );
+                                                                  }}
+                                                                >
+                                                                  Remove
+                                                                </a>
+                                                              </div>
+                                                            </div>
                                                           </div>
+                                                        </span>
+                                                      </div>
+                                                      <div className="task-board-body">
+                                                        <div className="kanban-footer">
+                                                          <span
+                                                            className="task-info-cont"
+                                                            style={{
+                                                              maxHeight: "4em",
+                                                              overflow:
+                                                                "hidden",
+                                                            }}
+                                                          >
+                                                            <span className="task-date">
+                                                              {" "}
+                                                              {getTaskTags(
+                                                                task.taskId
+                                                              )?.map((tag) => (
+                                                                <Tag
+                                                                  key={tag}
+                                                                  color={
+                                                                    colorMapping[
+                                                                      column
+                                                                        .color
+                                                                    ]
+                                                                  }
+                                                                  style={{
+                                                                    marginBottom:
+                                                                      "4px",
+                                                                  }}
+                                                                >
+                                                                  {tag}
+                                                                </Tag>
+                                                              ))}
+                                                            </span>
+                                                          </span>
                                                         </div>
                                                       </div>
                                                     </div>
                                                   </div>
-                                                )}
-                                              </Draggable>
-                                            ))
-                                          ) : (
-                                            customEmptyText2
-                                          )
-                                        )
-                                        }
+                                                </div>
+                                              )}
+                                            </Draggable>
+                                          ))
+                                        ) : (
+                                          customEmptyText2
+                                        )}
                                         {provided.placeholder}
                                       </div>
                                     )}
                                   </Droppable>
-                                  <div className="add-new-task" style={{ padding: '5px', borderTop: '1px solid #ddd' }}>
-                                    <a 
-                                    style={{ cursor: "pointer" }} 
-                                    // style={{ cursor: (role === "admin" || permissions.projectManagement) ? "pointer" : "not-allowed" }} 
-                                    // onClick={() => {
-                                    //   if ((role === "admin" || permissions.projectManagement)) {
-                                    //     getTasksOptions(ProjectData?._id);
-                                    //     setTaskModal(true);
-                                    //     setColumnId(column._id);
-                                    //   } 
-                                    //   else {
-                                    //     return;
-                                    //   }
-                                    // }}
-                                    onClick={() => {
-                                      getTasksOptions(BoardData?._id ? BoardData?._id : BoardData?.board?.project ? BoardData?.board?.project?._id : BoardData?.board?._id);
-                                      setTaskModal(true);
-                                      setColumnId(column._id);
+                                  <div
+                                    className="add-new-task"
+                                    style={{
+                                      padding: "5px",
+                                      borderTop: "1px solid #ddd",
                                     }}
+                                  >
+                                    <a
+                                      style={{ cursor: "pointer" }}
+                                      // style={{ cursor: (role === "admin" || permissions.projectManagement) ? "pointer" : "not-allowed" }}
+                                      // onClick={() => {
+                                      //   if ((role === "admin" || permissions.projectManagement)) {
+                                      //     getTasksOptions(ProjectData?._id);
+                                      //     setTaskModal(true);
+                                      //     setColumnId(column._id);
+                                      //   }
+                                      //   else {
+                                      //     return;
+                                      //   }
+                                      // }}
+                                      onClick={() => {
+                                        getTasksOptions(
+                                          BoardData?._id
+                                            ? BoardData?._id
+                                            : BoardData?.board?.project
+                                            ? BoardData?.board?.project?._id
+                                            : BoardData?.board?._id
+                                        );
+                                        setTaskModal(true);
+                                        setColumnId(column._id);
+                                      }}
                                     >
                                       Add New Task
                                     </a>
@@ -1552,16 +2036,18 @@ const TaskBoard = () => {
                   <label>
                     Column Title <span className="text-danger">*</span>
                   </label>
-                  <Form.Item name="title" className="custom-border"
-                  rules={[
-                    {
-                      whitespace: true,
-                      required: true,
-                      message: "Please enter a title name",
-                    },
-                  ]}
+                  <Form.Item
+                    name="title"
+                    className="custom-border"
+                    rules={[
+                      {
+                        whitespace: true,
+                        required: true,
+                        message: "Please enter a title name",
+                      },
+                    ]}
                   >
-                    <Input className="form-control" autoFocus maxLength={30}/>
+                    <Input className="form-control" autoFocus maxLength={30} />
                   </Form.Item>
                 </div>
                 <div className="form-group task-board-color">
@@ -1580,7 +2066,8 @@ const TaskBoard = () => {
                             value={color.value}
                             className="board-control-input"
                             defaultChecked={
-                              (open?.data?.color && color.value === open?.data?.color) ||
+                              (open?.data?.color &&
+                                color.value === open?.data?.color) ||
                               (!open?.data?.color && color.value === "primary")
                             }
                           />
@@ -1702,7 +2189,7 @@ const TaskBoard = () => {
                   <span
                     dangerouslySetInnerHTML={{
                       __html: t("holiday.confirmRemove", {
-                        holiday: addTask?.title
+                        holiday: addTask?.title,
                       }),
                     }}
                   />
@@ -1721,7 +2208,7 @@ const TaskBoard = () => {
                       {loader ? (
                         <Spin size="small" indicator={antIcon} />
                       ) : (
-                        'Remove'
+                        "Remove"
                       )}
                     </Button>
                   </div>
@@ -1806,25 +2293,41 @@ const TaskBoard = () => {
                         notFoundContent={
                           <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
                         }
-                        dropdownRender={(menu) => <>
-                        {menu}
-                        <Divider style={{ margin: '5px 0' }} />
-                        <Button
-                            type="button"
-                            icon={<PlusOutlined style={{ fontSize: '20px', marginRight: '5px' }} />}
-                            className="addButtonStyles"
-                            style={{ width: '100%', height: '40px', background: '#efefef', borderColor: '#efefef', display: 'flex', justifyContent: 'center', alignItems: 'center',
-                                    cursor: "pointer"
-                            }}
-                            onClick={() => {
-                              setSelectedTeamMembers([]); // Clear selected team members
-                              form2.resetFields(); // Reset form fields
-                              setAddTask({ isAddOpen: true, data: '' });
-                            }}
-                        >
-                            Add New Task
-                        </Button>
-                        </>}
+                        dropdownRender={(menu) => (
+                          <>
+                            {menu}
+                            <Divider style={{ margin: "5px 0" }} />
+                            <Button
+                              type="button"
+                              icon={
+                                <PlusOutlined
+                                  style={{
+                                    fontSize: "20px",
+                                    marginRight: "5px",
+                                  }}
+                                />
+                              }
+                              className="addButtonStyles"
+                              style={{
+                                width: "100%",
+                                height: "40px",
+                                background: "#efefef",
+                                borderColor: "#efefef",
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                cursor: "pointer",
+                              }}
+                              onClick={() => {
+                                setSelectedTeamMembers([]); // Clear selected team members
+                                form2.resetFields(); // Reset form fields
+                                setAddTask({ isAddOpen: true, data: "" });
+                              }}
+                            >
+                              Add New Task
+                            </Button>
+                          </>
+                        )}
                         className="custom-select custom-normal"
                         getPopupContainer={() =>
                           document.getElementById("area")
@@ -1843,12 +2346,11 @@ const TaskBoard = () => {
                 <div className="row">
                   <div className="col-sm-6">
                     <div className="form-group">
-                      <label>{t("projectScreen.Modal.addTeam")}{" "}</label>
+                      <label>{t("projectScreen.Modal.addTeam")} </label>
                       <div style={{ position: "relative" }} id="area">
                         <Form.Item
                           name="assignedDevelopers"
                           className="addTeamHeight"
-                          
                         >
                           <Select
                             showSearch
@@ -1863,7 +2365,7 @@ const TaskBoard = () => {
                             }
                             optionFilterProp="children"
                             notFoundContent={
-                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
                             }
                             dropdownRender={(menu) => <>{menu}</>}
                             getPopupContainer={() =>
@@ -1874,7 +2376,6 @@ const TaskBoard = () => {
                             placeholder={t(
                               "projectScreen.Modal.selectTeamMembers"
                             )}
-                            
                             onChange={handleChange}
                           >
                             {getTeamMemberOptions()}
@@ -1898,14 +2399,10 @@ const TaskBoard = () => {
                             ?.slice(0, 4)
                             .map((teamMember, index) => (
                               <li key={index}>
-                                <Tooltip
-                                  title={teamMember?.fullName}
-                                >
+                                <Tooltip title={teamMember?.fullName}>
                                   <Avatar
                                     style={{ cursor: "pointer" }}
-                                    src={
-                                      teamMember?.imageUrl || user_icon
-                                    }
+                                    src={teamMember?.imageUrl || user_icon}
                                   />
                                 </Tooltip>
                               </li>
@@ -1934,15 +2431,10 @@ const TaskBoard = () => {
                                         className="avatar avatar-xs projectTeamMember"
                                         key={index}
                                       >
-                                        <Tooltip
-                                          title={
-                                            teamMember?.fullName
-                                          }
-                                        >
+                                        <Tooltip title={teamMember?.fullName}>
                                           <Avatar
                                             src={
-                                              teamMember?.imageUrl ||
-                                              user_icon
+                                              teamMember?.imageUrl || user_icon
                                             }
                                             style={{ cursor: "pointer" }}
                                           />
@@ -2062,7 +2554,6 @@ const TaskBoard = () => {
         </div>
       </Modal>
 
-      
       <Modal
         open={openUser}
         onClose={closeTaskModal}
@@ -2086,7 +2577,7 @@ const TaskBoard = () => {
             </div>
 
             <div className="modal-body">
-              <Form 
+              <Form
                 form={form}
                 name="board-members-form"
                 onFinish={handleBoardMembersChange}
@@ -2129,40 +2620,42 @@ const TaskBoard = () => {
                   </div>
                 </div>
 
-                    <ul className="chat-user-list">
-                    {selectedDevelopers?.map((developerId) => (
-                      <li>
-                        <div
-                          className="employee-selection"
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                          }}
-                        >
-                          <div>
-                            <img
-                              alt=""
-                              className="avatar"
-                              src={developerId?.imageUrl || user_icon}
-                            />
-                            <span className="employee-name">
-                              {developerId?.fullName}
-                            </span>
-                          </div>
-
-                          <MinusCircleFilled
-                            style={{ color: "red", cursor: "pointer" }}
-                            onClick={() => handleRemoveDeveloper(developerId?._id)}
+                <ul className="chat-user-list">
+                  {selectedDevelopers?.map((developerId) => (
+                    <li>
+                      <div
+                        className="employee-selection"
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <div>
+                          <img
+                            alt=""
+                            className="avatar"
+                            src={developerId?.imageUrl || user_icon}
                           />
+                          <span className="employee-name">
+                            {developerId?.fullName}
+                          </span>
                         </div>
-                        <hr
-                          className="developer-divider"
-                          style={{ opacity: "0.1" }}
+
+                        <MinusCircleFilled
+                          style={{ color: "red", cursor: "pointer" }}
+                          onClick={() =>
+                            handleRemoveDeveloper(developerId?._id)
+                          }
                         />
-                      </li>
-                    ))}
-                  </ul>
+                      </div>
+                      <hr
+                        className="developer-divider"
+                        style={{ opacity: "0.1" }}
+                      />
+                    </li>
+                  ))}
+                </ul>
 
                 <div className="submit-section">
                   <Form.Item>
@@ -2186,166 +2679,207 @@ const TaskBoard = () => {
         </div>
       </Modal>
 
-
       <Modal
-            open={addTask.isAddOpen}
-            onClose={closeNewTask}
-            aria-labelledby="modal-modal-title"
-            className="modalScroll"
-            aria-describedby="modal-modal-description"
-            disableRestoreFocus
-            BackdropProps={{
-            style: { backgroundColor: "rgb(0 0 0 / 87%)" },
-            }}
-            sx={{
-            overflowY: "scroll",
-            }}
-        >
-            <div className="modal-dialog modal-dialog-centered" role="document">
-            <div className="modal-content">
-                <div className="modal-header">
-                <h5 className="modal-title">{t('holiday.add')} {t('Timesheetemployee.task')}</h5>
-                <button type="button" className="close" onClick={closeNewTask}>
-                    <span aria-hidden="true">×</span>
-                </button>
-                </div>
-                <div className="modal-body">
-                <Form
+        open={addTask.isAddOpen}
+        onClose={closeNewTask}
+        aria-labelledby="modal-modal-title"
+        className="modalScroll"
+        aria-describedby="modal-modal-description"
+        disableRestoreFocus
+        BackdropProps={{
+          style: { backgroundColor: "rgb(0 0 0 / 87%)" },
+        }}
+        sx={{
+          overflowY: "scroll",
+        }}
+      >
+        <div className="modal-dialog modal-dialog-centered" role="document">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">
+                {t("holiday.add")} {t("Timesheetemployee.task")}
+              </h5>
+              <button type="button" className="close" onClick={closeNewTask}>
+                <span aria-hidden="true">×</span>
+              </button>
+            </div>
+            <div className="modal-body">
+              <Form
                 form={form2}
-                onFinish={(values) => {onFinishAdd(values)}
-                }
-                onFinishFailed={({errorFields}) => {
-                    const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
-                    if(consecutiveSpacesError){
-                      message.error(t('allEmp.errors.removeConsecutiveSpaces'))
-                   }else{
-                      message.error(t('allEmp.errors.fillRequiredFields'))
-                    } 
+                onFinish={(values) => {
+                  onFinishAdd(values);
                 }}
-                autoComplete='off'
-                >
-                <div className="row">
-                    <div className="col-12">
-                        <div className="form-group">
-                        <label>
-                        {t('Tasks.title')} <span className="text-danger">*</span>
-                        </label>
-                        <Form.Item
-                            name='title'
-                            className='custom-border'
-                            rules={[
-                            {
-                                whitespace: true,
-                                required: true,
-                                validator: (_, value) => {
-                                if (!value || value.trim() === '') {
-                                    return Promise.reject(t('Tasks.pleaseentertitle'));
-                                } else if (/\s{2,}/.test(value)) {
-                                  return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
-                                } else if (value.length < 3) {
-                                    return Promise.reject(t('Tasks.titleLength'));
-                                }
-                                return Promise.resolve();
-                                },
-                            },
-                            ]}
-                        >
-                            <Input className='form-control' maxLength={50}/>
-                        </Form.Item>
-                        </div>
-                    </div>
-                    <div className="col-12">
-                        <div className="form-group">
-                        <label>
-                        {t('Tasks.tags')} <span className="text-danger">*</span>
-                            <Tooltip className="custom-tooltip" placement="rightBottom" title={(
-                                <label>{t('Tasks.taginstruction')}</label>
-                            )}>
-                                <span style={{border: '1px solid grey', color: 'grey', fontSize: '12px', borderRadius: '50%', padding: '1.5px 4px 1px', margin: '5px', cursor: 'pointer'}}>
-                                {t('Tasks.Qmark')}
-                                </span>
-                            </Tooltip>
-                        </label>
-                        <div style={{ position: "relative" }} className='hideDropdownMenu' id="area22">
-                        <Form.Item
-                            name='tags'
-                            className='addTeamHeight'
-                            rules={[
-                            {
-                                // whitespace: true,
-                                required: true,
-                                message: t('Tasks.pleaseentertags'),
-                            },
-                            ]}
-                        >
-                                <Select
-                                    mode="tags"
-                                    // className="custom-select custom-normal"
-                                    className="custom-select customselect-height"
-                                    getPopupContainer={() =>
-                                        document.getElementById("area22")
-                                    }
-                                />
-                        </Form.Item>
-                        </div>
-                        </div>
-                    </div>
-                    <div className="col-12">
-                        <div className="form-group">
-                        <label style={{display: 'flex', justifyContent: 'space-between'}}>
-                            <div>{t('finance.Invoices.description')} <span className="text-danger">*</span></div>
-                        </label>
-                        <Form.Item
-                            name="description"
-                            rules={[
-                            {
-                                whitespace: true,
-                                required: true,
-                                validator: (_, value) => {
-                                if(!value || value.trim() === ''){
-                                    return Promise.reject(t('Tasks.pleaseenterdescription'));
-                                }
-                                else if (/\s{2,}/.test(value)) {
-                                    return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
-                                }
-                                else if (value.length <= 4) {
-                                    return Promise.reject(t('Tasks.descriptionLength'));
-                                }
-                                return Promise.resolve();
-                                },
-                            },
-                            ]}
-                            className="custom-border"
-                        >
-                            <Input.TextArea rows={3} className='form-control' />
-                        </Form.Item>
-                        </div>
-                    </div>
-                </div>  
-                <div className="submit-section">
-                  <button type='submit' className="btn btn-primary submit-btn" disabled={loader}>
-                  {
-                      loader ? <Spin size="small" indicator={antIcon} />
-                      : t('submit')
+                onFinishFailed={({ errorFields }) => {
+                  const consecutiveSpacesError = errorFields.find((field) =>
+                    field.errors.toString().includes("consecutive spaces")
+                  );
+                  if (consecutiveSpacesError) {
+                    message.error(t("allEmp.errors.removeConsecutiveSpaces"));
+                  } else {
+                    message.error(t("allEmp.errors.fillRequiredFields"));
                   }
+                }}
+                autoComplete="off"
+              >
+                <div className="row">
+                  <div className="col-12">
+                    <div className="form-group">
+                      <label>
+                        {t("Tasks.title")}{" "}
+                        <span className="text-danger">*</span>
+                      </label>
+                      <Form.Item
+                        name="title"
+                        className="custom-border"
+                        rules={[
+                          {
+                            whitespace: true,
+                            required: true,
+                            validator: (_, value) => {
+                              if (!value || value.trim() === "") {
+                                return Promise.reject(
+                                  t("Tasks.pleaseentertitle")
+                                );
+                              } else if (/\s{2,}/.test(value)) {
+                                return Promise.reject(
+                                  t("allEmp.errors.removeConsecutiveSpaces2")
+                                );
+                              } else if (value.length < 3) {
+                                return Promise.reject(t("Tasks.titleLength"));
+                              }
+                              return Promise.resolve();
+                            },
+                          },
+                        ]}
+                      >
+                        <Input className="form-control" maxLength={50} />
+                      </Form.Item>
+                    </div>
+                  </div>
+                  <div className="col-12">
+                    <div className="form-group">
+                      <label>
+                        {t("Tasks.tags")} <span className="text-danger">*</span>
+                        <Tooltip
+                          className="custom-tooltip"
+                          placement="rightBottom"
+                          title={<label>{t("Tasks.taginstruction")}</label>}
+                        >
+                          <span
+                            style={{
+                              border: "1px solid grey",
+                              color: "grey",
+                              fontSize: "12px",
+                              borderRadius: "50%",
+                              padding: "1.5px 4px 1px",
+                              margin: "5px",
+                              cursor: "pointer",
+                            }}
+                          >
+                            {t("Tasks.Qmark")}
+                          </span>
+                        </Tooltip>
+                      </label>
+                      <div
+                        style={{ position: "relative" }}
+                        className="hideDropdownMenu"
+                        id="area22"
+                      >
+                        <Form.Item
+                          name="tags"
+                          className="addTeamHeight"
+                          rules={[
+                            {
+                              // whitespace: true,
+                              required: true,
+                              message: t("Tasks.pleaseentertags"),
+                            },
+                          ]}
+                        >
+                          <Select
+                            mode="tags"
+                            // className="custom-select custom-normal"
+                            className="custom-select customselect-height"
+                            getPopupContainer={() =>
+                              document.getElementById("area22")
+                            }
+                          />
+                        </Form.Item>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-12">
+                    <div className="form-group">
+                      <label
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <div>
+                          {t("finance.Invoices.description")}{" "}
+                          <span className="text-danger">*</span>
+                        </div>
+                      </label>
+                      <Form.Item
+                        name="description"
+                        rules={[
+                          {
+                            whitespace: true,
+                            required: true,
+                            validator: (_, value) => {
+                              if (!value || value.trim() === "") {
+                                return Promise.reject(
+                                  t("Tasks.pleaseenterdescription")
+                                );
+                              } else if (/\s{2,}/.test(value)) {
+                                return Promise.reject(
+                                  t("allEmp.errors.removeConsecutiveSpaces2")
+                                );
+                              } else if (value.length <= 4) {
+                                return Promise.reject(
+                                  t("Tasks.descriptionLength")
+                                );
+                              }
+                              return Promise.resolve();
+                            },
+                          },
+                        ]}
+                        className="custom-border"
+                      >
+                        <Input.TextArea rows={3} className="form-control" />
+                      </Form.Item>
+                    </div>
+                  </div>
+                </div>
+                <div className="submit-section">
+                  <button
+                    type="submit"
+                    className="btn btn-primary submit-btn"
+                    disabled={loader}
+                  >
+                    {loader ? (
+                      <Spin size="small" indicator={antIcon} />
+                    ) : (
+                      t("submit")
+                    )}
                   </button>
                 </div>
-                
-                </Form>
-                </div>
+              </Form>
             </div>
-            </div>
-        </Modal>
+          </div>
+        </div>
+      </Modal>
 
-        {viewModal && (
-          <TaskModal
-            data={selectedTask}
-            viewModal={viewModal}
-            closeViewModal={closeViewModal}
-            getAllTasks={getAllTasks}
-            getTaskBoard={getTaskBoard}
-          />
-        )}
+      {viewModal && (
+        <TaskModal
+          data={selectedTask}
+          viewModal={viewModal}
+          closeViewModal={closeViewModal}
+          getAllTasks={getAllTasks}
+          getTaskBoard={getTaskBoard}
+        />
+      )}
     </>
   );
 };

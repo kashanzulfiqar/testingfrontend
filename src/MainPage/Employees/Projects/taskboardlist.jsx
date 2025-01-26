@@ -235,7 +235,7 @@ const TaskBoardList = () => {
   const handleSelectDeveloper = (value) => {
     const developer = employees?.find((emp) => emp._id === value);
     setSelectedTeamMembers([...selectedTeamMembers, developer]);
-    setSelectValue(undefined);
+    form.resetFields();
   };
 
   const handleRemoveDeveloper = (developerId) => {
@@ -341,6 +341,7 @@ const TaskBoardList = () => {
     let updated_data = {
       ...values,
       companyId: info?.companyId,
+      assignedDevelopers: selectedTeamMembers.map((member) => member._id),
     };
     setLoader(true);
     apiServices("POST", "taskBoard/add-taskBoard", updated_data, user_state)
@@ -855,7 +856,7 @@ const TaskBoardList = () => {
                 </div>
                 <div className="modal-body">
                   <Form
-                    // form={form}
+                    form={form}
                     name="control-hooks"
                     onFinish={(val) => onFinish(val, open?.data)}
                     onFinishFailed={({ errorFields }) => {

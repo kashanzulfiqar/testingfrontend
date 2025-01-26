@@ -59,6 +59,10 @@ function TaskModal({
   const [openStatusDropdown, setOpenStatusDropdown] = useState(false);
 
   useEffect(() => {
+    if (data?.isEditing) {
+      // Set up edit mode immediately
+      setIsEditing(true);
+    }
     setDescription(data?.description);
     setTags(data?.tags);
     setTitle(data?.title);
