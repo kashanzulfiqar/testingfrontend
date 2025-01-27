@@ -41,6 +41,7 @@ const TaskBoard = () => {
   const [allTasks, setAllTasks] = useState([]);
   const [optTasks, setOptTasks] = useState([]);
   const [boardId, setBoardId] = useState("");
+  const [activeDropdown, setActiveDropdown] = useState(null);
   const [selectedTask, setSelectedTask] = useState({
     _id: "",
     title: "",
@@ -108,6 +109,11 @@ const TaskBoard = () => {
     setIsEditing(false);
   };
 
+  const handleDropdownToggle = (taskId, event) => {
+    event.stopPropagation(); // Prevent event bubbling
+    setActiveDropdown(activeDropdown === taskId ? null : taskId); // Toggle state
+  };
+  
   const handleCancel = () => {
     // Revert to original project name
     console.log("called");
@@ -545,6 +551,16 @@ const TaskBoard = () => {
         ? BoardData?.board?.project?._id
         : BoardData?.board?._id
     );
+    const handleClickOutside = (event) => {
+      if (!event.target.closest(".kanban-task-action")) {
+        setActiveDropdown(null); // Close dropdown when clicking outside
+      }
+    };
+  
+    document.addEventListener("click", handleClickOutside);
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
   }, []);
 
   const onFinish = (values, info) => {
@@ -789,6 +805,9 @@ const TaskBoard = () => {
   };
 
   const onFinishAdd = (values) => {
+    // Find the column to get its title
+    const currentColumn = columns.find(col => col._id === columnId); 
+    console.log("currentColumn",currentColumn)
     let updated_data = {
       ...values,
       ...(BoardData?.board?.project
@@ -796,6 +815,8 @@ const TaskBoard = () => {
         : BoardData?._id
         ? { projectId: BoardData?._id }
         : { boardId: BoardData?.board?._id }),
+        columnId: columnId,
+        lane: currentColumn?.title,
     };
     setLoader(true);
     apiServices("POST", "tasks", updated_data, user_state)
@@ -1688,6 +1709,7 @@ const TaskBoard = () => {
                                                                         fontSize:
                                                                           "10px",
                                                                       }}
+                                                                      onClick={(e) => e.stopPropagation()}
                                                                       data-bs-toggle="dropdown"
                                                                       aria-expanded="false"
                                                                     >
@@ -1745,17 +1767,18 @@ const TaskBoard = () => {
                                                             <div className="dropdown kanban-task-action" onClick={(e) => e.stopPropagation()}>
                                                               <a
                                                                 data-bs-toggle="dropdown"
-                                                                aria-expanded="true"
+                                                                aria-expanded={activeDropdown === task.taskId} // Control open state
                                                                 style={{
                                                                   cursor:
                                                                     "pointer",
                                                                   padding:
                                                                     "5px",
                                                                 }}
+                                                                onClick={(e) => handleDropdownToggle(task.taskId, e)}
                                                               >
                                                                 <i className="fa fa-angle-down" />
                                                               </a>
-                                                              <div className="dropdown-menu dropdown-menu-right">
+                                                              <div className={`dropdown-menu dropdown-menu-right ${activeDropdown === task.taskId ? "show" : ""}`}>
                                                                 {/* {(role === "admin" || permissions?.projectManagement) && ( */}
                                                                 <a
                                                                   className="dropdown-item"
@@ -1954,14 +1977,17 @@ const TaskBoard = () => {
                                       //   }
                                       // }}
                                       onClick={() => {
-                                        getTasksOptions(
-                                          BoardData?._id
-                                            ? BoardData?._id
-                                            : BoardData?.board?.project
-                                            ? BoardData?.board?.project?._id
-                                            : BoardData?.board?._id
-                                        );
-                                        setTaskModal(true);
+                                        // getTasksOptions(
+                                        //   BoardData?._id
+                                        //     ? BoardData?._id
+                                        //     : BoardData?.board?.project
+                                        //     ? BoardData?.board?.project?._id
+                                        //     : BoardData?.board?._id
+                                        // );
+                                        // setTaskModal(true);
+                                        setSelectedTeamMembers([]); // Clear selected team members
+                                        form2.resetFields(); // Reset form fields
+                                        setAddTask({ isAddOpen: true, data: "" });
                                         setColumnId(column._id);
                                       }}
                                     >
@@ -2188,9 +2214,9 @@ const TaskBoard = () => {
                 <p>
                   <span
                     dangerouslySetInnerHTML={{
-                      __html: t("holiday.confirmRemove", {
+                      __html: `${t("holiday.confirmRemove", {
                         holiday: addTask?.title,
-                      }),
+                      })}<br/> Upon removing, the task will be deleted.`,
                     }}
                   />
                 </p>

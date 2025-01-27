@@ -977,14 +977,14 @@ const TaskBoardList = () => {
                             <Form.Item
                               name="assignedDevelopers"
                               className="custom-border"
-                              // rules={[
-                              //   {
-                              //     required: true,
-                              //     message: t(
-                              //       "projectScreen.Modal.teamCannotBeEmpty"
-                              //     ),
-                              //   },
-                              // ]}
+                              rules={[
+                                {
+                                  required: true,
+                                  message: t(
+                                    "projectScreen.Modal.teamCannotBeEmpty"
+                                  ),
+                                },
+                              ]}
                             >
                               <Select
                                 showSearch
