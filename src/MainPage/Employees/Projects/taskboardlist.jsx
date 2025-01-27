@@ -224,6 +224,28 @@ const TaskBoardList = () => {
       });
   };
 
+  const showTeamSearch = (val, type) => {
+    let dropdownValues = [];
+    if (type === "Team") {
+      employees.forEach((team) => {
+        dropdownValues.push(team.fullName.toLowerCase());
+      });
+    }
+
+    if (val !== "") {
+      dropdownValues.some((team) => {
+        if (team.includes(val.toLowerCase())) {
+          // setNoData(false);
+          return true;
+        } else {
+          // setNoData(true);
+        }
+      });
+    } else {
+      // setNoData(false)
+    }
+  };
+  
   const getTeamMemberOptions = () => {
     return employees?.filter((emp) => !selectedTeamMembers.some((selected) => selected._id === emp._id))
     ?.map((employee) => (
@@ -235,7 +257,7 @@ const TaskBoardList = () => {
   const handleSelectDeveloper = (value) => {
     const developer = employees?.find((emp) => emp._id === value);
     setSelectedTeamMembers([...selectedTeamMembers, developer]);
-    form.resetFields();
+    form.resetFields(["assignedDevelopers"])
   };
 
   const handleRemoveDeveloper = (developerId) => {
@@ -331,6 +353,7 @@ const TaskBoardList = () => {
 
   const handleClose = () => {
     setSelectedTeamMembers([]);
+    form.resetFields();
     setSelectValue(undefined);
     setOpen({ isAddOpen: false, isDelOpen: false, data: "" });
     setIsProjectAssociated(false);
@@ -977,14 +1000,14 @@ const TaskBoardList = () => {
                             <Form.Item
                               name="assignedDevelopers"
                               className="custom-border"
-                              rules={[
-                                {
-                                  required: true,
-                                  message: t(
-                                    "projectScreen.Modal.teamCannotBeEmpty"
-                                  ),
-                                },
-                              ]}
+                              // rules={[
+                              //   {
+                              //     required: true,
+                              //     message: t(
+                              //       "projectScreen.Modal.teamCannotBeEmpty"
+                              //     ),
+                              //   },
+                              // ]}
                             >
                               <Select
                                 showSearch

@@ -29,7 +29,7 @@ const Tasks = () => {
   const [allProjects, setAllProjects] = useState([]);
   const [allTaskboards, setAllTaskboards] = useState([]);
   const [descLength, setDescLength] = useState(0);
-  const [isProjectAssociated, setIsProjectAssociated] = useState(false);
+  const [isProjectAssociated, setIsProjectAssociated] = useState(null);
   const [originalTaskboard, setOriginalTaskboard] = useState(null);
   const [tableLoader, setTableLoader] = useState(true);
   const [loader, setLoader] = useState(false)
@@ -74,7 +74,7 @@ useEffect(() => {
           }
       } else {
           // Adding mode
-          setIsProjectAssociated(false); // Default to task board
+          setIsProjectAssociated(null); // Default to task board
       }
   }
 }, [open]);
@@ -988,7 +988,7 @@ const onFinishEdit = (values) => {
                     {/* Conditionally render Taskboard or Project Selection */}
                     <div className="col-12">
                         <div className="form-group">
-                            {isProjectAssociated ? (
+                            {isProjectAssociated === true && (
                                 <>
                                     <label>
                                         {t('Project')}<span className="text-danger">*</span>
@@ -1022,7 +1022,8 @@ const onFinishEdit = (values) => {
                                         </Select>
                                     </Form.Item>
                                 </>
-                            ) : (
+                            )}
+                            {isProjectAssociated === false && (
                                 <>
                                     <label>
                                         {t('TaskBoard')} <span className="text-danger">*</span>
