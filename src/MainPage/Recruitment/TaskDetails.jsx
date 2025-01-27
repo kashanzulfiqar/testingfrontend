@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   Card, Spin, message, Tag, Button, Descriptions, Timeline, Row, Col,
-  Modal, Form, Input, Rate, DatePicker, Radio, Upload
+  Modal, Form, Input, Rate, DatePicker, Radio, Upload, Select
 } from 'antd';
 import { apiServices } from '../../Services/apiServices';
 import { useSelector } from 'react-redux';
@@ -29,6 +29,7 @@ const TaskDetails = () => {
   const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
   const [feedbackForm] = Form.useForm();
   const [submitting, setSubmitting] = useState(false);
+  const [statusUpdateLoading, setStatusUpdateLoading] = useState(false);
 
   useEffect(() => {
     fetchTaskDetails();
@@ -119,6 +120,13 @@ const TaskDetails = () => {
     setSubmitting(true);
     const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
 
+    // Check if user is a task reviewer
+    if (!isUserTaskReviewer()) {
+      message.error('Only assigned reviewers can submit feedback');
+      setSubmitting(false);
+      return;
+    }
+
     try {
       const response = await apiServices(
         "POST",
@@ -132,9 +140,6 @@ const TaskDetails = () => {
         {
           access_token: {
             accessToken: token
-          },
-          headers: {
-            'Authorization': `Bearer ${token}`
           }
         }
       );
@@ -145,7 +150,7 @@ const TaskDetails = () => {
         feedbackForm.resetFields();
         fetchTaskDetails(); // Refresh task details to show new feedback
       } else {
-        message.error(response?.data?.message || 'Failed to submit feedback');
+        throw new Error(response?.data?.message || 'Failed to submit feedback');
       }
     } catch (error) {
       console.error('Error submitting feedback:', error);
@@ -156,6 +161,12 @@ const TaskDetails = () => {
         message.error('You are not authorized to provide feedback for this task');
       } else if (error.response?.status === 404) {
         message.error('Task not found');
+      } else if (error.response?.data?.errors) {
+        // Handle validation errors
+        const errorMessage = error.response.data.errors
+          .map(err => `${err.field}: ${err.message}`)
+          .join(', ');
+        message.error(errorMessage);
       } else {
         message.error(error.response?.data?.message || 'Error submitting feedback. Please try again');
       }
@@ -167,6 +178,38 @@ const TaskDetails = () => {
   const isUserTaskReviewer = () => {
     if (!taskDetails?.taskReviewers || !authState?.user?._id) return false;
     return taskDetails.taskReviewers.some(reviewer => reviewer._id === authState.user._id);
+  };
+
+  const handleStatusUpdate = async (newStatus) => {
+    setStatusUpdateLoading(true);
+    const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
+
+    try {
+      const response = await apiServices(
+        "PATCH",
+        `task/${id}/status`,
+        {
+          status: newStatus
+        },
+        {
+          access_token: {
+            accessToken: token
+          }
+        }
+      );
+
+      if (response?.data?.success) {
+        message.success('Task status updated successfully');
+        fetchTaskDetails(); // Refresh task details
+      } else {
+        throw new Error(response?.data?.message || 'Failed to update task status');
+      }
+    } catch (error) {
+      console.error('Error updating task status:', error);
+      message.error(error.response?.data?.message || 'Error updating task status');
+    } finally {
+      setStatusUpdateLoading(false);
+    }
   };
 
   if (loading) {
@@ -220,9 +263,23 @@ const TaskDetails = () => {
                   {taskDetails.description}
                 </Descriptions.Item>
                 <Descriptions.Item label="Status">
-                  <Tag color={getStatusColor(taskDetails.status)}>
-                    {taskDetails.status?.charAt(0).toUpperCase() + taskDetails.status?.slice(1).toLowerCase()}
-                  </Tag>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <Tag color={getStatusColor(taskDetails.status)}>
+                      {taskDetails.status?.charAt(0).toUpperCase() + taskDetails.status?.slice(1).toLowerCase()}
+                    </Tag>
+                    <Select
+                      style={{ width: 150 }}
+                      placeholder="Change Status"
+                      onChange={handleStatusUpdate}
+                      loading={statusUpdateLoading}
+                      value={taskDetails.status}
+                    >
+                      <Select.Option value="PENDING">Pending</Select.Option>
+                      <Select.Option value="SUBMITTED">Submitted</Select.Option>
+                      <Select.Option value="COMPLETED">Completed</Select.Option>
+                      <Select.Option value="OVERDUE">Overdue</Select.Option>
+                    </Select>
+                  </div>
                 </Descriptions.Item>
                 <Descriptions.Item label="Duration">
                   {taskDetails.taskDuration} days
@@ -298,14 +355,19 @@ const TaskDetails = () => {
                       </Descriptions.Item>
                       {feedback.rating && (
                         <Descriptions.Item label="Rating">
-                          {feedback.rating}/10
+                          {feedback.rating}/5
                         </Descriptions.Item>
                       )}
                       <Descriptions.Item label="Comment">
                         {feedback.comment}
                       </Descriptions.Item>
+                      <Descriptions.Item label="Decision">
+                        <Tag color={feedback.decision === 'PASS' ? 'success' : 'error'}>
+                          {feedback.decision}
+                        </Tag>
+                      </Descriptions.Item>
                       <Descriptions.Item label="Date">
-                        {moment(feedback.createdAt).format('DD MMM YYYY')}
+                        {moment(feedback.evaluationDate).format('DD MMM YYYY')}
                       </Descriptions.Item>
                     </Descriptions>
                   </div>

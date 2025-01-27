@@ -17,6 +17,11 @@ import {
   Rate,
   Collapse,
   Empty,
+  Modal,
+  Form,
+  Input,
+  DatePicker,
+  Upload,
 } from "antd";
 import {
   MailOutlined,
@@ -29,12 +34,15 @@ import {
   FileWordOutlined,
   EyeOutlined,
   DownloadOutlined,
+  InboxOutlined,
 } from "@ant-design/icons";
 import { apiServices } from "../../Services/apiServices";
 import { useSelector } from "react-redux";
 import moment from "moment";
 import CreateInterviewModal from "./CreateInterviewModal";
 import CreateTaskModal from "./CreateTaskModal";
+import SendOfferModal from './SendOfferModal';
+import { apiUploadToS3 } from "../../Services/uploadImage";
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
@@ -54,6 +62,15 @@ const CandidateDetails = () => {
   const [isTaskModalVisible, setIsTaskModalVisible] = useState(false);
   const [tasks, setTasks] = useState([]);
   const [loadingTasks, setLoadingTasks] = useState(false);
+  const [isOfferModalVisible, setIsOfferModalVisible] = useState(false);
+  const [submittingOffer, setSubmittingOffer] = useState(false);
+  const [offer, setOffer] = useState(null);
+  const [selectedStatus, setSelectedStatus] = useState(null);
+  const [isReasonModalVisible, setIsReasonModalVisible] = useState(false);
+
+  useEffect(() => {
+    console.log('isOfferModalVisible changed:', isOfferModalVisible);
+  }, [isOfferModalVisible]);
 
   useEffect(() => {
     fetchCandidateDetails();
@@ -74,6 +91,12 @@ const CandidateDetails = () => {
       fetchCandidateTasks();
     }
   }, [id, activeTab]);
+
+  useEffect(() => {
+    if (id) {
+      fetchOfferDetails();
+    }
+  }, [id]);
 
   const fetchCandidateDetails = async () => {
     const token =
@@ -196,18 +219,24 @@ const CandidateDetails = () => {
   };
 
   const handleStatusChange = async (newStatus) => {
-    const token =
-      localStorage.getItem("token") || authState?.access_token?.accessToken;
-
-    if (!token) {
-      message.error("Authentication required");
+    if (newStatus === 'BLACKLISTED') {
+      // Show modal to get blacklist reason
+      setSelectedStatus(newStatus);
+      setIsReasonModalVisible(true);
       return;
     }
 
     try {
       setUpdatingStatus(true);
+      const token = authState?.access_token?.accessToken || localStorage.getItem("token");
+      
+      if (!token) {
+        message.error("Authentication required");
+        return;
+      }
+
       const response = await apiServices(
-        "PATCH",
+        'PATCH',
         `candidate/${id}/status`,
         { status: newStatus },
         {
@@ -220,23 +249,219 @@ const CandidateDetails = () => {
         }
       );
 
-      if (response?.data?.success) {
-        message.success("Candidate status updated successfully");
-        setCandidate((prev) => ({ ...prev, status: newStatus }));
+      if (response?.data?.status) {
+        message.success('Status updated successfully');
+        await fetchCandidateDetails();
       } else {
-        message.error(response?.data?.message || "Failed to update status");
+        throw new Error(response?.data?.message || 'Failed to update status');
       }
     } catch (error) {
-      console.error("Error updating candidate status:", error);
-      message.error("Error updating candidate status");
+      console.error('Error updating status:', error);
+      message.error(error.message || 'Error updating status');
     } finally {
       setUpdatingStatus(false);
     }
   };
 
-  const handleSendOffer = () => {
-    // Implement send offer logic here
-    message.info("Send offer functionality to be implemented");
+  const handleReasonSubmit = async (values) => {
+    try {
+      setUpdatingStatus(true);
+      const token = authState?.access_token?.accessToken || localStorage.getItem("token");
+      
+      if (!token) {
+        message.error("Authentication required");
+        return;
+      }
+
+      const payload = {
+        status: selectedStatus,
+        reason: values.reason || values.blacklistReason, // Use reason or blacklistReason as the general reason
+      };
+
+      // Add specific reason field based on status
+      if (selectedStatus === 'BLACKLISTED') {
+        payload.blacklistReason = values.blacklistReason;
+      }
+
+      const response = await apiServices(
+        'PATCH',
+        `candidate/${id}/status`,
+        payload,
+        {
+          access_token: {
+            accessToken: token,
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response?.data?.status) {
+        message.success('Status updated successfully');
+        setIsReasonModalVisible(false);
+        await fetchCandidateDetails();
+      } else {
+        throw new Error(response?.data?.message || 'Failed to update status');
+      }
+    } catch (error) {
+      console.error('Error updating status:', error);
+      message.error(error.message || 'Error updating status');
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
+  const fetchOfferDetails = async () => {
+    try {
+      const token = authState?.access_token?.accessToken || localStorage.getItem("token");
+      
+      if (!token) return;
+
+      const response = await apiServices(
+        'GET',
+        `candidate/${id}/offer`,
+        null,
+        {
+          access_token: {
+            accessToken: token,
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response?.data?.status) {
+        setOffer(response.data.data);
+      }
+    } catch (error) {
+      // Silently handle 404 - it's an expected case when no offer exists
+      if (error.response?.status === 404) {
+        setOffer(null);
+        return;
+      }
+      console.error('Error fetching offer details:', error);
+    }
+  };
+
+  const handleSendOffer = async (formData) => {
+    try {
+      setSubmittingOffer(true);
+      const token = authState?.access_token?.accessToken || localStorage.getItem("token");
+      
+      if (!token) {
+        message.error("Authentication required");
+        return;
+      }
+
+      // First upload the contract file
+      const contractFile = formData.get('contract');
+      if (contractFile) {
+        try {
+          const uploadResponse = await apiUploadToS3(contractFile);
+          if (uploadResponse?.data?.result?.secure_url) {
+            // Replace the file with the secure URL in the formData
+            formData.delete('contract');
+            formData.append('contract', uploadResponse.data.result.secure_url);
+          }
+        } catch (error) {
+          console.error('Error uploading contract:', error);
+          message.error('Failed to upload contract file');
+          return;
+        }
+      }
+
+      // Add flag to indicate this is an offer update if an offer exists
+      if (offer) {
+        formData.append('isUpdate', 'true');
+      }
+
+      const response = await apiServices(
+        'POST',
+        'candidate/send-offer',
+        formData,
+        {
+          access_token: {
+            accessToken: token,
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+
+      if (response?.data?.status) {
+        message.success(offer ? 'Offer updated successfully' : 'Offer sent successfully');
+        setIsOfferModalVisible(false);
+        
+        // Always update candidate status to "OFFERED" and clear any previous status/reasons
+        await handleStatusChange('OFFERED');
+        
+        // Fetch updated offer details
+        await fetchOfferDetails();
+        
+        // Fetch updated candidate details to refresh the page
+        await fetchCandidateDetails();
+        
+        // Redirect to offered candidates list
+        navigate('/recruitment/candidates/offered');
+      } else {
+        throw new Error(response?.data?.message || 'Failed to send offer');
+      }
+    } catch (error) {
+      console.error('Error sending offer:', error);
+      message.error(error.message || 'Error sending offer');
+    } finally {
+      setSubmittingOffer(false);
+    }
+  };
+
+  const handleUpdateOfferStatus = async (offerId, status) => {
+    try {
+      const token = authState?.access_token?.accessToken || localStorage.getItem("token");
+      
+      if (!token) {
+        message.error("Authentication required");
+        return;
+      }
+
+      const response = await apiServices(
+        'PATCH',
+        `candidate/offer/${offerId}/status`,
+        { status },
+        {
+          access_token: {
+            accessToken: token,
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response?.data?.success) {
+        message.success('Offer status updated successfully');
+        await fetchOfferDetails();
+      } else {
+        throw new Error(response?.data?.message || 'Failed to update offer status');
+      }
+    } catch (error) {
+      console.error('Error updating offer status:', error);
+      message.error(error.message || 'Error updating offer status');
+    }
+  };
+
+  const handleSendOfferClick = () => {
+    console.log('Send Offer button clicked');
+    setIsOfferModalVisible(true);
+  };
+
+  const handleContractUpload = ({ file }) => {
+    if (file.status === 'done') {
+      setUploadedContract(file.originFileObj);
+    }
   };
 
   const fetchEmployees = async () => {
@@ -1055,24 +1280,14 @@ const CandidateDetails = () => {
                 <Row gutter={16}>
                   <Col span={16}>
                     <h4 className="task-title">{task.taskName}</h4>
-                    <Space
-                      direction="vertical"
-                      size="small"
-                      style={{ width: "100%" }}
-                    >
+                    <Space direction="vertical" size="small" style={{ width: "100%" }}>
                       <div>
                         <Text type="secondary">Task Reviewers:</Text>{" "}
                         <Avatar.Group maxCount={3}>
                           {task.taskReviewers?.map((reviewer) => (
-                            <Tooltip
-                              key={reviewer._id}
-                              title={reviewer.fullName}
-                            >
+                            <Tooltip key={reviewer._id} title={reviewer.fullName}>
                               <Avatar src={reviewer.imageUrl}>
-                                {reviewer.fullName
-                                  ?.split(" ")
-                                  .map((n) => n[0])
-                                  .join("")}
+                                {reviewer.fullName?.split(" ").map((n) => n[0]).join("")}
                               </Avatar>
                             </Tooltip>
                           ))}
@@ -1080,16 +1295,21 @@ const CandidateDetails = () => {
                       </div>
                       <div>
                         <Text type="secondary">Due Date:</Text>{" "}
-                        <Text>
-                          {moment(task.lastDateOfSubmission).format(
-                            "DD MMM YYYY"
-                          )}
-                        </Text>
+                        <Text>{moment(task.lastDateOfSubmission).format("DD MMM YYYY")}</Text>
                       </div>
                       <div>
                         <Text type="secondary">Duration:</Text>{" "}
                         <Text>{task.taskDuration} days</Text>
                       </div>
+                      {task.feedback && task.feedback.length > 0 && (
+                        <div>
+                          <Text type="secondary">Latest Feedback:</Text>{" "}
+                          <Rate disabled defaultValue={task.feedback[0].rating} style={{ fontSize: 12 }} />
+                          <Tag color={task.feedback[0].decision === "PASS" ? "success" : "error"} style={{ marginLeft: 8 }}>
+                            {task.feedback[0].decision}
+                          </Tag>
+                        </div>
+                      )}
                     </Space>
                   </Col>
                   <Col span={8} style={{ textAlign: "right" }}>
@@ -1097,7 +1317,6 @@ const CandidateDetails = () => {
                       value={task.status}
                       style={{ width: 120 }}
                       onChange={(value) => {
-                        // Prevent card click when changing status
                         event.stopPropagation();
                         updateTaskStatus(task._id, value);
                       }}
@@ -1111,6 +1330,57 @@ const CandidateDetails = () => {
                     </Select>
                   </Col>
                 </Row>
+                {task.feedback && task.feedback.length > 0 && (
+                  <div style={{ marginTop: "16px", borderTop: "1px solid #f0f0f0", paddingTop: "16px" }}>
+                    <Card size="small">
+                      <div style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
+                        <Avatar src={task.feedback[0].reviewerId?.imageUrl} style={{ marginRight: "8px" }}>
+                          {task.feedback[0].reviewerId?.fullName?.split(" ").map((n) => n[0]).join("")}
+                        </Avatar>
+                        <div>
+                          <Text strong>{task.feedback[0].reviewerId?.fullName}</Text>
+                          <br />
+                          <Text type="secondary">{moment(task.feedback[0].evaluationDate).format("DD MMM YYYY")}</Text>
+                        </div>
+                      </div>
+                      <div style={{ marginTop: "8px" }}>
+                        <Text>{task.feedback[0].comment}</Text>
+                      </div>
+                    </Card>
+                  </div>
+                )}
+                {task.feedback && task.feedback.length > 1 && (
+                  <div style={{ marginTop: "8px" }}>
+                    <Collapse ghost>
+                      <Collapse.Panel header={`View All Feedback (${task.feedback.length})`} key="1">
+                        {task.feedback.slice(1).map((feedback, index) => (
+                          <Card key={index} size="small" style={{ marginTop: "8px" }}>
+                            <div style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
+                              <Avatar src={feedback.reviewerId?.imageUrl} style={{ marginRight: "8px" }}>
+                                {feedback.reviewerId?.fullName?.split(" ").map((n) => n[0]).join("")}
+                              </Avatar>
+                              <div>
+                                <Text strong>{feedback.reviewerId?.fullName}</Text>
+                                <br />
+                                <Text type="secondary">{moment(feedback.evaluationDate).format("DD MMM YYYY")}</Text>
+                              </div>
+                              <Tag color={feedback.decision === "PASS" ? "success" : "error"} style={{ marginLeft: "auto" }}>
+                                {feedback.decision}
+                              </Tag>
+                            </div>
+                            <div>
+                              <Rate disabled defaultValue={feedback.rating} style={{ fontSize: 12 }} />
+                              <Text style={{ marginLeft: 8 }}>({feedback.rating}/5)</Text>
+                            </div>
+                            <div style={{ marginTop: "8px" }}>
+                              <Text>{feedback.comment}</Text>
+                            </div>
+                          </Card>
+                        ))}
+                      </Collapse.Panel>
+                    </Collapse>
+                  </div>
+                )}
               </Card>
             ))
           ) : (
@@ -1258,6 +1528,8 @@ const CandidateDetails = () => {
                     candidate?.status?.toLowerCase() === "screening"
                       ? "#FFF7E6"
                       : "transparent",
+                  zIndex: 1000,
+                  position: 'relative',
                 }}
                 className={`status-${candidate?.status?.toLowerCase()}`}
                 dropdownStyle={{
@@ -1270,17 +1542,22 @@ const CandidateDetails = () => {
                 <Select.Option value="NEW">New</Select.Option>
                 <Select.Option value="SCREENING">Screening</Select.Option>
                 <Select.Option value="SHORTLISTED">Shortlisted</Select.Option>
+                <Select.Option value="OFFER_SENT">Offer Sent</Select.Option>
                 <Select.Option value="HIRED">Hired</Select.Option>
                 <Select.Option value="REJECTED">Rejected</Select.Option>
+                <Select.Option value="BLACKLISTED">Blacklisted</Select.Option>
               </Select>
               <Button
                 type="primary"
-                onClick={() =>
-                  message.info("Send offer functionality coming soon")
-                }
-                style={{ background: "#FF9B44", borderColor: "#FF9B44" }}
+                onClick={handleSendOfferClick}
+                style={{
+                  background: "#FF9B44",
+                  borderColor: "#FF9B44",
+                  zIndex: 1000,
+                  position: 'relative',
+                }}
               >
-                Send Offer
+                {offer ? 'Edit Offer' : 'Send Offer'}
               </Button>
             </Space>
           </div>
@@ -1543,6 +1820,140 @@ const CandidateDetails = () => {
         candidate={candidate}
         authState={authState}
       />
+
+      {/* Send Offer Modal */}
+      <SendOfferModal
+        visible={isOfferModalVisible}
+        onCancel={() => {
+          console.log('Modal cancel triggered');
+          setIsOfferModalVisible(false);
+        }}
+        onSubmit={handleSendOffer}
+        loading={submittingOffer}
+        candidate={candidate}
+        existingOffer={offer}
+      />
+
+      {/* Status Change Reason Modal */}
+      <Modal
+        title="Provide Reason"
+        visible={isReasonModalVisible}
+        onCancel={() => {
+          setIsReasonModalVisible(false);
+          setSelectedStatus(null);
+        }}
+        footer={null}
+      >
+        <Form
+          onFinish={handleReasonSubmit}
+          layout="vertical"
+        >
+          <Form.Item
+            name="blacklistReason"
+            label="Reason for Blacklisting"
+            rules={[
+              {
+                required: true,
+                message: 'Please provide a reason for blacklisting the candidate',
+              },
+            ]}
+          >
+            <Input.TextArea
+              rows={4}
+              placeholder="Enter the reason for blacklisting the candidate"
+              maxLength={500}
+              showCount
+            />
+          </Form.Item>
+
+          <Form.Item className="mb-0 text-right">
+            <Button
+              style={{ marginRight: 8 }}
+              onClick={() => {
+                setIsReasonModalVisible(false);
+                setSelectedStatus(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button type="primary" htmlType="submit" loading={updatingStatus}>
+              Submit
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {offer && (
+        <div className="info-section">
+          <Title level={5} className="section-title">
+            Offer Details
+          </Title>
+          <div className="info-list">
+            <div className="info-item">
+              <div className="info-content">
+                <Text type="secondary" className="info-label">
+                  Offered Salary
+                </Text>
+                <Text strong className="info-value">
+                  {offer.currency} {offer.salary?.toLocaleString()}
+                </Text>
+              </div>
+            </div>
+            <div className="info-item">
+              <div className="info-content">
+                <Text type="secondary" className="info-label">
+                  Joining Date
+                </Text>
+                <Text strong className="info-value">
+                  {moment(offer.joiningDate).format('DD MMM YYYY')}
+                </Text>
+              </div>
+            </div>
+            <div className="info-item">
+              <div className="info-content">
+                <Text type="secondary" className="info-label">
+                  Offer Status
+                </Text>
+                <Tag color={
+                  offer.status === 'SENT' ? 'blue' :
+                  offer.status === 'ACCEPTED' ? 'green' :
+                  'red'
+                }>
+                  {offer.status}
+                </Tag>
+              </div>
+            </div>
+            {offer.contractUrl && (
+              <div className="info-item">
+                <div className="info-content">
+                  <Text type="secondary" className="info-label">
+                    Contract Document
+                  </Text>
+                  <Button 
+                    type="link" 
+                    icon={<DownloadOutlined />}
+                    onClick={() => window.open(offer.contractUrl, '_blank')}
+                  >
+                    Download Contract
+                  </Button>
+                </div>
+              </div>
+            )}
+            {!offer.contractUrl && (
+              <div className="info-item">
+                <div className="info-content">
+                  <Text type="secondary" className="info-label">
+                    Contract Document
+                  </Text>
+                  <Text type="secondary" italic>
+                    No contract uploaded
+                  </Text>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         .info-card {
@@ -1808,55 +2219,6 @@ const CandidateDetails = () => {
           color: #f5222d !important;
         }
 
-        .status-dropdown {
-          padding: 8px;
-        }
-
-        .status-dropdown .ant-select-item {
-          padding: 8px 12px;
-          border-radius: 4px;
-          margin-bottom: 4px;
-        }
-
-        .status-dropdown .ant-select-item:hover {
-          background-color: #f5f5f5;
-        }
-
-        .status-dropdown .ant-select-item-option-selected {
-          background-color: #e6f7ff;
-          font-weight: 500;
-        }
-
-        .status-new .ant-select-selector {
-          background-color: #e6f7ff !important;
-          border-color: #91d5ff !important;
-          color: #1890ff !important;
-        }
-
-        .status-screening .ant-select-selector {
-          background-color: #fff7e6 !important;
-          border-color: #ffd591 !important;
-          color: #fa8c16 !important;
-        }
-
-        .status-shortlisted .ant-select-selector {
-          background-color: #f6ffed !important;
-          border-color: #b7eb8f !important;
-          color: #52c41a !important;
-        }
-
-        .status-hired .ant-select-selector {
-          background-color: #f9f0ff !important;
-          border-color: #d3adf7 !important;
-          color: #722ed1 !important;
-        }
-
-        .status-rejected .ant-select-selector {
-          background-color: #fff1f0 !important;
-          border-color: #ffa39e !important;
-          color: #f5222d !important;
-        }
-
         .ant-select-focused:not(.ant-select-disabled).ant-select:not(
             .ant-select-customize-input
           )
@@ -1935,6 +2297,82 @@ const CandidateDetails = () => {
         .no-files-message {
           text-align: center;
           padding: 40px 0;
+        }
+
+        /* Offer Modal Styles */
+        :global(.offer-modal .ant-modal-content) {
+          border-radius: 8px;
+          overflow: hidden;
+        }
+
+        :global(.offer-modal .ant-modal-header) {
+          padding: 20px 24px;
+          border-bottom: 1px solid #f0f0f0;
+        }
+
+        :global(.offer-modal .ant-modal-body) {
+          padding: 24px;
+        }
+
+        :global(.offer-modal .ant-form-item-label > label) {
+          font-weight: 500;
+        }
+
+        :global(.offer-modal .ant-input),
+        :global(.offer-modal .ant-select-selector),
+        :global(.offer-modal .ant-picker) {
+          border-radius: 4px;
+          border-color: #e3e3e3;
+        }
+
+        :global(.offer-modal .ant-input:hover),
+        :global(.offer-modal .ant-select-selector:hover),
+        :global(.offer-modal .ant-picker:hover) {
+          border-color: #ff9b44;
+        }
+
+        :global(.offer-modal .ant-input:focus),
+        :global(.offer-modal .ant-select-selector:focus),
+        :global(.offer-modal .ant-picker-focused) {
+          border-color: #ff9b44;
+          box-shadow: 0 0 0 2px rgba(255, 155, 68, 0.2);
+        }
+
+        :global(.offer-modal .ant-upload-drag) {
+          border: 2px dashed #e3e3e3;
+          border-radius: 4px;
+          background: #fafafa;
+          transition: all 0.3s;
+        }
+
+        :global(.offer-modal .ant-upload-drag:hover) {
+          border-color: #ff9b44;
+        }
+
+        :global(.offer-modal .ant-upload-drag-icon) {
+          color: #ff9b44;
+          font-size: 48px;
+          margin-bottom: 16px;
+        }
+
+        :global(.offer-modal .ant-upload-text) {
+          color: #666;
+          font-size: 16px;
+          margin-bottom: 8px;
+        }
+
+        :global(.offer-modal .ant-upload-hint) {
+          color: #999;
+        }
+
+        :global(.offer-modal .ant-btn-primary) {
+          background: #ff9b44;
+          border-color: #ff9b44;
+        }
+
+        :global(.offer-modal .ant-btn-primary:hover) {
+          background: #ff8629;
+          border-color: #ff8629;
         }
       `}</style>
     </div>
