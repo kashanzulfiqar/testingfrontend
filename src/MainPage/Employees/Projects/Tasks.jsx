@@ -280,8 +280,14 @@ const searchHandler = (val, type) => {
 }
 
 const onFinishAdd = (values) => {
+  const { associateWith, ...payloadData } = values;
+  
+  let updated_data = {
+    ...payloadData,
+    // Add other necessary fields
+  };
     setLoader(true)
-    apiServices("POST", 'tasks', values, user_state)
+    apiServices("POST", 'tasks', updated_data, user_state)
       .then((res) => {
           if (res?.data?.success === true) {
               handleClose('update')
@@ -304,8 +310,9 @@ const onFinishAdd = (values) => {
 }
 
 const onFinishEdit = (values) => {
+  const { associateWith, ...payloadData } = values;
     const data = {
-        ...values,
+        ...payloadData,
         _id: open?.data?._id
     }
 
