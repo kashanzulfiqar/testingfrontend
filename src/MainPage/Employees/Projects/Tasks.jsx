@@ -376,7 +376,7 @@ const onFinishEdit = (values) => {
       ),
     }, 
     {
-      title: t('Project'),
+      title: t('Tasks.project'),
       dataIndex: 'projectId',
       render: (text, record) => (
         record?.projectId ? (
@@ -399,7 +399,7 @@ const onFinishEdit = (values) => {
       ),
     },  
     {
-      title: t('Task Board'),
+      title: t('sideBar.taskBoard'),
       dataIndex: 'boardId',
       render: (text, record) => (
         record?.boardId ? (
@@ -485,7 +485,7 @@ const onFinishEdit = (values) => {
                 href="javascript:void(0)"
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleUpdateStatus(record?.boardId, record?._id, record?.columnId, option.columnId);
+                  handleUpdateStatus(record?.boardId?._id || record?.projectId?._id, record?._id, record?.columnId, option.columnId);
                   setOpenStatusDropdownId(null); // Close the dropdown
                 }}
               >
@@ -642,11 +642,11 @@ const onFinishEdit = (values) => {
                 size="large"
                 options={[
                 {
-                    label: t('Active'),
+                    label: t('active'),
                     value: 'Active',
                 },
                 {
-                    label: t('Archived'),
+                    label: t('projectScreen.Modal.archived'),
                     value: 'Archived', 
                 },
                 ]}
@@ -747,7 +747,7 @@ const onFinishEdit = (values) => {
                     style={{
                       width: '100%',
                     }}
-                    placeholder={t('Select Taskboard')}
+                    placeholder={t('Tasks.selecttaskboard')}
                     size='large'
                     getPopupContainer={() => document.getElementById('area11')}
                   >
@@ -951,7 +951,7 @@ const onFinishEdit = (values) => {
                             },
                             ]}
                         >
-                            <Input className='form-control' maxLength={50}/>
+                            <Input className='form-control' placeholder={t("Tasks.title")} maxLength={50}/>
                         </Form.Item>
                         </div>
                     </div>
@@ -978,8 +978,8 @@ const onFinishEdit = (values) => {
                                 onChange={(value) => setIsProjectAssociated(value === 'project')}
                                 className="custom-select custom-normal"
                             >
-                                <Select.Option value="project">{t('Project')}</Select.Option>
-                                <Select.Option value="taskboard">{t('TaskBoard')}</Select.Option>
+                                <Select.Option value="project">{t('Tasks.project')}</Select.Option>
+                                <Select.Option value="taskboard">{t('sideBar.taskBoard')}</Select.Option>
                             </Select>
                             </Form.Item>
                         </div>
@@ -991,7 +991,7 @@ const onFinishEdit = (values) => {
                             {isProjectAssociated === true && (
                                 <>
                                     <label>
-                                        {t('Project')}<span className="text-danger">*</span>
+                                        {t('Tasks.project')}<span className="text-danger">*</span>
                                     </label>
                                     <Form.Item
                                         name="projectId"
@@ -1000,7 +1000,7 @@ const onFinishEdit = (values) => {
                                             {
                                                 whitespace: true,
                                                 required: true,
-                                                message: t('please select project'),
+                                                message: t('Tasks.pleaseselectproject'),
                                             },
                                         ]}
                                     >
@@ -1012,7 +1012,7 @@ const onFinishEdit = (values) => {
                                             }
                                             notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
                                             className="custom-select custom-normal"
-                                            placeholder={t('Select Project')}
+                                            placeholder={t('Tasks.selectproject')}
                                         >
                                             {allProjects.map((project, index) => (
                                                 <Select.Option key={index} value={project._id}>
@@ -1026,7 +1026,7 @@ const onFinishEdit = (values) => {
                             {isProjectAssociated === false && (
                                 <>
                                     <label>
-                                        {t('TaskBoard')} <span className="text-danger">*</span>
+                                        {t('sideBar.taskBoard')} <span className="text-danger">*</span>
                                     </label>
                                     <Form.Item
                                         name="boardId"
@@ -1035,7 +1035,7 @@ const onFinishEdit = (values) => {
                                             {
                                                 whitespace: true,
                                                 required: true,
-                                                message: t('please select taskboard'),
+                                                message: t('Tasks.pleaseselecttaskboard'),
                                             },
                                         ]}
                                     >
@@ -1047,7 +1047,7 @@ const onFinishEdit = (values) => {
                                             }
                                             notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
                                             className="custom-select custom-normal"
-                                            placeholder={t('Select Taskboard')}
+                                            placeholder={t('Tasks.selecttaskboard')}
                                         >
                                             {allTaskboards.map((taskBoard, index) => (
                                                 <Select.Option key={index} value={taskBoard._id}>
@@ -1102,9 +1102,9 @@ const onFinishEdit = (values) => {
                                 if(!value || value.trim() === ''){
                                     return Promise.reject(t('Tasks.pleaseenterdescription'));
                                 }
-                                else if (/\s{2,}/.test(value)) {
-                                    return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
-                                }
+                                // else if (/\s{2,}/.test(value)) {
+                                //     return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
+                                // }
                                 else if (value.length <= 4) {
                                     return Promise.reject(t('Tasks.descriptionLength'));
                                 }
