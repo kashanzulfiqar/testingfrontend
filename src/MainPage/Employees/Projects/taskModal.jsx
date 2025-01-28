@@ -280,20 +280,18 @@ function TaskModal({
                             className="custom-border mb-4"
                             rules={[
                               {
-                                validator: (_, value) => {
-                                  if (/\s{2,}/.test(value)) {
-                                    return Promise.reject(
-                                      t(
-                                        "allEmp.errors.removeConsecutiveSpaces2"
-                                      )
-                                    );
-                                  }
-                                  return Promise.resolve();
-                                },
-                              },
-                              {
+                                whitespace: true,
                                 required: true,
-                                message: "Please enter a title",
+                                validator: (_, value) => {
+                                if (!value || value.trim() === '') {
+                                    return Promise.reject(t('Tasks.pleaseentertitle'));
+                                } else if (/\s{2,}/.test(value)) {
+                                  return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
+                                } else if (value.length < 3) {
+                                    return Promise.reject(t('Tasks.titleLength'));
+                                }
+                                return Promise.resolve();
+                                },
                               },
                             ]}
                           >
@@ -324,8 +322,20 @@ function TaskModal({
                             name="description"
                             rules={[
                               {
+                                whitespace: true,
                                 required: true,
-                                message: "Please enter description",
+                                validator: (_, value) => {
+                                if(!value || value.trim() === ''){
+                                    return Promise.reject(t('Tasks.pleaseenterdescription'));
+                                }
+                                // else if (/\s{2,}/.test(value)) {
+                                //     return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
+                                // }
+                                else if (value.length <= 4) {
+                                    return Promise.reject(t('Tasks.descriptionLength'));
+                                }
+                                return Promise.resolve();
+                                },
                               },
                             ]}
                           >
