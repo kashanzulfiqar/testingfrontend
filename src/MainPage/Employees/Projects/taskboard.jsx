@@ -1171,6 +1171,21 @@ const TaskBoard = () => {
                       >
                         Save
                       </a>
+                      <a
+                        className="btn"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={handleCancel}
+                        style={{
+                          marginLeft: "10px",
+                          height: "42px",
+                          textAlign: "center",
+                          backgroundColor: "lightgrey",
+                          color: "white"
+                        }}
+
+                      >
+                        Cancel
+                      </a>
                     </div>
                     {boardTitle?.trim() === "" && (
                       <p className="text-danger">
@@ -1198,9 +1213,10 @@ const TaskBoard = () => {
                     {(role === "admin" || permissions?.projectManagement) && (
                       <h3 style={{ marginLeft: "1%" }}>
                         <a onClick={handleEditClick}>
-                          <i className="fa fa-pencil ml-2" />
+                          <i className="fa fa-pencil fa-xs ml-2" />
                         </a>
                       </h3>
+
                     )}
                   </div>
                 )}
