@@ -221,10 +221,13 @@ function DayViewTimesheet({
   const searchHandler = (val, type) => {
     let dropdownValues = [];
     if (type === "project") {
-      allProjects.forEach((proj) => {
-        dropdownValues.push(proj.projectName?.toLowerCase());
-      });
-    } else if (type === "task") {
+      // Combined project and taskboard search handling
+      const combinedValues = [
+        ...allProjects.map(proj => proj.projectName?.toLowerCase()),
+        ...allTaskboards.map(taskboard => taskboard.boardTitle?.toLowerCase())
+    ];
+    dropdownValues = combinedValues;
+} else if (type === "task") {
       allTasks.forEach((proj) => {
         dropdownValues.push(proj.title?.toLowerCase());
       });
@@ -1232,7 +1235,7 @@ function DayViewTimesheet({
                                 searchHandler(val, "project");
                               }}
                               filterOption={(input, option) =>
-                                option.children
+                                String(option.children)
                                   ?.toLowerCase()
                                   .indexOf(input?.toLowerCase()) >= 0
                               }
@@ -1283,62 +1286,6 @@ function DayViewTimesheet({
                           </Form.Item>
                         </div>
                       </>
-                      {/* ) : (
-                        <>
-                          <label>
-                            {t("TaskBoard")}{" "}
-                            <span className="text-danger">*</span>
-                          </label>
-                          <div style={{ position: "relative" }} id="area">
-                            <Form.Item
-                              name="boardId"
-                              className="custom-border"
-                              rules={[
-                                {
-                                  whitespace: true,
-                                  required: true,
-                                  message: t("please select taskboard"),
-                                },
-                              ]}
-                            >
-                              <Select
-                                showSearch
-                                onSearch={(val) => {
-                                  searchHandler(val, "taskboard");
-                                }}
-                                filterOption={(input, option) =>
-                                  option.children
-                                    ?.toLowerCase()
-                                    .indexOf(input?.toLowerCase()) >= 0
-                                }
-                                optionFilterProp="children"
-                                notFoundContent={
-                                  <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                                }
-                                dropdownRender={(menu) => <>{menu}</>}
-                                onChange={(val) => {
-                                  getAllTasks(val);
-                                  form2.setFieldsValue({ taskId: "" });
-                                }}
-                                className="custom-select custom-normal"
-                                getPopupContainer={() =>
-                                  document.getElementById("area")
-                                }
-                                placeholder={t("Select Taskboard")}
-                              >
-                                {allTaskboards.map((taskBoard, index) => (
-                                  <Select.Option
-                                    key={index}
-                                    value={taskBoard._id}
-                                  >
-                                    {taskBoard.boardTitle}
-                                  </Select.Option>
-                                ))}
-                              </Select>
-                            </Form.Item>
-                          </div>
-                        </>
-                      )} */}
                     </div>
                   </div>
                   <div className="col-12">
