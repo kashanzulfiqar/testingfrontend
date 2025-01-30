@@ -229,7 +229,7 @@ const App = () => {
           <Route path={`employee/request-admin/:id`} element={<LeaveAdmin />} />
           <Route path={`employee/timesheet`} element={<Timesheet />} />
           <Route
-            path={`/profile/employee-profile`}
+            path={`/profile/employee-profile/:id`}
             element={<EmployeeProfile />}
           />
           <Route path={`/profile`} element={<EmployeeProfile />} />
