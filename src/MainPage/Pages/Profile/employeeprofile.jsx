@@ -48,7 +48,7 @@ const EmployeeProfile = () => {
   const moment = require("moment");
   const location = useLocation();
   const nav = useNavigate();
-  const user_data = location?.state?.user_data;
+  const [user_data, setUser_data] = useState(location?.state?.user_data);
   const allDataLocal = JSON.parse(localStorage.getItem("allDataLocal"));
 
   let active = sessionStorage.getItem("emp_active_tab");
@@ -110,9 +110,9 @@ const EmployeeProfile = () => {
   useEffect(() => {
     if (location.pathname.startsWith("/profile/employee-profile")) {
       console.log("all data available", allDataLocal, user_data, userId);
-      setAllData(allDataLocal ? allDataLocal : user_data);
+      setAllData(user_data);
       const userId = location.pathname.split("/")[3]; // extract the userId from the pathname
-      if (!allDataLocal && !user_data) {
+      if (!user_data) {
         console.log("no data", allDataLocal, user_data, userId);
         setDataLoading(true);
         apiServices(
@@ -134,15 +134,16 @@ const EmployeeProfile = () => {
           });
       }
     } else if (location.pathname === "/profile") {
+      console.log("all data available", allDataLocal, user_data);
       setActiveTab(employee_tab ? employee_tab : active ? active : "profile");
       if (imageChange === 1) {
         setDataLoading(true);
         apiServices("GET", "user/employee-overview", null, user_state)
           .then((res) => {
             if (res?.data?.success === true) {
-              setAllData(allDataLocal ? allDataLocal : res?.data?.user);
+              setAllData(res?.data?.user);
               setDataLoading(false);
-              setImageChange((prev) => prev + 1);
+              // setImageChange((prev) => prev + 1);
             }
           })
           .catch((err) => {
@@ -317,7 +318,9 @@ const EmployeeProfile = () => {
         delete d[key];
       }
     });
+    console.log("allData", allData, user_state);
     if (allData?._id === user_state?.user?._id) {
+      console.log("inside ===");
       localStorage.setItem(
         "updated_user",
         JSON.stringify({ imageUrl: d?.imageUrl, fullName: d?.fullName })
@@ -328,6 +331,7 @@ const EmployeeProfile = () => {
           user_data: user_data,
         },
       });
+      console.log("inside ===", user_data);
     }
     const newData = { ...allData };
     delete newData.password;
@@ -342,11 +346,11 @@ const EmployeeProfile = () => {
           setAllData((prev) => ({
             ...prev,
             ...d,
-          }));
-          localStorage.setItem(
-            "allDataLocal",
-            JSON.stringify({ ...new_values, password: user_data?.password })
-          );
+          }));// directly update set All Data with res?.data?.user
+          // localStorage.setItem(
+          //   "allDataLocal",
+          //   JSON.stringify({ ...new_values, password: user_data?.password })
+          // );
           message.success(
             t("empProfile.errors.profileDetailsUpdatedSuccessfully")
           );
@@ -386,10 +390,10 @@ const EmployeeProfile = () => {
             ...prev,
             ...values,
           }));
-          localStorage.setItem(
-            "allDataLocal",
-            JSON.stringify({ ...d1, password: user_data?.password })
-          );
+          // localStorage.setItem(
+          //   "allDataLocal",
+          //   JSON.stringify({ ...d1, password: user_data?.password })
+          // );
           message.success(
             t("empProfile.errors.bankDetailsUpdatedSuccessfully")
           );
@@ -428,10 +432,10 @@ const EmployeeProfile = () => {
             ...prev,
             emergencyContacts: [values],
           }));
-          localStorage.setItem(
-            "allDataLocal",
-            JSON.stringify({ ...d1, password: user_data?.password })
-          );
+          // localStorage.setItem(
+          //   "allDataLocal",
+          //   JSON.stringify({ ...d1, password: user_data?.password })
+          // );
           message.success(
             t("empProfile.errors.emergencyContactUpdatedSuccessfully")
           );
@@ -470,10 +474,10 @@ const EmployeeProfile = () => {
             ...prev,
             education: values?.education,
           }));
-          localStorage.setItem(
-            "allDataLocal",
-            JSON.stringify({ ...d1, password: user_data?.password })
-          );
+          // localStorage.setItem(
+          //   "allDataLocal",
+          //   JSON.stringify({ ...d1, password: user_data?.password })
+          // );
           message.success(
             t("empProfile.errors.educationDetailsUpdatedSuccessfully")
           );
@@ -512,10 +516,10 @@ const EmployeeProfile = () => {
             ...prev,
             experience: values?.experience,
           }));
-          localStorage.setItem(
-            "allDataLocal",
-            JSON.stringify({ ...d1, password: user_data?.password })
-          );
+          // localStorage.setItem(
+          //   "allDataLocal",
+          //   JSON.stringify({ ...d1, password: user_data?.password })
+          // );
           message.success(
             t("empProfile.errors.experienceDetailsUpdatedSuccessfully")
           );
@@ -614,10 +618,10 @@ const EmployeeProfile = () => {
                 ...prev,
                 imageUrl: res?.data?.result,
               }));
-              localStorage.setItem(
-                "allDataLocal",
-                JSON.stringify({ ...d1, password: user_data?.password })
-              );
+              // localStorage.setItem(
+              //   "allDataLocal",
+              //   JSON.stringify({ ...d1, password: user_data?.password })
+              // );
               // setImage(res?.data?.result)
               setImageLoader(false);
               message.success(
@@ -685,10 +689,10 @@ const EmployeeProfile = () => {
             ...prev,
             imageUrl: null,
           }));
-          localStorage.setItem(
-            "allDataLocal",
-            JSON.stringify({ ...d1, password: user_data?.password })
-          );
+          // localStorage.setItem(
+          //   "allDataLocal",
+          //   JSON.stringify({ ...d1, password: user_data?.password })
+          // );
           // setImage(res?.data?.result)
           setImageLoader(false);
           setLoader(false);
