@@ -847,7 +847,7 @@ const AllEmployees = () => {
                             onClick={() =>
                               sessionStorage.setItem(`employee_tab`, "profile")
                             }
-                            state={{ user_data: user }}
+                            // state={{ user_data: user }}
                             className="avatar"
                           >
                             <img
@@ -932,7 +932,7 @@ const AllEmployees = () => {
                             onClick={() =>
                               sessionStorage.setItem(`employee_tab`, "profile")
                             }
-                            state={{ user_data: user }}
+                            // state={{ user_data: user }}
                           >
                             {user?.fullName}
                           </Link>

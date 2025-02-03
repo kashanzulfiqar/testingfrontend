@@ -108,66 +108,78 @@ const EmployeeProfile = () => {
   });
   const [imageChange, setImageChange] = useState(1);
   useEffect(() => {
+    getEmployeeOverview();
+  }, [location]);
+
+  const getEmployeeOverview = () => {
     if (location.pathname.startsWith("/profile/employee-profile")) {
-      console.log("all data available", allDataLocal, user_data, userId);
-      setAllData(user_data);
       const userId = location.pathname.split("/")[3]; // extract the userId from the pathname
-      if (!user_data) {
-        console.log("no data", allDataLocal, user_data, userId);
-        setDataLoading(true);
-        apiServices(
-          "GET",
-          `user/employee-overview/?employeeId=${userId}`,
-          null,
-          user_state
-        )
-          .then((res) => {
-            if (res.data.success === true) {
-              setAllData(res.data?.user);
-              // localStorage.setItem("allDataLocal", JSON.stringify(res.data?.user));
-              setDataLoading(false);
-            }
-          })
-          .catch((err) => {
+      console.log("no data", allDataLocal, user_data, userId);
+      setDataLoading(true);
+      apiServices(
+        "GET",
+        `user/employee-overview/?employeeId=${userId}`,
+        null,
+        user_state
+      )
+        .then((res) => {
+          if (res?.data?.success === true) {
+            setAllData(res?.data?.user);
             setDataLoading(false);
-            console.error(err);
-          });
-      }
+            setLoader(false);
+            // setImageChange((prev) => prev + 1);
+          }
+        })
+        .catch((err) => {
+          setDataLoading(false);
+          setLoader(false);
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : t("empProfile.errors.getEmployeeInfoError")
+
+            }!`
+          );
+        });
     } else if (location.pathname === "/profile") {
       console.log("all data available", allDataLocal, user_data);
       setActiveTab(employee_tab ? employee_tab : active ? active : "profile");
-      if (imageChange === 1) {
-        setDataLoading(true);
-        apiServices("GET", "user/employee-overview", null, user_state)
-          .then((res) => {
-            if (res?.data?.success === true) {
-              setAllData(res?.data?.user);
-              setDataLoading(false);
-              // setImageChange((prev) => prev + 1);
-            }
-          })
-          .catch((err) => {
+      setDataLoading(true);
+      apiServices("GET", `user/employee-overview`, null, user_state)
+        .then((res) => {
+          if (res?.data?.success === true) {
+            setAllData(res?.data?.user);
             setDataLoading(false);
-            message.error(
-              `${
-                err?.response?.data?.msg
-                  ? err?.response?.data?.msg
-                  : err?.response?.data?.validation?.body?.message
-                  ? err?.response?.data?.validation?.body?.message
-                  : t("empProfile.errors.getEmployeeInfoError")
-              }!`
-            );
-          });
-      }
+            setLoader(false);
+            // setImageChange((prev) => prev + 1);
+          }
+        })
+        .catch((err) => {
+          setDataLoading(false);
+          setLoader(false);
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : t("empProfile.errors.getEmployeeInfoError")
+            }!`
+          );
+        });
     }
-  }, [location]);
-
+  };
   // useEffect(() => {
+
   //   if(activeTab === 'profile'){
   //     getReportsTo()
   //     getDepartment();
   //     getDesignation();
   //   }
+
   //   // if(role === 'admin' || permissions?.viewAllUsers) {
   //   //   getReportsTo()
   //   //   getDepartment();
@@ -183,6 +195,15 @@ const EmployeeProfile = () => {
     sessionStorage.setItem(`emp_active_tab`, `${activeTab}`);
   }, [activeTab]);
 
+  useEffect(() => {
+    if (open?.isEmergInfoOpen) {
+      form.setFieldsValue({
+        name: open.data.name,
+        relationship: open.data.relationship,
+        phoneNo: open.data.phoneNo,
+      });
+    }
+  }, [open?.isEmergInfoOpen]);
   // const getReportsTo = () => {
   //   apiServices("GET", "user/view-team-lead", null, user_state)
   //   .then((res) => {
@@ -343,19 +364,20 @@ const EmployeeProfile = () => {
     apiServices("PUT", "user/update-user", new_values, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
-          setAllData((prev) => ({
-            ...prev,
-            ...d,
-          }));// directly update set All Data with res?.data?.user
+          // setAllData((prev) => ({
+          //   ...prev,
+          //   ...d,
+          // })); //directly update set All Data with res?.data?.user
           // localStorage.setItem(
           //   "allDataLocal",
           //   JSON.stringify({ ...new_values, password: user_data?.password })
           // );
+
+          getEmployeeOverview();
           message.success(
             t("empProfile.errors.profileDetailsUpdatedSuccessfully")
           );
           handleClose();
-          setLoader(false);
         }
       })
       .catch((err) => {
@@ -386,21 +408,23 @@ const EmployeeProfile = () => {
     apiServices("PUT", "user/update-user", d1, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
-          setAllData((prev) => ({
-            ...prev,
-            ...values,
-          }));
+          // setAllData((prev) => ({
+          //   ...prev,
+          //   ...values,
+          // }));
           // localStorage.setItem(
           //   "allDataLocal",
           //   JSON.stringify({ ...d1, password: user_data?.password })
           // );
+          getEmployeeOverview();
           message.success(
             t("empProfile.errors.bankDetailsUpdatedSuccessfully")
           );
+
           handleClose();
-          setLoader(false);
         }
       })
+
       .catch((err) => {
         setLoader(false);
         message.error(
@@ -428,19 +452,19 @@ const EmployeeProfile = () => {
     apiServices("PUT", "user/update-user", d1, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
-          setAllData((prev) => ({
-            ...prev,
-            emergencyContacts: [values],
-          }));
+          // setAllData((prev) => ({
+          //   ...prev,
+          //   emergencyContacts: [values],
+          // }));
           // localStorage.setItem(
           //   "allDataLocal",
           //   JSON.stringify({ ...d1, password: user_data?.password })
           // );
+          getEmployeeOverview();
           message.success(
             t("empProfile.errors.emergencyContactUpdatedSuccessfully")
           );
           handleClose();
-          setLoader(false);
         }
       })
       .catch((err) => {
@@ -470,19 +494,19 @@ const EmployeeProfile = () => {
     apiServices("PUT", "user/update-user", d1, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
-          setAllData((prev) => ({
-            ...prev,
-            education: values?.education,
-          }));
+          // setAllData((prev) => ({
+          //   ...prev,
+          //   education: values?.education,
+          // }));
           // localStorage.setItem(
           //   "allDataLocal",
           //   JSON.stringify({ ...d1, password: user_data?.password })
           // );
+          getEmployeeOverview();
           message.success(
             t("empProfile.errors.educationDetailsUpdatedSuccessfully")
           );
           handleClose();
-          setLoader(false);
         }
       })
       .catch((err) => {
@@ -512,19 +536,19 @@ const EmployeeProfile = () => {
     apiServices("PUT", "user/update-user", d1, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
-          setAllData((prev) => ({
-            ...prev,
-            experience: values?.experience,
-          }));
+          // setAllData((prev) => ({
+          //   ...prev,
+          //   experience: values?.experience,
+          // }));
           // localStorage.setItem(
           //   "allDataLocal",
           //   JSON.stringify({ ...d1, password: user_data?.password })
           // );
+          getEmployeeOverview();
           message.success(
             t("empProfile.errors.experienceDetailsUpdatedSuccessfully")
           );
           handleClose();
-          setLoader(false);
         }
       })
       .catch((err) => {
@@ -600,6 +624,7 @@ const EmployeeProfile = () => {
         );
         nav("/profile", {
           state: { updated_user: { imageUrl: res?.data?.result?.secure_url } },
+          replace: true,
         });
 
         let d1 = {
@@ -614,16 +639,17 @@ const EmployeeProfile = () => {
         apiServices("PUT", "user/update-user", d1, user_state)
           .then((res) => {
             if (res?.data?.success === true) {
-              setAllData((prev) => ({
-                ...prev,
-                imageUrl: res?.data?.result,
-              }));
+              // setAllData((prev) => ({
+              //   ...prev,
+              //   imageUrl: res?.data?.result,
+              // }));
               // localStorage.setItem(
               //   "allDataLocal",
               //   JSON.stringify({ ...d1, password: user_data?.password })
               // );
-              // setImage(res?.data?.result)
+              setImage(res?.data?.result)
               setImageLoader(false);
+              getEmployeeOverview();
               message.success(
                 t("empProfile.errors.profilePictureUpdatedSuccessfully")
               );
@@ -683,23 +709,24 @@ const EmployeeProfile = () => {
             "updated_user",
             JSON.stringify({ imageUrl: null })
           );
-          nav("/profile", { state: { updated_user: { imageUrl: null } } });
+          nav("/profile", { state: { updated_user: { imageUrl: null } }, replace: true });
 
-          setAllData((prev) => ({
-            ...prev,
-            imageUrl: null,
-          }));
+          // setAllData((prev) => ({
+          //   ...prev,
+          //   imageUrl: null,
+          // }));
           // localStorage.setItem(
           //   "allDataLocal",
           //   JSON.stringify({ ...d1, password: user_data?.password })
           // );
           // setImage(res?.data?.result)
           setImageLoader(false);
-          setLoader(false);
+          getEmployeeOverview();
           handleClose();
           message.success(
             t("empProfile.errors.profilePictureRemovedSuccessfully")
           );
+
         }
       })
       .catch((err) => {
@@ -2403,13 +2430,13 @@ const EmployeeProfile = () => {
                       message.error(t("allEmp.errors.fillRequiredFields"));
                     }
                   }}
-                  initialValues={{
-                    name: open?.data?.name ? open?.data?.name : "",
-                    relationship: open?.data?.relationship
-                      ? open?.data?.relationship
-                      : "",
-                    phoneNo: open?.data?.phoneNo ? open?.data?.phoneNo : "",
-                  }}
+                  // initialValues={{
+                  //   name: open?.data?.name ? open?.data?.name : "",
+                  //   relationship: open?.data?.relationship
+                  //     ? open?.data?.relationship
+                  //     : "",
+                  //   phoneNo: open?.data?.phoneNo ? open?.data?.phoneNo : "",
+                  // }}
                 >
                   <>
                     <div className="card">
