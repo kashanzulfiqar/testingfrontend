@@ -372,8 +372,8 @@ const Employeeslist = () => {
               dataIndex: 'fullName',
               render: (text, record) => (            
                   <h2 className="table-avatar">
-                    <Link to="/profile/employee-profile" onClick={() => sessionStorage.setItem(`employee_tab`, 'profile')} state={{user_data: record}} className="avatar"><img alt="" src={record?.imageUrl ? record?.imageUrl : user_icon} /></Link>
-                    <Link to="/profile/employee-profile" onClick={() => sessionStorage.setItem(`employee_tab`, 'profile')} state={{user_data: record}}>{text} <span> <label>{desigInfo[record?.designationId]}</label> </span></Link>
+                    <Link to={`/profile/employee-profile/${record?._id}`} onClick={() => sessionStorage.setItem(`employee_tab`, 'profile')} className="avatar"><img alt="" src={record?.imageUrl ? record?.imageUrl : user_icon} /></Link>
+                    <Link to={`/profile/employee-profile/${record?._id}`} onClick={() => sessionStorage.setItem(`employee_tab`, 'profile')} >{text} <span> <label>{desigInfo[record?.designationId]}</label> </span></Link>
                   </h2>
                 ),
             },
