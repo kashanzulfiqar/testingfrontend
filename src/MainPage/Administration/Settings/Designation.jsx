@@ -62,14 +62,14 @@ const Designation = () => {
     form.resetFields();
   };
 
-  const onHandleDelete = (id) => {
+  const onHandleDelete = (Data) => {
     setLoader(true)
-    apiServices("DELETE", "designation", id, user_state)
+    apiServices("DELETE", "designation", Data, user_state)
       .then((res) => {
         // console.log(res?.data);
         if (res?.data?.success === true) {
           // console.log(data);
-          setData([...data.filter((designation) => designation._id !== id)]);
+          setData([...data.filter((designation) => designation._id !== Data?._id)]);
           handleClose();
           message.success(t('settings.designation.designationDeleted'));
           setLoader(false)
@@ -480,7 +480,7 @@ const Designation = () => {
                     <Button
                       htmlType="submit"
                       className="btn btn-primary continue-btn"
-                      onClick={() => onHandleDelete(open?.data?._id)}
+                      onClick={() => onHandleDelete(open?.data)}
                       disabled={loader}
                       style={{width: '100%'}}
                     >

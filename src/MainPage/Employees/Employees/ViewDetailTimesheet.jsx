@@ -271,7 +271,7 @@ const ViewDetailTimesheet = () => {
           ),
         },
         {
-          title: t('Timesheetadmin.project'),
+          title: t('Project / Taskboard'),
           dataIndex: 'projectId',
           key: 'projectId',
           render: (text, record) => {
@@ -281,9 +281,23 @@ const ViewDetailTimesheet = () => {
                     <>
                     {/* <label key={index} className="projectTitleLongDesc" style={{marginBottom: `${index < record?.mergeObjects?.length - 1 && '17px'}`}}> */}
                     <div style={{display: 'flex', alignItems: 'center', marginBottom: '10px'}}>
-                      <label key={index} className="projectTitleLongDesc">
+                    {item?.projectId?.projectName ? <label key={index} className="projectTitleLongDesc">
                         {item?.projectId?.projectName}
-                      </label>
+                      </label> : <label key={index} className="projectTitleLongDesc">
+                        {item?.boardId?.boardTitle}{" "}
+                        <span
+                          style={{
+                            marginLeft: "8px",
+                            backgroundColor: "#7460EE",
+                            color: "#fff",
+                            padding: "2px 8px",
+                            borderRadius: "12px",
+                            fontSize: "12px",
+                          }}
+                        >
+                          {t("Taskboard")}
+                        </span>
+                      </label>}
                     </div>
                       {/* {index < record?.mergeObjects?.length - 1 && <br />} */}
                     </>
@@ -334,6 +348,7 @@ const ViewDetailTimesheet = () => {
                                   // date: moment(item?.date, 'YYYY-MM-DD'),
                                   date: moment(item?.date).format('DD-MMM-YYYY'),
                                   projectName: item?.projectId?.projectName ,
+                                  taskboardName: item?.boardId?.boardTitle,
                                   title: item?.taskId?.title ,
                                   hoursWorked: item?.hoursWorked ,
                                   notes: item?.notes,
@@ -1296,7 +1311,7 @@ const ViewDetailTimesheet = () => {
                             <Input className='form-control' style={{color: '#6C757D', backgroundColor: 'transparent', cursor: 'default'}} disabled/>
                           </Form.Item>
                       </div>
-                      <div className="form-group">
+                      {open?.data?.projectId ? (<div className="form-group">
                         <label>
                         {t('Timesheetemployee.project')}
                         </label>
@@ -1313,7 +1328,26 @@ const ViewDetailTimesheet = () => {
                               /> */}
                             <Input className='form-control' style={{color: '#6C757D', backgroundColor: 'transparent', cursor: 'default'}} disabled/>
                           </Form.Item>
+                      </div>) : (
+                        <div className="form-group">
+                        <label>
+                        {t('TaskBoard')}
+                        </label>
+                          <Form.Item
+                          name='taskboardName'
+                          className='custom-border'
+                          >
+                              {/* <Select
+                                  disabled={true}
+                                  className="custom-select custom-normal"
+                                  style={{
+                                  width: '100%',
+                                  }}
+                              /> */}
+                            <Input className='form-control' style={{color: '#6C757D', backgroundColor: 'transparent', cursor: 'default'}} disabled/>
+                          </Form.Item>
                       </div>
+                      )}
                       <div className="form-group">
                         <label>
                         {t('Timesheetadmin.taskName')}

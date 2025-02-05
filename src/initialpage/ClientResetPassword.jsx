@@ -1,21 +1,16 @@
-/**
- * Signin Firebase
- */
-
-import React, { Component, useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { Link, useParams } from "react-router-dom";
-import { Applogo } from "../Entryfile/imagepath.jsx";
-import DaftarProLogo from "../files/Icons/DaftraProLogo.svg";
 import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
 import { Form, Input, message, Spin } from "antd";
-import SuccessIcon from "../files/Icons/SuccessIcon.svg";
 import { LoadingOutlined } from "@ant-design/icons";
 import { apiServices } from "../Services/apiServices.js";
+import DaftarProLogo from "../files/Icons/DaftraProLogo.svg";
+import SuccessIcon from "../files/Icons/SuccessIcon.svg";
 import favicon from '../files/Icons/DaftarProIcon.svg';
 import { useTranslation } from 'react-i18next';
 
-const ResetPassword = () => {
+const ClientResetPassword = () => {
   const { t } = useTranslation();
   const [form] = Form.useForm();
   const { token } = useParams();
@@ -69,13 +64,11 @@ const ResetPassword = () => {
   };
 
   useEffect(() => {
-    // Detect Safari using more robust feature detection (for both mobile and desktop)
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || 
                      (navigator.vendor && navigator.vendor.includes('Apple') && !navigator.userAgent.includes('CriOS') && !navigator.userAgent.includes('FxiOS'));
   
     if (isSafari) {
       console.log("Detected Safari");
-      // Apply custom styles for Safari
       document.documentElement.style.setProperty('--word-spacing', '0px');
       document.documentElement.style.setProperty('--heading-spacing', '0px');
       document.documentElement.style.setProperty('--div-spacing', '0px');
@@ -94,11 +87,11 @@ const ResetPassword = () => {
 
     let data = {
       password: values?.confirmPassword,
+      userType: 'client'
     };
 
-    apiServices("PUT", `user/reset-password?token=${token}`, data)
+    apiServices("PUT", `client/reset-password?token=${token}`, data)
       .then((res) => {
-        // console.log(res);
         if (res?.data?.msg === 'Link have been expired') {
           setLoader(false);
           message.error(`Password Reset ${res?.data?.msg}`);
@@ -111,7 +104,6 @@ const ResetPassword = () => {
         }
       })
       .catch((err) => {
-        // console.log(err);
         setLoader(false);
         message.error(
           `${
@@ -119,7 +111,7 @@ const ResetPassword = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : "Forgot Password"
+              : "Reset Password"
           } Error`
         );
       });
@@ -139,19 +131,16 @@ const ResetPassword = () => {
     <>
       <Helmet>
         <title>Reset Password - DaftarPro</title>
-        <meta name="description" content="Login page" />
+        <meta name="description" content="Reset Password page" />
         <link rel="icon" type="image/x-icon" href={favicon} />				
       </Helmet>
       <div className="account-content">
-        {/* <Link to="/applyjob/joblist" className="btn btn-primary apply-btn">Apply Job</Link> */}
         <div className="container">
-          {/* Account Logo */}
           <div className="account-logo pt-3 pb-2">
             <Link to="/">
               <img src={DaftarProLogo} alt="DaftarPro" />
             </Link>
           </div>
-          {/* /Account Logo */}
           {!successSection ? (
             <div
               className="account-box"
@@ -169,10 +158,7 @@ const ResetPassword = () => {
                 >
                   Create New Password
                 </h3>
-                {/* <p className="account-subtitle">Enter your email to get a password reset link</p> */}
-                {/* Account Form */}
                 <Form
-                  // {...layout}
                   form={form}
                   name="control-hooks"
                   onFinish={onFinish}
@@ -316,7 +302,6 @@ const ResetPassword = () => {
                     </p>
                   </div>
                 </Form>
-                {/* /Account Form */}
               </div>
             </div>
           ) : (
@@ -352,7 +337,7 @@ const ResetPassword = () => {
                 </div>
 
                 <div className="form-group text-center">
-                  <Link to="/login">
+                  <Link to="/client/login">
                     <span className="account-btn" style={{ color: "white" }}>
                       Login Now
                     </span>
@@ -367,4 +352,4 @@ const ResetPassword = () => {
   );
 };
 
-export default ResetPassword;
+export default ClientResetPassword; 

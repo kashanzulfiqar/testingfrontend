@@ -16,6 +16,7 @@ const ForgotPassword = () => {
   const [successSection, setSuccessSection] = useState(false);
   const [email, setEmail] = useState("");
   const [loader, setLoader] = useState(false)
+  const [resendLoader, setResendLoader] = useState(false); // New state for resend loader
 
 
   useEffect(() => {
@@ -77,6 +78,7 @@ const ForgotPassword = () => {
   );
 
   const ResendEmail = (email) => {
+    setResendLoader(true); // Start the loader
     let data1 = {
       email: email
     } 
@@ -95,6 +97,9 @@ const ForgotPassword = () => {
         }!`
       );
    })
+   .finally(() => {
+    setResendLoader(false); // Stop the loader
+  });
   }
 
   return (
@@ -223,15 +228,16 @@ const ForgotPassword = () => {
                     We’ve emailed you with instructions to reset your password.
                   </label>
                   <div style={{ fontWeight: "700", fontSize: "18px", margin: '15px 0px 11px 0px' }}>{email}</div>
-                  <label
+                  <a
                     style={{
                       color: "#0097C7",
                       fontSize: "18px",
                       margin: '8px 0px'
                     }}
+                    onClick={() => setSuccessSection(false)}
                   >
                     Not your email address?
-                  </label>
+                  </a>
                   {/* <p style={{fontSize: '18px'}}>Please <a onClick={() => {setEmailNotVerified(false); setLoginValues({})}} style={{color: '#0097C7'}}>Click-Here</a> to Login again with the correct email address.</p> */}
                   <label
                     style={{
@@ -251,7 +257,17 @@ const ForgotPassword = () => {
                     }}
                   >
                     Still not Received?{" "}
-                    <a onClick={() => ResendEmail(email)} style={{ color: "#0097C7" }}>Resend Email</a>
+                    <label
+                      style={{
+                        color: resendLoader ? "#aaa" : "#0097C7", // Optional: Gray out text when loading
+                        cursor: resendLoader ? "not-allowed" : "pointer", // Disable pointer interaction during loading
+                        fontSize: "18px",
+                        margin: "8px 0px",
+                      }}
+                      onClick={() => !resendLoader && ResendEmail(email)} // Disable click when loading
+                    >
+                      {resendLoader ? <Spin size="small" /> : "Resend Email"} {/* Show spinner when loading */}
+                    </label>
                   </label>
                 </div>
                 {/* /Account Form */}

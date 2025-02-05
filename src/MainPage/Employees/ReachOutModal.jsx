@@ -26,13 +26,25 @@ import { Modal } from "@mui/material";
 import PlusOutlined from "@mui/icons-material/Add";
 import { getAllISOCodes } from "iso-country-currency";
 import moment from "moment";
-import { DeleteOutlined, LoadingOutlined, MinusCircleFilled } from "@ant-design/icons";
+import {
+  DeleteOutlined,
+  LoadingOutlined,
+  MinusCircleFilled,
+} from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { acceptableFormats } from "./Projects/EditProjects";
 import { apiServices } from "../../Services/apiServices";
 import { DeleteFiles, uploadFunction } from "./Projects/UploadAndDeleteFunc";
 
-function ReachOutModal({ openModal, closeModal, data, leadId, viewLeads, viewFiles, setLoadReachOut}) {
+function ReachOutModal({
+  openModal,
+  closeModal,
+  data,
+  leadId,
+  viewLeads,
+  viewFiles,
+  setLoadReachOut,
+}) {
   const nav = useNavigate();
   const [form] = Form.useForm();
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
@@ -47,21 +59,21 @@ function ReachOutModal({ openModal, closeModal, data, leadId, viewLeads, viewFil
   const [filesToDelete, setFilesToDelete] = useState([]);
   const [uploadFiles, setUploadFiles] = useState([]);
   const [newFiles, setNewFiles] = useState([]);
-  const [mediumOptions, setMediumOptions] = useState([]);  
+  const [mediumOptions, setMediumOptions] = useState([]);
   const [open1, setOpen1] = useState(false);
   const [searchValue, setSearchValue] = useState("");
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedMedium, setSelectedMedium] = useState(null);
 
-  useEffect(() => {      
+  useEffect(() => {
     fetchEmployees();
     viewMediums();
     console.log("EDIT MODAL");
     if (data) {
-      console.log("data",data)
+      console.log("data", data);
       form.setFieldsValue({
-        ...data,        
+        ...data,
         date: moment(data?.date, "YYYY-MM-DD"),
         communicatedBy: data?.communicatedBy?._id,
         communicationMedium: data?.communicationMedium?._id,
@@ -134,8 +146,8 @@ function ReachOutModal({ openModal, closeModal, data, leadId, viewLeads, viewFil
       apiServices("PUT", "leads/editReachOut", updatedData, user_state)
         .then((res) => {
           if (res.data.success === true) {
-            message.success('Reachout Record Updated Successfully');
-            setLoadReachOut(true)
+            message.success("Reachout Record Updated Successfully");
+            setLoadReachOut(true);
             viewLeads();
             closeModal();
             setLoader(false);
@@ -143,11 +155,10 @@ function ReachOutModal({ openModal, closeModal, data, leadId, viewLeads, viewFil
         })
         .catch((error) => {
           console.log("error", error);
-          message.error('Error updating Reachout');
+          message.error("Error updating Reachout");
           setLoader(false);
-        })
-    }
-    else {
+        });
+    } else {
       const updatedData = {
         reachOut: {
           ...val,
@@ -158,8 +169,8 @@ function ReachOutModal({ openModal, closeModal, data, leadId, viewLeads, viewFil
       apiServices("PUT", "leads/addReachOut", updatedData, user_state)
         .then((res) => {
           if (res.data.success === true) {
-            message.success('Reachout Record Added Successfully');
-            setLoadReachOut(true)
+            message.success("Reachout Record Added Successfully");
+            setLoadReachOut(true);
             viewLeads();
             closeModal();
             setLoader(false);
@@ -167,37 +178,44 @@ function ReachOutModal({ openModal, closeModal, data, leadId, viewLeads, viewFil
         })
         .catch((error) => {
           console.log("error", error);
-          message.error('Error Adding Reachout');
+          message.error("Error Adding Reachout");
           setLoader(false);
-        })
+        });
     }
   };
 
   const handleOk = () => {
     setLoader(true);
     if (selectedMedium) {
-      apiServices("DELETE", "leads/delete-medium", selectedMedium?._id, user_state)
-      .then((res) => {
-        // console.log(res?.data);
-        if (res?.data?.success === true) {
-          message.success('Option removed Successfully');
-          setMediumOptions(prevOptions => prevOptions.filter(proj=> proj._id !== selectedMedium?._id))
+      apiServices(
+        "DELETE",
+        "leads/delete-medium",
+        selectedMedium?._id,
+        user_state
+      )
+        .then((res) => {
+          // console.log(res?.data);
+          if (res?.data?.success === true) {
+            message.success("Option removed Successfully");
+            setMediumOptions((prevOptions) =>
+              prevOptions.filter((proj) => proj._id !== selectedMedium?._id)
+            );
+            setLoader(false);
+          }
+        })
+        .catch((err) => {
           setLoader(false);
-        }
-      })
-      .catch((err) => {
-        setLoader(false);
-        message.error(
-          `${
-            err?.response?.data?.msg
-              ? err?.response?.data?.msg
-              : err?.response?.data?.validation?.body?.message
-              ? err?.response?.data?.validation?.body?.message
-              : 'Error Deleting Option'
-          }!`
-        );
-        setLoader(false);
-      });
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : "Error Deleting Option"
+            }!`
+          );
+          setLoader(false);
+        });
     }
     handleCancel();
   };
@@ -226,38 +244,37 @@ function ReachOutModal({ openModal, closeModal, data, leadId, viewLeads, viewFil
   const handleAddMedium = (values) => {
     setLoader(true);
     let data = {
-      title: values
-    }
-      apiServices("POST", "leads/add-medium", data, user_state)
-        .then((res) => {
-          // console.log(res?.data);
-          if (res?.data?.success === true) {
-            setMediumOptions([
-                ...mediumOptions,
-                {
-                    title: values,
-                    _id: res?.data?.Medium?._id,
-                }
-            ])
-            //message.success('Medium added successfully');
-            setLoader(false);
-          }
-        })
-        .catch((err) => {
+      title: values,
+    };
+    apiServices("POST", "leads/add-medium", data, user_state)
+      .then((res) => {
+        // console.log(res?.data);
+        if (res?.data?.success === true) {
+          setMediumOptions([
+            ...mediumOptions,
+            {
+              title: values,
+              _id: res?.data?.Medium?._id,
+            },
+          ]);
+          //message.success('Medium added successfully');
           setLoader(false);
-          // console.log(err);
-          message.error(
-            `${
-              err?.response?.data?.msg
-                ? err?.response?.data?.msg
-                : err?.response?.data?.validation?.body?.message
-                ? err?.response?.data?.validation?.body?.message
-                : 'error adding medium'
-            }!`
-          );
-        });
+        }
+      })
+      .catch((err) => {
+        setLoader(false);
+        // console.log(err);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "error adding medium"
+          }!`
+        );
+      });
   };
-
 
   const antIcon = (
     <LoadingOutlined
@@ -313,11 +330,12 @@ function ReachOutModal({ openModal, closeModal, data, leadId, viewLeads, viewFil
                 }}
                 name="control-hooks"
               >
-                                <div className="row">
+                <div className="row">
                   <div className="col-sm-6">
                     <div className="form-group">
-                      <label>Reach Out Date{" "}
-                      <span className="text-danger">*</span></label>
+                      <label>
+                        Reach Out Date <span className="text-danger">*</span>
+                      </label>
                       <div style={{ position: "relative" }} id="area">
                         <Form.Item
                           name="date"
@@ -330,23 +348,25 @@ function ReachOutModal({ openModal, closeModal, data, leadId, viewLeads, viewFil
                           ]}
                         >
                           <DatePicker
-                            getPopupContainer={() =>
-                              document.getElementById("area")
-                            }
-                            style={{ width: "100%" }}
+                            getPopupContainer={() => document.body}
+                            placeholder={t("requests.addModal.selectDate")}
                             className="form-control"
-                            placeholder="Enter reach-out date"
                             size="large"
+                            disabledDate={(current) =>
+                              current && current > moment().endOf("day")
+                            }
                           />
                         </Form.Item>
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="col-sm-6">
                     <div className="form-group">
-                      <label>Communication Medium{" "}
-                      <span className="text-danger">*</span></label>
+                      <label>
+                        Communication Medium{" "}
+                        <span className="text-danger">*</span>
+                      </label>
                       <div style={{ position: "relative" }} id="area">
                         <Form.Item
                           name="communicationMedium"
@@ -361,10 +381,13 @@ function ReachOutModal({ openModal, closeModal, data, leadId, viewLeads, viewFil
                           <Select
                             showSearch
                             onSearch={(val) => {
+                              if (val.length <= 50) {
                               setSearchValue(val);
                               showTeamSearch(val, "medium");
                               // onTeamChange(val)
+                              }
                             }}
+                            searchValue={searchValue}
                             filterOption={(input, option) =>
                               option.children[0]
                                 ?.toLowerCase()
@@ -379,30 +402,42 @@ function ReachOutModal({ openModal, closeModal, data, leadId, viewLeads, viewFil
                             dropdownRender={(menu) => (
                               <>
                                 {menu}
-                                {searchValue && !mediumOptions?.some(option => option?.title?.toLowerCase() === searchValue?.toLowerCase()) && (
-                                  <>
-                                    <Divider style={{ margin: "5px 0" }} />
-                                    <Button
-                                      type="button"
-                                      icon={
-                                        <PlusOutlined style={{ fontSize: "20px", marginRight: "5px" }} />
-                                      }
-                                      className="addButtonStyles"
-                                      style={{
-                                        width: "100%",
-                                        height: "40px",
-                                        background: "#efefef",
-                                        borderColor: "#efefef",
-                                        display: "flex",
-                                        justifyContent: "center",
-                                        alignItems: "center",
-                                      }}
-                                      onClick={() => handleAddMedium(searchValue)}
-                                    >
-                                      {`Add "${searchValue}"`}
-                                    </Button>
-                                  </>
-                                )}
+                                {searchValue &&
+                                  !mediumOptions?.some(
+                                    (option) =>
+                                      option?.title?.toLowerCase() ===
+                                      searchValue?.toLowerCase()
+                                  ) && searchValue.length <= 50 && (
+                                    <>
+                                      <Divider style={{ margin: "5px 0" }} />
+                                      <Button
+                                        type="button"
+                                        icon={
+                                          <PlusOutlined
+                                            style={{
+                                              fontSize: "20px",
+                                              marginRight: "5px",
+                                            }}
+                                          />
+                                        }
+                                        className="addButtonStyles"
+                                        style={{
+                                          width: "100%",
+                                          height: "40px",
+                                          background: "#efefef",
+                                          borderColor: "#efefef",
+                                          display: "flex",
+                                          justifyContent: "center",
+                                          alignItems: "center",
+                                        }}
+                                        onClick={() =>
+                                          handleAddMedium(searchValue)
+                                        }
+                                      >
+                                        {`Add "${searchValue}"`}
+                                      </Button>
+                                    </>
+                                  )}
                                 {/* {
                                   <>
                                     <Divider
@@ -448,17 +483,21 @@ function ReachOutModal({ openModal, closeModal, data, leadId, viewLeads, viewFil
                               return (
                                 <Option key={index} value={item?._id}>
                                   {item?.title}
-                                  {open1 && item?._id !== form.getFieldValue('communicationMedium') && (
-                                    <span style={{ float: "right" }}>
-                                      <DeleteOutlined
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setSelectedMedium(item);
-                                          setIsModalVisible(true);
-                                        }}
-                                      />
-                                    </span>
-                                  )}
+                                  {open1 &&
+                                    item?._id !==
+                                      form.getFieldValue(
+                                        "communicationMedium"
+                                      ) && (
+                                      <span style={{ float: "right" }}>
+                                        <DeleteOutlined
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSelectedMedium(item);
+                                            setIsModalVisible(true);
+                                          }}
+                                        />
+                                      </span>
+                                    )}
                                 </Option>
                               );
                             })}
@@ -467,63 +506,64 @@ function ReachOutModal({ openModal, closeModal, data, leadId, viewLeads, viewFil
                       </div>
                     </div>
                   </div>
-                  </div>
-                  <div className="col-sm-6">
-                    <div className="form-group">
-                      <label>Communicated By{" "}
-                      <span className="text-danger">*</span></label>
-                      <Form.Item
-                        name="communicatedBy"
-                        className="custom-border"
-                        rules={[
-                          {
-                            required: true,
-                            message: "Select a communication person",
-                          },
-                        ]}
-                      >
-                          <Select
-                            showSearch
-                            onSearch={(val) => {
-                              showTeamSearch(val, "Team");
-                              // onTeamChange(val)
-                            }}
-                            filterOption={(input, option) =>
-                              option.children
-                                ?.toLowerCase()
-                                ?.indexOf(input?.toLowerCase()) >= 0
-                            }
-                            optionFilterProp="children"
-                            notFoundContent={
-                              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                            }
-                            dropdownRender={(menu) => <>{menu}</>}
-                            className="custom-select custom-normal"
-                            getPopupContainer={() =>
-                              document.getElementById("area")
-                            }
-                            placeholder="Select a personnel"
-                          >
-                            {employees?.map((employee) => (
-                              <Select.Option
-                                key={employee._id}
-                                value={employee._id}
-                              >
-                                {employee.fullName}
-                              </Select.Option>
-                            ))}
-                          </Select>
-                      </Form.Item>
-                    </div>
-                  </div>
-
+                </div>
+                <div className="col-sm-6">
                   <div className="form-group">
-                    <label>Comments</label>
-                    <Form.Item name="comments">
-                      <Input.TextArea className="form-control" rows={5} />
+                    <label>
+                      Communicated By <span className="text-danger">*</span>
+                    </label>
+                    <Form.Item
+                      name="communicatedBy"
+                      className="custom-border"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Select a communication person",
+                        },
+                      ]}
+                    >
+                      <Select
+                        showSearch
+                        onSearch={(val) => {
+                          showTeamSearch(val, "Team");
+                          // onTeamChange(val)
+                        }}
+                        filterOption={(input, option) =>
+                          option.children
+                            ?.toLowerCase()
+                            ?.indexOf(input?.toLowerCase()) >= 0
+                        }
+                        optionFilterProp="children"
+                        notFoundContent={
+                          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                        }
+                        dropdownRender={(menu) => <>{menu}</>}
+                        className="custom-select custom-normal"
+                        getPopupContainer={() =>
+                          document.getElementById("area")
+                        }
+                        placeholder="Select a personnel"
+                      >
+                        {employees?.map((employee) => (
+                          <Select.Option
+                            key={employee._id}
+                            value={employee._id}
+                          >
+                            {employee.fullName}
+                          </Select.Option>
+                        ))}
+                      </Select>
                     </Form.Item>
-                    {/* <textarea rows={4} className="form-control summernote" placeholder="Enter your message here" defaultValue={""} /> */}
                   </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Comments</label>
+                  <Form.Item name="comments">
+                    <Input.TextArea className="form-control" rows={5} />
+                  </Form.Item>
+                  {/* <textarea rows={4} className="form-control summernote" placeholder="Enter your message here" defaultValue={""} /> */}
+                </div>
 
                 <div className="submit-section">
                   <Form.Item>

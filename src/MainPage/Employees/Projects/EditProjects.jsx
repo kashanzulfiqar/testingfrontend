@@ -120,23 +120,31 @@ function EditProjects({
   ]);
 
   const addPaymentSchedule = () => {
-    setPaymentSchedules([
-      ...paymentSchedules,
-      {
-        paymentTitle: "",
-        dueDate: null,
-        amountInPercent: "",
-        amountInFigure: "",
-        paid: false,
-      },
-    ]);
+    const blankRow = {
+      paymentTitle: "",
+      dueDate: null,
+      amountInPercent: "",
+      amountInFigure: "",
+      paid: false,
+  };
+
+  // Update the state with the new row
+  const updatedSchedules = [...paymentSchedules, blankRow];
+  setPaymentSchedules(updatedSchedules);
+
+  // Update the form fields with the new paymentSchedule array
+  form.setFieldsValue({
+      paymentSchedule: updatedSchedules,
+  });
   };
 
   const removePaymentSchedule = (indexToRemove) => {
     const updatedSchedules = paymentSchedules.filter(
       (_, index) => index !== indexToRemove
     );
+    // Update the state and sync form values
     setPaymentSchedules(updatedSchedules);
+    form.setFieldsValue({ paymentSchedule: updatedSchedules });
   };
   
     const getAllCountries = () => {
@@ -181,21 +189,13 @@ function EditProjects({
       setProjectType(data?.projectType);
       setCostType(data?.costType);
       setProjectCost(data?.cost);
-      // Count the number of payment schedules in the response
-      const numPaymentSchedules = data?.paymentSchedule?.length;
-
-      // Initialize the paymentSchedules state with the correct number of payment schedules
-      const initialPaymentSchedules = Array.from(
-        { length: numPaymentSchedules },
-        (_, index) => ({
-          paymentTitle: "",
-          dueDate: null,
-          amountInPercent: "",
-          amountInFigure: "",
-          paid: false,
-        })
-      );
-
+      // Initialize paymentSchedules from data
+  const initialPaymentSchedules = data?.paymentSchedule?.map((schedule) => ({
+    ...schedule,
+    dueDate: schedule.dueDate
+      ? moment(schedule.dueDate, "YYYY-MM-DD")
+      : null,
+  })) || [];
       setPaymentSchedules(initialPaymentSchedules);
 
       form.setFieldsValue({
@@ -204,12 +204,7 @@ function EditProjects({
         assignedDevelopers: data?.assignedDevelopers?.map((dev) => dev?._id),
         startDate: moment(data?.startDate, "YYYY-MM-DD"),
         endDate: moment(data?.endDate, "YYYY-MM-DD"),
-        paymentSchedule: data?.paymentSchedule?.map((schedule) => ({
-          ...schedule,
-          dueDate: schedule.dueDate
-            ? moment(schedule.dueDate, "YYYY-MM-DD")
-            : null,
-        })),
+        paymentSchedule: initialPaymentSchedules,
       });
       setFocalPersonDisable(false)
     }
@@ -520,8 +515,8 @@ function EditProjects({
         status: values.status,
         docs: docs,
         adminDocs: admin,
-        paymentSchedule:
-          projectType === "Billed" ? values?.paymentSchedule : [],
+        paymentSchedule: values?.paymentSchedule,
+          // projectType === "Billed" ? values?.paymentSchedule : [],
         deleted: false,
         companyId: selectedData.companyId,
       };
@@ -870,13 +865,20 @@ function EditProjects({
     }
   };
 
+  const handleCostType = (value) => {
+    setCostType(value);
+    if (projectType === "Billed" && value === "Fixed" && paymentSchedules?.length === 0) {
+      addPaymentSchedule();
+    }
+  };
+
   const handleCostChange = (value) => {
     setProjectCost(value);
     const paymentSchedules = form.getFieldValue("paymentSchedule");
 
     const updatedPaymentSchedules = paymentSchedules?.map((schedule) => {
       const { amountInFigure } = schedule;
-      const percentage = ((amountInFigure / value) * 100).toFixed(2);
+      const percentage = value ? ((amountInFigure / value) * 100).toFixed(2) : 0;
       return {
         ...schedule,
         amountInPercent: parseFloat(percentage),
@@ -899,10 +901,10 @@ function EditProjects({
   );
 
   const handleAmountInFigureChange = (value, index) => {
-    const newPaymentSchedules = form.getFieldValue("paymentSchedule");
+    const newPaymentSchedules = [...paymentSchedules];
     newPaymentSchedules[index].amountInFigure = value;
 
-    const percentage = ((value / projectCost) * 100).toFixed(2);
+    const percentage = projectCost ? ((value / projectCost) * 100).toFixed(2) : 0;
     newPaymentSchedules[index].amountInPercent = parseFloat(percentage);
 
     setPaymentSchedules(newPaymentSchedules);
@@ -913,7 +915,7 @@ function EditProjects({
   };
 
   const handleAmountInPercentChange = (value, index) => {
-    const newPaymentSchedules = form.getFieldValue("paymentSchedule");
+    const newPaymentSchedules = [...paymentSchedules];
     newPaymentSchedules[index].amountInPercent = value;
 
     const amount = Math.round((value * projectCost) / 100);
@@ -926,6 +928,21 @@ function EditProjects({
     });
   };
 
+  const handlePaymentFieldChange = (fieldName, value, index) => {
+    const updatedSchedules = [...paymentSchedules];
+    updatedSchedules[index] = {
+        ...updatedSchedules[index],
+        [fieldName]: value,
+    };
+
+    // Update state
+    setPaymentSchedules(updatedSchedules);
+
+    // Sync form with updated state
+    form.setFieldsValue({
+        paymentSchedule: updatedSchedules,
+    });
+};
 
   const handleAmountChange = (value, index) => {
     const newArray = [...teamCost];
@@ -946,8 +963,8 @@ function EditProjects({
       key: 'userId',
       render: (text, record) => (
       <h2 className="table-avatar">
-        <label className="avatar"><img alt="" src={getEmployeeImage(text) || record?.imageUrl || user_icon} /></label>
-        <label>{getEmployeeFullName(text) || record?.fullName}</label>
+        <label className="avatar"><img alt="" src={record?.imageUrl || user_icon} /></label>
+        <label>{record?.fullName}</label>
       </h2>
     ),
     },
@@ -969,6 +986,8 @@ function EditProjects({
           <InputNumber
             className="form-control"
             value={record.cost}
+            stringMode={true}
+            style={{ paddingRight: '25px', width: '100%' }}
             placeholder={t('projectScreen.Modal.enterAmount')}
             formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
             parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
@@ -998,6 +1017,7 @@ function EditProjects({
           <Input
             className="form-control"
             placeholder={t("projectScreen.Modal.enterTitle")}
+            onChange={(e) => handlePaymentFieldChange("paymentTitle", e.target.value, index)}
           />
         </Form.Item>
       ),
@@ -1020,6 +1040,9 @@ function EditProjects({
           {/* <Input type="number" className="form-control" /> */}
           <InputNumber
             className="form-control"
+            min={0}
+            stringMode={true}
+            style={{ paddingRight: '25px', width: '100%' }}
             placeholder={t("projectScreen.Modal.enterAmount")}
             formatter={(value) => {
               return `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -1084,6 +1107,7 @@ function EditProjects({
               placeholder={t("requests.addModal.selectDate")}
               className="form-control"
               size="large"
+              onChange={(date) => handlePaymentFieldChange("dueDate", date, index)}
             />
           </Form.Item>
         </div>
@@ -1098,7 +1122,9 @@ function EditProjects({
           name={["paymentSchedule", index, "paid"]}
           valuePropName="checked"
         >
-          <Checkbox />
+          <Checkbox 
+            onChange={(e) => handlePaymentFieldChange("paid", e.target.checked, index)}
+          />
         </Form.Item>
       ),
     },
@@ -1743,7 +1769,7 @@ function EditProjects({
                               placeholder={t(
                                 "projectScreen.Modal.selectCostType"
                               )}
-                              onChange={(value) => setCostType(value)}
+                              onChange={(value) => handleCostType(value)}
                             >
                               <Select.Option value="Hourly">
                                 {t("projectScreen.Modal.hourly")}
@@ -1781,6 +1807,9 @@ function EditProjects({
                         {/* <Input type="number" className="form-control" /> */}
                         <InputNumber
                           className="form-control"
+                          min={0}
+                          stringMode={true}
+                          style={{ paddingRight: '25px', width: '100%' }}
                           formatter={(value) => {
                             return `${value}`.replace(
                               /\B(?=(\d{3})+(?!\d))/g,

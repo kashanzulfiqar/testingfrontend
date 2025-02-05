@@ -254,7 +254,7 @@ const Projects = () => {
         GetListProjects();
       }
       
-    //   getAllDomain();
+    // getAllDomain();
     // }else{
     //    nav('/restricted', { state: { unAuthorize: true}})
     // }

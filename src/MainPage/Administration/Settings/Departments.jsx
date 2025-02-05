@@ -61,14 +61,14 @@ const Departments = () => {
     form.resetFields();
   };
 
-  const onHandleDelete = (id) => {
+  const onHandleDelete = (Data) => {
     setLoader(true);
-    apiServices("DELETE", "team/delete-team", id, user_state)
+    apiServices("DELETE", "team/delete-team", Data, user_state)
       .then((res) => {
         // console.log(res?.data);
         if (res?.data?.success === true) {
           // console.log(data);
-          setData([...data.filter((departemnt) => departemnt._id !== id)]);
+          setData([...data.filter((departemnt) => departemnt._id !== Data?._id)]);
           handleClose();
           message.success(t('settings.departmentDeleted'));
           setLoader(false);
@@ -517,7 +517,7 @@ const Departments = () => {
                     <Button
                       htmlType="submit"
                       className="btn btn-primary continue-btn"
-                      onClick={() => onHandleDelete(open?.data?._id)}
+                      onClick={() => onHandleDelete(open?.data)}
                       disabled={loader}
                       style={{ width: "100%" }}
                     >

@@ -58,9 +58,9 @@ const { t, i18n } = useTranslation();
       });
   }
 
-  const onFinishDelete = (id) => {
+  const onFinishDelete = (Data) => {
     setLoader(true)
-    apiServices("DELETE", "focal-person/delete-focal-person", id, user_state)
+    apiServices("DELETE", "focal-person/delete-focal-person",Data, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
           getFocalPerson(currentPage, pageSize)
@@ -364,7 +364,7 @@ const antIcon = (
                     <Button
                       htmlType="submit"
                       className="btn btn-primary continue-btn"
-                      onClick={() => onFinishDelete(open?.data?._id)}
+                      onClick={() => onFinishDelete(open?.data)}
                       disabled={loader}
                       style={{width: '100%'}}
                     >

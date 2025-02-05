@@ -12,7 +12,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import * as Yup from 'yup';
 import { alphaNumericPattern, emailrgx } from '../constant'
 import { useDispatch, useSelector } from 'react-redux';
-import { login } from '../Entryfile/features/users.jsx';
+import { loginStart, loginSuccess, loginFailure } from '../Entryfile/features/users.jsx';
 import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 import { Form, Input, Spin, message } from 'antd';
 import { apiLoginEmployee } from "../Services/apiLogin";
@@ -41,7 +41,7 @@ const Loginpage = (props) => {
 
   // console.log(verificationEmail, verificationToken);
 
-
+  const [resendLoader, setResendLoader] = useState(false); // New state for resend loader
   const [emailNotVerified, setEmailNotVerified] = useState(false);
   const [emailVal, setEmailVal] = useState();
   const [loader, setLoader] = useState(false)
@@ -112,8 +112,8 @@ const Loginpage = (props) => {
   }
 
   const onFinish = (values) => {
-    setLoader(true)
-    // console.log(values, ">>>")
+    setLoader(true);
+    dispatch(loginStart());
 
     let data = {
       token: verificationToken,
@@ -121,66 +121,50 @@ const Loginpage = (props) => {
       password: values?.password,
     };
 
-    apiLoginEmployee( !verificationToken ? 'user/login-user' : `user/login-user?token=${verificationToken}` , data).then((res) => {
-      if (res?.data?.success === true) {
-        // console.log(res?.data?.result);
-        dispatch(getPermissionList({ roleId: res?.data?.result?.user?.roleId, athtoken: res?.data?.result?.access_token?.accessToken }))
-        dispatch(login(res?.data?.result));
-        dispatch(superAdmin(false));
-        if(!res?.data?.result?.user?.role && res?.data?.result?.user?.firstTimeLogin){
-          // nav('/change-password');
-          setTimeout(() => {
-            setLoader(false)
-            // window.location.href = `${window?.location?.origin}/change-password`
-            
-            window.history.replaceState(null, null, `${window?.location?.origin}/change-password`);
-            // window.location.replace(`${window?.location?.origin}/client/client-profile`)
-            window.location.reload();
+    apiLoginEmployee(!verificationToken ? 'user/login-user' : `user/login-user?token=${verificationToken}`, data)
+      .then((res) => {
+        if (res?.data?.success === true) {
+          dispatch(getPermissionList({ 
+            roleId: res?.data?.result?.user?.roleId, 
+            athtoken: res?.data?.result?.access_token?.accessToken 
+          }));
+          dispatch(loginSuccess(res?.data?.result));
+          dispatch(superAdmin(false));
 
+          if (!res?.data?.result?.user?.role && res?.data?.result?.user?.firstTimeLogin) {
+            setTimeout(() => {
+              setLoader(false);
+              window.history.replaceState(null, null, `${window?.location?.origin}/change-password`);
+              window.location.reload();
+
+              localStorage.setItem("languagePreference", JSON.stringify(res?.data?.result?.user?.languagePreference));
+              localStorage.setItem("firstTimeLogin", JSON.stringify(res?.data?.result?.user?.firstTimeLogin));
+              langChange(res?.data?.result?.user?.languagePreference);
+            }, 1300);
+          } else {
             localStorage.setItem("languagePreference", JSON.stringify(res?.data?.result?.user?.languagePreference));
-            localStorage.setItem("firstTimeLogin", JSON.stringify(res?.data?.result?.user?.firstTimeLogin));
             langChange(res?.data?.result?.user?.languagePreference);
-          }, 1300);
-        }else{
-          localStorage.setItem("languagePreference", JSON.stringify(res?.data?.result?.user?.languagePreference));
-          langChange(res?.data?.result?.user?.languagePreference);
-          // nav(`${res?.data?.result?.user?.role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}`);
-          setTimeout(() => {
-            setLoader(false)
-            // window.location.href = `${window?.location?.origin}${res?.data?.result?.user?.role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}`
-
-            window.history.replaceState(null, null, `${window?.location?.origin}${res?.data?.result?.user?.role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}`);
-            // window.location.replace(`${window?.location?.origin}/client/client-profile`)
-            window.location.reload();
-
-
-          }, 1300);
+            setTimeout(() => {
+              setLoader(false);
+              window.history.replaceState(
+                null, 
+                null, 
+                `${window?.location?.origin}${res?.data?.result?.user?.role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}`
+              );
+              window.location.reload();
+            }, 1300);
+          }
         }
-        // nav(`${res?.data?.result?.user?.role === 'admin' ? '/main/dashboard' : '/employee/dashboard'}`);
-        // dispatch(getPermissionList({ userId: res?.data?.result?.user?._id, athtoken: res?.data?.result?.access_token }))
-      }
-    }).catch((err)=>{
-      if (err.response.data.verified === false){
-        // setresendEmail(true)
-        // console.log(err);
-        setEmailNotVerified(true)
-        setEmailVal(data?.email)
-      }
-      setLoader(false)
-      message.error(
-        `${
-          err?.response?.data?.msg
-            ? err?.response?.data?.msg
-            : err?.response?.data?.validation?.body?.message
-            ? err?.response?.data?.validation?.body?.message
-            : "Login"
-        }!`
-      );
-  })
-
-    // Credentials are valid, proceed with login
-    // dispatch(login(data));
-    // nav('/main/dashboard');
+      })
+      .catch((err) => {
+        dispatch(loginFailure(err?.response?.data?.msg || 'Login failed'));
+        setLoader(false);
+        message.error(
+          err?.response?.data?.msg || 
+          err?.response?.data?.validation?.body?.message || 
+          'Login failed'
+        );
+      });
   }
   const dispatch = useDispatch();
   const [eye, seteye] = useState(true);
@@ -201,6 +185,7 @@ const Loginpage = (props) => {
   );
 
   const ResendEmail = (email) => {
+    setResendLoader(true); // Start the loader
     let data1 = {
       email: email
     }
@@ -220,6 +205,9 @@ const Loginpage = (props) => {
             : "Resend Email Error"
         }!`
       );
+    })
+    .finally(() => {
+      setResendLoader(false); // Stop the loader
     });
   }
 
@@ -347,10 +335,15 @@ const Loginpage = (props) => {
                   <div className="account-footer">
                     <label style={{ color: '#6F6F6F', fontSize: '18px', margin: '4px 0px'}}>Confirm your email address. We have sent a verification <br /> email to</label>
                     <div style={{ fontWeight: '700', fontSize: '18px', margin: '15px 0px 11px 0px' }}>{emailVal}</div>
-                    <label style={{ color: '#0097C7', fontSize: '18px', margin: '8px 0px' }}>Not your email address?</label>
+                    <a style={{ color: '#0097C7', fontSize: '18px', margin: '8px 0px' }} onClick={() => setEmailNotVerified(false)}>Not your email address?</a>
                     {/* <p style={{fontSize: '18px'}}>Please <a onClick={() => {setEmailNotVerified(false); setLoginValues({})}} style={{color: '#0097C7'}}>Click-Here</a> to Login again with the correct email address.</p> */}
                     <label style={{ color: '#6F6F6F', fontSize: '18px', margin: '8px 0px' }}>Make sure to check your inbox and your spam folder if you can't find the email.</label>
-                    <label style={{ color: '#6F6F6F ', fontSize: '18px', margin: '8px 0px' }}>Still not Received? <a onClick={() => ResendEmail(emailVal)} style={{ color: '#0097C7' }}>Resend Email</a></label>
+                    <label style={{ color: '#6F6F6F ', fontSize: '18px', margin: '8px 0px' }}>Still not Received? <a style={{
+                        color: resendLoader ? "#aaa" : "#0097C7", // Optional: Gray out text when loading
+                        cursor: resendLoader ? "not-allowed" : "pointer", // Disable pointer interaction during loading
+                        fontSize: "18px",
+                        margin: "8px 0px",
+                      }}onClick={() => !resendLoader && ResendEmail(emailVal)}>{resendLoader ? <Spin size="small" /> : "Resend Email"} </a></label>
                   </div>
                   {/* /Account Form */}
                 </div>

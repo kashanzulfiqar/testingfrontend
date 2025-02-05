@@ -126,7 +126,8 @@ const Roles = () => {
     setPermissions([]);
   };
   const handlePermClose = () => {
-    apiServices("DELETE", "role/delete-role", openPermissions?.data?._id, user_state)
+    let Data = openPermissions?.data;
+    apiServices("DELETE", "role/delete-role", Data, user_state)
     .then((res) => {
       // console.log(res?.data);
       if (res?.data?.success === true) {
@@ -328,14 +329,14 @@ const Roles = () => {
       });
   };
 
-  const onHandleDelete = (id) => {
+  const onHandleDelete = (Data) => {
     setLoader(true);
-    apiServices("DELETE", "role/delete-role", id, user_state)
+    apiServices("DELETE", "role/delete-role", Data, user_state)
       .then((res) => {
         // console.log(res?.data);
         if (res?.data?.success === true) {
           // console.log(data);
-          setData([...data.filter((role) => role._id !== id)]);
+          setData([...data.filter((role) => role._id !== Data?._id)]);
           handleClose();
           message.success(t('settings.Roles.roleDeletedSuccessfully'));
           setLoader(false);
@@ -717,7 +718,7 @@ const Roles = () => {
                     <Button
                       htmlType="submit"
                       className="btn btn-primary continue-btn"
-                      onClick={() => onHandleDelete(open?.data?._id)}
+                      onClick={() => onHandleDelete(open?.data)}
                       disabled={loader}
                       style={{ width: "100%" }}
                     >
