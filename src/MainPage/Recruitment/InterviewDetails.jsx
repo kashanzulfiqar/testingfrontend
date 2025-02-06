@@ -214,7 +214,7 @@ const InterviewDetails = () => {
         ratings.technicalSkills2 +
         ratings.technicalSkills3
       );
-      return sum + (ratingSum / 5); // Average of all skills for this feedback
+      return sum + (ratingSum / 5);
     }, 0);
 
     return (totalRatings / interview.feedback.length).toFixed(1);

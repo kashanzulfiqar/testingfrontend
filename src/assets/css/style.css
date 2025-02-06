@@ -3555,11 +3555,39 @@ input[type=file].form-control {
 
 .table-striped tbody tr:nth-of-type(2n+1) {
   background-color: #f7f7f8;
+  height: 65px;
+
 }
 
 .table-striped tbody tr:nth-of-type(2n){
   background-color:#EEF0F1;
+  height: 65px;
 }
+
+.table-striped .ant-table-tbody a {
+  color: #212529 !important;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.table-striped thead th{
+  background-color: #ffffff !important;
+  height: 40px;
+}
+
+.table-striped .ant-table-thead th{
+  padding: 11px 15px 11px 15px !important;
+  color: #212529 !important;
+}
+
+.table-striped .ant-table-tbody td{
+  font-size: 14px !important;
+  font-weight: 450 !important;
+  padding: 25px 15px 25px 15px !important;
+
+
+}
+
 
 .custom-table tr.holiday-completed {
   color: #aaa;
@@ -5096,8 +5124,9 @@ input[type=file].form-control {
   padding: 16px;
   font-size: 14px;
   font-weight: 500;
-  color: #1C2D40;
-  background: #EDF3F9;
+  color: #212529;
+  background: #FFFFFF;
+  height: 40px;
 }
 .table-new thead tr th:first-child {
   border-radius: 10px 0 0 0;

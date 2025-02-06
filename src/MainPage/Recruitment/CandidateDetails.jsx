@@ -43,6 +43,15 @@ import CreateInterviewModal from "./CreateInterviewModal";
 import CreateTaskModal from "./CreateTaskModal";
 import SendOfferModal from './SendOfferModal';
 import { apiUploadToS3 } from "../../Services/uploadImage";
+import backBtn from '../../assets/iconsRecruitment/arrow-left.svg';
+import more from '../../assets/iconsRecruitment/vertical.svg';
+import mail from '../../assets/iconsRecruitment/mail.svg';
+import phone from '../../assets/iconsRecruitment/phone.svg';
+import location from '../../assets/iconsRecruitment/location.svg';
+import timeline from '../../assets/iconsRecruitment/Timeline.svg';
+import files from '../../assets/iconsRecruitment/description.svg';
+import interviewIcon from '../../assets/iconsRecruitment/interview.svg';
+import star from '../../assets/iconsRecruitment/star.svg';
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
@@ -67,6 +76,7 @@ const CandidateDetails = () => {
   const [offer, setOffer] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [isReasonModalVisible, setIsReasonModalVisible] = useState(false);
+  const [filter ,setfilter] =useState('history');
 
   useEffect(() => {
     console.log('isOfferModalVisible changed:', isOfferModalVisible);
@@ -1246,6 +1256,20 @@ const CandidateDetails = () => {
     }
   };
 
+  const today = moment().format('DD MM');
+  const filteredInterviews = interviews.filter((interview)=>{
+    const interviewDate = moment(interview.interviewDate).format('DD MMM');
+    return filter=== 'present' ? interviewDate === today : interviewDate < today;
+  })
+  const handleFilterChange =(changer)=>{
+    setfilter(changer);
+    console.log(filteredInterviews);
+  }
+
+  const handleActiveTab =(key)=>{
+    setActiveTab(key);
+  }
+
   const renderTaskContent = () => {
     if (loadingTasks) {
       return (
@@ -1482,7 +1506,38 @@ const CandidateDetails = () => {
     );
   }
 
+
   if (!candidate) return null;
+
+  // Calculate average rating from interviews feedback
+  // const feedbackScores = interviews
+  //   .map(interview => interview.feedback)
+  //   .filter(feedback => feedback && feedback.ratings)
+  //   .map(feedback => {
+  //     const { technicalSkills1, behavior, softSkills, technicalSkills2, technicalSkills3 } = feedback.ratings;
+  //     return (technicalSkills1 + behavior + softSkills + technicalSkills2 + technicalSkills3) / 5;
+  //   });
+
+  // const averageRating = feedbackScores.length > 0 ? feedbackScores.reduce((a, b) => a + b, 0) / feedbackScores.length : 0;
+  const calculateAverageRating = (feedbackArray) => {
+    if (!feedbackArray || feedbackArray.length === 0) {
+      return 0;
+    }
+
+    const totalRatings = feedbackArray.reduce((sum, feedback) => {
+      const ratings = feedback.ratings;
+      const ratingSum = (
+        ratings.technicalSkills1 +
+        ratings.behavior +
+        ratings.softSkills +
+        ratings.technicalSkills2 +
+        ratings.technicalSkills3
+      );
+      return sum + (ratingSum / 5); // Average of all skills for this feedback
+    }, 0);
+
+    return (totalRatings / feedbackArray.length).toFixed(1);
+  };
 
   return (
     <div className="content container-fluid">
@@ -1491,15 +1546,16 @@ const CandidateDetails = () => {
         <div className="row align-items-center">
           <div className="col">
             <div className="d-flex align-items-center">
-              <Button
+              {/* <Button
                 icon={<ArrowLeftOutlined />}
                 type="link"
                 onClick={() => navigate("/recruitment/candidates")}
                 style={{ marginRight: "16px", padding: 0 }}
-              />
+              /> */}
               <div>
                 <h3 className="page-title mb-0">
-                  {candidate?.firstName} {candidate?.lastName}
+                  {/* {candidate?.firstName} {candidate?.lastName} */}
+                  Candidates
                 </h3>
                 <ul className="breadcrumb">
                   <li className="breadcrumb-item">
@@ -1508,14 +1564,17 @@ const CandidateDetails = () => {
                   <li className="breadcrumb-item">
                     <Link to="/recruitment/candidates">Candidates</Link>
                   </li>
-                  <li className="breadcrumb-item active">
+                  {/* <li className="breadcrumb-item active">
                     {candidate?.firstName} {candidate?.lastName}
-                  </li>
+                  </li> */}
                 </ul>
               </div>
             </div>
           </div>
-          <div className="col-auto float-end ms-auto">
+
+          {/* i will need this part */}
+
+          {/* <div className="col-auto float-end ms-auto">
             <Space>
               <Select
                 value={candidate?.status}
@@ -1560,15 +1619,98 @@ const CandidateDetails = () => {
                 {offer ? 'Edit Offer' : 'Send Offer'}
               </Button>
             </Space>
+          </div> */}
+
+        </div>
+      </div>
+      <div style={{width:'100%',borderTop:'1px solid #CFD4D8', display:'flex', justifySelf:'center', height:'50px', alignItems:'flex-end', marginBottom:'15px'}}>
+        <div style={{display:'flex', marginBottom:'6px'}}>
+          <div>
+            <button onClick={()=>navigate("/recruitment/candidates")} style={{marginRight: '16px' ,padding:'0', border:'none', background:'transparent'}}>
+              <img src={backBtn}></img>
+            </button>
+          </div>
+          <div>
+            <ul className="breadcrumb">
+              <li className="breadcrumb-item"><Link to="/recruitment/candidates">Candidate</Link></li>
+              <li className="breadcrumb-item active">{candidate?.firstName} {candidate?.lastName}</li>
+            </ul>
           </div>
         </div>
+      <div>
+        </div>
+      </div>
+
+      <div style={{height:'130px', background:'#ffffff' ,border:'1px solid transparent' , borderRadius:'8px', marginBottom:"20px", display:"flex", alignItems:"center", justifyContent:"space-between"}}>
+        <div style={{display:"flex", alignItems:'center'}}>
+          <div style={{height:'80px' ,width:"80px", border:"1px solid transparent" , borderRadius:"50%", background:'#f5f1fd', color:'#9368e9', display:"flex", justifyContent:"center", alignItems:'center', marginLeft:"20px", fontSize:"28px", fontweight:"500"}}>{candidate.firstName?.[0]}{candidate.lastName?.[0]}</div>
+          <div>
+            <h3 className="ms-3 mt-2 mb-0" style={{fontSize:'20px', fontweight:'500', color:"#000000"}}>{candidate.firstName} {candidate.lastName}</h3>
+            <h5 className='ms-3' style={{fontSize:'14px', fontweight:'450', color:"#444444"}} >{candidate?.appliedFor.title}</h5> 
+            <div style={{paddingLeft:"10px"}}>
+              <img src={star}></img>
+              <span style={{ marginLeft:'10px'}}>{calculateAverageRating()}</span>
+            </div>   
+          </div>
+          <div><Tag
+                  color={
+                    candidate.status === "NEW"? "blue": candidate.status === "SCREENING"
+                    ? "orange": candidate.status === "SHORTLISTED"? "green": candidate.status === "REJECTED"? "red": "purple"}
+                  style={{marginLeft:"10px", borderRadius:"70px", marginBottom:"12px"}}
+                  >{candidate.status?.charAt(0) + candidate.status?.slice(1).toLowerCase()}</Tag>
+          </div>
+        </div>
+          <div className="col-auto float-end me-4">
+            <Space>
+              <Select
+                value={candidate?.status}
+                onChange={handleStatusChange}
+                loading={updatingStatus}
+                style={{
+                  background:
+                    candidate?.status?.toLowerCase() === "screening"
+                      ? "#FFF7E6"
+                      : "transparent",
+                  zIndex: 1000,
+                  position: 'relative',
+                  marginRight:'10px',
+                }}
+                className={`status-${candidate?.status?.toLowerCase()} customized`}
+                dropdownStyle={{
+                  minWidth: "120px",
+                  borderRadius: "8px",
+                }}
+                dropdownMatchSelectWidth={false}
+                popupClassName="status-dropdown"
+              >
+                <Select.Option value="NEW">New</Select.Option>
+                <Select.Option value="SCREENING">Screening</Select.Option>
+                <Select.Option value="SHORTLISTED">Shortlisted</Select.Option>
+                <Select.Option value="OFFER_SENT">Offer Sent</Select.Option>
+                <Select.Option value="HIRED">Hired</Select.Option>
+                <Select.Option value="REJECTED">Rejected</Select.Option>
+                <Select.Option value="BLACKLISTED">Blacklisted</Select.Option>
+              </Select>
+              <button
+                onClick={handleSendOfferClick}
+                className= 'select-btn'
+              >{offer ? 'Edit Offer' : 'Send Offer'}</button>
+              <div style={{marginLeft:"13px"}}><img src={more}></img></div>
+            </Space>
+          </div>
       </div>
 
       <div className="row">
         {/* Left Panel - Basic Information */}
-        <div className="col-md-3">
-          <Card className="info-card">
-            <div className="candidate-profile mb-4">
+        <div className="col-md-3 custom-col">
+          {activeTab === 'timeline' &&(
+            <div className="p-3" style={{display:"flex" ,height:"90px", marginBottom:"30px", borderRadius:"8px",boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)"}}>
+              <button className='btn-style' onClick={()=>{handleFilterChange('present')}} style={{color: filter === 'present' ? '#ff9244' : '#a5adb6', boxShadow: filter === 'present' ?"0px 4px 10px rgba(0, 0, 0, 0.2)" : 'none'}}>Present</button>
+              <button  className='btn-style' onClick={()=>{handleFilterChange('history')}} style={{color: filter === 'history' ? '#ff9244' : '#a5adb6', boxShadow: filter === 'history' ?"0px 4px 10px rgba(0, 0, 0, 0.2)" : 'none'}}>Old History</button>
+            </div>
+          )}
+          <Card style={{borderRadius:"8px"}}>
+            {/* <div className="candidate-profile mb-4">
               <div className="profile-img">
                 <div className="profile-avatar">
                   {candidate.firstName?.[0]}
@@ -1603,43 +1745,28 @@ const CandidateDetails = () => {
                     candidate.status?.slice(1).toLowerCase()}
                 </Tag>
               </div>
-            </div>
+            </div> */}
 
             <div className="info-section">
               <Title level={5} className="section-title">
                 Basic Information
               </Title>
               <div className="info-item">
-                <MailOutlined className="info-icon" />
-                <div className="info-content">
-                  <Text type="secondary" className="info-label">
-                    Email
-                  </Text>
-                  <Text strong className="info-value">
-                    {candidate.email}
-                  </Text>
+                <div className='info-items-children'>
+                  <div style={{display:'flex', justifyContent:'center', alignItems:"center", border:"1px solid transparent", borderRadius:"50%", background:"#f7f7f8", height:"32px" ,width:"32px"}}><img src={mail}></img></div>
+                  <Text strong style={{color:"#56616b", marginLeft:"7px", display:'flex', alignSelf:"center"}}>{candidate.email}</Text>
                 </div>
               </div>
               <div className="info-item">
-                <PhoneOutlined className="info-icon" />
-                <div className="info-content">
-                  <Text type="secondary" className="info-label">
-                    Phone
-                  </Text>
-                  <Text strong className="info-value">
-                    {candidate.phoneNumber}
-                  </Text>
+                <div style={{display:"flex"}}>
+                <div style={{display:'flex', justifyContent:'center', alignItems:"center", border:"1px solid transparent", borderRadius:"50%", background:"#f7f7f8", height:"32px" ,width:"32px"}}><img src={phone}></img></div>
+                  <Text strong style={{color:"#56616b", marginLeft:"7px", display:'flex', alignSelf:"center"}}>{candidate.phoneNumber}</Text>
                 </div>
               </div>
               <div className="info-item">
-                <EnvironmentOutlined className="info-icon" />
-                <div className="info-content">
-                  <Text type="secondary" className="info-label">
-                    Location
-                  </Text>
-                  <Text strong className="info-value">
-                    Not specified
-                  </Text>
+                <div style={{display:"flex"}}>
+                <div style={{display:'flex', justifyContent:'center', alignItems:"center", border:"1px solid transparent", borderRadius:"50%", background:"#f7f7f8", height:"32px" ,width:"32px"}}><img src={location}></img></div>
+                  <Text strong style={{color:"#56616b", marginLeft:"7px", display:'flex', alignSelf:"center"}}> Not Specified</Text>
                 </div>
               </div>
             </div>
@@ -1651,70 +1778,80 @@ const CandidateDetails = () => {
               <div className="info-list">
                 <div className="info-item">
                   <div className="info-content">
-                    <Text type="secondary" className="info-label">
-                      Applied for
+                    <Text type="secondary" style={{marginBottom:"6px" ,fontSize:"14px", fontWeight:"450", color:"#212529", width:"45%"}}>
+                      Applied Position
                     </Text>
-                    <Text strong className="info-value">
+                    <Text style={{marginBottom:"6px" ,fontSize:"14px", fontWeight:"450", color:"#56616b", width:"45%", marginLeft:"15px"}}>
                       {candidate.appliedFor?.title}
                     </Text>
                   </div>
                 </div>
                 <div className="info-item">
                   <div className="info-content">
-                    <Text type="secondary" className="info-label">
-                      Applied on
+                    <Text type="secondary" style={{marginBottom:"6px" ,fontSize:"14px", fontWeight:"450", color:"#212529", width:"45%"}}>
+                      Applied On
                     </Text>
-                    <Text strong className="info-value">
-                      {moment(candidate.appliedDate).format("DD MMM YYYY")}
+                    <Text style={{marginBottom:"6px" ,fontSize:"14px", fontWeight:"450", color:"#56616b", width:"45%", marginLeft:"15px"}}>
+                    {moment(candidate.appliedDate).format("DD MMM YYYY")}
                     </Text>
                   </div>
                 </div>
                 <div className="info-item">
                   <div className="info-content">
-                    <Text type="secondary" className="info-label">
+                    <Text type="secondary"  style={{marginBottom:"6px" ,fontSize:"14px", fontWeight:"450", color:"#212529", width:"45%"}}>
                       Department
                     </Text>
-                    <Text strong className="info-value">
+                    <Text strong  style={{marginBottom:"6px" ,fontSize:"14px", fontWeight:"450", color:"#56616b", width:"45%", marginLeft:"15px"}}>
                       {candidate.appliedFor?.department || "Not specified"}
                     </Text>
                   </div>
                 </div>
                 <div className="info-item">
                   <div className="info-content">
-                    <Text type="secondary" className="info-label">
+                    <Text type="secondary"  style={{marginBottom:"6px" ,fontSize:"14px", fontWeight:"450", color:"#212529", width:"45%"}}>
+                      Job Type
+                    </Text>
+                    <Text strong  style={{marginBottom:"6px" ,fontSize:"14px", fontWeight:"450", color:"#56616b", width:"45%",  marginLeft:"15px"}}>
+                      {candidate.appliedFor?.jobType.replace('_' , ' ') || "Not specified"}
+                    </Text>
+                  </div>
+                </div>
+                <div className="info-item">
+                  <div className="info-content">
+                    <Text type="secondary" style={{marginBottom:"6px" ,fontSize:"14px", fontWeight:"450", color:"#212529", width:"45%"}}>
                       Experience
                     </Text>
-                    <Text strong className="info-value">
+                    <Text strong  style={{marginBottom:"6px" ,fontSize:"14px", fontWeight:"450", color:"#56616b", width:"45%",  marginLeft:"15px"}}>
                       {candidate.experience} Years
                     </Text>
                   </div>
                 </div>
                 <div className="info-item">
                   <div className="info-content">
-                    <Text type="secondary" className="info-label">
+                    <Text type="secondary"  style={{marginBottom:"6px" ,fontSize:"14px", fontWeight:"450", color:"#212529", width:"45%"}}>
                       Notice Period
                     </Text>
-                    <Text strong className="info-value">
+                    <Text strong  style={{marginBottom:"6px" ,fontSize:"14px", fontWeight:"450", color:"#56616b", width:"45%", marginLeft:"15px"}}>
                       {candidate.noticePeriod?.replace("_", " ").toLowerCase()}
                     </Text>
                   </div>
                 </div>
                 <div className="info-item">
                   <div className="info-content">
-                    <Text type="secondary" className="info-label">
+                    <Text type="secondary"  style={{marginBottom:"6px" ,fontSize:"14px", fontWeight:"450", color:"#212529", width:"45%"}}>
                       Current Salary
                     </Text>
-                    <Text strong className="info-value">
+                    <Text strong  style={{marginBottom:"6px" ,fontSize:"14px", fontWeight:"450", color:"#56616b", width:"45%",  marginLeft:"15px"}}>
                       PKR {candidate.currentSalary?.toLocaleString()}
                     </Text>
                   </div>
                 </div>
                 <div className="info-item">
                   <div className="info-content">
-                    <Text type="secondary" className="info-label">
+                    <Text type="secondary"  style={{marginBottom:"6px" ,fontSize:"14px", fontWeight:"450", color:"#212529", width:"45%"}}>
                       Expected Salary
                     </Text>
-                    <Text strong className="info-value">
+                    <Text strong  style={{marginBottom:"6px" ,fontSize:"14px", fontWeight:"450", color:"#56616b", width:"45%", marginLeft:"15px"}}>
                       PKR {candidate.expectedSalary?.toLocaleString()}
                     </Text>
                   </div>
@@ -1724,8 +1861,98 @@ const CandidateDetails = () => {
           </Card>
         </div>
 
-        {/* Main Content Area */}
-        <div className="col-md-9">
+
+        <div className='col-md-9 custom-col-two'>
+          <div className="card p-4" style={{border:"1px solid transparent" ,borderRadius:"8px", display:"flex", flexDirection:"row", justifyContent:"space-between"}}>
+            <div className='active-tab-styles'>
+              <div className='active-tab-timeline' style={{color:activeTab === 'timeline' ? '#ff9244' : '#a5adb6', cursor: 'pointer',borderBottom: activeTab === 'timeline' ? '2px solid #ff9244' : 'none'}} key='timeline' onClick={()=>{handleActiveTab('timeline')}}><span className='span-timeline'><img src={timeline} style={{marginRight:'8px'}}></img>Timeline</span></div>
+              <div  className='active-tab-files'  style={{color:activeTab === 'files' ? '#ff9244' : '#a5adb6', cursor: 'pointer',borderBottom: activeTab === 'files' ? '2px solid #ff9244' : 'none'}}  key='files' onClick={()=>{handleActiveTab('files')}}><span  className='span-files'><img src={files} style={{marginRight:'8px'}}></img>Files</span></div>
+              <div  className='active-tab-interview'  style={{color:activeTab === 'interview' ? '#ff9244' : '#a5adb6', cursor: 'pointer',borderBottom: activeTab === 'interview' ? '2px solid #ff9244' : 'none'}}  key='interview'  onClick={()=>{handleActiveTab('interview')}}><span  className='span-interview'><img src={interviewIcon} style={{marginRight:'8px'}}></img>Interview</span></div>
+            </div>
+          </div>
+          <div className="card p-4" style={{border:"1px solid transparent" ,borderRadius:"8px"}} >
+            <h3>{activeTab === 'files' ? `Files  (${files.length})` : activeTab === 'timeline' ? "Timeline" : ''}</h3>
+              {activeTab === 'timeline' && (
+                <div className='mt-2'>
+                  <div className="p-3"  style={{background:'#f7f7f8', display:"flex", justifyContent:"space-between"}}>
+                    <div style={{fontSize:'14px', fontWeight:"500", color:"#000000"}}>{`${candidate.firstName} is ${candidate.status}`}</div>
+                    <div style={{fontSize:'12px', fontWeight:"450", color:"#495057"}}>{moment(candidate.appliedDate).format("DD MMM") + ' at ' + moment(candidate.appliedTime).format("HH:mm A")}</div>
+                  </div>
+                  {filteredInterviews.length>0 ?(
+                    filteredInterviews.map((interview)=>(
+                      <div  className="p-3 mt-3"  style={{background:'#f7f7f8', display:"flex", justifyContent:"space-between"}}>
+                        <div style={{fontSize:'14px', fontWeight:"500", color:"#000000"}}>{`${interview.interviewTitle} is scheduled with ${interview.createdBy.fullName}`}</div>
+                        <div style={{fontSize:'12px', fontWeight:"450", color:"#495057"}}>{moment(interview.interviewDate).format("DD MMM") + ' at ' + moment(interview.interviewTime, "HH:mm").format("hh:mm A")}</div> 
+                      </div>
+                    )) 
+                  ) : ''}
+                </div>
+              )}
+              {activeTab === 'files' &&(
+                <div>
+                  {candidate.resume ? (
+                    <div
+                    className="no-files-message"
+                    style={{ textAlign: "center", padding: "40px 0" }}
+                    >
+                      <FilePdfOutlined style={{ fontSize: "48px", color: "#d9d9d9" }} />
+                      <Typography.Text
+                      type="secondary"
+                      style={{ display: "block", marginTop: "16px" }}
+                      >
+                        No resume uploaded
+                      </Typography.Text>
+                    </div>
+                  ):(
+                    <div className="files-content">
+                      <Card className="file-card">
+                        <div className="file-item">
+                          <div className="file-info">
+                            {getFileIcon(candidate.resume)}
+                            <div className="file-details">
+                              <Typography.Text strong style={{ fontSize: "16px" }}>
+                                {getFileName(candidate.resume)}
+                              </Typography.Text>
+                              <Typography.Text type="secondary" style={{ fontSize: "12px" }}>
+                                Uploaded on:{" "}
+                                {moment(candidate.updatedAt).format("DD MMM YYYY")}
+                              </Typography.Text>
+                            </div>
+                          </div>
+                          <div className="file-actions">
+                            <Button
+                            type="text"
+                            icon={<EyeOutlined />}
+                            onClick={handlePreviewResume}
+                            style={{ marginRight: "8px" }}
+                            >
+                              Preview
+                            </Button>
+                            <Button
+                              type="primary"
+                              icon={<DownloadOutlined />}
+                              onClick={handleDownloadResume}
+                            >
+                              Download
+                            </Button>
+                          </div>
+                        </div>
+                      </Card>
+                    </div>
+                  )}
+                </div>
+              )}
+              {activeTab === 'interview' && (
+              <div style={{display:' flex'}}>
+                {/* <h3>{activeTab === 'interview' ? `(${activeTab.charAt(0) + })` : ''}</h3> */}
+                <button>Create Interview</button>
+                <button>Create Task</button>
+              </div> )}
+          </div>
+        </div>
+
+
+        <div className="col-md-9 custom-col-two">
           <Card>
             <Tabs
               activeKey={activeTab}
@@ -1734,7 +1961,7 @@ const CandidateDetails = () => {
             >
               <TabPane tab="Timeline" key="timeline">
                 <div className="timeline-content">
-                  {/* Application Event */}
+
                   <div className="timeline-item">
                     <div className="time">
                       {moment(candidate.appliedDate).format("DD MMM YYYY")}
@@ -1747,11 +1974,11 @@ const CandidateDetails = () => {
                     </div>
                   </div>
 
-                  {/* Interview Events */}
+
                   {interviews.map((interview) => (
                     <div key={interview._id} className="timeline-item">
                       <div className="time">
-                        {moment(interview.createdAt).format("DD MMM YYYY")}
+                        {moment(interview.createdAt).format("DD MMM")}
                       </div>
                       <div className="event">
                         <Tag color="green">Interview Scheduled</Tag>
@@ -1956,6 +2183,13 @@ const CandidateDetails = () => {
       )}
 
       <style jsx>{`
+        .btn-style{
+          width:50%;
+          font-size:14px; 
+          font-weight: 500;
+          color: #A5ADB6 ;
+          border: 1px solid transparent;
+        }
         .info-card {
           background: #fff;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -2030,14 +2264,16 @@ const CandidateDetails = () => {
         .info-row {
           display: none;
         }
+
         .nav-tabs-custom .ant-tabs-nav {
           margin-bottom: 20px;
         }
         .nav-tabs-custom .ant-tabs-tab {
           padding: 12px 0;
-          margin: 0 32px 0 0;
+          margin: 0 0 0 32px;
           font-size: 15px;
         }
+
         .nav-tabs-custom .ant-tabs-tab-active {
           font-weight: 600;
         }
@@ -2129,41 +2365,31 @@ const CandidateDetails = () => {
           border-radius: 3px;
           padding: 4px 8px;
         }
-        .custom-select .ant-select-selector {
-          font-size: 13px !important;
-          height: 32px !important;
-          padding: 0 11px !important;
-        }
 
-        .custom-select .ant-select-selection-item {
-          line-height: 30px !important;
-        }
-
-        .custom-select.ant-select-dropdown {
-          font-size: 13px !important;
-        }
-
-        .custom-select .ant-select-item {
-          padding: 5px 12px !important;
-          min-height: 32px !important;
-          line-height: 22px !important;
-        }
 
         .ant-select-dropdown {
           z-index: 1050;
         }
 
-        .ant-select:not(.ant-select-disabled):hover .ant-select-selector {
-          border-color: #ff9b44;
-        }
 
-        .ant-select-focused:not(.ant-select-disabled).ant-select:not(
-            .ant-select-customize-input
-          )
-          .ant-select-selector {
-          border-color: #ff9b44;
-          box-shadow: 0 0 0 2px rgba(255, 155, 68, 0.2);
-        }
+        // .ant-select:not(.ant-select-disabled):hover .ant-select-selector {
+        //   border-color: #ff9b44;
+        // }
+
+        // .ant-select-focused:not(.ant-select-disabled).ant-select:not(
+        //     .ant-select-customize-input
+        //   )
+        //   .ant-select-selector {
+        //   border-color: #ff9b44;
+        //   box-shadow: 0 0 0 2px rgba(255, 155, 68, 0.2);
+        //   padding-top: 7px !important;
+        //   padding-left: 10px !important;
+        //   padding-right: 10px !important;
+        //   font-size: 16px !important;
+        //   font-weight: 450 !important;
+        //   border-radius: 8px !important;
+
+        // }
 
         .status-scheduled .ant-select-selector {
           background-color: #e6f7ff !important;
@@ -2195,16 +2421,47 @@ const CandidateDetails = () => {
           color: #1890ff !important;
         }
 
+        .status-new .ant-select-arrow {
+          color: #1890ff !important;
+          font-size: 14px !important;
+          padding-top: 5px !important;
+        }
+
         .status-screening .ant-select-selector {
           background-color: #fff7e6 !important;
           border-color: #ffd591 !important;
           color: #fa8c16 !important;
         }
 
+        .status-screening .ant-select-arrow {
+          color: #fa8c16 !important;
+          font-size: 14px !important;
+          padding-top: 5px !important;
+        }
+
+        .status-offer_sent .ant-select-selector {
+          background-color: #d3d3d3 !important;
+          border-color: #5e716a !important;
+          color: #5e716a !important;
+        }
+
+        .status-offer_sent .ant-select-arrow {
+          color: #5e716a !important;
+          font-size: 14px !important;
+          padding-top: 5px !important;
+        }
+        
+
         .status-shortlisted .ant-select-selector {
           background-color: #f6ffed !important;
           border-color: #b7eb8f !important;
           color: #52c41a !important;
+        }
+
+        .status-shortlisted .ant-select-arrow {
+          color: #52c41a !important;
+          font-size: 14px !important;
+          padding-top: 5px !important;
         }
 
         .status-hired .ant-select-selector {
@@ -2213,23 +2470,35 @@ const CandidateDetails = () => {
           color: #722ed1 !important;
         }
 
+        .status-hired .ant-select-arrow {
+          color: #722ed1 !important;
+          font-size: 14px !important;
+          padding-top: 5px !important;
+        }
+
         .status-rejected .ant-select-selector {
           background-color: #fff1f0 !important;
           border-color: #ffa39e !important;
           color: #f5222d !important;
         }
 
-        .ant-select-focused:not(.ant-select-disabled).ant-select:not(
-            .ant-select-customize-input
-          )
-          .ant-select-selector {
-          border-color: #ff9b44 !important;
-          box-shadow: 0 0 0 2px rgba(255, 155, 68, 0.2) !important;
+        .status-rejected .ant-select-arrow {
+          color: #f5222d !important;
+          font-size: 14px !important;
+          padding-top: 5px !important;
         }
 
-        .ant-select:not(.ant-select-disabled):hover .ant-select-selector {
-          border-color: #ff9b44 !important;
-        }
+        // .ant-select-focused:not(.ant-select-disabled).ant-select:not(
+        //     .ant-select-customize-input
+        //   )
+        //   .ant-select-selector {
+        //   border-color: #ff9b44 !important;
+        //   box-shadow: 0 0 0 2px rgba(255, 155, 68, 0.2) !important;
+        // }
+
+        // .ant-select:not(.ant-select-disabled):hover .ant-select-selector {
+        //   border-color: #ff9b44 !important;
+        // }
 
         .task-card {
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -2299,6 +2568,7 @@ const CandidateDetails = () => {
           padding: 40px 0;
         }
 
+
         /* Offer Modal Styles */
         :global(.offer-modal .ant-modal-content) {
           border-radius: 8px;
@@ -2321,22 +2591,24 @@ const CandidateDetails = () => {
         :global(.offer-modal .ant-input),
         :global(.offer-modal .ant-select-selector),
         :global(.offer-modal .ant-picker) {
-          border-radius: 4px;
+          border-radius: 8px;
+          padding: 8px 12px;
+          height: 40px;
           border-color: #e3e3e3;
         }
 
-        :global(.offer-modal .ant-input:hover),
-        :global(.offer-modal .ant-select-selector:hover),
-        :global(.offer-modal .ant-picker:hover) {
-          border-color: #ff9b44;
-        }
+        // :global(.offer-modal .ant-input:hover),
+        // :global(.offer-modal .ant-select-selector:hover),
+        // :global(.offer-modal .ant-picker:hover) {
+        //   border-color: #ff9b44;
+        // }
 
-        :global(.offer-modal .ant-input:focus),
-        :global(.offer-modal .ant-select-selector:focus),
-        :global(.offer-modal .ant-picker-focused) {
-          border-color: #ff9b44;
-          box-shadow: 0 0 0 2px rgba(255, 155, 68, 0.2);
-        }
+        // :global(.offer-modal .ant-input:focus),
+        // :global(.offer-modal .ant-select-selector:focus),
+        // :global(.offer-modal .ant-picker-focused) {
+        //   border-color: #ff9b44;
+        //   box-shadow: 0 0 0 2px rgba(255, 155, 68, 0.2);
+        // }
 
         :global(.offer-modal .ant-upload-drag) {
           border: 2px dashed #e3e3e3;
@@ -2345,9 +2617,9 @@ const CandidateDetails = () => {
           transition: all 0.3s;
         }
 
-        :global(.offer-modal .ant-upload-drag:hover) {
-          border-color: #ff9b44;
-        }
+        // :global(.offer-modal .ant-upload-drag:hover) {
+        //   border-color: #ff9b44;
+        // }
 
         :global(.offer-modal .ant-upload-drag-icon) {
           color: #ff9b44;
@@ -2370,10 +2642,112 @@ const CandidateDetails = () => {
           border-color: #ff9b44;
         }
 
-        :global(.offer-modal .ant-btn-primary:hover) {
-          background: #ff8629;
-          border-color: #ff8629;
+        // :global(.offer-modal .ant-btn-primary:hover) {
+        //   background: #ff8629;
+        //   border-color: #ff8629;
+        // }
+
+        .active-tab-styles{
+           display: flex ;
+            width: 60%;
+            justify-content: space-between;
         }
+
+        .active-tab-timeline{
+          padding: 0 10px 15px 0px ;
+          font-size: 16px; 
+          font-weight: 500;
+        }
+        .active-tab-files{
+          padding: 0 10px 15px 0px ;
+          font-size: 16px; 
+          font-weight: 500;
+          color: activeTab === 'files' ? #ff9244 : #a5adb6;
+          cursor: pointer;
+          border-bottom: activeTab === 'files' ? 2px solid #ff9244: none;
+        }
+        .active-tab-interview{
+          padding: 0 10px 15px 0px ;
+          font-size: 16px; 
+          font-weight: 500;
+          color: activeTab === 'interview' ?  #ff9244  : #a5adb6;
+          cursor: pointer;
+          border-bottom: activeTab === 'interview' ?  2px solid #ff9244 : none;
+        }
+        .info-items-children{
+          display: flex ;
+        }
+
+        .select-btn{
+          border: 1px solid #ff9244;
+          border-radius: 8px;
+          background: #ff9244;
+          z-index: 1000;
+          position: relative;
+          height: 45px;
+          width: 120px;
+          font-size: 16px;
+          font-weight: 500;
+          color: #ffffff;
+        }
+
+
+
+        @media(min-width: 993px) and (max-width: 1280px){
+          .active-tab-styles{
+            width: 90%;
+          }
+        }
+        @media(min-width: 768px) and (max-width: 890px){
+          .active-tab-styles{
+            width: 90%;
+          }
+        }
+        @media(min-width: 430px) and (max-width: 767px){
+          .active-tab-styles{
+            width: 100%;
+          }
+        }
+        @media(min-width: 330px) and (max-width: 430px){
+          .active-tab-styles{
+            width: 100%;
+            gap: 20px;
+          }
+        }
+        @media(min-width: 330px) and (max-width: 430px){
+          .span-timeline img, .span-files img, .span-interview img{
+            display: none;
+            width: max-width;
+          }
+        }
+
+        @media (min-width: 768px) and (max-width: 1445px) {
+        .custom-col {
+          flex: 0 0 43%;  
+          max-width: 43%;
+        }
+      }
+
+      @media (min-width: 768px) and (max-width: 1445px) {
+        .custom-col-two {
+          flex: 0 0 57%;  
+          max-width: 57%;
+        }
+      }
+
+      .customized .ant-select-selector{
+        height: 45px !important;
+        border-radius: 8px !important;
+        display: flex;
+        align-items: center;
+        font-size: 16px;
+        font-weight: 450;
+      }
+        
+        
+
+
+
       `}</style>
     </div>
   );

@@ -1,6 +1,6 @@
 import axios from "axios";
 import {store} from '../Entryfile/Main.js';
-import { login } from "../Entryfile/features/users.jsx";
+import { logout } from "../Entryfile/features/users.jsx";
 import { superAdmin } from "../Redux/Reducer/permissions/superAdminSlice.js";
 import { BASE_URL } from '../config/apiConfig';
 

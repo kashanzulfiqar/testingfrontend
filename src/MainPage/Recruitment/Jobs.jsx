@@ -9,7 +9,7 @@ import calander from '../../assets/iconsRecruitment/calander.svg';
 import department from '../../assets/iconsRecruitment/department.svg';
 import facebook from '../../assets/iconsRecruitment/Facebook.svg';
 import indeed from '../../assets/iconsRecruitment/indeed.svg';
-import linkdin from '../../assets/iconsRecruitment/linkedin.svg';
+import linkdin from '../../assets/iconsRecruitment/linkedin-icon.svg';
 import instagram from '../../assets/iconsRecruitment/insta.svg';
 import more from '../../assets/iconsRecruitment/vertical.svg';
 import circle from '../../assets/iconsRecruitment/circle.svg';
@@ -439,12 +439,12 @@ const Jobs = () => {
                   </Menu>}
                   trigger={['click']}
                   placement="bottomRight">
-      <div style={{ cursor: 'pointer',height:'25px' }}>
-        <img src={more} alt="More Options" />
-      </div>
-    </Dropdown>
+                  <div style={{ cursor: 'pointer',height:'25px' }}>
+                    <img src={more} alt="More Options" />
+                  </div>
+                  </Dropdown>
                 </div>
-                
+                               
                 <div className="job-details">
                   <div className="detail-item">
                     <div className = 'icons'><img src={department}></img></div>
@@ -825,7 +825,7 @@ const Jobs = () => {
           display: flex;
           align-items: center;
           justify-content: center;
-}
+        }
         .custom-modal .ant-form-item-label > label {
           font-weight: 500;
         }

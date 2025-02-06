@@ -193,7 +193,7 @@ const CreateCandidateModal = ({
               setFileList(newFileList);
             }}
           >
-            <Button icon={<UploadOutlined />} disabled={fileList.length > 0}>
+            <Button className='resume-upload-btn' disabled={fileList.length > 0}>
               Upload Resume
             </Button>
           </Upload>
@@ -300,6 +300,7 @@ const CreateCandidateModal = ({
               ]}
             >
               <Select
+                className= 'customized'
                 placeholder="Select Job Position"
                 showSearch
                 optionFilterProp="children"
@@ -350,8 +351,31 @@ const CreateCandidateModal = ({
             </Form.Item>
           </div>
         </div>
+        
 
         <div className="row">
+          {/*  */}
+          <div className="col-md-6">
+            <Form.Item
+              name="status"
+              label={
+                <>
+                  Application Status <span className="text-danger">*</span>
+                </>
+              }
+              rules={[
+                { required: true, message: "Select Status" },
+              ]}
+            >
+              <Select className='customized' placeholder="Select Status">
+                <Select.Option value="OPEN">Open</Select.Option>
+                <Select.Option value="ON_HOLD">On-Hold</Select.Option>
+                <Select.Option value="FILLED">Filled</Select.Option>
+                <Select.Option value="CANCELLED">Cancelled</Select.Option>
+              </Select>
+            </Form.Item>
+          </div>
+          {/*  */}
           <div className="col-md-6">
             <Form.Item
               name="experience"
@@ -376,7 +400,34 @@ const CreateCandidateModal = ({
                 precision={1}
               />
             </Form.Item>
-          </div>
+          </div>       
+          {/* <div className="col-md-6">
+            <Form.Item
+              name="currentSalary"
+              label={
+                <>
+                  Current Salary <span className="text-danger">*</span>
+                </>
+              }
+              rules={[
+                { required: true, message: "Please enter current salary" },
+                {
+                  type: "number",
+                  min: 0,
+                  message: "Salary cannot be negative",
+                },
+              ]}
+            >
+              <InputNumber
+                style={{ width: "100%" }}
+                placeholder="Enter Current Salary"
+                min={0}
+              />
+            </Form.Item>
+          </div> */}
+        </div>
+
+        <div className="row">
           <div className="col-md-6">
             <Form.Item
               name="currentSalary"
@@ -401,9 +452,6 @@ const CreateCandidateModal = ({
               />
             </Form.Item>
           </div>
-        </div>
-
-        <div className="row">
           <div className="col-md-6">
             <Form.Item
               name="expectedSalary"
@@ -428,6 +476,10 @@ const CreateCandidateModal = ({
               />
             </Form.Item>
           </div>
+        </div>
+        
+
+        <div className="row">
           <div className="col-md-6">
             <Form.Item
               name="noticePeriod"
@@ -440,7 +492,7 @@ const CreateCandidateModal = ({
                 { required: true, message: "Please select notice period" },
               ]}
             >
-              <Select placeholder="Select Notice Period">
+              <Select className='customized' placeholder="Select Notice Period">
                 <Select.Option value="IMMEDIATE">Immediate</Select.Option>
                 <Select.Option value="15_DAYS">15 Days</Select.Option>
                 <Select.Option value="30_DAYS">30 Days</Select.Option>
@@ -449,9 +501,6 @@ const CreateCandidateModal = ({
               </Select>
             </Form.Item>
           </div>
-        </div>
-
-        <div className="row">
           <div className="col-md-6">
             <Form.Item
               name="source"
@@ -462,7 +511,7 @@ const CreateCandidateModal = ({
               }
               rules={[{ required: true, message: "Please select source" }]}
             >
-              <Select placeholder="Select source">
+              <Select className='customized' placeholder="Select source">
                 <Select.Option value="LINKEDIN">LinkedIn</Select.Option>
                 <Select.Option value="WEBSITE">Website</Select.Option>
                 <Select.Option value="REFERRAL">Referral</Select.Option>
@@ -478,9 +527,9 @@ const CreateCandidateModal = ({
             style={{
               marginRight: 12,
               padding: "6px 24px",
-              height: "40px",
-              borderRadius: "20px",
-              background: "#F8F9FA",
+              height: "50px",
+              borderRadius: "32px",
+              background: "#F7F7F8",
               border: "none",
             }}
           >
@@ -491,10 +540,11 @@ const CreateCandidateModal = ({
             htmlType="submit"
             loading={submitting}
             style={{
+              fontSize: '16px',
               padding: "6px 24px",
-              height: "40px",
-              borderRadius: "20px",
-              background: "#F4A261",
+              height: "50px",
+              borderRadius: "32px",
+              background: "#FF9244",
               border: "none",
             }}
           >
@@ -504,13 +554,29 @@ const CreateCandidateModal = ({
       </Form>
 
       <style jsx global>{`
+        .custom-modal .ant-modal-content{
+          border: 1px solid transparent;
+          border-radius: 10px;
+        }
         .custom-modal .ant-modal-header {
           border-bottom: none;
-          padding: 24px 24px 0;
+          padding: 24px 24px 0px 24px;
+          border-radius: 10px;
         }
         .custom-modal .ant-modal-title {
           font-size: 24px;
           font-weight: 600;
+        }
+        .custom-modal .ant-modal-close {
+          background-color: #F8F9FA;
+          border-radius: 50%;
+          border:"1px solid #F8F9FA";
+          margin:16px 16px 0 0;
+          width: 32px;
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
         .custom-modal .ant-form-item-label > label {
           font-weight: 500;
@@ -521,19 +587,38 @@ const CreateCandidateModal = ({
         .custom-modal .ant-input-number {
           border-radius: 8px;
           padding: 8px 12px;
-          height: 40px;
+          height: 56px;
+          font-size: 16px;
+          font-weight: 450;
         }
         .custom-modal .ant-select-selection-placeholder,
         .custom-modal .ant-input::placeholder {
           color: #6c757d;
         }
+
+        .customized .ant-select-selector{
+        height: 56px !important;
+        border-radius: 8px !important;
+        display: flex;
+        align-items: center;
+        padding-left: 10px;
+        }
+
+        
         .upload-resume {
-          background: #f8f9fa;
           padding: 16px;
-          border-radius: 8px;
+          padding-left: 3px;
+          border-top: 1px solid #eef0f1;
+          border-bottom: 1px solid #eef0f1;
         }
         .upload-resume p {
           margin-bottom: 12px;
+        }
+
+        .resume-upload-btn{
+          border: 1px solid #ff9244;
+          border-radius: 40px;
+          color: #ff9244;
         }
       `}</style>
     </Modal>
