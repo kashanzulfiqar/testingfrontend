@@ -61,14 +61,14 @@ const InvoiceCounter = () => {
     form.resetFields();
   };
 
-  const onHandleDelete = (id) => {
+  const onHandleDelete = (Data) => {
     setLoader(true);
-    apiServices("DELETE", "invoice-counter", id, user_state)
+    apiServices("DELETE", "invoice-counter", Data, user_state)
       .then((res) => {
         // console.log(res?.data);
         if (res?.data?.success === true) {
           // console.log(data);
-          setData([...data.filter((counter) => counter._id !== id)]);
+          setData([...data.filter((counter) => counter._id !== Data?._id)]);
           handleClose();
           message.success(t('settings.InvoiceCounter.deleteInvoiceCounterSuccess'));
           setLoader(false);
@@ -466,7 +466,7 @@ const InvoiceCounter = () => {
                     <Button
                       htmlType="submit"
                       className="btn btn-primary continue-btn"
-                      onClick={() => onHandleDelete(open?.data?._id)}
+                      onClick={() => onHandleDelete(open?.data)}
                       disabled={loader}
                       style={{ width: "100%" }}
                     >

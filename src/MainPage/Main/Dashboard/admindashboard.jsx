@@ -1435,7 +1435,7 @@ const AdminDashboard = () => {
                       <>
                         <div className="progress mb-4">
                           <div
-                            className="progress-bar bg-purple"
+                            className="progress-bar bg-success"
                             role="progressbar"
                             style={{
                               width: `${allData?.statistics?.percentCompletedTasks}%`,
@@ -1463,7 +1463,7 @@ const AdminDashboard = () => {
                             {allData?.statistics?.percentInProgressTasks}%
                           </div>
                           <div
-                            className="progress-bar bg-success"
+                            className="progress-bar bg-purple"
                             role="progressbar"
                             style={{
                               width: `${allData?.statistics?.percentToDoTasks}%`,

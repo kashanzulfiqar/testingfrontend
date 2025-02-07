@@ -168,7 +168,7 @@ const Leads = () => {
       apiServices(
         "DELETE",
         "leads/delete-medium",
-        selectedMedium?._id,
+        selectedMedium,
         user_state
       )
         .then((res) => {
@@ -199,7 +199,7 @@ const Leads = () => {
       apiServices(
         "DELETE",
         "leads/delete-source",
-        selectedSource?._id,
+        selectedSource,
         user_state
       )
         .then((res) => {
@@ -695,7 +695,11 @@ const Leads = () => {
       });
   };
   const handleStatusChange = (record, newStatus) => {
-    if (newStatus === "Converted") {
+    if (newStatus === "Lost") {
+      setSelectedRecord(record);
+      setIsLostReasonModalVisible(true);
+      setActiveDropdown(null);
+    } else if (newStatus === "Converted") {
       setSelectedRecord(record);
       setIsConversionDateModalVisible(true);
       setActiveDropdown(null);
@@ -723,18 +727,13 @@ const Leads = () => {
     lostReason = null,
     conversionDate = null
   ) => {
+    setLoadStatus(true);
     try {
       const data = {
         status: newStatus,
+        ...(lostReason && { lost_reason: lostReason }),
+        ...(conversionDate && { conversion_date: conversionDate }),
       };
-
-      if (newStatus === "Lost" && lostReason) {
-        data.lost_reason = lostReason;
-      }
-
-      if (newStatus === "Converted" && conversionDate) {
-        data.conversion_date = conversionDate;
-      }
 
       const response = await apiServices(
         "PUT",
@@ -752,6 +751,8 @@ const Leads = () => {
     } catch (err) {
       console.error("Error updating status:", err);
       message.error(err?.response?.data?.msg || "Error updating status");
+    } finally {
+      setLoadStatus(false);
     }
   };
   const closeDropDown = (e) => {
@@ -3099,7 +3100,7 @@ const Leads = () => {
           style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
         }}
       >
-        <div className="modal-dialog modal-dialog-centered modal-lg">
+        <div className="modal-dialog modal-dialog-centered">
           <div className="modal-content" style={{ height: "280px" }}>
             <div
               className="modal-body"

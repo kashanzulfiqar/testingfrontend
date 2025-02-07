@@ -381,10 +381,13 @@ function ReachOutModal({
                           <Select
                             showSearch
                             onSearch={(val) => {
+                              if (val.length <= 50) {
                               setSearchValue(val);
                               showTeamSearch(val, "medium");
                               // onTeamChange(val)
+                              }
                             }}
+                            searchValue={searchValue}
                             filterOption={(input, option) =>
                               option.children[0]
                                 ?.toLowerCase()
@@ -404,7 +407,7 @@ function ReachOutModal({
                                     (option) =>
                                       option?.title?.toLowerCase() ===
                                       searchValue?.toLowerCase()
-                                  ) && (
+                                  ) && searchValue.length <= 50 && (
                                     <>
                                       <Divider style={{ margin: "5px 0" }} />
                                       <Button

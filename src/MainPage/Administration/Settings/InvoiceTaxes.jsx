@@ -79,14 +79,14 @@ const InvoiceTaxes = () => {
       });
   };
 
-  const onHandleDelete = (id) => {
+  const onHandleDelete = (Data) => {
     setLoader(true);
-    apiServices("DELETE", "invoices-tax-slab", id, user_state)
+    apiServices("DELETE", "invoices-tax-slab", Data, user_state)
       .then((res) => {
         // console.log(res?.data);
         if (res?.data?.success === true) {
           // console.log(data);
-          setTaxes([...taxes.filter((tax) => tax._id !== id)]);
+          setTaxes([...taxes.filter((tax) => tax._id !== Data?._id)]);
           handleClose();
           message.success(t('settings.tax.taxSlabDeletedSuccessfully'));
           setLoader(false);
@@ -825,7 +825,7 @@ const InvoiceTaxes = () => {
                   <Button
                       htmlType="submit"
                       className="btn btn-primary continue-btn"
-                      onClick={() => onHandleDelete(open?.data?._id)}
+                      onClick={() => onHandleDelete(open?.data)}
                       disabled={loader}
                       style={{ width: "100%" }}
                     >

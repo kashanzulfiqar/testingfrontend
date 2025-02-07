@@ -41,11 +41,9 @@ axiosInstance.interceptors.response.use(
   (error) => {
     // Check for authentication errors (401) or token expiration
     if (
-      error?.response?.status === 401 || 
+      (error?.response?.status === 401 && error?.response?.data?.forceLogout === true) || 
       error?.response?.data?.error?.message === "jwt expired" || 
-      error?.response?.data?.err?.message === "jwt expired" ||
-      error?.response?.data?.message === "Invalid token" ||
-      error?.response?.data?.message === "Token is required"
+      error?.response?.data?.err?.message === "jwt expired"
     ) {
       console.log('Authentication failed - clearing session');
       

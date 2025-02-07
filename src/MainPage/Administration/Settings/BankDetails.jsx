@@ -121,14 +121,14 @@ const BankDetails = () => {
     }
   };
 
-  const onHandleDelete = (id) => {
+  const onHandleDelete = (Data) => {
     setLoader(true);
-    apiServices("DELETE", "bank-details", id, user_state)
+    apiServices("DELETE", "bank-details", Data, user_state)
       .then((res) => {
         // console.log(res?.data);
         if (res?.data?.success === true) {
           // console.log(data);
-          setData([...data.filter((Bank) => Bank._id !== id)]);
+          setData([...data.filter((Bank) => Bank._id !== Data?._id)]);
           handleClose();
           message.success(t('settings.BankDetails.bankDeletedSuccessfully'));
           setLoader(false);
@@ -888,7 +888,7 @@ const BankDetails = () => {
                     <Button
                       htmlType="submit"
                       className="btn btn-primary continue-btn"
-                      onClick={() => onHandleDelete(open?.data?._id)}
+                      onClick={() => onHandleDelete(open?.data)}
                       disabled={loader}
                       style={{ width: "100%" }}
                     >
