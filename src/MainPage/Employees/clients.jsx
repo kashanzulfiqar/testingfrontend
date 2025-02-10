@@ -261,6 +261,118 @@ const Clients = () => {
     return countryCode ? countryCode.toLowerCase() : null; // Convert to lowercase if found
   };
 
+  // Render client card
+  const renderClientCard = (client) => {
+    const handleClientClick = (e) => {
+      e.preventDefault(); // Prevent default navigation
+      console.log('Storing current client data:', client);
+      try {
+        sessionStorage.setItem('current_client_data', JSON.stringify(client));
+        sessionStorage.setItem('clients_tab', "projects");
+        // Only navigate after storage is successful
+        window.location.href = '/client/client-profile';
+      } catch (error) {
+        console.error('Error storing client data:', error);
+      }
+    };
+
+    const handleContextMenu = (e) => {
+      // Store the data before showing context menu
+      console.log('Right click detected, storing client data:', client);
+      try {
+        sessionStorage.setItem('current_client_data', JSON.stringify(client));
+        sessionStorage.setItem('clients_tab', "projects");
+        console.log('Storing current client data:', client);
+      } catch (error) {
+        console.error('Error storing client data:', error);
+      }
+    };
+    
+    return (
+      <>
+        {client?.country && (
+          <div
+            style={{
+              position: "absolute",
+              top: "10px",
+              left: "10px",
+              width: "10%",
+              height: "8%",
+            }}
+          >
+            <img
+              src={`https://flagcdn.com/128x96/${getCountryCodeFromList(
+                client.country
+              )}.png`}
+              alt={`${client.country} flag`}
+            />
+          </div>
+        )}
+        <div className="profile-img">
+          <Link
+            to="/client/client-profile"
+            onClick={handleClientClick}
+            onMouseDown={handleContextMenu}
+            className="avatar"
+          >
+            <img alt="" src={client?.logo || user_icon} />
+          </Link>
+        </div>
+        <div className="dropdown profile-action">
+          <a
+            href="javascript:void(0)"
+            className="action-icon dropdown-toggle"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            <i className="material-icons">more_vert</i>
+          </a>
+          <div className="dropdown-menu dropdown-menu-right">
+            <a
+              className="dropdown-item"
+              href="javascript:void(0)"
+              onClick={() => {
+                setOpen({
+                  isAddClientOpen: false,
+                  isAddOpen: true,
+                  data: client,
+                });
+                getAllCountries();
+              }}
+            >
+              <i className="fa fa-pencil m-r-5" /> {t("edit")}
+            </a>
+            <a
+              className="dropdown-item"
+              href="javascript:void(0)"
+              onClick={() => {
+                setOpen({ isDelOpen: true, data: client });
+              }}
+            >
+              <i className="fa fa-trash-o m-r-5" /> {t("delete")}
+            </a>
+          </div>
+        </div>
+        <h4 className="user-name m-t-10 m-b-15 text-ellipsis">
+          <a
+            onClick={handleClientClick}
+            onMouseDown={handleContextMenu}
+          >
+            {client?.clientName}
+          </a>
+        </h4>
+        <a
+          onClick={handleClientClick}
+          onMouseDown={handleContextMenu}
+          className="btn btn-white btn-sm"
+          style={{ margin: "auto auto 0 auto" }}
+        >
+          {t("client.viewProfile")}
+        </a>
+      </>
+    );
+  };
+
   return (
     <>
       <div className="page-wrapper">
@@ -429,119 +541,15 @@ const Clients = () => {
               </div>
             ) : allClients?.length > 0 ? (
               allClients.map((client, index) => (
-                <>
-                  <div
-                    key={index}
-                    className="col-md-4 col-sm-6 col-12 col-lg-4 col-xl-3 d-flex"
-                  >
-                    <div
-                      className="profile-widget"
-                      style={{
-                        width: "100%",
-                        display: "flex",
-                        flexDirection: "column",
-                      }}
-                    >
-                      {/* Country Flag */}
-                      {console.log(
-                        "Country Code:",
-                        getCountryCodeFromList(client.country)
-                      )}
-                      {client?.country && (
-                        <div
-                          style={{
-                            position: "absolute",
-                            top: "10px",
-                            left: "10px",
-                            width: "10%",
-                            height: "8%",
-                          }}
-                        >
-                          <img
-                            src={`https://flagcdn.com/128x96/${getCountryCodeFromList(
-                              client.country
-                            )}.png`}
-                            alt={`${client.country} flag`}
-                            // style={{ width: "100%", height: "100%" }}
-                          />
-                        </div>
-                      )}
-                      <div className="profile-img">
-                        <Link
-                          to="/client/client-profile"
-                          state={{ client_data: client }}
-                          onClick={() =>
-                            sessionStorage.setItem(`clients_tab`, "projects")
-                          }
-                          className="avatar"
-                        >
-                          <img alt="" src={client?.logo || user_icon} />
-                        </Link>
-                      </div>
-                      <div className="dropdown profile-action">
-                        <a
-                          href="javascript:void(0)"
-                          className="action-icon dropdown-toggle"
-                          data-bs-toggle="dropdown"
-                          aria-expanded="false"
-                        >
-                          <i className="material-icons">more_vert</i>
-                        </a>
-                        <div className="dropdown-menu dropdown-menu-right">
-                          <a
-                            className="dropdown-item"
-                            href="javascript:void(0)"
-                            onClick={() => {
-                              setOpen({
-                                isAddClientOpen: false,
-                                isAddOpen: true,
-                                data: client,
-                              });
-                              getAllCountries();
-                            }}
-                          >
-                            <i className="fa fa-pencil m-r-5" /> {t("edit")}
-                          </a>
-                          <a
-                            className="dropdown-item"
-                            href="javascript:void(0)"
-                            onClick={() => {
-                              setOpen({ isDelOpen: true, data: client });
-                            }}
-                          >
-                            <i className="fa fa-trash-o m-r-5" /> {t("delete")}
-                          </a>
-                        </div>
-                      </div>
-                      <h4 className="user-name m-t-10 m-b-15 text-ellipsis">
-                        <Link
-                          to="/client/client-profile"
-                          state={{ client_data: client }}
-                          onClick={() =>
-                            sessionStorage.setItem(`clients_tab`, "projects")
-                          }
-                        >
-                          {client?.clientName}
-                        </Link>
-                      </h4>
-                      {/* <h5 className="user-name m-t-10 mb-0 text-ellipsis"><Link to="/app/profile/client-profile">Barry Cuda</Link></h5>
-                      <div className="small text-muted">CEO</div> */}
-                      {/* <Link onClick={() => localStorage.setItem("minheight", "true")} to="/conversation/chat" className="btn btn-white btn-sm m-t-10 me-1">Message</Link> */}
-                      {/* <Link to="/app/profile/client-profile" className="btn btn-white btn-sm m-t-10" style={{margin: 'auto auto 0 auto'}}>View Profile</Link> */}
-                      <Link
-                        to="/client/client-profile"
-                        state={{ client_data: client }}
-                        onClick={() =>
-                          sessionStorage.setItem(`clients_tab`, "projects")
-                        }
-                        className="btn btn-white btn-sm"
-                        style={{ margin: "auto auto 0 auto" }}
-                      >
-                        {t("client.viewProfile")}
-                      </Link>
-                    </div>
+                <div key={index} className="col-md-4 col-sm-6 col-12 col-lg-4 col-xl-3 d-flex">
+                  <div className="profile-widget" style={{
+                    width: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                  }}>
+                    {renderClientCard(client)}
                   </div>
-                </>
+                </div>
               ))
             ) : (
               customEmptyText
