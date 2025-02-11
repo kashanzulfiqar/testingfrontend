@@ -18,8 +18,8 @@ const ClientProfile = () => {
   const location = useLocation();
   const nav = useNavigate();
 
-  let active = sessionStorage.getItem("active_tab");
-  let clients_tab = sessionStorage.getItem("clients_tab");
+  let active = localStorage.getItem("active_tab");
+  let clients_tab = localStorage.getItem("clients_tab");
 
   const user_state = useSelector((state) => state.user.loginvalue);
   const role = user_state?.user?.role
@@ -52,14 +52,14 @@ const ClientProfile = () => {
         return true;
       }
 
-      // Try to get from sessionStorage
-      const storedClientData = sessionStorage.getItem('current_client_data');
-      console.log('Checking sessionStorage for current_client_data:', storedClientData);
+      // Try to get from localStorage
+      const storedClientData = localStorage.getItem('current_client_data');
+      console.log('Checking localStorage for current_client_data:', storedClientData);
       
       if(storedClientData){
         try {
           const parsedData = JSON.parse(storedClientData);
-          console.log('Using client data from sessionStorage:', parsedData);
+          console.log('Using client data from localStorage:', parsedData);
           setClientData(parsedData);
           setLoader(false);
           return true;
@@ -69,8 +69,8 @@ const ClientProfile = () => {
       }
 
       // If still no data, try all_clients_data as last resort
-      const allClientsData = sessionStorage.getItem('all_clients_data');
-      console.log('Checking sessionStorage for all_clients_data:', allClientsData);
+      const allClientsData = localStorage.getItem('all_clients_data');
+      console.log('Checking localStorage for all_clients_data:', allClientsData);
       
       if(allClientsData){
         try {
@@ -98,20 +98,26 @@ const ClientProfile = () => {
       console.log('No client data found from any source, redirecting...');
       nav(role === 'focalperson' ? `/client/focal-profile` : role === 'admin' ? `/main/dashboard` : `/employee/dashboard`);
     }
+
+    // // Cleanup function to remove data when component unmounts
+    // return () => {
+    //   localStorage.removeItem('current_client_data');
+    //   localStorage.removeItem('clients_tab');
+    // };
   }, [location.state, role]);
 
   // Handle clients_tab cleanup
-  useEffect(() => {
-    if(clients_tab){
-      const timer = setTimeout(() => {
-        sessionStorage.removeItem('clients_tab');
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [clients_tab]);
+  // useEffect(() => {
+  //   if(clients_tab){
+  //     const timer = setTimeout(() => {
+  //       localStorage.removeItem('clients_tab');
+  //     }, 1000);
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [clients_tab]);
 
   useEffect(() => {
-    sessionStorage.setItem(`active_tab`, `${activeTab}`)
+    localStorage.setItem(`active_tab`, `${activeTab}`)
   }, [activeTab])
 
   const getSingleClient = () => {

@@ -263,31 +263,28 @@ const Clients = () => {
 
   // Render client card
   const renderClientCard = (client) => {
-    const handleClientClick = (e) => {
-      e.preventDefault(); // Prevent default navigation
-      console.log('Storing current client data:', client);
-      try {
-        sessionStorage.setItem('current_client_data', JSON.stringify(client));
-        sessionStorage.setItem('clients_tab', "projects");
-        // Only navigate after storage is successful
-        window.location.href = '/client/client-profile';
-      } catch (error) {
-        console.error('Error storing client data:', error);
+    const handleContextMenu = (e) => {
+      if (e.button === 2) {
+        // Store the data before showing context menu
+        console.log("Right click detected, storing client data:", client);
+        try {
+          localStorage.setItem("current_client_data", JSON.stringify(client));
+          localStorage.setItem("clients_tab", "projects");
+          // Add logging to verify stored data
+          console.log(
+            "Stored client data:",
+            JSON.parse(localStorage.getItem("current_client_data"))
+          );
+          console.log(
+            "Stored clients tab:",
+            localStorage.getItem("clients_tab")
+          );
+        } catch (error) {
+          console.error("Error storing client data:", error);
+        }
       }
     };
 
-    const handleContextMenu = (e) => {
-      // Store the data before showing context menu
-      console.log('Right click detected, storing client data:', client);
-      try {
-        sessionStorage.setItem('current_client_data', JSON.stringify(client));
-        sessionStorage.setItem('clients_tab', "projects");
-        console.log('Storing current client data:', client);
-      } catch (error) {
-        console.error('Error storing client data:', error);
-      }
-    };
-    
     return (
       <>
         {client?.country && (
@@ -311,7 +308,8 @@ const Clients = () => {
         <div className="profile-img">
           <Link
             to="/client/client-profile"
-            onClick={handleClientClick}
+            state={{ client_data: client }}
+            onClick={localStorage.setItem("clients_tab", "projects")}
             onMouseDown={handleContextMenu}
             className="avatar"
           >
@@ -354,21 +352,25 @@ const Clients = () => {
           </div>
         </div>
         <h4 className="user-name m-t-10 m-b-15 text-ellipsis">
-          <a
-            onClick={handleClientClick}
+          <Link
+            to="/client/client-profile"
+            state={{ client_data: client }}
+            onClick={localStorage.setItem("clients_tab", "projects")}
             onMouseDown={handleContextMenu}
           >
             {client?.clientName}
-          </a>
+          </Link>
         </h4>
-        <a
-          onClick={handleClientClick}
+        <Link
+          to="/client/client-profile"
+          state={{ client_data: client }}
+          onClick={localStorage.setItem("clients_tab", "projects")}
           onMouseDown={handleContextMenu}
           className="btn btn-white btn-sm"
           style={{ margin: "auto auto 0 auto" }}
         >
           {t("client.viewProfile")}
-        </a>
+        </Link>
       </>
     );
   };
@@ -541,12 +543,18 @@ const Clients = () => {
               </div>
             ) : allClients?.length > 0 ? (
               allClients.map((client, index) => (
-                <div key={index} className="col-md-4 col-sm-6 col-12 col-lg-4 col-xl-3 d-flex">
-                  <div className="profile-widget" style={{
-                    width: "100%",
-                    display: "flex",
-                    flexDirection: "column",
-                  }}>
+                <div
+                  key={index}
+                  className="col-md-4 col-sm-6 col-12 col-lg-4 col-xl-3 d-flex"
+                >
+                  <div
+                    className="profile-widget"
+                    style={{
+                      width: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                  >
                     {renderClientCard(client)}
                   </div>
                 </div>
