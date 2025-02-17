@@ -46,7 +46,7 @@ const ForgotPassword = () => {
 
     apiServices("POST", "user/forgot-password", values).then((res) => {
       // console.log(res);
-      if (res?.data?.return?.success === true) {
+      if (res?.data?.success === true) {
         setLoader(false)
         setEmail(values?.email);
         setSuccessSection(true);
@@ -83,7 +83,7 @@ const ForgotPassword = () => {
       email: email
     } 
     apiServices("POST", "user/forgot-password", data1, null).then((res) => {
-      if (res?.data?.return?.success === true) {
+      if (res?.data?.success === true) {
         message.success('Reset Link has been sent Successfully!')
       }
    }).catch((err)=>{
