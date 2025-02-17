@@ -4,6 +4,8 @@ import jsPDF from "jspdf";
 
 import "jspdf-autotable";
 
+import { message } from "antd";
+
 function CurrentPayrollPDF(row_data, bankData) {
   function getCurrentFormattedDate() {
     const months = [
@@ -228,6 +230,8 @@ function CurrentPayrollPDF(row_data, bankData) {
   doc.text(x, currentY + 49, bankData?.companyName);
 
   doc.save("payroll_export.pdf");
+  
+  message.success('PDF downloaded successfully');
 
   // for open pdf
 
