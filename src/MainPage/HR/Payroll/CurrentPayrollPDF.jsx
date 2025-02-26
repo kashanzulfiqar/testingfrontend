@@ -231,7 +231,7 @@ function CurrentPayrollPDF(row_data, bankData) {
 
   doc.save("payroll_export.pdf");
   
-  message.success('PDF downloaded successfully');
+  message.success('file downloaded successfully');
 
   // for open pdf
 
