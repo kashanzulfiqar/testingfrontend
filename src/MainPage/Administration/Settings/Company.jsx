@@ -22,11 +22,18 @@ const Company = () => {
   const [allCurrencies, setAllCurrencies] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [absentDeduction, setAbsentDeduction] = useState();
+  const [countries, setCountries] = useState([]);
+  const [states, setStates] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [selectedCountry, setSelectedCountry] = useState(null);
+  const [selectedState, setSelectedState] = useState(null);
+  const [loadingLocations, setLoadingLocations] = useState(false);
 
   useEffect(() => {
     getCompanyData();
     getAllCurrencies();
     fetchEmployees();
+    fetchCountries();
   }, []);
 
   const getCompanyData = () => {
@@ -224,6 +231,92 @@ const Company = () => {
     const sorted_data = currency_d.sort((a, b) => a.currency.localeCompare(b.currency));
     // setAllCurrencies([...uniqueCurrencies])
     setAllCurrencies(sorted_data)
+  };
+
+  const fetchCountries = async () => {
+    setLoadingLocations(true);
+    try {
+      const response = await fetch('https://countriesnow.space/api/v0.1/countries');
+      const data = await response.json();
+      if (data.data) {
+        const formattedCountries = data.data.map(country => ({
+          value: country.country,
+          label: country.country
+        }));
+        setCountries(formattedCountries);
+      }
+    } catch (error) {
+      message.error(t('settings.companySettings.errorFetchingCountries'));
+    }
+    setLoadingLocations(false);
+  };
+
+  const fetchStates = async (country) => {
+    setLoadingLocations(true);
+    try {
+      const response = await fetch('https://countriesnow.space/api/v0.1/countries/states', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ country }),
+      });
+      const data = await response.json();
+      if (data.data?.states) {
+        const formattedStates = data.data.states.map(state => ({
+          value: state.name,
+          label: state.name
+        }));
+        setStates(formattedStates);
+      }
+    } catch (error) {
+      message.error(t('settings.companySettings.errorFetchingStates'));
+    }
+    setLoadingLocations(false);
+  };
+
+  const fetchCities = async (country, state) => {
+    setLoadingLocations(true);
+    try {
+      const response = await fetch('https://countriesnow.space/api/v0.1/countries/state/cities', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ country, state }),
+      });
+      const data = await response.json();
+      if (data.data) {
+        const formattedCities = data.data.map(city => ({
+          value: city,
+          label: city
+        }));
+        setCities(formattedCities);
+      }
+    } catch (error) {
+      message.error(t('settings.companySettings.errorFetchingCities'));
+    }
+    setLoadingLocations(false);
+  };
+
+  const handleCountryChange = (value) => {
+    form.setFieldsValue({ state: undefined, city: undefined });
+    setSelectedCountry(value);
+    setSelectedState(null);
+    setStates([]);
+    setCities([]);
+    if (value) {
+      fetchStates(value);
+    }
+  };
+
+  const handleStateChange = (value) => {
+    form.setFieldsValue({ city: undefined });
+    setSelectedState(value);
+    setCities([]);
+    if (value && selectedCountry) {
+      fetchCities(selectedCountry, value);
+    }
   };
 
   return (
@@ -638,38 +731,28 @@ const Company = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                {t('settings.companySettings.city')} <span className="text-danger">*</span>
+                {t('settings.companySettings.country')} <span className="text-danger">*</span>
                 </label>
                 <Form.Item
-                  name="city"
+                  name="country"
                   rules={[
                     {
-                      whitespace: true,
                       required: true,
-                      validator: (_, value) => {
-                        if(value.trim() === ''){
-                          return Promise.reject(t('settings.companySettings.pleaseEnterCityName'));
-                        }
-                        else if (/\s{2,}/.test(value)) {
-                          return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
-                        }
-                        return Promise.resolve();
-                      },
-                    },
-                    {
-                      min: 3,
-                      message: t('settings.minLength2', { name: t('settings.companySettings.city') }),
-                    },
+                      message: t('settings.companySettings.pleaseSelectCountry')
+                    }
                   ]}
                 >
-                  <Input style={{ display: "none" }} value={allValues?.city} />
-                  <input
-                    className="form-control inputWordSpacing"
-                    defaultValue={data ? data?.city : ""}
-                    onInput={(e) => {
-                      onHandleChange("city", e.target.value);
-                    }}
-                    maxLength={50}
+                  <Select
+                    showSearch
+                    placeholder={t('settings.companySettings.selectCountry')}
+                    loading={loadingLocations}
+                    onChange={handleCountryChange}
+                    filterOption={(input, option) =>
+                      option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    }
+                    options={countries}
+                    style={{ width: '100%' }}
+                    className="custom-select custom-normal"
                   />
                 </Form.Item>
               </div>
@@ -683,32 +766,23 @@ const Company = () => {
                   name="state"
                   rules={[
                     {
-                      whitespace: true,
                       required: true,
-                      validator: (_, value) => {
-                        if(value.trim() === ''){
-                          return Promise.reject(t('settings.companySettings.pleaseEnterStateName'));
-                        }
-                        else if (/\s{2,}/.test(value)) {
-                          return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
-                        }
-                        return Promise.resolve();
-                      },
-                    },
-                    {
-                      min: 3,
-                      message: t('settings.minLength2', { name: t('settings.companySettings.state') }),
-                    },
+                      message: t('settings.companySettings.pleaseSelectState')
+                    }
                   ]}
                 >
-                  <Input style={{ display: "none" }} value={allValues?.state} />
-                  <input
-                    className="form-control inputWordSpacing"
-                    defaultValue={data ? data?.state : ""}
-                    onInput={(e) => {
-                      onHandleChange("state", e.target.value);
-                    }}
-                    maxLength={50}
+                  <Select
+                    showSearch
+                    placeholder={t('settings.companySettings.selectState')}
+                    loading={loadingLocations}
+                    onChange={handleStateChange}
+                    filterOption={(input, option) =>
+                      option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    }
+                    options={states}
+                    disabled={!selectedCountry}
+                    style={{ width: '100%' }}
+                    className="custom-select custom-normal"
                   />
                 </Form.Item>
               </div>
@@ -716,41 +790,28 @@ const Company = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                {t('settings.companySettings.country')} <span className="text-danger">*</span>
+                {t('settings.companySettings.city')} <span className="text-danger">*</span>
                 </label>
                 <Form.Item
-                  name="country"
+                  name="city"
                   rules={[
                     {
-                      whitespace: true,
                       required: true,
-                      validator: (_, value) => {
-                        if(value.trim() === ''){
-                          return Promise.reject(t('settings.companySettings.pleaseEnterCountryName'));
-                        }
-                        else if (/\s{2,}/.test(value)) {
-                          return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
-                        }
-                        return Promise.resolve();
-                      },
-                    },
-                    {
-                      min: 3,
-                      message: t('settings.minLength2', { name: t('settings.companySettings.country') }),
-                    },
+                      message: t('settings.companySettings.pleaseSelectCity')
+                    }
                   ]}
                 >
-                  <Input
-                    style={{ display: "none" }}
-                    value={allValues?.country}
-                  />
-                  <input
-                    className="form-control inputWordSpacing"
-                    defaultValue={data ? data?.country : ""}
-                    onInput={(e) => {
-                      onHandleChange("country", e.target.value);
-                    }}
-                    maxLength={50}
+                  <Select
+                    showSearch
+                    placeholder={t('settings.companySettings.selectCity')}
+                    loading={loadingLocations}
+                    filterOption={(input, option) =>
+                      option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    }
+                    options={cities}
+                    disabled={!selectedState}
+                    style={{ width: '100%' }}
+                    className="custom-select custom-normal"
                   />
                 </Form.Item>
               </div>
