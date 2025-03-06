@@ -95,9 +95,13 @@ const Registrationpage = (props) => {
   };
 
   const next = () => {
+    console.log("Moving to next step. Current step:", current);
+    console.log("Company ID before transition:", compId);
     setCurrent(current + 1);
   };
   const prev = () => {
+    console.log("Moving to previous step. Current step:", current);
+    console.log("Company ID before transition:", compId);
     setCurrent(current - 1);
   };
 
@@ -218,19 +222,39 @@ const Registrationpage = (props) => {
 
   const onRegFinish = (values) => {
     setLoader(true)
+    console.log("Starting company registration with values:", values);
+    
     apiServices("POST", "company/addcompany", values)
       .then((res) => {
         if (res?.data?.success) {
-          setLoader(false)
-          // console.log("values==", values, "handleChange----", regValues);
-          // console.log("res======", res?.data);
-          setCompId(res?.data?.Company?._id);
+          console.log("Company registration API response:", res.data);
+          
+          // Get company ID from the correct path in response
+          const newCompanyId = res?.data?.data?.companyId;
+          console.log("New Company ID received:", newCompanyId);
+          
+          if (!newCompanyId) {
+            console.error("Company ID not found in response");
+            setLoader(false);
+            message.error("Error getting company ID. Please try again.");
+            return;
+          }
+          
+          // Update state and proceed
+          setCompId(newCompanyId);
+          setLoader(false);
           message.success("Company Registered Successfully!");
-          next();
-          window.scrollTo(0, 0);
+          
+          // Use the ID directly from response rather than state
+          setTimeout(() => {
+            console.log("Moving to admin registration with company ID:", newCompanyId);
+            next();
+            window.scrollTo(0, 0);
+          }, 100);
         }
       })
       .catch((err) => {
+        console.error("Company registration error:", err);
         setLoader(false)
         message.error(
           `${
@@ -243,16 +267,31 @@ const Registrationpage = (props) => {
         );
       });
   };
+
   const onAdminFinish = (values) => {
     setLoader(true)
-    let data = {
+    console.log("Starting admin registration. Current step:", current);
+    console.log("Company ID at admin registration:", compId);
+    
+    if (!compId) {
+      console.error("Company ID missing at admin registration");
+      setLoader(false);
+      message.error("Company registration incomplete. Please try registering the company again.");
+      setCurrent(0);
+      return;
+    }
+
+    const data = {
       ...values,
       role: 'admin',
-      companyId: `${compId}`,
+      companyId: compId
     };
+
+    console.log("Sending admin signup request with data:", data);
 
     apiServices("POST", "user/admin-signup", data, null)
       .then((res) => {
+        console.log("Admin registration API response:", res.data);
         if (res?.data?.success) {
           setLoader(false)
           message.success("Admin Account Created Successfully!");
@@ -260,6 +299,7 @@ const Registrationpage = (props) => {
         }
       })
       .catch((err) => {
+        console.error("Admin registration error:", err);
         setLoader(false)
         message.error(
           `${

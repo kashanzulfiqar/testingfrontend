@@ -1,8 +1,10 @@
 import React, { Suspense } from 'react';
+import ReactDOM from 'react-dom/client';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import App from '../initialpage/App';
 import config from 'config';
 import 'bootstrap'
+import StripeWrapper from '../components/StripeWrapper';
 
 import 'bootstrap/dist/js/bootstrap.bundle';
 // import 'font-awesome/css/font-awesome.min.css';
@@ -90,29 +92,26 @@ const persistConfig = {
  const persistor = persistStore(store);
 
 const MainApp = () => (
-  // <Router basename={`${config.publicPath}`}>
-  //    <Routes>
-  //       <Provider store={store}>
-  //          <Route path="/" component={App} />
-  //       </Provider>
-
-  //    </Routes>
-  // </Router>
-
-    <Router basename={`${config.publicPath}`}>
-      {/* <Router basename={config.publicPath}> */}
-      <Provider store={store}>
-        <PersistGate loading={null} persistor={persistor}>
-          <I18nextProvider i18n={i18n}>
-            <Suspense fallback="...loading">
+  <Provider store={store}>
+    <PersistGate loading={null} persistor={persistor}>
+      <I18nextProvider i18n={i18n}>
+        <StripeWrapper>
+          <Router basename={`${config.publicPath}`}>
+            <Suspense fallback={<div>Loading...</div>}>
               <Routes>
                 <Route path="/*" element={<App />} />
               </Routes>
             </Suspense>
-          </I18nextProvider>
-        </PersistGate>
-      </Provider>
-    </Router>
+          </Router>
+        </StripeWrapper>
+      </I18nextProvider>
+    </PersistGate>
+  </Provider>
 );
+
+const root = document.getElementById('app');
+if (root) {
+  ReactDOM.createRoot(root).render(<MainApp />);
+}
 
 export default MainApp;
