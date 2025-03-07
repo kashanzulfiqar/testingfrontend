@@ -12,16 +12,16 @@ const ALLOWED_FILE_TYPES = [
   'application/x-zip-compressed'
 ];
 
-const CreateTaskModal = ({ visible, onCancel, onSubmit, candidate, authState }) => {
+const CreateTaskModal = ({ isVisible, onCancel, onSubmit, candidate, authState }) => {
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState([]);
   const [employees, setEmployees] = useState([]);
 
   useEffect(() => {
-    if (visible) {
+    if (isVisible) {
       fetchEmployees();
     }
-  }, [visible]);
+  }, [isVisible]);
 
   const fetchEmployees = async () => {
     const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
@@ -83,15 +83,9 @@ const CreateTaskModal = ({ visible, onCancel, onSubmit, candidate, authState }) 
     return true;
   };
 
-  const handleSubmit = async (values) => {
-    try {
-      await form.validateFields();
-      onSubmit(values);
-      form.resetFields();
-      setFileList([]);
-    } catch (error) {
-      console.error('Validation failed:', error);
-    }
+  const handleFinish = (values) => {
+    console.log('Form submitted with values:', values); // Debug log
+    onSubmit(values); // Call the onSubmit function passed as a prop
   };
 
   const handleCancel = () => {
@@ -103,30 +97,30 @@ const CreateTaskModal = ({ visible, onCancel, onSubmit, candidate, authState }) 
   return (
     <Modal
       title="Create a Task"
-      visible={visible}
+      visible={isVisible}
       onCancel={handleCancel}
       footer={null}
       width={800}
-      closeIcon={<CloseOutlined style={{ color: '#333' }} />}
-      className="custom-modal task-modal"
+      className="custom-modal"
     >
       <Form
         form={form}
         layout="vertical"
-        onFinish={handleSubmit}
+        onFinish={handleFinish}
         initialValues={{
-          candidateName: `${candidate?.firstName} ${candidate?.lastName}`,
-          candidateEmail: candidate?.email
+          candidateName: candidate ? `${candidate?.firstName} ${candidate?.lastName}` : '',
+          candidateEmail: candidate ? candidate.email : '',
         }}
       >
         <div className="row">
+        <div style={{height:"20px", width:"100%", display:"flex", justifyContent:"center", borderTop:"1px solid #E2E8F0"}}></div>
           <div className="col-md-6">
             <Form.Item
               name="candidateName"
               label={<>Candidate Name <span className="text-danger">*</span></>}
               rules={[{ required: true, message: 'Please enter candidate name' }]}
             >
-              <Input placeholder="Enter Name" disabled />
+              <Input placeholder="Enter Name" />
             </Form.Item>
           </div>
           <div className="col-md-6">
@@ -135,7 +129,7 @@ const CreateTaskModal = ({ visible, onCancel, onSubmit, candidate, authState }) 
               label={<>Candidate Email <span className="text-danger">*</span></>}
               rules={[{ required: true, message: 'Please enter candidate email' }]}
             >
-              <Input placeholder="Enter Email" disabled />
+              <Input placeholder="Enter Email"/>
             </Form.Item>
           </div>
         </div>
@@ -150,33 +144,35 @@ const CreateTaskModal = ({ visible, onCancel, onSubmit, candidate, authState }) 
               <Input placeholder="Enter Task Name" />
             </Form.Item>
           </div>
+
           <div className="col-md-6">
             <Form.Item
-              name="taskFile"
-              label="Task File"
-              valuePropName="fileList"
-              getValueFromEvent={(e) => {
-                if (Array.isArray(e)) {
-                  return e;
-                }
-                return e?.fileList || [];
-              }}
+            name="taskFile"
+            label="Task File"
+            valuePropName="fileList"
+            getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList || [])}
             >
               <Upload
-                maxCount={1}
-                fileList={fileList}
-                onChange={({ fileList }) => setFileList(fileList)}
-                beforeUpload={(file) => {
-                  const isValid = validateFile(file);
-                  if (!isValid) {
-                    return false;
-                  }
-                  return false; // Return false to prevent auto upload
-                }}
+              maxCount={1}
+              fileList={fileList}
+              onChange={({ fileList }) => setFileList(fileList)}
+              beforeUpload={(file) => {
+                if (!validateFile(file)) {
+                  return false;
+                }
+                return false; // Prevent auto upload
+              }}
+              showUploadList={false} // Hide default Ant Design file list
               >
-                <div className="upload-box">
-                  <span className="choose-text">Choose File</span>
-                  {fileList[0]?.name && <span className="file-name">{fileList[0].name}</span>}
+                <div className="custom-upload">
+                  <button type="button" className="upload-button">Choose File</button>
+                  <input
+                  type="text"
+                  value={fileList[0]?.name || ""}
+                  placeholder="No file chosen"
+                  readOnly
+                  className="file-input"
+                  />
                 </div>
               </Upload>
             </Form.Item>
@@ -222,6 +218,7 @@ const CreateTaskModal = ({ visible, onCancel, onSubmit, candidate, authState }) 
                 style={{ width: '100%' }} 
                 placeholder="Select Date"
                 format="DD-MM-YYYY"
+                className='custom-datepicker'
               />
             </Form.Item>
           </div>
@@ -256,7 +253,7 @@ const CreateTaskModal = ({ visible, onCancel, onSubmit, candidate, authState }) 
           </div>
         </div>
 
-        <Form.Item
+        {/* <Form.Item
           name="interviewLink"
           label={<>Interview Link <span className="text-danger">*</span></>}
           rules={[{ required: true, message: 'Please enter interview link' }]}
@@ -265,13 +262,13 @@ const CreateTaskModal = ({ visible, onCancel, onSubmit, candidate, authState }) 
             placeholder="Enter Description"
             autoSize={{ minRows: 4, maxRows: 6 }}
           />
-        </Form.Item>
+        </Form.Item> */}
 
-        <div className="text-end mt-4">
+        <div className="text-end mt-4 pt-2 pb-4">
           <Button 
             onClick={handleCancel}
             style={{ 
-              marginRight: 12,
+              marginRight: '12px',
               padding: '6px 24px',
               height: '40px',
               borderRadius: '20px',
@@ -297,74 +294,104 @@ const CreateTaskModal = ({ visible, onCancel, onSubmit, candidate, authState }) 
         </div>
       </Form>
 
-      <style jsx>{`
-        .task-modal .ant-modal-header {
+      <style jsx global>{`
+        .custom-modal .ant-modal-header {
           border-bottom: none;
           padding: 24px 24px 0;
         }
-        
-        .task-modal .ant-modal-title {
+        .custom-modal .ant-modal-title {
           font-size: 24px;
           font-weight: 600;
         }
-        
-        .task-modal .ant-form-item-label > label {
-          font-weight: 500;
-        }
-        
-        .task-modal .ant-input,
-        .task-modal .ant-select-selector,
-        .task-modal .ant-picker {
-          border-radius: 8px;
-          padding: 8px 12px;
-          height: 40px;
-        }
-        
-        .task-modal .ant-select-selection-placeholder,
-        .task-modal .ant-input::placeholder {
-          color: #6C757D;
-        }
-        
-        .upload-box {
-          border: 1px dashed #d9d9d9;
-          border-radius: 8px;
-          padding: 8px 12px;
-          height: 40px;
+        .custom-modal .ant-modal-close {
+          background-color: #F8F9FA;
+          border-radius: 50%;
+          border:"1px solid #F8F9FA";
+          margin:16px 16px 0 0;
+          width: 32px;
+          height: 32px;
           display: flex;
           align-items: center;
+          justify-content: center;
+        }
+
+        .custom-modal .ant-input,
+        .custom-modal .ant-select-selector,
+        .custom-modal .ant-input-number {
+          border-radius: 8px;
+          padding: 8px 12px;
+          height: 56px;
+          font-size: 16px;
+          font-weight: 450;
+        }
+        .custom-timepicker, .custom-datepicker{
+          border-radius: 8px;
+          padding: 8px 12px;
+          height: 56px;
+          font-size: 16px;
+          font-weight: 450;
+        }
+
+        .customized .ant-select-selector{
+        height: 56px !important;
+        border-radius: 8px !important;
+        display: flex;
+        align-items: center;
+        padding-left: 10px;
+        }
+
+        .custom-tag{
+        height: 35px !important;
+        display: flex;
+        align-items: center;
+        width: 110px !important;
+        }
+
+        .add-candidate-btn{
+          border-radius: 40px !important;
+          height: 44px !important;
+          background-color: #ff9244 !important;
+          color: white !important;
+          font-weight: 500 !important;
+          font-size: 16px !important;
+          border: 2px solid #ff9244 !important;
+          width: 185px !important;
+        }
+        
+        .btn-content{
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+
+        .custom-upload {
+          display: flex;
+          align-items: center;
+          border: 1px solid #ccc;
+          border-radius: 5px;
+          overflow: hidden;
+          height: 55px;
+          width: 364px;
+        }
+
+        .file-input {
+          flex-grow: 1;
+          padding: 8px;
+          border: none;
+          outline: none;
+          background: white;
+          height: 100%;
+        }
+
+        .upload-button {
+          padding: 8px 12px;
+          background: #f7f7f8;
+          color: #a5adb6;
+          border: none;
           cursor: pointer;
+          height: 100%;
         }
-        
-        .upload-box:hover {
-          border-color: #F4A261;
-        }
-        
-        .choose-text {
-          color: #6C757D;
-        }
-        
-        .file-name {
-          margin-left: 12px;
-          color: #333;
-        }
-        
-        .ant-upload-list {
-          display: none;
-        }
-        
-        .customselect-height .ant-select-selection-search-input {
-          height: 32px !important;
-        }
-        
-        .custom-select .ant-select-selector {
-          height: 40px !important;
-          padding: 4px 11px !important;
-        }
-        
-        .custom-select .ant-select-selection-placeholder,
-        .custom-select .ant-select-selection-item {
-          line-height: 32px !important;
-        }
+
       `}</style>
     </Modal>
   );

@@ -5,6 +5,7 @@ import { LeftOutlined, UploadOutlined } from '@ant-design/icons';
 import { apiServices } from '../../Services/apiServices';
 import { useSelector } from 'react-redux';
 import moment from 'moment';
+import backBtn from '../../assets/iconsRecruitment/arrow-left.svg';
 
 const EditCandidate = () => {
   const { id } = useParams();
@@ -15,6 +16,7 @@ const EditCandidate = () => {
   const [resumeFile, setResumeFile] = useState(null);
   const [initialValues, setInitialValues] = useState(null);
   const authState = useSelector((state) => state.user.loginvalue);
+  const [fileList , setFileList] = useState([]);
 
   useEffect(() => {
     fetchCandidateDetails();
@@ -161,6 +163,7 @@ const EditCandidate = () => {
       if (response?.data?.status) {
         message.success('Candidate updated successfully');
         navigate(`/recruitment/candidates/${id}`);
+        setFileList([]);
       } else {
         // Handle specific error cases
         if (response?.data?.message === 'Email already exists') {
@@ -191,6 +194,8 @@ const EditCandidate = () => {
     }
   };
 
+
+
   if (loading) {
     return (
       <div className="content container-fluid">
@@ -201,7 +206,7 @@ const EditCandidate = () => {
               <ul className="breadcrumb">
                 <li className="breadcrumb-item"><Link to="/recruitment/dashboard">Dashboard</Link></li>
                 <li className="breadcrumb-item"><Link to="/recruitment/candidates">Candidates</Link></li>
-                <li className="breadcrumb-item active">Edit</li>
+                <li className="breadcrumb-item active">Edit Candidate</li>
               </ul>
             </div>
           </div>
@@ -224,14 +229,9 @@ const EditCandidate = () => {
               <li className="breadcrumb-item"><Link to="/recruitment/candidates">Candidates</Link></li>
               <li className="breadcrumb-item active">Edit</li>
             </ul>
-          </div>
-          <div className="col-auto float-end ms-auto">
-            <Button
-              onClick={() => navigate(`/recruitment/candidates/${id}`)}
-              icon={<LeftOutlined />}
-            >
-              Back to Details
-            </Button>
+            {/* <div style={{height:'20px' , width:"20px"}} onClick={()=>{navigate(`/recruitment/candidates/${id}`)}}>
+              <img src={backBtn} style={{height:"100%" ,width:"100%"}}></img>
+            </div> */}
           </div>
         </div>
       </div>
@@ -245,7 +245,43 @@ const EditCandidate = () => {
               onFinish={handleSubmit}
               initialValues={initialValues}
             >
-              <div className="upload-resume mb-4">
+            <div className="upload-resume mb-4">
+              <p>
+                If you have a resume, upload the resume first. We will automatically
+                pickup all the details.
+              </p>
+              <Upload
+                name="resume"
+                maxCount={1}
+                beforeUpload={(file) => {
+                  // Validate file size (5MB)
+                  if (file.size > 5 * 1024 * 1024) {
+                    message.error('Resume file size should not exceed 5MB');
+                    return false;
+                  }
+                  
+                  // Validate file type
+                  const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+                  if (!allowedTypes.includes(file.type)) {
+                    message.error('Only PDF, DOC, and DOCX files are allowed');
+                    return false;
+                  }
+
+                setResumeFile(file);
+                return false;
+                }}
+                onRemove={() => {
+                setResumeFile(null);
+                setFileList([]);
+                return true;
+                }}
+              >
+                <Button className='resume-upload-btn' disabled={fileList.length > 0}>
+                  Upload Resume
+                </Button>
+              </Upload>
+            </div>
+              {/* <div className="upload-resume mb-4">
                 <p>Current Resume: {initialValues?.resume ? <a href={initialValues.resume} target="_blank" rel="noopener noreferrer">View Resume</a> : 'No resume uploaded'}</p>
                 <Upload
                   beforeUpload={(file) => {
@@ -269,7 +305,7 @@ const EditCandidate = () => {
                 >
                   <Button icon={<UploadOutlined />}>Upload New Resume</Button>
                 </Upload>
-              </div>
+              </div> */}
 
               <div className="row">
                 <div className="col-md-6">
@@ -373,7 +409,7 @@ const EditCandidate = () => {
                     label={<>Application Status <span className="text-danger">*</span></>}
                     rules={[{ required: true, message: 'Please select status' }]}
                   >
-                    <Select placeholder="Select Status">
+                    <Select className="customized" placeholder="Select Status">
                       <Select.Option value="NEW">New</Select.Option>
                       <Select.Option value="SCREENING">Screening</Select.Option>
                       <Select.Option value="SHORTLISTED">Shortlisted</Select.Option>
@@ -508,7 +544,7 @@ const EditCandidate = () => {
                     label={<>Notice Period <span className="text-danger">*</span></>}
                     rules={[{ required: true, message: 'Please select notice period' }]}
                   >
-                    <Select placeholder="Select Notice Period">
+                    <Select className='customized' placeholder="Select Notice Period">
                       <Select.Option value="IMMEDIATE">Immediate</Select.Option>
                       <Select.Option value="15_DAYS">15 Days</Select.Option>
                       <Select.Option value="30_DAYS">30 Days</Select.Option>
@@ -523,7 +559,7 @@ const EditCandidate = () => {
                     label={<>Source <span className="text-danger">*</span></>}
                     rules={[{ required: true, message: 'Please select source' }]}
                   >
-                    <Select placeholder="Select source">
+                    <Select className='customized' placeholder="Select source">
                       <Select.Option value="LINKEDIN">LinkedIn</Select.Option>
                       <Select.Option value="WEBSITE">Website</Select.Option>
                       <Select.Option value="REFERRAL">Referral</Select.Option>
@@ -572,26 +608,46 @@ const EditCandidate = () => {
           font-weight: 500;
         }
         .ant-input,
-        .ant-select-selector,
-        .ant-picker {
+        .ant-picker,
+        .ant-input-number {
           border-radius: 8px;
           padding: 8px 12px;
-          height: 40px;
+          height: 56px;
+          font-size: 16px;
+          font-weight: 450;
         }
+
         .ant-select-selection-placeholder,
         .ant-input::placeholder {
           color: #6C757D;
         }
+
         .upload-resume {
-          background: #F8F9FA;
           padding: 16px;
-          border-radius: 8px;
+          padding-left: 3px;
+          border-top: 1px solid #eef0f1;
+          border-bottom: 1px solid #eef0f1;
         }
         .upload-resume p {
           margin-bottom: 12px;
         }
+
+        .resume-upload-btn{
+          border: 1px solid #ff9244;
+          border-radius: 40px;
+          color: #ff9244;
+        }
+
         .ant-card {
           box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .customized .ant-select-selector{
+        height: 56px !important;
+        border-radius: 8px !important;
+        display: flex;
+        align-items: center;
+        padding-left: 10px;
         }
       `}</style>
     </div>

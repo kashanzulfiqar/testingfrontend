@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import {
   Card,
-  Row,
-  Col,
+  Menu,
+  Dropdown,
   Button,
   Spin,
   message,
@@ -12,29 +12,15 @@ import {
   Tabs,
   Select,
   Space,
-  Avatar,
-  Tooltip,
-  Rate,
   Collapse,
-  Empty,
   Modal,
   Form,
   Input,
-  DatePicker,
-  Upload,
 } from "antd";
 import {
-  MailOutlined,
-  PhoneOutlined,
-  EnvironmentOutlined,
-  CalendarOutlined,
-  PlusOutlined,
-  ArrowLeftOutlined,
   FilePdfOutlined,
   FileWordOutlined,
-  EyeOutlined,
   DownloadOutlined,
-  InboxOutlined,
 } from "@ant-design/icons";
 import { apiServices } from "../../Services/apiServices";
 import { useSelector } from "react-redux";
@@ -52,6 +38,25 @@ import timeline from '../../assets/iconsRecruitment/Timeline.svg';
 import files from '../../assets/iconsRecruitment/description.svg';
 import interviewIcon from '../../assets/iconsRecruitment/interview.svg';
 import star from '../../assets/iconsRecruitment/star.svg';
+import colored from '../../assets/iconsRecruitment/Colored.svg';
+import cloudUpload from '../../assets/iconsRecruitment/cloud.svg';
+import EditIcon from '../../assets/iconsRecruitment/editIcon.svg';
+import DeleteIcon from '../../assets/iconsRecruitment/deleteIcon.svg';
+import NoInterview from '../../assets/iconsRecruitment/NoInterviewIcon.svg';
+import InterviewFeedbackDisplay from './InterviewFeedbackDisplay';
+import LayersIcon from '../../assets/iconsRecruitment/layersIcon.svg';
+import  newEditIcon from '../../assets/iconsRecruitment/newEditIcon.svg';
+import  newCalanderIcon from '../../assets/iconsRecruitment/newCalanderIcon.svg';
+import  blacklistIcon from '../../assets/iconsRecruitment/BlacklistIcon.svg';
+import taskIcon from '../../assets/iconsRecruitment/taskIcon.svg';
+
+
+
+
+
+
+
+
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
@@ -77,6 +82,17 @@ const CandidateDetails = () => {
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [isReasonModalVisible, setIsReasonModalVisible] = useState(false);
   const [filter ,setfilter] =useState('history');
+  const [file, setFile] = useState(null);
+  const [dragging ,setDragging] = useState(false);
+  const [resume, setResume] = useState([]); 
+  const [openModalIndex, setOpenModalIndex] = useState(null);
+  const [editingIndex ,setEditingIndex] = useState(null);
+  const [tempName ,setTempName] = useState('');
+  const fileInputRef = useRef(null);
+  const [viewMore ,setViewMore] = useState(false);
+
+
+  
 
   useEffect(() => {
     console.log('isOfferModalVisible changed:', isOfferModalVisible);
@@ -92,6 +108,7 @@ const CandidateDetails = () => {
 
   useEffect(() => {
     if (id && activeTab === "interview") {
+      console.log('Hello' )
       fetchCandidateInterviews();
     }
   }, [id, activeTab]);
@@ -162,6 +179,45 @@ const CandidateDetails = () => {
     }
   };
 
+  const handleUpload = async () => {
+    if (!file) {
+      message.error("No file selected");
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      message.error("Authentication required");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("resume", file);
+
+    try {
+      const response = await apiServices("POST", `candidate/${id}/uploadResume`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      if (response?.data?.status) {
+        message.success("Resume uploaded successfully");
+        // Optionally refresh candidate details
+      } else {
+        console.error("Upload failed:", response?.data);
+        message.error(response?.data?.message || "Failed to upload resume");
+      }
+    } catch (error) {
+      console.error("Error uploading resume:", error);
+      message.error("Error uploading resume");
+    }
+  };
+
+
+
   const getFileIcon = (fileUrl) => {
     if (!fileUrl) return <FilePdfOutlined />;
     const extension = fileUrl.split(".").pop().toLowerCase();
@@ -188,13 +244,43 @@ const CandidateDetails = () => {
     return parts[parts.length - 1];
   };
 
+
+  const handleDrop = (event) => {
+    event.preventDefault();
+    setDragging(false);
+    const droppedFiles = Array.from(event.dataTransfer.files);
+    if (droppedFiles.length > 0) {
+      setResume((prevFiles) => [...prevFiles, ...droppedFiles]);
+      console.log("Files dropped:", droppedFiles);
+    }
+  };
+
+    const handleDragOver = (event) => {
+    event.preventDefault();
+    setDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setDragging(false);
+  };
+
+  const handleFileChange = (event) => {
+    const selectedFiles = Array.from(event.target.files);
+    if (selectedFiles.length > 0) {
+      setResume((prevFiles) => [...prevFiles, ...selectedFiles]);
+      console.log("Files selected:", selectedFiles);
+    }
+    event.target.value = '';
+  };
+
+
+
   const handlePreviewResume = () => {
     if (!candidate?.resume) {
       message.error("No resume available for preview");
       return;
     }
 
-    // Open resume in new tab
     window.open(candidate.resume, "_blank");
   };
 
@@ -210,23 +296,34 @@ const CandidateDetails = () => {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = getFileName(candidate.resume);
+      link.download = candidate.resume.split("/").pop();
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error("Error downloading resume:", error);
       message.error("Failed to download resume");
     }
   };
 
-  // Helper function to check if resume URL is valid
-  const isValidResumeUrl = (resume) => {
-    console.log("Checking resume URL:", resume);
-    // Check if resume exists and is not empty
-    return Boolean(resume && resume.length > 0);
+  const startEditing = (index, name)=>{
+    setEditingIndex(index);
+    setTempName(name);
+  }
+
+  const saveRename = (index)=>{
+    setResume((prev)=>prev.map((file,i)=>
+       (i === index) ? {...file , name : tempName} : file
+    ))
+    setEditingIndex(null);
   };
+
+  const handleViewMore = (id)=>{
+    setViewMore(viewMore === id ? null : id);
+  }
+
+
+
 
   const handleStatusChange = async (newStatus) => {
     if (newStatus === 'BLACKLISTED') {
@@ -802,405 +899,405 @@ const CandidateDetails = () => {
     }
   };
 
-  const renderInterviewContent = () => {
-    if (loadingInterviews) {
-      return (
-        <div style={{ textAlign: "center", padding: "20px" }}>
-          <Spin />
-        </div>
-      );
-    }
+  // const renderInterviewContent = () => {
+  //   if (loadingInterviews) {
+  //     return (
+  //       <div style={{ textAlign: "center", padding: "20px" }}>
+  //         <Spin />
+  //       </div>
+  //     );
+  //   }
 
-    return (
-      <div className="interview-content">
-        <div style={{ position: "absolute", top: "16px", right: "24px" }}>
-          <Button
-            type="text"
-            style={{ color: "#ff9b44" }}
-            icon={<CalendarOutlined />}
-            onClick={handleCreateInterview}
-          >
-            Create Interview
-          </Button>
-        </div>
+  //   return (
+  //     <div className="interview-content">
+  //       <div style={{ position: "absolute", top: "16px", right: "24px" }}>
+  //         <Button
+  //           type="text"
+  //           style={{ color: "#ff9b44" }}
+  //           icon={<CalendarOutlined />}
+  //           onClick={handleCreateInterview}
+  //         >
+  //           Create Interview
+  //         </Button>
+  //       </div>
 
-        <div style={{ marginTop: "60px" }}>
-          {interviews.length > 0 ? (
-            <div>
-              {interviews.map((interview) => (
-                <Card
-                  key={interview._id}
-                  style={{ marginBottom: "16px" }}
-                  className="interview-card"
-                >
-                  <Row gutter={16}>
-                    <Col span={16}>
-                      <h4 className="interview-title">
-                        {interview.interviewTitle || "Untitled Interview"}
-                      </h4>
-                      <Space
-                        direction="vertical"
-                        size="small"
-                        style={{ width: "100%" }}
-                      >
-                        <div>
-                          <Text type="secondary">Interview With:</Text>{" "}
-                          <Text strong>
-                            {interview.interviewerId?.fullName}
-                          </Text>
-                        </div>
-                        <div>
-                          <Text type="secondary">Date & Time:</Text>{" "}
-                          <Text>
-                            {moment(interview.interviewDate).format(
-                              "DD MMM YYYY"
-                            )}{" "}
-                            at {interview.interviewTime}
-                          </Text>
-                        </div>
-                        <div>
-                          <Text type="secondary">Type:</Text>{" "}
-                          <Text>
-                            {interview.interviewType === "ONLINE"
-                              ? "Online"
-                              : "In Person"}
-                          </Text>
-                        </div>
-                        {interview.interviewType === "ONLINE" &&
-                          interview.interviewLink && (
-                            <div>
-                              <Text type="secondary">Meeting Link:</Text>{" "}
-                              <Button
-                                type="link"
-                                href={interview.interviewLink}
-                                target="_blank"
-                                style={{ padding: 0 }}
-                              >
-                                Join Meeting
-                              </Button>
-                            </div>
-                          )}
-                      </Space>
-                    </Col>
-                    <Col span={8} style={{ textAlign: "right" }}>
-                      <Select
-                        value={interview.status}
-                        style={{ width: 120 }}
-                        onChange={(value) =>
-                          updateInterviewStatus(interview._id, value)
-                        }
-                        className={`status-${interview.status?.toLowerCase()}`}
-                      >
-                        <Select.Option value="scheduled">
-                          Scheduled
-                        </Select.Option>
-                        <Select.Option value="completed">
-                          Completed
-                        </Select.Option>
-                        <Select.Option value="cancelled">
-                          Cancelled
-                        </Select.Option>
-                        <Select.Option value="rescheduled">
-                          Rescheduled
-                        </Select.Option>
-                      </Select>
-                    </Col>
-                  </Row>
+  //       <div style={{ marginTop: "60px" }}>
+  //         {interviews.length > 0 ? (
+  //           <div>
+  //             {interviews.map((interview) => (
+  //               <Card
+  //                 key={interview._id}
+  //                 style={{ marginBottom: "16px" }}
+  //                 className="interview-card"
+  //               >
+  //                 <Row gutter={16}>
+  //                   <Col span={16}>
+  //                     <h4 className="interview-title">
+  //                       {interview.interviewTitle || "Untitled Interview"}
+  //                     </h4>
+  //                     <Space
+  //                       direction="vertical"
+  //                       size="small"
+  //                       style={{ width: "100%" }}
+  //                     >
+  //                       <div>
+  //                         <Text type="secondary">Interview With:</Text>{" "}
+  //                         <Text strong>
+  //                           {interview.interviewerId?.fullName}
+  //                         </Text>
+  //                       </div>
+  //                       <div>
+  //                         <Text type="secondary">Date & Time:</Text>{" "}
+  //                         <Text>
+  //                           {moment(interview.interviewDate).format(
+  //                             "DD MMM YYYY"
+  //                           )}{" "}
+  //                           at {interview.interviewTime}
+  //                         </Text>
+  //                       </div>
+  //                       <div>
+  //                         <Text type="secondary">Type:</Text>{" "}
+  //                         <Text>
+  //                           {interview.interviewType === "ONLINE"
+  //                             ? "Online"
+  //                             : "In Person"}
+  //                         </Text>
+  //                       </div>
+  //                       {interview.interviewType === "ONLINE" &&
+  //                         interview.interviewLink && (
+  //                           <div>
+  //                             <Text type="secondary">Meeting Link:</Text>{" "}
+  //                             <Button
+  //                               type="link"
+  //                               href={interview.interviewLink}
+  //                               target="_blank"
+  //                               style={{ padding: 0 }}
+  //                             >
+  //                               Join Meeting
+  //                             </Button>
+  //                           </div>
+  //                         )}
+  //                     </Space>
+  //                   </Col>
+  //                   <Col span={8} style={{ textAlign: "right" }}>
+  //                     <Select
+  //                       value={interview.status}
+  //                       style={{ width: 120 }}
+  //                       onChange={(value) =>
+  //                         updateInterviewStatus(interview._id, value)
+  //                       }
+  //                       className={`status-${interview.status?.toLowerCase()}`}
+  //                     >
+  //                       <Select.Option value="scheduled">
+  //                         Scheduled
+  //                       </Select.Option>
+  //                       <Select.Option value="completed">
+  //                         Completed
+  //                       </Select.Option>
+  //                       <Select.Option value="cancelled">
+  //                         Cancelled
+  //                       </Select.Option>
+  //                       <Select.Option value="rescheduled">
+  //                         Rescheduled
+  //                       </Select.Option>
+  //                     </Select>
+  //                   </Col>
+  //                 </Row>
 
-                  {/* Additional Interviewers */}
-                  {interview.assignedTo?.length > 0 && (
-                    <div style={{ marginTop: "16px" }}>
-                      <Text type="secondary">Additional Interviewers:</Text>
-                      <div style={{ marginTop: "8px" }}>
-                        <Avatar.Group maxCount={3}>
-                          {interview.assignedTo?.map((interviewer) => (
-                            <Tooltip
-                              key={interviewer._id}
-                              title={interviewer.fullName}
-                            >
-                              <Avatar src={interviewer.imageUrl}>
-                                {interviewer.fullName
-                                  ?.split(" ")
-                                  .map((n) => n[0])
-                                  .join("")}
-                              </Avatar>
-                            </Tooltip>
-                          ))}
-                        </Avatar.Group>
-                      </div>
-                    </div>
-                  )}
+  //                 {/* Additional Interviewers */}
+  //                 {interview.assignedTo?.length > 0 && (
+  //                   <div style={{ marginTop: "16px" }}>
+  //                     <Text type="secondary">Additional Interviewers:</Text>
+  //                     <div style={{ marginTop: "8px" }}>
+  //                       <Avatar.Group maxCount={3}>
+  //                         {interview.assignedTo?.map((interviewer) => (
+  //                           <Tooltip
+  //                             key={interviewer._id}
+  //                             title={interviewer.fullName}
+  //                           >
+  //                             <Avatar src={interviewer.imageUrl}>
+  //                               {interviewer.fullName
+  //                                 ?.split(" ")
+  //                                 .map((n) => n[0])
+  //                                 .join("")}
+  //                             </Avatar>
+  //                           </Tooltip>
+  //                         ))}
+  //                       </Avatar.Group>
+  //                     </div>
+  //                   </div>
+  //                 )}
 
-                  {/* Latest Feedback Section */}
-                  {interview.latestFeedback && (
-                    <div
-                      style={{
-                        marginTop: "16px",
-                        borderTop: "1px solid #f0f0f0",
-                        paddingTop: "16px",
-                      }}
-                    >
-                      <div className="d-flex justify-content-between align-items-center mb-3">
-                        <Text strong>Latest Feedback</Text>
-                        <Tag
-                          color={
-                            interview.latestFeedback.recommendation ===
-                            "Strong Yes"
-                              ? "green"
-                              : interview.latestFeedback.recommendation ===
-                                "Yes"
-                              ? "cyan"
-                              : interview.latestFeedback.recommendation === "No"
-                              ? "orange"
-                              : "red"
-                          }
-                        >
-                          {interview.latestFeedback.recommendation}
-                        </Tag>
-                      </div>
-                      <Card size="small">
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            marginBottom: "12px",
-                          }}
-                        >
-                          <Avatar
-                            src={interview.latestFeedback.submittedBy?.imageUrl}
-                            style={{ marginRight: "8px" }}
-                          >
-                            {interview.latestFeedback.submittedBy?.fullName
-                              ?.split(" ")
-                              .map((n) => n[0])
-                              .join("")}
-                          </Avatar>
-                          <div>
-                            <Text strong>
-                              {interview.latestFeedback.submittedBy?.fullName}
-                            </Text>
-                            <br />
-                            <Text type="secondary">
-                              {moment(
-                                interview.latestFeedback.createdAt
-                              ).format("DD MMM YYYY")}
-                            </Text>
-                          </div>
-                        </div>
-                        <Row gutter={[16, 16]}>
-                          <Col span={8}>
-                            <Text type="secondary">
-                              Technical Skills (Programming):
-                            </Text>
-                            <div>
-                              <Rate
-                                disabled
-                                defaultValue={
-                                  interview.latestFeedback.ratings
-                                    .technicalSkills1
-                                }
-                              />
-                            </div>
-                          </Col>
-                          <Col span={8}>
-                            <Text type="secondary">
-                              Technical Skills (System Design):
-                            </Text>
-                            <div>
-                              <Rate
-                                disabled
-                                defaultValue={
-                                  interview.latestFeedback.ratings
-                                    .technicalSkills2
-                                }
-                              />
-                            </div>
-                          </Col>
-                          <Col span={8}>
-                            <Text type="secondary">
-                              Technical Skills (Problem Solving):
-                            </Text>
-                            <div>
-                              <Rate
-                                disabled
-                                defaultValue={
-                                  interview.latestFeedback.ratings
-                                    .technicalSkills3
-                                }
-                              />
-                            </div>
-                          </Col>
-                        </Row>
-                        <Row gutter={[16, 16]} style={{ marginTop: "8px" }}>
-                          <Col span={8}>
-                            <Text type="secondary">Behavior:</Text>
-                            <div>
-                              <Rate
-                                disabled
-                                defaultValue={
-                                  interview.latestFeedback.ratings.behavior
-                                }
-                              />
-                            </div>
-                          </Col>
-                          <Col span={8}>
-                            <Text type="secondary">Soft Skills:</Text>
-                            <div>
-                              <Rate
-                                disabled
-                                defaultValue={
-                                  interview.latestFeedback.ratings.softSkills
-                                }
-                              />
-                            </div>
-                          </Col>
-                        </Row>
-                      </Card>
-                    </div>
-                  )}
+  //                 {/* Latest Feedback Section */}
+  //                 {interview.latestFeedback && (
+  //                   <div
+  //                     style={{
+  //                       marginTop: "16px",
+  //                       borderTop: "1px solid #f0f0f0",
+  //                       paddingTop: "16px",
+  //                     }}
+  //                   >
+  //                     <div className="d-flex justify-content-between align-items-center mb-3">
+  //                       <Text strong>Latest Feedback</Text>
+  //                       <Tag
+  //                         color={
+  //                           interview.latestFeedback.recommendation ===
+  //                           "Strong Yes"
+  //                             ? "green"
+  //                             : interview.latestFeedback.recommendation ===
+  //                               "Yes"
+  //                             ? "cyan"
+  //                             : interview.latestFeedback.recommendation === "No"
+  //                             ? "orange"
+  //                             : "red"
+  //                         }
+  //                       >
+  //                         {interview.latestFeedback.recommendation}
+  //                       </Tag>
+  //                     </div>
+  //                     <Card size="small">
+  //                       <div
+  //                         style={{
+  //                           display: "flex",
+  //                           alignItems: "center",
+  //                           marginBottom: "12px",
+  //                         }}
+  //                       >
+  //                         <Avatar
+  //                           src={interview.latestFeedback.submittedBy?.imageUrl}
+  //                           style={{ marginRight: "8px" }}
+  //                         >
+  //                           {interview.latestFeedback.submittedBy?.fullName
+  //                             ?.split(" ")
+  //                             .map((n) => n[0])
+  //                             .join("")}
+  //                         </Avatar>
+  //                         <div>
+  //                           <Text strong>
+  //                             {interview.latestFeedback.submittedBy?.fullName}
+  //                           </Text>
+  //                           <br />
+  //                           <Text type="secondary">
+  //                             {moment(
+  //                               interview.latestFeedback.createdAt
+  //                             ).format("DD MMM YYYY")}
+  //                           </Text>
+  //                         </div>
+  //                       </div>
+  //                       <Row gutter={[16, 16]}>
+  //                         <Col span={8}>
+  //                           <Text type="secondary">
+  //                             Technical Skills (Programming):
+  //                           </Text>
+  //                           <div>
+  //                             <Rate
+  //                               disabled
+  //                               defaultValue={
+  //                                 interview.latestFeedback.ratings
+  //                                   .technicalSkills1
+  //                               }
+  //                             />
+  //                           </div>
+  //                         </Col>
+  //                         <Col span={8}>
+  //                           <Text type="secondary">
+  //                             Technical Skills (System Design):
+  //                           </Text>
+  //                           <div>
+  //                             <Rate
+  //                               disabled
+  //                               defaultValue={
+  //                                 interview.latestFeedback.ratings
+  //                                   .technicalSkills2
+  //                               }
+  //                             />
+  //                           </div>
+  //                         </Col>
+  //                         <Col span={8}>
+  //                           <Text type="secondary">
+  //                             Technical Skills (Problem Solving):
+  //                           </Text>
+  //                           <div>
+  //                             <Rate
+  //                               disabled
+  //                               defaultValue={
+  //                                 interview.latestFeedback.ratings
+  //                                   .technicalSkills3
+  //                               }
+  //                             />
+  //                           </div>
+  //                         </Col>
+  //                       </Row>
+  //                       <Row gutter={[16, 16]} style={{ marginTop: "8px" }}>
+  //                         <Col span={8}>
+  //                           <Text type="secondary">Behavior:</Text>
+  //                           <div>
+  //                             <Rate
+  //                               disabled
+  //                               defaultValue={
+  //                                 interview.latestFeedback.ratings.behavior
+  //                               }
+  //                             />
+  //                           </div>
+  //                         </Col>
+  //                         <Col span={8}>
+  //                           <Text type="secondary">Soft Skills:</Text>
+  //                           <div>
+  //                             <Rate
+  //                               disabled
+  //                               defaultValue={
+  //                                 interview.latestFeedback.ratings.softSkills
+  //                               }
+  //                             />
+  //                           </div>
+  //                         </Col>
+  //                       </Row>
+  //                     </Card>
+  //                   </div>
+  //                 )}
 
-                  {/* All Feedback Section */}
-                  {interview.feedback && interview.feedback.length > 1 && (
-                    <div style={{ marginTop: "16px" }}>
-                      <Collapse ghost>
-                        <Collapse.Panel
-                          header={`View All Feedback (${interview.feedback.length})`}
-                          key="1"
-                        >
-                          {interview.feedback
-                            .slice(1)
-                            .map((feedback, index) => (
-                              <Card
-                                key={index}
-                                size="small"
-                                style={{ marginTop: "8px" }}
-                              >
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    marginBottom: "8px",
-                                  }}
-                                >
-                                  <Avatar
-                                    src={feedback.submittedBy?.imageUrl}
-                                    style={{ marginRight: "8px" }}
-                                  >
-                                    {feedback.submittedBy?.fullName
-                                      ?.split(" ")
-                                      .map((n) => n[0])
-                                      .join("")}
-                                  </Avatar>
-                                  <div>
-                                    <Text strong>
-                                      {feedback.submittedBy?.fullName}
-                                    </Text>
-                                    <br />
-                                    <Text type="secondary">
-                                      {moment(feedback.createdAt).format(
-                                        "DD MMM YYYY"
-                                      )}
-                                    </Text>
-                                  </div>
-                                  <Tag
-                                    color={
-                                      feedback.recommendation === "Strong Yes"
-                                        ? "green"
-                                        : feedback.recommendation === "Yes"
-                                        ? "cyan"
-                                        : feedback.recommendation === "No"
-                                        ? "orange"
-                                        : "red"
-                                    }
-                                    style={{ marginLeft: "auto" }}
-                                  >
-                                    {feedback.recommendation}
-                                  </Tag>
-                                </div>
-                                <Row gutter={[16, 16]}>
-                                  <Col span={8}>
-                                    <Text type="secondary">
-                                      Technical Skills (Programming):
-                                    </Text>
-                                    <div>
-                                      <Rate
-                                        disabled
-                                        defaultValue={
-                                          feedback.ratings.technicalSkills1
-                                        }
-                                      />
-                                    </div>
-                                  </Col>
-                                  <Col span={8}>
-                                    <Text type="secondary">
-                                      Technical Skills (System Design):
-                                    </Text>
-                                    <div>
-                                      <Rate
-                                        disabled
-                                        defaultValue={
-                                          feedback.ratings.technicalSkills2
-                                        }
-                                      />
-                                    </div>
-                                  </Col>
-                                  <Col span={8}>
-                                    <Text type="secondary">
-                                      Technical Skills (Problem Solving):
-                                    </Text>
-                                    <div>
-                                      <Rate
-                                        disabled
-                                        defaultValue={
-                                          feedback.ratings.technicalSkills3
-                                        }
-                                      />
-                                    </div>
-                                  </Col>
-                                </Row>
-                                <Row
-                                  gutter={[16, 16]}
-                                  style={{ marginTop: "8px" }}
-                                >
-                                  <Col span={8}>
-                                    <Text type="secondary">Behavior:</Text>
-                                    <div>
-                                      <Rate
-                                        disabled
-                                        defaultValue={feedback.ratings.behavior}
-                                      />
-                                    </div>
-                                  </Col>
-                                  <Col span={8}>
-                                    <Text type="secondary">Soft Skills:</Text>
-                                    <div>
-                                      <Rate
-                                        disabled
-                                        defaultValue={
-                                          feedback.ratings.softSkills
-                                        }
-                                      />
-                                    </div>
-                                  </Col>
-                                </Row>
-                              </Card>
-                            ))}
-                        </Collapse.Panel>
-                      </Collapse>
-                    </div>
-                  )}
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <div style={{ textAlign: "center" }}>
-              <Text type="secondary">No interviews scheduled</Text>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
+  //                 {/* All Feedback Section */}
+  //                 {interview.feedback && interview.feedback.length > 1 && (
+  //                   <div style={{ marginTop: "16px" }}>
+  //                     <Collapse ghost>
+  //                       <Collapse.Panel
+  //                         header={`View All Feedback (${interview.feedback.length})`}
+  //                         key="1"
+  //                       >
+  //                         {interview.feedback
+  //                           .slice(1)
+  //                           .map((feedback, index) => (
+  //                             <Card
+  //                               key={index}
+  //                               size="small"
+  //                               style={{ marginTop: "8px" }}
+  //                             >
+  //                               <div
+  //                                 style={{
+  //                                   display: "flex",
+  //                                   alignItems: "center",
+  //                                   marginBottom: "8px",
+  //                                 }}
+  //                               >
+  //                                 <Avatar
+  //                                   src={feedback.submittedBy?.imageUrl}
+  //                                   style={{ marginRight: "8px" }}
+  //                                 >
+  //                                   {feedback.submittedBy?.fullName
+  //                                     ?.split(" ")
+  //                                     .map((n) => n[0])
+  //                                     .join("")}
+  //                                 </Avatar>
+  //                                 <div>
+  //                                   <Text strong>
+  //                                     {feedback.submittedBy?.fullName}
+  //                                   </Text>
+  //                                   <br />
+  //                                   <Text type="secondary">
+  //                                     {moment(feedback.createdAt).format(
+  //                                       "DD MMM YYYY"
+  //                                     )}
+  //                                   </Text>
+  //                                 </div>
+  //                                 <Tag
+  //                                   color={
+  //                                     feedback.recommendation === "Strong Yes"
+  //                                       ? "green"
+  //                                       : feedback.recommendation === "Yes"
+  //                                       ? "cyan"
+  //                                       : feedback.recommendation === "No"
+  //                                       ? "orange"
+  //                                       : "red"
+  //                                   }
+  //                                   style={{ marginLeft: "auto" }}
+  //                                 >
+  //                                   {feedback.recommendation}
+  //                                 </Tag>
+  //                               </div>
+  //                               <Row gutter={[16, 16]}>
+  //                                 <Col span={8}>
+  //                                   <Text type="secondary">
+  //                                     Technical Skills (Programming):
+  //                                   </Text>
+  //                                   <div>
+  //                                     <Rate
+  //                                       disabled
+  //                                       defaultValue={
+  //                                         feedback.ratings.technicalSkills1
+  //                                       }
+  //                                     />
+  //                                   </div>
+  //                                 </Col>
+  //                                 <Col span={8}>
+  //                                   <Text type="secondary">
+  //                                     Technical Skills (System Design):
+  //                                   </Text>
+  //                                   <div>
+  //                                     <Rate
+  //                                       disabled
+  //                                       defaultValue={
+  //                                         feedback.ratings.technicalSkills2
+  //                                       }
+  //                                     />
+  //                                   </div>
+  //                                 </Col>
+  //                                 <Col span={8}>
+  //                                   <Text type="secondary">
+  //                                     Technical Skills (Problem Solving):
+  //                                   </Text>
+  //                                   <div>
+  //                                     <Rate
+  //                                       disabled
+  //                                       defaultValue={
+  //                                         feedback.ratings.technicalSkills3
+  //                                       }
+  //                                     />
+  //                                   </div>
+  //                                 </Col>
+  //                               </Row>
+  //                               <Row
+  //                                 gutter={[16, 16]}
+  //                                 style={{ marginTop: "8px" }}
+  //                               >
+  //                                 <Col span={8}>
+  //                                   <Text type="secondary">Behavior:</Text>
+  //                                   <div>
+  //                                     <Rate
+  //                                       disabled
+  //                                       defaultValue={feedback.ratings.behavior}
+  //                                     />
+  //                                   </div>
+  //                                 </Col>
+  //                                 <Col span={8}>
+  //                                   <Text type="secondary">Soft Skills:</Text>
+  //                                   <div>
+  //                                     <Rate
+  //                                       disabled
+  //                                       defaultValue={
+  //                                         feedback.ratings.softSkills
+  //                                       }
+  //                                     />
+  //                                   </div>
+  //                                 </Col>
+  //                               </Row>
+  //                             </Card>
+  //                           ))}
+  //                       </Collapse.Panel>
+  //                     </Collapse>
+  //                   </div>
+  //                 )}
+  //               </Card>
+  //             ))}
+  //           </div>
+  //         ) : (
+  //           <div style={{ textAlign: "center" }}>
+  //             <Text type="secondary">No interviews scheduled</Text>
+  //           </div>
+  //         )}
+  //       </div>
+  //     </div>
+  //   );
+  // };
 
   const updateTaskStatus = async (taskId, newStatus) => {
     try {
@@ -1268,234 +1365,249 @@ const CandidateDetails = () => {
 
   const handleActiveTab =(key)=>{
     setActiveTab(key);
+
   }
 
-  const renderTaskContent = () => {
-    if (loadingTasks) {
-      return (
-        <div style={{ textAlign: "center", padding: "20px" }}>
-          <Spin />
-        </div>
+  const handleDeleteCandidate = async (candidateId) => {
+    const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
+    
+    try {
+      setLoading(true);
+      const response = await apiServices(
+        "DELETE", 
+        `candidate/${candidateId}`,
+        null, 
+        {
+          access_token: {
+            accessToken: token
+          }
+        }
       );
+      if (response?.data?.status) {
+        message.success('Job deleted successfully');
+        fetchJobs();
+      } else {
+        message.error(response?.data?.message || 'Failed to delete job');
+      }
+    } catch (error) {
+      console.error('Delete job error:', error.response?.data || error.message);
+      handleApiError(error);
+    } finally {
+      setLoading(false);
     }
-
-    return (
-      <div className="task-content">
-        <div style={{ position: "absolute", top: "16px", right: "24px" }}>
-          <Button
-            type="text"
-            style={{ color: "#ff9b44" }}
-            icon={<PlusOutlined />}
-            onClick={handleCreateTask}
-          >
-            Create Task
-          </Button>
-        </div>
-
-        <div style={{ marginTop: "60px" }}>
-          {tasks.length > 0 ? (
-            tasks.map((task) => (
-              <Card
-                key={task._id}
-                style={{ marginBottom: "16px" }}
-                className="task-card"
-                onClick={() => navigate(`/recruitment/tasks/${task._id}`)}
-              >
-                <Row gutter={16}>
-                  <Col span={16}>
-                    <h4 className="task-title">{task.taskName}</h4>
-                    <Space direction="vertical" size="small" style={{ width: "100%" }}>
-                      <div>
-                        <Text type="secondary">Task Reviewers:</Text>{" "}
-                        <Avatar.Group maxCount={3}>
-                          {task.taskReviewers?.map((reviewer) => (
-                            <Tooltip key={reviewer._id} title={reviewer.fullName}>
-                              <Avatar src={reviewer.imageUrl}>
-                                {reviewer.fullName?.split(" ").map((n) => n[0]).join("")}
-                              </Avatar>
-                            </Tooltip>
-                          ))}
-                        </Avatar.Group>
-                      </div>
-                      <div>
-                        <Text type="secondary">Due Date:</Text>{" "}
-                        <Text>{moment(task.lastDateOfSubmission).format("DD MMM YYYY")}</Text>
-                      </div>
-                      <div>
-                        <Text type="secondary">Duration:</Text>{" "}
-                        <Text>{task.taskDuration} days</Text>
-                      </div>
-                      {task.feedback && task.feedback.length > 0 && (
-                        <div>
-                          <Text type="secondary">Latest Feedback:</Text>{" "}
-                          <Rate disabled defaultValue={task.feedback[0].rating} style={{ fontSize: 12 }} />
-                          <Tag color={task.feedback[0].decision === "PASS" ? "success" : "error"} style={{ marginLeft: 8 }}>
-                            {task.feedback[0].decision}
-                          </Tag>
-                        </div>
-                      )}
-                    </Space>
-                  </Col>
-                  <Col span={8} style={{ textAlign: "right" }}>
-                    <Select
-                      value={task.status}
-                      style={{ width: 120 }}
-                      onChange={(value) => {
-                        event.stopPropagation();
-                        updateTaskStatus(task._id, value);
-                      }}
-                      onClick={(event) => event.stopPropagation()}
-                      className={`status-${task.status?.toLowerCase()}`}
-                    >
-                      <Select.Option value="PENDING">Pending</Select.Option>
-                      <Select.Option value="SUBMITTED">Submitted</Select.Option>
-                      <Select.Option value="COMPLETED">Completed</Select.Option>
-                      <Select.Option value="CANCELLED">Cancelled</Select.Option>
-                    </Select>
-                  </Col>
-                </Row>
-                {task.feedback && task.feedback.length > 0 && (
-                  <div style={{ marginTop: "16px", borderTop: "1px solid #f0f0f0", paddingTop: "16px" }}>
-                    <Card size="small">
-                      <div style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
-                        <Avatar src={task.feedback[0].reviewerId?.imageUrl} style={{ marginRight: "8px" }}>
-                          {task.feedback[0].reviewerId?.fullName?.split(" ").map((n) => n[0]).join("")}
-                        </Avatar>
-                        <div>
-                          <Text strong>{task.feedback[0].reviewerId?.fullName}</Text>
-                          <br />
-                          <Text type="secondary">{moment(task.feedback[0].evaluationDate).format("DD MMM YYYY")}</Text>
-                        </div>
-                      </div>
-                      <div style={{ marginTop: "8px" }}>
-                        <Text>{task.feedback[0].comment}</Text>
-                      </div>
-                    </Card>
-                  </div>
-                )}
-                {task.feedback && task.feedback.length > 1 && (
-                  <div style={{ marginTop: "8px" }}>
-                    <Collapse ghost>
-                      <Collapse.Panel header={`View All Feedback (${task.feedback.length})`} key="1">
-                        {task.feedback.slice(1).map((feedback, index) => (
-                          <Card key={index} size="small" style={{ marginTop: "8px" }}>
-                            <div style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
-                              <Avatar src={feedback.reviewerId?.imageUrl} style={{ marginRight: "8px" }}>
-                                {feedback.reviewerId?.fullName?.split(" ").map((n) => n[0]).join("")}
-                              </Avatar>
-                              <div>
-                                <Text strong>{feedback.reviewerId?.fullName}</Text>
-                                <br />
-                                <Text type="secondary">{moment(feedback.evaluationDate).format("DD MMM YYYY")}</Text>
-                              </div>
-                              <Tag color={feedback.decision === "PASS" ? "success" : "error"} style={{ marginLeft: "auto" }}>
-                                {feedback.decision}
-                              </Tag>
-                            </div>
-                            <div>
-                              <Rate disabled defaultValue={feedback.rating} style={{ fontSize: 12 }} />
-                              <Text style={{ marginLeft: 8 }}>({feedback.rating}/5)</Text>
-                            </div>
-                            <div style={{ marginTop: "8px" }}>
-                              <Text>{feedback.comment}</Text>
-                            </div>
-                          </Card>
-                        ))}
-                      </Collapse.Panel>
-                    </Collapse>
-                  </div>
-                )}
-              </Card>
-            ))
-          ) : (
-            <Empty
-              description="No tasks found"
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-            />
-          )}
-        </div>
-      </div>
-    );
   };
 
-  const renderFilesContent = () => {
-    if (!candidate?.resume) {
-      return (
-        <div
-          className="no-files-message"
-          style={{ textAlign: "center", padding: "40px 0" }}
-        >
-          <FilePdfOutlined style={{ fontSize: "48px", color: "#d9d9d9" }} />
-          <Typography.Text
-            type="secondary"
-            style={{ display: "block", marginTop: "16px" }}
-          >
-            No resume uploaded
-          </Typography.Text>
-        </div>
-      );
-    }
 
-    return (
-      <div className="files-content">
-        <Card className="file-card">
-          <div className="file-item">
-            <div className="file-info">
-              {getFileIcon(candidate.resume)}
-              <div className="file-details">
-                <Typography.Text strong style={{ fontSize: "16px" }}>
-                  {getFileName(candidate.resume)}
-                </Typography.Text>
-                <Typography.Text type="secondary" style={{ fontSize: "12px" }}>
-                  Uploaded on:{" "}
-                  {moment(candidate.updatedAt).format("DD MMM YYYY")}
-                </Typography.Text>
-              </div>
-            </div>
-            <div className="file-actions">
-              <Button
-                type="text"
-                icon={<EyeOutlined />}
-                onClick={handlePreviewResume}
-                style={{ marginRight: "8px" }}
-              >
-                Preview
-              </Button>
-              <Button
-                type="primary"
-                icon={<DownloadOutlined />}
-                onClick={handleDownloadResume}
-              >
-                Download
-              </Button>
-            </div>
-          </div>
-        </Card>
-      </div>
-    );
-  };
+
+
+  // const renderTaskContent = () => {
+  //   if (loadingTasks) {
+  //     return (
+  //       <div style={{ textAlign: "center", padding: "20px" }}>
+  //         <Spin />
+  //       </div>
+  //     );
+  //   }
+
+  //   return (
+  //     <div className="task-content">
+  //       <div style={{ position: "absolute", top: "16px", right: "24px" }}>
+  //         <Button
+  //           type="text"
+  //           style={{ color: "#ff9b44" }}
+  //           icon={<PlusOutlined />}
+  //           onClick={handleCreateTask}
+  //         >
+  //           Create Task
+  //         </Button>
+  //       </div>
+
+  //       <div style={{ marginTop: "60px" }}>
+  //         {tasks.length > 0 ? (
+  //           tasks.map((task) => (
+  //             <Card
+  //               key={task._id}
+  //               style={{ marginBottom: "16px" }}
+  //               className="task-card"
+  //               onClick={() => navigate(`/recruitment/tasks/${task._id}`)}
+  //             >
+  //               <Row gutter={16}>
+  //                 <Col span={16}>
+  //                   <h4 className="task-title">{task.taskName}</h4>
+  //                   <Space direction="vertical" size="small" style={{ width: "100%" }}>
+  //                     <div>
+  //                       <Text type="secondary">Task Reviewers:</Text>{" "}
+  //                       <Avatar.Group maxCount={3}>
+  //                         {task.taskReviewers?.map((reviewer) => (
+  //                           <Tooltip key={reviewer._id} title={reviewer.fullName}>
+  //                             <Avatar src={reviewer.imageUrl}>
+  //                               {reviewer.fullName?.split(" ").map((n) => n[0]).join("")}
+  //                             </Avatar>
+  //                           </Tooltip>
+  //                         ))}
+  //                       </Avatar.Group>
+  //                     </div>
+  //                     <div>
+  //                       <Text type="secondary">Due Date:</Text>{" "}
+  //                       <Text>{moment(task.lastDateOfSubmission).format("DD MMM YYYY")}</Text>
+  //                     </div>
+  //                     <div>
+  //                       <Text type="secondary">Duration:</Text>{" "}
+  //                       <Text>{task.taskDuration} days</Text>
+  //                     </div>
+  //                     {task.feedback && task.feedback.length > 0 && (
+  //                       <div>
+  //                         <Text type="secondary">Latest Feedback:</Text>{" "}
+  //                         <Rate disabled defaultValue={task.feedback[0].rating} style={{ fontSize: 12 }} />
+  //                         <Tag color={task.feedback[0].decision === "PASS" ? "success" : "error"} style={{ marginLeft: 8 }}>
+  //                           {task.feedback[0].decision}
+  //                         </Tag>
+  //                       </div>
+  //                     )}
+  //                   </Space>
+  //                 </Col>
+  //                 <Col span={8} style={{ textAlign: "right" }}>
+  //                   <Select
+  //                     value={task.status}
+  //                     style={{ width: 120 }}
+  //                     onChange={(value) => {
+  //                       event.stopPropagation();
+  //                       updateTaskStatus(task._id, value);
+  //                     }}
+  //                     onClick={(event) => event.stopPropagation()}
+  //                     className={`status-${task.status?.toLowerCase()}`}
+  //                   >
+  //                     <Select.Option value="PENDING">Pending</Select.Option>
+  //                     <Select.Option value="SUBMITTED">Submitted</Select.Option>
+  //                     <Select.Option value="COMPLETED">Completed</Select.Option>
+  //                     <Select.Option value="CANCELLED">Cancelled</Select.Option>
+  //                   </Select>
+  //                 </Col>
+  //               </Row>
+  //               {task.feedback && task.feedback.length > 0 && (
+  //                 <div style={{ marginTop: "16px", borderTop: "1px solid #f0f0f0", paddingTop: "16px" }}>
+  //                   <Card size="small">
+  //                     <div style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
+  //                       <Avatar src={task.feedback[0].reviewerId?.imageUrl} style={{ marginRight: "8px" }}>
+  //                         {task.feedback[0].reviewerId?.fullName?.split(" ").map((n) => n[0]).join("")}
+  //                       </Avatar>
+  //                       <div>
+  //                         <Text strong>{task.feedback[0].reviewerId?.fullName}</Text>
+  //                         <br />
+  //                         <Text type="secondary">{moment(task.feedback[0].evaluationDate).format("DD MMM YYYY")}</Text>
+  //                       </div>
+  //                     </div>
+  //                     <div style={{ marginTop: "8px" }}>
+  //                       <Text>{task.feedback[0].comment}</Text>
+  //                     </div>
+  //                   </Card>
+  //                 </div>
+  //               )}
+  //               {task.feedback && task.feedback.length > 1 && (
+  //                 <div style={{ marginTop: "8px" }}>
+  //                   <Collapse ghost>
+  //                     <Collapse.Panel header={`View All Feedback (${task.feedback.length})`} key="1">
+  //                       {task.feedback.slice(1).map((feedback, index) => (
+  //                         <Card key={index} size="small" style={{ marginTop: "8px" }}>
+  //                           <div style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
+  //                             <Avatar src={feedback.reviewerId?.imageUrl} style={{ marginRight: "8px" }}>
+  //                               {feedback.reviewerId?.fullName?.split(" ").map((n) => n[0]).join("")}
+  //                             </Avatar>
+  //                             <div>
+  //                               <Text strong>{feedback.reviewerId?.fullName}</Text>
+  //                               <br />
+  //                               <Text type="secondary">{moment(feedback.evaluationDate).format("DD MMM YYYY")}</Text>
+  //                             </div>
+  //                             <Tag color={feedback.decision === "PASS" ? "success" : "error"} style={{ marginLeft: "auto" }}>
+  //                               {feedback.decision}
+  //                             </Tag>
+  //                           </div>
+  //                           <div>
+  //                             <Rate disabled defaultValue={feedback.rating} style={{ fontSize: 12 }} />
+  //                             <Text style={{ marginLeft: 8 }}>({feedback.rating}/5)</Text>
+  //                           </div>
+  //                           <div style={{ marginTop: "8px" }}>
+  //                             <Text>{feedback.comment}</Text>
+  //                           </div>
+  //                         </Card>
+  //                       ))}
+  //                     </Collapse.Panel>
+  //                   </Collapse>
+  //                 </div>
+  //               )}
+  //             </Card>
+  //           ))
+  //         ) : (
+  //           <Empty
+  //             description="No tasks found"
+  //             image={Empty.PRESENTED_IMAGE_SIMPLE}
+  //           />
+  //         )}
+  //       </div>
+  //     </div>
+  //   );
+  // };
+
+  // const renderFilesContent = () => {
+  //   if (!candidate?.resume) {
+  //     return (
+  //       <div
+  //         className="no-files-message"
+  //         style={{ textAlign: "center", padding: "40px 0" }}
+  //       >
+  //         <FilePdfOutlined style={{ fontSize: "48px", color: "#d9d9d9" }} />
+  //         <Typography.Text
+  //           type="secondary"
+  //           style={{ display: "block", marginTop: "16px" }}
+  //         >
+  //           No resume uploaded
+  //         </Typography.Text>
+  //       </div>
+  //     );
+  //   }
+
+  //   return (
+  //     <div className="files-content">
+  //       <Card className="file-card">
+  //         <div className="file-item">
+  //           <div className="file-info">
+  //             {getFileIcon(candidate.resume)}
+  //             <div className="file-details">
+  //               <Typography.Text strong style={{ fontSize: "16px" }}>
+  //                 {getFileName(candidate.resume)}
+  //               </Typography.Text>
+  //               <Typography.Text type="secondary" style={{ fontSize: "12px" }}>
+  //                 Uploaded on:{" "}
+  //                 {moment(candidate.updatedAt).format("DD MMM YYYY")}
+  //               </Typography.Text>
+  //             </div>
+  //           </div>
+  //           <div className="file-actions">
+  //             <Button
+  //               type="text"
+  //               icon={<EyeOutlined />}
+  //               onClick={handlePreviewResume}
+  //               style={{ marginRight: "8px" }}
+  //             >
+  //               Preview
+  //             </Button>
+  //             <Button
+  //               type="primary"
+  //               icon={<DownloadOutlined />}
+  //               onClick={handleDownloadResume}
+  //             >
+  //               Download
+  //             </Button>
+  //           </div>
+  //         </div>
+  //       </Card>
+  //     </div>
+  //   );
+  // };
 
   if (loading) {
     return (
       <div className="content container-fluid">
-        <div className="page-header">
-          <div className="row align-items-center">
-            <div className="col">
-              <h3 className="page-title">Candidate Details</h3>
-              <ul className="breadcrumb">
-                <li className="breadcrumb-item">
-                  <Link to="/recruitment/dashboard">Dashboard</Link>
-                </li>
-                <li className="breadcrumb-item">
-                  <Link to="/recruitment/candidates">Candidates</Link>
-                </li>
-                <li className="breadcrumb-item active">
-                  {candidate?.firstName} {candidate?.lastName}
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
         <div
           className="d-flex justify-content-center align-items-center"
           style={{ minHeight: "400px" }}
@@ -1508,17 +1620,6 @@ const CandidateDetails = () => {
 
 
   if (!candidate) return null;
-
-  // Calculate average rating from interviews feedback
-  // const feedbackScores = interviews
-  //   .map(interview => interview.feedback)
-  //   .filter(feedback => feedback && feedback.ratings)
-  //   .map(feedback => {
-  //     const { technicalSkills1, behavior, softSkills, technicalSkills2, technicalSkills3 } = feedback.ratings;
-  //     return (technicalSkills1 + behavior + softSkills + technicalSkills2 + technicalSkills3) / 5;
-  //   });
-
-  // const averageRating = feedbackScores.length > 0 ? feedbackScores.reduce((a, b) => a + b, 0) / feedbackScores.length : 0;
   const calculateAverageRating = (feedbackArray) => {
     if (!feedbackArray || feedbackArray.length === 0) {
       return 0;
@@ -1539,6 +1640,22 @@ const CandidateDetails = () => {
     return (totalRatings / feedbackArray.length).toFixed(1);
   };
 
+
+  const deleteResume = (index) => {
+    setResume((prevResume) => prevResume.filter((_, i) => i !== index));
+    if (editingIndex === index) {
+      setEditingIndex(null);
+      setTempName("");
+    }  
+    if(fileInputRef.current){
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const toggleModal = (index) => {
+    setOpenModalIndex(openModalIndex === index ? null : index);
+  };
+
   return (
     <div className="content container-fluid">
       {/* Header */}
@@ -1546,15 +1663,8 @@ const CandidateDetails = () => {
         <div className="row align-items-center">
           <div className="col">
             <div className="d-flex align-items-center">
-              {/* <Button
-                icon={<ArrowLeftOutlined />}
-                type="link"
-                onClick={() => navigate("/recruitment/candidates")}
-                style={{ marginRight: "16px", padding: 0 }}
-              /> */}
               <div>
                 <h3 className="page-title mb-0">
-                  {/* {candidate?.firstName} {candidate?.lastName} */}
                   Candidates
                 </h3>
                 <ul className="breadcrumb">
@@ -1564,62 +1674,10 @@ const CandidateDetails = () => {
                   <li className="breadcrumb-item">
                     <Link to="/recruitment/candidates">Candidates</Link>
                   </li>
-                  {/* <li className="breadcrumb-item active">
-                    {candidate?.firstName} {candidate?.lastName}
-                  </li> */}
                 </ul>
               </div>
             </div>
           </div>
-
-          {/* i will need this part */}
-
-          {/* <div className="col-auto float-end ms-auto">
-            <Space>
-              <Select
-                value={candidate?.status}
-                onChange={handleStatusChange}
-                loading={updatingStatus}
-                style={{
-                  width: "150px",
-                  fontSize: "13px",
-                  background:
-                    candidate?.status?.toLowerCase() === "screening"
-                      ? "#FFF7E6"
-                      : "transparent",
-                  zIndex: 1000,
-                  position: 'relative',
-                }}
-                className={`status-${candidate?.status?.toLowerCase()}`}
-                dropdownStyle={{
-                  minWidth: "150px",
-                  borderRadius: "4px",
-                }}
-                dropdownMatchSelectWidth={false}
-                popupClassName="status-dropdown"
-              >
-                <Select.Option value="NEW">New</Select.Option>
-                <Select.Option value="SCREENING">Screening</Select.Option>
-                <Select.Option value="SHORTLISTED">Shortlisted</Select.Option>
-                <Select.Option value="OFFER_SENT">Offer Sent</Select.Option>
-                <Select.Option value="HIRED">Hired</Select.Option>
-                <Select.Option value="REJECTED">Rejected</Select.Option>
-                <Select.Option value="BLACKLISTED">Blacklisted</Select.Option>
-              </Select>
-              <Button
-                type="primary"
-                onClick={handleSendOfferClick}
-                style={{
-                  background: "#FF9B44",
-                  borderColor: "#FF9B44",
-                  zIndex: 1000,
-                  position: 'relative',
-                }}
-              >
-                {offer ? 'Edit Offer' : 'Send Offer'}
-              </Button>
-            </Space>
-          </div> */}
 
         </div>
       </div>
@@ -1641,8 +1699,8 @@ const CandidateDetails = () => {
         </div>
       </div>
 
-      <div style={{height:'130px', background:'#ffffff' ,border:'1px solid transparent' , borderRadius:'8px', marginBottom:"20px", display:"flex", alignItems:"center", justifyContent:"space-between"}}>
-        <div style={{display:"flex", alignItems:'center'}}>
+      <div className='initial-section'>
+        <div className='initial-section-first-child'>
           <div style={{height:'80px' ,width:"80px", border:"1px solid transparent" , borderRadius:"50%", background:'#f5f1fd', color:'#9368e9', display:"flex", justifyContent:"center", alignItems:'center', marginLeft:"20px", fontSize:"28px", fontweight:"500"}}>{candidate.firstName?.[0]}{candidate.lastName?.[0]}</div>
           <div>
             <h3 className="ms-3 mt-2 mb-0" style={{fontSize:'20px', fontweight:'500', color:"#000000"}}>{candidate.firstName} {candidate.lastName}</h3>
@@ -1652,15 +1710,13 @@ const CandidateDetails = () => {
               <span style={{ marginLeft:'10px'}}>{calculateAverageRating()}</span>
             </div>   
           </div>
-          <div><Tag
-                  color={
-                    candidate.status === "NEW"? "blue": candidate.status === "SCREENING"
-                    ? "orange": candidate.status === "SHORTLISTED"? "green": candidate.status === "REJECTED"? "red": "purple"}
-                  style={{marginLeft:"10px", borderRadius:"70px", marginBottom:"12px"}}
-                  >{candidate.status?.charAt(0) + candidate.status?.slice(1).toLowerCase()}</Tag>
+          <div>
+            <Tag
+              style={{marginLeft:"10px", borderRadius:"70px", marginBottom:"12px"}}
+            >{candidate.status?.charAt(0) + candidate.status?.slice(1).toLowerCase()}</Tag>
           </div>
         </div>
-          <div className="col-auto float-end me-4">
+          <div className=" initial-section-sec-child col-auto float-end me-4">
             <Space>
               <Select
                 value={candidate?.status}
@@ -1668,7 +1724,7 @@ const CandidateDetails = () => {
                 loading={updatingStatus}
                 style={{
                   background:
-                    candidate?.status?.toLowerCase() === "screening"
+                    candidate?.status?.toLowerCase() === "SHORTLISTED"
                       ? "#FFF7E6"
                       : "transparent",
                   zIndex: 1000,
@@ -1686,16 +1742,44 @@ const CandidateDetails = () => {
                 <Select.Option value="NEW">New</Select.Option>
                 <Select.Option value="SCREENING">Screening</Select.Option>
                 <Select.Option value="SHORTLISTED">Shortlisted</Select.Option>
-                <Select.Option value="OFFER_SENT">Offer Sent</Select.Option>
+                <Select.Option value="OFFERED">Offer Sent</Select.Option>
                 <Select.Option value="HIRED">Hired</Select.Option>
                 <Select.Option value="REJECTED">Rejected</Select.Option>
                 <Select.Option value="BLACKLISTED">Blacklisted</Select.Option>
               </Select>
               <button
                 onClick={handleSendOfferClick}
+                disabled={candidate?.status === "OFFERED"}
+                style={{background: candidate.status === 'OFFERED' ? 'red' : '#ff9244'}}
                 className= 'select-btn'
               >{offer ? 'Edit Offer' : 'Send Offer'}</button>
-              <div style={{marginLeft:"13px"}}><img src={more}></img></div>
+              <div style={{marginLeft:"13px"}}>
+                <Dropdown
+                  overlay={<Menu>
+                    <Menu.Item key="edit" icon={<img src={newEditIcon} style={{height:"20px" ,width:"20px"}}></img>}onClick={() => navigate(`/recruitment/candidates/${candidate._id}/edit`)}>Edit</Menu.Item>
+                    <Menu.Item key="delete" icon={<img src={DeleteIcon} style={{height:"15px" ,width:"20px"}}></img>}
+                     onClick={() => {
+                      Modal.confirm({
+                      title: 'Delete Job',
+                      content: 'Are you sure you want to delete this job?',
+                      okText: 'Yes, Delete',
+                      okType: 'danger',
+                      cancelText: 'No',
+                      onOk: () => handleDeleteCandidate(candidate._id)
+                    });
+                    }}
+                    >Delete</Menu.Item>
+                    <Menu.Item key="scheduled" icon={<img src={newCalanderIcon} style={{height:"20px" ,width:"20px"}}></img>} onClick={()=>setIsInterviewModalVisible(true)}>Schedule Interview</Menu.Item>
+                    <Menu.Item key="blacklisted" icon={<img src={blacklistIcon} style={{height:"20px" ,width:"20px"}}></img>}  onClick={()=>setIsReasonModalVisible(true)}>Add to Blacklist</Menu.Item>  
+                  </Menu>}
+                  overlayStyle = {{paddingTop:"15px"}}
+                  trigger={['click']}
+                  placement="bottomRight">
+                  <div style={{ cursor: 'pointer',height:'25px' }}>
+                    <img src={more} alt="More Options" />
+                  </div>
+                </Dropdown>
+              </div>
             </Space>
           </div>
       </div>
@@ -1710,43 +1794,6 @@ const CandidateDetails = () => {
             </div>
           )}
           <Card style={{borderRadius:"8px"}}>
-            {/* <div className="candidate-profile mb-4">
-              <div className="profile-img">
-                <div className="profile-avatar">
-                  {candidate.firstName?.[0]}
-                  {candidate.lastName?.[0]}
-                </div>
-              </div>
-              <div className="profile-info text-center">
-                <Title
-                  level={4}
-                  style={{
-                    margin: "12px 0 4px",
-                    fontSize: "20px",
-                    color: "#333",
-                  }}
-                >
-                  {candidate.firstName} {candidate.lastName}
-                </Title>
-                <Tag
-                  color={
-                    candidate.status === "NEW"
-                      ? "blue"
-                      : candidate.status === "SCREENING"
-                      ? "orange"
-                      : candidate.status === "SHORTLISTED"
-                      ? "green"
-                      : candidate.status === "REJECTED"
-                      ? "red"
-                      : "purple"
-                  }
-                >
-                  {candidate.status?.charAt(0) +
-                    candidate.status?.slice(1).toLowerCase()}
-                </Tag>
-              </div>
-            </div> */}
-
             <div className="info-section">
               <Title level={5} className="section-title">
                 Basic Information
@@ -1864,95 +1911,248 @@ const CandidateDetails = () => {
 
         <div className='col-md-9 custom-col-two'>
           <div className="card p-4" style={{border:"1px solid transparent" ,borderRadius:"8px", display:"flex", flexDirection:"row", justifyContent:"space-between"}}>
-            <div className='active-tab-styles'>
+            <div className='tab-container'>
               <div className='active-tab-timeline' style={{color:activeTab === 'timeline' ? '#ff9244' : '#a5adb6', cursor: 'pointer',borderBottom: activeTab === 'timeline' ? '2px solid #ff9244' : 'none'}} key='timeline' onClick={()=>{handleActiveTab('timeline')}}><span className='span-timeline'><img src={timeline} style={{marginRight:'8px'}}></img>Timeline</span></div>
               <div  className='active-tab-files'  style={{color:activeTab === 'files' ? '#ff9244' : '#a5adb6', cursor: 'pointer',borderBottom: activeTab === 'files' ? '2px solid #ff9244' : 'none'}}  key='files' onClick={()=>{handleActiveTab('files')}}><span  className='span-files'><img src={files} style={{marginRight:'8px'}}></img>Files</span></div>
               <div  className='active-tab-interview'  style={{color:activeTab === 'interview' ? '#ff9244' : '#a5adb6', cursor: 'pointer',borderBottom: activeTab === 'interview' ? '2px solid #ff9244' : 'none'}}  key='interview'  onClick={()=>{handleActiveTab('interview')}}><span  className='span-interview'><img src={interviewIcon} style={{marginRight:'8px'}}></img>Interview</span></div>
+              <div className = 'active-tab-tasks' style={{color: activeTab === 'tasks' ? "#ff9244" : "#a5adb6" , cursor:"pointer" ,borderBottom: activeTab === 'tasks' ? '2px solid #ff9244' : 'none'}} key='tasks' onClick={()=>{handleActiveTab('tasks')}}><span  className='span-tasks'><img src={taskIcon} style={{marginRight:'8px'}}></img>Tasks</span></div>
             </div>
           </div>
-          <div className="card p-4" style={{border:"1px solid transparent" ,borderRadius:"8px"}} >
-            <h3>{activeTab === 'files' ? `Files  (${files.length})` : activeTab === 'timeline' ? "Timeline" : ''}</h3>
-              {activeTab === 'timeline' && (
-                <div className='mt-2'>
-                  <div className="p-3"  style={{background:'#f7f7f8', display:"flex", justifyContent:"space-between"}}>
-                    <div style={{fontSize:'14px', fontWeight:"500", color:"#000000"}}>{`${candidate.firstName} is ${candidate.status}`}</div>
-                    <div style={{fontSize:'12px', fontWeight:"450", color:"#495057"}}>{moment(candidate.appliedDate).format("DD MMM") + ' at ' + moment(candidate.appliedTime).format("HH:mm A")}</div>
+          {/* Files Tab Upload File Section */}
+          {activeTab === 'files' && (
+              <div className='col-md-12 custom-col-two mb-4'>
+                <div style={{border: '1px dashed #a5adb6', borderRadius:"8px",display:"flex", justifyContent:"center", cursor:"pointer"}}>
+                  <div style={{display:'flex', gap:'12px'}}  onClick={() => document.getElementById("resume-upload").click()} onDrop={handleDrop} onDragOver={handleDragOver} onDragLeave={handleDragLeave}><img src={cloudUpload}></img><p style={{marginTop:"15px", color:"#a5adb6" ,width:"100%"}}>
+                  <input type='file' accept='.pdf, .doc, .docx,' onChange={handleFileChange} id='resume-upload' style={{display:'none' ,width:"100%"}}></input> Drop file here or click to upload file</p>
                   </div>
-                  {filteredInterviews.length>0 ?(
-                    filteredInterviews.map((interview)=>(
-                      <div  className="p-3 mt-3"  style={{background:'#f7f7f8', display:"flex", justifyContent:"space-between"}}>
-                        <div style={{fontSize:'14px', fontWeight:"500", color:"#000000"}}>{`${interview.interviewTitle} is scheduled with ${interview.createdBy.fullName}`}</div>
-                        <div style={{fontSize:'12px', fontWeight:"450", color:"#495057"}}>{moment(interview.interviewDate).format("DD MMM") + ' at ' + moment(interview.interviewTime, "HH:mm").format("hh:mm A")}</div> 
-                      </div>
-                    )) 
-                  ) : ''}
                 </div>
-              )}
-              {activeTab === 'files' &&(
+              </div>
+          )}
+          <div className="card p-4" style={{ border: "1px solid transparent", borderRadius: "8px", display: 'flex', flexDirection: 'column' }}>
+          {/* Interview Tab Content */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+            <h3>{activeTab === 'timeline' ? "Timeline" : activeTab === 'files' ? `Files (${resume ? resume.length : ''})` : activeTab === 'interview' ? 'Interview' : activeTab === 'tasks' ? 'Tasks' : 'null'}</h3>
+            {activeTab === 'interview' && (
+            <div>
+              <div><button style={{background:"transparent" ,border:"none", fontSize:'14px' ,fontWeight:"450", color:"#ff9244"}}onClick={handleCreateInterview}><img src={colored} style={{height:"16px", width:"16px", marginRight:"4px", marginBottom:'3px'}}></img>Create Interview</button></div>
+            </div>
+            )}
+            {activeTab === 'tasks' && (
+            <div>
+              <div><button style={{background:"transparent" ,border:"none", fontSize:'14px' ,fontWeight:"450", color:"#ff9244"}} onClick={handleCreateTask}><img src={colored} style={{height:"16px", width:"16px", marginRight:"4px", marginBottom:'3px'}}></img>Create Task</button></div>
+            </div>
+            )}
+          </div>
+
+          {activeTab === 'interview' && (
+            <div style={{borderTop:'2px solid #e0e3e6' ,marginTop:"20px"}}>
+              {interviews.length > 0 ? (
                 <div>
-                  {candidate.resume ? (
-                    <div
-                    className="no-files-message"
-                    style={{ textAlign: "center", padding: "40px 0" }}
-                    >
-                      <FilePdfOutlined style={{ fontSize: "48px", color: "#d9d9d9" }} />
-                      <Typography.Text
-                      type="secondary"
-                      style={{ display: "block", marginTop: "16px" }}
-                      >
-                        No resume uploaded
-                      </Typography.Text>
-                    </div>
-                  ):(
-                    <div className="files-content">
-                      <Card className="file-card">
-                        <div className="file-item">
-                          <div className="file-info">
-                            {getFileIcon(candidate.resume)}
-                            <div className="file-details">
-                              <Typography.Text strong style={{ fontSize: "16px" }}>
-                                {getFileName(candidate.resume)}
-                              </Typography.Text>
-                              <Typography.Text type="secondary" style={{ fontSize: "12px" }}>
-                                Uploaded on:{" "}
-                                {moment(candidate.updatedAt).format("DD MMM YYYY")}
-                              </Typography.Text>
+                  {interviews.map(interview=>(
+                    <div key={interview._id}  style={{ border: '2px solid #cfd4d8', borderRadius: '8px', marginTop: "20px", padding: '15px' }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <div style={{display:'flex', alignItems:'center'}}>
+                          <div style={{height:'40px', width:"40px",background:'#f7f7f8' ,borderRadius:'50%', display:"flex", justifyContent:"center", alignItems:'center'}}><img src={interviewIcon}></img></div>
+                          <div style={{marginLeft:"15px"}}>
+                            <div style={{fontSize:"14px" ,fontWeight:"500"}}>{interview.interviewTitle || "Untitled Interview"}</div>
+                            <div  style={{fontSize:"12px" ,fontWeight:"450"}}>{moment(interview.interviewDate).format("DD MMM YYYY") + ' at ' + moment(interview.interviewTime, 'Hh:mm').format('hh:mm A')}</div>
+                          </div>
+                          <div className={`status-${interview.status?.toLowerCase()}`} style={{borderRadius:'70px',height:"26px", width:"90px", marginLeft:"15px", display:'flex', justifyContent:'center', alignItems:'center'}}>{interview.status}</div>
+                        </div>
+                        <div onClick={()=>{handleViewMore(interview._id)}} style={{display:'flex', alignItems:"center"}}><button style={{border:'none' , background:"transparent"}}>{viewMore? 'View Less' : 'View Details'}</button></div>
+                      </div>
+                      {viewMore === interview._id &&(
+                        <div>
+                          {interview.status === 'completed' ? (
+                            <div>
+                              {interview?.feedback?.map((feedback, index) => (
+                                <InterviewFeedbackDisplay key={index} feedback={feedback} />
+                              ))}
+                            </div>
+                          ) : 
+                          <div style={{borderTop:'1px solid #eef0f1', padding:"10px", marginTop:"10px"}}>
+                          <div>
+                            <h2 style={{fontSize:"14px" ,fontWeight:"500"}}>Assigners</h2>
+                            <div style={{display:'flex', gap:"20px"}}>
+                              <div style={{display:"flex"}}>
+                                <div style={{height:"32px" , width:"32px"}}><img src={interview?.interviewerId?.imageUrl} style={{height:"100%" ,width:"100%", borderRadius:"50%"}}></img></div>
+                                <div style={{marginLeft:"10px"}}>
+                                  <h3 style={{fontSize:"14px" ,fontWeight:"500",marginBottom:"0"}}>{interview.interviewerId?.fullName}</h3>
+                                  <p style={{fontSize:"12px" ,fontWeight:"450",color:"#56616b"}}>Hello</p>
+                                </div>
+                              </div>
+                              {interview.assignedTo?.map((interviewer)=>(
+                                <div style={{display:'flex'}}>
+                                  <div style={{height:"32px" , width:"32px"}}><img src={interviewer.imageUrl} style={{height:"100%" ,width:"100%", borderRadius:"50%"}}></img></div>
+                                  <div style={{marginLeft:"10px"}}>
+                                    <h3 style={{fontSize:"14px" ,fontWeight:"500",marginBottom:"0"}}>{interviewer.fullName}</h3>
+                                    <p style={{fontSize:"12px" ,fontWeight:"450",color:"#56616b"}}>Hello</p>
+                                  </div>
+                                </div>
+                              ))}
                             </div>
                           </div>
-                          <div className="file-actions">
-                            <Button
-                            type="text"
-                            icon={<EyeOutlined />}
-                            onClick={handlePreviewResume}
-                            style={{ marginRight: "8px" }}
-                            >
-                              Preview
-                            </Button>
-                            <Button
-                              type="primary"
-                              icon={<DownloadOutlined />}
-                              onClick={handleDownloadResume}
-                            >
-                              Download
-                            </Button>
+                          <div>
+                            <h2 style={{fontSize:"14px" ,fontWeight:"500"}}>Created By</h2>
+                            <div style={{display:"flex"}}>
+                                <div style={{height:"32px" , width:"32px"}}><img src={interview?.createdBy?.imageUrl} style={{height:"100%" ,width:"100%", borderRadius:"50%"}}></img></div>
+                                <div style={{marginLeft:"10px"}}>
+                                  <h3 style={{fontSize:"14px" ,fontWeight:"500",marginBottom:"0"}}>{interview?.createdBy?.fullName}</h3>
+                                  <p style={{fontSize:"12px" ,fontWeight:"450",color:"#56616b"}}>Hello</p>
+                                </div>
+                              </div>
                           </div>
                         </div>
-                      </Card>
+                          }
+                        </div>
+                      )}
                     </div>
-                  )}
+                  ))}
                 </div>
-              )}
-              {activeTab === 'interview' && (
-              <div style={{display:' flex'}}>
-                {/* <h3>{activeTab === 'interview' ? `(${activeTab.charAt(0) + })` : ''}</h3> */}
-                <button>Create Interview</button>
-                <button>Create Task</button>
-              </div> )}
+              ) : 
+              <div style={{height:'400px' ,width:"100%", border:'2px solid #cfd4d8' ,borderRadius:"4px", display:"flex", justifyContent:"center", alignItems:"center", marginTop:'20px'}}>
+                <div>
+                < img src={NoInterview} style={{display:'flex', justifySelf:"center"}}></img>
+                  <p>No Interview Created</p>
+                </div>
+              </div> 
+            }
+            </div>
+          )}
+
+          {/* tasks module  */}
+          {activeTab === 'tasks' && (
+            <div>
+              {tasks.length > 0 && (
+                <div>
+                  {tasks.map(task=>(
+                    <div key={task._id}  style={{ border: '2px solid #cfd4d8', borderRadius: '8px', marginTop: "20px", padding: '15px' }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <div style={{display:'flex', alignItems:'center'}}>
+                          <div style={{height:'40px', width:"40px",background:'#f7f7f8' ,borderRadius:'50%', display:"flex", justifyContent:"center", alignItems:'center'}}><img src={files}></img></div>
+                          <div style={{marginLeft:"15px"}}>
+                            <div style={{fontSize:"14px" ,fontWeight:"500"}}>{task.taskName || "Untitled Task"}</div>
+                            <div  style={{fontSize:"12px" ,fontWeight:"450"}}>{moment(task.createdAt).format("DD MMM YYYY") + ' at ' + moment(task.createdAt, 'Hh:mm').format('hh:mm A')}</div>
+                          </div>
+                          <div className={`status-${task.status?.toLowerCase()}`} style={{borderRadius:'70px',height:"26px", width:"90px", marginLeft:"15px", display:'flex', justifyContent:'center', alignItems:'center'}}>{task.status.toLowerCase()}</div>
+                        </div>
+                        <div onClick={()=>{handleViewMore(task._id)}} style={{display:'flex', alignItems:"center"}}><button style={{border:'none' , background:"transparent"}}>{viewMore? 'View Less' : 'View Details'}</button></div>
+                      </div>
+                      {viewMore === task._id &&(
+                        <div>
+                          {task.status === 'COMPLETED' ? (
+                            <div>
+                              {interviews.feedback?.map((feedback, index) => (
+                                <InterviewFeedbackDisplay key={index} feedback={feedback} />
+                              ))}
+                            </div>
+                            ) : 
+                            <div style={{borderTop:'1px solid #eef0f1', padding:"10px", marginTop:"10px"}}>
+                              <div>
+                                <h2 style={{fontSize:"14px" ,fontWeight:"500"}}>Reviewers</h2>
+                                <div style={{display:'flex', gap:"20px"}}>
+                                  <div style={{display:"flex"}}>
+                                    <div style={{height:"32px" , width:"32px"}}><img src={task?.taskReviewers?.imageUrl} style={{height:"100%" ,width:"100%", borderRadius:"50%"}}></img></div>
+                                    <div style={{marginLeft:"10px"}}>
+                                      <h3 style={{fontSize:"14px" ,fontWeight:"500",marginBottom:"0"}}>{task.taskReviewers?.fullName}</h3>
+                                      <p style={{fontSize:"12px" ,fontWeight:"450",color:"#56616b"}}>Hello</p>
+                                    </div>
+                                  </div>
+                                  {task.Reviewers?.map((taskReviewer)=>(
+                                    <div style={{display:'flex'}}>
+                                      <div style={{height:"32px" , width:"32px"}}><img src={taskReviewer.imageUrl} style={{height:"100%" ,width:"100%", borderRadius:"50%"}}></img></div>
+                                      <div style={{marginLeft:"10px"}}>
+                                        <h3 style={{fontSize:"14px" ,fontWeight:"500",marginBottom:"0"}}>{taskReviewer.fullName}</h3>
+                                        <p style={{fontSize:"12px" ,fontWeight:"450",color:"#56616b"}}>Hello</p>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                              <div>
+                                <h2 style={{fontSize:"14px" ,fontWeight:"500" ,marginTop:"10px"}}>Created By</h2>
+                                  <div style={{display:"flex"}}>
+                                    <div style={{height:"32px" , width:"32px"}}><img src={task?.createdBy?.imageUrl} style={{height:"100%" ,width:"100%", borderRadius:"50%"}}></img></div>
+                                    <div style={{marginLeft:"10px"}}>
+                                      <h3 style={{fontSize:"14px" ,fontWeight:"500",marginBottom:"0"}}>{task?.createdBy?.fullName}</h3>
+                                      <p style={{fontSize:"12px" ,fontWeight:"450",color:"#56616b"}}>Hello</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            }
+                          </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                )}
+            </div>
+          )}   
+          {/* Timeline Tab Content */}
+          {activeTab === 'timeline' && (
+            <div className='mt-2'>
+              <div className="p-3" style={{ background: '#f7f7f8', display: "flex", justifyContent: "space-between" }}>
+                <div style={{ fontSize: '14px', fontWeight: "500", color: "#000000" }}>{`${candidate.firstName} is ${candidate.status}`}</div>
+                <div style={{ fontSize: '12px', fontWeight: "450", color: "#495057" }}>{moment(candidate.appliedDate).format("DD MMM") + ' at ' + moment(candidate.appliedTime).format("HH:mm A")}</div>
+              </div>
+              {filteredInterviews.length > 0 ? (
+                filteredInterviews.map((interview) => (
+                  <div className="p-3 mt-3" style={{ background: '#f7f7f8', display: "flex", justifyContent: "space-between" }}>
+                    <div style={{ fontSize: '14px', fontWeight: "500", color: "#000000" }}>
+                      {`${interview.interviewTitle} is scheduled with ${interview.createdBy.fullName}`}
+                    </div>
+                    <div style={{ fontSize: '12px', fontWeight: "450", color: "#495057" }}>
+                      {moment(interview.interviewDate).format("DD MMM") + ' at ' + moment(interview.interviewTime, "HH:mm").format("hh:mm A")}
+                    </div>
+                  </div>
+                ))
+              ) : ''}
+            </div>
+          )}
+          {activeTab === 'files' && (
+            <div className='mt-2'>
+              {resume.map((file,index)=>(
+                <div className="p-3" style={{ background: '#f7f7f8', display: "flex", justifyContent: "space-between", marginTop:"8px"}} key={index}>
+                    {editingIndex === index ? (
+                      <div style={{ fontSize: '14px', fontWeight: "500", color: "#000000"}}>
+                        <input style={{border: '1px solid #a5adb6' , borderRadius:"8px" , height:'28px', paddingLeft:"8px"}} type='text' value={tempName} onChange={(e)=>setTempName(e.target.value)} onBlur={()=>saveRename(index)} onKeyDown={(e)=>e.key === 'Enter' && saveRename(index)}></input>
+                      </div>
+                    ) :
+                      <div style={{ fontSize: '14px', fontWeight: "500", color: "#000000", cursor: 'pointer' }} onClick={()=>{handlePreviewResume()}}>
+                        {file.name}
+                      </div>
+                    }
+
+                  <div style={{display:"flex", gap:"15px"}}>
+                    <div style={{ fontSize: '12px', fontWeight: "450", color: "#495057",  paddingTop:"5px" }}>{moment().format("DD MMM YYYY") + ' at ' + moment().format("HH:mm A")}</div>
+                    <div style={{marginRight:"10px", cursor:"pointer", position:"relative"}} onClick={()=>{toggleModal(index)}}><img src={more}></img>
+                      {openModalIndex === index && (
+                        <div style={{position:'absolute',top:'100%',right:'10%',background: 'white',border:'1px solid #ddd',
+                        borderRadius:'5px',boxShadow:'0px 4px 6px rgba(0, 0, 0, 0.1)',padding:'5px',display:'flex',
+                        flexDirection:'column', marginTop:"10px", width:"120px"}}
+                        >
+                          <div style={{background: 'none',border: 'none',marginTop: '7px',marginBottom:"7px" ,cursor: 'pointer',width:'100%',display:'flex'}} onClick={()=>{startEditing(index, file.name)}}>
+                            <div style={{width:"30%",paddingLeft:"7px"}}><img src={EditIcon}></img></div>
+                            <div style={{ width:"70%", paddingTop:"3px"}} ><span style={{fontSize:"14px", fontWeight:'500', color:'#56616b'}}>Edit</span></div>
+                          </div>
+                          <div style={{background: 'none',border: 'none',marginTop: '10px',cursor: 'pointer',width:'100%',display:"flex"}}  onClick={()=>{deleteResume(index)}}>
+                            <div  style={{width:"30%",paddingLeft:"7px"}}><img src={DeleteIcon}></img></div>
+                            <div style={{ width:"70%", paddingTop:"3px"}}><span style={{fontSize:"14px", fontWeight:'500', color:'#56616b'}}>Delete</span></div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    </div>
+                  </div>
+              ))}
+            </div>
+          )}
           </div>
-        </div>
+          </div>
 
 
-        <div className="col-md-9 custom-col-two">
+        {/* <div className="col-md-9 custom-col-two">
           <Card>
             <Tabs
               activeKey={activeTab}
@@ -2027,7 +2227,7 @@ const CandidateDetails = () => {
               </TabPane>
             </Tabs>
           </Card>
-        </div>
+        </div> */}
       </div>
 
       {/* Replace the old Modal with the new CreateInterviewModal component */}
@@ -2041,7 +2241,7 @@ const CandidateDetails = () => {
 
       {/* Add CreateTaskModal */}
       <CreateTaskModal
-        visible={isTaskModalVisible}
+        isVisible={isTaskModalVisible}
         onCancel={handleTaskModalCancel}
         onSubmit={handleTaskSubmit}
         candidate={candidate}
@@ -2063,13 +2263,14 @@ const CandidateDetails = () => {
 
       {/* Status Change Reason Modal */}
       <Modal
-        title="Provide Reason"
+        title="Blacklist Reason"
         visible={isReasonModalVisible}
         onCancel={() => {
           setIsReasonModalVisible(false);
           setSelectedStatus(null);
         }}
         footer={null}
+        className="custom-modal"
       >
         <Form
           onFinish={handleReasonSubmit}
@@ -2086,16 +2287,23 @@ const CandidateDetails = () => {
             ]}
           >
             <Input.TextArea
-              rows={4}
+              rows={6}
               placeholder="Enter the reason for blacklisting the candidate"
               maxLength={500}
               showCount
             />
           </Form.Item>
 
-          <Form.Item className="mb-0 text-right">
+          <Form.Item className="text-end pb-3 mt-2">
             <Button
-              style={{ marginRight: 8 }}
+              style={{ 
+                marginRight: 12,
+                padding: '6px 24px',
+                height: '40px',
+                borderRadius: '20px',
+                background: '#F8F9FA',
+                border: 'none'
+              }}
               onClick={() => {
                 setIsReasonModalVisible(false);
                 setSelectedStatus(null);
@@ -2103,7 +2311,14 @@ const CandidateDetails = () => {
             >
               Cancel
             </Button>
-            <Button type="primary" htmlType="submit" loading={updatingStatus}>
+            <Button type="primary" htmlType="submit" loading={updatingStatus}
+              style={{ 
+                padding: '6px 24px',
+                height: '40px',
+                borderRadius: '20px',
+                background: '#F4A261',
+                border: 'none'
+              }}>
               Submit
             </Button>
           </Form.Item>
@@ -2391,31 +2606,36 @@ const CandidateDetails = () => {
 
         // }
 
-        .status-scheduled .ant-select-selector {
+        .status-scheduled .ant-select-selector,
+        .status-scheduled  {
           background-color: #e6f7ff !important;
           border-color: #91d5ff !important;
           color: #1890ff !important;
         }
 
-        .status-completed .ant-select-selector {
+        .status-completed .ant-select-selector,
+        .status-completed{
           background-color: #f6ffed !important;
           border-color: #b7eb8f !important;
           color: #52c41a !important;
         }
 
-        .status-cancelled .ant-select-selector {
+        .status-cancelled .ant-select-selector,
+        .status-cancelled {
           background-color: #fff1f0 !important;
           border-color: #ffa39e !important;
           color: #f5222d !important;
         }
 
-        .status-rescheduled .ant-select-selector {
+        .status-rescheduled .ant-select-selector,
+        .status-rescheduled {
           background-color: #fff7e6 !important;
           border-color: #ffd591 !important;
           color: #fa8c16 !important;
         }
 
-        .status-new .ant-select-selector {
+        .status-new .ant-select-selector,
+        .status-new {
           background-color: #e6f7ff !important;
           border-color: #91d5ff !important;
           color: #1890ff !important;
@@ -2427,7 +2647,8 @@ const CandidateDetails = () => {
           padding-top: 5px !important;
         }
 
-        .status-screening .ant-select-selector {
+        .status-screening .ant-select-selector,
+        .status-screening {
           background-color: #fff7e6 !important;
           border-color: #ffd591 !important;
           color: #fa8c16 !important;
@@ -2439,7 +2660,8 @@ const CandidateDetails = () => {
           padding-top: 5px !important;
         }
 
-        .status-offer_sent .ant-select-selector {
+        .status-offer_sent .ant-select-selector,
+        .status-offer_sent {
           background-color: #d3d3d3 !important;
           border-color: #5e716a !important;
           color: #5e716a !important;
@@ -2452,7 +2674,8 @@ const CandidateDetails = () => {
         }
         
 
-        .status-shortlisted .ant-select-selector {
+        .status-shortlisted .ant-select-selector,
+        .status-shortlisted {
           background-color: #f6ffed !important;
           border-color: #b7eb8f !important;
           color: #52c41a !important;
@@ -2464,7 +2687,8 @@ const CandidateDetails = () => {
           padding-top: 5px !important;
         }
 
-        .status-hired .ant-select-selector {
+        .status-hired .ant-select-selector,
+        .status-hired {
           background-color: #f9f0ff !important;
           border-color: #d3adf7 !important;
           color: #722ed1 !important;
@@ -2476,7 +2700,8 @@ const CandidateDetails = () => {
           padding-top: 5px !important;
         }
 
-        .status-rejected .ant-select-selector {
+        .status-rejected .ant-select-selector,
+        .status-rejected {
           background-color: #fff1f0 !important;
           border-color: #ffa39e !important;
           color: #f5222d !important;
@@ -2647,19 +2872,21 @@ const CandidateDetails = () => {
         //   border-color: #ff8629;
         // }
 
-        .active-tab-styles{
-           display: flex ;
-            width: 60%;
-            justify-content: space-between;
+        .tab-container{
+          display: flex;
+          gap: 30px;
+          justify-content: flex-start;
+          flex-wrap: wrap;
+          width: 100%;
         }
 
         .active-tab-timeline{
-          padding: 0 10px 15px 0px ;
+          padding: 0 10px 10px 0px ;
           font-size: 16px; 
           font-weight: 500;
         }
         .active-tab-files{
-          padding: 0 10px 15px 0px ;
+          padding: 0 10px 10px 0px ;
           font-size: 16px; 
           font-weight: 500;
           color: activeTab === 'files' ? #ff9244 : #a5adb6;
@@ -2667,6 +2894,15 @@ const CandidateDetails = () => {
           border-bottom: activeTab === 'files' ? 2px solid #ff9244: none;
         }
         .active-tab-interview{
+          padding: 0 10px 10px 0px ;
+          font-size: 16px; 
+          font-weight: 500;
+          color: activeTab === 'interview' ?  #ff9244  : #a5adb6;
+          cursor: pointer;
+          border-bottom: activeTab === 'interview' ?  2px solid #ff9244 : none;
+        }
+
+        .active-tab-tasks{
           padding: 0 10px 15px 0px ;
           font-size: 16px; 
           font-weight: 500;
@@ -2693,32 +2929,38 @@ const CandidateDetails = () => {
 
 
 
-        @media(min-width: 993px) and (max-width: 1280px){
-          .active-tab-styles{
-            width: 90%;
-          }
+        .custom-modal .ant-modal-content{
+          border: 1px solid transparent;
+          border-radius: 10px;
         }
-        @media(min-width: 768px) and (max-width: 890px){
-          .active-tab-styles{
-            width: 90%;
-          }
+        .custom-modal .ant-modal-header {
+          border-bottom: none;
+          padding: 24px 24px 0px 24px;
+          border-radius: 10px;
         }
-        @media(min-width: 430px) and (max-width: 767px){
-          .active-tab-styles{
-            width: 100%;
-          }
+        .custom-modal .ant-modal-title {
+          font-size: 24px;
+          font-weight: 600;
         }
-        @media(min-width: 330px) and (max-width: 430px){
-          .active-tab-styles{
-            width: 100%;
-            gap: 20px;
-          }
+        .custom-modal .ant-modal-close {
+          background-color: #F8F9FA;
+          border-radius: 50%;
+          border:"1px solid #F8F9FA";
+          margin:16px 16px 0 0;
+          width: 32px;
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
-        @media(min-width: 330px) and (max-width: 430px){
-          .span-timeline img, .span-files img, .span-interview img{
-            display: none;
-            width: max-width;
-          }
+        .custom-modal .ant-form-item-label > label {
+          font-weight: 500;
+        }
+        .custom-modal .ant-input{
+          border-radius: 8px;
+          padding: 8px 12px;
+          font-size: 16px;
+          font-weight: 450;
         }
 
         @media (min-width: 768px) and (max-width: 1445px) {
@@ -2731,7 +2973,7 @@ const CandidateDetails = () => {
       @media (min-width: 768px) and (max-width: 1445px) {
         .custom-col-two {
           flex: 0 0 57%;  
-          max-width: 57%;
+          max-width: 100%;
         }
       }
 
@@ -2743,6 +2985,60 @@ const CandidateDetails = () => {
         font-size: 16px;
         font-weight: 450;
       }
+
+      .initial-section{
+       height: 130px;
+        background: #ffffff;
+        border: 1px solid transparent; 
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .initial-section-first-child{
+        display: flex;
+        align-items: center ;
+      }
+
+      @media (min-width: 768px) and (max-width: 1305px) {
+          .tab-container{
+            gap: 25%;
+          };
+        }
+
+        @media (min-width: 440px) and (max-width: 736px) {
+          .tab-container{
+            gap: 30%;
+          };
+        }
+
+        @media (min-width: 330px) and (max-width: 384px) {
+          .tab-container{
+            gap: 45%;
+          };
+        }
+
+        @media (min-width: 330px) and (max-width: 768px) {
+          .initial-section{
+            flex-direction: column;
+            height: 190px;
+            padding-top: 20px !important;
+            padding-bottom: 20px !important;
+          };
+      }
+
+      @media (min-width: 410px) and (max-width: 768px) {
+          .initial-section-sec-child{
+            padding-left: 50px !important;          
+          };
+      }
+      @media (min-width: 370px) and (max-width: 409px) {
+          .initial-section-sec-child{
+            padding-left: 25px !important;          
+          };
+      }
+
         
         
 

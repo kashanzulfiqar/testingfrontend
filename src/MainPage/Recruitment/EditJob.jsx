@@ -125,7 +125,7 @@ const EditJob = () => {
 
       <div className="row">
         <div className="col-md-12">
-          <Card>
+          <Card className='job-card'>
             <Spin spinning={loading}>
               <JobForm
                 form={form}
@@ -138,6 +138,15 @@ const EditJob = () => {
           </Card>
         </div>
       </div>
+
+      <style jsx global>{`
+        .job-card {
+          background: white;
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+          border: 1px solid #e0e3e6;
+        }
+      `}</style>
     </div>
   );
 };

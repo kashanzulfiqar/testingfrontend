@@ -24,7 +24,7 @@ const JobForm = ({
         ...initialValues
       }}
     >
-      <div className="row">
+      {/* <div className="row">
         <div className="col-md-6">
           <Form.Item
             name="department"
@@ -159,7 +159,165 @@ const JobForm = ({
         >
           {isEdit ? 'Update Job' : 'Create Job'}
         </Button>
-      </Form.Item>
+      </Form.Item> */}
+                <div className="row">
+            <div className="col-md-6">
+              <Form.Item
+                name="department"
+                label={<>Department</>}
+                rules={[{ required: true, message: 'Please select department' }]}
+              >
+                <Select placeholder="Enter Department" className= 'customized'>
+                  <Select.Option value="Engineering">Engineering</Select.Option>
+                  <Select.Option value="Marketing">Marketing</Select.Option>
+                  <Select.Option value="Sales">Sales</Select.Option>
+                  <Select.Option value="HR">HR</Select.Option>
+                  <Select.Option value="Finance">Finance</Select.Option>
+                  <Select.Option value="Operations">Operations</Select.Option>
+                  <Select.Option value="Design">Design</Select.Option>
+                  <Select.Option value="Product">Product</Select.Option>
+                </Select>
+              </Form.Item>
+            </div>
+            <div className="col-md-6">
+              <Form.Item
+                name="title"
+                label={<>Job Title <span className="text-danger">*</span></>}
+                rules={[{ required: true, message: 'Please enter job title' }]}
+              >
+                <Input placeholder="Enter Job" />
+              </Form.Item>
+            </div>
+          </div>
+
+          <div className="row">
+            <div className="col-md-6">
+              <Form.Item
+                name="jobType"
+                label={<>Job Type <span className="text-danger">*</span></>}
+                rules={[{ required: true, message: 'Please select job type' }]}
+              >
+                <Select placeholder="Full Time" className= 'customized'>
+                  <Select.Option value="FULL_TIME">Full Time</Select.Option>
+                  <Select.Option value="PART_TIME">Part Time</Select.Option>
+                  <Select.Option value="CONTRACT">Contract</Select.Option>
+                  <Select.Option value="INTERNSHIP">Internship</Select.Option>
+                  <Select.Option value="FREELANCE">Freelance</Select.Option>
+                </Select>
+              </Form.Item>
+            </div>
+            <div className="col-md-6">
+              <Form.Item
+                name="workSetup"
+                label={<>Work Setup <span className="text-danger">*</span></>}
+                rules={[{ required: true, message: 'Please select work setup' }]}
+              >
+                <Select placeholder="On-site" className= 'customized'>
+                  <Select.Option value="ONSITE">On-site</Select.Option>
+                  <Select.Option value="REMOTE">Remote</Select.Option>
+                  <Select.Option value="HYBRID">Hybrid</Select.Option>
+                </Select>
+              </Form.Item>
+            </div>
+          </div>
+
+          <div className="row">
+            <div className="col-md-6">
+              <Form.Item
+                name="salaryRange"
+                label={<>Salary Range <span className="text-danger">*</span></>}
+                rules={[{ required: true, message: 'Please enter salary range' }]}
+              >
+                <Input placeholder="100 - 200"/>
+              </Form.Item>
+            </div>
+            <div className="col-md-6">
+              <Form.Item
+                name="positions"
+                label={<>No of. Positions <span className="text-danger">*</span></>}
+                rules={[
+                  { required: true, message: 'Please enter number of positions' },
+                  { type: 'number', min: 1, message: 'Must be at least 1 position' }
+                ]}
+              >
+                <InputNumber min={1} style={{ width: '100%', display:"flex", alignItems:"center" }} placeholder="1" />
+              </Form.Item>
+            </div>
+          </div>
+
+          <Form.Item
+            name="description"
+            label={<>Job Description <span className="text-danger">*</span></>}
+            rules={[{ required: true, message: 'Please enter job description' }]}
+          >
+            <TextArea rows={6} placeholder="Add Description" />
+          </Form.Item>
+
+          <Form.Item
+            name="postingPlatforms"
+            label="Post this Job on"
+            initialValue={['WEBSITE']}
+          >
+            <Checkbox.Group>
+              <div className= 'checkbox-style'>
+                <Checkbox value="FACEBOOK">Facebook</Checkbox>
+                <Checkbox value="LINKEDIN">LinkedIn</Checkbox>
+                <Checkbox value="WEBSITE">Website</Checkbox>
+              </div>
+            </Checkbox.Group>
+          </Form.Item>
+
+          <Form.Item className="text-end mt-3" style={{backgroundColor:'transparent', height:"70px"}}>
+            <Button 
+              onClick={onCancel} 
+              style={{ 
+                marginRight: 12,
+                padding: '6px 24px',
+                height: '40px',
+                borderRadius: '40px',
+                background: '#F8F9FA',
+                border: 'none'
+              }}
+            >
+              Reset
+            </Button>
+            <Button 
+              type="primary" 
+              htmlType="submit" 
+              loading={loading}
+              style={{ 
+                padding: '6px 24px',
+                height: '40px',
+                borderRadius: '40px',
+                background: '#ff9244',
+                border: 'none',
+                color:"white"
+              }}
+            >
+              {isEdit ? 'Update Job' : 'Create Job' }
+            </Button>
+          </Form.Item>
+
+          <style jsx global>{`
+        .ant-input,
+        .ant-select-selector,
+        .ant-input-number {
+          border-radius: 8px;
+          padding: 8px 12px;
+          height: 56px;
+          font-size: 16px;
+          font-weight: 450;
+        }
+        
+        .customized .ant-select-selector{
+          height: 56px !important;
+          border-radius: 8px !important;
+          display: flex;
+          align-items: center;
+          padding-left: 10px;
+        }
+          
+          `}</style>
     </Form>
   );
 };

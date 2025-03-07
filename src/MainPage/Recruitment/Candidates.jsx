@@ -36,484 +36,7 @@ import phone from '../../assets/iconsRecruitment/phone.svg';
 import calander from '../../assets/iconsRecruitment/calander.svg';
 
 
-
-
-//   useEffect(() => {
-//     const token =
-//       localStorage.getItem("token") || authState?.access_token?.accessToken;
-    
-//     if (!token) {
-//       message.error("Please login again to continue");
-//       navigate("/login");
-//       return;
-//     }
-    
-//     fetchCandidates();
-//     // Fetch active jobs initially
-//     fetchActiveJobs();
-//   }, [filters, pagination.current, pagination.pageSize]);
-
-//   // Separate useEffect for fetching active jobs when modal opens
-//   useEffect(() => {
-//     if (isModalVisible) {
-//       fetchActiveJobs();
-//     }
-//   }, [isModalVisible]);
-
-//   const fetchCandidates = async () => {
-//     const token =
-//       localStorage.getItem("token") || authState?.access_token?.accessToken;
-    
-//     if (!token) {
-//       message.error("Authentication required");
-//       navigate("/login");
-//       return;
-//     }
-
-//     try {
-//       setLoading(true);
-//       const queryParams = {
-//         page: pagination.current,
-//         limit: pagination.pageSize,
-//         ...(filters.name && { name: filters.name }),
-//         ...(filters.appliedFor && { appliedFor: filters.appliedFor }),
-//         ...(filters.status && { status: filters.status }),
-//         includeInterviews: true,
-//         includeTasks: true,
-//       };
-
-//       const response = await apiServices(
-//         "GET", 
-//         `candidate/list?${new URLSearchParams(queryParams).toString()}`, 
-//         null, 
-//         {
-//           access_token: {
-//             accessToken: token,
-//           },
-//           headers: {
-//             Authorization: `Bearer ${token}`,
-//           },
-//         }
-//       );
-      
-//       if (response?.data?.status) {
-//         const candidateData = response.data.data;
-//         console.log("Candidates Response:", response.data);
-        
-//         if (Array.isArray(candidateData.docs)) {
-//           setCandidates(candidateData.docs);
-//           setPagination((prev) => ({
-//             ...prev,
-//             total: candidateData.totalDocs || 0,
-//           }));
-//         } else {
-//           message.error("Invalid data format received from server");
-//           setCandidates([]);
-//         }
-//       } else {
-//         if (response?.data?.message === "Invalid token") {
-//           message.error("Session expired. Please login again");
-//           navigate("/login");
-//         } else {
-//           message.error(
-//             response?.data?.message || "Failed to fetch candidates"
-//           );
-//           setCandidates([]);
-//         }
-//       }
-//     } catch (error) {
-//       console.error("Error fetching candidates:", error);
-//       if (error.response?.status === 401) {
-//         message.error("Session expired. Please login again");
-//         navigate("/login");
-//       } else {
-//         message.error("Error fetching candidates. Please try again");
-//         setCandidates([]);
-//       }
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   const handleSearch = (value) => {
-//     setFilters((prev) => ({
-//         ...prev,
-//       name: value,
-//     }));
-//     setPagination((prev) => ({
-//       ...prev,
-//       current: 1,
-//     }));
-//   };
-
-//   const handleTableChange = (newPagination, filters, sorter) => {
-//     setPagination((prev) => ({
-//       ...prev,
-//       current: newPagination.current,
-//       pageSize: newPagination.pageSize,
-//     }));
-//   };
-
-//   const handleDeleteCandidate = async (candidateId) => {
-//     const token =
-//       localStorage.getItem("token") || authState?.access_token?.accessToken;
-    
-//     if (!token) {
-//       message.error("Authentication required");
-//       navigate("/login");
-//       return;
-//     }
-
-//     try {
-//       setLoading(true);
-//       const response = await apiServices(
-//         "DELETE", 
-//         `candidate/${candidateId}`,
-//         null, 
-//         {
-//           access_token: {
-//             accessToken: token,
-//           },
-//           headers: {
-//             Authorization: `Bearer ${token}`,
-//           },
-//         }
-//       );
-
-//       if (response?.data?.status) {
-//         message.success("Candidate deleted successfully");
-//         fetchCandidates();
-//       } else {
-//         message.error(response?.data?.message || "Failed to delete candidate");
-//       }
-//     } catch (error) {
-//       console.error("Error deleting candidate:", error);
-//       message.error("Error deleting candidate. Please try again");
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   const fetchActiveJobs = async () => {
-//     const token =
-//       localStorage.getItem("token") || authState?.access_token?.accessToken;
-
-//     if (!token) return;
-
-//     try {
-//       const response = await apiServices("GET", "job/active", null, {
-//           access_token: {
-//           accessToken: token,
-//           },
-//           headers: {
-//           Authorization: `Bearer ${token}`,
-//         },
-//       });
-
-//       console.log("Active Jobs API Response:", response);
-
-//       if (response?.data?.status) {
-//         // Access the docs array from the response data
-//         const jobs = response.data.data.docs || [];
-//         console.log("Jobs data before setting:", jobs);
-
-//         if (Array.isArray(jobs)) {
-//           setActiveJobs(jobs);
-//           console.log("Active jobs set successfully:", jobs.length, "jobs");
-//       } else {
-//           console.error("Jobs data is not an array:", jobs);
-//           setActiveJobs([]);
-//         }
-//         } else {
-//         console.error("Failed to fetch active jobs:", response?.data);
-//         setActiveJobs([]);
-//       }
-//     } catch (error) {
-//       console.error("Error fetching active jobs:", error);
-//       setActiveJobs([]);
-//     }
-//   };
-
-//   const columns = [
-//     {
-//       title: "Name",
-//       key: "name",
-//       render: (_, record) => (
-//         <Link
-//           to={`/recruitment/candidates/${record._id}`}
-//           className="text-primary"
-//         >
-//           {`${record.firstName} ${record.lastName}`}
-//         </Link>
-//       ),
-//       sorter: true,
-//     },
-//     {
-//       title: "Applied For",
-//       dataIndex: "appliedFor",
-//       key: "appliedFor",
-//       render: (appliedFor) => {
-//         if (appliedFor?.title) {
-//           return `${appliedFor.title}${
-//             appliedFor.department ? ` - ${appliedFor.department}` : ""
-//           }`;
-//         }
-//         return "N/A";
-//       },
-//       sorter: true,
-//     },
-//     {
-//       title: "Email",
-//       dataIndex: "email",
-//       key: "email",
-//     },
-//     {
-//       title: "Phone",
-//       dataIndex: "phoneNumber",
-//       key: "phoneNumber",
-//     },
-//     {
-//       title: "Current Stage",
-//       key: "currentStage",
-//       render: (_, record) => {
-//         const stage = getCurrentStage(record);
-//         return (
-//           <Tag
-//             color={
-//               stage.type === "upcoming-interview"
-//                 ? "blue"
-//                 : stage.type === "pending-task"
-//                 ? "orange"
-//                 : stage.type === "completed-interview"
-//                 ? "green"
-//                 : stage.type === "completed-task"
-//                 ? "cyan"
-//                 : "default"
-//             }
-//             style={{
-//               padding: "4px 8px",
-//               borderRadius: "4px",
-//               fontSize: "12px",
-//             }}
-//           >
-//             {stage.text}
-//           </Tag>
-//         );
-//       },
-//     },
-//     {
-//       title: "Experience",
-//       dataIndex: "experience",
-//       key: "experience",
-//       render: (experience) => `${experience} years`,
-//     },
-//     {
-//       title: "Applied Date",
-//       dataIndex: "appliedDate",
-//       key: "appliedDate",
-//       render: (date) => new Date(date).toLocaleDateString(),
-//       sorter: true,
-//     },
-//     {
-//       title: "Status",
-//       dataIndex: "status",
-//       key: "status",
-//       render: (status) => (
-//         <Tag
-//           color={
-//             status === "NEW"
-//               ? "blue"
-//               : status === "SCREENING"
-//               ? "orange"
-//               : status === "SHORTLISTED"
-//               ? "green"
-//               : status === "REJECTED"
-//               ? "red"
-//               : status === "HIRED"
-//               ? "purple"
-//               : "default"
-//           }
-//         >
-//           {status?.charAt(0) + status?.slice(1).toLowerCase()}
-//         </Tag>
-//       ),
-//     },
-//     {
-//       title: "Actions",
-//       key: "actions",
-//       width: 80,
-//       render: (_, record) => (
-//         <Dropdown
-//           overlay={
-//             <Menu>
-//               <Menu.Item 
-//                 key="edit" 
-//                 icon={<EditOutlined />}
-//                 onClick={() =>
-//                   navigate(`/recruitment/candidates/${record._id}/edit`)
-//                 }
-//               >
-//                 Edit
-//               </Menu.Item>
-//               <Menu.Item
-//                 key="delete"
-//                 icon={<DeleteOutlined />}
-//                 danger
-//                 onClick={() => {
-//                   Modal.confirm({
-//                     title: "Delete Candidate",
-//                     content:
-//                       "Are you sure you want to delete this candidate? This action cannot be undone.",
-//                     okText: "Yes, Delete",
-//                     okType: "danger",
-//                     cancelText: "No",
-//                     onOk: () => handleDeleteCandidate(record._id),
-//                     okButtonProps: {
-//                       loading: loading,
-//                     },
-//                   });
-//                 }}
-//               >
-//                 Delete
-//               </Menu.Item>
-//             </Menu>
-//           }
-//           trigger={["click"]}
-//           placement="bottomRight"
-//         >
-//           <Button 
-//             type="text" 
-//             icon={
-//               <MoreOutlined
-//             style={{
-//                   transform: "rotate(90deg)",
-//                   fontSize: "16px",
-//                   color: "#6C757D",
-//                 }}
-//               />
-//             }
-//             style={{
-//               width: "32px",
-//               height: "32px",
-//               display: "flex",
-//               alignItems: "center",
-//               justifyContent: "center",
-//               padding: 0,
-//               border: "none",
-//               background: "transparent",
-//             }}
-//           />
-//         </Dropdown>
-//       ),
-//     },
-//   ];
-
-//   const handleAddCandidate = () => {
-//     setIsModalVisible(true);
-//   };
-
-//   const handleModalCancel = () => {
-//     setIsModalVisible(false);
-//   };
-
-//   const handleModalSuccess = () => {
-//     setIsModalVisible(false);
-//     fetchCandidates();
-//   };
-
-//   return (
-//     <div className="content container-fluid">
-//       {/* Header section */}
-//       <div className="page-header">
-//         <div className="row align-items-center">
-//           <div className="col">
-//             <h3 className="page-title" style={{color:'#212529', fontSize:'28px', fontWeight:'500'}}>Candidates</h3>
-//             <ul className="breadcrumb">
-//               <li className="breadcrumb-item">
-//                 <Link to="/recruitment/dashboard"  style={{color:'#212529', fontSize:'18px', fontWeight:'450'}}>Dashboard</Link>
-//               </li>
-//               <li className="breadcrumb-item active"  style={{color:'#212529', fontSize:'18px', fontWeight:'450'}}>Candidates</li>
-//             </ul>
-//           </div>
-//           <div className="col-auto float-end ms-auto">
-//           <Button
-//               className="add-candidate-btn"
-//               onClick={handleAddCandidate}
-//             >
-//               <div className='btn-content'>
-//                 <img src={circle} style={{marginRight:'8px', marginBottom:'20px'}}></img>
-//                 <p>Add Candidate</p>  
-//               </div>
-//             </Button>
-//           </div>
-//         </div>
-//       </div>
-
-//       {/* Search section */}
-//       <div className="row filter-row mb-4">
-//         <div className="col-sm-6 col-md-3">
-//           <Input.Search
-//             placeholder="Search candidates..."
-//               allowClear
-//             onSearch={handleSearch}
-//             style={{ width: "100%" }}
-//           />
-//         </div>
-//             </div>
-
-//       {/* Table section */}
-//       <div className="row">
-//         <div className="col-md-12">
-//                 <Table 
-//                   columns={columns}
-//                   dataSource={candidates}
-//             loading={loading}
-//             onChange={handleTableChange}
-//                   pagination={{
-//                     ...pagination,
-//                     showSizeChanger: true,
-//               showTotal: (total, range) =>
-//                 `${range[0]}-${range[1]} of ${total} candidates`,
-//                   }}
-//             rowKey="_id"
-//                 />
-//               </div>
-//         </div>
-
-//       {/* Create Candidate Modal */}
-//       <CreateCandidateModal
-//         visible={isModalVisible}
-//         onCancel={handleModalCancel}
-//         onSuccess={handleModalSuccess}
-//         activeJobs={activeJobs}
-//       />
-
-//       <style jsx global>{`
-//         .add-candidate-btn{
-//           border-radius: 40px !important;
-//           height: 44px !important;
-//           background-color: #ff9244 !important;
-//           color: white !important;
-//           font-weight: 500 !important;
-//           font-size: 16px !important;
-//           border: 2px solid #ff9244 !important;
-//           width: 185px !important;
-//         }
-        
-//         .btn-content{
-//           display: flex;
-//           justify-content: center;
-//           align-items: center;
-//         }
-//       `}</style>
-//     </div>
-//   );
-// };
-
-// export default Candidates; 
-
-
-const { TextArea } = Input;
+// const { TextArea } = Input;
 
 const Candidates = () => {
   const navigate = useNavigate();
@@ -735,7 +258,7 @@ const Candidates = () => {
       key: "name",
       render: (_, record) => {
         const fullName = `${record.firstName} ${record.lastName}`;
-        const initials = fullName.split(' ').map(name=>name.charAt(0).toUpperCase()).join('');
+        const initials = record.firstName[0].toUpperCase() + record.lastName[0].toUpperCase();
         return(
         <Link
           to={`/recruitment/candidates/${record._id}`}
@@ -743,7 +266,7 @@ const Candidates = () => {
         >
           <div style={{display:'flex', alignItems:'center'}}>
             <span style={{height: '40px', width:'40px', border: '1px solid tranparent', borderRadius:'50%', display:'flex', justifyContent:'center', alignItems:'center', fontSize:'16px', fontWeight:'500', color:'#8326ff', background: '#f3eaff'}}>{initials}</span>
-            <span style={{marginLeft: '10px'}}>{fullName}</span>
+            <span style={{marginLeft: '10px'}}>{fullName.split(' ').map(word=>word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}</span>
           </div>
         </Link>
         )
@@ -881,7 +404,7 @@ const Candidates = () => {
                   <div style={{display:'flex'}}>
                     <div style={{height:'50px' ,width:'50px', border:'1px solid transparent', borderRadius:'50%', background:"#f3eaff", color:'#8326ff', display:"flex", justifyContent:"center", alignItems:'center'}}>{initials}</div>
                     <div style={{marginLeft:"12px"}}>
-                      <div style={{fontSize:"18px" ,fontWeight:"500", color:'#212529'}}>{fullName}</div>
+                      <div><Link to={`/recruitment/candidates/${candidate._id}`}  style={{fontSize:"18px" ,fontWeight:"500", color:'#212529'}}>{fullName}</Link></div>
                       <div><Link to={`/recruitment/jobs/${candidate._id}`} style={{color:'#56616b', fontSize:'12px', fontWeight:"450"}}>{candidate?.appliedFor.title}</Link></div>
                     </div>
                   </div>
@@ -952,6 +475,7 @@ const Candidates = () => {
     setIsModalVisible(false);
     fetchCandidates();
   };
+
 
   return (
     <div className="content container-fluid">
@@ -1067,6 +591,7 @@ const Candidates = () => {
                   columns={columns}
                   dataSource={candidates}
                   rowKey="_id"
+                  scroll={{ x: 1350 }}
                   pagination={{
                     ...pagination,
                     showSizeChanger: true,
@@ -1190,6 +715,7 @@ const Candidates = () => {
           border-radius: 8px;
           box-shadow: 0 2px 4px rgba(0,0,0,0.05);
           border: 1px solid #e0e3e6;
+          box-sizing: border-box;
         }
         .job-card .ant-card-body {
           padding: 16px;
@@ -1270,13 +796,6 @@ const Candidates = () => {
         color: white !important;
         }
 
-        .customized .ant-select-selector{
-        height: 56px !important;
-        border-radius: 8px !important;
-        display: flex;
-        align-items: center;
-        padding-left: 10px;
-        }
 
         .add-candidate-btn{
           border-radius: 40px !important;

@@ -521,6 +521,29 @@ const CreateCandidateModal = ({
           </div>
         </div>
 
+        <div className="row">
+          <div className="col-md-6">
+            <Form.Item
+              name="skillset"
+              label={
+                <>
+                  Skill Set <span className="text-danger">*</span>
+                </>
+              }
+              rules={[
+                { required: true, message: "Please enter atleast one skill" },
+              ]}
+            >
+               <Select  className='customized'
+                  mode="tags"
+                  style={{ width: "100%" }}
+                  placeholder="Enter your Skills"
+                  tokenSeparators={[" "]}
+                />
+            </Form.Item>
+          </div>
+        </div>
+
         <Form.Item className="text-end mt-3">
           <Button
             onClick={handleCancel}

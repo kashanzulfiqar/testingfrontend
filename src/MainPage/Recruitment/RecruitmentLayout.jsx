@@ -17,6 +17,11 @@ import TaskDetails from './TaskDetails';
 import HiredCandidates from './HiredCandidates';
 import BlacklistedCandidates from './BlacklistedCandidates';
 import OfferedCandidates from './OfferedCandidates';
+import dashboard from '../../assets/iconsRecruitment/DashBoard.svg';
+import interviewIcon from '../../assets/iconsRecruitment/interview.svg';
+import candidateIcon from '../../assets/iconsRecruitment/candidate.svg';
+import jobsIcon from '../../assets/iconsRecruitment/jobsIcon.svg';
+import taskIcon from '../../assets/iconsRecruitment/taskIcon.svg';
 
 const RecruitmentLayout = () => {
   const location = useLocation();
@@ -41,19 +46,26 @@ const RecruitmentLayout = () => {
         <div className="sidebar-inner slimscroll">
           <div id="sidebar-menu" className="sidebar-menu">
             <ul>
-              <li className="menu-title">
-                <span>Recruitment</span>
+              <li className="menu-title align-items-center" style={{gap:'5px'}}>
+                <div style={{height:"4px" , width:"4px" , borderRadius:"50%" , background:"#ff9244"}}></div>
+                <span>Main</span>
               </li>
 
               <li className={pathname.includes("/recruitment/dashboard") ? "active" : ""}>
                 <Link to="/recruitment/dashboard">
-                  <i className="la la-dashboard" /> <span>Dashboard</span>
+                  <img src={dashboard}></img> <span>Dashboard</span>
                 </Link>
+              </li>
+            </ul>
+            <ul style={{marginTop:"10px"}}>
+              <li className="menu-title align-items-center" style={{gap:'5px'}}>
+                <div style={{height:"4px" , width:"4px" , borderRadius:"50%" , background:"#ff9244"}}></div>
+                <span>Recruitment</span>
               </li>
 
               <li className={pathname.includes("/recruitment/jobs") ? "active" : ""}>
                 <Link to="/recruitment/jobs">
-                  <i className="la la-briefcase" /> <span>Jobs</span>
+                  <img src={jobsIcon}></img> <span>Jobs</span>
                 </Link>
               </li>
 
@@ -62,31 +74,34 @@ const RecruitmentLayout = () => {
                   e.preventDefault();
                   toggleSubmenu('candidates');
                 }}>
-                  <i className="la la-user-plus" /> 
+                  <img src={candidateIcon}></img> 
                   <span>Candidates</span>
                   <span className={`menu-arrow ${openMenus.includes('candidates') ? 'active' : ''}`} />
                 </a>
                 <ul style={{ 
                   display: pathname.includes("/recruitment/candidates") || openMenus.includes('candidates') ? "block" : "none",
-                  paddingLeft: "34px"
                 }}>
                   <li className={pathname.includes("/recruitment/candidates/processing") ? "active" : ""}>
-                    <Link to="/recruitment/candidates/processing">
+                    <Link to="/recruitment/candidates/processing"  style={{display:"flex" , alignItems:"center"}}>
+                      <div style={{background:"#ff9244" , height:'4px' , width:"4px" , borderRadius:"50%"}}></div>
                       <span>Processing</span>
                     </Link>
                   </li>
                   <li className={pathname.includes("/recruitment/candidates/offered") ? "active" : ""}>
-                    <Link to="/recruitment/candidates/offered">
+                    <Link to="/recruitment/candidates/offered" style={{display:"flex" , alignItems:"center"}}>
+                      <div style={{background:"#ff9244" , height:'4px' , width:"4px" , borderRadius:"50%"}}></div>
                       <span>Offered</span>
                     </Link>
                   </li>
                   <li className={pathname.includes("/recruitment/candidates/hired") ? "active" : ""}>
-                    <Link to="/recruitment/candidates/hired">
+                    <Link to="/recruitment/candidates/hired" style={{display:"flex" , alignItems:"center"}}>
+                      <div style={{background:"#ff9244" , height:'4px' , width:"4px" , borderRadius:"50%"}}></div>
                       <span>Hired</span>
                     </Link>
                   </li>
                   <li className={pathname.includes("/recruitment/candidates/blacklist") ? "active" : ""}>
-                    <Link to="/recruitment/candidates/blacklist">
+                    <Link to="/recruitment/candidates/blacklist" style={{display:"flex" , alignItems:"center"}}>
+                      <div style={{background:"#ff9244" , height:'4px' , width:"4px" , borderRadius:"50%"}}></div>
                       <span>Blacklist</span>
                     </Link>
                   </li>
@@ -95,13 +110,13 @@ const RecruitmentLayout = () => {
 
               <li className={pathname.includes("/recruitment/interviews") ? "active" : ""}>
                 <Link to="/recruitment/interviews">
-                  <i className="la la-calendar" /> <span>Interviews</span>
+                  <img src={interviewIcon}></img> <span>Interviews</span>
                 </Link>
               </li>
 
               <li className={pathname.includes("/recruitment/tasks") ? "active" : ""}>
                 <Link to="/recruitment/tasks">
-                  <i className="la la-tasks" /> <span>Tasks</span>
+                  <img src={taskIcon}></img> <span>Tasks</span>
                 </Link>
               </li>
             </ul>

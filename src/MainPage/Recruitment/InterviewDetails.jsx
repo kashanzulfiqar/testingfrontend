@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { Card, Avatar, Tag, Button, Input, Form, message, Spin, Row, Col, Tooltip, Dropdown, Select } from 'antd';
+import { Card, Avatar, Tag, Button, Input, Form, message, Spin, Row, Col, Tooltip, Dropdown, Select, Menu } from 'antd';
 import { 
   ArrowLeftOutlined, 
   VideoCameraOutlined, 
@@ -21,6 +21,23 @@ import { apiServices } from '../../Services/apiServices';
 import moment from 'moment';
 import InterviewFeedback from './InterviewFeedback';
 import InterviewFeedbackDisplay from './InterviewFeedbackDisplay';
+import backBtn from '../../assets/iconsRecruitment/arrow-left.svg';
+import starIcon from '../../assets/iconsRecruitment/star.svg';
+import camera from '../../assets/iconsRecruitment/camera.svg';
+import interviewIcon from '../../assets/iconsRecruitment/interview.svg';
+import colored from '../../assets/iconsRecruitment/Colored.svg';
+import description from '../../assets/iconsRecruitment/description.svg';
+import list from '../../assets/iconsRecruitment/vertical.svg';
+import previewIcon from '../../assets/iconsRecruitment/previewIcon.svg';
+import downloadIcon from '../../assets/iconsRecruitment/downloadIcon.svg';
+import media from '../../assets/iconsRecruitment/Media.svg';
+import gallery from '../../assets/iconsRecruitment/Gallery.svg';
+import emoji from '../../assets/iconsRecruitment/Emoji.svg';
+import copyLink from '../../assets/iconsRecruitment/CopyLink.svg';
+
+
+
+
 
 const { TextArea } = Input;
 
@@ -32,7 +49,6 @@ const InterviewDetails = () => {
   const [comment, setComment] = useState('');
   const authState = useSelector((state) => state.user.loginvalue);
   const loggedInUser = useSelector((state) => state.user.loginvalue?.user);
-  const [isFeedbackModalVisible, setIsFeedbackModalVisible] = useState(false);
   const [feedbackForm] = Form.useForm();
 
   useEffect(() => {
@@ -75,64 +91,64 @@ const InterviewDetails = () => {
     }
   };
 
-  const handleCommentSubmit = async () => {
-    if (!comment.trim()) return;
+  // const handleCommentSubmit = async () => {
+  //   if (!comment.trim()) return;
 
-    const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
+  //   const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
     
-    try {
-      const response = await apiServices(
-        "POST",
-        `interview/${id}/comment`,
-        { 
-          text: comment.trim(),
-          user: {
-            firstName: loggedInUser?.firstName,
-            lastName: loggedInUser?.lastName,
-            imageUrl: loggedInUser?.imageUrl,
-            _id: loggedInUser?._id
-          }
-        },
-        {
-          access_token: {
-            accessToken: token
-          }
-        }
-      );
+  //   try {
+  //     const response = await apiServices(
+  //       "POST",
+  //       `interview/${id}/comment`,
+  //       { 
+  //         text: comment.trim(),
+  //         user: {
+  //           firstName: loggedInUser?.firstName,
+  //           lastName: loggedInUser?.lastName,
+  //           imageUrl: loggedInUser?.imageUrl,
+  //           _id: loggedInUser?._id
+  //         }
+  //       },
+  //       {
+  //         access_token: {
+  //           accessToken: token
+  //         }
+  //       }
+  //     );
 
-      if (response?.data?.success) {
-        message.success('Comment added successfully');
-        setComment('');
-        fetchInterviewDetails(); // Refresh the comments
-      } else {
-        message.error(response?.data?.message || 'Failed to add comment');
-      }
-    } catch (error) {
-      console.error('Error adding comment:', error);
-      message.error('Error adding comment');
-    }
-  };
+  //     if (response?.data?.success) {
+  //       message.success('Comment added successfully');
+  //       setComment('');
+  //       fetchInterviewDetails(); // Refresh the comments
+  //     } else {
+  //       message.error(response?.data?.message || 'Failed to add comment');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error adding comment:', error);
+  //     message.error('Error adding comment');
+  //   }
+  // };
 
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(interview.interviewLink)
-      .then(() => {
-        message.success('Interview link copied to clipboard');
-      })
-      .catch(() => {
-        message.error('Failed to copy link');
-      });
-  };
+  // const handleCopyLink = () => {
+  //   navigator.clipboard.writeText(interview.interviewLink)
+  //     .then(() => {
+  //       message.success('Interview link copied to clipboard');
+  //     })
+  //     .catch(() => {
+  //       message.error('Failed to copy link');
+  //     });
+  // };
 
-  const joinInterviewMenu = {
-    items: [
-      {
-        key: '1',
-        icon: <CopyOutlined />,
-        label: 'Copy Link',
-        onClick: handleCopyLink
-      }
-    ]
-  };
+  // const joinInterviewMenu = {
+  //   items: [
+  //     {
+  //       key: '1',
+  //       icon: <CopyOutlined />,
+  //       label: 'Copy Link',
+  //       onClick: handleCopyLink
+  //     }
+  //   ]
+  // };
 
   const handleFeedbackSubmit = async (values) => {
     const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
@@ -185,7 +201,6 @@ const InterviewDetails = () => {
           message.success('Feedback submitted successfully');
         }
         
-        setIsFeedbackModalVisible(false);
         fetchInterviewDetails(); // Refresh interview details to show new feedback and updated status
       } else {
         throw new Error(response?.data?.message || 'Failed to submit feedback');
@@ -251,24 +266,24 @@ const InterviewDetails = () => {
     }
   };
 
-  const getInterviewTypeDisplay = (type) => {
-    return type === 'ONLINE' ? 'Online' : 'In Person';
-  };
+  // const getInterviewTypeDisplay = (type) => {
+  //   return type === 'ONLINE' ? 'Online' : 'In Person';
+  // };
 
-  const resumeMenu = {
-    items: [
-      {
-        key: '1',
-        icon: <EyeOutlined />,
-        label: 'Preview',
-      },
-      {
-        key: '2',
-        icon: <DownloadOutlined />,
-        label: 'Download',
-      },
-    ],
-  };
+  // const resumeMenu = {
+  //   items: [
+  //     {
+  //       key: '1',
+  //       icon: <EyeOutlined />,
+  //       label: 'Preview',
+  //     },
+  //     {
+  //       key: '2',
+  //       icon: <DownloadOutlined />,
+  //       label: 'Download',
+  //     },
+  //   ],
+  // };
 
   const handleStatusChange = async (newStatus) => {
     const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
@@ -297,223 +312,992 @@ const InterviewDetails = () => {
     }
   };
 
+  const handlePreviewResume = () => {
+    if (!interview?.candidateId?.resume) {
+      message.error("No resume available for preview");
+      return;
+    }
+
+    window.open(interview.candidateId.resume, "_blank");
+  };
+
+  const handleDownloadResume = async () => {
+    if (!interview?.candidateId?.resume) {
+      message.error("No resume available for download");
+      return;
+    }
+
+    try {
+      const response = await fetch(interview?.candidateId.resume);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = interview.candidateId.resume.split("/").pop();
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      message.error("Failed to download resume");
+    }
+  };
+
+
+  const MainInterviewer = interview?.interviewerId?.imageUrl;
+  const OptionalInterviewer = interview?.assignedTo || [];
+
   return (
     <div className="content container-fluid">
-      {/* Breadcrumb Navigation */}
-      <div className="mb-4 d-flex align-items-center">
-        <Button 
-          icon={<ArrowLeftOutlined />} 
-          type="link" 
-          onClick={() => navigate('/recruitment/interviews')}
-          style={{ marginRight: '16px', padding: 0 }}
-        />
-        <div>
-          <ul className="breadcrumb mb-0">
-            <li className="breadcrumb-item"><Link to="/recruitment/dashboard">Dashboard</Link></li>
-            <li className="breadcrumb-item"><Link to="/recruitment/interviews">Interview</Link></li>
-            <li className="breadcrumb-item active">{interview?.candidateId?.firstName} {interview?.candidateId?.lastName}</li>
-          </ul>
+      {/* Header */}
+      <div className="page-header">
+        <div className="row align-items-center">
+          <div className="col">
+            <div className="d-flex align-items-center">
+              <div>
+                <h3 className="page-title mb-0">
+                  Interviews
+                </h3>
+                <ul className="breadcrumb">
+                  <li className="breadcrumb-item">
+                    <Link to="/recruitment/dashboard">Dashboard</Link>
+                  </li>
+                  <li className="breadcrumb-item">
+                    <Link to="/recruitment/interviews">Interviews</Link>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <div style={{width:'100%',borderTop:'1px solid #CFD4D8', display:'flex', justifySelf:'center', height:'50px', alignItems:'flex-end', marginBottom:'15px'}}>
+        <div style={{display:'flex', marginBottom:'6px'}}>
+          <div>
+            <button onClick={()=>navigate("/recruitment/interviews")} style={{marginRight: '16px' ,padding:'0', border:'none', background:'transparent'}}>
+              <img src={backBtn}></img>
+            </button>
+          </div>
+          <div>
+            <ul className="breadcrumb">
+              <li className="breadcrumb-item"><Link to="/recruitment/interviews">Interviews</Link></li>
+              <li className="breadcrumb-item active">{interview?.candidateName}</li>
+            </ul>
+          </div>
+        </div>
+        <div></div>
+      </div>
+
+      <div style={{height:'130px', background:'#ffffff' ,border:'1px solid transparent' , borderRadius:'8px', marginBottom:"20px", display:"flex", alignItems:"center", justifyContent:"space-between"}}>
+        <div style={{display:"flex", alignItems:'center'}}>
+          <div style={{height:'80px' ,width:"80px", border:"1px solid transparent" , borderRadius:"50%", background:'#f5f1fd', color:'#9368e9', display:"flex", justifyContent:"center", alignItems:'center', marginLeft:"20px", fontSize:"28px", fontweight:"500"}}>{interview?.candidateId.firstName?.[0].toUpperCase()}{interview?.candidateId.lastName?.[0].toUpperCase()}</div>
+          <div>
+            <h3 className="ms-3 mt-2 mb-0" style={{fontSize:'20px', fontweight:'500', color:"#000000"}}>{interview?.candidateName}</h3>
+            <h5 className='ms-3' style={{fontSize:'14px', fontweight:'450', color:"#444444"}} >Hello</h5> 
+            <div style={{paddingLeft:"10px"}}>
+              <img src={starIcon}></img>
+              <span style={{ marginLeft:'10px'}}>{calculateAverageRating()}</span>
+            </div>   
+          </div>
+          <Tag color={getStatusColor(interview?.status)} style={{borderRadius:'70px', marginLeft:'9px', marginTop:'-35px'}}>{interview?.status}</Tag>
+        </div>
+        <div className="col-auto float-end me-4">
+          <div
+            onClick={() => window.open(interview.interviewLink, '_blank')}
+            className= 'select-btn'
+          >
+            <div><img src={camera} style={{height:"20px", width:'20px'}}></img></div>
+            <h3 style={{fontSize:"16px" , fontWeight: '500', marginTop:"8px"}}>Join Interview</h3>
+          </div>
         </div>
       </div>
 
-      <Row gutter={24}>
-        <Col span={16}>
-          {/* Candidate Information Card */}
-          <Card className="mb-4">
-            <div className="d-flex justify-content-between align-items-start">
-              <div className="d-flex gap-3">
-                <Avatar 
-                  size={64} 
-                  style={{ backgroundColor: '#f56a00' }}
-                >
-                  {`${interview?.candidateId?.firstName?.charAt(0)}${interview?.candidateId?.lastName?.charAt(0)}`}
-                </Avatar>
-                <div>
-                  <h2 className="mb-1">{interview?.candidateId?.firstName} {interview?.candidateId?.lastName}</h2>
-                  <p className="text-muted mb-2">{interview?.candidateId?.jobTitle || 'Product Designer'}</p>
-                  <div className="d-flex align-items-center gap-2">
-                    <span className="d-flex align-items-center">
-                      <StarFilled style={{ color: '#FFD700', marginRight: 4 }} /> {calculateAverageRating()}
-                    </span>
-                    <Tag color={getStatusColor(interview?.status)}>{interview?.status}</Tag>
-                  </div>
-                </div>
-              </div>
-              {interview?.interviewType === 'ONLINE' && interview?.interviewLink && (
-                <Dropdown menu={joinInterviewMenu} trigger={['contextMenu']}>
-                  <Button 
-                    type="primary" 
-                    icon={<VideoCameraOutlined />}
-                    onClick={() => window.open(interview.interviewLink, '_blank')}
-                  >
-                    Join Interview
-                  </Button>
-                </Dropdown>
-              )}
+      <div  style={{background:'#ffffff' ,border:'1px solid transparent' , borderRadius:'8px', marginBottom:"20px" , padding:'25px'}}>
+        <div style={{display:"flex", justifyContent:'space-between'}}>
+          <div style={{display:'flex', gap:"20px"}}>
+            <div style={{height:"40px" ,width:"40px" ,borderRadius:'50%' ,background:"#f7f7f8", display:"flex" ,justifyContent:"center" ,alignItems:"center"}}><img src={interviewIcon}></img></div>
+            <div style={{marginTop:"7px" ,fontSize:"18px" ,fontWeight:"500" ,color:"#000000" }}>{interview?.interviewTitle}</div> 
+            <div style={{marginTop:"7px" }}><Tag color={getStatusColor(interview?.status)} style={{borderRadius:"60px"}}>{interview?.status}</Tag></div>
+          </div>
+          {interview?.status !== 'In-Review' && (
+            <div style={{paddingTop:'12px'}}>
+              <button
+                style={{background:"transparent" ,border:"none", fontSize:'14px' ,fontWeight:"450", color:"#ff9244", cursor:"pointer"}} 
+                onClick={() => setIsFeedbackModalVisible(true)}
+                disabled={hasUserSubmittedFeedback()}
+                title={hasUserSubmittedFeedback() ? "You have already submitted feedback for this interview" : ""}
+              >
+                <img src={colored} style={{height:"16px", width:"16px", marginRight:"4px", marginBottom:'3px'}}></img>
+                Add Feedback
+              </button>
             </div>
-          </Card>
-
-          {/* Interview Details Section */}
-          <Card className="mb-4">
-            <div className="d-flex justify-content-between align-items-start mb-4">
-              <div>
-                <h3 className="mb-2">{interview?.interviewName}</h3>
-                <div className="d-flex align-items-center gap-2">
-                  <Tag color={getStatusColor(interview?.status)}>{interview?.status}</Tag>
-                  <Select
-                    value={interview?.status?.toLowerCase()}
-                    style={{ width: 150 }}
-                    onChange={handleStatusChange}
-                    placeholder="Change Status"
-                  >
-                    <Select.Option value="scheduled">Scheduled</Select.Option>
-                    <Select.Option value="completed">Completed</Select.Option>
-                    <Select.Option value="cancelled">Cancelled</Select.Option>
-                    <Select.Option value="rescheduled">Rescheduled</Select.Option>
-                  </Select>
-                </div>
-              </div>
-              <div className="d-flex gap-3">
-                {interview?.candidateId?.resume && (
-                  <Dropdown menu={resumeMenu}>
-                    <Button type="primary" style={{ background: '#4CAF50', borderColor: '#4CAF50' }}>
-                      <FileTextOutlined /> Resume.pdf
-                    </Button>
-                  </Dropdown>
-                )}
-                <Button 
-                  type="primary" 
-                  icon={<PlusOutlined />}
-                  style={{ background: '#FF9B44', borderColor: '#FF9B44' }}
-                  onClick={() => setIsFeedbackModalVisible(true)}
-                  disabled={hasUserSubmittedFeedback()}
-                  title={hasUserSubmittedFeedback() ? "You have already submitted feedback for this interview" : ""}
-                >
-                  Add Feedback
-                </Button>
-              </div>
-            </div>
-            
-            <Row gutter={[24, 16]}>
-              <Col span={8}>
-                <p className="text-muted mb-1">Interview Type</p>
-                <p>{getInterviewTypeDisplay(interview?.interviewType)}</p>
-              </Col>
-              <Col span={8}>
-                <p className="text-muted mb-1">Interview Date</p>
-                <p>{moment(interview?.interviewDate).format('DD-MMM-YYYY')}</p>
-              </Col>
-              <Col span={8}>
-                <p className="text-muted mb-1">Interview Time</p>
-                <p>{interview?.interviewTime}</p>
-              </Col>
-            </Row>
-
-            <div className="mt-3">
-              <p className="text-muted mb-2">Main Interviewer</p>
-              <div className="d-flex align-items-center gap-2">
-                <Avatar src={interview?.interviewerId?.imageUrl}>
-                  {`${interview?.interviewerId?.firstName?.charAt(0)}${interview?.interviewerId?.lastName?.charAt(0)}`}
-                </Avatar>
-                <span>{interview?.interviewerId?.firstName} {interview?.interviewerId?.lastName}</span>
-              </div>
-            </div>
-
-            <div className="mt-3">
-              <p className="text-muted mb-2">Additional Interviewers</p>
-              <Avatar.Group maxCount={5}>
-                {interview?.assignedTo?.map((interviewer) => (
-                  <Tooltip key={interviewer._id} title={`${interviewer.firstName} ${interviewer.lastName}`}>
-                    <Avatar src={interviewer.imageUrl}>
-                      {`${interviewer.firstName?.charAt(0)}${interviewer.lastName?.charAt(0)}`}
-                    </Avatar>
-                  </Tooltip>
-                ))}
-              </Avatar.Group>
-            </div>
-
-            <div className="mt-3">
-              <p className="text-muted">Created By {interview?.createdBy?.firstName} {interview?.createdBy?.lastName}</p>
-            </div>
-          </Card>
-
-          {/* Feedback Display Section */}
-          {interview?.feedback?.map((feedback, index) => (
-            <InterviewFeedbackDisplay key={index} feedback={feedback} />
-          ))}
-
-          {/* Comments Section */}
-          <Card>
-            <h3 className="mb-4">Comments</h3>
-            <div className="comment-box mb-4">
-              <TextArea
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder="Enter Comment and hit enter"
-                autoSize={{ minRows: 3 }}
-                className="mb-3"
-              />
-              <div className="d-flex justify-content-between align-items-center">
-                <div className="d-flex gap-3">
-                  <Button type="text" icon={<BoldOutlined />} />
-                  <Button type="text" icon={<ItalicOutlined />} />
-                  <Button type="text" icon={<UnderlineOutlined />} />
-                  <Button type="text" icon={<PaperClipOutlined />} />
-                  <Button type="text" icon={<SmileOutlined />} />
-                </div>
-                <Button type="primary" onClick={handleCommentSubmit}>
-                  Add Comment
-                </Button>
-              </div>
-            </div>
-
-            {/* Display Comments */}
-            <div className="comments-list">
-              {interview?.comments?.map((comment, index) => (
-                <div key={index} className="comment-item mb-3 pb-3" style={{ borderBottom: '1px solid #f0f0f0' }}>
-                  <div className="d-flex gap-3">
-                    <Avatar 
-                      src={comment.user?.imageUrl}
-                      style={{ backgroundColor: comment.user?.imageUrl ? 'transparent' : '#f56a00' }}
-                    >
-                      {!comment.user?.imageUrl && `${comment.user?.firstName?.charAt(0)}${comment.user?.lastName?.charAt(0)}`}
-                    </Avatar>
-                    <div>
-                      <div className="d-flex align-items-center gap-2 mb-1">
-                        <strong>{comment.user?.firstName} {comment.user?.lastName}</strong>
-                        <span className="text-muted">•</span>
-                        <span className="text-muted">{moment(comment.createdAt).fromNow()}</span>
-                      </div>
-                      <p className="mb-0">{comment.text}</p>
-                    </div>
-                  </div>
-                </div>
+          )}
+        </div>
+        <Row gutter={[24, 16]} style={{marginTop:"10px"}}>
+          <Col span={6} style={{paddingTop:"10px"}}>
+            <p className="text-muted mb-1" style={{fontSize:"14px" ,fontWeight:"450",color:'#212529'}}>Interview Type</p>
+            <p  style={{fontSize:"16px" ,fontWeight:"500" ,color:'#3b4249'}}>{interview?.interviewType[0] + interview?.interviewType.slice(1).toLowerCase()}</p>
+          </Col>
+          <Col span={6} style={{paddingTop:"10px"}}>
+            <p className="text-muted mb-1" style={{fontSize:"14px" ,fontWeight:"450",color:'#212529'}}>Interview Date</p>
+            <p style={{fontSize:"16px" ,fontWeight:"500" ,color:'#3b4249'}}>{moment(interview?.interviewDate).format('DD-MMM-YYYY')}</p>
+          </Col>
+          <Col span={6} style={{paddingTop:"10px"}}>
+            <p className="text-muted mb-1"style={{fontSize:"14px" ,fontWeight:"450",color:'#212529'}}>Interview Time</p>
+            <p style={{fontSize:"16px" ,fontWeight:"500" ,color:'#3b4249'}}>{interview?.interviewTime}</p>
+          </Col>
+          <Col span={6} style={{paddingTop:"10px"}}>
+            <p className="text-muted mb-1"style={{fontSize:"14px" ,fontWeight:"450",color:'#212529'}}>Assign To</p>
+            <div>
+              <Link to="#" className="social-icon-one"><img src={MainInterviewer} style={{height:"30px" ,width:"30px" ,borderRadius:"50%", border:'2px solid white'}}></img></Link>
+              {OptionalInterviewer.map((interviewer, index) => (
+                <Link key={index} to="#" className="social-icon-two" style={{ marginLeft: "-10px" }}>
+                  <img src={interviewer?.imageUrl} style={{ height: "30px", width: "30px", borderRadius: "50%", border:'2px solid white'}}/>
+                </Link>
               ))}
+          </div>
+          </Col>
+        </Row>
+        <Row gutter={[24, 16]} style={{marginTop:"10px"}}>
+          <Col span={6} style={{paddingTop:"10px"}}>
+            <p className="text-muted mb-1" style={{fontSize:"14px" ,fontWeight:"450",color:'#212529'}}>Created By</p>
+            <p  style={{fontSize:"16px" ,fontWeight:"500" ,color:'#3b4249'}}>{interview?.createdBy?.fullName}</p>
+          </Col>
+          {interview?.status !== 'in-review' && (
+            <Col span={6} style={{paddingTop:"10px"}}>
+              <p className="text-muted mb-1" style={{fontSize:"14px" ,fontWeight:"450",color:'#212529'}}>Medium</p>
+              <p onClick={() => window.open(interview.interviewLink, '_blank')} style={{cursor:"pointer" ,textDecoration:"underLine" ,color:"#009efb"}}>www.zoom.com</p>
+            </Col>
+          )}
+        </Row>
+        {/* {interview?.candidateId?.resume && ( */}
+          <div style={{marginTop:"10px", border:"1px solid #cfd4d8" , borderRadius:"8px", display:'flex', alignItems:'center', justifyContent:"space-between", padding:"10px" ,height:"90px" ,width:"230px"}}>
+            <div style={{display:"flex"}}>
+              <div style={{height:"50px" ,width:"50px" ,borderRadius:"50%" ,background:'#55ce63', display:"flex", justifyContent:'center' ,alignItems:"center", alignSelf:"center"}}><img src={description}></img></div>
+              <div style={{padding:"10px 0px 10px 10px"}}>
+                <p style={{marginBottom:'0px' ,fontSize:"14px" ,fontWeight:"500"}}>{interview.candidateId.resume ? interview.candidateId.resume : 'undefined'}</p>
+                <p style={{marginBottom:'0px',fontSize:"12px" ,fontWeight:"450"}}>{interview.candidateId.resume ? interview.candidateId.resume : 'undefined'}</p>
+              </div>
+              </div>
+              <div>
+                <Dropdown
+                  overlay={<Menu>
+                    <Menu.Item key="edit" onClick={() =>{handlePreviewResume()}}>
+                      <div style={{display:"flex", gap:'6px'}}>
+                        <img src={previewIcon}></img>
+                        <p style={{marginBottom:"0px"}}>Preview</p>
+                      </div>
+                    </Menu.Item>
+                    <Menu.Item key="downlaod" onClick={() => {handleDownloadResume()}}>
+                    <div style={{display:'flex', gap:'6px'}}>
+                        <img src={downloadIcon}></img>
+                        <p style={{marginBottom:"0px"}}>Download</p>
+                      </div>
+                    </Menu.Item>
+                  </Menu>}
+                  trigger={['click']}
+                  placement="topRight">
+                  <div style={{ cursor: 'pointer',height:'25px' }}>
+                    <img src={list} alt="More Options" />
+                  </div>
+                </Dropdown>
+              </div >
             </div>
-          </Card>
-        </Col>
+        {/* )} */}
+        
+        {interview.status === 'completed' && (
+          <div>
+            {interview?.feedback?.map((feedback, index) => (
+              <InterviewFeedbackDisplay key={index} feedback={feedback} />
+            ))}
+          </div>
+        )}
+      </div>
 
-        <Col span={8}>
-          {/* Additional information or widgets can be added here */}
-        </Col>
-      </Row>
+      {/* comments if needed! */}
+      {/* <div style={{display:'flex',gap:'15px'}}>
+        <div>
+          <img src={MainInterviewer} style={{height:'40px' ,width:"40px" ,borderRadius:'50%' ,border:"1px solid transparent"}}></img>
+        </div>
+        <div style={{background:'#ffffff' ,border:'1px solid transparent' , borderRadius:'8px',padding:'10px 20px 15px 10px' , width:'100%'}}>
+          <TextArea
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            placeholder="Enter Comment and hit enter"
+            autoSize={{ minRows: 1 }}
+            style={{border:"none", fontSize:"16px" ,fontWeight:"450"}}
+          />
+          <div style={{display:'flex' ,justifyContent:"space-between",alignItems:'center' ,marginTop:"10px"}}>
+            <div className="d-flex gap-1 ms-3">
+              <button style={{border:"2px solid #f7f7f8" ,borderRadius:"4px" ,height:"35px" ,width:"35px"}}><img src={media}></img></button>
+              <button style={{border:"2px solid #f7f7f8" ,borderRadius:"4px" ,height:"35px" ,width:"35px"}}><img src={gallery}></img></button>
+              <button style={{border:"2px solid #f7f7f8" ,borderRadius:"4px" ,height:"35px" ,width:"35px"}}><img src={emoji}></img></button>
+              <button style={{border:"2px solid #f7f7f8" ,borderRadius:"4px" ,height:"35px" ,width:"35px"}}><img src={copyLink}></img></button>
+            </div>
+            <div>
+              <Button onClick={handleCommentSubmit} style={{color:"#ff9244", border:'1px solid #ff9244', borderRadius:"8px", fontSize:"16px" ,fontWeight:"450"}}>
+                Comment
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div> */}
+  
 
-      {/* Replace the Modal with InterviewFeedback component */}
-      <InterviewFeedback 
-        visible={isFeedbackModalVisible}
-        onCancel={() => setIsFeedbackModalVisible(false)}
-        onSubmit={handleFeedbackSubmit}
-      />
+    
 
       <style jsx>{`
-        .comment-box {
-          border: 1px solid #f0f0f0;
+        .btn-style{
+          width:50%;
+          font-size:14px; 
+          font-weight: 500;
+          color: #A5ADB6 ;
+          border: 1px solid transparent;
+        }
+        .info-card {
+          background: #fff;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+          border-radius: 8px;
+        }
+        .profile-img {
+          display: flex;
+          justify-content: center;
+          margin-bottom: 16px;
+        }
+        .profile-avatar {
+          width: 80px;
+          height: 80px;
+          border-radius: 50%;
+          background: #f5f5f5;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 24px;
+          font-weight: 500;
+          color: #666;
+          border: 1px solid #e8e8e8;
+        }
+        .section-title {
+          color: #333;
+          font-size: 16px;
+          font-weight: 600;
+          margin-bottom: 16px;
+        }
+        .info-section {
+          padding-top: 20px;
+          border-top: 1px solid #e8e8e8;
+          margin-top: 20px;
+        }
+        .info-section:first-child {
+          padding-top: 0;
+          border-top: none;
+          margin-top: 0;
+        }
+        .info-item {
+          display: flex;
+          align-items: flex-start;
+          margin-bottom: 12px;
+        }
+        .info-icon {
+          font-size: 16px;
+          margin-right: 12px;
+          color: #666;
+          margin-top: 3px;
+        }
+        .info-content {
+          flex: 1;
+        }
+        .info-label {
+          display: block;
+          font-size: 12px;
+          margin-bottom: 4px;
+          color: #666;
+        }
+        .info-value {
+          display: block;
+          font-size: 14px;
+          color: #333;
+          font-weight: 500;
+          line-height: 1.4;
+        }
+        .info-list {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        .info-row {
+          display: none;
+        }
+
+        .nav-tabs-custom .ant-tabs-nav {
+          margin-bottom: 20px;
+        }
+        .nav-tabs-custom .ant-tabs-tab {
+          padding: 12px 0;
+          margin: 0 0 0 32px;
+          font-size: 15px;
+        }
+
+        .nav-tabs-custom .ant-tabs-tab-active {
+          font-weight: 600;
+        }
+        .timeline-item {
+          padding-bottom: 20px;
+          border-left: 2px solid #e8e8e8;
+          margin-left: 16px;
+          padding-left: 20px;
+          position: relative;
+        }
+        .timeline-item::before {
+          content: "";
+          position: absolute;
+          left: -7px;
+          top: 0;
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          background: #f4a261;
+        }
+        .time {
+          color: #666;
+          font-size: 13px;
+          margin-bottom: 8px;
+        }
+        .event {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .files-content,
+        .interview-content {
+          min-height: 200px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #666;
+        }
+        .file-item {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 12px;
+          background: #f9f9f9;
           border-radius: 4px;
+          border: 1px solid #e8e8e8;
+        }
+        .ant-tag {
+          border-radius: 4px;
+          padding: 2px 8px;
+          font-size: 12px;
+          font-weight: 500;
+        }
+        .interview-modal .ant-modal-content {
+          border-radius: 3px;
+          overflow: hidden;
+        }
+
+        .interview-modal .ant-modal-header {
+          padding: 20px 24px;
+          border-bottom: 1px solid #f0f0f0;
+        }
+
+        .interview-modal .ant-modal-body {
+          padding: 24px;
+        }
+
+        .interview-modal .ant-form-item-label > label {
+          font-weight: 500;
+        }
+
+        .interview-modal .ant-input,
+        .interview-modal .ant-select-selector,
+        .interview-modal .ant-picker {
+          border-radius: 3px;
+          border-color: #e3e3e3;
+        }
+
+        .interview-modal .ant-input::placeholder,
+        .interview-modal .ant-select-selection-placeholder,
+        .interview-modal .ant-picker-input > input::placeholder {
+          color: #999;
+        }
+
+        .interview-modal .ant-tag {
+          margin-right: 3px;
+          background: #f4f4f4;
+          border: none;
+          border-radius: 3px;
+          padding: 4px 8px;
+        }
+
+
+        .ant-select-dropdown {
+          z-index: 1050;
+        }
+
+
+        .status-scheduled .ant-select-selector,
+        .status-scheduled  {
+          background-color: #e6f7ff !important;
+          border-color: #91d5ff !important;
+          color: #1890ff !important;
+        }
+
+        .status-completed .ant-select-selector,
+        .status-completed{
+          background-color: #f6ffed !important;
+          border-color: #b7eb8f !important;
+          color: #52c41a !important;
+        }
+
+        .status-cancelled .ant-select-selector,
+        .status-cancelled {
+          background-color: #fff1f0 !important;
+          border-color: #ffa39e !important;
+          color: #f5222d !important;
+        }
+
+        .status-rescheduled .ant-select-selector,
+        .status-rescheduled {
+          background-color: #fff7e6 !important;
+          border-color: #ffd591 !important;
+          color: #fa8c16 !important;
+        }
+
+        .status-new .ant-select-selector,
+        .status-new {
+          background-color: #e6f7ff !important;
+          border-color: #91d5ff !important;
+          color: #1890ff !important;
+        }
+
+        .status-new .ant-select-arrow {
+          color: #1890ff !important;
+          font-size: 14px !important;
+          padding-top: 5px !important;
+        }
+
+        .status-screening .ant-select-selector,
+        .status-screening {
+          background-color: #fff7e6 !important;
+          border-color: #ffd591 !important;
+          color: #fa8c16 !important;
+        }
+
+        .status-screening .ant-select-arrow {
+          color: #fa8c16 !important;
+          font-size: 14px !important;
+          padding-top: 5px !important;
+        }
+
+        .status-offer_sent .ant-select-selector,
+        .status-offer_sent {
+          background-color: #d3d3d3 !important;
+          border-color: #5e716a !important;
+          color: #5e716a !important;
+        }
+
+        .status-offer_sent .ant-select-arrow {
+          color: #5e716a !important;
+          font-size: 14px !important;
+          padding-top: 5px !important;
+        }
+        
+
+        .status-shortlisted .ant-select-selector,
+        .status-shortlisted {
+          background-color: #f6ffed !important;
+          border-color: #b7eb8f !important;
+          color: #52c41a !important;
+        }
+
+        .status-shortlisted .ant-select-arrow {
+          color: #52c41a !important;
+          font-size: 14px !important;
+          padding-top: 5px !important;
+        }
+
+        .status-hired .ant-select-selector,
+        .status-hired {
+          background-color: #f9f0ff !important;
+          border-color: #d3adf7 !important;
+          color: #722ed1 !important;
+        }
+
+        .status-hired .ant-select-arrow {
+          color: #722ed1 !important;
+          font-size: 14px !important;
+          padding-top: 5px !important;
+        }
+
+        .status-rejected .ant-select-selector,
+        .status-rejected {
+          background-color: #fff1f0 !important;
+          border-color: #ffa39e !important;
+          color: #f5222d !important;
+        }
+
+        .status-rejected .ant-select-arrow {
+          color: #f5222d !important;
+          font-size: 14px !important;
+          padding-top: 5px !important;
+        }
+
+
+        .task-card {
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+          border-radius: 8px;
+        }
+
+        .task-card .task-title {
+          font-size: 16px;
+          font-weight: 600;
+          color: #333;
+          margin-bottom: 12px;
+        }
+
+        .status-pending .ant-select-selector {
+          background-color: #fff7e6 !important;
+          border-color: #ffd591 !important;
+          color: #fa8c16 !important;
+        }
+
+        .status-submitted .ant-select-selector {
+          background-color: #e6f7ff !important;
+          border-color: #91d5ff !important;
+          color: #1890ff !important;
+        }
+
+        .status-completed .ant-select-selector {
+          background-color: #f6ffed !important;
+          border-color: #b7eb8f !important;
+          color: #52c41a !important;
+        }
+
+        .status-cancelled .ant-select-selector {
+          background-color: #fff1f0 !important;
+          border-color: #ffa39e !important;
+          color: #f5222d !important;
+        }
+
+        .file-card {
+          margin: 16px;
+        }
+
+        .file-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
           padding: 16px;
         }
+
+        .file-info {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+        }
+
+        .file-details {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .file-actions {
+          display: flex;
+          align-items: center;
+        }
+
+        .no-files-message {
+          text-align: center;
+          padding: 40px 0;
+        }
+
+
+        /* Offer Modal Styles */
+        :global(.offer-modal .ant-modal-content) {
+          border-radius: 8px;
+          overflow: hidden;
+        }
+
+        :global(.offer-modal .ant-modal-header) {
+          padding: 20px 24px;
+          border-bottom: 1px solid #f0f0f0;
+        }
+
+        :global(.offer-modal .ant-modal-body) {
+          padding: 24px;
+        }
+
+        :global(.offer-modal .ant-form-item-label > label) {
+          font-weight: 500;
+        }
+
+        :global(.offer-modal .ant-input),
+        :global(.offer-modal .ant-select-selector),
+        :global(.offer-modal .ant-picker) {
+          border-radius: 8px;
+          padding: 8px 12px;
+          height: 40px;
+          border-color: #e3e3e3;
+        }
+
+
+        :global(.offer-modal .ant-upload-drag) {
+          border: 2px dashed #e3e3e3;
+          border-radius: 4px;
+          background: #fafafa;
+          transition: all 0.3s;
+        }
+
+
+        :global(.offer-modal .ant-upload-drag-icon) {
+          color: #ff9b44;
+          font-size: 48px;
+          margin-bottom: 16px;
+        }
+
+        :global(.offer-modal .ant-upload-text) {
+          color: #666;
+          font-size: 16px;
+          margin-bottom: 8px;
+        }
+
+        :global(.offer-modal .ant-upload-hint) {
+          color: #999;
+        }
+
+        :global(.offer-modal .ant-btn-primary) {
+          background: #ff9b44;
+          border-color: #ff9b44;
+        }
+
+
+        .active-tab-styles{
+           display: flex ;
+            width: 60%;
+            justify-content: space-between;
+        }
+
+        .active-tab-timeline{
+          padding: 0 10px 15px 0px ;
+          font-size: 16px; 
+          font-weight: 500;
+        }
+        .active-tab-files{
+          padding: 0 10px 15px 0px ;
+          font-size: 16px; 
+          font-weight: 500;
+          color: activeTab === 'files' ? #ff9244 : #a5adb6;
+          cursor: pointer;
+          border-bottom: activeTab === 'files' ? 2px solid #ff9244: none;
+        }
+        .active-tab-interview{
+          padding: 0 10px 15px 0px ;
+          font-size: 16px; 
+          font-weight: 500;
+          color: activeTab === 'interview' ?  #ff9244  : #a5adb6;
+          cursor: pointer;
+          border-bottom: activeTab === 'interview' ?  2px solid #ff9244 : none;
+        }
+        .info-items-children{
+          display: flex ;
+        }
+
+        .select-btn{
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 7px;
+          border: 1px solid #ff9244;
+          border-radius: 8px;
+          background: #ff9244;
+          height: 45px;
+          width: 160px;
+          font-size: 16px;
+          font-weight: 500;
+          color: #ffffff;
+          cursor: pointer;
+        }
+
+
+
+        @media(min-width: 993px) and (max-width: 1280px){
+          .active-tab-styles{
+            width: 90%;
+          }
+        }
+        @media(min-width: 768px) and (max-width: 890px){
+          .active-tab-styles{
+            width: 90%;
+          }
+        }
+        @media(min-width: 430px) and (max-width: 767px){
+          .active-tab-styles{
+            width: 100%;
+          }
+        }
+        @media(min-width: 330px) and (max-width: 430px){
+          .active-tab-styles{
+            width: 100%;
+            gap: 20px;
+          }
+        }
+        @media(min-width: 330px) and (max-width: 430px){
+          .span-timeline img, .span-files img, .span-interview img{
+            display: none;
+            width: max-width;
+          }
+        }
+
+        @media (min-width: 768px) and (max-width: 1445px) {
+        .custom-col {
+          flex: 0 0 43%;  
+          max-width: 43%;
+        }
+      }
+
+      @media (min-width: 768px) and (max-width: 1445px) {
+        .custom-col-two {
+          flex: 0 0 57%;  
+          max-width: 57%;
+        }
+      }
+
+      .customized .ant-select-selector{
+        height: 45px !important;
+        border-radius: 8px !important;
+        display: flex;
+        align-items: center;
+        font-size: 16px;
+        font-weight: 450;
+      }
+        
+        
+
+
+
       `}</style>
     </div>
   );
+
+  // return (
+  //   <div className="content container-fluid">
+  //     {/* Breadcrumb Navigation */}
+  //     <div className="mb-4 d-flex align-items-center">
+  //       <Button 
+  //         icon={<ArrowLeftOutlined />} 
+  //         type="link" 
+  //         onClick={() => navigate('/recruitment/interviews')}
+  //         style={{ marginRight: '16px', padding: 0 }}
+  //       />
+  //       <div>
+  //         <ul className="breadcrumb mb-0">
+  //           <li className="breadcrumb-item"><Link to="/recruitment/dashboard">Dashboard</Link></li>
+  //           <li className="breadcrumb-item"><Link to="/recruitment/interviews">Interview</Link></li>
+  //           <li className="breadcrumb-item active">{interview?.candidateId?.firstName} {interview?.candidateId?.lastName}</li>
+  //         </ul>
+  //       </div>
+  //     </div>
+
+  //     <Row gutter={24}>
+  //       <Col span={16}>
+  //         {/* Candidate Information Card */}
+  //         <Card className="mb-4">
+  //           <div className="d-flex justify-content-between align-items-start">
+  //             <div className="d-flex gap-3">
+  //               <Avatar 
+  //                 size={64} 
+  //                 style={{ backgroundColor: '#f56a00' }}
+  //               >
+  //                 {`${interview?.candidateId?.firstName?.charAt(0)}${interview?.candidateId?.lastName?.charAt(0)}`}
+  //               </Avatar>
+  //               <div>
+  //                 <h2 className="mb-1">{interview?.candidateId?.firstName} {interview?.candidateId?.lastName}</h2>
+  //                 <p className="text-muted mb-2">{interview?.candidateId?.jobTitle || 'Product Designer'}</p>
+  //                 <div className="d-flex align-items-center gap-2">
+  //                   <span className="d-flex align-items-center">
+  //                     <StarFilled style={{ color: '#FFD700', marginRight: 4 }} /> {calculateAverageRating()}
+  //                   </span>
+  //                   <Tag color={getStatusColor(interview?.status)}>{interview?.status}</Tag>
+  //                 </div>
+  //               </div>
+  //             </div>
+  //             {interview?.interviewType === 'ONLINE' && interview?.interviewLink && (
+  //               <Dropdown menu={joinInterviewMenu} trigger={['contextMenu']}>
+  //                 <Button 
+  //                   type="primary" 
+  //                   icon={<VideoCameraOutlined />}
+  //                   onClick={() => window.open(interview.interviewLink, '_blank')}
+  //                 >
+  //                   Join Interview
+  //                 </Button>
+  //               </Dropdown>
+  //             )}
+  //           </div>
+  //         </Card>
+
+  //         {/* Interview Details Section */}
+  //         <Card className="mb-4">
+  //           <div className="d-flex justify-content-between align-items-start mb-4">
+  //             <div>
+  //               <h3 className="mb-2">{interview?.interviewName}</h3>
+  //               <div className="d-flex align-items-center gap-2">
+  //                 <Tag color={getStatusColor(interview?.status)}>{interview?.status}</Tag>
+  //                 <Select
+  //                   value={interview?.status?.toLowerCase()}
+  //                   style={{ width: 150 }}
+  //                   onChange={handleStatusChange}
+  //                   placeholder="Change Status"
+  //                 >
+  //                   <Select.Option value="scheduled">Scheduled</Select.Option>
+  //                   <Select.Option value="completed">Completed</Select.Option>
+  //                   <Select.Option value="cancelled">Cancelled</Select.Option>
+  //                   <Select.Option value="rescheduled">Rescheduled</Select.Option>
+  //                 </Select>
+  //               </div>
+  //             </div>
+  //             <div className="d-flex gap-3">
+  //               {interview?.candidateId?.resume && (
+  //                 <Dropdown menu={resumeMenu}>
+  //                   <Button type="primary" style={{ background: '#4CAF50', borderColor: '#4CAF50' }}>
+  //                     <FileTextOutlined /> Resume.pdf
+  //                   </Button>
+  //                 </Dropdown>
+  //               )}
+  //               <Button 
+  //                 type="primary" 
+  //                 icon={<PlusOutlined />}
+  //                 style={{ background: '#FF9B44', borderColor: '#FF9B44' }}
+  //                 onClick={() => setIsFeedbackModalVisible(true)}
+  //                 disabled={hasUserSubmittedFeedback()}
+  //                 title={hasUserSubmittedFeedback() ? "You have already submitted feedback for this interview" : ""}
+  //               >
+  //                 Add Feedback
+  //               </Button>
+  //             </div>
+  //           </div>
+            
+  //           <Row gutter={[24, 16]}>
+  //             <Col span={8}>
+  //               <p className="text-muted mb-1">Interview Type</p>
+  //               <p>{getInterviewTypeDisplay(interview?.interviewType)}</p>
+  //             </Col>
+  //             <Col span={8}>
+  //               <p className="text-muted mb-1">Interview Date</p>
+  //               <p>{moment(interview?.interviewDate).format('DD-MMM-YYYY')}</p>
+  //             </Col>
+  //             <Col span={8}>
+  //               <p className="text-muted mb-1">Interview Time</p>
+  //               <p>{interview?.interviewTime}</p>
+  //             </Col>
+  //           </Row>
+
+  //           <div className="mt-3">
+  //             <p className="text-muted mb-2">Main Interviewer</p>
+  //             <div className="d-flex align-items-center gap-2">
+  //               <Avatar src={interview?.interviewerId?.imageUrl}>
+  //                 {`${interview?.interviewerId?.firstName?.charAt(0)}${interview?.interviewerId?.lastName?.charAt(0)}`}
+  //               </Avatar>
+  //               <span>{interview?.interviewerId?.firstName} {interview?.interviewerId?.lastName}</span>
+  //             </div>
+  //           </div>
+
+  //           <div className="mt-3">
+  //             <p className="text-muted mb-2">Additional Interviewers</p>
+  //             <Avatar.Group maxCount={5}>
+  //               {interview?.assignedTo?.map((interviewer) => (
+  //                 <Tooltip key={interviewer._id} title={`${interviewer.firstName} ${interviewer.lastName}`}>
+  //                   <Avatar src={interviewer.imageUrl}>
+  //                     {`${interviewer.firstName?.charAt(0)}${interviewer.lastName?.charAt(0)}`}
+  //                   </Avatar>
+  //                 </Tooltip>
+  //               ))}
+  //             </Avatar.Group>
+  //           </div>
+
+  //           <div className="mt-3">
+  //             <p className="text-muted">Created By {interview?.createdBy?.firstName} {interview?.createdBy?.lastName}</p>
+  //           </div>
+  //         </Card>
+
+          // {/* Feedback Display Section */}
+          // {interview?.feedback?.map((feedback, index) => (
+          //   <InterviewFeedbackDisplay key={index} feedback={feedback} />
+          // ))}
+
+  //         {/* Comments Section */}
+  //         <Card>
+  //           <h3 className="mb-4">Comments</h3>
+  //           <div className="comment-box mb-4">
+  //             <TextArea
+  //               value={comment}
+  //               onChange={(e) => setComment(e.target.value)}
+  //               placeholder="Enter Comment and hit enter"
+  //               autoSize={{ minRows: 3 }}
+  //               className="mb-3"
+  //             />
+  //             <div className="d-flex justify-content-between align-items-center">
+  //               <div className="d-flex gap-3">
+  //                 <Button type="text" icon={<BoldOutlined />} />
+  //                 <Button type="text" icon={<ItalicOutlined />} />
+  //                 <Button type="text" icon={<UnderlineOutlined />} />
+  //                 <Button type="text" icon={<PaperClipOutlined />} />
+  //                 <Button type="text" icon={<SmileOutlined />} />
+  //               </div>
+  //               <Button type="primary" onClick={handleCommentSubmit}>
+  //                 Add Comment
+  //               </Button>
+  //             </div>
+  //           </div>
+
+  //           {/* Display Comments */}
+  //           <div className="comments-list">
+  //             {interview?.comments?.map((comment, index) => (
+  //               <div key={index} className="comment-item mb-3 pb-3" style={{ borderBottom: '1px solid #f0f0f0' }}>
+  //                 <div className="d-flex gap-3">
+  //                   <Avatar 
+  //                     src={comment.user?.imageUrl}
+  //                     style={{ backgroundColor: comment.user?.imageUrl ? 'transparent' : '#f56a00' }}
+  //                   >
+  //                     {!comment.user?.imageUrl && `${comment.user?.firstName?.charAt(0)}${comment.user?.lastName?.charAt(0)}`}
+  //                   </Avatar>
+  //                   <div>
+  //                     <div className="d-flex align-items-center gap-2 mb-1">
+  //                       <strong>{comment.user?.firstName} {comment.user?.lastName}</strong>
+  //                       <span className="text-muted">•</span>
+  //                       <span className="text-muted">{moment(comment.createdAt).fromNow()}</span>
+  //                     </div>
+  //                     <p className="mb-0">{comment.text}</p>
+  //                   </div>
+  //                 </div>
+  //               </div>
+  //             ))}
+  //           </div>
+  //         </Card>
+  //       </Col>
+
+  //       <Col span={8}>
+  //         {/* Additional information or widgets can be added here */}
+  //       </Col>
+  //     </Row>
+
+  //     {/* Replace the Modal with InterviewFeedback component */}
+  //     <InterviewFeedback 
+  //       visible={isFeedbackModalVisible}
+  //       onCancel={() => setIsFeedbackModalVisible(false)}
+  //       onSubmit={handleFeedbackSubmit}
+  //     />
+
+  //     <style jsx>{`
+  //       .comment-box {
+  //         border: 1px solid #f0f0f0;
+  //         border-radius: 4px;
+  //         padding: 16px;
+  //       }
+  //     `}</style>
+  //   </div>
+  // );
 };
 
 export default InterviewDetails; 

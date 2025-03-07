@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Form, Input, Select, DatePicker, Upload, Button, Row, Col, Alert, message } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 import moment from 'moment';
+import uploadIcon from '../../assets/iconsRecruitment/cloud.svg';
+import FormItem from 'antd/es/form/FormItem';
+import deleteIcon from '../../assets/iconsRecruitment/deleteIcon.svg';
 
 const SendOfferModal = ({ 
   visible, 
@@ -13,14 +16,80 @@ const SendOfferModal = ({
 }) => {
   const [form] = Form.useForm();
   const [uploadedContract, setUploadedContract] = useState(null);
+  const [fileInfo ,setFileinfo] = useState(null);
 
   // Set initial values when existing offer is present
+  // useEffect(() => {
+  //   if (existingOffer && visible) {
+  //     form.setFieldsValue({
+  //       salary: existingOffer.title,
+  //       currency: existingOffer.currency,
+  //       joiningDate: moment(existingOffer.joiningDate)
+  //     });
+  //   }
+  // }, [existingOffer, visible, form]);
+
+  // const handleCancel = () => {
+  //   form.resetFields();
+  //   setUploadedContract(null);
+  //   onCancel();
+  // };
+
+    // const handleSubmit = async (values) => {
+  //   const formData = new FormData();
+    
+  //   // Append form fields to FormData
+  //   formData.append('candidateId', candidate._id);
+  //   formData.append('salary', Number(values.salary)); // Convert to number
+  //   formData.append('currency', values.currency);
+  //   formData.append('joiningDate', values.joiningDate.format('YYYY-MM-DD'));
+    
+  //   // Only append contract if one is uploaded
+  //   if (uploadedContract) {
+  //     formData.append('contract', uploadedContract);
+  //   } else if (existingOffer?.contract) {
+  //     // If no new contract uploaded but existing offer has one, keep the existing contract
+  //     formData.append('contract', existingOffer.contract);
+  //   }
+
+  //   onSubmit(formData);
+  // };
+
+  // const handleContractUpload = ({ file }) => {
+  //   if (file.status === 'done' || file.status === 'uploading') {
+  //     setUploadedContract(file.originFileObj);
+  //   }
+  // };
+
+    // Validate file size and type
+  // const beforeUpload = (file) => {
+  //   const isValidType = [
+  //     'application/pdf',
+  //     'application/msword',
+  //     'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  //   ].includes(file.type);
+    
+  //   if (!isValidType) {
+  //     message.error('You can only upload PDF or Word documents!');
+  //     return false;
+  //   }
+
+  //   const isLt5M = file.size / 1024 / 1024 < 5;
+  //   if (!isLt5M) {
+  //     message.error('File must be smaller than 5MB!');
+  //     return false;
+  //   }
+
+  //   return false; 
+  // };
+
+
+
   useEffect(() => {
     if (existingOffer && visible) {
       form.setFieldsValue({
-        salary: existingOffer.salary,
-        currency: existingOffer.currency,
-        joiningDate: moment(existingOffer.joiningDate)
+        title: existingOffer.title,
+        description: existingOffer.description,
       });
     }
   }, [existingOffer, visible, form]);
@@ -36,9 +105,8 @@ const SendOfferModal = ({
     
     // Append form fields to FormData
     formData.append('candidateId', candidate._id);
-    formData.append('salary', Number(values.salary)); // Convert to number
-    formData.append('currency', values.currency);
-    formData.append('joiningDate', values.joiningDate.format('YYYY-MM-DD'));
+    formData.append('title', values.title);
+    formData.append('description', values.description);
     
     // Only append contract if one is uploaded
     if (uploadedContract) {
@@ -52,12 +120,12 @@ const SendOfferModal = ({
   };
 
   const handleContractUpload = ({ file }) => {
-    if (file.status === 'done' || file.status === 'uploading') {
+    if (file.status !== 'removed') {
       setUploadedContract(file.originFileObj);
+      setFileinfo({name: file.name, size:(file.size/1024).toFixed(2)+'KB'})
     }
   };
 
-  // Validate file size and type
   const beforeUpload = (file) => {
     const isValidType = [
       'application/pdf',
@@ -76,7 +144,7 @@ const SendOfferModal = ({
       return false;
     }
 
-    return false; // Return false to prevent auto upload
+    return false; 
   };
 
   return (
@@ -86,7 +154,7 @@ const SendOfferModal = ({
       onCancel={handleCancel}
       footer={null}
       width={600}
-      className="offer-modal"
+      className="custom-modal"
     >
       {existingOffer && (
         <Alert
@@ -103,8 +171,8 @@ const SendOfferModal = ({
         layout="vertical"
         onFinish={handleSubmit}
       >
-        <Row gutter={16}>
-          <Col span={12}>
+        {/* <Row gutter={16}>
+          <Col span={24}>
             <Form.Item
               name="salary"
               label="Salary"
@@ -131,9 +199,9 @@ const SendOfferModal = ({
               </Select>
             </Form.Item>
           </Col>
-        </Row>
+        </Row> */}
 
-        <Form.Item
+        {/* <Form.Item
           name="joiningDate"
           label="Joining Date"
           rules={[{ required: true, message: 'Please select joining date' }]}
@@ -143,129 +211,130 @@ const SendOfferModal = ({
             format="DD-MM-YYYY"
             disabledDate={(current) => current && current < moment().startOf('day')}
           />
+        </Form.Item> */}
+
+        
+
+        <div style={{height:"20px", width:"100%", display:"flex", justifyContent:"center", borderTop:"1px solid #E2E8F0"}}></div>
+        <Form.Item
+          name="title"
+          label="Title"
+          rules={[{required: true, message: 'Please enter the Title'}]}
+        >
+          <Input type="text" placeholder="Enter Title" />
         </Form.Item>
 
         <Form.Item
-          name="contract"
+          name="description"
+          label="Description"
+          rules={[{required: true, message: 'Please enter the Description'}]}
+        >
+          <Input.TextArea 
+            placeholder="Enter Description"
+            autoSize={{ minRows: 4, maxRows: 6 }}
+          />
+        </Form.Item>
+
+        <Form.Item
+          name="attachment"
           label={
             <span>
-              Contract Document <span style={{ color: '#888' }}>(Optional)</span>
+              Attachment
             </span>
           }
-          extra="Supported formats: PDF, DOC, DOCX. Max file size: 5MB"
+          // extra="Supported formats: PDF, DOC, DOCX. Max file size: 5MB"
         >
           <Upload.Dragger
-            name="contract"
+            name="attachment"
             maxCount={1}
             accept=".pdf,.doc,.docx"
             onChange={handleContractUpload}
             beforeUpload={beforeUpload}
-            showUploadList={{ showRemoveIcon: true }}
+            showUploadList={false}
           >
-            <p className="ant-upload-drag-icon">
-              <InboxOutlined />
-            </p>
-            <p className="ant-upload-text">Click or drag contract document to upload</p>
-            <p className="ant-upload-hint">
-              {existingOffer ? 'Upload new contract or keep existing' : 'Upload contract document (optional)'}
-            </p>
+            <div style={{display:"flex", justifyContent:"center" ,alignItems:"center"}}>
+              <img src={uploadIcon} style={{height:"25px", width:"25px", marginRight:"10px"}}></img>
+              <p>
+                {existingOffer ? 'Upload new contract or keep existing' : 'Drag and Drop your Files'}
+              </p>
+            </div>
           </Upload.Dragger>
         </Form.Item>
 
-        <Form.Item className="mb-0">
-          <div style={{ textAlign: 'right' }}>
-            <Button
-              style={{ marginRight: 8 }}
-              onClick={handleCancel}
-            >
-              Cancel
-            </Button>
-            <Button 
-              type="primary" 
-              htmlType="submit"
-              loading={loading}
-            >
-              {existingOffer ? 'Update Offer' : 'Send Offer'}
-            </Button>
-          </div>
-        </Form.Item>
+        <Form.Item name='uploadedfiles' label='Uploaded files'>
+            {fileInfo &&(
+              <div className='pt-2 pb-2 ps-3 pe-3' style={{display:"flex", justifyContent:"space-between" ,alignItems:"center", background:"#cfd4d8", borderRadius:"8px"}}>
+                <div style={{display:"flex" , flexDirection:'column'}}>
+                  <span>{fileInfo.name}</span>
+                  <span  style={{marginTop:"6px"}}>{fileInfo.size}</span>
+                </div>
+                <img src={deleteIcon} style={{height:'20px' ,width:"20px"}}></img>
+              </div>
+            )}
+        </Form.Item>  
+
+        <div className="text-end mt-4 pt-2 pb-4">
+          <Button 
+            onClick={handleCancel}
+            style={{ 
+              marginRight: '12px',
+              padding: '6px 24px',
+              height: '40px',
+              borderRadius: '20px',
+              background: '#F8F9FA',
+              border: 'none'
+            }}
+          >
+            Reset
+          </Button>
+          <Button 
+            type="primary" 
+            htmlType="submit"
+            style={{ 
+              padding: '6px 24px',
+              height: '40px',
+              borderRadius: '20px',
+              background: '#F4A261',
+              border: 'none'
+            }}
+            onClick={()=>{handleSubmit}}
+          >
+            Send Offer
+          </Button>
+        </div>
       </Form>
 
       <style jsx>{`
-        :global(.offer-modal .ant-modal-content) {
+        .custom-modal .ant-modal-header {
+          border-bottom: none;
+          padding: 24px 24px 0;
+        }
+        .custom-modal .ant-modal-title {
+          font-size: 24px;
+          font-weight: 600;
+        }
+        .custom-modal .ant-modal-close {
+          background-color: #F8F9FA;
+          border-radius: 50%;
+          border:"1px solid #F8F9FA";
+          margin:16px 16px 0 0;
+          width: 32px;
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .custom-modal .ant-input,
+        .custom-modal .ant-select-selector,
+        .custom-modal .ant-input-number {
           border-radius: 8px;
-          overflow: hidden;
-        }
-
-        :global(.offer-modal .ant-modal-header) {
-          padding: 20px 24px;
-          border-bottom: 1px solid #f0f0f0;
-        }
-
-        :global(.offer-modal .ant-modal-body) {
-          padding: 24px;
-        }
-
-        :global(.offer-modal .ant-form-item-label > label) {
-          font-weight: 500;
-        }
-
-        :global(.offer-modal .ant-input),
-        :global(.offer-modal .ant-select-selector),
-        :global(.offer-modal .ant-picker) {
-          border-radius: 4px;
-          border-color: #e3e3e3;
-        }
-
-        :global(.offer-modal .ant-input:hover),
-        :global(.offer-modal .ant-select-selector:hover),
-        :global(.offer-modal .ant-picker:hover) {
-          border-color: #ff9b44;
-        }
-
-        :global(.offer-modal .ant-input:focus),
-        :global(.offer-modal .ant-select-selector:focus),
-        :global(.offer-modal .ant-picker-focused) {
-          border-color: #ff9b44;
-          box-shadow: 0 0 0 2px rgba(255, 155, 68, 0.2);
-        }
-
-        :global(.offer-modal .ant-upload-drag) {
-          border: 2px dashed #e3e3e3;
-          border-radius: 4px;
-          background: #fafafa;
-          transition: all 0.3s;
-        }
-
-        :global(.offer-modal .ant-upload-drag:hover) {
-          border-color: #ff9b44;
-        }
-
-        :global(.offer-modal .ant-upload-drag-icon) {
-          color: #ff9b44;
-          font-size: 48px;
-          margin-bottom: 16px;
-        }
-
-        :global(.offer-modal .ant-upload-text) {
-          color: #666;
+          padding: 8px 12px;
+          height: 56px;
           font-size: 16px;
-          margin-bottom: 8px;
+          font-weight: 450;
         }
 
-        :global(.offer-modal .ant-upload-hint) {
-          color: #999;
-        }
-
-        :global(.offer-modal .ant-btn-primary) {
-          background: #ff9b44;
-          border-color: #ff9b44;
-        }
-
-        :global(.offer-modal .ant-btn-primary:hover) {
-          background: #ff8629;
-          border-color: #ff8629;
-        }
       `}</style>
     </Modal>
   );

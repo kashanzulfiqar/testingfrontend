@@ -17,6 +17,14 @@ import {
   PlusOutlined
 } from '@ant-design/icons';
 import moment from 'moment';
+import backBtn from '../../assets/iconsRecruitment/arrow-left.svg';
+import RightArrow from '../../assets/iconsRecruitment/RightArrow.svg';
+import description from '../../assets/iconsRecruitment/description.svg';
+import colored from '../../assets/iconsRecruitment/Colored.svg';
+import starIcon from '../../assets/iconsRecruitment/star.svg';
+
+
+
 
 const { TextArea } = Input;
 
@@ -24,12 +32,13 @@ const TaskDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [taskDetails, setTaskDetails] = useState(null);
+  const [task, setTask] = useState(null);
   const authState = useSelector((state) => state.user.loginvalue);
   const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
   const [feedbackForm] = Form.useForm();
   const [submitting, setSubmitting] = useState(false);
   const [statusUpdateLoading, setStatusUpdateLoading] = useState(false);
+
 
   useEffect(() => {
     fetchTaskDetails();
@@ -66,14 +75,14 @@ const TaskDetails = () => {
         console.log('Task details data:', response.data.data);
         console.log('Current user:', authState?.user);
         console.log('Task reviewers:', response.data.data.taskReviewers);
-        setTaskDetails(response.data.data);
+        setTask(response.data.data);
       } else {
         console.error('Failed to fetch task details:', response?.data);
         message.error(response?.data?.message || 'Failed to fetch task details');
       }
     } catch (error) {
       console.error('Error fetching task details:', error);
-      console.error('Error response:', error.response);
+      console.error('Error response:', error.response); 
       if (error.response?.status === 401) {
         message.error('Unauthorized access. Please login again.');
         navigate('/login');
@@ -111,8 +120,8 @@ const TaskDetails = () => {
     feedbackForm.setFieldsValue({
       evaluationDate: moment(),
       evaluatorName: authState?.user?.fullName || '',
-      candidateName: `${taskDetails.candidateId.firstName} ${taskDetails.candidateId.lastName}`,
-      jobTitle: taskDetails.candidateId.appliedFor?.title || ''
+      candidateName: `${task.candidateId.firstName} ${task.candidateId.lastName}`,
+      jobTitle: task.candidateId.appliedFor?.title || ''
     });
   };
 
@@ -176,8 +185,8 @@ const TaskDetails = () => {
   };
 
   const isUserTaskReviewer = () => {
-    if (!taskDetails?.taskReviewers || !authState?.user?._id) return false;
-    return taskDetails.taskReviewers.some(reviewer => reviewer._id === authState.user._id);
+    if (!task?.taskReviewers || !authState?.user?._id) return false;
+    return task.taskReviewers.some(reviewer => reviewer._id === authState.user._id);
   };
 
   const handleStatusUpdate = async (newStatus) => {
@@ -220,369 +229,1217 @@ const TaskDetails = () => {
     );
   }
 
+  const FirstName = task?.candidateId.firstName;
+  const LastName = task?.candidateId.lastName;
+  const FullName = FirstName + LastName;
+
+  
   return (
     <div className="content container-fluid">
-      {/* Page Header */}
+      {/* Header */}
       <div className="page-header">
         <div className="row align-items-center">
           <div className="col">
-            <h3 className="page-title">Task Details</h3>
+            <div className="d-flex align-items-center">
+              <div>
+                <h3 className="page-title mb-0">
+                  Tasks
+                </h3>
+                <ul className="breadcrumb">
+                  <li className="breadcrumb-item">
+                    <Link to="/recruitment/dashboard">Dashboard</Link>
+                  </li>
+                  <li className="breadcrumb-item">
+                    <Link to="/recruitment/tasks">Tasks</Link>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <div style={{width:'100%',borderTop:'1px solid #CFD4D8', display:'flex', justifySelf:'center', height:'50px', alignItems:'flex-end', marginBottom:'15px'}}>
+        <div style={{display:'flex', marginBottom:'6px'}}>
+          <div>
+            <button onClick={()=>navigate("/recruitment/tasks")} style={{marginRight: '16px' ,padding:'0', border:'none', background:'transparent'}}>
+              <img src={backBtn}></img>
+            </button>
+          </div>
+          <div>
             <ul className="breadcrumb">
-              <li className="breadcrumb-item">
-                <Link to="/recruitment/dashboard">Dashboard</Link>
-              </li>
-              <li className="breadcrumb-item">
-                <Link to="/recruitment/tasks">Tasks</Link>
-              </li>
-              <li className="breadcrumb-item active">Task Details</li>
+              <li className="breadcrumb-item"><Link to="/recruitment/tasks">Tasks</Link></li>
+              <li className="breadcrumb-item active">{FullName}</li>
             </ul>
           </div>
-          <div className="col-auto float-end ms-auto">
-            {isUserTaskReviewer() && (
-              <Button 
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={handleAddFeedback}
-              >
-                Add Feedback
-              </Button>
-            )}
+        </div>
+        <div></div>
+      </div>
+
+      <div style={{height:'130px', background:'#ffffff' ,border:'1px solid transparent' , borderRadius:'8px', marginBottom:"20px", display:"flex", alignItems:"center", justifyContent:"space-between"}}>
+        <div style={{display:"flex", alignItems:'center'}}>
+          <div style={{height:'80px' ,width:"80px", border:"1px solid transparent" , borderRadius:"50%", background:'#f5f1fd', color:'#9368e9', display:"flex", justifyContent:"center", alignItems:'center', marginLeft:"20px", fontSize:"28px", fontweight:"500"}}>{task?.candidateId.firstName?.[0].toUpperCase()}{task?.candidateId.lastName?.[0].toUpperCase()}</div>
+          <div>
+            <h3 className="ms-3 mt-2 mb-0" style={{fontSize:'20px', fontweight:'500', color:"#000000"}}>{FirstName + ' ' + LastName} </h3>
+            <h5 className='ms-3' style={{fontSize:'14px', fontweight:'450', color:"#444444"}} >Hello</h5> 
+            <div style={{paddingLeft:"10px"}}>
+              <img src={starIcon}></img>
+              <span style={{ marginLeft:'10px'}}>{task?.feedback.rating}</span>
+            </div>   
+          </div>
+          <Tag style={{borderRadius:'70px', marginLeft:'9px', marginTop:'-35px'}}>{task?.candidateId?.appliedFor.status[0] + task?.candidateId?.appliedFor.status.slice(1).toLowerCase()}</Tag>
+        </div>
+        <div className="col-auto float-end me-4">
+          <div
+            onClick={() => navigate(`/recruitment/candidates/${task.candidateId._id}`)}
+            className= 'select-btn'
+          >
+            <h3 style={{fontSize:"16px" , fontWeight: '500', marginTop:"8px"}}>Go to Profile</h3>
+            <div><img src={RightArrow} style={{height:"20px", width:'20px'}}></img></div>
           </div>
         </div>
       </div>
 
-      {taskDetails && (
-        <div className="row">
-          <div className="col-md-8">
-            <Card title="Task Information" className="mb-4">
-              <Descriptions column={1} bordered>
-                <Descriptions.Item label="Task Name">
-                  {taskDetails.taskName}
-                </Descriptions.Item>
-                <Descriptions.Item label="Description">
-                  {taskDetails.description}
-                </Descriptions.Item>
-                <Descriptions.Item label="Status">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <Tag color={getStatusColor(taskDetails.status)}>
-                      {taskDetails.status?.charAt(0).toUpperCase() + taskDetails.status?.slice(1).toLowerCase()}
-                    </Tag>
-                    <Select
-                      style={{ width: 150 }}
-                      placeholder="Change Status"
-                      onChange={handleStatusUpdate}
-                      loading={statusUpdateLoading}
-                      value={taskDetails.status}
-                    >
-                      <Select.Option value="PENDING">Pending</Select.Option>
-                      <Select.Option value="SUBMITTED">Submitted</Select.Option>
-                      <Select.Option value="COMPLETED">Completed</Select.Option>
-                      <Select.Option value="OVERDUE">Overdue</Select.Option>
-                    </Select>
-                  </div>
-                </Descriptions.Item>
-                <Descriptions.Item label="Duration">
-                  {taskDetails.taskDuration} days
-                </Descriptions.Item>
-                <Descriptions.Item label="Due Date">
-                  {moment(taskDetails.lastDateOfSubmission).format('DD MMM YYYY')}
-                </Descriptions.Item>
-              </Descriptions>
-            </Card>
-
-            {taskDetails.taskFile && (
-              <Card title="Task File" className="mb-4">
-                <div className="d-flex align-items-center">
-                  <FileTextOutlined style={{ fontSize: '24px', marginRight: '12px' }} />
-                  <div>
-                    <div>{taskDetails.taskFile.fileName}</div>
-                    <div className="text-muted">{Math.round(taskDetails.taskFile.bytes / 1024)} KB</div>
-                  </div>
-                  <Button 
-                    type="link" 
-                    href={taskDetails.taskFile.imageUrl}
-                    target="_blank"
-                    className="ms-auto"
-                  >
-                    Download
-                  </Button>
-                </div>
-              </Card>
-            )}
-
-            {taskDetails.submittedFile && (
-              <Card title="Submitted File" className="mb-4">
-                <div className="d-flex align-items-center">
-                  <FileTextOutlined style={{ fontSize: '24px', marginRight: '12px' }} />
-                  <div>
-                    <div>{taskDetails.submittedFile.fileName}</div>
-                    <div className="text-muted">{Math.round(taskDetails.submittedFile.bytes / 1024)} KB</div>
-                  </div>
-                  <Button 
-                    type="link" 
-                    href={taskDetails.submittedFile.imageUrl}
-                    target="_blank"
-                    className="ms-auto"
-                  >
-                    Download
-                  </Button>
-                </div>
-              </Card>
-            )}
-
-            <div className="mb-4">
-              <h4 className="mb-0">Feedback</h4>
-            </div>
-
-            {taskDetails.feedback && taskDetails.feedback.length > 0 && (
-              <Card title="Feedback" className="mb-4">
-                {taskDetails.feedback.map((feedback, index) => (
-                  <div key={index} className="mb-4">
-                    <Descriptions column={1} bordered>
-                      <Descriptions.Item label="Reviewer">
-                        <div className="d-flex align-items-center">
-                          {feedback.reviewerId.imageUrl ? (
-                            <img 
-                              src={feedback.reviewerId.imageUrl} 
-                              alt={feedback.reviewerId.fullName}
-                              style={{ width: 24, height: 24, borderRadius: '50%', marginRight: 8 }}
-                            />
-                          ) : (
-                            <UserOutlined style={{ marginRight: 8 }} />
-                          )}
-                          {feedback.reviewerId.fullName}
-                        </div>
-                      </Descriptions.Item>
-                      {feedback.rating && (
-                        <Descriptions.Item label="Rating">
-                          {feedback.rating}/5
-                        </Descriptions.Item>
-                      )}
-                      <Descriptions.Item label="Comment">
-                        {feedback.comment}
-                      </Descriptions.Item>
-                      <Descriptions.Item label="Decision">
-                        <Tag color={feedback.decision === 'PASS' ? 'success' : 'error'}>
-                          {feedback.decision}
-                        </Tag>
-                      </Descriptions.Item>
-                      <Descriptions.Item label="Date">
-                        {moment(feedback.evaluationDate).format('DD MMM YYYY')}
-                      </Descriptions.Item>
-                    </Descriptions>
-                  </div>
-                ))}
-              </Card>
-            )}
+      <div  style={{background:'#ffffff' ,border:'1px solid transparent' , borderRadius:'8px', marginBottom:"20px" , padding:'25px'}}>
+        <div style={{display:"flex", justifyContent:'space-between'}}>
+          <div style={{display:'flex', gap:"20px"}}>
+            <div style={{height:"40px" ,width:"40px" ,borderRadius:'50%' ,background:"#f7f7f8", display:"flex" ,justifyContent:"center" ,alignItems:"center"}}><img src={description}></img></div>
+            <div style={{marginTop:"7px" ,fontSize:"18px" ,fontWeight:"500" ,color:"#000000" }}>{task?.taskName}</div> 
+            <div style={{marginTop:"7px" }}><Tag color={getStatusColor(task?.status)} style={{borderRadius:"60px"}}>{task.status[0] + task.status.slice(1).toLowerCase()}</Tag></div>
           </div>
-
-          <div className="col-md-4">
-            <Card title="Candidate Information" className="mb-4">
-              <Descriptions column={1}>
-                <Descriptions.Item label="Name">
-                  <Link to={`/recruitment/candidates/${taskDetails.candidateId._id}`}>
-                    {taskDetails.candidateId.firstName} {taskDetails.candidateId.lastName}
-                  </Link>
-                </Descriptions.Item>
-                <Descriptions.Item label="Email">
-                  {taskDetails.candidateId.email}
-                </Descriptions.Item>
-                {taskDetails.candidateId.appliedFor && (
-                  <>
-                    <Descriptions.Item label="Applied For">
-                      <Link to={`/recruitment/jobs/${taskDetails.candidateId.appliedFor._id}`}>
-                        {taskDetails.candidateId.appliedFor.title}
-                      </Link>
-                    </Descriptions.Item>
-                    <Descriptions.Item label="Department">
-                      {taskDetails.candidateId.appliedFor.department}
-                    </Descriptions.Item>
-                    <Descriptions.Item label="Job Type">
-                      <Tag color="blue">
-                        {taskDetails.candidateId.appliedFor.jobType?.split('_').map(word => 
-                          word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-                        ).join(' ')}
-                      </Tag>
-                    </Descriptions.Item>
-                    <Descriptions.Item label="Work Setup">
-                      <Tag color="green">
-                        {taskDetails.candidateId.appliedFor.workSetup?.charAt(0).toUpperCase() + 
-                         taskDetails.candidateId.appliedFor.workSetup?.slice(1).toLowerCase()}
-                      </Tag>
-                    </Descriptions.Item>
-                    <Descriptions.Item label="Job Status">
-                      <Tag color={taskDetails.candidateId.appliedFor.status === 'ACTIVE' ? 'green' : 'red'}>
-                        {taskDetails.candidateId.appliedFor.status?.charAt(0).toUpperCase() + 
-                         taskDetails.candidateId.appliedFor.status?.slice(1).toLowerCase()}
-                      </Tag>
-                    </Descriptions.Item>
-                  </>
-                )}
-              </Descriptions>
-            </Card>
-
-            <Card title="Reviewers" className="mb-4">
-              {taskDetails.taskReviewers?.map((reviewer, index) => (
-                <div key={index} className="d-flex align-items-center mb-3">
-                  {reviewer.imageUrl ? (
-                    <img 
-                      src={reviewer.imageUrl} 
-                      alt={reviewer.fullName}
-                      style={{ width: 24, height: 24, borderRadius: '50%', marginRight: 8 }}
-                    />
-                  ) : (
-                    <UserOutlined style={{ marginRight: 8 }} />
-                  )}
-                  <span>{reviewer.fullName}</span>
-                </div>
+          {task?.status !== 'PENDING' && (
+            <div style={{paddingTop:'12px'}}>
+              <button
+                onClick={handleAddFeedback}
+                style={{background:"transparent" ,border:"none", fontSize:'14px' ,fontWeight:"450", color:"#ff9244", cursor:"pointer"}} 
+              >
+                <img src={colored} style={{height:"16px", width:"16px", marginRight:"4px", marginBottom:'3px'}}></img>
+                Add Feedback
+              </button>
+            </div>
+          )}
+        </div>
+        <Row gutter={[24, 16]} style={{marginTop:"10px"}}>
+          <Col span={6} style={{paddingTop:"10px"}}>
+            <p className="text-muted mb-1" style={{fontSize:"14px" ,fontWeight:"450",color:'#212529'}}>Task Type</p>
+            <p  style={{fontSize:"16px" ,fontWeight:"500" ,color:'#3b4249'}}>{task?.taskType}</p>
+          </Col>
+          <Col span={6} style={{paddingTop:"10px"}}>
+            <p className="text-muted mb-1"style={{fontSize:"14px" ,fontWeight:"450",color:'#212529'}}>Duration</p>
+            <p style={{fontSize:"16px" ,fontWeight:"500" ,color:'#3b4249'}}>{task?.taskDuration} Days</p>
+          </Col>
+          <Col span={6} style={{paddingTop:"10px"}}>
+            <p className="text-muted mb-1" style={{fontSize:"14px" ,fontWeight:"450",color:'#212529'}}>Deadline Date</p>
+            <p style={{fontSize:"16px" ,fontWeight:"500" ,color:'#3b4249'}}>{moment(task?.lastDateOfSubmission).format('DD-MMM-YYYY')}</p>
+          </Col>
+          <Col span={6} style={{paddingTop:"10px"}}>
+            <p className="text-muted mb-1"style={{fontSize:"14px" ,fontWeight:"450",color:'#212529'}}>Task Reviewers</p>
+            <div>
+              {task?.taskReviewers.map((reviewer, index) => (
+                <Link key={index} to="#" className="social-icon-two" style={{ marginLeft: "-10px" }}>
+                  <img src={reviewer?.imageUrl} style={{ height: "30px", width: "30px", borderRadius: "50%", border:'2px solid white'}}/>
+                </Link>
               ))}
-            </Card>
+          </div>
+          </Col>
+        </Row>
+        <Row gutter={[24, 16]} style={{marginTop:"10px"}}>
+          <Col span={6} style={{paddingTop:"10px"}}>
+            <p className="text-muted mb-1" style={{fontSize:"14px" ,fontWeight:"450",color:'#212529'}}>Created By</p>
+            <p  style={{fontSize:"16px" ,fontWeight:"500" ,color:'#3b4249'}}>{task?.createdBy?.fullName}</p>
+          </Col>
+        </Row>
+        
+        {task.status === 'task-reviewed' && (
+          <div>
+            {task?.feedback.map((feedback, index) => (
+                  <Card className="mb-4" style={{background:"#f7f7f8" , marginTop:"20px" ,borderRadius:"4px", padding:"15px 10px 15px 10px"}}>
+                  <div style={{display:'flex' ,justifyContent:"space-between"}}>
+                    <div style={{display:'flex', gap:'15px'}}>
+                      <h3 style={{fontSize:'16px' ,fontWeight:"500" ,color:"#212529" ,marginTop:"3px"}}>Task Feedback By</h3>
+                      <img src={feedback.reviewerId?.imageUrl} style={{height:"30px" ,width:"30px", borderRadius:'50%'}}></img>
+                      <p  style={{fontSize:'12px' ,fontWeight:"500" ,color:"#ff9244", marginBottom:'0px' ,marginTop:"5px"}}>{feedback?.reviewerId.fullName}</p>
+                    </div>
+                    <p style={{fontSize:'12px' ,fontWeight:"500" ,color:"#67748e", marginBottom:'0px', marginTop:'5px'}}>{moment(feedback.createdAt).format('ddd, MMM DD @ hh:mm a')}</p>
+                  </div>
+                  <div style={{display:'flex' ,gap:"15px" ,marginTop:"15px"}}>
+                    <p style={{fontSize:'12px' ,fontWeight:"500" ,color:"#212529", marginBottom:'0px' ,marginTop:"5px"}}>Decision:</p>
+                    <h3 style={{fontSize:'16px' ,fontWeight:"500",color:"#47ac52" ,marginTop:"3px" }}>{feedback.decision}</h3>
+                  </div>
+                  <div  style={{display:'flex' ,gap:"15px" ,marginTop:"15px"}}>
+                    <p style={{fontSize:'14px' ,fontWeight:"450" ,color:"#6f7d8a", marginBottom:'0px' ,marginTop:"5px"}}>{feedback.comment}</p>
+                  </div>
+                  <div  style={{display:'flex' ,gap:"15px" ,marginTop:"20px"}}>
+                    <div>
+                      <div style={{background:"#e0e3e6" , padding:'3px 5px 3px 5px'}}>Soft Skills</div>
+                      <div style={{display:'flex' , gap:"5px", marginTop:"5px"}}>
+                        <img src={star} style={{height:'14px' ,width:"14px"}}></img>
+                        <h3  style={{fontSize:"15px" ,fontWeight:'500', paddingBottom:'2px'}}>{feedback.ratings.softSkills}</h3>
+                      </div>
+                    </div>
+            
+                    {/* <div>
+                      <div style={{background:"#e0e3e6" , padding:'3px 5px 3px 5px'}}>Technical Skills</div>
+                      <div style={{display:'flex' , gap:"5px", marginTop:"5px"}}>
+                        <img src={star} style={{height:'14px' ,width:"14px"}}></img>
+                        <h3  style={{fontSize:"15px" ,fontWeight:'500', paddingBottom:'2px'}}>{feedback.ratings.technicalSkills1}</h3>
+                      </div>
+                    </div> */}
+            
+                    {/* <div>
+                      <div style={{background:"#e0e3e6" , padding:'3px 5px 3px 5px'}}>Behaviour</div>
+                      <div style={{display:'flex' , gap:"5px", marginTop:"5px"}}>
+                        <img src={star} style={{height:'14px' ,width:"14px"}}></img>
+                        <h3  style={{fontSize:"15px" ,fontWeight:'500', paddingBottom:'2px'}}>{feedback.ratings.behavior} </h3>
+                      </div>
+                    </div> */}
+            
+                    {/* <div>
+                      <div style={{background:"#e0e3e6" , padding:'3px 5px 3px 5px'}}>Technical Skills</div>
+                      <div style={{display:'flex' , gap:"5px", marginTop:"5px"}}>
+                        <img src={star} style={{height:'14px' ,width:"14px"}}></img>
+                        <h3  style={{fontSize:"15px" ,fontWeight:'500', paddingBottom:'2px'}}>{feedback.ratings.technicalSkills2}</h3>
+                      </div>
+                    </div> */}
+            
+                    {/* <div>
+                      <div style={{background:"#e0e3e6" , padding:'3px 5px 3px 5px'}}>Technical Skills</div>
+                      <div style={{display:'flex' , gap:"5px", marginTop:"5px"}}>
+                        <img src={star} style={{height:'14px' ,width:"14px"}}></img>
+                        <h3  style={{fontSize:"15px" ,fontWeight:'500', paddingBottom:'2px'}}>{feedback.ratings.technicalSkills3}</h3>
+                      </div>
+                    </div> */}
+                  </div>
+                </Card>
+            ))}
+          </div>
+        )}
+      </div>
 
-            <Card title="Timeline">
-              <Timeline>
-                <Timeline.Item dot={<CalendarOutlined />}>
-                  Created on {moment(taskDetails.createdAt).format('DD MMM YYYY')}
-                </Timeline.Item>
-                {taskDetails.submittedAt && (
-                  <Timeline.Item dot={<FileTextOutlined />}>
-                    Submitted on {moment(taskDetails.submittedAt).format('DD MMM YYYY')}
-                  </Timeline.Item>
-                )}
-                {taskDetails.status === 'COMPLETED' && (
-                  <Timeline.Item dot={<CheckCircleOutlined />}>
-                    Completed on {moment(taskDetails.updatedAt).format('DD MMM YYYY')}
-                  </Timeline.Item>
-                )}
-                <Timeline.Item dot={<ClockCircleOutlined />}>
-                  Due on {moment(taskDetails.lastDateOfSubmission).format('DD MMM YYYY')}
-                </Timeline.Item>
-              </Timeline>
-            </Card>
+      {/* comments if needed! */}
+      {/* <div style={{display:'flex',gap:'15px'}}>
+        <div>
+          <img src={MainInterviewer} style={{height:'40px' ,width:"40px" ,borderRadius:'50%' ,border:"1px solid transparent"}}></img>
+        </div>
+        <div style={{background:'#ffffff' ,border:'1px solid transparent' , borderRadius:'8px',padding:'10px 20px 15px 10px' , width:'100%'}}>
+          <TextArea
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            placeholder="Enter Comment and hit enter"
+            autoSize={{ minRows: 1 }}
+            style={{border:"none", fontSize:"16px" ,fontWeight:"450"}}
+          />
+          <div style={{display:'flex' ,justifyContent:"space-between",alignItems:'center' ,marginTop:"10px"}}>
+            <div className="d-flex gap-1 ms-3">
+              <button style={{border:"2px solid #f7f7f8" ,borderRadius:"4px" ,height:"35px" ,width:"35px"}}><img src={media}></img></button>
+              <button style={{border:"2px solid #f7f7f8" ,borderRadius:"4px" ,height:"35px" ,width:"35px"}}><img src={gallery}></img></button>
+              <button style={{border:"2px solid #f7f7f8" ,borderRadius:"4px" ,height:"35px" ,width:"35px"}}><img src={emoji}></img></button>
+              <button style={{border:"2px solid #f7f7f8" ,borderRadius:"4px" ,height:"35px" ,width:"35px"}}><img src={copyLink}></img></button>
+            </div>
+            <div>
+              <Button onClick={handleCommentSubmit} style={{color:"#ff9244", border:'1px solid #ff9244', borderRadius:"8px", fontSize:"16px" ,fontWeight:"450"}}>
+                Comment
+              </Button>
+            </div>
           </div>
         </div>
-      )}
+      </div> */}
 
-      {/* Feedback Modal */}
-      <Modal
-        title="Task Feedback Form"
-        open={feedbackModalVisible}
-        onCancel={() => setFeedbackModalVisible(false)}
-        footer={null}
-        width={800}
+<Modal
+  title="Add Feedback"
+  open={feedbackModalVisible}
+  onCancel={() => setFeedbackModalVisible(false)}
+  footer={null}
+  width={450}
+  className='custom-modal'
+>
+  <Form
+    form={feedbackForm}
+    layout="vertical"
+    onFinish={handleFeedbackSubmit}
+  >
+    <Form.Item
+      name="description"
+      label="Description"
+      rules={[{ required: true, message: 'Please provide feedback description' }]}
+    >
+      <TextArea rows={5} placeholder="Enter Description" style={{borderRadius:"8px"}}/>
+    </Form.Item>
+
+    <div style={{background:'#f7f7f8' , borderRadius:"12px"}}>
+      <div style={{display:'flex' ,justifyContent:'space-between',alignItems:"center" ,borderBottom:"1px solid #e0e3e6", padding:'12px 12px 8px 12px' ,fontWeight:"450" ,color:"black"}}>
+        <span>Rating</span>
+        <div style={{display:"flex" ,gap:'23px' ,fontSize:"10px" ,fontWeight:"450" ,color:"#6f7d8a",paddingLeft:'5px' ,paddingRight:'5px'}}>
+          <div>1</div>
+          <div>2</div>
+          <div>3</div>
+          <div>4</div>
+          <div>5</div>
+        </div>
+      </div>
+      <div style={{ padding:'6px 12px 12px 12px'}}>
+        <div style={{display:'flex' ,justifyContent:'space-between' ,borderBottom:'1px solid #eef0f1' , alignItems:"center" , height:"45px"}}>
+          <label>Technical Skill:</label> 
+          <Form.Item
+            name="technicalRating"
+            rules={[{ required: true, message: 'Please provide technical rating' }]}
+            style={{marginTop:"22px"}}
+          >
+            <Rate count={5}/>
+          </Form.Item>
+        </div>
+
+        <div style={{display:'flex' ,justifyContent:'space-between',borderBottom:'1px solid #eef0f1', alignItems:"center" , height:"45px"}}>
+          <label>Behavior</label>
+          <Form.Item
+            name="behaviorRating"
+            rules={[{ required: true, message: 'Please provide a behavior rating' }]}
+            style={{marginTop:"22px"}}
+          >
+            <Rate count={5}/>
+          </Form.Item>
+        </div>
+
+        <div style={{display:'flex' ,justifyContent:'space-between' ,borderBottom:'1px solid #eef0f1',alignItems:"center" , height:'45px'}}>
+          <label>Soft Skills</label>
+          <Form.Item
+          name="softSkillRating"
+          rules={[{ required: true, message: 'Please provide soft skill rating' }]}
+          style={{marginTop:"22px"}}
+          >
+            <Rate count={5}/>
+          </Form.Item>
+        </div>  
+      </div>
+    </div>
+
+    <Form.Item
+      name="decision"
+      rules={[{ required: true, message: 'Please select a decision' }]}
+      style={{marginTop:"15px"}}
+    >
+      <div style={{display:'flex' , border:'1px solid transparent' ,background:'#f7f7f8' ,borderRadius:'8px',display:"flex" ,justifyContent:"space-between"}}>
+        <Button onClick={()=>{feedbackForm.setFieldValue('decision' , 'STRONG YES')}} style={{border:"none" ,background:"transparent"}}>Strong Yes</Button>
+        <Button onClick={()=>{feedbackForm.setFieldValue('decision' , 'YES')}} style={{border:"none" ,background:"transparent"}}>Yes</Button>
+        <Button onClick={()=>{feedbackForm.setFieldValue('decision' , 'NO')}} style={{border:"none" ,background:"transparent"}}>No</Button>
+        <Button onClick={()=>{feedbackForm.setFieldValue('decision' , 'STRONG NO')}} style={{border:"none" ,background:"transparent"}}>Strong No</Button>
+      </div>
+    </Form.Item>
+
+    <Form.Item style={{display:'flex' ,justifyContent:"flex-end"}} className='pt-3 pb-3'>
+      <Button 
+        onClick={() => setFeedbackModalVisible(false)} 
+        style={{ marginRight:'8px' , borderRadius:'32px' ,fontSize:"16px" ,fontWeight:"500" ,color:"#a5adb6" ,background:"#f7f7f8" ,border:"1px solid transparent"}}
       >
-        <Form
-          form={feedbackForm}
-          layout="vertical"
-          onFinish={handleFeedbackSubmit}
-        >
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="candidateName"
-                label="Candidate Name"
-                rules={[{ required: true }]}
-              >
-                <Input disabled />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="jobTitle"
-                label="Job Title"
-                rules={[{ required: true }]}
-              >
-                <Input disabled />
-              </Form.Item>
-            </Col>
-          </Row>
+        Cancel
+      </Button>
+      <Button 
+        type="primary" 
+        htmlType="submit"
+        loading={submitting}
+        style={{borderRadius:'32px' ,fontSize:"16px" ,fontWeight:"500" ,color:"#white" ,background:"#ff9244",border:"1px solid transparent"}}
+      >
+        Submit Feedback
+      </Button>
+    </Form.Item>
+  </Form>
+</Modal>
 
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="evaluatorName"
-                label="Evaluator Name"
-                rules={[{ required: true }]}
-              >
-                <Input disabled />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="evaluationDate"
-                label="Evaluation Date"
-                rules={[{ required: true }]}
-              >
-                <DatePicker 
-                  style={{ width: '100%' }} 
-                  disabled 
-                />
-              </Form.Item>
-            </Col>
-          </Row>
+  
 
-          <Form.Item
-            name="rating"
-            label="Rating"
-            rules={[{ required: true, message: 'Please provide a rating' }]}
-          >
-            <Rate count={5} />
-          </Form.Item>
-
-          <Form.Item
-            name="comments"
-            label="Feedback Comments"
-            rules={[{ required: true, message: 'Please provide feedback comments' }]}
-          >
-            <TextArea rows={4} placeholder="Enter your detailed feedback here..." />
-          </Form.Item>
-
-          <Form.Item
-            name="decision"
-            label="Decision"
-            rules={[{ required: true, message: 'Please select a decision' }]}
-          >
-            <Radio.Group>
-              <Radio value="PASS">Pass</Radio>
-              <Radio value="FAIL">Fail</Radio>
-            </Radio.Group>
-          </Form.Item>
-
-          <Form.Item className="mb-0 text-right">
-            <Button 
-              onClick={() => setFeedbackModalVisible(false)} 
-              style={{ marginRight: 8 }}
-            >
-              Cancel
-            </Button>
-            <Button 
-              type="primary" 
-              htmlType="submit"
-              loading={submitting}
-            >
-              Submit Feedback
-            </Button>
-          </Form.Item>
-        </Form>
-      </Modal>
-
-      <style jsx global>{`
-        .ant-descriptions-bordered .ant-descriptions-item-label {
-          width: 200px;
-          background-color: #fafafa;
+    
+      <style jsx>{`
+        .btn-style{
+          width:50%;
+          font-size:14px; 
+          font-weight: 500;
+          color: #A5ADB6 ;
+          border: 1px solid transparent;
         }
-        .ant-card {
+        .info-card {
+          background: #fff;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
           border-radius: 8px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
-        .ant-timeline {
+        .profile-img {
+          display: flex;
+          justify-content: center;
+          margin-bottom: 16px;
+        }
+        .profile-avatar {
+          width: 80px;
+          height: 80px;
+          border-radius: 50%;
+          background: #f5f5f5;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 24px;
+          font-weight: 500;
+          color: #666;
+          border: 1px solid #e8e8e8;
+        }
+        .section-title {
+          color: #333;
+          font-size: 16px;
+          font-weight: 600;
+          margin-bottom: 16px;
+        }
+        .info-section {
+          padding-top: 20px;
+          border-top: 1px solid #e8e8e8;
+          margin-top: 20px;
+        }
+        .info-section:first-child {
+          padding-top: 0;
+          border-top: none;
+          margin-top: 0;
+        }
+        .info-item {
+          display: flex;
+          align-items: flex-start;
+          margin-bottom: 12px;
+        }
+        .info-icon {
+          font-size: 16px;
+          margin-right: 12px;
+          color: #666;
+          margin-top: 3px;
+        }
+        .info-content {
+          flex: 1;
+        }
+        .info-label {
+          display: block;
+          font-size: 12px;
+          margin-bottom: 4px;
+          color: #666;
+        }
+        .info-value {
+          display: block;
+          font-size: 14px;
+          color: #333;
+          font-weight: 500;
+          line-height: 1.4;
+        }
+        .info-list {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        .info-row {
+          display: none;
+        }
+
+        .nav-tabs-custom .ant-tabs-nav {
+          margin-bottom: 20px;
+        }
+        .nav-tabs-custom .ant-tabs-tab {
+          padding: 12px 0;
+          margin: 0 0 0 32px;
+          font-size: 15px;
+        }
+
+        .nav-tabs-custom .ant-tabs-tab-active {
+          font-weight: 600;
+        }
+        .timeline-item {
+          padding-bottom: 20px;
+          border-left: 2px solid #e8e8e8;
+          margin-left: 16px;
+          padding-left: 20px;
+          position: relative;
+        }
+        .timeline-item::before {
+          content: "";
+          position: absolute;
+          left: -7px;
+          top: 0;
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          background: #f4a261;
+        }
+        .time {
+          color: #666;
+          font-size: 13px;
+          margin-bottom: 8px;
+        }
+        .event {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .files-content,
+        .interview-content {
+          min-height: 200px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #666;
+        }
+        .file-item {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 12px;
+          background: #f9f9f9;
+          border-radius: 4px;
+          border: 1px solid #e8e8e8;
+        }
+        .ant-tag {
+          border-radius: 4px;
+          padding: 2px 8px;
+          font-size: 12px;
+          font-weight: 500;
+        }
+        .interview-modal .ant-modal-content {
+          border-radius: 3px;
+          overflow: hidden;
+        }
+
+        .interview-modal .ant-modal-header {
+          padding: 20px 24px;
+          border-bottom: 1px solid #f0f0f0;
+        }
+
+        .interview-modal .ant-modal-body {
+          padding: 24px;
+        }
+
+        .interview-modal .ant-form-item-label > label {
+          font-weight: 500;
+        }
+
+        .interview-modal .ant-input,
+        .interview-modal .ant-select-selector,
+        .interview-modal .ant-picker {
+          border-radius: 3px;
+          border-color: #e3e3e3;
+        }
+
+        .interview-modal .ant-input::placeholder,
+        .interview-modal .ant-select-selection-placeholder,
+        .interview-modal .ant-picker-input > input::placeholder {
+          color: #999;
+        }
+
+        .interview-modal .ant-tag {
+          margin-right: 3px;
+          background: #f4f4f4;
+          border: none;
+          border-radius: 3px;
+          padding: 4px 8px;
+        }
+
+
+        .ant-select-dropdown {
+          z-index: 1050;
+        }
+
+
+        .status-scheduled .ant-select-selector,
+        .status-scheduled  {
+          background-color: #e6f7ff !important;
+          border-color: #91d5ff !important;
+          color: #1890ff !important;
+        }
+
+        .status-completed .ant-select-selector,
+        .status-completed{
+          background-color: #f6ffed !important;
+          border-color: #b7eb8f !important;
+          color: #52c41a !important;
+        }
+
+        .status-cancelled .ant-select-selector,
+        .status-cancelled {
+          background-color: #fff1f0 !important;
+          border-color: #ffa39e !important;
+          color: #f5222d !important;
+        }
+
+        .status-rescheduled .ant-select-selector,
+        .status-rescheduled {
+          background-color: #fff7e6 !important;
+          border-color: #ffd591 !important;
+          color: #fa8c16 !important;
+        }
+
+        .status-new .ant-select-selector,
+        .status-new {
+          background-color: #e6f7ff !important;
+          border-color: #91d5ff !important;
+          color: #1890ff !important;
+        }
+
+        .status-new .ant-select-arrow {
+          color: #1890ff !important;
+          font-size: 14px !important;
+          padding-top: 5px !important;
+        }
+
+        .status-screening .ant-select-selector,
+        .status-screening {
+          background-color: #fff7e6 !important;
+          border-color: #ffd591 !important;
+          color: #fa8c16 !important;
+        }
+
+        .status-screening .ant-select-arrow {
+          color: #fa8c16 !important;
+          font-size: 14px !important;
+          padding-top: 5px !important;
+        }
+
+        .status-offer_sent .ant-select-selector,
+        .status-offer_sent {
+          background-color: #d3d3d3 !important;
+          border-color: #5e716a !important;
+          color: #5e716a !important;
+        }
+
+        .status-offer_sent .ant-select-arrow {
+          color: #5e716a !important;
+          font-size: 14px !important;
+          padding-top: 5px !important;
+        }
+        
+
+        .status-shortlisted .ant-select-selector,
+        .status-shortlisted {
+          background-color: #f6ffed !important;
+          border-color: #b7eb8f !important;
+          color: #52c41a !important;
+        }
+
+        .status-shortlisted .ant-select-arrow {
+          color: #52c41a !important;
+          font-size: 14px !important;
+          padding-top: 5px !important;
+        }
+
+        .status-hired .ant-select-selector,
+        .status-hired {
+          background-color: #f9f0ff !important;
+          border-color: #d3adf7 !important;
+          color: #722ed1 !important;
+        }
+
+        .status-hired .ant-select-arrow {
+          color: #722ed1 !important;
+          font-size: 14px !important;
+          padding-top: 5px !important;
+        }
+
+        .status-rejected .ant-select-selector,
+        .status-rejected {
+          background-color: #fff1f0 !important;
+          border-color: #ffa39e !important;
+          color: #f5222d !important;
+        }
+
+        .status-rejected .ant-select-arrow {
+          color: #f5222d !important;
+          font-size: 14px !important;
+          padding-top: 5px !important;
+        }
+
+
+        .task-card {
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+          border-radius: 8px;
+        }
+
+        .task-card .task-title {
+          font-size: 16px;
+          font-weight: 600;
+          color: #333;
+          margin-bottom: 12px;
+        }
+
+        .status-pending .ant-select-selector {
+          background-color: #fff7e6 !important;
+          border-color: #ffd591 !important;
+          color: #fa8c16 !important;
+        }
+
+        .status-submitted .ant-select-selector {
+          background-color: #e6f7ff !important;
+          border-color: #91d5ff !important;
+          color: #1890ff !important;
+        }
+
+        .status-completed .ant-select-selector {
+          background-color: #f6ffed !important;
+          border-color: #b7eb8f !important;
+          color: #52c41a !important;
+        }
+
+        .status-cancelled .ant-select-selector {
+          background-color: #fff1f0 !important;
+          border-color: #ffa39e !important;
+          color: #f5222d !important;
+        }
+
+        .file-card {
+          margin: 16px;
+        }
+
+        .file-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
           padding: 16px;
         }
-        .ant-timeline-item-content {
-          margin-left: 32px;
+
+        .file-info {
+          display: flex;
+          align-items: center;
+          gap: 16px;
         }
+
+        .file-details {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .file-actions {
+          display: flex;
+          align-items: center;
+        }
+
+        .no-files-message {
+          text-align: center;
+          padding: 40px 0;
+        }
+
+
+        /* Offer Modal Styles */
+        :global(.offer-modal .ant-modal-content) {
+          border-radius: 8px;
+          overflow: hidden;
+        }
+
+        :global(.offer-modal .ant-modal-header) {
+          padding: 20px 24px;
+          border-bottom: 1px solid #f0f0f0;
+        }
+
+        :global(.offer-modal .ant-modal-body) {
+          padding: 24px;
+        }
+
+        :global(.offer-modal .ant-form-item-label > label) {
+          font-weight: 500;
+        }
+
+        :global(.offer-modal .ant-input),
+        :global(.offer-modal .ant-select-selector),
+        :global(.offer-modal .ant-picker) {
+          border-radius: 8px;
+          padding: 8px 12px;
+          height: 40px;
+          border-color: #e3e3e3;
+        }
+
+
+        :global(.offer-modal .ant-upload-drag) {
+          border: 2px dashed #e3e3e3;
+          border-radius: 4px;
+          background: #fafafa;
+          transition: all 0.3s;
+        }
+
+
+        :global(.offer-modal .ant-upload-drag-icon) {
+          color: #ff9b44;
+          font-size: 48px;
+          margin-bottom: 16px;
+        }
+
+        :global(.offer-modal .ant-upload-text) {
+          color: #666;
+          font-size: 16px;
+          margin-bottom: 8px;
+        }
+
+        :global(.offer-modal .ant-upload-hint) {
+          color: #999;
+        }
+
+        :global(.offer-modal .ant-btn-primary) {
+          background: #ff9b44;
+          border-color: #ff9b44;
+        }
+
+
+        .active-tab-styles{
+           display: flex ;
+            width: 60%;
+            justify-content: space-between;
+        }
+
+        .active-tab-timeline{
+          padding: 0 10px 15px 0px ;
+          font-size: 16px; 
+          font-weight: 500;
+        }
+        .active-tab-files{
+          padding: 0 10px 15px 0px ;
+          font-size: 16px; 
+          font-weight: 500;
+          color: activeTab === 'files' ? #ff9244 : #a5adb6;
+          cursor: pointer;
+          border-bottom: activeTab === 'files' ? 2px solid #ff9244: none;
+        }
+        .active-tab-interview{
+          padding: 0 10px 15px 0px ;
+          font-size: 16px; 
+          font-weight: 500;
+          color: activeTab === 'interview' ?  #ff9244  : #a5adb6;
+          cursor: pointer;
+          border-bottom: activeTab === 'interview' ?  2px solid #ff9244 : none;
+        }
+        .info-items-children{
+          display: flex ;
+        }
+
+        .select-btn{
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 7px;
+          border: 1px solid #ff9244;
+          border-radius: 8px;
+          background: #ff9244;
+          height: 45px;
+          width: 160px;
+          font-size: 16px;
+          font-weight: 500;
+          color: #ffffff;
+          cursor: pointer;
+        }
+
+      .customized .ant-select-selector{
+        height: 45px !important;
+        border-radius: 8px !important;
+        display: flex;
+        align-items: center;
+        font-size: 16px;
+        font-weight: 450;
+      }
+
+      .custom-modal .ant-modal-close {
+        background-color: #F8F9FA;
+        border-radius: 50%;
+        border:"1px solid #F8F9FA";
+        margin:16px 16px 0 0;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .add-candidate-btn{
+          border-radius: 40px !important;
+          height: 44px !important;
+          background-color: #ff9244 !important;
+          color: white !important;
+          font-weight: 500 !important;
+          font-size: 16px !important;
+          border: 2px solid #ff9244 !important;
+          width: 185px !important;
+      }
+        
+      .btn-content{
+          display: flex;
+          justify-content: center;
+          align-items: center;
+      }
+
+      .search-btn {
+          background: #1f1f1f;
+          border: 1px solid #1f1f1f;
+          height: 40px;
+          border-radius: 8px;
+          width: 80% !important;
+          font-weight: 500;
+          font-size: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          justify-self: end;
+        }
+
       `}</style>
     </div>
   );
+
+  // return (
+  //   <div className="content container-fluid">
+  //     {/* Page Header */}
+  //     <div className="page-header">
+  //       <div className="row align-items-center">
+  //         <div className="col">
+  //           <h3 className="page-title">Task Details</h3>
+  //           <ul className="breadcrumb">
+  //             <li className="breadcrumb-item">
+  //               <Link to="/recruitment/dashboard">Dashboard</Link>
+  //             </li>
+  //             <li className="breadcrumb-item">
+  //               <Link to="/recruitment/tasks">Tasks</Link>
+  //             </li>
+  //             <li className="breadcrumb-item active">Task Details</li>
+  //           </ul>
+  //         </div>
+  //         <div className="col-auto float-end ms-auto">
+  //           {isUserTaskReviewer() && (
+  //             <Button 
+  //               type="primary"
+  //               icon={<PlusOutlined />}
+  //               onClick={handleAddFeedback}
+  //             >
+  //               Add Feedback
+  //             </Button>
+  //           )}
+  //         </div>
+  //       </div>
+  //     </div>
+
+  //     {taskDetails && (
+  //       <div className="row">
+  //         <div className="col-md-8">
+  //           <Card title="Task Information" className="mb-4">
+  //             <Descriptions column={1} bordered>
+  //               <Descriptions.Item label="Task Name">
+  //                 {taskDetails.taskName}
+  //               </Descriptions.Item>
+  //               <Descriptions.Item label="Description">
+  //                 {taskDetails.description}
+  //               </Descriptions.Item>
+  //               <Descriptions.Item label="Status">
+  //                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+  //                   <Tag color={getStatusColor(taskDetails.status)}>
+  //                     {taskDetails.status?.charAt(0).toUpperCase() + taskDetails.status?.slice(1).toLowerCase()}
+  //                   </Tag>
+  //                   <Select
+  //                     style={{ width: 150 }}
+  //                     placeholder="Change Status"
+  //                     onChange={handleStatusUpdate}
+  //                     loading={statusUpdateLoading}
+  //                     value={taskDetails.status}
+  //                   >
+  //                     <Select.Option value="PENDING">Pending</Select.Option>
+  //                     <Select.Option value="SUBMITTED">Submitted</Select.Option>
+  //                     <Select.Option value="COMPLETED">Completed</Select.Option>
+  //                     <Select.Option value="OVERDUE">Overdue</Select.Option>
+  //                   </Select>
+  //                 </div>
+  //               </Descriptions.Item>
+  //               <Descriptions.Item label="Duration">
+  //                 {taskDetails.taskDuration} days
+  //               </Descriptions.Item>
+  //               <Descriptions.Item label="Due Date">
+  //                 {moment(taskDetails.lastDateOfSubmission).format('DD MMM YYYY')}
+  //               </Descriptions.Item>
+  //             </Descriptions>
+  //           </Card>
+
+  //           {taskDetails.taskFile && (
+  //             <Card title="Task File" className="mb-4">
+  //               <div className="d-flex align-items-center">
+  //                 <FileTextOutlined style={{ fontSize: '24px', marginRight: '12px' }} />
+  //                 <div>
+  //                   <div>{taskDetails.taskFile.fileName}</div>
+  //                   <div className="text-muted">{Math.round(taskDetails.taskFile.bytes / 1024)} KB</div>
+  //                 </div>
+  //                 <Button 
+  //                   type="link" 
+  //                   href={taskDetails.taskFile.imageUrl}
+  //                   target="_blank"
+  //                   className="ms-auto"
+  //                 >
+  //                   Download
+  //                 </Button>
+  //               </div>
+  //             </Card>
+  //           )}
+
+  //           {taskDetails.submittedFile && (
+  //             <Card title="Submitted File" className="mb-4">
+  //               <div className="d-flex align-items-center">
+  //                 <FileTextOutlined style={{ fontSize: '24px', marginRight: '12px' }} />
+  //                 <div>
+  //                   <div>{taskDetails.submittedFile.fileName}</div>
+  //                   <div className="text-muted">{Math.round(taskDetails.submittedFile.bytes / 1024)} KB</div>
+  //                 </div>
+  //                 <Button 
+  //                   type="link" 
+  //                   href={taskDetails.submittedFile.imageUrl}
+  //                   target="_blank"
+  //                   className="ms-auto"
+  //                 >
+  //                   Download
+  //                 </Button>
+  //               </div>
+  //             </Card>
+  //           )}
+
+  //           <div className="mb-4">
+  //             <h4 className="mb-0">Feedback</h4>
+  //           </div>
+
+  //           {taskDetails.feedback && taskDetails.feedback.length > 0 && (
+  //             <Card title="Feedback" className="mb-4">
+  //               {taskDetails.feedback.map((feedback, index) => (
+  //                 <div key={index} className="mb-4">
+  //                   <Descriptions column={1} bordered>
+  //                     <Descriptions.Item label="Reviewer">
+  //                       <div className="d-flex align-items-center">
+  //                         {feedback.reviewerId.imageUrl ? (
+  //                           <img 
+  //                             src={feedback.reviewerId.imageUrl} 
+  //                             alt={feedback.reviewerId.fullName}
+  //                             style={{ width: 24, height: 24, borderRadius: '50%', marginRight: 8 }}
+  //                           />
+  //                         ) : (
+  //                           <UserOutlined style={{ marginRight: 8 }} />
+  //                         )}
+  //                         {feedback.reviewerId.fullName}
+  //                       </div>
+  //                     </Descriptions.Item>
+  //                     {feedback.rating && (
+  //                       <Descriptions.Item label="Rating">
+  //                         {feedback.rating}/5
+  //                       </Descriptions.Item>
+  //                     )}
+  //                     <Descriptions.Item label="Comment">
+  //                       {feedback.comment}
+  //                     </Descriptions.Item>
+  //                     <Descriptions.Item label="Decision">
+  //                       <Tag color={feedback.decision === 'PASS' ? 'success' : 'error'}>
+  //                         {feedback.decision}
+  //                       </Tag>
+  //                     </Descriptions.Item>
+  //                     <Descriptions.Item label="Date">
+  //                       {moment(feedback.evaluationDate).format('DD MMM YYYY')}
+  //                     </Descriptions.Item>
+  //                   </Descriptions>
+  //                 </div>
+  //               ))}
+  //             </Card>
+  //           )}
+  //         </div>
+
+  //         <div className="col-md-4">
+  //           <Card title="Candidate Information" className="mb-4">
+  //             <Descriptions column={1}>
+  //               <Descriptions.Item label="Name">
+  //                 <Link to={`/recruitment/candidates/${taskDetails.candidateId._id}`}>
+  //                   {taskDetails.candidateId.firstName} {taskDetails.candidateId.lastName}
+  //                 </Link>
+  //               </Descriptions.Item>
+  //               <Descriptions.Item label="Email">
+  //                 {taskDetails.candidateId.email}
+  //               </Descriptions.Item>
+  //               {taskDetails.candidateId.appliedFor && (
+  //                 <>
+  //                   <Descriptions.Item label="Applied For">
+  //                     <Link to={`/recruitment/jobs/${taskDetails.candidateId.appliedFor._id}`}>
+  //                       {taskDetails.candidateId.appliedFor.title}
+  //                     </Link>
+  //                   </Descriptions.Item>
+  //                   <Descriptions.Item label="Department">
+  //                     {taskDetails.candidateId.appliedFor.department}
+  //                   </Descriptions.Item>
+  //                   <Descriptions.Item label="Job Type">
+  //                     <Tag color="blue">
+  //                       {taskDetails.candidateId.appliedFor.jobType?.split('_').map(word => 
+  //                         word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+  //                       ).join(' ')}
+  //                     </Tag>
+  //                   </Descriptions.Item>
+  //                   <Descriptions.Item label="Work Setup">
+  //                     <Tag color="green">
+  //                       {taskDetails.candidateId.appliedFor.workSetup?.charAt(0).toUpperCase() + 
+  //                        taskDetails.candidateId.appliedFor.workSetup?.slice(1).toLowerCase()}
+  //                     </Tag>
+  //                   </Descriptions.Item>
+  //                   <Descriptions.Item label="Job Status">
+  //                     <Tag color={taskDetails.candidateId.appliedFor.status === 'ACTIVE' ? 'green' : 'red'}>
+  //                       {taskDetails.candidateId.appliedFor.status?.charAt(0).toUpperCase() + 
+  //                        taskDetails.candidateId.appliedFor.status?.slice(1).toLowerCase()}
+  //                     </Tag>
+  //                   </Descriptions.Item>
+  //                 </>
+  //               )}
+  //             </Descriptions>
+  //           </Card>
+
+  //           <Card title="Reviewers" className="mb-4">
+  //             {taskDetails.taskReviewers?.map((reviewer, index) => (
+  //               <div key={index} className="d-flex align-items-center mb-3">
+  //                 {reviewer.imageUrl ? (
+  //                   <img 
+  //                     src={reviewer.imageUrl} 
+  //                     alt={reviewer.fullName}
+  //                     style={{ width: 24, height: 24, borderRadius: '50%', marginRight: 8 }}
+  //                   />
+  //                 ) : (
+  //                   <UserOutlined style={{ marginRight: 8 }} />
+  //                 )}
+  //                 <span>{reviewer.fullName}</span>
+  //               </div>
+  //             ))}
+  //           </Card>
+
+  //           <Card title="Timeline">
+  //             <Timeline>
+  //               <Timeline.Item dot={<CalendarOutlined />}>
+  //                 Created on {moment(taskDetails.createdAt).format('DD MMM YYYY')}
+  //               </Timeline.Item>
+  //               {taskDetails.submittedAt && (
+  //                 <Timeline.Item dot={<FileTextOutlined />}>
+  //                   Submitted on {moment(taskDetails.submittedAt).format('DD MMM YYYY')}
+  //                 </Timeline.Item>
+  //               )}
+  //               {taskDetails.status === 'COMPLETED' && (
+  //                 <Timeline.Item dot={<CheckCircleOutlined />}>
+  //                   Completed on {moment(taskDetails.updatedAt).format('DD MMM YYYY')}
+  //                 </Timeline.Item>
+  //               )}
+  //               <Timeline.Item dot={<ClockCircleOutlined />}>
+  //                 Due on {moment(taskDetails.lastDateOfSubmission).format('DD MMM YYYY')}
+  //               </Timeline.Item>
+  //             </Timeline>
+  //           </Card>
+  //         </div>
+  //       </div>
+  //     )}
+
+  //     {/* Feedback Modal */}
+  //     <Modal
+  //       title="Task Feedback Form"
+  //       open={feedbackModalVisible}
+  //       onCancel={() => setFeedbackModalVisible(false)}
+  //       footer={null}
+  //       width={800}
+  //     >
+  //       <Form
+  //         form={feedbackForm}
+  //         layout="vertical"
+  //         onFinish={handleFeedbackSubmit}
+  //       >
+  //         <Row gutter={16}>
+  //           <Col span={12}>
+  //             <Form.Item
+  //               name="candidateName"
+  //               label="Candidate Name"
+  //               rules={[{ required: true }]}
+  //             >
+  //               <Input disabled />
+  //             </Form.Item>
+  //           </Col>
+  //           <Col span={12}>
+  //             <Form.Item
+  //               name="jobTitle"
+  //               label="Job Title"
+  //               rules={[{ required: true }]}
+  //             >
+  //               <Input disabled />
+  //             </Form.Item>
+  //           </Col>
+  //         </Row>
+
+  //         <Row gutter={16}>
+  //           <Col span={12}>
+  //             <Form.Item
+  //               name="evaluatorName"
+  //               label="Evaluator Name"
+  //               rules={[{ required: true }]}
+  //             >
+  //               <Input disabled />
+  //             </Form.Item>
+  //           </Col>
+  //           <Col span={12}>
+  //             <Form.Item
+  //               name="evaluationDate"
+  //               label="Evaluation Date"
+  //               rules={[{ required: true }]}
+  //             >
+  //               <DatePicker 
+  //                 style={{ width: '100%' }} 
+  //                 disabled 
+  //               />
+  //             </Form.Item>
+  //           </Col>
+  //         </Row>
+
+  //         <Form.Item
+  //           name="rating"
+  //           label="Rating"
+  //           rules={[{ required: true, message: 'Please provide a rating' }]}
+  //         >
+  //           <Rate count={5} />
+  //         </Form.Item>
+
+  //         <Form.Item
+  //           name="comments"
+  //           label="Feedback Comments"
+  //           rules={[{ required: true, message: 'Please provide feedback comments' }]}
+  //         >
+  //           <TextArea rows={4} placeholder="Enter your detailed feedback here..." />
+  //         </Form.Item>
+
+  //         <Form.Item
+  //           name="decision"
+  //           label="Decision"
+  //           rules={[{ required: true, message: 'Please select a decision' }]}
+  //         >
+  //           <Radio.Group>
+  //             <Radio value="PASS">Pass</Radio>
+  //             <Radio value="FAIL">Fail</Radio>
+  //           </Radio.Group>
+  //         </Form.Item>
+
+  //         <Form.Item className="mb-0 text-right">
+  //           <Button 
+  //             onClick={() => setFeedbackModalVisible(false)} 
+  //             style={{ marginRight: 8 }}
+  //           >
+  //             Cancel
+  //           </Button>
+  //           <Button 
+  //             type="primary" 
+  //             htmlType="submit"
+  //             loading={submitting}
+  //           >
+  //             Submit Feedback
+  //           </Button>
+  //         </Form.Item>
+  //       </Form>
+  //     </Modal>
+
+  //     <style jsx global>{`
+  //       .ant-descriptions-bordered .ant-descriptions-item-label {
+  //         width: 200px;
+  //         background-color: #fafafa;
+  //       }
+  //       .ant-card {
+  //         border-radius: 8px;
+  //         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  //       }
+  //       .ant-timeline {
+  //         padding: 16px;
+  //       }
+  //       .ant-timeline-item-content {
+  //         margin-left: 32px;
+  //       }
+  //     `}</style>
+  //   </div>
+  // );
 };
 
 export default TaskDetails; 

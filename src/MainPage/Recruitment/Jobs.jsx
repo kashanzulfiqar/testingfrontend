@@ -385,7 +385,7 @@ const Jobs = () => {
       render: (_, record) => (
         <Dropdown
         overlay={<Menu>
-        <Menu.Item key="edit" icon={<EditOutlined />}onClick={() => navigate(`/recruitment/jobs/${job._id}/edit`)}>Edit</Menu.Item>
+        <Menu.Item key="edit" icon={<EditOutlined />}onClick={() => navigate(`/recruitment/jobs/${record._id}/edit`)}>Edit</Menu.Item>
         <Menu.Item key="delete" icon={<DeleteOutlined />} danger onClick={() => {
           Modal.confirm({
             title: 'Delete Job',
@@ -393,7 +393,7 @@ const Jobs = () => {
             okText: 'Yes, Delete',
             okType: 'danger',
             cancelText: 'No',
-            onOk: () => handleDeleteJob(job._id)
+            onOk: () => handleDeleteJob(record._id)
           });
         }}>Delete</Menu.Item>
         </Menu>}
@@ -543,15 +543,13 @@ const Jobs = () => {
               /> */}
             </div>
             <Button
-              // style={{borderRadius:"40px" ,height:"44px", backgroundColor:"#ff9244", color:"white", fontWeight:"500", fontSize:"16px", border:'2px solid #ff924', width:window.innerWidth<1400?"120px":'190px'}}
               className="add-candidate-btn"
               onClick={handleAddJob}
             >
               <div className='btn-content'>
                 <img src={circle} style={{marginRight:'8px', marginBottom:'20px'}}></img>
-                <p>Add Candidate</p>  
+                <p>Add New Job</p>  
               </div>
-
             </Button>
           </div>
         </div>
@@ -1107,6 +1105,22 @@ const Jobs = () => {
         .applications-count{
          margin-right: 0;}
         } 
+        @media(min-width: 768px) and (max-width: 1300px){
+          .job-card{
+            height: 300px;
+          }
+          .job-title{
+            font-size: 16px;
+          }
+        }
+        @media(min-width: 576px) and (max-width: 3px){
+          .job-card{
+            height: 300px;
+          }
+          .job-title{
+            font-size: 16px;
+          }
+        }
 
 
 

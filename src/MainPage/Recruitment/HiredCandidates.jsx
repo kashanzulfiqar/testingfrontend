@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Card, Input, Space, Tag, Empty, message, Select, Button, Modal, Form, Tooltip } from 'antd';
+import { Table, Card, Input, Space, Tag, Empty, message, Select, Button, Modal, Form, Tooltip, Row ,Col, DatePicker } from 'antd';
 import { SearchOutlined, UserOutlined, DownloadOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { apiServices } from '../../Services/apiServices';
 import { useSelector } from 'react-redux';
 import moment from 'moment';
+import calander from '../../assets/iconsRecruitment/calander.svg';
+import circle from '../../assets/iconsRecruitment/circle.svg';
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -16,6 +18,7 @@ const HiredCandidates = () => {
   const [isReasonModalVisible, setIsReasonModalVisible] = useState(false);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState(null);
+  const [form]  = Form.useForm();
   const [reasonForm] = Form.useForm();
   const [pagination, setPagination] = useState({
     current: 1,
@@ -153,20 +156,26 @@ const HiredCandidates = () => {
 
   const columns = [
     {
-      title: 'Name',
-      key: 'name',
-      width: 200,
-      fixed: 'left',
-      render: (_, record) => (
-        <Link to={`/recruitment/candidates/${record._id}`}>
-          {record.firstName} {record.lastName}
-        </Link>
-      ),
+      title: 'Candidate Name',
+      key: 'CandidateName',
+      width: 150,
+      render: (_, record) =>{
+        const initials = `${record.firstName.charAt(0).toUpperCase()}${record.lastName.charAt(0).toUpperCase()}`;
+        const candidateName = `${record.firstName} ${record.lastName}`
+        return(
+          <div style={{display:"flex", alignItems:'center'}}>
+            <div style={{height:'40px' ,width:"40px", border:"1px solid transparent" , borderRadius:"50%", background:'#f5f1fd', color:'#9368e9', display:"flex", justifyContent:"center", alignItems:'center', marginRight:"10px"}}>{initials}</div>
+            <Link to={`/recruitment/candidates/${record._id}`} style={{color:"#212529" ,fontSize:"14px" ,fontWight:"500"}}>
+              {candidateName}
+            </Link>
+          </div>
+        )
+      }
     },
     {
       title: 'Position',
       key: 'position',
-      width: 200,
+      width: 150,
       render: (_, record) => record.appliedFor?.title || 'N/A',
     },
     {
@@ -204,26 +213,19 @@ const HiredCandidates = () => {
     {
       title: 'Status',
       key: 'status',
-      width: 180,
+      width: 200,
       render: (_, record) => (
         <Select
           value={record.status}
-          style={{ width: 150 }}
+          className='customized'
+          style={{color:"HIRED" ? 'green' : "JOINED" ? "blue" : "DID_NOT_JOIN" ? "red" : "BLACKLISTED" ? "black" : 'default'}}
           onChange={(value) => handleStatusChange(record._id, value)}
           loading={updatingStatus && selectedCandidate === record._id}
         >
-          <Option value="HIRED">
-            <Tag color="green">HIRED</Tag>
-          </Option>
-          <Option value="JOINED">
-            <Tag color="blue">JOINED</Tag>
-          </Option>
-          <Option value="DID_NOT_JOIN">
-            <Tag color="red">DID NOT JOIN</Tag>
-          </Option>
-          <Option value="BLACKLISTED">
-            <Tag color="black">BLACKLISTED</Tag>
-          </Option>
+          <Option value="HIRED" style={{color:"green"}}>HIRED</Option>
+          <Option value="JOINED" style={{color:"blue"}}>JOINED</Option>
+          <Option value="DID_NOT_JOIN" style={{color:"red"}}>DID NOT JOIN</Option>
+          <Option value="BLACKLISTED" style={{color:"black"}}>BLACKLISTED</Option>
         </Select>
       ),
     },
@@ -266,9 +268,11 @@ const HiredCandidates = () => {
     }
   ];
 
+  
+
   return (
     <div className="content container-fluid">
-      <div className="page-header">
+      {/* <div className="page-header">
         <div className="row align-items-center">
           <div className="col">
             <h3 className="page-title">Hired Candidates</h3>
@@ -278,9 +282,21 @@ const HiredCandidates = () => {
             </ul>
           </div>
         </div>
+      </div> */}
+      <div className="page-header">
+        <div className="row align-items-center">
+          <div className="col">
+            <h3 className="page-title">Hired</h3>
+            <ul className="breadcrumb">
+              <li className="breadcrumb-item"><Link to="/recruitment/dashboard">Dashboard</Link></li>
+              <li className="breadcrumb-item active">Hired</li>
+            </ul>
+          </div>
+        </div>
       </div>
 
-      <Card>
+
+      {/* <Card>
         <div className="row filter-row">
           <div className="col-sm-6 col-md-3">
             <Input
@@ -309,10 +325,78 @@ const HiredCandidates = () => {
             emptyText: <Empty description="No hired candidates found" />
           }}
         />
-      </Card>
+      </Card> */}
+    <Form 
+      form={form}
+      onFinish={handleSearch} 
+      className="search-form"
+      initialValues={pagination}
+    >
+      <Row gutter={[12, 12]} align="middle">
+        <Col xs={24} sm={12} md={5}>
+          <Form.Item name="candidateName" className="mb-0">
+            <Input style={{borderRadius:"8px", height:"40px"}} placeholder="Name" allowClear />
+          </Form.Item>
+        </Col>
+        <Col xs={24} sm={12} md={5}>
+          <Form.Item name="appliedPosition" className="mb-0">
+            <Input style={{borderRadius:"8px", height:"40px"}} placeholder="Position" allowClear />
+          </Form.Item>
+        </Col>
+        <Col xs={24} sm={12} md={5}>
+          <Form.Item name="status" className="mb-0">
+            <DatePicker
+            placeholder="Blacklist Date"
+            className="custom"
+            allowClear
+            suffixIcon= {<img src={calander}></img>}
+          />
+          </Form.Item>
+        </Col>
+        <Col xs={24} sm={12} md={5}>
+          <Form.Item name="blacklistReason" className="mb-0">
+            <Select placeholder="Blacklist Reason" allowClear
+            className='custom'
+              options={[
+                // { value: 'FULL_TIME', label: 'Full Time' },
+                // { value: 'PART_TIME', label: 'Part Time' },
+                // { value: 'CONTRACT', label: 'Contract' },
+                // { value: 'INTERNSHIP', label: 'Internship' },
+                // { value: 'FREELANCE', label: 'Freelance' }
+              ]}
+            />
+          </Form.Item>
+        </Col>
+        <Col xs={24} sm={12} md={4}>
+          <Form.Item className="mb-0">
+            <Button type="primary" htmlType="submit" className="search-btn" block>
+              Search
+            </Button>
+          </Form.Item>
+        </Col>
+      </Row>
+    </Form>
+
+    <Table
+      className="mt-4"
+      columns={columns}
+      dataSource={candidates}
+      rowKey={(record) => record._id}
+      loading={loading}
+      pagination={{
+        ...pagination,
+        showSizeChanger: true,
+        showTotal: (total, range) =>
+          `${range[0]}-${range[1]} of ${total} candidates`,
+      }}
+      onChange={handleTableChange}
+      locale={{
+        emptyText: <Empty description="No hired candidates found" />
+      }}
+    />
 
       <Modal
-        title={`Update Candidate Status - ${selectedStatus?.replace(/_/g, ' ')}`}
+        title={`Update Candidate Status ${selectedStatus?.replace(/_/g, ' ')}`}
         visible={isReasonModalVisible}
         onCancel={() => {
           setIsReasonModalVisible(false);
@@ -385,6 +469,162 @@ const HiredCandidates = () => {
           </Form.Item>
         </Form>
       </Modal>
+
+      
+      <style jsx global>{`
+        .add-candidate-btn{
+          border-radius: 40px !important;
+          height: 44px !important;
+          background-color: #ff9244 !important;
+          color: white !important;
+          font-weight: 500 !important;
+          font-size: 16px !important;
+          border: 2px solid #ff9244 !important;
+          width: 185px !important;
+        }
+
+        .btn-content{
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+
+        .search-btn {
+          background: #1f1f1f;
+          border: 1px solid #1f1f1f;
+          height: 40px;
+          border-radius: 8px;
+          width: 80% !important;
+          font-weight: 500;
+          font-size: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          justify-self: end;
+        }
+        .search-btn:hover {
+          background: #333 !important;
+          border: none
+        }
+
+        .custom  .ant-select-selector {
+        height: 40px !important;
+        border-radius: 8px !important;
+        display: flex;
+        align-items: center;
+        padding-left: 10px;
+        }
+
+        .customized .ant-select-selector{
+          height: 30px !important;
+          border-radius: 8px !important;
+          display: flex;
+          align-items: center;
+          padding-left: 10px;
+        }
+
+        .custom .ant-select-placeholder {
+        color: white !important;
+        }
+
+        .ant-modal-content{
+          border: 1px solid transparent;
+          border-radius: 10px;
+        }
+        .ant-modal-header {
+          border-bottom: none;
+          padding: 24px 24px 0px 24px;
+          border-radius: 10px;
+        }
+        .ant-modal-title {
+          font-size: 24px;
+          font-weight: 600;
+        }
+
+        .ant-modal-close {
+          background-color: #F8F9FA;
+          border-radius: 50%;
+          border:"1px solid #F8F9FA";
+          margin:16px 16px 0 0;
+          width: 32px;
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .custom-input .ant-form-item-label > label{
+          color: #212529 !important;
+          font-size: 12px;
+          font-weight: 500;
+        }
+
+        .custom-input .ant-input{
+          height: 55px !important;
+          border-radius: 4px !important;
+          border: 1px solid #cfd4d8;
+          font-size: 16px !important;
+          font-weight: 450;
+          color: #212529 !important;
+          padding: 15px !important; 
+        }
+
+        .input-details .ant-form-item-label > label{
+          color: #212529 !important;
+          font-size: 12px;
+          font-weight: 500;
+          margin-left: 13px;
+        }
+        .input-details .ant-input{
+          border-radius: 4px !important;
+          border: 1px solid #cfd4d8;
+          font-size: 16px !important;
+          font-weight: 450;
+          color: #212529 !important;
+          padding: 15px !important; 
+        }
+
+        .ant-picker {
+          height: 40px !important;
+          border-radius: 8px !important;
+          display: flex;
+          align-items: center;
+          padding-left: 10px;
+        }
+
+      .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+        }
+
+      .custom-table th {
+        width: 300px !important;
+        background-color: #ffffff;
+        color: #212529; 
+        font-size: 14px;
+        font-weight: 450;
+
+      }
+
+      .custom-table td {
+        width: 300px !;
+        background-color: #f7f7f8;
+        color: #181d27;
+        font-size: 14px;
+        font-weight: 450;
+      }
+
+      .custom-table tr:nth-child(even){
+        background-color: #eef0f1;
+      }
+
+      .custom-table tr:hover {
+        background-color: #f1f1f1;
+      }
+
+        
+      `}</style>
     </div>
   );
 };

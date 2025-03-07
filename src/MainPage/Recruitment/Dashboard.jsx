@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Typography, Tag, Button, Dropdown, Menu } from 'antd';
-import { Link } from 'react-router-dom';
+import { Card, Row, Col, Typography, Tag, Button, Dropdown, Menu, Table, Modal} from 'antd';
+import { Link ,useNavigate  } from 'react-router-dom';
 import { 
   MoreOutlined, 
   UserOutlined, 
@@ -8,43 +8,65 @@ import {
   CloseCircleOutlined,
   CalendarOutlined,
   EnvironmentOutlined,
-  TrophyOutlined
+  TrophyOutlined,
+  EditOutlined,
+  DeleteOutlined
 } from '@ant-design/icons';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { apiServices } from '../../Services/apiServices';
 import { useSelector } from 'react-redux';
+import orangeFile from '../../assets/iconsRecruitment/orangeFile.svg';
+import fileCheck from '../../assets/iconsRecruitment/fileCheck.svg';
+import handShakeIcon from '../../assets/iconsRecruitment/handShakeIcon.svg';
+import fileCrossed from '../../assets/iconsRecruitment/fileCrossed.svg';
+import list from '../../assets/iconsRecruitment/list.svg';
+import grid from '../../assets/iconsRecruitment/grid.svg';
+import indeed from '../../assets/iconsRecruitment/indeed.svg';
+import linkedin from '../../assets/iconsRecruitment/linkedin-icon.svg';
+import instagram from '../../assets/iconsRecruitment/insta.svg';
+import facebook from '../../assets/iconsRecruitment/Facebook.svg';
+import more from '../../assets/iconsRecruitment/vertical.svg';
+import departmentIcon from '../../assets/iconsRecruitment/department.svg';
+import calander from '../../assets/iconsRecruitment/calander.svg';
+
+
+
+
+
+
 
 const { Title, Text } = Typography;
 
 const COLORS = ['#1890FF', '#52C41A', '#FAAD14', '#722ED1', '#F5222D'];
 
-const DashboardCard = ({ title, value, icon, color }) => (
-  <Card>
-    <div style={{ display: 'flex', alignItems: 'center' }}>
-      <div style={{ 
-        width: 48, 
-        height: 48, 
-        borderRadius: 8,
-        background: color?.bg || '#e3f2fd',
-        color: color?.text || '#1976d2',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: 24,
-        marginRight: 16
-      }}>
-        {icon}
-      </div>
-      <div>
-        <Title level={3} style={{ margin: 0 }}>{value}</Title>
-        <Text>{title}</Text>
-      </div>
-    </div>
-  </Card>
-);
+// const DashboardCard = ({ title, value, icon, color }) => (
+//   <Card>
+//     <div style={{ display: 'flex', alignItems: 'center' }}>
+//       <div style={{ 
+//         width: 48, 
+//         height: 48, 
+//         borderRadius: 8,
+//         background: color?.bg || '#e3f2fd',
+//         color: color?.text || '#1976d2',
+//         display: 'flex',
+//         alignItems: 'center',
+//         justifyContent: 'center',
+//         fontSize: 24,
+//         marginRight: 16
+//       }}>
+//         {icon}
+//       </div>
+//       <div>
+//         <Title level={3} style={{ margin: 0 }}>{value}</Title>
+//         <Text>{title}</Text>
+//       </div>
+//     </div>
+//   </Card>
+// );
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     total: 0,
     shortlisted: 0,
@@ -55,8 +77,14 @@ const Dashboard = () => {
     departmentBreakdown: {},
     monthlyBreakdown: []
   });
+  const [viewType , setViewType] = useState('grid');
   const [openPositions, setOpenPositions] = useState([]);
   const authState = useSelector((state) => state.user.loginvalue);
+  const [pagination , setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0
+  })
 
   useEffect(() => {
     fetchDashboardData();
@@ -135,6 +163,127 @@ const Dashboard = () => {
     ? stats.monthlyBreakdown.slice(-6)
     : [];
 
+    const columns = [
+      {
+        title: 'Position',
+        dataIndex: 'title',
+        key: 'title',
+        render: (text, record) => (
+          <Link to={`/recruitment/jobs/${record._id}`} className="text-primary">
+            {text}
+          </Link>
+        ),
+        sorter: true,
+      },
+      {
+        title: 'Position Open',
+        dataIndex: 'positions',
+        key: 'positions',
+        sorter: true,
+      },
+      {
+        title: 'Department',
+        dataIndex: 'department',
+        key: 'department',
+        sorter: true,
+      },
+      {
+        title: 'Resume',
+        dataIndex: 'applicationCount',
+        key: 'applicationCount',
+        render: (count, record) => (
+          <Link to={`/recruitment/jobs/${record._id}/applications`} className="text-primary">
+            {count || 0}
+          </Link>
+        ),
+        sorter: true,
+      },
+      {
+        title: 'Post Date',
+        dataIndex: 'createdAt',
+        key: 'createdAt',
+        render: (date) => new Date(date).toLocaleDateString(),
+        sorter: true,
+      },
+      {
+        title: 'Posted On',
+        key: 'postedOn',
+        render:(text,record)=>(
+          <div className= 'social-icons'>
+          <Link to="#" className="social-icon-one"><img src={indeed}></img></Link>
+          <Link to="#" className="social-icon-two"><img src={linkedin}></img></Link>
+          <Link to="#" className="social-icon-three"><img src={instagram}></img></Link> 
+          <Link to="#" className="social-icon-four"><img src={facebook}></img></Link> 
+        </div>
+        )
+      },
+  
+      {
+        title: 'Actions',
+        key: 'actions',
+        width: 80,
+        render: (_, record) => (
+          <Dropdown
+          overlay={<Menu>
+          <Menu.Item key="edit" icon={<EditOutlined />}onClick={() => navigate(`/recruitment/jobs/${record._id}/edit`)}>Edit</Menu.Item>
+          <Menu.Item key="delete" icon={<DeleteOutlined />} danger onClick={() => {
+            Modal.confirm({
+              title: 'Delete Job',
+              content: 'Are you sure you want to delete this job?',
+              okText: 'Yes, Delete',
+              okType: 'danger',
+              cancelText: 'No',
+              onOk: () => handleDeleteJob(record._id)
+            });
+          }}>Delete</Menu.Item>
+          </Menu>}
+          trigger={['click']}
+          placement="bottomRight">
+          <div style={{ cursor: 'pointer',height:'25px' }}>
+            <img src={more} alt="More Options" />
+          </div>
+        </Dropdown>
+        ),
+      },
+    ];
+
+    const handleTableChange = (newPagination, filters, sorter) => {
+      setPagination({
+        ...pagination,
+        current: newPagination.current,
+        pageSize: newPagination.pageSize
+      });
+    };
+
+    const handleDeleteJob = async (jobId) => {
+      const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
+      
+      try {
+        setLoading(true);
+        const response = await apiServices(
+          "DELETE", 
+          `job/${jobId}`,
+          null, 
+          {
+            access_token: {
+              accessToken: token
+            }
+          }
+        );
+        if (response?.data?.status) {
+          message.success('Job deleted successfully');
+          fetchJobs();
+        } else {
+          message.error(response?.data?.message || 'Failed to delete job');
+        }
+      } catch (error) {
+        console.error('Delete job error:', error.response?.data || error.message);
+        handleApiError(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
   return (
     <div className="content container-fluid">
       <div className="page-header">
@@ -146,7 +295,7 @@ const Dashboard = () => {
       </div>
 
       {/* Statistics Cards */}
-      <Row gutter={[16, 16]}>
+      {/* <Row gutter={[16, 16]}>
         <Col xs={24} sm={12} lg={6}>
           <DashboardCard
             title="Applications"
@@ -179,7 +328,53 @@ const Dashboard = () => {
             color={{ bg: '#ffebee', text: '#c62828' }}
           />
         </Col>
-      </Row>
+      </Row> */}
+
+        <div style={{width:"100%"}}>
+          <div className='dashboard-cards'>
+
+            <div style={{display:"flex",height:"102px", width:"24%" , justifyContent:"space-between",padding:"0px 15px 0px 15px", borderRadius:"6px" ,boxShadow: "4px 4px 10px rgba(0, 0, 0, 0.2)"}}>
+              <div style={{display:"flex" ,alignItems:"center"}}>
+                <div style={{height:'40px', width:"40px" ,background:"#fff1e5" ,borderRadius:'50%', display:"flex" ,justifyContent:"center" ,alignItems:"center"}}><img src={orangeFile}></img></div>
+              </div>
+              <div style={{display:'flex' ,flexDirection:"column"  ,justifyContent:"center"}}>
+                <p style={{marginBottom:'0' ,fontSize:"24px" , fontWeight:"500", textAlign:"end"}}>{stats?.total}</p>
+                <p  style={{marginBottom:'0',fontSize:"14px" , fontWeight:"450" ,color:"#56616b"}}>Applications</p>
+              </div>
+            </div>
+
+            <div style={{display:"flex",height:"102px", width:"24%" , justifyContent:"space-between",padding:"0px 15px 0px 15px", borderRadius:"6px" ,boxShadow: "4px 4px 10px rgba(0, 0, 0, 0.2)"}}>
+              <div style={{display:"flex" ,alignItems:"center"}}>
+                <div style={{height:'40px', width:"40px" ,background:"#fff1e5" ,borderRadius:'50%', display:"flex" ,justifyContent:"center" ,alignItems:"center"}}><img src={fileCheck}></img></div>
+              </div>
+              <div style={{display:'flex' ,flexDirection:"column"  ,justifyContent:"center"}}>
+                <p style={{marginBottom:'0' ,fontSize:"24px" , fontWeight:"500", textAlign:"end"}}>{stats?.shortlisted}</p>
+                <p  style={{marginBottom:'0',fontSize:"14px" , fontWeight:"450" ,color:"#56616b"}}>Shortlisted</p>
+              </div>
+            </div>
+
+            <div style={{display:"flex",height:"102px", width:"24%" , justifyContent:"space-between",padding:"0px 15px 0px 15px", borderRadius:"6px" ,boxShadow: "4px 4px 10px rgba(0, 0, 0, 0.2)"}}>
+              <div style={{display:"flex" ,alignItems:"center"}}>
+                <div style={{height:'40px', width:"40px" ,background:"#fff1e5" ,borderRadius:'50%', display:"flex" ,justifyContent:"center" ,alignItems:"center"}}><img src={handShakeIcon}></img></div>
+              </div>
+              <div style={{display:'flex' ,flexDirection:"column"  ,justifyContent:"center"}}>
+                <p style={{marginBottom:'0' ,fontSize:"24px" , fontWeight:"500", textAlign:"end"}}>{stats?.hired}</p>
+                <p  style={{marginBottom:'0',fontSize:"14px" , fontWeight:"450" ,color:"#56616b"}}>Hired</p>
+              </div>
+            </div>
+
+            <div style={{display:"flex",height:"102px", width:"24%" , justifyContent:"space-between",padding:"0px 15px 0px 15px", borderRadius:"6px" ,boxShadow: "4px 4px 10px rgba(0, 0, 0, 0.2)"}}>
+              <div style={{display:"flex" ,alignItems:"center"}}>
+                <div style={{height:'40px', width:"40px" ,background:"#fff1e5" ,borderRadius:'50%', display:"flex" ,justifyContent:"center" ,alignItems:"center"}}><img src={fileCrossed}></img></div>
+              </div>
+              <div style={{display:'flex' ,flexDirection:"column"  ,justifyContent:"center"}}>
+                <p style={{marginBottom:'0' ,fontSize:"24px" , fontWeight:"500", textAlign:"end"}}>{stats?.rejected}</p>
+                <p  style={{marginBottom:'0',fontSize:"14px" , fontWeight:"450" ,color:"#56616b"}}>Rejected</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
 
       {/* Monthly Trend Chart */}
       <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
@@ -484,77 +679,250 @@ const Dashboard = () => {
           alignItems: 'center', 
           marginBottom: 16 
         }}>
-          <Title level={5} style={{ margin: 0 }}>Latest Open Positions <Tag>{openPositions.length}</Tag></Title>
+          <Title level={5} style={{display:'flex' , alignItems:"center",fontSize:"24px" , fontWeight:"500"}}>Open Positions <Tag style={{height:"20px" ,width:"20px" ,borderRadius:"50%" ,color:"#ff9244" ,background:"#fff1e5" ,display:"flex", justifyContent:"center" ,alignItems:"center" , border:"1px solid transparent", margin:"0px 0px 0px 7px" ,paddingBottom:"0px"}}>{openPositions.length}</Tag></Title>
           <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{height:"40px" , width:"40px" , border:'1px solid #EEF0F1' , borderRadius:"8px", display:'flex' ,justifyContent:"center" , alignItems:'center' , cursor:"pointer" }} onClick={()=>{setViewType('grid')}}>
+              <img src={grid}></img>
+            </div>
+            <div style={{height:"40px" , width:"40px" , border:'1px solid #EEF0F1' , borderRadius:"8px", display:'flex' ,justifyContent:"center" , alignItems:'center' , cursor:"pointer"}} onClick={()=>{setViewType('list')}}>
+              <img src={list}></img>
+            </div>
             <Link to="/recruitment/jobs">
-              <Button type="link">View all</Button>
+              <Button type="link" style={{color:"#56616B"}}>View all</Button>
             </Link>
           </div>
         </div>
-        <Row gutter={[16, 16]}>
-          {openPositions.map(position => (
-            <Col xs={24} sm={12} lg={8} key={position._id}>
-              <Card>
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'flex-start',
-                  marginBottom: 12 
-                }}>
-                  <Title level={5} style={{ margin: 0, flex: 1 }}>
-                    <Link to={`/recruitment/jobs/${position._id}`}>{position.title}</Link>
-                  </Title>
-                  <Dropdown 
-                    overlay={
-                      <Menu>
-                        <Menu.Item key="edit">
-                          <Link to={`/recruitment/jobs/${position._id}/edit`}>Edit</Link>
-                        </Menu.Item>
-                      </Menu>
-                    }
-                    trigger={['click']}
+        {viewType === 'grid' ? (
+          <div>
+            <Row gutter={[24, 24]}>
+              {openPositions.map(position => (
+                <Col xs={24} sm={12} md={8} key={position._id}>
+                  <Card
+                    className="job-card"
                   >
-                    <Button type="text" icon={<MoreOutlined />} />
-                  </Dropdown>
-                </div>
-                <div style={{ marginBottom: 16 }}>
-                  <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: 8,
-                    color: '#666',
-                    marginBottom: 8 
-                  }}>
-                    <EnvironmentOutlined />
-                    <Text>{position.department}</Text>
+                  <div className="job-card-content">
+                    <div style={{display:'flex', justifyContent:'space-between', width:"98%"}}>
+                      <div>
+                        <h3 className="job-title">
+                          <Link to={`/recruitment/jobs/${position._id}`}>{position.title}</Link>
+                        </h3>
+                        <p className="positions-count">{position.positions} open positions</p>
+                      </div>
+                      <Dropdown
+                        overlay={<Menu>
+                          {/* <Menu.Item key="edit" icon={<EditOutlined />}onClick={() => navigate(`/recruitment/jobs/${position._id}/edit`)}>Edit</Menu.Item> */}
+                          <Menu.Item key="delete" icon={<DeleteOutlined />} danger onClick={() => {
+                            Modal.confirm({
+                            title: 'Delete Job',
+                            content: 'Are you sure you want to delete this job?',
+                            okText: 'Yes, Delete',
+                            okType: 'danger',
+                            cancelText: 'No',
+                            onOk: () => handleDeleteJob(position._id)
+                            });
+                          }}>Delete</Menu.Item>
+                        </Menu>}
+                        trigger={['click']}
+                        placement="bottomRight">
+                        <div style={{ cursor: 'pointer',height:'25px' }}>
+                          <img src={more} alt="More Options" />
+                        </div>
+                      </Dropdown>
+                    </div>
+                               
+                    <div className="job-details">
+                      <div className="detail-item">
+                        <div className = 'icons'><img src={departmentIcon}></img></div>
+                        <div className = 'detail-text'>{position.department}</div>
+                      </div>
+                      <div className="detail-items">
+                        <div className = 'icons'><img src={calander}></img></div>
+                        <div className = 'detail-text'>{new Date(position.createdAt).toLocaleDateString()}</div>
+                      </div>
+                    </div>
+
+                    <div className="card-foot">
+                      <div style={{width:'60%'}}>
+                        <div className='post-on'><span>Posted on:</span></div>
+                        <div className= 'social-icons'>
+                          <Link to="#" className="social-icon-one"><img src={indeed}></img></Link>
+                          <Link to="#" className="social-icon-two"><img src={linkedin}></img></Link>
+                          <Link to="#" className="social-icon-three"><img src={instagram}></img></Link> 
+                          <Link to="#" className="social-icon-four"><img src={facebook}></img></Link> 
+                        </div>
+                      </div>
+                      <div className="applications-count">
+                        <Link to={`/recruitment/jobs/${position._id}/applications`}>
+                          <div className= 'applications-count-number'>{position.applicationCount || 0}</div>
+                          <div className='applications-count-text'>Applications</div>
+                        </Link>
+                      </div> 
+                    </div>
                   </div>
-                  <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: 8,
-                    color: '#666',
-                    marginBottom: 8 
-                  }}>
-                    <CalendarOutlined />
-                    <Text>{new Date(position.createdAt).toLocaleDateString()}</Text>
-                  </div>
-                </div>
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center',
-                  marginTop: 16,
-                  paddingTop: 16,
-                  borderTop: '1px solid #f0f0f0'
-                }}>
-                  <Tag>{position.positions} open positions</Tag>
-                  <Text>{position.applicationCount || 0} Applications</Text>
-                </div>
-              </Card>
-            </Col>
-          ))}
-        </Row>
+                </Card>
+                </Col>
+              ))}
+            </Row>
+          </div>  
+        ) : (
+          <Table 
+          className="table-striped"
+          columns={columns}
+          dataSource={openPositions}
+          rowKey="_id"
+          pagination={{
+            ...pagination,
+            showSizeChanger: true,
+            showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+            pageSizeOptions: ['10', '20', '50']
+          }}
+          onChange={handleTableChange}
+          />
+        )}
       </div>
+      <style jsx global>{`
+        .job-card {
+          background: white;
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+          border: 1px solid #e0e3e6;
+        }
+        .job-card .ant-card-body {
+          padding: 16px;
+        }
+        .job-card-content {
+          padding: 0;
+        }
+        .job-title {
+          font-size: 20px;
+          font-weight: 500;
+          margin-bottom: 4px;
+        }
+        .job-title a {
+          color: #212529;
+        }
+        .positions-count {
+          color: #56616B;
+          font-size: 14px;
+          margin-bottom: 9px;
+          font-weight: 450px;
+          margin-left: 2px;
+        }
+        .job-details {
+          margin-bottom: 12px;
+          height: 100px !important;
+        }
+        .detail-item {
+          display: flex;
+          align-items: center;
+          margin-bottom: 6px;
+          color: #4A5568;
+          font-size: 13px;
+          line-height: 1;
+          height: 50%;
+        }
+        .detail-items{
+          display: flex;
+          align-items: flex-start;
+          margin-bottom: 6px;
+          color: #4A5568;
+          font-size: 13px;
+          line-height: 1;
+          height: 40%;
+        }
+        .detail-item:last-child {
+          margin-bottom: 0;
+        }
+        .detail-item .icons,
+        .detail-items .icons{
+          width: 20px;
+          margin-right: 8px;
+          display: flex;
+          justify-content: center;
+          flex-shrink: 0;
+          height: 20px;
+          margin-left: 3px;
+        }
+        .detail-item .icon svg {
+          display: block;
+        }
+        .detail-item .detail-text,
+        .detail-items .detail-text{
+          line-height: 17px;
+          font-size: 14px;
+          font-weight: 450px;
+          color: #56616B;
+          display: flex;
+          align-items: flex-end;
+          margin-top: 5px;
+        }
+
+        .card-foot{
+         display: flex;
+         justify-content: space-between;
+        }
+        .post-on {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 8px;
+          color: #212529;
+          font-size: 14px;
+          font-weight: 450;
+          width: 100%;
+        }
+        .social-icons {
+          display: flex;
+          position: absolute;
+        }
+
+        .social-icon-one {
+          z-index: 0;
+        }
+        .social-icon-two {
+          position: relative;
+          z-index: 1;
+          right: 5px;
+
+        }
+        .social-icon-three {
+          position: relative;
+          z-index: 2;
+          right: 10px;
+        }
+        .social-icon-four {
+          z-index: 3;
+          position: relative;
+          right: 15px;
+
+        }
+
+        .social-icon:hover {
+          color: #F4A261;
+        }
+        .applications-count {
+          text-align: start;
+          margin-right: 15px;
+        }
+        .applications-count-number {
+          color: #FF9244;
+          font-weight: 500;
+          font-size: 28px;
+          height: 60%;
+          margin-left: 3px;
+        }
+        .applications-count-text{
+          color: #56616B;
+          font-size: 14px;
+          font-weight: 450;
+          height: 40%;
+        }
+
+        .dashboard-cards{
+          display: flex;
+          gap: 25px;
+        }
+      `}</style>
     </div>
   );
 };

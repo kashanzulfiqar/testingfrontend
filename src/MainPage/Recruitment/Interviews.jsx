@@ -1,16 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Table, Button, Select, Input, Modal, Form, message, Spin, Tag, Row, Col } from 'antd';
-import { UnorderedListOutlined, AppstoreOutlined, StarFilled } from '@ant-design/icons';
+import { Table, Button, Select, Input, Modal, Form, message, Spin, Tag, Row, Col, Card, Dropdown, Menu } from 'antd';
+import { UnorderedListOutlined, AppstoreOutlined, StarFilled, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { apiServices } from '../../Services/apiServices';
 import { useSelector } from 'react-redux';
 import moment from 'moment';
+import list from '../../assets/iconsRecruitment/list.svg';
+import grid from '../../assets/iconsRecruitment/grid.svg';
+import circle from '../../assets/iconsRecruitment/circle.svg';
+import interviewIcon from '../../assets/iconsRecruitment/interview.svg';
+import clock from '../../assets/iconsRecruitment/clock.svg';
+import calander from '../../assets/iconsRecruitment/calander.svg';
+import more from '../../assets/iconsRecruitment/vertical.svg';
+import CreateInterviewModal from './CreateInterviewModal';
 
-const Interviews = () => {
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [interviews, setInterviews] = useState([]);
-  const [pagination, setPagination] = useState({
+const Interviews = ()=>{
+const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
     total: 0
@@ -19,6 +24,9 @@ const Interviews = () => {
   const [form] = Form.useForm();
   const authState = useSelector((state) => state.user.loginvalue);
   const [viewType, setViewType] = useState('list');
+  const [loading,setLoading] =useState();
+  const [interviews, setInterviews] = useState([]);
+  const [isModalVisible ,setIsModalVisible] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
@@ -65,7 +73,8 @@ const Interviews = () => {
         const interviewsData = response.data.data;
         console.log('Interviews Data with feedback:', interviewsData.docs.map(interview => ({
           id: interview._id,
-          feedback: interview.feedback
+          feedback: interview.feedback,
+          interviewName : interview.interviewTitle,
         })));
         
         setInterviews(interviewsData.docs || []);
@@ -109,29 +118,43 @@ const Interviews = () => {
     });
   };
 
-  const calculateAverageRating = (feedbackArray) => {
-    if (!feedbackArray || feedbackArray.length === 0) {
-      return 0;
-    }
+  const getInitials = (title)=>{
+    if(!title) return '';
+    return title.split(' ').map(word=>word.charAt(0).toUpperCase()).join('');
+  }
 
-    const totalRatings = feedbackArray.reduce((sum, feedback) => {
-      const ratings = feedback.ratings;
-      const ratingSum = (
-        ratings.technicalSkills1 +
-        ratings.behavior +
-        ratings.softSkills +
-        ratings.technicalSkills2 +
-        ratings.technicalSkills3
-      );
-      return sum + (ratingSum / 5); // Average of all skills for this feedback
-    }, 0);
+  // const calculateAverageRating = (feedbackArray) => {
+  //   if (!feedbackArray || feedbackArray.length === 0) {
+  //     return 0;
+  //   }
 
-    return (totalRatings / feedbackArray.length).toFixed(1);
+  //   const totalRatings = feedbackArray.reduce((sum, feedback) => {
+  //     const ratings = feedback.ratings;
+  //     const ratingSum = (
+  //       ratings.technicalSkills1 +
+  //       ratings.behavior +
+  //       ratings.softSkills +
+  //       ratings.technicalSkills2 +
+  //       ratings.technicalSkills3
+  //     );
+  //     return sum + (ratingSum / 5); // Average of all skills for this feedback
+  //   }, 0);
+
+  //   return (totalRatings / feedbackArray.length).toFixed(1);
+  // };
+
+  // const getLatestDecision = (feedbackArray) => {
+  //   if (!feedbackArray || feedbackArray.length === 0) return '-';
+  //   return feedbackArray[feedbackArray.length - 1].recommendation || '-';
+  // };
+
+  
+  const showModal = () => {
+    setIsModalVisible(true);
   };
 
-  const getLatestDecision = (feedbackArray) => {
-    if (!feedbackArray || feedbackArray.length === 0) return '-';
-    return feedbackArray[feedbackArray.length - 1].recommendation || '-';
+  const handleCancel = () => {
+    setIsModalVisible(false);
   };
 
   const columns = [
@@ -140,94 +163,48 @@ const Interviews = () => {
       key: 'candidateName',
       dataIndex: 'candidateName',
       render: (_, record) => (
-        <Link to={`/recruitment/candidates/${record.candidateId._id}`}>
-          {record.candidateName}
-        </Link>
+        <div style={{display:"flex", alignItems:'center'}}>
+          <div style={{height:'40px' ,width:"40px", border:"1px solid transparent" , borderRadius:"50%", background:'#f5f1fd', color:'#9368e9', display:"flex", justifyContent:"center", alignItems:'center', marginLeft:"10px", marginRight:"10px"}}>{getInitials(record.candidateName)}</div>
+          <Link to={`/recruitment/interviews/${record._id}`}>
+            {record.candidateName}
+          </Link>
+        </div>
+
       ),
       sorter: true,
     },
     {
-      title: 'Interview Name',
-      dataIndex: 'interviewName',
-      key: 'interviewName',
-      render: (_, record) => (
-        <Link to={`/recruitment/interviews/${record._id}`}>
-          {record.interviewName}
-        </Link>
-      ),
+      title: 'Position',
+      dataIndex: 'appliedFor',
+      key: 'appliedFor',
+      render: (appliedFor)=>{
+        return appliedFor?.title || 'N/A';
+      },
       sorter: true,
     },
-    {
-      title: 'Interview Type',
-      dataIndex: 'interviewType',
-      key: 'interviewType',
-      render: (type) => (
-        <Tag color={type === 'ONLINE' ? 'blue' : 'green'}>
-          {type === 'ONLINE' ? 'Online' : 'In Person'}
-        </Tag>
-      ),
-    },
-    {
-      title: 'Interviewer',
-      key: 'interviewer',
-      render: (_, record) => record.interviewerId?.fullName || 'N/A',
-    },
-    {
-      title: 'Date & Time',
-      key: 'dateTime',
-      render: (_, record) => (
-        <span>
-          {moment(record.interviewDate).format('DD MMM YYYY')}
-          <br />
-          {record.interviewTime}
-        </span>
-      ),
-      sorter: true,
-    },
-    {
-      title: 'Decision',
-      key: 'decision',
-      render: (_, record) => {
-        return record.latestFeedback?.recommendation || '-';
-      }
-    },
-    {
-      title: 'Rating',
-      key: 'rating',
-      render: (_, record) => {
-        if (!record.feedback || record.feedback.length === 0) {
-          return (
-            <div className="d-flex align-items-center">
-              <StarFilled style={{ color: '#FFD700', marginRight: 4 }} />
-              <span>0</span>
-            </div>
-          );
-        }
 
-        const totalRatings = record.feedback.reduce((sum, feedback) => {
-          const ratings = feedback.ratings;
-          const ratingSum = (
-            ratings.technicalSkills1 +
-            ratings.behavior +
-            ratings.softSkills +
-            ratings.technicalSkills2 +
-            ratings.technicalSkills3
-          );
-          return sum + (ratingSum / 5);
-        }, 0);
-
-        const averageRating = (totalRatings / record.feedback.length).toFixed(1);
-
-        return (
-          <div className="d-flex align-items-center">
-            <StarFilled style={{ color: '#FFD700', marginRight: 4 }} />
-            <span>{averageRating}</span>
+    {
+      title: 'Interviewers',
+      key: 'interviewers',
+      render:(_,record)=>{
+        const MainInterviewer = record.interviewerId?.imageUrl;
+        const OptionalInterviewer = record?.assignedTo;
+        console.log("record of interviwers",record);
+        return(
+          <div className='social-icons'>
+            <Link to="#" className="social-icon-one"><img src={MainInterviewer} style={{height:"40px" ,width:"40px" ,borderRadius:"50%", border:'2px solid white'}}></img></Link>
+            {OptionalInterviewer.map((interviewer, index) => (
+              <Link key={index} to="#" className="social-icon-two" style={{ marginLeft: "-10px" }}>
+                <img src={interviewer?.imageUrl} style={{ height: "40px", width: "40px", borderRadius: "50%", border:'2px solid white'}}/>
+              </Link>
+            ))}
           </div>
-        );
-      }
+        )
+      },
+      sorter: true,
     },
     {
-      title: 'Status',
+      title: 'Interview Status',
       dataIndex: 'status',
       key: 'status',
       render: (status) => (
@@ -241,82 +218,266 @@ const Interviews = () => {
         </Tag>
       ),
     },
+    {
+      title: 'Interview Name',
+      dataIndex: 'interviewTitle',
+      key: 'interviewTitle',
+      render: (_, record) => (
+         <div>{record.interviewTitle}</div>
+      ),
+      sorter: true,
+    },
+    {
+      title: 'Interview Date',
+      key: 'date',
+      render: (_, record) => (
+        <span>
+          {moment(record.interviewDate).format('DD MMM YYYY')}
+        </span>
+      ),
+      sorter: true,
+    },
+    // {
+    //   title: 'Decision',
+    //   key: 'decision',
+    //   render: (_, record) => {
+    //     return record.latestFeedback?.recommendation || '-';
+    //   }
+    // },
+    // {Rating if needed}
+    // {
+    //   title: 'Rating',
+    //   key: 'rating',
+    //   render: (_, record) => {
+    //     if (!record.feedback || record.feedback.length === 0) {
+    //       return (
+    //         <div className="d-flex align-items-center">
+    //           <StarFilled style={{ color: '#FFD700', marginRight: 4 }} />
+    //           <span>0</span>
+    //         </div>
+    //       );
+    //     }
+
+    //     const totalRatings = record.feedback.reduce((sum, feedback) => {
+    //       const ratings = feedback.ratings;
+    //       const ratingSum = (
+    //         ratings.technicalSkills1 +
+    //         ratings.behavior +
+    //         ratings.softSkills +
+    //         ratings.technicalSkills2 +
+    //         ratings.technicalSkills3
+    //       );
+    //       return sum + (ratingSum / 5);
+    //     }, 0);
+
+    //     const averageRating = (totalRatings / record.feedback.length).toFixed(1);
+
+    //     return (
+    //       <div className="d-flex align-items-center">
+    //         <StarFilled style={{ color: '#FFD700', marginRight: 4 }} />
+    //         <span>{averageRating}</span>
+    //       </div>
+    //     );
+    //   }
+    // },
   ];
 
+  const renderGridView = () => {
+    return (
+      <Row gutter={[24, 24]}>
+        {interviews.map(interview => {
+          const fullName = interview?.candidateName;
+          const initials = fullName.split(' ').map(name=>name.charAt(0).toUpperCase()).join('');
+          const MainInterviewer = interview?.interviewerId?.imageUrl;
+          const OptionalInterviewer = interview?.assignedTo || [];
+          return(
+          <Col xs={24} sm={12} md={8}>
+            <Card className="job-card">
+              <div>
+                <div style={{display:'flex', justifyContent:'space-between', width:"98%"}} >
+                  <div style={{display:"flex"}}>
+                    <div style={{height:'50px' ,width:'50px', border:'1px solid transparent', borderRadius:'50%', background:"#f3eaff", color:'#8326ff', display:"flex", justifyContent:"center", alignItems:'center'}}>{initials}</div>
+                    <div style={{marginLeft:"12px"}}>
+                      <div className='job-title' style={{fontSize:"18px" ,fontWeight:"500", color:'#212529', paddingTop:"3px"}}>
+                      <Link to={`/recruitment/interviews/${interview._id}`}>
+                        {fullName}
+                      </Link>
+                      </div>
+                      <div  style={{color:'#56616b', fontSize:'12px', fontWeight:"450"}}>Hello</div>
+                    </div>
+                  </div>
+                  <Dropdown 
+                    overlay={<Menu>
+                      <Menu.Item key="edit" icon={<EditOutlined />}onClick={() => navigate(`/recruitment/interviews/${candidate._id}/edit`)}>Edit</Menu.Item>
+                      <Menu.Item key="delete" icon={<DeleteOutlined />} danger onClick={() => {
+                        Modal.confirm({
+                          title: 'Delete Job',
+                          content: 'Are you sure you want to delete this candidate?',
+                          okText: 'Yes, Delete',
+                          okType: 'danger',
+                          cancelText: 'No',
+                          onOk: () => handleDeleteInterview(candidate._id)
+                        });
+                      }}>Delete</Menu.Item>
+                    </Menu>}
+                    trigger={['click']}
+                    placement="bottomRight">
+                    <div style={{ cursor: 'pointer',height:'25px', marginTop:"5px" }}>
+                      <img src={more} alt="More Options" />
+                    </div>
+                  </Dropdown>
+                </div>
+                <div style={{marginTop:"12px"}}>
+                  <div style={{display:"flex", marginTop:'7px'}}>
+                    <div><img src={interviewIcon}></img></div>
+                    <div style={{paddingTop:"3px", marginLeft:"12px" ,color:"#56616b"}}>
+                    {/* <Link to={`/recruitment/interviews/${interviewer._id}`}>  */}
+                      {interview?.interviewTitle}
+                    {/* </Link> */}
+                    </div>
+                  </div>
+                  <div style={{display:"flex", marginTop:'7px'}}>
+                  <div><img src={clock}></img></div>
+                  <div  style={{paddingTop:"3px", marginLeft:"12px", color:"#56616b"}}>{moment(interview?.interviewTime, 'Hh:mm').format('hh:mm A')}</div>
+                  </div>
+                  <div  style={{display:"flex" , marginTop:"7px"}}>
+                  <div><img src={calander}></img></div>
+                  <div  style={{paddingTop:"3px", marginLeft:"12px",color:"#56616b"}}>{moment(interview?.interviewDate).format('DD MMM YYYY')}</div>
+                  </div>
+                  <Tag color={
+                      interview?.status?.toLowerCase() === 'scheduled' ? 'blue' :
+                      interview?.status?.toLowerCase() === 'completed' ? 'green' :
+                      interview?.status?.toLowerCase() === 'cancelled' ? 'red' : 'default'
+                      } style={{borderRadius:'70px', marginTop:"13px"}}
+                    >
+                      {interview?.status?.charAt(0).toUpperCase() + interview?.status?.slice(1).toLowerCase()}
+                    </Tag>
+                </div>
+                <div style={{marginTop:"12px"}}>
+                  <h3>Interviewers:</h3>
+                  <div>
+                    <img src={MainInterviewer} style={{height:"30px" ,width:"30px" ,borderRadius:"50%", border:'2px solid white'}}></img>
+                    {OptionalInterviewer.map((interviewer, index)=>(
+                      <Link>
+                        <img src={interviewer?.imageUrl} style={{ height: "30px", width: "30px", borderRadius: "50%", border:'2px solid white', marginLeft:"-10px"}}/>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </Col>
+          )
+        })}
+      </Row>
+    );
+  };
+
   return (
+
     <div className="content container-fluid">
-      {/* Page Header */}
-      <div className="page-header">
-        <div className="row align-items-center">
-          <div className="col">
-            <h3 className="page-title">Interviews</h3>
-            <ul className="breadcrumb">
-              <li className="breadcrumb-item"><Link to="/recruitment/dashboard">Dashboard</Link></li>
-              <li className="breadcrumb-item active">Interviews</li>
-            </ul>
+    {/* Page Header */}
+    <div className="page-header">
+      <div className="row align-items-center">
+        <div className="col">
+          <h3 className="page-title">Interviews</h3>
+          <ul className="breadcrumb">
+            <li className="breadcrumb-item"><Link to="/recruitment/dashboard">Dashboard</Link></li>
+            <li className="breadcrumb-item active">Interviews</li>
+          </ul>
+        </div>
+        <div className="col-auto float-end ms-auto d-flex align-items-center">
+          <div className="view-icons me-3">
+            <button type={viewType === 'list' ? 'primary' : 'default'}   onClick={() => setViewType('list')} style={{height:"40px", width:'40px', border:'1.5px solid #EEf0f1', borderRadius:'4px', background:'white'}} >
+              <img src={list}></img>
+            </button>
+            <button  type={viewType === 'grid' ? 'primary' : 'default'} onClick={() => setViewType('grid')} style={{height:"40px", width:'40px', border:'1.5px solid #EEf0f1', borderRadius:'4px', background:'white'}}>
+              <img src={grid}></img>
+            </button>
           </div>
-          <div className="col-auto float-end ms-auto d-flex align-items-center">
-            <div className="view-icons me-2">
-              <Button
-                type={viewType === 'list' ? 'primary' : 'default'}
-                icon={<UnorderedListOutlined />}
-                onClick={() => setViewType('list')}
-                className="me-1"
-              />
-              <Button
-                type={viewType === 'grid' ? 'primary' : 'default'}
-                icon={<AppstoreOutlined />}
-                onClick={() => setViewType('grid')}
-              />
+          <Button
+            className="add-candidate-btn"
+            onClick={showModal}
+          >
+            <div className='btn-content'>
+              <img src={circle} style={{marginRight:'8px', marginBottom:'20px'}}></img>
+              <p>Create Interview</p>  
             </div>
-          </div>
+          </Button>
         </div>
       </div>
+    </div>
 
-      {/* Search Filters */}
-      <Form 
-        form={form}
-        onFinish={handleSearch} 
-        className="row filter-row"
-        initialValues={filters}
-      >
-        <div className="col-sm-6 col-md-3">
-          <Form.Item name="candidateName">
-            <Input placeholder="Candidate Name" allowClear />
+    {/* Search Filters */}
+    <Form 
+      form={form}
+      onFinish={handleSearch} 
+      className="search-form"
+      initialValues={filters}
+    >
+      <Row gutter={[12, 12]} align="middle">
+        <Col xs={24} sm={12} md={5}>
+          <Form.Item name="candidateName" className="mb-0">
+            <Input style={{borderRadius:"8px", height:"40px"}} placeholder="Candidate Name" allowClear />
           </Form.Item>
-        </div>
-        <div className="col-sm-6 col-md-3">
-          <Form.Item name="status">
+        </Col>
+        <Col xs={24} sm={12} md={5}>
+          <Form.Item name="appliedPosition" className="mb-0">
+            <Input style={{borderRadius:"8px", height:"40px"}} placeholder="Applied Position" allowClear />
+          </Form.Item>
+        </Col>
+        <Col xs={24} sm={12} md={5}>
+          <Form.Item name="status" className="mb-0">
             <Select
-              placeholder="Status"
+              placeholder="Interview Status"
               allowClear
+              className='custom'
               options={[
                 { value: 'SCHEDULED', label: 'Scheduled' },
                 { value: 'COMPLETED', label: 'Completed' },
-                { value: 'CANCELLED', label: 'Cancelled' }
+                { value: 'CANCELLED', label: 'Cancelled' },
+                { value: 'RESCHEDULED', label: 'Rescheduled' },
               ]}
             />
           </Form.Item>
-        </div>
-        <div className="col-sm-6 col-md-3">
-          <Form.Item>
-            <div className="d-flex gap-2">
-              <Button type="primary" htmlType="submit" className="btn btn-success flex-grow-1">
-                Search
-              </Button>
-              <Button onClick={handleReset} className="flex-grow-1">
-                Reset
-              </Button>
-            </div>
+        </Col>
+        <Col xs={24} sm={12} md={5}>
+          <Form.Item name="jobType" className="mb-0">
+            <Select placeholder="Interview Rating" allowClear
+            className='custom'
+              options={[
+                { value: '1', label: '1.0' },
+                { value: '2', label: '2.0' },
+                { value: '3', label: '3.0' },
+                { value: '4', label: '4.0' },
+                { value: '5', label: '5.0' }
+              ]}
+            />
           </Form.Item>
-        </div>
-      </Form>
+        </Col>
+        <Col xs={24} sm={12} md={4}>
+          <Form.Item className="mb-0">
+            <Button type="primary" htmlType="submit" className="search-btn" block>
+              Search
+            </Button>
+          </Form.Item>
+        </Col>
+      </Row>
+    </Form>
 
-      {/* Interviews List */}
-      <div className="row">
-        <div className="col-md-12">
-          <Spin spinning={loading}>
-            {console.log('Rendering interviews:', interviews)}
+    {/* Render the CreateInterviewModal */}
+    <CreateInterviewModal
+      isVisible={isModalVisible}
+      onCancel={handleCancel}
+      interview={interviews}
+      authState={authState}
+    />
+
+    {/* Jobs View */}
+    <div className="row">
+      <div className="col-md-12">
+        <Spin spinning={loading}>
+          {viewType === 'list' ? (
             <div className="table-responsive">
               <Table 
                 className="table-striped"
@@ -330,59 +491,325 @@ const Interviews = () => {
                   pageSizeOptions: ['10', '20', '50']
                 }}
                 onChange={handleTableChange}
-                onRow={(record) => ({
-                  onClick: () => navigate(`/recruitment/interviews/${record._id}`),
-                  style: { cursor: 'pointer' }
-                })}
               />
             </div>
-          </Spin>
-        </div>
+          ) : (
+            renderGridView()
+          )}
+        </Spin>
       </div>
-
-      <style jsx global>{`
-        .view-icons {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-        .view-icons .ant-btn {
-          padding: 4px 8px;
-          height: 32px;
-          background: #F4A261;
-          border: none;
-          color: white;
-        }
-        .view-icons .ant-btn:hover {
-          background: #E76F51;
-          color: white;
-        }
-        .view-icons .ant-btn.ant-btn-default {
-          background: #F8F9FA;
-          color: #4A5568;
-        }
-        .view-icons .ant-btn.ant-btn-default:hover {
-          background: #E2E8F0;
-          color: #2D3748;
-        }
-        .ant-table-tbody > tr:hover {
-          background-color: #f5f5f5;
-        }
-        .ant-table-tbody > tr > td {
-          transition: background 0.3s;
-        }
-        .ant-table-row {
-          cursor: pointer;
-        }
-        .ant-table-cell a {
-          color: inherit;
-          text-decoration: none;
-        }
-        .ant-table-cell a:hover {
-          color: #1890ff;
-        }
-      `}</style>
     </div>
+
+    {/* Add some global styles */}
+    <style jsx global>{`
+      .custom-modal .ant-modal-header {
+        border-bottom: none;
+        padding: 24px 24px 0;
+      }
+      .custom-modal .ant-modal-title {
+        font-size: 24px;
+        font-weight: 600;
+      }
+      .custom-modal .ant-modal-close {
+        background-color: #F8F9FA;
+        border-radius: 50%;
+        border:"1px solid #F8F9FA";
+        margin:16px 16px 0 0;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .custom-modal .ant-form-item-label > label {
+        font-weight: 500;
+      }
+      .custom-modal .ant-input,
+      .custom-modal .ant-select-selector,
+      .custom-modal .ant-input-number {
+        border-radius: 8px;
+        padding: 8px 12px;
+        height: 56px;
+        font-size: 16px;
+        font-weight: 450;
+      }
+      .custom-modal .ant-input-number-input {
+        height: 24px;
+        font-size: 16px;
+        font-weight: 450;
+        
+      }
+      .custom-modal .ant-select-selection-placeholder,
+      .custom-modal .ant-input::placeholder {
+        color: #6C757D;
+      }
+      .custom-modal textarea.ant-input {
+        height: auto;
+        min-height: 120px;
+        height: 80px;
+        border-radius: 8px;
+      }
+      .view-icons {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .view-icons .ant-btn {
+        padding: 4px 8px;
+        height: 32px;
+        background: #F4A261;
+        border: none;
+        color: white;
+      }
+      .view-icons .ant-btn:hover {
+        background: #E76F51;
+        color: white;
+      }
+      .view-icons .ant-btn.ant-btn-default {
+        background: #F8F9FA;
+        color: #4A5568;
+      }
+      .view-icons .ant-btn.ant-btn-default:hover {
+        background: #E2E8F0;
+        color: #2D3748;
+      }
+      .search-form {
+        background: transparent;
+        margin-bottom: 16px;
+      }
+
+      .search-btn {
+        background: #1f1f1f;
+        border: 1px solid #1f1f1f;
+        height: 40px;
+        border-radius: 8px;
+        width: 80% !important;
+        font-weight: 500;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        justify-self: end;
+      }
+      .search-btn:hover {
+        background: #333 !important;
+        border: none
+      }
+      .job-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        border: 1px solid #e0e3e6;
+        height: auto;
+      }
+      .job-card .ant-card-body {
+        padding: 16px;
+      }
+      .job-card-content {
+        padding: 0;
+      }
+      .job-title {
+        font-size: 20px;
+        font-weight: 500;
+        margin-bottom: 4px;
+      }
+      .job-title a {
+        color: #212529;
+      }
+      .positions-count {
+        color: #56616B;
+        font-size: 14px;
+        margin-bottom: 9px;
+        font-weight: 450px;
+        margin-left: 2px;
+      }
+      .job-details {
+        margin-bottom: 12px;
+        height: 100px !important;
+      }
+      .detail-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 6px;
+        color: #4A5568;
+        font-size: 13px;
+        line-height: 1;
+        height: 50%;
+      }
+      .detail-items{
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 6px;
+        color: #4A5568;
+        font-size: 13px;
+        line-height: 1;
+        height: 40%;
+      }
+      .detail-item:last-child {
+        margin-bottom: 0;
+      }
+      .detail-item .icons,
+      .detail-items .icons{
+        width: 20px;
+        margin-right: 8px;
+        display: flex;
+        justify-content: center;
+        flex-shrink: 0;
+        height: 20px;
+        margin-left: 3px;
+      }
+      .detail-item .icon svg {
+        display: block;
+      }
+      .detail-item .detail-text,
+      .detail-items .detail-text{
+        line-height: 17px;
+        font-size: 14px;
+        font-weight: 450px;
+        color: #56616B;
+        display: flex;
+        align-items: flex-end;
+        margin-top: 5px;
+      }
+
+      .card-foot{
+       display: flex;
+       justify-content: space-between;
+      }
+      .post-on {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        color: #212529;
+        font-size: 14px;
+        font-weight: 450;
+        width: 100%;
+      }
+      .social-icons {
+        display: flex;
+        position: absolute;
+      }
+
+      .social-icon-one {
+        z-index: 0;
+      }
+      .social-icon-two {
+        position: relative;
+        z-index: 1;
+        right: 5px;
+
+      }
+      .social-icon-three {
+        position: relative;
+        z-index: 2;
+        right: 10px;
+      }
+      .social-icon-four {
+        z-index: 3;
+        position: relative;
+        right: 15px;
+
+      }
+
+      .social-icon:hover {
+        color: #F4A261;
+      }
+      .applications-count {
+        text-align: start;
+        margin-right: 15px;
+      }
+      .applications-count-number {
+        color: #FF9244;
+        font-weight: 500;
+        font-size: 28px;
+        height: 60%;
+        margin-left: 3px;
+      }
+      .applications-count-text{
+        color: #56616B;
+        font-size: 14px;
+        font-weight: 450;
+        height: 40%;
+      }
+      .ant-row {
+        margin-right: -12px !important;
+        margin-left: -12px !important;
+      }
+      .ant-col {
+        padding-right: 12px !important;
+        padding-left: 12px !important;
+      }
+      .custom  .ant-select-selector {
+      height: 40px !important;
+      border-radius: 8px !important;
+      display: flex;
+      align-items: center;
+      padding-left: 10px;
+      }
+
+      .custom .ant-select-placeholder {
+      color: white !important;
+      }
+
+      .customized .ant-select-selector{
+      height: 56px !important;
+      border-radius: 8px !important;
+      display: flex;
+      align-items: center;
+      padding-left: 10px;
+      }
+
+      .add-candidate-btn{
+        border-radius: 40px !important;
+        height: 44px !important;
+        background-color: #ff9244 !important;
+        color: white !important;
+        font-weight: 500 !important;
+        font-size: 16px !important;
+        border: 2px solid #ff9244 !important;
+        width: 185px !important;
+      }
+      
+      .btn-content{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .checkbox-style{
+        display: 'flex';
+        gap: '24px' ;
+      }
+
+
+
+      @media (max-width: 768px) {
+      .search-btn {
+       justify-self: center;  
+       width: 80% !important; }
+      }
+
+      @media (min-width: 350px) and (max-width: 390px) {
+      .checkbox-style{
+       gap: 10px;}
+      }
+      
+      @media(min-width: 990px) and (max-width: 1200px){
+      .applications-count{
+        margin-right: 0;}
+      }
+      @media(min-width: 767px) and (max-width: 830px){
+      .applications-count{
+       margin-right: 0;}
+      } 
+
+
+
+      
+
+    `}</style>
+  </div>
   );
 };
 

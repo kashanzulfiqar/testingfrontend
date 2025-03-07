@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Input, Button, Select, DatePicker, TimePicker, message, Switch } from 'antd';
+import { Modal, Form, Input, Button, Select, DatePicker, TimePicker, message, Switch, Empty } from 'antd';
 import { apiServices } from '../../Services/apiServices';
 import moment from 'moment';
+import onCloseIcon from '../../assets/iconsRecruitment/x.svg';
+import { CloseOutlined } from '@ant-design/icons';
 
 const CreateInterviewModal = ({ isVisible, onCancel, candidate, authState }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [employees, setEmployees] = useState([]);
   const [sendEmail, setSendEmail] = useState(true);
+
 
   useEffect(() => {
     if (isVisible) {
@@ -97,13 +100,15 @@ const CreateInterviewModal = ({ isVisible, onCancel, candidate, authState }) => 
     }
   };
 
+
   return (
     <Modal
-      title="Schedule Interview"
+      title="Add New Interview"
       visible={isVisible}
       onCancel={onCancel}
       footer={null}
-      width={600}
+      width={800}
+      className="custom-modal"
     >
       <Form
         form={form}
@@ -115,7 +120,152 @@ const CreateInterviewModal = ({ isVisible, onCancel, candidate, authState }) => 
           sendEmail: true
         }}
       >
-        <Form.Item
+        <div className="row">
+        <div style={{height:"20px", width:"100%", display:"flex", justifyContent:"center", borderTop:"1px solid #E2E8F0"}}></div>
+          <div className="col-md-6">
+          <Form.Item
+              name="candidateName"
+              label={<>Candidate Name <span className="text-danger">*</span></>}
+              rules={[{ required: true, message: 'Please enter candidate name' }]}
+            >
+              <Input placeholder="Enter Name"  />
+            </Form.Item>
+          </div>
+          <div className="col-md-6">
+          <Form.Item
+              name="candidateEmail"
+              label={<>Candidate Email <span className="text-danger">*</span></>}
+              rules={[{ required: true, message: 'Please enter candidate email' }]}
+            >
+              <Input placeholder="Enter Email"/>
+            </Form.Item>
+          </div>
+        </div>
+
+        <div className='row'>
+          <div className='col-md-6'>
+            <Form.Item
+            name="interviewType"
+            label="Interview Type"
+            rules={[{ required: true, message: 'Please select interview type' }]}
+            >
+            <Select placeholder="Select interview type" className='customized'>
+              <Select.Option value="ONLINE">Online</Select.Option>
+              <Select.Option value="IN_PERSON">In Person</Select.Option>
+            </Select>
+            </Form.Item>
+          </div>
+          <div className="col-md-6">
+            <Form.Item
+              name="taskReviewer"
+              label={<>Assign To <span className="text-danger">*</span></>}
+              rules={[{ required: true, message: 'Please select Interviewer' }]}
+            >
+              <Select
+                className='customized'
+                mode="multiple"
+                showSearch
+                filterOption={(input, option) => 
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+                optionFilterProp="children"
+                notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                placeholder="Select Reviewer"
+              >
+                {employees?.map((employee) => (
+                  <Select.Option
+                    key={employee._id}
+                    value={employee._id}
+                  >
+                    {employee.fullName}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </div>
+        </div>
+
+        <div className='row'>
+          <div className='col-md-6'>
+            <Form.Item
+            name="interviewDate"
+            label="Interview Date"
+            rules={[{ required: true, message: 'Please select date' }]}
+            >
+              <DatePicker
+              style={{ width: '100%' }}
+              disabledDate={(current) => current && current < moment().startOf('day')}
+              className='custom-datepicker'
+              />
+            </Form.Item>
+          </div>
+          <div className='col-md-6'>
+            <Form.Item
+              name="interviewTime"
+              label="Interview Time"
+              rules={[{ required: true, message: 'Please select time' }]}
+            >
+              <TimePicker
+                style={{ width: '100%' }}
+                format="HH:mm"
+                minuteStep={15}
+                className='custom-timepicker'
+              />
+            </Form.Item>
+          </div>
+        </div>
+
+        <div className='row'>
+          <div className='col-md-6'>
+            <Form.Item
+              name="interviewLink"
+              label={<>Interview Link <span className="text-danger">*</span></>}
+              rules={[{ required: true, message: 'Please enter interview link' }]}
+            >
+              <Input placeholder="www.zoom.com"/>
+            </Form.Item>
+          </div>
+        </div>
+
+        {/* <Form.Item className="text-right mb-0">
+          <Button onClick={onCancel} style={{ marginRight: 8 }}>
+            Cancel
+          </Button>
+          <Button type="primary" htmlType="submit" loading={loading}>
+            Schedule Interview
+          </Button>
+        </Form.Item>  */}
+        <Form.Item className="text-end mt-3" style={{backgroundColor:'transparent', height:"70px"}}>
+            <Button 
+              onClick={onCancel} 
+              style={{ 
+                marginRight: '12px',
+                padding: '6px 24px',
+                height: '40px',
+                borderRadius: '40px',
+                background: '#F8F9FA',
+                border: 'none'
+              }}
+            >
+              Reset
+            </Button>
+            <Button 
+              type="primary" 
+              htmlType="submit" 
+              loading={loading}
+              style={{ 
+                padding: '6px 24px',
+                height: '40px',
+                borderRadius: '40px',
+                background: '#ff9244',
+                border: 'none',
+                color:"white"
+              }}
+            >
+              Schedule Interview
+            </Button>
+          </Form.Item>
+        {/* <Form.Item
           name="interviewTitle"
           label="Interview Title"
           rules={[{ required: true, message: 'Please select interview title' }]}
@@ -128,16 +278,6 @@ const CreateInterviewModal = ({ isVisible, onCancel, candidate, authState }) => 
           </Select>
         </Form.Item>
 
-        <Form.Item
-          name="interviewType"
-          label="Interview Type"
-          rules={[{ required: true, message: 'Please select interview type' }]}
-        >
-          <Select placeholder="Select interview type">
-            <Select.Option value="ONLINE">Online</Select.Option>
-            <Select.Option value="IN_PERSON">In Person</Select.Option>
-          </Select>
-        </Form.Item>
 
         <Form.Item
           noStyle
@@ -228,17 +368,98 @@ const CreateInterviewModal = ({ isVisible, onCancel, candidate, authState }) => 
             checkedChildren="Yes"
             unCheckedChildren="No"
           />
-        </Form.Item>
-
-        <Form.Item className="text-right mb-0">
-          <Button onClick={onCancel} style={{ marginRight: 8 }}>
-            Cancel
-          </Button>
-          <Button type="primary" htmlType="submit" loading={loading}>
-            Schedule Interview
-          </Button>
-        </Form.Item>
+        </Form.Item>*/}
       </Form>
+      <style jsx global>{`
+        .custom-modal .ant-modal-header {
+          border-bottom: none;
+          padding: 24px 24px 0;
+        }
+        .custom-modal .ant-modal-title {
+          font-size: 24px;
+          font-weight: 600;
+        }
+        .custom-modal .ant-modal-close {
+          background-color: #F8F9FA;
+          border-radius: 50%;
+          border:"1px solid #F8F9FA";
+          margin:16px 16px 0 0;
+          width: 32px;
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .custom-modal .ant-input,
+        .custom-modal .ant-select-selector,
+        .custom-modal .ant-input-number {
+          border-radius: 8px;
+          padding: 8px 12px;
+          height: 56px;
+          font-size: 16px;
+          font-weight: 450;
+        }
+        .custom-timepicker, .custom-datepicker{
+          border-radius: 8px;
+          padding: 8px 12px;
+          height: 56px;
+          font-size: 16px;
+          font-weight: 450;
+        }
+
+        // .search-form {
+        //   background: transparent;
+        //   margin-bottom: 16px;
+        // }
+
+        // .search-btn {
+        //   background: #1f1f1f;
+        //   border: 1px solid #1f1f1f;
+        //   height: 40px;
+        //   border-radius: 8px;
+        //   width: 80% !important;
+        //   font-weight: 500;
+        //   font-size: 16px;
+        //   display: flex;
+        //   align-items: center;
+        //   justify-content: center;
+        //   justify-self: end;
+        // }
+        // .search-btn:hover {
+        //   background: #333 !important;
+        //   border: none
+        // }
+
+        .customized .ant-select-selector{
+        height: 56px !important;
+        border-radius: 8px !important;
+        display: flex;
+        align-items: center;
+        padding-left: 10px;
+        }
+
+        .add-candidate-btn{
+          border-radius: 40px !important;
+          height: 44px !important;
+          background-color: #ff9244 !important;
+          color: white !important;
+          font-weight: 500 !important;
+          font-size: 16px !important;
+          border: 2px solid #ff9244 !important;
+          width: 185px !important;
+        }
+        
+        .btn-content{
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+
+
+        
+  
+      `}</style>
     </Modal>
   );
 };

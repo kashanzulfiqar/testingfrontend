@@ -130,13 +130,6 @@ const JobDetails = () => {
     }
   };
 
-  const getInitials = (title)=>{
-    if(!title) return "";
-    return title
-    .split(' ')
-    .map(word=>word.charAt(0).toUpperCase())
-    .join('');
-  };
 
   const handleAddCandidate = () => {
     setIsModalVisible(true);
@@ -289,11 +282,9 @@ const JobDetails = () => {
             <div className="d-flex align-items-center">
               <div>
                 <h3 className="page-title">Jobs</h3>
-                {/* <h3 className="page-title mb-0">{jobDetails?.title}</h3> */}
                 <ul className="breadcrumb">
                   <li className="breadcrumb-item"><Link to="/recruitment/dashboard">Dashboard</Link></li>
                   <li className="breadcrumb-item"><Link to="/recruitment/jobs">Jobs</Link></li>
-                  {/* <li className="breadcrumb-item active">{jobDetails?.title || 'Job Details'}</li> */}
                 </ul>
               </div>
             </div>
@@ -331,9 +322,9 @@ const JobDetails = () => {
       </div>
       <div style={{height:'130px', background:'#ffffff' ,border:'1px solid transparent' , borderRadius:'8px', marginBottom:"20px", display:"flex", alignItems:"center", justifyContent:"space-between"}}>
         <div style={{display:"flex", alignItems:'center'}}>
-          <div style={{height:'80px' ,width:"80px", border:"1px solid transparent" , borderRadius:"50%", background:'#f5f1fd', color:'#9368e9', display:"flex", justifyContent:"center", alignItems:'center', marginLeft:"20px"}}>{getInitials(jobDetails.title)}</div>
+          <div style={{height:'80px' ,width:"80px", border:"1px solid transparent" , borderRadius:"50%", background:'#f5f1fd', color:'#9368e9', display:"flex", justifyContent:"center", alignItems:'center', marginLeft:"20px"}}>{jobDetails.title.split(' ').map(word=>word.charAt(0).toUpperCase()).join('')}</div>
           <div>
-          <h3 className="ms-3 mt-2 mb-0">{jobDetails?.title}</h3>
+          <h3 className="ms-3 mt-2 mb-0">{jobDetails?.title.split(' ').map(word=>word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}</h3>
           <Tag color="success" className="ms-3" style={{background:'#f5f1fd', borderRadius:"70px"}}>Open</Tag>
           </div>
         </div>
@@ -367,10 +358,6 @@ const JobDetails = () => {
         <div className="col-md-4">
           <div className="card mb-4"   style={{border:"1px solid transparent", borderRadius:"8px"}}>
             <div className="card-body">
-              {/* <div className="d-flex align-items-center mb-4">
-                <h3 className="mb-0">{jobDetails?.title}</h3>
-                <Tag color="success" className="ms-2">Open</Tag>
-              </div> */}
 
               <div className="info-section mb-4">
                 <h5 className="mb-3" style={{fontSize:'18px', fontWeight:"500", color:'#212529'}}>Basic Information</h5>
@@ -392,16 +379,11 @@ const JobDetails = () => {
                   <span  className="applications-received" style={{fontSize:"28px", fontweight:"'500", color:'#FF9244', display:'flex', alignSelf:'center', justifySelf:'center', marginLeft:'25px'}}>{candidates.length}</span>
                 </div>
 
-                {/* <div className="info-item">
-                  <UserOutlined className="me-2" />
-                  <span>{candidates.length} Applications</span>
-                </div> */}
               </div>
 
               <div className="info-section mb-4">
                 <h5 className="mb-3"  style={{fontSize:'18px', fontWeight:"500", color:'#212529'}}>Other Information</h5>
                 <div className="info-item">
-                  {/* <GlobalOutlined className="me-2" /> */}
                   <span className='other-info-content-left'  style={{fontSize:'14px', fontWeight:"450", color:'#212529', width:"32%"}}>Job Type</span>
                   <span className='other-info-content-right' style={{fontSize:'14px', fontWeight:"450", color:'#56616B', width:"32%"}}>{jobDetails?.jobType?.split('_').map(word => word.charAt(0) + word.slice(1).toLowerCase()).join(' ')}</span>
                 </div>
@@ -442,13 +424,6 @@ const JobDetails = () => {
         {/* Right Panel */}
         <div className="col-md-8">
           <div className="card pt-4 pb-4" style={{border:"1px solid transparent" ,borderRadius:"8px", display:"flex", flexDirection:"row", justifyContent:"space-between"}}>
-            {/* <div className="card-body">
-              <Tabs 
-                defaultActiveKey="timeline" 
-                items={items}
-                className="job-details-tabs"
-              />
-            </div> */}
             <div className='tab-container'>
               {items.map((item)=>(
                 <div key={item.key} className={`tab-label ${active === item.key ? 'active' : ''}`} style={{}} onClick={()=>{setActive(item.key)}}>{item.label}</div>
