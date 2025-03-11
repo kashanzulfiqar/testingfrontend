@@ -498,6 +498,7 @@
     "noOfDays": "No Of Days",
     "reason": "Reason",
     "approvedBy": "Approved By",
+    "declineReason": "Reason of Rejection",
     "addModal": {
       "request": "Request",
       "requestType": "Request Type",
@@ -559,11 +560,17 @@
       "annual": "Annual",
       "wfh": "WFH"
     },
+    "declineModal": {
+      "title": "Decline Request",
+      "reason": "Reason for Declining",
+      "placeholder": "Please enter reason for declining the request"
+    },
     "errors": {
       "leaveRequestUpdated": "Leave request updated to {{newStatus}}",
       "failedToUpdateLeaveRequest": "Failed to update leave request status",
       "noRecordFound": "No Record Found!",
-      "bothStartEndDateRequired": "Both Start and End Date required"
+      "bothStartEndDateRequired": "Both Start and End Date required",
+      "declineReasonRequired": "Please provide a reason for declining"
     }
   },
   "empProfile": {
@@ -880,12 +887,12 @@
     "submitUpdates": "Submit Updates",
     "viewTimesheetError": "View Timesheet Error!",
     "getAllTasksError": "Get All Tasks Error",
-    "timesheetAddedSuccessfully": "Timesheet Added Successfully!",
-    "addTimesheetError": "Add Timesheet Error",
-    "timesheetUpdatedSuccessfully": "Timesheet Updated Successfully!",
-    "updateTimesheetError": "Update Timesheet Error",
-    "timesheetDeletedSuccessfully": "Timesheet Deleted Successfully!",
-    "deleteTimesheetError": "Delete Timesheet Error",
+    "timesheetAddedSuccessfully": "Entry Added Successfully!",
+    "addTimesheetError": "Add Entry Error",
+    "timesheetUpdatedSuccessfully": "Entry Updated Successfully!",
+    "updateTimesheetError": "Update Entry Error",
+    "timesheetDeletedSuccessfully": "Entry Deleted Successfully!",
+    "deleteTimesheetError": "Delete Entry Error",
     "timesheetSubmittedSuccessfully": "Timesheet Submitted Successfully!",
     "submitTimesheetError": "Submit Timesheet Error",
     "taskDurationCannotBeZero": "Task duration cannot be zero",
@@ -893,8 +900,8 @@
     "dataAlreadyExistError": "Data Already Exist for this Project & Task!",
     "taskDurationZeroError": "Task Duration Cannot be Zero!",
     "row": "Row",
-    "deleteTimesheet": "Delete Timesheet",
-    "confirmDeleteTimesheet": "Are you sure you want to delete the timesheet?"
+    "deleteTimesheet": "Delete Entry",
+    "confirmDeleteTimesheet": "Are you sure you want to delete the entry?"
   },
   "Timesheetadmin": {
     "timesheetTitle": "Timesheet - DaftarPro",
@@ -946,6 +953,7 @@
     "addtask": "Add Task",
     "title": "Title",
     "project": "Project",
+    "taskboard": "Task Board",
     "selectproject": "Select Project",
     "selecttaskboard":"Select Taskboard",
     "tags": "Tags",
@@ -1289,6 +1297,9 @@
       "city": "City",
       "state": "State",
       "country": "Country",
+      "selectCountry": "Select Country",
+      "selectState": "Select State",
+      "selectCity": "Select City",
       "companyEmail": "Company Email",
       "registrationNo": "Registration No",
       "phoneNumber": "Phone Number",
@@ -1301,9 +1312,9 @@
       "pleaseEnterAddress": "please enter address",
       "pleaseEnterPostalCode": "Please enter postal code",
       "validEmail": "Please enter a valid email",
-      "pleaseEnterCityName": "Please enter city name",
-      "pleaseEnterStateName": "Please enter state name",
-      "pleaseEnterCountryName": "Please enter country name",
+      "pleaseSelectCity": "Please select a city",
+      "pleaseSelectState": "Please select a state",
+      "pleaseSelectCountry": "Please select a country",
       "pleaseEnterCompanyEmail": "Please enter company email",
       "pleaseEnterRegistrationNo": "Please enter registration no",
       "pleaseEnterPhoneNumber": "Please enter phone number",
@@ -1312,7 +1323,10 @@
       "pleaseEnterFax": "Please enter fax",
       "companyInfoError": "Error fetching company information",
       "companySettingsUpdated": "Company settings updated successfully!",
-      "updateCompanyInfoError": "Error updating company information"
+      "updateCompanyInfoError": "Error updating company information",
+      "errorFetchingCountries": "Error fetching countries",
+      "errorFetchingStates": "Error fetching states",
+      "errorFetchingCities": "Error fetching cities"
     },
     "LeaveSettings": {
       "leaveSettings": "Leave Settings",

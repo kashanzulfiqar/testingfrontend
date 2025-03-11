@@ -45,41 +45,33 @@ const formatCostToWords = (value, currency) => {
   if (!value) return '0';
   
   const scales = [
-    { value: 1e66, name: 'undecillion' },
-    { value: 1e63, name: 'vigintillion' },
-    { value: 1e60, name: 'novemdecillion' },
-    { value: 1e57, name: 'octodecillion' },
-    { value: 1e54, name: 'septendecillion' },
-    { value: 1e51, name: 'sexdecillion' },
-    { value: 1e48, name: 'quindecillion' },
-    { value: 1e45, name: 'quattuordecillion' },
-    { value: 1e42, name: 'tredecillion' },
-    { value: 1e39, name: 'duodecillion' },
-    { value: 1e36, name: 'undecillion' },
-    { value: 1e33, name: 'decillion' },
-    { value: 1e30, name: 'nonillion' },
-    { value: 1e27, name: 'octillion' },
-    { value: 1e24, name: 'septillion' },
-    { value: 1e21, name: 'sextillion' },
-    { value: 1e18, name: 'quintillion' },
-    { value: 1e15, name: 'quadrillion' },
-    { value: 1e12, name: 'trillion' },
-    { value: 1e9, name: 'billion' },
-    { value: 1e6, name: 'million' },
-    { value: 1e3, name: 'thousand' }
+    { value: 1e24, name: 'Y' },  // Yotta
+    { value: 1e21, name: 'Z' },  // Zetta
+    { value: 1e18, name: 'E' },  // Exa
+    { value: 1e15, name: 'P' },  // Peta
+    { value: 1e12, name: 'T' },  // Trillion
+    { value: 1e9, name: 'B' },   // Billion
+    { value: 1e6, name: 'M' },   // Million
+    { value: 1e3, name: 'K' }    // Thousand
   ];
 
   const formatValue = (val) => {
+    // For values less than 10,000, use regular comma formatting
+    if (val < 10000) {
+      return numeral(val).format('0,0');
+    }
+
     // Handle numbers larger than the highest scale
-    if (val >= 1e69) {
-      return 'Value too large to represent';
+    if (val >= 1e27) {
+      return 'Value too large';
     }
 
     // Find the appropriate scale
     const scale = scales.find(s => val >= s.value);
     
     if (scale) {
-      return numeral(val / scale.value).format('0.0') + ' ' + scale.name;
+      const scaledValue = Math.floor(val / scale.value);
+      return `${scaledValue}${scale.name}`;
     }
     
     return numeral(val).format('0,0');
