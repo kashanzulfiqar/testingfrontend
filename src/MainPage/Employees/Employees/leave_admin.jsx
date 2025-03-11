@@ -73,6 +73,9 @@ const LeaveAdmin = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [statdata, setStatdata] = useState("");
+  const [isDeclineModalVisible, setIsDeclineModalVisible] = useState(false);
+  const [declineReason, setDeclineReason] = useState("");
+  const [pendingDeclineRecord, setPendingDeclineRecord] = useState(null);
 
   const leaveTypeTranslations = {
     casual: t('aRequests.casual'),
@@ -105,6 +108,11 @@ const LeaveAdmin = () => {
   // }, [selectedRecord]);
 
   const handleUpdateStatus = (record, newStatus) => {
+    if (newStatus === "Declined") {
+      setPendingDeclineRecord(record);
+      setIsDeclineModalVisible(true);
+      return;
+    }
     const {
       _id,
       userId,
@@ -152,6 +160,59 @@ const LeaveAdmin = () => {
       });
   };
 
+  // Add new function to handle decline submission
+const handleDeclineSubmit = () => {
+    if (!declineReason.trim()) {
+      message.error(t('aRequests.errors.declineReasonRequired'));
+      return;
+    }
+
+    const {
+      _id,
+      userId,
+      companyId,
+      requestType,
+      leaveType,
+      startDate,
+      endDate,
+      description,
+      approvedBy,
+    } = pendingDeclineRecord;
+
+    const updatedData = {
+      _id,
+      userId,
+      companyId,
+      requestType,
+      leaveType,
+      startDate,
+      endDate,
+      status: "Declined",
+      description,
+      approvedBy,
+      declineReason: declineReason
+    };
+
+    const apiUrl = `requests/update-request`;
+    apiServices("PUT", apiUrl, updatedData, user_state)
+      .then((res) => {
+        if (res.data.success === true) {
+          message.success(t('aRequests.errors.leaveRequestUpdated', {newStatus: t('aRequests.Declined')}));
+          fetchleaves();
+          dispatch(counter(pending_counter - 1));
+        }
+      })
+      .catch((error) => {
+        console.log("error", error);
+        message.error(t('aRequests.errors.failedToUpdateLeaveRequest'));
+      })
+      .finally(() => {
+        setIsDeclineModalVisible(false);
+        setDeclineReason("");
+        setPendingDeclineRecord(null);
+        closeModal();
+      });
+  };
   const [filters, setFilters] = useState({
     name: "",
     type: "",
@@ -972,6 +1033,8 @@ const LeaveAdmin = () => {
                       totalDays: selectedRecord?.totalDays || "",
 
                       description: selectedRecord?.description || "",
+
+                      declineReason: selectedRecord?.declineReason || "",
                     }}
                     autoComplete="off"
                   >
@@ -1072,6 +1135,18 @@ const LeaveAdmin = () => {
                       </Form.Item>
                     </div>
 
+                    { (selectedRecord?.status === 'Declined') ? ( 
+                      <div className="form-group">
+                        <label style={{display: 'flex', justifyContent: 'space-between'}}>
+                          <div>{t('requests.declineReason')} <span className="text-danger">*</span></div>
+                        </label>
+                        <Form.Item
+                          name="declineReason"
+                          className="custom-border"
+                        >
+                          <Input.TextArea rows={3} className="form-control" readOnly />
+                        </Form.Item>
+                      </div>) : null }
                     <div
                       style={{
                         display: "flex",
@@ -1127,6 +1202,71 @@ const LeaveAdmin = () => {
           {/* Delete Leave Modal */}
           <Delete />
           {/* /Delete Leave Modal */}
+          {/* Decline Reason Modal */}
+        <Modal
+          open={isDeclineModalVisible}
+          onClose={() => {
+            setIsDeclineModalVisible(false);
+            setDeclineReason("");
+            setPendingDeclineRecord(null);
+          }}
+          aria-labelledby="decline-modal-title"
+          className="modalScroll"
+          aria-describedby="decline-modal-description"
+          BackdropProps={{
+            style: { backgroundColor: "rgb(0 0 0 / 87%)" },
+          }}
+        >
+          <div className="modal-dialog modal-dialog-centered" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">{t('aRequests.declineModal.title')}</h5>
+                <button
+                  type="button"
+                  className="close"
+                  onClick={() => {
+                    setIsDeclineModalVisible(false);
+                    setDeclineReason("");
+                    setPendingDeclineRecord(null);
+                  }}
+                >
+                  <span aria-hidden="true">×</span>
+                </button>
+              </div>
+              <div className="modal-body">
+              <Form>
+                    <div className="form-group">
+                      <label>
+                        {t("aRequests.declineModal.reason")} <span className="text-danger">*</span>
+                      </label>
+                      <div style={{ position: "relative" }} id="area">
+                        <Form.Item name="declineReason" className="custom-border">
+                          <Input.TextArea
+                            className="form-control"
+                            value={declineReason}
+                            onChange={(e) => setDeclineReason(e.target.value)}
+                            rows={4}
+                            maxLength={100}
+                            placeholder={t(
+                              "aRequests.declineModal.placeholder"
+                            )}
+                          />
+                        </Form.Item>
+                      </div>
+                    </div>
+                    <div className="submit-section">
+                      <Button
+                        onClick={handleDeclineSubmit}
+                        className="btn btn-primary submit-btn"
+                      >
+                        {t("submit")}
+                      </Button>
+                    </div>
+                  </Form>
+              </div>
+            </div>
+          </div>
+        </Modal>
         </div>
       </div>
       <Offcanvas />
