@@ -319,6 +319,19 @@ const Company = () => {
     }
   };
 
+  // Add this new effect to handle initial data loading
+  useEffect(() => {
+    if (data?.country) {
+      setSelectedCountry(data.country);
+      fetchStates(data.country).then(() => {
+        if (data?.state) {
+          setSelectedState(data.state);
+          fetchCities(data.country, data.state);
+        }
+      });
+    }
+  }, [data]);
+
   return (
     <div>
       <div>
@@ -733,8 +746,10 @@ const Company = () => {
                 <label className="col-form-label">
                 {t('settings.companySettings.country')} <span className="text-danger">*</span>
                 </label>
+                <div style={{ position: "relative" }} id="area">
                 <Form.Item
                   name="country"
+                  className="custom-border"
                   rules={[
                     {
                       required: true,
@@ -755,6 +770,7 @@ const Company = () => {
                     className="custom-select custom-normal"
                   />
                 </Form.Item>
+                </div>
               </div>
             </div>
             <div className="col-sm-6">
@@ -762,8 +778,10 @@ const Company = () => {
                 <label className="col-form-label">
                 {t('settings.companySettings.state')} <span className="text-danger">*</span>
                 </label>
+                <div style={{ position: "relative" }} id="area">
                 <Form.Item
                   name="state"
+                  className="custom-border"
                   rules={[
                     {
                       required: true,
@@ -783,8 +801,14 @@ const Company = () => {
                     disabled={!selectedCountry}
                     style={{ width: '100%' }}
                     className="custom-select custom-normal"
+                    onFocus={() => {
+                      if (selectedCountry && states.length === 0) {
+                        fetchStates(selectedCountry);
+                      }
+                    }}
                   />
                 </Form.Item>
+                </div>
               </div>
             </div>
             <div className="col-sm-6">
@@ -792,8 +816,10 @@ const Company = () => {
                 <label className="col-form-label">
                 {t('settings.companySettings.city')} <span className="text-danger">*</span>
                 </label>
+                <div style={{ position: "relative" }} id="area">
                 <Form.Item
                   name="city"
+                  className="custom-border"
                   rules={[
                     {
                       required: true,
@@ -812,8 +838,14 @@ const Company = () => {
                     disabled={!selectedState}
                     style={{ width: '100%' }}
                     className="custom-select custom-normal"
+                    onFocus={() => {
+                      if (selectedCountry && selectedState && cities.length === 0) {
+                        fetchCities(selectedCountry, selectedState);
+                      }
+                    }}
                   />
                 </Form.Item>
+                </div>
               </div>
             </div>
             <div className="col-sm-6">
