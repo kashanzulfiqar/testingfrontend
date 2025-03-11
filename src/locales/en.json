@@ -498,6 +498,7 @@
     "noOfDays": "No Of Days",
     "reason": "Reason",
     "approvedBy": "Approved By",
+    "declineReason": "Reason of Rejection",
     "addModal": {
       "request": "Request",
       "requestType": "Request Type",
@@ -559,11 +560,17 @@
       "annual": "Annual",
       "wfh": "WFH"
     },
+    "declineModal": {
+      "title": "Decline Request",
+      "reason": "Reason for Declining",
+      "placeholder": "Please enter reason for declining the request"
+    },
     "errors": {
       "leaveRequestUpdated": "Leave request updated to {{newStatus}}",
       "failedToUpdateLeaveRequest": "Failed to update leave request status",
       "noRecordFound": "No Record Found!",
-      "bothStartEndDateRequired": "Both Start and End Date required"
+      "bothStartEndDateRequired": "Both Start and End Date required",
+      "declineReasonRequired": "Please provide a reason for declining"
     }
   },
   "empProfile": {
@@ -946,6 +953,7 @@
     "addtask": "Add Task",
     "title": "Title",
     "project": "Project",
+    "taskboard": "Task Board",
     "selectproject": "Select Project",
     "selecttaskboard":"Select Taskboard",
     "tags": "Tags",

@@ -497,6 +497,7 @@
     "noOfDays": "عدد الأيام",
     "reason": "السبب",
     "approvedBy": "تمت الموافقة من قبل",
+    "declineReason": "سبب الرفض",
     "addModal": {
       "request": "طلب",
       "requestType": "نوع الطلب",
@@ -558,11 +559,17 @@
       "annual": "سنوي",
       "wfh": "WFH"
     },
+    "declineModal": {
+      "title": "رفض الطلب",
+      "reason": "سبب الرفض",
+      "placeholder": "يرجى إدخال سبب رفض الطلب"
+    },
     "errors": {
       "leaveRequestUpdated": "تم تحديث طلب الإجازة إلى {{newStatus}}",
       "failedToUpdateLeaveRequest": "فشل تحديث حالة طلب الإجازة",
       "noRecordFound": "لم يتم العثور على سجل!",
-      "bothStartEndDateRequired": "كل من تاريخ البداية والنهاية مطلوبين"
+      "bothStartEndDateRequired": "كل من تاريخ البداية والنهاية مطلوبين",
+      "declineReasonRequired": "من فضلك قدم سببًا لرفض الطلب"
     }
   },
   "empProfile": {
@@ -944,6 +951,7 @@
     "addtask": "إضافة مهمة",
     "title": "العنوان",
     "project": "المشروع",
+    "taskboard":"لوحة المهام",
     "selectproject": "اختر المشروع",
     "selecttaskboard":"اختر لوحة المهام",
     "tags": "العلامات",
