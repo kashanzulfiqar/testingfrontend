@@ -1240,7 +1240,26 @@ const handleDeclineSubmit = () => {
                         {t("aRequests.declineModal.reason")} <span className="text-danger">*</span>
                       </label>
                       <div style={{ position: "relative" }} id="area">
-                        <Form.Item name="declineReason" className="custom-border">
+                        <Form.Item name="declineReason"
+                          rules={[
+                            {
+                              whitespace: true,
+                              required: true,
+                              validator: (_, value) => {
+                                if(!value || value.trim() === ''){
+                                  return Promise.reject(t('requests.errors.pleaseEnterReason'));
+                                }
+                                else if (/\s{2,}/.test(value)) {
+                                  return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
+                                }
+                                else if (value.length < 5) {
+                                  return Promise.reject(t('requests.errors.reasonLengthMin'));
+                                }
+                                return Promise.resolve();
+                              },
+                            },
+                          ]} 
+                          className="custom-border">
                           <Input.TextArea
                             className="form-control"
                             value={declineReason}
