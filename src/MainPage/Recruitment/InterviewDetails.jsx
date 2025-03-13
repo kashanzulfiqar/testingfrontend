@@ -30,10 +30,6 @@ import description from '../../assets/iconsRecruitment/description.svg';
 import list from '../../assets/iconsRecruitment/vertical.svg';
 import previewIcon from '../../assets/iconsRecruitment/previewIcon.svg';
 import downloadIcon from '../../assets/iconsRecruitment/downloadIcon.svg';
-import media from '../../assets/iconsRecruitment/Media.svg';
-import gallery from '../../assets/iconsRecruitment/Gallery.svg';
-import emoji from '../../assets/iconsRecruitment/Emoji.svg';
-import copyLink from '../../assets/iconsRecruitment/CopyLink.svg';
 
 
 
@@ -41,7 +37,7 @@ import copyLink from '../../assets/iconsRecruitment/CopyLink.svg';
 
 const { TextArea } = Input;
 
-const InterviewDetails = () => {
+const InterviewDetails = ({visible , onCancel , onSubmit}) => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -50,6 +46,7 @@ const InterviewDetails = () => {
   const authState = useSelector((state) => state.user.loginvalue);
   const loggedInUser = useSelector((state) => state.user.loginvalue?.user);
   const [feedbackForm] = Form.useForm();
+  const [isFeedbackModalVisible , setIsFeedbackModalVisible] = useState(false);
 
   useEffect(() => {
     fetchInterviewDetails();
@@ -91,64 +88,6 @@ const InterviewDetails = () => {
     }
   };
 
-  // const handleCommentSubmit = async () => {
-  //   if (!comment.trim()) return;
-
-  //   const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
-    
-  //   try {
-  //     const response = await apiServices(
-  //       "POST",
-  //       `interview/${id}/comment`,
-  //       { 
-  //         text: comment.trim(),
-  //         user: {
-  //           firstName: loggedInUser?.firstName,
-  //           lastName: loggedInUser?.lastName,
-  //           imageUrl: loggedInUser?.imageUrl,
-  //           _id: loggedInUser?._id
-  //         }
-  //       },
-  //       {
-  //         access_token: {
-  //           accessToken: token
-  //         }
-  //       }
-  //     );
-
-  //     if (response?.data?.success) {
-  //       message.success('Comment added successfully');
-  //       setComment('');
-  //       fetchInterviewDetails(); // Refresh the comments
-  //     } else {
-  //       message.error(response?.data?.message || 'Failed to add comment');
-  //     }
-  //   } catch (error) {
-  //     console.error('Error adding comment:', error);
-  //     message.error('Error adding comment');
-  //   }
-  // };
-
-  // const handleCopyLink = () => {
-  //   navigator.clipboard.writeText(interview.interviewLink)
-  //     .then(() => {
-  //       message.success('Interview link copied to clipboard');
-  //     })
-  //     .catch(() => {
-  //       message.error('Failed to copy link');
-  //     });
-  // };
-
-  // const joinInterviewMenu = {
-  //   items: [
-  //     {
-  //       key: '1',
-  //       icon: <CopyOutlined />,
-  //       label: 'Copy Link',
-  //       onClick: handleCopyLink
-  //     }
-  //   ]
-  // };
 
   const handleFeedbackSubmit = async (values) => {
     const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
@@ -266,24 +205,6 @@ const InterviewDetails = () => {
     }
   };
 
-  // const getInterviewTypeDisplay = (type) => {
-  //   return type === 'ONLINE' ? 'Online' : 'In Person';
-  // };
-
-  // const resumeMenu = {
-  //   items: [
-  //     {
-  //       key: '1',
-  //       icon: <EyeOutlined />,
-  //       label: 'Preview',
-  //     },
-  //     {
-  //       key: '2',
-  //       icon: <DownloadOutlined />,
-  //       label: 'Download',
-  //     },
-  //   ],
-  // };
 
   const handleStatusChange = async (newStatus) => {
     const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
@@ -389,9 +310,9 @@ const InterviewDetails = () => {
         <div></div>
       </div>
 
-      <div style={{height:'130px', background:'#ffffff' ,border:'1px solid transparent' , borderRadius:'8px', marginBottom:"20px", display:"flex", alignItems:"center", justifyContent:"space-between"}}>
+      <div className='initials-div'>
         <div style={{display:"flex", alignItems:'center'}}>
-          <div style={{height:'80px' ,width:"80px", border:"1px solid transparent" , borderRadius:"50%", background:'#f5f1fd', color:'#9368e9', display:"flex", justifyContent:"center", alignItems:'center', marginLeft:"20px", fontSize:"28px", fontweight:"500"}}>{interview?.candidateId.firstName?.[0].toUpperCase()}{interview?.candidateId.lastName?.[0].toUpperCase()}</div>
+          <div className='initials-details'>{interview?.candidateId.firstName?.[0].toUpperCase()}{interview?.candidateId.lastName?.[0].toUpperCase()}</div>
           <div>
             <h3 className="ms-3 mt-2 mb-0" style={{fontSize:'20px', fontweight:'500', color:"#000000"}}>{interview?.candidateName}</h3>
             <h5 className='ms-3' style={{fontSize:'14px', fontweight:'450', color:"#444444"}} >Hello</h5> 
@@ -400,54 +321,54 @@ const InterviewDetails = () => {
               <span style={{ marginLeft:'10px'}}>{calculateAverageRating()}</span>
             </div>   
           </div>
-          <Tag color={getStatusColor(interview?.status)} style={{borderRadius:'70px', marginLeft:'9px', marginTop:'-35px'}}>{interview?.status}</Tag>
+          <Tag color={getStatusColor(interview?.status)} className='tag-style'>{interview?.status}</Tag>
         </div>
-        <div className="col-auto float-end me-4">
+        <div className="custom">
           <div
             onClick={() => window.open(interview.interviewLink, '_blank')}
             className= 'select-btn'
           >
-            <div><img src={camera} style={{height:"20px", width:'20px'}}></img></div>
+            <div className='joinImg'><img src={camera} style={{height:"20px", width:'20px'}}></img></div>
             <h3 style={{fontSize:"16px" , fontWeight: '500', marginTop:"8px"}}>Join Interview</h3>
           </div>
         </div>
       </div>
 
-      <div  style={{background:'#ffffff' ,border:'1px solid transparent' , borderRadius:'8px', marginBottom:"20px" , padding:'25px'}}>
-        <div style={{display:"flex", justifyContent:'space-between'}}>
-          <div style={{display:'flex', gap:"20px"}}>
-            <div style={{height:"40px" ,width:"40px" ,borderRadius:'50%' ,background:"#f7f7f8", display:"flex" ,justifyContent:"center" ,alignItems:"center"}}><img src={interviewIcon}></img></div>
-            <div style={{marginTop:"7px" ,fontSize:"18px" ,fontWeight:"500" ,color:"#000000" }}>{interview?.interviewTitle}</div> 
+      <div className='AddFeedback-screen'>
+        <div className='AddFeedback-innerScreen'>
+          <div style={{display:'flex', gap:"10px" }}>
+            <div style={{height:"40px" ,width:"40px" ,borderRadius:'50%' ,background:"#f7f7f8", display:"flex" ,justifyContent:"center" ,alignItems:"center"}}><img style={{ maxWidth: "80%", maxHeight: "80%" }} src={interviewIcon}></img></div>
+            <div style={{marginTop:"7px" ,fontSize:"18px" ,fontWeight:"500" ,color:"#000000", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{interview?.interviewTitle}</div> 
             <div style={{marginTop:"7px" }}><Tag color={getStatusColor(interview?.status)} style={{borderRadius:"60px"}}>{interview?.status}</Tag></div>
           </div>
           {interview?.status !== 'In-Review' && (
             <div style={{paddingTop:'12px'}}>
               <button
-                style={{background:"transparent" ,border:"none", fontSize:'14px' ,fontWeight:"450", color:"#ff9244", cursor:"pointer"}} 
-                onClick={() => setIsFeedbackModalVisible(true)}
-                disabled={hasUserSubmittedFeedback()}
-                title={hasUserSubmittedFeedback() ? "You have already submitted feedback for this interview" : ""}
+                className='feedback-btn' 
+                onClick={() =>{setIsFeedbackModalVisible(true);}}
+                // disabled={hasUserSubmittedFeedback()}
+                // title={hasUserSubmittedFeedback() ? "You have already submitted feedback for this interview" : ""}
               >
-                <img src={colored} style={{height:"16px", width:"16px", marginRight:"4px", marginBottom:'3px'}}></img>
+                <img src={colored} style={{ height: "16px", width: "16px" }} ></img>
                 Add Feedback
               </button>
             </div>
           )}
         </div>
-        <Row gutter={[24, 16]} style={{marginTop:"10px"}}>
-          <Col span={6} style={{paddingTop:"10px"}}>
+        <Row gutter={[24, 16]}  wrap={true} style={{ marginTop: "10px", display: 'flex', flexWrap: 'wrap' }}>
+          <Col xs={12} sm={12} md={8} lg={6}  style={{paddingTop:"10px"}}>
             <p className="text-muted mb-1" style={{fontSize:"14px" ,fontWeight:"450",color:'#212529'}}>Interview Type</p>
             <p  style={{fontSize:"16px" ,fontWeight:"500" ,color:'#3b4249'}}>{interview?.interviewType[0] + interview?.interviewType.slice(1).toLowerCase()}</p>
           </Col>
-          <Col span={6} style={{paddingTop:"10px"}}>
+          <Col  xs={12} sm={12} md={8} lg={6} style={{paddingTop:"10px"}}>
             <p className="text-muted mb-1" style={{fontSize:"14px" ,fontWeight:"450",color:'#212529'}}>Interview Date</p>
             <p style={{fontSize:"16px" ,fontWeight:"500" ,color:'#3b4249'}}>{moment(interview?.interviewDate).format('DD-MMM-YYYY')}</p>
           </Col>
-          <Col span={6} style={{paddingTop:"10px"}}>
+          <Col  xs={12} sm={12} md={8} lg={6}  style={{paddingTop:"10px"}}>
             <p className="text-muted mb-1"style={{fontSize:"14px" ,fontWeight:"450",color:'#212529'}}>Interview Time</p>
             <p style={{fontSize:"16px" ,fontWeight:"500" ,color:'#3b4249'}}>{interview?.interviewTime}</p>
           </Col>
-          <Col span={6} style={{paddingTop:"10px"}}>
+          <Col  xs={12} sm={12} md={8} lg={6}  style={{paddingTop:"10px"}}>
             <p className="text-muted mb-1"style={{fontSize:"14px" ,fontWeight:"450",color:'#212529'}}>Assign To</p>
             <div>
               <Link to="#" className="social-icon-one"><img src={MainInterviewer} style={{height:"30px" ,width:"30px" ,borderRadius:"50%", border:'2px solid white'}}></img></Link>
@@ -458,14 +379,12 @@ const InterviewDetails = () => {
               ))}
           </div>
           </Col>
-        </Row>
-        <Row gutter={[24, 16]} style={{marginTop:"10px"}}>
-          <Col span={6} style={{paddingTop:"10px"}}>
+          <Col  xs={12} sm={12} md={8} lg={6} style={{paddingTop:"10px"}}>
             <p className="text-muted mb-1" style={{fontSize:"14px" ,fontWeight:"450",color:'#212529'}}>Created By</p>
             <p  style={{fontSize:"16px" ,fontWeight:"500" ,color:'#3b4249'}}>{interview?.createdBy?.fullName}</p>
           </Col>
           {interview?.status !== 'in-review' && (
-            <Col span={6} style={{paddingTop:"10px"}}>
+            <Col  xs={12} sm={12} md={8} lg={6}  style={{paddingTop:"10px"}}>
               <p className="text-muted mb-1" style={{fontSize:"14px" ,fontWeight:"450",color:'#212529'}}>Medium</p>
               <p onClick={() => window.open(interview.interviewLink, '_blank')} style={{cursor:"pointer" ,textDecoration:"underLine" ,color:"#009efb"}}>www.zoom.com</p>
             </Col>
@@ -515,34 +434,12 @@ const InterviewDetails = () => {
         )}
       </div>
 
-      {/* comments if needed! */}
-      {/* <div style={{display:'flex',gap:'15px'}}>
-        <div>
-          <img src={MainInterviewer} style={{height:'40px' ,width:"40px" ,borderRadius:'50%' ,border:"1px solid transparent"}}></img>
-        </div>
-        <div style={{background:'#ffffff' ,border:'1px solid transparent' , borderRadius:'8px',padding:'10px 20px 15px 10px' , width:'100%'}}>
-          <TextArea
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            placeholder="Enter Comment and hit enter"
-            autoSize={{ minRows: 1 }}
-            style={{border:"none", fontSize:"16px" ,fontWeight:"450"}}
-          />
-          <div style={{display:'flex' ,justifyContent:"space-between",alignItems:'center' ,marginTop:"10px"}}>
-            <div className="d-flex gap-1 ms-3">
-              <button style={{border:"2px solid #f7f7f8" ,borderRadius:"4px" ,height:"35px" ,width:"35px"}}><img src={media}></img></button>
-              <button style={{border:"2px solid #f7f7f8" ,borderRadius:"4px" ,height:"35px" ,width:"35px"}}><img src={gallery}></img></button>
-              <button style={{border:"2px solid #f7f7f8" ,borderRadius:"4px" ,height:"35px" ,width:"35px"}}><img src={emoji}></img></button>
-              <button style={{border:"2px solid #f7f7f8" ,borderRadius:"4px" ,height:"35px" ,width:"35px"}}><img src={copyLink}></img></button>
-            </div>
-            <div>
-              <Button onClick={handleCommentSubmit} style={{color:"#ff9244", border:'1px solid #ff9244', borderRadius:"8px", fontSize:"16px" ,fontWeight:"450"}}>
-                Comment
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div> */}
+
+     <InterviewFeedback 
+        visible={isFeedbackModalVisible}
+        onCancel={() => setIsFeedbackModalVisible(false)}
+        onSubmit={handleFeedbackSubmit}
+     />
   
 
     
@@ -593,6 +490,18 @@ const InterviewDetails = () => {
           padding-top: 0;
           border-top: none;
           margin-top: 0;
+        }
+
+        .feedback-btn{
+          background: transparent;
+          border: none;
+          font-size: 16px;
+          font-weight: 450;
+          color: #ff9244;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 4px;
         }
         .info-item {
           display: flex;
@@ -881,37 +790,7 @@ const InterviewDetails = () => {
           color: #f5222d !important;
         }
 
-        .file-card {
-          margin: 16px;
-        }
 
-        .file-item {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 16px;
-        }
-
-        .file-info {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-        }
-
-        .file-details {
-          display: flex;
-          flex-direction: column;
-        }
-
-        .file-actions {
-          display: flex;
-          align-items: center;
-        }
-
-        .no-files-message {
-          text-align: center;
-          padding: 40px 0;
-        }
 
 
         /* Offer Modal Styles */
@@ -972,38 +851,6 @@ const InterviewDetails = () => {
           border-color: #ff9b44;
         }
 
-
-        .active-tab-styles{
-           display: flex ;
-            width: 60%;
-            justify-content: space-between;
-        }
-
-        .active-tab-timeline{
-          padding: 0 10px 15px 0px ;
-          font-size: 16px; 
-          font-weight: 500;
-        }
-        .active-tab-files{
-          padding: 0 10px 15px 0px ;
-          font-size: 16px; 
-          font-weight: 500;
-          color: activeTab === 'files' ? #ff9244 : #a5adb6;
-          cursor: pointer;
-          border-bottom: activeTab === 'files' ? 2px solid #ff9244: none;
-        }
-        .active-tab-interview{
-          padding: 0 10px 15px 0px ;
-          font-size: 16px; 
-          font-weight: 500;
-          color: activeTab === 'interview' ?  #ff9244  : #a5adb6;
-          cursor: pointer;
-          border-bottom: activeTab === 'interview' ?  2px solid #ff9244 : none;
-        }
-        .info-items-children{
-          display: flex ;
-        }
-
         .select-btn{
           display: flex;
           justify-content: center;
@@ -1020,59 +867,97 @@ const InterviewDetails = () => {
           cursor: pointer;
         }
 
-
-
-        @media(min-width: 993px) and (max-width: 1280px){
-          .active-tab-styles{
-            width: 90%;
-          }
-        }
-        @media(min-width: 768px) and (max-width: 890px){
-          .active-tab-styles{
-            width: 90%;
-          }
-        }
-        @media(min-width: 430px) and (max-width: 767px){
-          .active-tab-styles{
-            width: 100%;
-          }
-        }
-        @media(min-width: 330px) and (max-width: 430px){
-          .active-tab-styles{
-            width: 100%;
-            gap: 20px;
-          }
-        }
-        @media(min-width: 330px) and (max-width: 430px){
-          .span-timeline img, .span-files img, .span-interview img{
-            display: none;
-            width: max-width;
-          }
+        .tag-style{
+          border-radius: 70px;
+          margin-left: 9px;
+          margin-top: -35px;
         }
 
-        @media (min-width: 768px) and (max-width: 1445px) {
-        .custom-col {
-          flex: 0 0 43%;  
-          max-width: 43%;
+        .initials-div{
+          height: 130px;
+          background: #ffffff;
+          border: 1px solid transparent;
+          border-radius: 8px;
+          margin-bottom: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
         }
-      }
 
-      @media (min-width: 768px) and (max-width: 1445px) {
-        .custom-col-two {
-          flex: 0 0 57%;  
-          max-width: 57%;
+        .initials-details{
+          height: 80px;
+          width: 80px;
+          border: 1px solid transparent;
+          border-radius: 50%;
+          background: #f5f1fd;
+          color: #9368e9;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          margin-left: 20px;
+          font-size: 28px;
+          fontweight: 500;
         }
-      }
 
-      .customized .ant-select-selector{
-        height: 45px !important;
-        border-radius: 8px !important;
-        display: flex;
-        align-items: center;
-        font-size: 16px;
-        font-weight: 450;
-      }
-        
+        .custom{
+          display: flex;
+          float : end;
+          margin-right: 12px 
+        }
+
+        .AddFeedback-screen{
+          background: #ffffff ;
+          border: 1px solid transparent;
+          border-radius: 8px;
+          margin-bottom: 20px;
+          padding: 25px;
+        }
+
+        .AddFeedback-innerScreen{
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 10px;
+          flex-wrap: wrap;
+        }
+
+        @media (max-width: 630px){
+          .tag-style{
+            display: none !important;
+          }
+        }
+
+        @media (max-width: 500px){
+          .select-btn{
+            width: 130px !important;
+            gap: 4px !important;
+          }
+        }
+
+        @media (max-width: 500px){
+          .joinImg{
+            display : none !important;
+          }
+        }
+
+        @media(min-width: 415px) and (max-width: 450px){
+          .select-btn{
+            margin-left: 30px !important;
+          }
+        }
+
+        @media (max-width: 410px){
+          .select-btn{
+            width: 110px !important;
+          }
+        }
+
+        @media (max-width: 500px){
+          .initials-details{
+            margin-left: 7px !important; 
+          }
+        }
+
         
 
 

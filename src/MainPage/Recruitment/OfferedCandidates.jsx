@@ -510,7 +510,7 @@ const OfferedCandidates = () => {
         dataSource={candidates}
         rowKey={(record) => record._id}
         loading={loading}
-        scroll={{ x: 1350 }}
+        // scroll={{ x: 1350 }}
         pagination={{
           ...pagination,
           showSizeChanger: true,

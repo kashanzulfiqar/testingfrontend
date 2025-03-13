@@ -24,7 +24,7 @@ import {
 } from "@ant-design/icons";
 import { apiServices } from "../../Services/apiServices";
 import { useSelector } from "react-redux";
-import moment from "moment";
+import moment, { min } from "moment";
 import CreateInterviewModal from "./CreateInterviewModal";
 import CreateTaskModal from "./CreateTaskModal";
 import SendOfferModal from './SendOfferModal';
@@ -44,11 +44,11 @@ import EditIcon from '../../assets/iconsRecruitment/editIcon.svg';
 import DeleteIcon from '../../assets/iconsRecruitment/deleteIcon.svg';
 import NoInterview from '../../assets/iconsRecruitment/NoInterviewIcon.svg';
 import InterviewFeedbackDisplay from './InterviewFeedbackDisplay';
-import LayersIcon from '../../assets/iconsRecruitment/layersIcon.svg';
 import  newEditIcon from '../../assets/iconsRecruitment/newEditIcon.svg';
 import  newCalanderIcon from '../../assets/iconsRecruitment/newCalanderIcon.svg';
 import  blacklistIcon from '../../assets/iconsRecruitment/BlacklistIcon.svg';
 import taskIcon from '../../assets/iconsRecruitment/taskIcon.svg';
+import fileCheck from '../../assets/iconsRecruitment/RightArrow.svg';
 
 
 
@@ -90,6 +90,7 @@ const CandidateDetails = () => {
   const [tempName ,setTempName] = useState('');
   const fileInputRef = useRef(null);
   const [viewMore ,setViewMore] = useState(false);
+  const [viewMobile ,setViewMobile] = useState(window.innerWidth < 768);
 
 
   
@@ -124,6 +125,15 @@ const CandidateDetails = () => {
       fetchOfferDetails();
     }
   }, [id]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setViewMobile(window.innerWidth < 768);
+    };
+  
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const fetchCandidateDetails = async () => {
     const token =
@@ -1701,10 +1711,10 @@ const CandidateDetails = () => {
 
       <div className='initial-section'>
         <div className='initial-section-first-child'>
-          <div style={{height:'80px' ,width:"80px", border:"1px solid transparent" , borderRadius:"50%", background:'#f5f1fd', color:'#9368e9', display:"flex", justifyContent:"center", alignItems:'center', marginLeft:"20px", fontSize:"28px", fontweight:"500"}}>{candidate.firstName?.[0]}{candidate.lastName?.[0]}</div>
+          <div className='candidate-initials'>{candidate.firstName?.[0].toUpperCase()}{candidate.lastName?.[0].toUpperCase()}</div>
           <div>
-            <h3 className="ms-3 mt-2 mb-0" style={{fontSize:'20px', fontweight:'500', color:"#000000"}}>{candidate.firstName} {candidate.lastName}</h3>
-            <h5 className='ms-3' style={{fontSize:'14px', fontweight:'450', color:"#444444"}} >{candidate?.appliedFor.title}</h5> 
+            <h3 className="ms-3 mt-2 mb-0 candidate-title" >{candidate.firstName} {candidate.lastName}</h3>
+            <h5 className='ms-3 candidate-job' >{candidate?.appliedFor.title}</h5> 
             <div style={{paddingLeft:"10px"}}>
               <img src={star}></img>
               <span style={{ marginLeft:'10px'}}>{calculateAverageRating()}</span>
@@ -1712,24 +1722,22 @@ const CandidateDetails = () => {
           </div>
           <div>
             <Tag
-              style={{marginLeft:"10px", borderRadius:"70px", marginBottom:"12px"}}
+              className='tag-styles'
             >{candidate.status?.charAt(0) + candidate.status?.slice(1).toLowerCase()}</Tag>
           </div>
         </div>
-          <div className=" initial-section-sec-child col-auto float-end me-4">
-            <Space>
+          <div className=" initial-section-sec-child">
+            {/* <Space> */}
               <Select
                 value={candidate?.status}
                 onChange={handleStatusChange}
                 loading={updatingStatus}
                 style={{
                   background:
-                    candidate?.status?.toLowerCase() === "SHORTLISTED"
-                      ? "#FFF7E6"
-                      : "transparent",
+                  candidate?.status?.toLowerCase() === "SHORTLISTED" ? "#FFF7E6": "transparent",
                   zIndex: 1000,
                   position: 'relative',
-                  marginRight:'10px',
+                  marginRight: viewMobile ? '3px' : '10px', 
                 }}
                 className={`status-${candidate?.status?.toLowerCase()} customized`}
                 dropdownStyle={{
@@ -1747,13 +1755,15 @@ const CandidateDetails = () => {
                 <Select.Option value="REJECTED">Rejected</Select.Option>
                 <Select.Option value="BLACKLISTED">Blacklisted</Select.Option>
               </Select>
-              <button
-                onClick={handleSendOfferClick}
-                disabled={candidate?.status === "OFFERED"}
-                style={{background: candidate.status === 'OFFERED' ? 'red' : '#ff9244'}}
-                className= 'select-btn'
-              >{offer ? 'Edit Offer' : 'Send Offer'}</button>
-              <div style={{marginLeft:"13px"}}>
+              {!viewMobile && (
+                <button
+                  onClick={handleSendOfferClick}
+                  disabled={candidate?.status === "OFFERED"}
+                  style={{background: candidate.status === 'OFFERED' ? 'red' : '#ff9244'}}
+                  className= 'select-btn'
+                >{offer ? 'Edit Offer' : 'Send Offer'}</button>
+              )}
+              <div className="dropdown-style">
                 <Dropdown
                   overlay={<Menu>
                     <Menu.Item key="edit" icon={<img src={newEditIcon} style={{height:"20px" ,width:"20px"}}></img>}onClick={() => navigate(`/recruitment/candidates/${candidate._id}/edit`)}>Edit</Menu.Item>
@@ -1771,16 +1781,19 @@ const CandidateDetails = () => {
                     >Delete</Menu.Item>
                     <Menu.Item key="scheduled" icon={<img src={newCalanderIcon} style={{height:"20px" ,width:"20px"}}></img>} onClick={()=>setIsInterviewModalVisible(true)}>Schedule Interview</Menu.Item>
                     <Menu.Item key="blacklisted" icon={<img src={blacklistIcon} style={{height:"20px" ,width:"20px"}}></img>}  onClick={()=>setIsReasonModalVisible(true)}>Add to Blacklist</Menu.Item>  
+                    {viewMobile && (
+                      <Menu.Item key='send' icon={<img src={fileCheck} style={{height:"20px" ,width:"20px"}}></img>} onClick={handleSendOfferClick}>Send Offer</Menu.Item>
+                    )}
                   </Menu>}
                   overlayStyle = {{paddingTop:"15px"}}
                   trigger={['click']}
                   placement="bottomRight">
-                  <div style={{ cursor: 'pointer',height:'25px' }}>
+                  <div style={{ cursor: 'pointer',height:'25px' ,width:'25px' }}>
                     <img src={more} alt="More Options" />
                   </div>
                 </Dropdown>
               </div>
-            </Space>
+            {/* </Space> */}
           </div>
       </div>
 
@@ -2587,24 +2600,6 @@ const CandidateDetails = () => {
         }
 
 
-        // .ant-select:not(.ant-select-disabled):hover .ant-select-selector {
-        //   border-color: #ff9b44;
-        // }
-
-        // .ant-select-focused:not(.ant-select-disabled).ant-select:not(
-        //     .ant-select-customize-input
-        //   )
-        //   .ant-select-selector {
-        //   border-color: #ff9b44;
-        //   box-shadow: 0 0 0 2px rgba(255, 155, 68, 0.2);
-        //   padding-top: 7px !important;
-        //   padding-left: 10px !important;
-        //   padding-right: 10px !important;
-        //   font-size: 16px !important;
-        //   font-weight: 450 !important;
-        //   border-radius: 8px !important;
-
-        // }
 
         .status-scheduled .ant-select-selector,
         .status-scheduled  {
@@ -2713,17 +2708,6 @@ const CandidateDetails = () => {
           padding-top: 5px !important;
         }
 
-        // .ant-select-focused:not(.ant-select-disabled).ant-select:not(
-        //     .ant-select-customize-input
-        //   )
-        //   .ant-select-selector {
-        //   border-color: #ff9b44 !important;
-        //   box-shadow: 0 0 0 2px rgba(255, 155, 68, 0.2) !important;
-        // }
-
-        // .ant-select:not(.ant-select-disabled):hover .ant-select-selector {
-        //   border-color: #ff9b44 !important;
-        // }
 
         .task-card {
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -2822,18 +2806,7 @@ const CandidateDetails = () => {
           border-color: #e3e3e3;
         }
 
-        // :global(.offer-modal .ant-input:hover),
-        // :global(.offer-modal .ant-select-selector:hover),
-        // :global(.offer-modal .ant-picker:hover) {
-        //   border-color: #ff9b44;
-        // }
 
-        // :global(.offer-modal .ant-input:focus),
-        // :global(.offer-modal .ant-select-selector:focus),
-        // :global(.offer-modal .ant-picker-focused) {
-        //   border-color: #ff9b44;
-        //   box-shadow: 0 0 0 2px rgba(255, 155, 68, 0.2);
-        // }
 
         :global(.offer-modal .ant-upload-drag) {
           border: 2px dashed #e3e3e3;
@@ -2842,9 +2815,7 @@ const CandidateDetails = () => {
           transition: all 0.3s;
         }
 
-        // :global(.offer-modal .ant-upload-drag:hover) {
-        //   border-color: #ff9b44;
-        // }
+
 
         :global(.offer-modal .ant-upload-drag-icon) {
           color: #ff9b44;
@@ -2867,10 +2838,7 @@ const CandidateDetails = () => {
           border-color: #ff9b44;
         }
 
-        // :global(.offer-modal .ant-btn-primary:hover) {
-        //   background: #ff8629;
-        //   border-color: #ff8629;
-        // }
+
 
         .tab-container{
           display: flex;
@@ -2963,19 +2931,45 @@ const CandidateDetails = () => {
           font-weight: 450;
         }
 
-        @media (min-width: 768px) and (max-width: 1445px) {
-        .custom-col {
-          flex: 0 0 43%;  
-          max-width: 43%;
+        .tag-styles{
+          margin-left: 10px;
+          border-radius: 70px;
+          margin-bottom: 12px;
         }
-      }
 
-      @media (min-width: 768px) and (max-width: 1445px) {
-        .custom-col-two {
-          flex: 0 0 57%;  
-          max-width: 100%;
+        .initial-section-sec-child{
+          display: flex;
+          float : end;
+          margin-right: 12px 
         }
-      }
+
+        .candidate-initials{
+          height: 80px;
+          width: 80px;
+          border: 1px solid transparent;
+          border-radius: 50%;
+          background: #f5f1fd;
+          color: #9368e9;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          margin-left: 20px;
+          font-size: 28px;
+          font-weight:500;
+        }
+
+        .candidate-title{
+          font-size: 20px;
+          font-weight:500;
+          color: #000000; 
+        }
+
+        .candidate-job{
+          font-size:'14px';
+          font-weight:450; 
+          color:#444444;
+        }
+
 
       .customized .ant-select-selector{
         height: 45px !important;
@@ -3001,6 +2995,26 @@ const CandidateDetails = () => {
         align-items: center ;
       }
 
+      .dropdown-style{
+        margin-left: 13px; 
+        display: flex;
+        align-items: center;
+      }
+
+      @media (min-width: 768px) and (max-width: 1445px) {
+        .custom-col {
+          flex: 0 0 43%;  
+          max-width: 43%;
+        }
+      }
+
+      @media (min-width: 768px) and (max-width: 1445px) {
+        .custom-col-two {
+          flex: 0 0 57%;  
+          max-width: 100%;
+        }
+      }
+
       @media (min-width: 768px) and (max-width: 1305px) {
           .tab-container{
             gap: 25%;
@@ -3019,27 +3033,49 @@ const CandidateDetails = () => {
           };
         }
 
-        @media (min-width: 330px) and (max-width: 768px) {
-          .initial-section{
-            flex-direction: column;
-            height: 190px;
-            padding-top: 20px !important;
-            padding-bottom: 20px !important;
-          };
+        @media (max-width: 768px) {
+          select-btn{
+            display: none !important;
+          }
+        }
+
+      @media (max-width: 667px) {
+        .tag-styles{
+          display: none !important
+        }
       }
 
-      @media (min-width: 410px) and (max-width: 768px) {
-          .initial-section-sec-child{
-            padding-left: 50px !important;          
-          };
+      @media (max-width: 667px) {
+        .dropdown-style{
+          margin-left: 3px !important
+        }
       }
-      @media (min-width: 370px) and (max-width: 409px) {
-          .initial-section-sec-child{
-            padding-left: 25px !important;          
-          };
+      @media (max-width: 667px) {
+        .customized .ant-select-selector{
+          font-size: 12px;
+          width: 95px !important;
+          padding-left: 6px !important;
+          padding-right: 5px !important;
+;        }
       }
 
-        
+      @media (max-width: 450px) {
+        .candidate-initials{
+          margin-left: 5px !important;
+        }
+      }
+
+      @media (max-width: 450px) {
+        .initial-section-sec-child{
+          margin-right: 5px !important; 
+        }
+      }
+
+
+
+
+
+       
         
 
 

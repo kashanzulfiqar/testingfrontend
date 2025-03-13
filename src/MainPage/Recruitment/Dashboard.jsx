@@ -332,44 +332,43 @@ const Dashboard = () => {
 
         <div style={{width:"100%"}}>
           <div className='dashboard-cards'>
-
-            <div style={{display:"flex",height:"102px", width:"24%" , justifyContent:"space-between",padding:"0px 15px 0px 15px", borderRadius:"6px" ,boxShadow: "4px 4px 10px rgba(0, 0, 0, 0.2)"}}>
-              <div style={{display:"flex" ,alignItems:"center"}}>
-                <div style={{height:'40px', width:"40px" ,background:"#fff1e5" ,borderRadius:'50%', display:"flex" ,justifyContent:"center" ,alignItems:"center"}}><img src={orangeFile}></img></div>
+            <div className='information-card'>
+              <div className='image-direction'>
+                <div className='card-image'><img src={orangeFile}></img></div>
               </div>
-              <div style={{display:'flex' ,flexDirection:"column"  ,justifyContent:"center"}}>
-                <p style={{marginBottom:'0' ,fontSize:"24px" , fontWeight:"500", textAlign:"end"}}>{stats?.total}</p>
-                <p  style={{marginBottom:'0',fontSize:"14px" , fontWeight:"450" ,color:"#56616b"}}>Applications</p>
-              </div>
-            </div>
-
-            <div style={{display:"flex",height:"102px", width:"24%" , justifyContent:"space-between",padding:"0px 15px 0px 15px", borderRadius:"6px" ,boxShadow: "4px 4px 10px rgba(0, 0, 0, 0.2)"}}>
-              <div style={{display:"flex" ,alignItems:"center"}}>
-                <div style={{height:'40px', width:"40px" ,background:"#fff1e5" ,borderRadius:'50%', display:"flex" ,justifyContent:"center" ,alignItems:"center"}}><img src={fileCheck}></img></div>
-              </div>
-              <div style={{display:'flex' ,flexDirection:"column"  ,justifyContent:"center"}}>
-                <p style={{marginBottom:'0' ,fontSize:"24px" , fontWeight:"500", textAlign:"end"}}>{stats?.shortlisted}</p>
-                <p  style={{marginBottom:'0',fontSize:"14px" , fontWeight:"450" ,color:"#56616b"}}>Shortlisted</p>
+              <div className='info-direction'>
+                <p className='info-numbers'>{stats?.total}</p>
+                <p className='info-detail'>Applications</p>
               </div>
             </div>
 
-            <div style={{display:"flex",height:"102px", width:"24%" , justifyContent:"space-between",padding:"0px 15px 0px 15px", borderRadius:"6px" ,boxShadow: "4px 4px 10px rgba(0, 0, 0, 0.2)"}}>
-              <div style={{display:"flex" ,alignItems:"center"}}>
-                <div style={{height:'40px', width:"40px" ,background:"#fff1e5" ,borderRadius:'50%', display:"flex" ,justifyContent:"center" ,alignItems:"center"}}><img src={handShakeIcon}></img></div>
+            <div className='information-card'>
+              <div className='image-direction'>
+                <div className='card-image'><img src={fileCheck}></img></div>
               </div>
-              <div style={{display:'flex' ,flexDirection:"column"  ,justifyContent:"center"}}>
-                <p style={{marginBottom:'0' ,fontSize:"24px" , fontWeight:"500", textAlign:"end"}}>{stats?.hired}</p>
-                <p  style={{marginBottom:'0',fontSize:"14px" , fontWeight:"450" ,color:"#56616b"}}>Hired</p>
+              <div className='info-direction'>
+                <p className='info-numbers'>{stats?.shortlisted}</p>
+                <p className='info-detail'>Shortlisted</p>
               </div>
             </div>
 
-            <div style={{display:"flex",height:"102px", width:"24%" , justifyContent:"space-between",padding:"0px 15px 0px 15px", borderRadius:"6px" ,boxShadow: "4px 4px 10px rgba(0, 0, 0, 0.2)"}}>
-              <div style={{display:"flex" ,alignItems:"center"}}>
-                <div style={{height:'40px', width:"40px" ,background:"#fff1e5" ,borderRadius:'50%', display:"flex" ,justifyContent:"center" ,alignItems:"center"}}><img src={fileCrossed}></img></div>
+            <div className='information-card'>
+              <div className='image-direction'>
+                <div className='card-image'><img src={handShakeIcon}></img></div>
               </div>
-              <div style={{display:'flex' ,flexDirection:"column"  ,justifyContent:"center"}}>
-                <p style={{marginBottom:'0' ,fontSize:"24px" , fontWeight:"500", textAlign:"end"}}>{stats?.rejected}</p>
-                <p  style={{marginBottom:'0',fontSize:"14px" , fontWeight:"450" ,color:"#56616b"}}>Rejected</p>
+              <div className='info-direction'>
+                <p className='info-numbers'>{stats?.hired}</p>
+                <p className='info-detail'>Hired</p>
+              </div>
+            </div>
+
+            <div className='information-card'>
+              <div className='image-direction'>
+                <div className='card-image'><img src={fileCrossed}></img></div>
+              </div>
+              <div className='info-direction'>
+                <p className='info-numbers'>{stats?.rejected}</p>
+                <p className='info-detail'>Rejected</p>
               </div>
             </div>
 
@@ -921,6 +920,70 @@ const Dashboard = () => {
         .dashboard-cards{
           display: flex;
           gap: 25px;
+        }
+
+        .information-card{
+          display: flex;
+          height: 102px;
+          width: 24%;
+          justify-content: space-between;
+          padding: 0px 15px 0px 15px;
+          border-radius: 6px ;
+          box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+
+        .image-direction{
+          display: flex; 
+          align-items: center;
+        }
+
+        .card-image{
+          height: 40px;
+          width: 40px;
+          background: #fff1e5;
+          border-radius: 50%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+
+        .info-direction{
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+        }
+
+        .info-numbers{
+          marginBottom: 0;
+          font-size: 24px;
+          font-weight: 500;
+          text-align: end;
+        }
+
+        .info-detail{
+          marginBottom: 0;
+          font-size: 14px;
+          font-weight: 450;
+          color: #56616b;
+        }
+
+        @media (min-width: 300px) and (max-width: 736px) {
+          .dashboard-cards{
+            flex-wrap : wrap;
+          };
+
+        }
+        @media (min-width: 400px) and (max-width: 736px) {
+          .information-card{
+            width : 45%;
+          };
+        }
+
+        @media (min-width: 300px) and (max-width: 399px) {
+          .information-card{
+            width : 98%;
+          };
         }
       `}</style>
     </div>

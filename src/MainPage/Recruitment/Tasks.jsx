@@ -113,14 +113,14 @@ const Tasks = () => {
     setFilters(values);
   };
 
-  const handleReset = () => {
-    form.resetFields();
-    setFilters({});
-    setPagination({
-      ...pagination,
-      current: 1
-    });
-  };
+  // const handleReset = () => {
+  //   form.resetFields();
+  //   setFilters({});
+  //   setPagination({
+  //     ...pagination,
+  //     current: 1
+  //   });
+  // };
 
   const showModal = () => {
     setIsModalVisible(true);
@@ -567,7 +567,7 @@ const Tasks = () => {
                 { value: 'PENDING', label: 'Pending' },
                 { value: 'SUBMITTED', label: 'Submitted' },
                 { value: 'COMPLETED', label: 'Completed' },
-                { value: 'REVIEWED', label: 'Reviewed' }
+                { value: 'OVERDUE', label: 'Overdue' }
               ]}
             />
           </Form.Item>

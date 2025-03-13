@@ -276,9 +276,9 @@ const TaskDetails = () => {
         <div></div>
       </div>
 
-      <div style={{height:'130px', background:'#ffffff' ,border:'1px solid transparent' , borderRadius:'8px', marginBottom:"20px", display:"flex", alignItems:"center", justifyContent:"space-between"}}>
+      <div className='initials-div'>
         <div style={{display:"flex", alignItems:'center'}}>
-          <div style={{height:'80px' ,width:"80px", border:"1px solid transparent" , borderRadius:"50%", background:'#f5f1fd', color:'#9368e9', display:"flex", justifyContent:"center", alignItems:'center', marginLeft:"20px", fontSize:"28px", fontweight:"500"}}>{task?.candidateId.firstName?.[0].toUpperCase()}{task?.candidateId.lastName?.[0].toUpperCase()}</div>
+          <div className='initials-details'>{task?.candidateId.firstName?.[0].toUpperCase()}{task?.candidateId.lastName?.[0].toUpperCase()}</div>
           <div>
             <h3 className="ms-3 mt-2 mb-0" style={{fontSize:'20px', fontweight:'500', color:"#000000"}}>{FirstName + ' ' + LastName} </h3>
             <h5 className='ms-3' style={{fontSize:'14px', fontweight:'450', color:"#444444"}} >Hello</h5> 
@@ -287,68 +287,83 @@ const TaskDetails = () => {
               <span style={{ marginLeft:'10px'}}>{task?.feedback.rating}</span>
             </div>   
           </div>
-          <Tag style={{borderRadius:'70px', marginLeft:'9px', marginTop:'-35px'}}>{task?.candidateId?.appliedFor.status[0] + task?.candidateId?.appliedFor.status.slice(1).toLowerCase()}</Tag>
+          <Tag className='tag-style'>{task?.candidateId?.appliedFor.status[0] + task?.candidateId?.appliedFor.status.slice(1).toLowerCase()}</Tag>
         </div>
-        <div className="col-auto float-end me-4">
+        <div className="custom">
           <div
             onClick={() => navigate(`/recruitment/candidates/${task.candidateId._id}`)}
             className= 'select-btn'
           >
             <h3 style={{fontSize:"16px" , fontWeight: '500', marginTop:"8px"}}>Go to Profile</h3>
-            <div><img src={RightArrow} style={{height:"20px", width:'20px'}}></img></div>
+            <div className='imageRightArrow'><img src={RightArrow} style={{height:"20px", width:'20px'}}></img></div>
           </div>
         </div>
       </div>
 
-      <div  style={{background:'#ffffff' ,border:'1px solid transparent' , borderRadius:'8px', marginBottom:"20px" , padding:'25px'}}>
-        <div style={{display:"flex", justifyContent:'space-between'}}>
-          <div style={{display:'flex', gap:"20px"}}>
-            <div style={{height:"40px" ,width:"40px" ,borderRadius:'50%' ,background:"#f7f7f8", display:"flex" ,justifyContent:"center" ,alignItems:"center"}}><img src={description}></img></div>
-            <div style={{marginTop:"7px" ,fontSize:"18px" ,fontWeight:"500" ,color:"#000000" }}>{task?.taskName}</div> 
-            <div style={{marginTop:"7px" }}><Tag color={getStatusColor(task?.status)} style={{borderRadius:"60px"}}>{task.status[0] + task.status.slice(1).toLowerCase()}</Tag></div>
-          </div>
-          {task?.status !== 'PENDING' && (
-            <div style={{paddingTop:'12px'}}>
-              <button
-                onClick={handleAddFeedback}
-                style={{background:"transparent" ,border:"none", fontSize:'14px' ,fontWeight:"450", color:"#ff9244", cursor:"pointer"}} 
-              >
-                <img src={colored} style={{height:"16px", width:"16px", marginRight:"4px", marginBottom:'3px'}}></img>
-                Add Feedback
-              </button>
+      <div className='AddFeedback-screen' >
+        <div className='AddFeedback-innerScreen'>
+          <div style={{display: "flex", gap: "10px" ,flexWrap:'wrap'}}>
+            <div style={{height: "40px", width: "40px",  borderRadius: "50%", background: "#f7f7f8", display: "flex", justifyContent: "center", alignItems: "center"}}>
+              <img 
+                src={description} 
+                alt="Task Icon" 
+                style={{ maxWidth: "80%", maxHeight: "80%" }}
+              />
             </div>
-          )}
-        </div>
-        <Row gutter={[24, 16]} style={{marginTop:"10px"}}>
-          <Col span={6} style={{paddingTop:"10px"}}>
-            <p className="text-muted mb-1" style={{fontSize:"14px" ,fontWeight:"450",color:'#212529'}}>Task Type</p>
-            <p  style={{fontSize:"16px" ,fontWeight:"500" ,color:'#3b4249'}}>{task?.taskType}</p>
+            <div style={{fontSize: "18px", fontWeight: "500", color: "#000000", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"}}>{task?.taskName}</div> 
+              <div>
+                <Tag 
+                  color={getStatusColor(task?.status)} 
+                  style={{ borderRadius: "60px", fontSize: "14px", padding: "2px 8px" }} // Adjust padding for smaller screens
+                >
+                  {task?.status[0] + task?.status.slice(1).toLowerCase()}
+                </Tag>
+              </div>
+            </div>
+            {task?.status !== "PENDING" && (
+              <div className='btn-div'> 
+                <button
+                  onClick={handleAddFeedback}
+                  className='feedback-btn'>
+                  <img 
+                    src={colored} 
+                    alt="Feedback Icon" 
+                    style={{ height: "16px", width: "16px" }} 
+                  />
+                    Add Feedback
+                </button>
+              </div>
+            )}
+          </div>
+        <Row gutter={[24, 16]} wrap={true} style={{ marginTop: "10px", display: 'flex', flexWrap: 'wrap' }}>
+          <Col xs={12} sm={12} md={8} lg={6} style={{ paddingTop: "10px" }}>
+            <p className="text-muted mb-1" style={{ fontSize: "14px", fontWeight: "450", color: '#212529' }}>Task Type</p>
+            <p style={{ fontSize: "16px", fontWeight: "500", color: '#3b4249' }}>{task?.taskType}</p>
           </Col>
-          <Col span={6} style={{paddingTop:"10px"}}>
-            <p className="text-muted mb-1"style={{fontSize:"14px" ,fontWeight:"450",color:'#212529'}}>Duration</p>
-            <p style={{fontSize:"16px" ,fontWeight:"500" ,color:'#3b4249'}}>{task?.taskDuration} Days</p>
+          <Col xs={12} sm={12} md={8} lg={6} style={{ paddingTop: "10px" }}>
+            <p className="text-muted mb-1" style={{ fontSize: "14px", fontWeight: "450", color: '#212529' }}>Duration</p>
+            <p style={{ fontSize: "16px", fontWeight: "500", color: '#3b4249' }}>{task?.taskDuration} Days</p>
           </Col>
-          <Col span={6} style={{paddingTop:"10px"}}>
-            <p className="text-muted mb-1" style={{fontSize:"14px" ,fontWeight:"450",color:'#212529'}}>Deadline Date</p>
-            <p style={{fontSize:"16px" ,fontWeight:"500" ,color:'#3b4249'}}>{moment(task?.lastDateOfSubmission).format('DD-MMM-YYYY')}</p>
+          <Col xs={12} sm={12} md={8} lg={6} style={{ paddingTop: "10px" }}>
+            <p className="text-muted mb-1" style={{ fontSize: "14px", fontWeight: "450", color: '#212529' }}>Deadline Date</p>
+            <p style={{ fontSize: "16px", fontWeight: "500", color: '#3b4249' }}>{moment(task?.lastDateOfSubmission).format('DD-MMM-YYYY')}</p>
           </Col>
-          <Col span={6} style={{paddingTop:"10px"}}>
-            <p className="text-muted mb-1"style={{fontSize:"14px" ,fontWeight:"450",color:'#212529'}}>Task Reviewers</p>
+          <Col xs={12} sm={12} md={8} lg={6} style={{ paddingTop: "10px" }}>
+            <p className="text-muted mb-1" style={{ fontSize: "14px", fontWeight: "450", color: '#212529' }}>Task Reviewers</p>
             <div>
               {task?.taskReviewers.map((reviewer, index) => (
                 <Link key={index} to="#" className="social-icon-two" style={{ marginLeft: "-10px" }}>
-                  <img src={reviewer?.imageUrl} style={{ height: "30px", width: "30px", borderRadius: "50%", border:'2px solid white'}}/>
+                  <img src={reviewer?.imageUrl} style={{ height: "30px", width: "30px", borderRadius: "50%", border: '2px solid white' }} />
                 </Link>
               ))}
-          </div>
+            </div>
+          </Col>
+          <Col xs={24} sm={12} md={8} lg={6} style={{ paddingTop: "10px" }}>
+            <p className="text-muted mb-1" style={{ fontSize: "14px", fontWeight: "450", color: '#212529' }}>Created By</p>
+            <p style={{ fontSize: "16px", fontWeight: "500", color: '#3b4249' }}>{task?.createdBy?.fullName}</p>
           </Col>
         </Row>
-        <Row gutter={[24, 16]} style={{marginTop:"10px"}}>
-          <Col span={6} style={{paddingTop:"10px"}}>
-            <p className="text-muted mb-1" style={{fontSize:"14px" ,fontWeight:"450",color:'#212529'}}>Created By</p>
-            <p  style={{fontSize:"16px" ,fontWeight:"500" ,color:'#3b4249'}}>{task?.createdBy?.fullName}</p>
-          </Col>
-        </Row>
+
         
         {task.status === 'task-reviewed' && (
           <div>
@@ -686,6 +701,12 @@ const TaskDetails = () => {
           background: #f9f9f9;
           border-radius: 4px;
           border: 1px solid #e8e8e8;
+        }
+
+        .tag-style{
+          border-radius: 70px;
+          margin-left: 9px;
+          margin-top: -35px;
         }
         .ant-tag {
           border-radius: 4px;
@@ -1073,373 +1094,130 @@ const TaskDetails = () => {
           justify-self: end;
         }
 
+        .initials-div{
+          height: 130px;
+          background: #ffffff;
+          border: 1px solid transparent;
+          border-radius: 8px;
+          margin-bottom: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+
+        .custom{
+          display: flex;
+          float : end;
+          margin-right: 12px 
+        }
+
+        .initials-details{
+          height: 80px;
+          width: 80px;
+          border: 1px solid transparent;
+          border-radius: 50%;
+          background: #f5f1fd;
+          color: #9368e9;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          margin-left: 20px;
+          font-size: 28px;
+          fontweight: 500;
+        }
+
+        .AddFeedback-screen{
+          background: #ffffff ;
+          border: 1px solid transparent;
+          border-radius: 8px;
+          margin-bottom: 20px;
+          padding: 25px;
+        }
+
+        .feedback-btn{
+          background: transparent;
+          border: none;
+          font-size: 16px;
+          font-weight: 450;
+          color: #ff9244;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+
+        .btn-div{
+          padding-top: 8px;
+          flex-shrink: 0;
+        }
+
+        .AddFeedback-innerScreen{
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 10px;
+          flex-wrap: wrap;
+        }
+
+        @media (max-width: 630px){
+          .tag-style{
+            display: none !important;
+          }
+        }
+
+        @media (max-width: 500px){
+          .select-btn{
+            width: 130px !important;
+            gap: 4px !important;
+          }
+        }
+
+        @media (max-width: 500px){
+          .custom{
+            margin-right: 7px !important; 
+          }
+        }
+
+        @media (max-width: 500px){
+          .initials-details{
+            margin-left: 7px !important; 
+          }
+        }
+
+        @media (min-width: 420px) and (max-width: 500px){
+          .select-btn{
+            margin-left: 30px !important;
+          }
+        }
+
+        @media (max-width: 400px){
+          .imageRightArrow{
+            display : none !important;
+          }
+        }
+
+        @media (max-width: 400px){
+          .select-btn{
+            width: 95px !important;
+          }
+        }
+
+        @media (min-width: 450px) and (max-width: 553px){
+         .btn-div{
+          display: flex;
+          }
+        }
+
+
+
+
+
+
+
+
       `}</style>
     </div>
   );
-
-  // return (
-  //   <div className="content container-fluid">
-  //     {/* Page Header */}
-  //     <div className="page-header">
-  //       <div className="row align-items-center">
-  //         <div className="col">
-  //           <h3 className="page-title">Task Details</h3>
-  //           <ul className="breadcrumb">
-  //             <li className="breadcrumb-item">
-  //               <Link to="/recruitment/dashboard">Dashboard</Link>
-  //             </li>
-  //             <li className="breadcrumb-item">
-  //               <Link to="/recruitment/tasks">Tasks</Link>
-  //             </li>
-  //             <li className="breadcrumb-item active">Task Details</li>
-  //           </ul>
-  //         </div>
-  //         <div className="col-auto float-end ms-auto">
-  //           {isUserTaskReviewer() && (
-  //             <Button 
-  //               type="primary"
-  //               icon={<PlusOutlined />}
-  //               onClick={handleAddFeedback}
-  //             >
-  //               Add Feedback
-  //             </Button>
-  //           )}
-  //         </div>
-  //       </div>
-  //     </div>
-
-  //     {taskDetails && (
-  //       <div className="row">
-  //         <div className="col-md-8">
-  //           <Card title="Task Information" className="mb-4">
-  //             <Descriptions column={1} bordered>
-  //               <Descriptions.Item label="Task Name">
-  //                 {taskDetails.taskName}
-  //               </Descriptions.Item>
-  //               <Descriptions.Item label="Description">
-  //                 {taskDetails.description}
-  //               </Descriptions.Item>
-  //               <Descriptions.Item label="Status">
-  //                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-  //                   <Tag color={getStatusColor(taskDetails.status)}>
-  //                     {taskDetails.status?.charAt(0).toUpperCase() + taskDetails.status?.slice(1).toLowerCase()}
-  //                   </Tag>
-  //                   <Select
-  //                     style={{ width: 150 }}
-  //                     placeholder="Change Status"
-  //                     onChange={handleStatusUpdate}
-  //                     loading={statusUpdateLoading}
-  //                     value={taskDetails.status}
-  //                   >
-  //                     <Select.Option value="PENDING">Pending</Select.Option>
-  //                     <Select.Option value="SUBMITTED">Submitted</Select.Option>
-  //                     <Select.Option value="COMPLETED">Completed</Select.Option>
-  //                     <Select.Option value="OVERDUE">Overdue</Select.Option>
-  //                   </Select>
-  //                 </div>
-  //               </Descriptions.Item>
-  //               <Descriptions.Item label="Duration">
-  //                 {taskDetails.taskDuration} days
-  //               </Descriptions.Item>
-  //               <Descriptions.Item label="Due Date">
-  //                 {moment(taskDetails.lastDateOfSubmission).format('DD MMM YYYY')}
-  //               </Descriptions.Item>
-  //             </Descriptions>
-  //           </Card>
-
-  //           {taskDetails.taskFile && (
-  //             <Card title="Task File" className="mb-4">
-  //               <div className="d-flex align-items-center">
-  //                 <FileTextOutlined style={{ fontSize: '24px', marginRight: '12px' }} />
-  //                 <div>
-  //                   <div>{taskDetails.taskFile.fileName}</div>
-  //                   <div className="text-muted">{Math.round(taskDetails.taskFile.bytes / 1024)} KB</div>
-  //                 </div>
-  //                 <Button 
-  //                   type="link" 
-  //                   href={taskDetails.taskFile.imageUrl}
-  //                   target="_blank"
-  //                   className="ms-auto"
-  //                 >
-  //                   Download
-  //                 </Button>
-  //               </div>
-  //             </Card>
-  //           )}
-
-  //           {taskDetails.submittedFile && (
-  //             <Card title="Submitted File" className="mb-4">
-  //               <div className="d-flex align-items-center">
-  //                 <FileTextOutlined style={{ fontSize: '24px', marginRight: '12px' }} />
-  //                 <div>
-  //                   <div>{taskDetails.submittedFile.fileName}</div>
-  //                   <div className="text-muted">{Math.round(taskDetails.submittedFile.bytes / 1024)} KB</div>
-  //                 </div>
-  //                 <Button 
-  //                   type="link" 
-  //                   href={taskDetails.submittedFile.imageUrl}
-  //                   target="_blank"
-  //                   className="ms-auto"
-  //                 >
-  //                   Download
-  //                 </Button>
-  //               </div>
-  //             </Card>
-  //           )}
-
-  //           <div className="mb-4">
-  //             <h4 className="mb-0">Feedback</h4>
-  //           </div>
-
-  //           {taskDetails.feedback && taskDetails.feedback.length > 0 && (
-  //             <Card title="Feedback" className="mb-4">
-  //               {taskDetails.feedback.map((feedback, index) => (
-  //                 <div key={index} className="mb-4">
-  //                   <Descriptions column={1} bordered>
-  //                     <Descriptions.Item label="Reviewer">
-  //                       <div className="d-flex align-items-center">
-  //                         {feedback.reviewerId.imageUrl ? (
-  //                           <img 
-  //                             src={feedback.reviewerId.imageUrl} 
-  //                             alt={feedback.reviewerId.fullName}
-  //                             style={{ width: 24, height: 24, borderRadius: '50%', marginRight: 8 }}
-  //                           />
-  //                         ) : (
-  //                           <UserOutlined style={{ marginRight: 8 }} />
-  //                         )}
-  //                         {feedback.reviewerId.fullName}
-  //                       </div>
-  //                     </Descriptions.Item>
-  //                     {feedback.rating && (
-  //                       <Descriptions.Item label="Rating">
-  //                         {feedback.rating}/5
-  //                       </Descriptions.Item>
-  //                     )}
-  //                     <Descriptions.Item label="Comment">
-  //                       {feedback.comment}
-  //                     </Descriptions.Item>
-  //                     <Descriptions.Item label="Decision">
-  //                       <Tag color={feedback.decision === 'PASS' ? 'success' : 'error'}>
-  //                         {feedback.decision}
-  //                       </Tag>
-  //                     </Descriptions.Item>
-  //                     <Descriptions.Item label="Date">
-  //                       {moment(feedback.evaluationDate).format('DD MMM YYYY')}
-  //                     </Descriptions.Item>
-  //                   </Descriptions>
-  //                 </div>
-  //               ))}
-  //             </Card>
-  //           )}
-  //         </div>
-
-  //         <div className="col-md-4">
-  //           <Card title="Candidate Information" className="mb-4">
-  //             <Descriptions column={1}>
-  //               <Descriptions.Item label="Name">
-  //                 <Link to={`/recruitment/candidates/${taskDetails.candidateId._id}`}>
-  //                   {taskDetails.candidateId.firstName} {taskDetails.candidateId.lastName}
-  //                 </Link>
-  //               </Descriptions.Item>
-  //               <Descriptions.Item label="Email">
-  //                 {taskDetails.candidateId.email}
-  //               </Descriptions.Item>
-  //               {taskDetails.candidateId.appliedFor && (
-  //                 <>
-  //                   <Descriptions.Item label="Applied For">
-  //                     <Link to={`/recruitment/jobs/${taskDetails.candidateId.appliedFor._id}`}>
-  //                       {taskDetails.candidateId.appliedFor.title}
-  //                     </Link>
-  //                   </Descriptions.Item>
-  //                   <Descriptions.Item label="Department">
-  //                     {taskDetails.candidateId.appliedFor.department}
-  //                   </Descriptions.Item>
-  //                   <Descriptions.Item label="Job Type">
-  //                     <Tag color="blue">
-  //                       {taskDetails.candidateId.appliedFor.jobType?.split('_').map(word => 
-  //                         word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-  //                       ).join(' ')}
-  //                     </Tag>
-  //                   </Descriptions.Item>
-  //                   <Descriptions.Item label="Work Setup">
-  //                     <Tag color="green">
-  //                       {taskDetails.candidateId.appliedFor.workSetup?.charAt(0).toUpperCase() + 
-  //                        taskDetails.candidateId.appliedFor.workSetup?.slice(1).toLowerCase()}
-  //                     </Tag>
-  //                   </Descriptions.Item>
-  //                   <Descriptions.Item label="Job Status">
-  //                     <Tag color={taskDetails.candidateId.appliedFor.status === 'ACTIVE' ? 'green' : 'red'}>
-  //                       {taskDetails.candidateId.appliedFor.status?.charAt(0).toUpperCase() + 
-  //                        taskDetails.candidateId.appliedFor.status?.slice(1).toLowerCase()}
-  //                     </Tag>
-  //                   </Descriptions.Item>
-  //                 </>
-  //               )}
-  //             </Descriptions>
-  //           </Card>
-
-  //           <Card title="Reviewers" className="mb-4">
-  //             {taskDetails.taskReviewers?.map((reviewer, index) => (
-  //               <div key={index} className="d-flex align-items-center mb-3">
-  //                 {reviewer.imageUrl ? (
-  //                   <img 
-  //                     src={reviewer.imageUrl} 
-  //                     alt={reviewer.fullName}
-  //                     style={{ width: 24, height: 24, borderRadius: '50%', marginRight: 8 }}
-  //                   />
-  //                 ) : (
-  //                   <UserOutlined style={{ marginRight: 8 }} />
-  //                 )}
-  //                 <span>{reviewer.fullName}</span>
-  //               </div>
-  //             ))}
-  //           </Card>
-
-  //           <Card title="Timeline">
-  //             <Timeline>
-  //               <Timeline.Item dot={<CalendarOutlined />}>
-  //                 Created on {moment(taskDetails.createdAt).format('DD MMM YYYY')}
-  //               </Timeline.Item>
-  //               {taskDetails.submittedAt && (
-  //                 <Timeline.Item dot={<FileTextOutlined />}>
-  //                   Submitted on {moment(taskDetails.submittedAt).format('DD MMM YYYY')}
-  //                 </Timeline.Item>
-  //               )}
-  //               {taskDetails.status === 'COMPLETED' && (
-  //                 <Timeline.Item dot={<CheckCircleOutlined />}>
-  //                   Completed on {moment(taskDetails.updatedAt).format('DD MMM YYYY')}
-  //                 </Timeline.Item>
-  //               )}
-  //               <Timeline.Item dot={<ClockCircleOutlined />}>
-  //                 Due on {moment(taskDetails.lastDateOfSubmission).format('DD MMM YYYY')}
-  //               </Timeline.Item>
-  //             </Timeline>
-  //           </Card>
-  //         </div>
-  //       </div>
-  //     )}
-
-  //     {/* Feedback Modal */}
-  //     <Modal
-  //       title="Task Feedback Form"
-  //       open={feedbackModalVisible}
-  //       onCancel={() => setFeedbackModalVisible(false)}
-  //       footer={null}
-  //       width={800}
-  //     >
-  //       <Form
-  //         form={feedbackForm}
-  //         layout="vertical"
-  //         onFinish={handleFeedbackSubmit}
-  //       >
-  //         <Row gutter={16}>
-  //           <Col span={12}>
-  //             <Form.Item
-  //               name="candidateName"
-  //               label="Candidate Name"
-  //               rules={[{ required: true }]}
-  //             >
-  //               <Input disabled />
-  //             </Form.Item>
-  //           </Col>
-  //           <Col span={12}>
-  //             <Form.Item
-  //               name="jobTitle"
-  //               label="Job Title"
-  //               rules={[{ required: true }]}
-  //             >
-  //               <Input disabled />
-  //             </Form.Item>
-  //           </Col>
-  //         </Row>
-
-  //         <Row gutter={16}>
-  //           <Col span={12}>
-  //             <Form.Item
-  //               name="evaluatorName"
-  //               label="Evaluator Name"
-  //               rules={[{ required: true }]}
-  //             >
-  //               <Input disabled />
-  //             </Form.Item>
-  //           </Col>
-  //           <Col span={12}>
-  //             <Form.Item
-  //               name="evaluationDate"
-  //               label="Evaluation Date"
-  //               rules={[{ required: true }]}
-  //             >
-  //               <DatePicker 
-  //                 style={{ width: '100%' }} 
-  //                 disabled 
-  //               />
-  //             </Form.Item>
-  //           </Col>
-  //         </Row>
-
-  //         <Form.Item
-  //           name="rating"
-  //           label="Rating"
-  //           rules={[{ required: true, message: 'Please provide a rating' }]}
-  //         >
-  //           <Rate count={5} />
-  //         </Form.Item>
-
-  //         <Form.Item
-  //           name="comments"
-  //           label="Feedback Comments"
-  //           rules={[{ required: true, message: 'Please provide feedback comments' }]}
-  //         >
-  //           <TextArea rows={4} placeholder="Enter your detailed feedback here..." />
-  //         </Form.Item>
-
-  //         <Form.Item
-  //           name="decision"
-  //           label="Decision"
-  //           rules={[{ required: true, message: 'Please select a decision' }]}
-  //         >
-  //           <Radio.Group>
-  //             <Radio value="PASS">Pass</Radio>
-  //             <Radio value="FAIL">Fail</Radio>
-  //           </Radio.Group>
-  //         </Form.Item>
-
-  //         <Form.Item className="mb-0 text-right">
-  //           <Button 
-  //             onClick={() => setFeedbackModalVisible(false)} 
-  //             style={{ marginRight: 8 }}
-  //           >
-  //             Cancel
-  //           </Button>
-  //           <Button 
-  //             type="primary" 
-  //             htmlType="submit"
-  //             loading={submitting}
-  //           >
-  //             Submit Feedback
-  //           </Button>
-  //         </Form.Item>
-  //       </Form>
-  //     </Modal>
-
-  //     <style jsx global>{`
-  //       .ant-descriptions-bordered .ant-descriptions-item-label {
-  //         width: 200px;
-  //         background-color: #fafafa;
-  //       }
-  //       .ant-card {
-  //         border-radius: 8px;
-  //         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  //       }
-  //       .ant-timeline {
-  //         padding: 16px;
-  //       }
-  //       .ant-timeline-item-content {
-  //         margin-left: 32px;
-  //       }
-  //     `}</style>
-  //   </div>
-  // );
 };
 
 export default TaskDetails; 

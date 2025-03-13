@@ -54,9 +54,13 @@ const [pagination, setPagination] = useState({
       const queryParams = {
         page: pagination.current,
         limit: pagination.pageSize,
-        ...(filters.candidateName && { candidateName: filters.candidateName }),
-        ...(filters.status && { status: filters.status }),
+        ...(filters.candidateName ? { candidateName: filters.candidateName } : {}),
+        ...(filters.status ? { status: filters.status } : {}),
+        ...(filters.appliedPosition ? { appliedPosition: filters.appliedPosition } : {}),
+        ...(filters.rating ? { rating: filters.rating } : {}),
       };
+
+      console.log('Fetching interviews with params:', queryParams);
 
       const response = await apiServices(
         "GET", 
@@ -102,6 +106,7 @@ const [pagination, setPagination] = useState({
   };
 
   const handleSearch = (values) => {
+    console.log('Search Values:', values);
     setPagination({
       ...pagination,
       current: 1
@@ -109,14 +114,14 @@ const [pagination, setPagination] = useState({
     setFilters(values);
   };
 
-  const handleReset = () => {
-    form.resetFields();
-    setFilters({});
-    setPagination({
-      ...pagination,
-      current: 1
-    });
-  };
+  // const handleReset = () => {
+  //   form.resetFields();
+  //   setFilters({});
+  //   setPagination({
+  //     ...pagination,
+  //     current: 1
+  //   });
+  // };
 
   const getInitials = (title)=>{
     if(!title) return '';
