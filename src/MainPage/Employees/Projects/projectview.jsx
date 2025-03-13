@@ -38,7 +38,7 @@ import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { DeleteFiles, uploadFunction } from "./UploadAndDeleteFunc";
 import { getAllISOCodes } from "iso-country-currency";
 import { useTranslation } from "react-i18next";
-import numeral from "numeral";
+// import numeral from "numeral";
 
 // Utility function to format cost values
 const formatCostToWords = (value, currency) => {

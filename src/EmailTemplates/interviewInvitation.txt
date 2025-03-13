@@ -1,0 +1,41 @@
+Dear {{candidateName}},
+
+You have been scheduled for an interview with DaftarPro. We look forward to discussing your application for the {{position}} position.
+
+INTERVIEW DETAILS
+----------------
+Interview Type: {{interviewTitle}}
+Date: {{interviewDate}}
+Time: {{interviewTime}} (PKT)
+Interviewer: {{interviewerName}}
+{{#if isOnline}}
+Format: Online Interview
+{{else}}
+Format: In-Person Interview
+Location: {{location}}
+{{/if}}
+
+To view your interview details{{#if isOnline}} and access the meeting link{{else}} and get location details{{/if}}, please visit:
+{{interviewLink}}
+
+IMPORTANT NOTES
+--------------
+{{#if isOnline}}
+* Please ensure you have a stable internet connection
+* Test your camera and microphone before the interview
+* Choose a quiet location for the interview
+{{else}}
+* Please arrive 10 minutes before the scheduled time
+* Bring a copy of your resume
+* Bring any form of government-issued ID
+{{/if}}
+* Review your application materials before the interview
+
+If you need to reschedule or have any questions, please contact our recruitment team as soon as possible.
+
+Best regards,
+DaftarPro Recruitment Team
+
+Need help? Contact us at support@daftarpro.com
+----------------
+This email was sent by DaftarPro. Please do not reply to this email. 
