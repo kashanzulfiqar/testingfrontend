@@ -1,7 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Avatar, Input, message, Select, Spin, Tag, Tooltip } from "antd";
+import {
+  Avatar,
+  Input,
+  message,
+  Select,
+  Spin,
+  Tag,
+  Tooltip,
+  Empty,
+} from "antd";
 import { PlusCircleOutlined } from "@ant-design/icons";
 import { apiServices } from "../../../Services/apiServices";
 import { useSelector } from "react-redux";
@@ -20,6 +29,8 @@ const TaskDetails = () => {
   const [isEditingMembers, setIsEditingMembers] = useState(false);
   const [availableMembers, setAvailableMembers] = useState([]);
   const [memberDropdownOpen, setMemberDropdownOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("description");
+  const [isEditing, setIsEditing] = useState(false);
 
   // Add refs for dropdowns
   const statusDropdownRef = React.useRef(null);
@@ -35,22 +46,16 @@ const TaskDetails = () => {
     }
   }, []);
 
-  // Add this useEffect to initialize members
+  // Update useEffect to get developers from projectId
   useEffect(() => {
     if (taskData?._id) {
       setSelectedMembers(taskData?.assignedDevelopers || []);
+      setAvailableMembers(
+        taskData?.projectId?.associatedBoard?.assignedDevelopers ||
+          taskData?.boardId?.assignedDevelopers ||
+          []
+      );
       setMemberLoading(false);
-    }
-  }, [taskData]);
-
-  // Add this useEffect to initialize available members
-  useEffect(() => {
-    if (taskData?._id) {
-      const developers =
-        taskData?.projectId?.assignedDevelopers ||
-        taskData?.boardId?.assignedDevelopers ||
-        [];
-      setAvailableMembers(developers);
     }
   }, [taskData]);
 
@@ -63,7 +68,12 @@ const TaskDetails = () => {
     if (membersDropdown) {
       membersDropdown.classList.remove("show");
     }
-    setIsEditingMembers(false);
+    // Only close member editing if we're not in the Select component area
+    const selectContainer = document.getElementById("area");
+    const activeElement = document.activeElement;
+    if (!selectContainer?.contains(activeElement)) {
+      setIsEditingMembers(false);
+    }
   };
 
   // Handle clicks outside dropdowns
@@ -89,12 +99,6 @@ const TaskDetails = () => {
     e.stopPropagation();
     closeAllDropdowns();
     setOpenStatusDropdown(true);
-  };
-
-  // Modify add members click handler
-  const handleAddMembersClick = () => {
-    closeAllDropdowns();
-    setMemberDropdownOpen(true);
   };
 
   const fetchTaskDetails = async () => {
@@ -200,6 +204,7 @@ const TaskDetails = () => {
   };
 
   const handleRemoveTag = (removedTag) => {
+    console.log("removedTag", removedTag);
     const newTags = taskData.tags.filter((tag) => tag !== removedTag);
 
     const data = {
@@ -207,46 +212,85 @@ const TaskDetails = () => {
       tags: newTags,
     };
 
-    apiServices("PUT", "tasks", data, user_state)
-      .then((res) => {
-        if (res?.data?.success === true) {
-          fetchTaskDetails();
-          message.success(t("Tag removed successfully"));
-        } else {
-          message.error(t("Failed to remove tag"));
-        }
-      })
-      .catch((err) => {
-        message.error(
-          err?.response?.data?.msg ||
-            err?.response?.data?.validation?.body?.message ||
-            t("Error removing tag")
-        );
-      });
+    // Prevent input from being hidden when removing a tag
+    setTimeout(() => {
+      apiServices("PUT", "tasks", data, user_state)
+        .then((res) => {
+          if (res?.data?.success === true) {
+            fetchTaskDetails();
+            message.success(t("Tag removed successfully"));
+          } else {
+            message.error(t("Failed to remove tag"));
+          }
+          setInputVisible(false);
+        })
+        .catch((err) => {
+          message.error(
+            err?.response?.data?.msg ||
+              err?.response?.data?.validation?.body?.message ||
+              t("Error removing tag")
+          );
+        });
+    }, 0);
   };
 
   const handleMemberChange = (values) => {
-    const data = {
-      _id: taskData._id,
-      assignedDevelopers: values,
-    };
+    // Close dropdown and remove focus
+    setIsEditingMembers(false);
+    
+    // Update state first
+    const selectedDevelopers = values
+      .map((value) => availableMembers.find((member) => member._id === value))
+      .filter(Boolean);
 
-    apiServices("PUT", "tasks", data, user_state)
-      .then((res) => {
-        if (res?.data?.success === true) {
-          fetchTaskDetails();
-          message.success(t("Team members updated successfully"));
-        } else {
-          message.error(t("Failed to update team members"));
-        }
-      })
-      .catch((err) => {
-        message.error(
-          err?.response?.data?.msg ||
-            err?.response?.data?.validation?.body?.message ||
-            t("Error updating team members")
-        );
-      });
+    setSelectedMembers(selectedDevelopers);
+
+    // Remove focus from the select component
+    setTimeout(() => {
+      document.activeElement?.blur();
+      const selectInput = document.querySelector("#area .ant-select-selector");
+      if (selectInput) {
+        selectInput.blur();
+      }
+    }, 0);
+
+    // Debounce API call to avoid multiple calls at once
+    clearTimeout(window.teamUpdateTimeout);
+    window.teamUpdateTimeout = setTimeout(() => {
+      const data = {
+        _id: taskData._id,
+        assignedDevelopers: values,
+      };
+
+      apiServices("PUT", "tasks", data, user_state)
+        .then((res) => {
+          if (res?.data?.success === true) {
+            fetchTaskDetails();
+            message.success(t("Team members updated successfully"));
+          } else {
+            message.error(t("Failed to update team members"));
+          }
+        })
+        .catch((err) => {
+          message.error(
+            err?.response?.data?.msg ||
+              err?.response?.data?.validation?.body?.message ||
+              t("Error updating team members")
+          );
+        });
+    }, 100);
+  };
+
+  // Add a new function to handle dropdown visibility
+  const handleDropdownVisibility = (open) => {
+    if (!open) {
+      // Only close if clicking outside the dropdown
+      const activeElement = document.activeElement;
+      const selectContainer = document.getElementById("area");
+      if (!selectContainer?.contains(activeElement)) {
+        setIsEditingMembers(false);
+      }
+    }
   };
 
   return (
@@ -429,8 +473,11 @@ const TaskDetails = () => {
                         taskData.tags.map((tag, index) => (
                           <Tag
                             key={index}
+                            onClose={(e) => {
+                              e.stopPropagation(); // Prevent input field from losing focus when clicking the close button
+                              handleRemoveTag(tag);
+                            }}
                             closable={inputVisible}
-                            onClose={() => handleRemoveTag(tag)}
                             style={{
                               maxWidth: "100%",
                               wordBreak: "break-word",
@@ -461,7 +508,14 @@ const TaskDetails = () => {
                           value={inputValue}
                           onChange={(e) => setInputValue(e.target.value)}
                           onPressEnter={handleAddTag}
-                          onBlur={handleAddTag} // Close input on blur
+                          onBlur={(e) => {
+                            // Only hide input if we're not clicking a tag's close button
+                            const closestTag =
+                              e.relatedTarget?.closest(".ant-tag");
+                            if (!closestTag) {
+                              handleAddTag();
+                            }
+                          }}
                         />
                       )}
                     </div>
@@ -486,189 +540,109 @@ const TaskDetails = () => {
                     >
                       {t("Team Members")}
                     </label>
-                    <div
-                      style={{
-                        display: "flex",
-                        flexWrap: "wrap",
-                        gap: "8px",
-                        border: "1px solid #d9d9d9",
-                        borderRadius: "4px",
-                        padding: "8px",
-                        minHeight: "38px",
-                        background: "#fff",
-                      }}
-                    >
-                      {memberLoading ? (
-                        <Spin size="small" />
-                      ) : isEditingMembers ? (
-                        <Select
-                          mode="multiple"
-                          style={{ width: "100%" }}
-                          placeholder={t("Select team members")}
-                          onChange={handleMemberChange}
-                          value={selectedMembers?.map((member) => member._id)}
-                        >
-                          {(
-                            taskData?.projectId?.assignedDevelopers ||
-                            taskData?.boardId?.assignedDevelopers ||
-                            []
-                          ).map((developer) => (
+                    <div style={{ position: "relative" }} id="area">
+                      <Select
+                        mode="multiple"
+                        style={{ width: "100%" }}
+                        placeholder={t("Select team members")}
+                        onChange={(values, option) => {
+                          handleMemberChange(values);
+                        }}
+                        value={selectedMembers?.map((member) => member._id)}
+                        open={isEditingMembers}
+                        onDropdownVisibleChange={handleDropdownVisibility}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          if (!isEditingMembers) {
+                            e.preventDefault();
+                          }
+                        }}
+                        showSearch={isEditingMembers}
+                        showArrow={false}
+                        optionFilterProp="children"
+                        filterOption={(input, option) =>
+                          option.children.props.children[1].props.children
+                            .toLowerCase()
+                            .indexOf(input.toLowerCase()) >= 0
+                        }
+                        className="customselect-height custom-select"
+                        notFoundContent={
+                          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                        }
+                        maxTagCount={3}
+                        maxTagPlaceholder={(omittedValues) =>
+                          `+${omittedValues.length} more`
+                        }
+                        tagRender={(props) => {
+                          const member = selectedMembers.find(
+                            (m) => m._id === props.value
+                          );
+                          return (
+                            <span
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                background: "rgba(247, 247, 248, 1)",
+                                padding: "4px 12px 4px 4px",
+                                borderRadius: "20px",
+                                gap: "8px",
+                                marginRight: "8px",
+                              }}
+                            >
+                              <Avatar
+                                size={24}
+                                src={member?.imageUrl || user_icon}
+                                style={{
+                                  minWidth: "24px",
+                                }}
+                              />
+                              <span
+                                style={{
+                                  color: "rgba(111, 125, 138, 1)",
+                                  fontSize: "14px",
+                                  overflowWrap: "break-word",
+                                  wordBreak: "break-word",
+                                }}
+                              >
+                                {member?.fullName}
+                              </span>
+                              {isEditingMembers && (
+                                <span
+                                  style={{
+                                    cursor: "pointer",
+                                    color: "#999",
+                                  }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const newValues = selectedMembers
+                                      .filter((m) => m._id !== props.value)
+                                      .map((m) => m._id);
+                                    handleMemberChange(newValues);
+                                  }}
+                                >
+                                  ×
+                                </span>
+                              )}
+                            </span>
+                          );
+                        }}
+                        dropdownStyle={{
+                          minWidth: "200px",
+                        }}
+                      >
+                        {availableMembers
+                          .filter(
+                            (developer) =>
+                              !selectedMembers.some(
+                                (member) => member._id === developer._id
+                              )
+                          )
+                          .map((developer) => (
                             <Select.Option
                               key={developer._id}
                               value={developer._id}
                             >
-                              {developer.fullName}
-                            </Select.Option>
-                          ))}
-                        </Select>
-                      ) : (
-                        <div className="project-members">
-                          <div
-                            style={{
-                              display: "flex",
-                              flexWrap: "wrap",
-                              gap: "8px",
-                            }}
-                          >
-                            {selectedMembers
-                              ?.slice(0, 3)
-                              .map((member, index) => (
-                                <div
-                                  key={index}
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    background: "rgba(247, 247, 248, 1)",
-                                    padding: "4px 12px 4px 4px",
-                                    borderRadius: "20px",
-                                    gap: "8px",
-                                  }}
-                                >
-                                  <Avatar
-                                    size={24}
-                                    src={member?.imageUrl || user_icon}
-                                    style={{
-                                      cursor: "pointer",
-                                      minWidth: "24px",
-                                    }}
-                                  />
-                                  <span
-                                    style={{
-                                      color: "rgba(111, 125, 138, 1)",
-                                      fontSize: "14px",
-                                      whiteSpace: "nowrap",
-                                    }}
-                                  >
-                                    {member?.fullName}
-                                  </span>
-                                </div>
-                              ))}
-
-                            {selectedMembers?.length > 3 && (
-                              <li
-                                className="dropdown avatar-dropdown"
-                                ref={membersDropdownRef}
-                              >
-                                <Link
-                                  className="all-users dropdown-toggle projectTeamMember"
-                                  style={{
-                                    display: "inline-flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    height: "32px",
-                                    width: "32px",
-                                    borderRadius: "50%",
-                                    backgroundColor: "#E9ECEF",
-                                    color: "#333",
-                                    textDecoration: "none",
-                                    fontSize: "13px",
-                                  }}
-                                  data-bs-toggle="dropdown"
-                                  aria-expanded="false"
-                                >
-                                  +{selectedMembers?.length - 3}
-                                </Link>
-                                <div
-                                  className="dropdown-menu dropdown-menu-right"
-                                  style={{
-                                    minWidth: "120px",
-                                    padding: "8px",
-                                    border: "1px solid rgba(0,0,0,0.1)",
-                                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                                  }}
-                                >
-                                  <div
-                                    className="avatar-group"
-                                    style={{
-                                      display: "grid",
-                                      gridTemplateColumns: "repeat(3, 1fr)",
-                                      gap: "8px",
-                                      justifyItems: "center",
-                                    }}
-                                  >
-                                    {selectedMembers
-                                      ?.slice(3)
-                                      .map((member, index) => (
-                                        <Tooltip
-                                          key={index}
-                                          title={member?.fullName}
-                                        >
-                                          <Avatar
-                                            className="avatar-xs"
-                                            src={member?.imageUrl || user_icon}
-                                            style={{
-                                              cursor: "pointer",
-                                              width: "32px",
-                                              height: "32px",
-                                            }}
-                                          />
-                                        </Tooltip>
-                                      ))}
-                                  </div>
-                                </div>
-                              </li>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    {/* Add Member Button and Dropdown */}
-                    <div
-                      className="dropdown"
-                      ref={addMembersRef}
-                      style={{ textAlign: "right", marginTop: "5px" }}
-                    >
-                      <span
-                        onClick={handleAddMembersClick}
-                        style={{
-                          cursor: "pointer",
-                          color: "rgba(255, 155, 68, 1)",
-                        }}
-                      >
-                        <PlusCircleOutlined /> Add Members
-                      </span>
-                      <div
-                        className={`dropdown-menu dropdown-menu-right ${
-                          memberDropdownOpen ? "show" : ""
-                        }`}
-                        style={{
-                          minWidth: "250px",
-                          padding: "10px",
-                          border: "1px solid rgba(0,0,0,0.1)",
-                          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                        }}
-                      >
-                        <Select
-                          mode="multiple"
-                          style={{ width: "100%" }}
-                          placeholder={t("Select team members")}
-                          value={selectedMembers?.map((member) => member._id)}
-                          onChange={handleMemberChange}
-                          open={true}
-                          dropdownStyle={{ display: "none" }}
-                        >
-                          {availableMembers.map((member) => (
-                            <Select.Option key={member._id} value={member._id}>
                               <div
                                 style={{
                                   display: "flex",
@@ -678,13 +652,32 @@ const TaskDetails = () => {
                               >
                                 <Avatar
                                   size={24}
-                                  src={member?.imageUrl || user_icon}
+                                  src={developer?.imageUrl || user_icon}
                                 />
-                                <span>{member.fullName}</span>
+                                <span>{developer.fullName}</span>
                               </div>
                             </Select.Option>
                           ))}
-                        </Select>
+                      </Select>
+                      <div style={{ textAlign: "right", marginTop: "5px" }}>
+                        <span
+                          onClick={() => {
+                            setIsEditingMembers(true);
+                            // Focus the select input to show the dropdown
+                            const selectInput = document.querySelector(
+                              "#area .ant-select-selector"
+                            );
+                            if (selectInput) {
+                              selectInput.click();
+                            }
+                          }}
+                          style={{
+                            cursor: "pointer",
+                            color: "rgba(255, 155, 68, 1)",
+                          }}
+                        >
+                          <PlusCircleOutlined /> Add Members
+                        </span>
                       </div>
                     </div>
                   </li>
@@ -693,22 +686,153 @@ const TaskDetails = () => {
             </div>
           </div>
           <div className="col-xl-9">
-            <div className="card">
-              <div className="card-body">
-                <div className="view-header">
-                  <h3>Description</h3>
-                </div>
-                <div className="description-content" style={{ 
-                  padding: '20px',
-                  backgroundColor: '#f8f9fa',
-                  borderRadius: '8px',
-                  margin: '15px 0',
-                  minHeight: '150px',
-                  color: '#6c757d',
-                  lineHeight: '1.6',
-                  fontSize: '14px'
-                }}>
-                  {taskData?.description || "No description available"}
+            <div className="contact-tab-wrap">
+              <ul className="contact-nav nav">
+                <li>
+                  <a
+                    onClick={() => setActiveTab("description")}
+                    data-bs-toggle="tab"
+                    data-bs-target="#description"
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "flex-start",
+                    }}
+                    className={activeTab === "description" ? "active" : ""}
+                  >
+                    <i className="las la-file" />
+                    Description
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div className="contact-tab-view">
+              <div className="tab-content pt-0">
+                {/* Description Tab */}
+                <div
+                  className={`tab-pane fade ${
+                    activeTab === "description" ? "active show" : ""
+                  }`}
+                  id="description"
+                >
+                  <div className="view-header">
+                    <h3>Description</h3>
+                    <button
+                      className="btn btn-primary btn-sm"
+                      style={{ minWidth: "60px" }}
+                      onClick={() => setIsEditing(!isEditing)}
+                    >
+                      Edit
+                    </button>
+                  </div>
+                  {isEditing ? (
+                    <div
+                      className="editor-container"
+                      style={{ margin: "15px 0" }}
+                    >
+                      <div
+                        className="editor-toolbar"
+                        style={{
+                          padding: "10px",
+                          backgroundColor: "#f8f9fa",
+                          borderTopLeftRadius: "8px",
+                          borderTopRightRadius: "8px",
+                          border: "1px solid #CFD4D8",
+                          borderBottom: "none",
+                        }}
+                      >
+                        <select
+                          className="editor-font"
+                          defaultValue="CircularStd"
+                        >
+                          <option value="CircularStd">CircularStd</option>
+                        </select>
+                        <button className="editor-btn">
+                          <i className="fas fa-undo"></i>
+                        </button>
+                        <button className="editor-btn">
+                          <i className="fas fa-redo"></i>
+                        </button>
+                        <select className="editor-size" defaultValue="15">
+                          <option value="15">15</option>
+                        </select>
+                        <button className="editor-btn">B</button>
+                        <button className="editor-btn">I</button>
+                        <button className="editor-btn">U</button>
+                        <button className="editor-btn">
+                          <i className="fas fa-highlighter"></i>
+                        </button>
+                        <button className="editor-btn">A</button>
+                        <button className="editor-btn">
+                          <i className="fas fa-list-ul"></i>
+                        </button>
+                        <button className="editor-btn">
+                          <i className="fas fa-list-ol"></i>
+                        </button>
+                        <button className="editor-btn">
+                          <i className="fas fa-align-left"></i>
+                        </button>
+                        <button className="editor-btn">
+                          <i className="fas fa-link"></i>
+                        </button>
+                        <button className="editor-btn">
+                          <i className="fas fa-image"></i>
+                        </button>
+                      </div>
+                      <textarea
+                        style={{
+                          width: "100%",
+                          minHeight: "150px",
+                          padding: "20px",
+                          border: "1px solid #CFD4D8",
+                          borderBottomLeftRadius: "8px",
+                          borderBottomRightRadius: "8px",
+                          resize: "vertical",
+                        }}
+                        defaultValue={taskData?.description || ""}
+                      />
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "flex-end",
+                          gap: "10px",
+                          marginTop: "10px",
+                        }}
+                      >
+                        <button
+                          className="btn btn-light"
+                          onClick={() => setIsEditing(false)}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          className="btn btn-primary"
+                          onClick={() => {
+                            // Add save logic here
+                            setIsEditing(false);
+                          }}
+                        >
+                          Save
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      className="description-content"
+                      style={{
+                        padding: "20px",
+                        border: "1px solid #CFD4D8",
+                        borderRadius: "8px",
+                        margin: "15px 0",
+                        minHeight: "150px",
+                        color: "#6c757d",
+                        lineHeight: "1.6",
+                        fontSize: "14px",
+                      }}
+                    >
+                      {taskData?.description || "No description available"}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
