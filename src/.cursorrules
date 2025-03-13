@@ -1,8 +1,0 @@
-This app is already in production so
-1. Never change any existing routes unless specifically mentioned in the prompt. 
-2. Never change any existing models unless specifically mentioned in the prompt. 
-3. Never change any existing functionality unless specifically mentioned in the prompt. 
-4. In every prompt confirm backward compatibility with existing code.
-5. Never Change any existing design unless specifically mentioned in the prompt.
-5. After every major change that might require a migration, tell me I might need a migration script. 
-6. After every prompt, confirm that you have not changed any existing routes, models, or functionality.
