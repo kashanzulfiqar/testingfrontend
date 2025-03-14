@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   Avatar,
@@ -19,6 +19,7 @@ import { user_icon } from "../../../Entryfile/imagepath";
 const TaskDetails = () => {
   const { t } = useTranslation();
   const location = useLocation();
+  const navigate = useNavigate();
   const [taskData, setTaskData] = useState(location.state.taskData || {});
   const [inputVisible, setInputVisible] = useState(false);
   const [inputValue, setInputValue] = useState("");
@@ -31,11 +32,16 @@ const TaskDetails = () => {
   const [memberDropdownOpen, setMemberDropdownOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("description");
   const [isEditing, setIsEditing] = useState(false);
+  const [descriptionValue, setDescriptionValue] = useState("");
+  const [descriptionDropdownOpen, setDescriptionDropdownOpen] = useState(false);
+  const [isDescriptionLoading, setIsDescriptionLoading] = useState(false);
+  const [isStatusLoading, setIsStatusLoading] = useState(false);
 
   // Add refs for dropdowns
   const statusDropdownRef = React.useRef(null);
   const membersDropdownRef = React.useRef(null);
   const addMembersRef = React.useRef(null);
+  const descriptionDropdownRef = React.useRef(null);
 
   // Add user state from Redux
   const user_state = useSelector((state) => state?.user?.loginvalue);
@@ -63,6 +69,7 @@ const TaskDetails = () => {
   const closeAllDropdowns = () => {
     setOpenStatusDropdown(false);
     setMemberDropdownOpen(false);
+    setDescriptionDropdownOpen(false);
     const membersDropdown =
       membersDropdownRef.current?.querySelector(".dropdown-menu");
     if (membersDropdown) {
@@ -82,7 +89,8 @@ const TaskDetails = () => {
       if (
         !statusDropdownRef.current?.contains(event.target) &&
         !membersDropdownRef.current?.contains(event.target) &&
-        !addMembersRef.current?.contains(event.target)
+        !addMembersRef.current?.contains(event.target) &&
+        !descriptionDropdownRef.current?.contains(event.target)
       ) {
         closeAllDropdowns();
       }
@@ -101,29 +109,44 @@ const TaskDetails = () => {
     setOpenStatusDropdown(true);
   };
 
+  // Add description dropdown click handler
+  const handleDescriptionDropdownClick = (e) => {
+    e.stopPropagation();
+    closeAllDropdowns();
+    setDescriptionDropdownOpen(true);
+  };
+
   const fetchTaskDetails = async () => {
     const taskId = taskData?._id;
     if (!taskId) return;
 
-    setTagLoading(true);
     try {
-      apiServices("GET", `tasks?taskId=${taskId}`, null, user_state).then(
-        (res) => {
-          if (res?.data?.success) {
-            setTaskData(res?.data?.Task);
-          } else {
-            message.error(t("Failed to fetch task details"));
-          }
-          setTagLoading(false);
-        }
+      const res = await apiServices(
+        "GET",
+        `tasks?taskId=${taskId}`,
+        null,
+        user_state
       );
+      if (res?.data?.success) {
+        const updatedTask = res?.data?.Task;
+        setTaskData(updatedTask);
+        // Update the location state to keep it in sync
+        navigate(location.pathname, {
+          state: { ...location.state, taskData: updatedTask },
+          replace: true,
+        });
+      } else {
+        message.error(t("Failed to fetch task details"));
+      }
     } catch (err) {
       message.error(
         err?.response?.data?.msg ||
           err?.response?.data?.validation?.body?.message ||
           t("Error fetching task details")
       );
+    } finally {
       setTagLoading(false);
+      setIsStatusLoading(false);
     }
   };
 
@@ -153,6 +176,7 @@ const TaskDetails = () => {
         taskId: taskId,
       };
 
+      setIsStatusLoading(true);
       apiServices("PUT", "taskBoard/add-taskBoard", updated_data, user_state)
         .then((res) => {
           if (res?.data?.success === true) {
@@ -175,7 +199,8 @@ const TaskDetails = () => {
   const handleAddTag = () => {
     if (inputValue.trim() && !taskData.tags.includes(inputValue.trim())) {
       const newTags = [...taskData.tags, inputValue.trim()];
-      console.log("newTags add", newTags);
+
+      setTagLoading(true);
       // Prepare data for API call
       const data = {
         _id: taskData._id,
@@ -207,6 +232,7 @@ const TaskDetails = () => {
     console.log("removedTag", removedTag);
     const newTags = taskData.tags.filter((tag) => tag !== removedTag);
 
+    setTagLoading(true);
     const data = {
       _id: taskData._id,
       tags: newTags,
@@ -237,7 +263,7 @@ const TaskDetails = () => {
   const handleMemberChange = (values) => {
     // Close dropdown and remove focus
     setIsEditingMembers(false);
-    
+
     // Update state first
     const selectedDevelopers = values
       .map((value) => availableMembers.find((member) => member._id === value))
@@ -293,6 +319,73 @@ const TaskDetails = () => {
     }
   };
 
+  // Add this useEffect to initialize descriptionValue when taskData changes
+  useEffect(() => {
+    setDescriptionValue(taskData?.description || "");
+  }, [taskData]);
+
+  // Update the description save handler
+  const handleSaveDescription = async () => {
+    // Validate description
+    if (!descriptionValue || descriptionValue.trim() === "") {
+      message.error(t("Tasks.pleaseenterdescription"));
+      return;
+    }
+    if (descriptionValue.length <= 4) {
+      message.error(t("Tasks.descriptionLength"));
+      return;
+    }
+    setIsEditing(false);
+    setIsDescriptionLoading(true);
+
+    // Update local state immediately for better UX
+    const updatedTaskData = {
+      ...taskData,
+      description: descriptionValue,
+    };
+    setTaskData(updatedTaskData);
+    navigate(location.pathname, {
+      state: { ...location.state, taskData: updatedTaskData },
+      replace: true,
+    });
+
+    // Add save logic here
+    const data = {
+      _id: taskData._id,
+      description: descriptionValue,
+    };
+
+    try {
+      const res = await apiServices("PUT", "tasks", data, user_state);
+      if (res?.data?.success === true) {
+        await fetchTaskDetails();
+        message.success(t("Description updated successfully"));
+      } else {
+        // Revert changes if API call fails
+        setTaskData(taskData);
+        navigate(location.pathname, {
+          state: { ...location.state, taskData: taskData },
+          replace: true,
+        });
+        message.error(t("Failed to update description"));
+      }
+    } catch (err) {
+      // Revert changes if API call fails
+      setTaskData(taskData);
+      navigate(location.pathname, {
+        state: { ...location.state, taskData: taskData },
+        replace: true,
+      });
+      message.error(
+        err?.response?.data?.msg ||
+          err?.response?.data?.validation?.body?.message ||
+          t("Error updating description")
+      );
+    } finally {
+      setIsDescriptionLoading(false);
+    }
+  };
+
   return (
     <div className="page-wrapper">
       <div className="content container-fluid">
@@ -340,10 +433,16 @@ const TaskDetails = () => {
                   onClick={handleStatusDropdownClick}
                   aria-expanded={openStatusDropdown}
                 >
-                  <i
-                    className={`fa fa-dot-circle-o text-${taskData?.columnColor}`}
-                  />{" "}
-                  {taskData?.lane || "No status"}
+                  {isStatusLoading ? (
+                    <Spin size="small" />
+                  ) : (
+                    <>
+                      <i
+                        className={`fa fa-dot-circle-o text-${taskData?.columnColor}`}
+                      />{" "}
+                      {taskData?.lane || "No status"}
+                    </>
+                  )}
                 </a>
                 <div
                   className={`dropdown-menu dropdown-menu-right ${
@@ -717,79 +816,69 @@ const TaskDetails = () => {
                 >
                   <div className="view-header">
                     <h3>Description</h3>
-                    <button
-                      className="btn btn-primary btn-sm"
-                      style={{ minWidth: "60px" }}
-                      onClick={() => setIsEditing(!isEditing)}
+                    <div
+                      className="dropdown"
+                      ref={descriptionDropdownRef}
+                      style={{ position: "relative" }}
                     >
-                      Edit
-                    </button>
+                      <a
+                        href="javascript:void(0)"
+                        className="action-icon"
+                        onClick={handleDescriptionDropdownClick}
+                        aria-expanded={descriptionDropdownOpen}
+                      >
+                        <i className="material-icons">more_vert</i>
+                      </a>
+                      <div
+                        className={`dropdown-menu dropdown-menu-right ${
+                          descriptionDropdownOpen ? "show" : ""
+                        }`}
+                        style={{
+                          position: "absolute",
+                          right: 0,
+                          left: "auto",
+                          transform: "none",
+                          top: "100%",
+                          minWidth: "120px",
+                        }}
+                      >
+                        <a
+                          className="dropdown-item"
+                          href="javascript:void(0)"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setIsEditing(true);
+                            setDescriptionDropdownOpen(false);
+                          }}
+                        >
+                          <i className="fa fa-pencil m-r-5" /> Edit
+                        </a>
+                      </div>
+                    </div>
                   </div>
                   {isEditing ? (
                     <div
                       className="editor-container"
                       style={{ margin: "15px 0" }}
                     >
-                      <div
-                        className="editor-toolbar"
-                        style={{
-                          padding: "10px",
-                          backgroundColor: "#f8f9fa",
-                          borderTopLeftRadius: "8px",
-                          borderTopRightRadius: "8px",
-                          border: "1px solid #CFD4D8",
-                          borderBottom: "none",
-                        }}
-                      >
-                        <select
-                          className="editor-font"
-                          defaultValue="CircularStd"
-                        >
-                          <option value="CircularStd">CircularStd</option>
-                        </select>
-                        <button className="editor-btn">
-                          <i className="fas fa-undo"></i>
-                        </button>
-                        <button className="editor-btn">
-                          <i className="fas fa-redo"></i>
-                        </button>
-                        <select className="editor-size" defaultValue="15">
-                          <option value="15">15</option>
-                        </select>
-                        <button className="editor-btn">B</button>
-                        <button className="editor-btn">I</button>
-                        <button className="editor-btn">U</button>
-                        <button className="editor-btn">
-                          <i className="fas fa-highlighter"></i>
-                        </button>
-                        <button className="editor-btn">A</button>
-                        <button className="editor-btn">
-                          <i className="fas fa-list-ul"></i>
-                        </button>
-                        <button className="editor-btn">
-                          <i className="fas fa-list-ol"></i>
-                        </button>
-                        <button className="editor-btn">
-                          <i className="fas fa-align-left"></i>
-                        </button>
-                        <button className="editor-btn">
-                          <i className="fas fa-link"></i>
-                        </button>
-                        <button className="editor-btn">
-                          <i className="fas fa-image"></i>
-                        </button>
-                      </div>
-                      <textarea
+                      <Input.TextArea
                         style={{
                           width: "100%",
                           minHeight: "150px",
                           padding: "20px",
-                          border: "1px solid #CFD4D8",
-                          borderBottomLeftRadius: "8px",
-                          borderBottomRightRadius: "8px",
+                          backgroundColor: "rgba(247, 247, 248, 1)",
+                          borderRadius: "8px",
                           resize: "vertical",
+                          wordBreak: "break-word",
+                          whiteSpace: "pre-wrap",
+                          fontFamily: "inherit",
+                          fontSize: "14px",
+                          lineHeight: "1.6",
+                          color: "#6c757d",
+                          border: "none",
                         }}
-                        defaultValue={taskData?.description || ""}
+                        value={descriptionValue}
+                        onChange={(e) => setDescriptionValue(e.target.value)}
                       />
                       <div
                         style={{
@@ -801,16 +890,16 @@ const TaskDetails = () => {
                       >
                         <button
                           className="btn btn-light"
-                          onClick={() => setIsEditing(false)}
+                          onClick={() => {
+                            setIsEditing(false);
+                            setDescriptionValue(taskData?.description || "");
+                          }}
                         >
                           Cancel
                         </button>
                         <button
                           className="btn btn-primary"
-                          onClick={() => {
-                            // Add save logic here
-                            setIsEditing(false);
-                          }}
+                          onClick={handleSaveDescription}
                         >
                           Save
                         </button>
@@ -824,13 +913,28 @@ const TaskDetails = () => {
                         border: "1px solid #CFD4D8",
                         borderRadius: "8px",
                         margin: "15px 0",
-                        minHeight: "150px",
+                        minHeight: "195px",
                         color: "#6c757d",
                         lineHeight: "1.6",
                         fontSize: "14px",
+                        whiteSpace: "pre-wrap",
+                        wordBreak: "break-word",
                       }}
                     >
-                      {taskData?.description || "No description available"}
+                      {isDescriptionLoading ? (
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            height: "150px",
+                          }}
+                        >
+                          <Spin size="large" />
+                        </div>
+                      ) : (
+                        taskData?.description || "No description available"
+                      )}
                     </div>
                   )}
                 </div>
