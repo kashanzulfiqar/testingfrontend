@@ -36,7 +36,7 @@ import PhoneNoInput from "../../../Components/PhoneNoInput";
 import moment from "moment";
 import ProfileInfoModal from "./modals/ProfileInfoModal";
 import { apiServices } from "../../../Services/apiServices";
-import { LoadingOutlined } from "@ant-design/icons";
+import { EyeInvisibleOutlined, EyeOutlined, LoadingOutlined } from "@ant-design/icons";
 import ImgCrop from "antd-img-crop";
 import { apiUploadToS3 } from "../../../Services/uploadImage";
 import EmployeeProjectsScreen from "./clientProfileScreens/EmployeeProjectsScreen";
@@ -50,9 +50,6 @@ const EmployeeProfile = () => {
   const nav = useNavigate();
   const [user_data, setUser_data] = useState(location?.state?.user_data);
   const allDataLocal = JSON.parse(localStorage.getItem("allDataLocal"));
-
-  let active = sessionStorage.getItem("emp_active_tab");
-  let employee_tab = sessionStorage.getItem("employee_tab");
 
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
   const { loginvalue } = useSelector((state) => state.user);
@@ -73,6 +70,7 @@ const EmployeeProfile = () => {
       sessionStorage.removeItem("employee_tab");
     }, 1000);
   }
+  const [showSalary, setShowSalary] = useState(false);
   const [loader, setLoader] = useState(false);
   const [imageLoader, setImageLoader] = useState(false);
   const [dataLoading, setDataLoading] = useState(false);
@@ -146,7 +144,6 @@ const EmployeeProfile = () => {
         });
     } else if (location.pathname === "/profile") {
       console.log("all data available", allDataLocal, user_data);
-      setActiveTab(employee_tab ? employee_tab : active ? active : "profile");
       setDataLoading(true);
       apiServices("GET", `user/employee-overview`, null, user_state)
         .then((res) => {
@@ -172,28 +169,31 @@ const EmployeeProfile = () => {
         });
     }
   };
-  // useEffect(() => {
-
-  //   if(activeTab === 'profile'){
-  //     getReportsTo()
-  //     getDepartment();
-  //     getDesignation();
-  //   }
-
-  //   // if(role === 'admin' || permissions?.viewAllUsers) {
-  //   //   getReportsTo()
-  //   //   getDepartment();
-  //   //   getDesignation();
-  //   // }else{
-  //   //   nav('/restricted', { state: { unAuthorize: true}})
-  //   // }
-  // }, [])
 
   useEffect(() => {
-    // window.scrollTo(0, 0);
-    // sessionStorage.clear();
-    sessionStorage.setItem(`emp_active_tab`, `${activeTab}`);
-  }, [activeTab]);
+    // Clear any existing tab state
+    sessionStorage.removeItem("employee_tab");
+    
+    // Set profile as active tab
+    setActiveTab("profile");
+
+     // Remove any lingering active/focus styles from tabs
+     const tabs = document.querySelectorAll('.nav-tabs .nav-link');
+     tabs.forEach(tab => {
+       tab.classList.remove('active');
+       tab.blur(); // Remove focus state
+     });
+ 
+     // Set the profile tab as active
+     const profileTab = document.querySelector('.nav-tabs .nav-link:first-child');
+     if (profileTab) {
+       profileTab.classList.add('active');
+     }
+    // Cleanup when component unmounts
+    return () => {
+      sessionStorage.removeItem("employee_tab");
+    };
+  }, [location.pathname]); // Re-run when path changes
 
   useEffect(() => {
     if (open?.isEmergInfoOpen) {
@@ -204,80 +204,6 @@ const EmployeeProfile = () => {
       });
     }
   }, [open?.isEmergInfoOpen]);
-  // const getReportsTo = () => {
-  //   apiServices("GET", "user/view-team-lead", null, user_state)
-  //   .then((res) => {
-  //     if (res?.data?.success === true) {
-  //       res?.data?.User?.map((rep)=> {
-  //         setRepInfo((prevRep) => ({
-  //           ...prevRep,
-  //           [rep?._id]: rep?.fullName,
-  //         }));
-  //       })
-  //     }
-  //   })
-  //   .catch((err) => {
-  //     message.error(
-  //       `${
-  //         err?.response?.data?.msg
-  //           ? err?.response?.data?.msg
-  //           : err?.response?.data?.validation?.body?.message
-  //           ? err?.response?.data?.validation?.body?.message
-  //           : t('allEmp.errors.getDepartmentInfoError')
-  //       }!`
-  //     );
-  //   });
-  // }
-
-  // const getDepartment = () => {
-  // apiServices("GET", "team/view-team", null, user_state)
-  //     .then((res) => {
-  //       if (res?.data?.success === true) {
-  //         console.log(res?.data?.Team);
-  //         res?.data?.Team?.map((dept)=> {
-  //           setDeptInfo((prevDept) => ({
-  //             ...prevDept,
-  //             [dept?._id]: dept?.teamName,
-  //           }));
-  //         })
-  //       }
-  //     })
-  //     .catch((err) => {
-  //       message.error(
-  //         `${
-  //           err?.response?.data?.msg
-  //             ? err?.response?.data?.msg
-  //             : err?.response?.data?.validation?.body?.message
-  //             ? err?.response?.data?.validation?.body?.message
-  //             : t('allEmp.errors.getDepartmentInfoError')
-  //         }!`
-  //       );
-  //     });
-  //   }
-  // const getDesignation = () => {
-  // apiServices("GET", "designation", null, user_state)
-  //     .then((res) => {
-  //       if (res?.data?.success === true) {
-  //         res?.data?.Designation?.map((desig)=> {
-  //           setDesigInfo((prevDesig) => ({
-  //             ...prevDesig,
-  //             [desig?._id]: desig?.designationName,
-  //           }));
-  //         })
-  //       }
-  //     })
-  //     .catch((err) => {
-  //       message.error(
-  //         `${
-  //           err?.response?.data?.msg
-  //             ? err?.response?.data?.msg
-  //             : err?.response?.data?.validation?.body?.message
-  //             ? err?.response?.data?.validation?.body?.message
-  //             : t('allEmp.errors.getDesignationInfoError')
-  //         }!`
-  //       );
-  //     });
-  //   }
 
   const handleClose = () => {
     setOpen({
@@ -346,7 +272,7 @@ const EmployeeProfile = () => {
         "updated_user",
         JSON.stringify({ imageUrl: d?.imageUrl, fullName: d?.fullName })
       );
-      nav("/profile/employee-profile", {
+      nav(`/profile/employee-profile/${user_state?.user?._id}`, {
         state: {
           updated_user: { imageUrl: d?.imageUrl, fullName: d?.fullName },
           user_data: user_data,
@@ -364,15 +290,6 @@ const EmployeeProfile = () => {
     apiServices("PUT", "user/update-user", new_values, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
-          // setAllData((prev) => ({
-          //   ...prev,
-          //   ...d,
-          // })); //directly update set All Data with res?.data?.user
-          // localStorage.setItem(
-          //   "allDataLocal",
-          //   JSON.stringify({ ...new_values, password: user_data?.password })
-          // );
-
           getEmployeeOverview();
           message.success(
             t("empProfile.errors.profileDetailsUpdatedSuccessfully")
@@ -408,14 +325,6 @@ const EmployeeProfile = () => {
     apiServices("PUT", "user/update-user", d1, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
-          // setAllData((prev) => ({
-          //   ...prev,
-          //   ...values,
-          // }));
-          // localStorage.setItem(
-          //   "allDataLocal",
-          //   JSON.stringify({ ...d1, password: user_data?.password })
-          // );
           getEmployeeOverview();
           message.success(
             t("empProfile.errors.bankDetailsUpdatedSuccessfully")
@@ -452,14 +361,6 @@ const EmployeeProfile = () => {
     apiServices("PUT", "user/update-user", d1, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
-          // setAllData((prev) => ({
-          //   ...prev,
-          //   emergencyContacts: [values],
-          // }));
-          // localStorage.setItem(
-          //   "allDataLocal",
-          //   JSON.stringify({ ...d1, password: user_data?.password })
-          // );
           getEmployeeOverview();
           message.success(
             t("empProfile.errors.emergencyContactUpdatedSuccessfully")
@@ -494,14 +395,6 @@ const EmployeeProfile = () => {
     apiServices("PUT", "user/update-user", d1, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
-          // setAllData((prev) => ({
-          //   ...prev,
-          //   education: values?.education,
-          // }));
-          // localStorage.setItem(
-          //   "allDataLocal",
-          //   JSON.stringify({ ...d1, password: user_data?.password })
-          // );
           getEmployeeOverview();
           message.success(
             t("empProfile.errors.educationDetailsUpdatedSuccessfully")
@@ -536,14 +429,6 @@ const EmployeeProfile = () => {
     apiServices("PUT", "user/update-user", d1, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
-          // setAllData((prev) => ({
-          //   ...prev,
-          //   experience: values?.experience,
-          // }));
-          // localStorage.setItem(
-          //   "allDataLocal",
-          //   JSON.stringify({ ...d1, password: user_data?.password })
-          // );
           getEmployeeOverview();
           message.success(
             t("empProfile.errors.experienceDetailsUpdatedSuccessfully")
@@ -604,19 +489,12 @@ const EmployeeProfile = () => {
     }
 
     return true;
-
-    // const isFileTypeAllowed = allowedFileTypes.includes(file.type);
-    // if (!isFileTypeAllowed) {
-    //   message.error('You can only upload PNG, JPG, or JPEG files!');
-    // }
-    // return isFileTypeAllowed;
   };
 
   const onImageUpload = (imagedata) => {
     setImageLoader(true);
     apiUploadToS3(imagedata)
       .then((res) => {
-        // console.log(res?.data?.result);
         setImage(res?.data?.result?.secure_url);
         localStorage.setItem(
           "updated_user",
@@ -639,14 +517,6 @@ const EmployeeProfile = () => {
         apiServices("PUT", "user/update-user", d1, user_state)
           .then((res) => {
             if (res?.data?.success === true) {
-              // setAllData((prev) => ({
-              //   ...prev,
-              //   imageUrl: res?.data?.result,
-              // }));
-              // localStorage.setItem(
-              //   "allDataLocal",
-              //   JSON.stringify({ ...d1, password: user_data?.password })
-              // );
               setImage(res?.data?.result)
               setImageLoader(false);
               getEmployeeOverview();
@@ -711,15 +581,6 @@ const EmployeeProfile = () => {
           );
           nav("/profile", { state: { updated_user: { imageUrl: null } }, replace: true });
 
-          // setAllData((prev) => ({
-          //   ...prev,
-          //   imageUrl: null,
-          // }));
-          // localStorage.setItem(
-          //   "allDataLocal",
-          //   JSON.stringify({ ...d1, password: user_data?.password })
-          // );
-          // setImage(res?.data?.result)
           setImageLoader(false);
           getEmployeeOverview();
           handleClose();
@@ -1083,10 +944,27 @@ const EmployeeProfile = () => {
                                 <div className="title">
                                   {t("empProfile.salary")}:
                                 </div>
-                                <div className="text">
-                                  {allData?.salary
-                                    ?.toString()
-                                    .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                                <div className="text" style={{ display: 'flex', alignItems: 'center' }}>
+                                  {showSalary ? (
+                                    allData?.salary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                                  ) : (
+                                    "******"
+                                  )}
+                                  <button 
+                                    onClick={() => setShowSalary(!showSalary)}
+                                    style={{ 
+                                      background: 'none',
+                                      border: 'none',
+                                      cursor: 'pointer',
+                                      marginLeft: '10px',
+                                      padding: '0'
+                                    }}
+                                  >
+                                    {showSalary ? 
+                                      <EyeInvisibleOutlined style={{ color: '#666666', fontSize: '20px' }} /> :
+                                      <EyeOutlined style={{ color: '#666666', fontSize: '20px' }} />
+                                    }
+                                  </button>
                                 </div>
                               </li>
                               <li>
@@ -1181,6 +1059,19 @@ const EmployeeProfile = () => {
                       }}
                     >
                       {t("requests.requests")}
+                    </a>
+                  </li>
+                  <li className="nav-item">
+                    <a
+                      href="javascript:void(0)"
+                      className={`nav-link ${
+                        activeTab === "incrementhistory" ? "active" : ""
+                      }`}
+                      onClick={() => {
+                        setActiveTab("incrementhistory");
+                      }}
+                    >
+                      {t("empProfile.incrementHistory")}
                     </a>
                   </li>
                   <li className="nav-item">
@@ -2134,7 +2025,71 @@ const EmployeeProfile = () => {
                     return {
                       style: {
                         textAlign: i18n.dir() === "rtl" ? "right" : "left",
-                        // fontWeight: record.title === 'Total' ? 'bold' : 'normal', // Bold style for the "Total" row
+                      },
+                    };
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Increment History Tab */}
+            {activeTab === "incrementhistory" && allData?._id && (
+              <div className="tab-pane fade show active" id="emp_increment_history">
+                <Table
+                  loading={dataLoading}
+                  className="table-striped customCellWidth"
+                  style={{ overflowX: "auto" }}
+                  columns={[
+                    {
+                      title: "#",
+                      dataIndex: "index",
+                      key: "index",
+                      render: (text, record, index) => index + 1,
+                    },
+                    {
+                      title: t("empProfile.salaryFrom"),
+                      dataIndex: "startDate",
+                      key: "startDate",
+                      render: (text) => formatDate(text),
+                    },
+                    {
+                      title: t("empProfile.salaryTo"),
+                      dataIndex: "endDate",
+                      key: "endDate",
+                      render: (text) => text === null ? "Present" : formatDate(text),
+                    },
+                    {
+                      title: t("empProfile.salary"),
+                      dataIndex: "salary",
+                      key: "salary", 
+                      render: (text) => text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+                    },
+                  ]}
+                  dataSource={allData?.salaryHistory || []}
+                  pagination={false}
+                  locale={{
+                    emptyText: (
+                      <Empty
+                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                        description={t("empProfile.noIncrementHistory")}
+                      />
+                    ),
+                  }}
+                  components={
+                    i18n.dir() === "rtl"
+                      ? {
+                          header: {
+                            cell: ({ children }) => (
+                              <th style={{ textAlign: "right" }}>{children}</th>
+                            ),
+                          },
+                        }
+                      : null
+                  }
+                  onRow={(record, rowIndex) => {
+                    return {
+                      style: {
+                        textAlign: i18n.dir() === "rtl" ? "right" : "left",
                       },
                     };
                   }}
