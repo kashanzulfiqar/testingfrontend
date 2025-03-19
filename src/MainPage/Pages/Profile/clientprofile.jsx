@@ -16,46 +16,108 @@ import { useTranslation } from 'react-i18next';
 const ClientProfile = () => {
   const { t, i18n } = useTranslation()
   const location = useLocation();
-  const client_data = location?.state?.client_data;
   const nav = useNavigate();
 
-  let active = sessionStorage.getItem("active_tab");
-  let clients_tab = sessionStorage.getItem("clients_tab");
+  let active = localStorage.getItem("active_tab");
+  let clients_tab = localStorage.getItem("clients_tab");
 
   const user_state = useSelector((state) => state.user.loginvalue);
   const role = user_state?.user?.role
 
   const [clientData, setClientData] = useState({})
   const [activeTab, setActiveTab] = useState(clients_tab ? clients_tab : active ? active : 'projects')
-  if(clients_tab){
-    setTimeout( function() { 
-    sessionStorage.removeItem('clients_tab');
-    }, 1000);
-  }
   const [loader, setLoader] = useState(true)
 
   useEffect(() => {
-    if(client_data){
-      setClientData(client_data)
-      setLoader(false)
-    }else if(role === 'client'){
-        getSingleClient()
-    }else if(!client_data && role !== 'client'){
-      nav(role === 'focalperson' ? `/client/focal-profile` : role === 'admin' ? `/main/dashboard` : `/employee/dashboard`)
+    console.log('Effect running with:', {
+      locationState: location?.state,
+      role: role,
+      pathname: location.pathname
+    });
+
+    const initializeClientData = () => {
+      // Try to get data from location state first
+      const stateClientData = location?.state?.client_data;
+      if(stateClientData){
+        console.log('Using client data from location state:', stateClientData);
+        setClientData(stateClientData);
+        setLoader(false);
+        return true;
+      }
+
+      // If no state data and user is client, get their data
+      if(role === 'client'){
+        console.log('User is client, fetching their data');
+        getSingleClient();
+        return true;
+      }
+
+      // Try to get from localStorage
+      const storedClientData = localStorage.getItem('current_client_data');
+      console.log('Checking localStorage for current_client_data:', storedClientData);
+      
+      if(storedClientData){
+        try {
+          const parsedData = JSON.parse(storedClientData);
+          console.log('Using client data from localStorage:', parsedData);
+          setClientData(parsedData);
+          setLoader(false);
+          return true;
+        } catch(error) {
+          console.error('Error parsing stored client data:', error);
+        }
+      }
+
+      // If still no data, try all_clients_data as last resort
+      const allClientsData = localStorage.getItem('all_clients_data');
+      console.log('Checking localStorage for all_clients_data:', allClientsData);
+      
+      if(allClientsData){
+        try {
+          const clientsMap = JSON.parse(allClientsData);
+          // Get the first client as fallback
+          const firstClient = Object.values(clientsMap)[0];
+          if(firstClient) {
+            console.log('Using first client from all_clients_data:', firstClient);
+            setClientData(firstClient);
+            setLoader(false);
+            return true;
+          }
+        } catch(error) {
+          console.error('Error parsing all clients data:', error);
+        }
+      }
+
+      return false;
+    };
+
+    // Initialize data and only redirect if no data was found
+    const dataFound = initializeClientData();
+    
+    if(!dataFound && role !== 'client'){
+      console.log('No client data found from any source, redirecting...');
+      nav(role === 'focalperson' ? `/client/focal-profile` : role === 'admin' ? `/main/dashboard` : `/employee/dashboard`);
     }
 
-    // window.history.pushState(null, '', `${window?.location?.origin}/client/focal-profile`)
-    // window.onpopstate = function() {
-    //   if(location.pathname === '/client/login' || location.pathname === '/login'){
-    //     window.history.pushState(null, '', `${window?.location?.origin}/client/focal-profile`)
-    //   }
-    // }
-  }, [])
+    // // Cleanup function to remove data when component unmounts
+    // return () => {
+    //   localStorage.removeItem('current_client_data');
+    //   localStorage.removeItem('clients_tab');
+    // };
+  }, [location.state, role]);
+
+  // Handle clients_tab cleanup
+  // useEffect(() => {
+  //   if(clients_tab){
+  //     const timer = setTimeout(() => {
+  //       localStorage.removeItem('clients_tab');
+  //     }, 1000);
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [clients_tab]);
 
   useEffect(() => {
-    // window.scrollTo(0, 0);
-    // sessionStorage.clear();
-    sessionStorage.setItem(`active_tab`, `${activeTab}`)
+    localStorage.setItem(`active_tab`, `${activeTab}`)
   }, [activeTab])
 
   const getSingleClient = () => {
@@ -78,7 +140,7 @@ const ClientProfile = () => {
           }!`
         );
       });
-  }
+  };
   
 
     return (
