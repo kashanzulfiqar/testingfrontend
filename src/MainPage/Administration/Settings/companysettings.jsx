@@ -6,7 +6,7 @@ import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet";
 import Offcanvas from "../../../Entryfile/offcanvance";
 import favicon from "../../../files/Icons/DaftarProIcon.svg";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import Company from "./Company";
 import Leaves from "./Leaves";
 import Roles from "./Roles";
@@ -27,18 +27,46 @@ const Settings = ({test}) => {
 
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const user_state = useSelector((state) => state.user.loginvalue);
   const role = user_state?.user?.role
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
 
-  let active = sessionStorage.getItem("active_setting");
+  // Generate a unique window ID if it doesn't exist
+  useEffect(() => {
+    if (!localStorage.getItem('windowId')) {
+      localStorage.setItem('windowId', `window_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
+    }
+  }, []);
 
+  const windowId = localStorage.getItem('windowId');
+
+  // Get initial component from URL or default to Company Settings
+  const getInitialComponent = () => {
+    const params = new URLSearchParams(location.search);
+    const settingFromURL = params.get('setting');
+    return settingFromURL ? decodeURIComponent(settingFromURL) : 'Company Settings';
+  };
 
   const [editModal, setEditModal] = useState('')
-  const [showComponent, setShowComponent] = useState(active ? active : 'Company Settings')
+  const [showComponent, setShowComponent] = useState(getInitialComponent())
 
-  console.log('logi====', test);
+  // Handle menu item clicks
+  const handleMenuClick = (setting) => {
+    setShowComponent(setting);
+    // Update URL without reloading
+    const newUrl = new URL(window.location);
+    newUrl.searchParams.set('setting', encodeURIComponent(setting));
+    window.history.pushState({}, '', newUrl);
+  };
+
+  // Create URL for menu items
+  const getMenuItemUrl = (setting) => {
+    const url = new URL(window.location);
+    url.searchParams.set('setting', encodeURIComponent(setting));
+    return url.toString();
+  };
 
   useEffect(() => {
     if ($(".select").length > 0) {
@@ -64,6 +92,15 @@ useEffect(() => {
   // sessionStorage.clear();
   sessionStorage.setItem(`active_setting`, `${showComponent}`)
 }, [showComponent])
+
+// Update component when URL changes
+useEffect(() => {
+  const params = new URLSearchParams(location.search);
+  const settingFromURL = params.get('setting');
+  if (settingFromURL) {
+    setShowComponent(decodeURIComponent(settingFromURL));
+  }
+}, [location.search]);
 
 
   return (
@@ -121,119 +158,161 @@ useEffect(() => {
                <div className="roles-menu" style={{margin: '0px'}}>
                  <ul>
                     <li className={showComponent === 'Company Settings' ? 'active' : ''}>
-                      <a href="javascript:void(0)" onClick={() => {setShowComponent('Company Settings') }}>
+                      <a 
+                        href={getMenuItemUrl('Company Settings')}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleMenuClick('Company Settings');
+                        }}
+                      >
                         <i className="fa fa-fw fa-info-circle" style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}></i>
                         {t('settings.companySettings.companySettings')}
                       </a>
-                   </li>
-                   <li className={showComponent === 'Working Days' ? 'active' : ''}>
-                      <a href="javascript:void(0)" onClick={() => {setShowComponent('Working Days') }}>
+                    </li>
+                    <li className={showComponent === 'Working Days' ? 'active' : ''}>
+                      <a 
+                        href={getMenuItemUrl('Working Days')}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleMenuClick('Working Days');
+                        }}
+                      >
                         <i className="fa fa-fw fa-calendar" style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}></i>
                         Working Days
                       </a>
-                   </li>
-                   <li className={showComponent === 'Leave Settings' ? 'active' : ''}>
-                      <a href="javascript:void(0)" onClick={() => {setShowComponent('Leave Settings') }}>
+                    </li>
+                    <li className={showComponent === 'Leave Settings' ? 'active' : ''}>
+                      <a 
+                        href={getMenuItemUrl('Leave Settings')}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleMenuClick('Leave Settings');
+                        }}
+                      >
                         <i className="fa fa-fw fa-warning" style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}></i>
                         {t('settings.leaveSettings')}
                       </a>
-                   </li>
-                   <li className={showComponent === 'Roles' ? 'active' : ''}>
-                      <a href="javascript:void(0)" onClick={() => {setShowComponent('Roles') }}>
+                    </li>
+                    <li className={showComponent === 'Roles' ? 'active' : ''}>
+                      <a 
+                        href={getMenuItemUrl('Roles')}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleMenuClick('Roles');
+                        }}
+                      >
                         <i className="fa fa-fw fa-list-alt" style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}></i>
                         {t('settings.roles')}
                       </a>
-                   </li>
-                   <li className={showComponent === 'Departments' ? 'active' : ''}>
-                      <a href="javascript:void(0)" onClick={() => {setShowComponent('Departments') }}>
+                    </li>
+                    <li className={showComponent === 'Departments' ? 'active' : ''}>
+                      <a 
+                        href={getMenuItemUrl('Departments')}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleMenuClick('Departments');
+                        }}
+                      >
                         <i className="fa fa-fw fa-sitemap" style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}></i>
                         {t('settings.departments')}
                       </a>
-                   </li>
-                   <li className={showComponent === 'Designations' ? 'active' : ''}>
-                      <a href="javascript:void(0)" onClick={() => {setShowComponent('Designations') }}>
+                    </li>
+                    <li className={showComponent === 'Designations' ? 'active' : ''}>
+                      <a 
+                        href={getMenuItemUrl('Designations')}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleMenuClick('Designations');
+                        }}
+                      >
                         <i className="fa fa-fw fa-users" style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}></i>
                         {t('settings.designations')}
                       </a>
-                   </li>
-                   <li className={showComponent === 'Shifts' ? 'active' : ''}>
-                      <a href="javascript:void(0)" onClick={() => {setShowComponent('Shifts') }}>
+                    </li>
+                    <li className={showComponent === 'Shifts' ? 'active' : ''}>
+                      <a 
+                        href={getMenuItemUrl('Shifts')}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleMenuClick('Shifts');
+                        }}
+                      >
                         <i className="fa fa-fw fa-clock-o" style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}></i>
                         {t('settings.shifts')}
                       </a>
-                   </li>
-                   <li className={showComponent === 'Tax Slabs' ? 'active' : ''}>
-                      <a href="javascript:void(0)" onClick={() => {setShowComponent('Tax Slabs') }}>
+                    </li>
+                    <li className={showComponent === 'Tax Slabs' ? 'active' : ''}>
+                      <a 
+                        href={getMenuItemUrl('Tax Slabs')}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleMenuClick('Tax Slabs');
+                        }}
+                      >
                         <i className="fa fa-fw fa-money" style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}></i>
                         {t('settings.taxSlabs')}
                       </a>
-                   </li>
-                   <li className={showComponent === 'Bank Details' ? 'active' : ''}>
-                      <a href="javascript:void(0)" onClick={() => {setShowComponent('Bank Details') }}>
+                    </li>
+                    <li className={showComponent === 'Bank Details' ? 'active' : ''}>
+                      <a 
+                        href={getMenuItemUrl('Bank Details')}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleMenuClick('Bank Details');
+                        }}
+                      >
                         <i className="fa fa-fw fa-bank" style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}></i>
                         {t('settings.bankDetails')}
                       </a>
-                   </li>
-                   <li className={showComponent === 'Invoice Tax Slabs' ? 'active' : ''}>
-                      <a href="javascript:void(0)" onClick={() => {setShowComponent('Invoice Tax Slabs') }}>
+                    </li>
+                    <li className={showComponent === 'Invoice Tax Slabs' ? 'active' : ''}>
+                      <a 
+                        href={getMenuItemUrl('Invoice Tax Slabs')}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleMenuClick('Invoice Tax Slabs');
+                        }}
+                      >
                         <i className="fa fa-fw fa-money" style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}></i>
                         {t('settings.invoiceTaxSlabs')}
                       </a>
-                   </li>
-                   <li className={showComponent === 'Invoice Tags' ? 'active' : ''}>
-                      <a href="javascript:void(0)" onClick={() => {setShowComponent('Invoice Tags') }}>
+                    </li>
+                    <li className={showComponent === 'Invoice Tags' ? 'active' : ''}>
+                      <a 
+                        href={getMenuItemUrl('Invoice Tags')}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleMenuClick('Invoice Tags');
+                        }}
+                      >
                         <i className="fa fa-fw fa-tags" style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}></i>
                         {t('settings.invoiceTags')}
                       </a>
-                   </li>
-                   <li className={showComponent === 'Invoice Counter' ? 'active' : ''}>
-                      <a href="javascript:void(0)" onClick={() => {setShowComponent('Invoice Counter') }}>
+                    </li>
+                    <li className={showComponent === 'Invoice Counter' ? 'active' : ''}>
+                      <a 
+                        href={getMenuItemUrl('Invoice Counter')}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleMenuClick('Invoice Counter');
+                        }}
+                      >
                         <i className="fa fa-fw fa-money" style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}></i>
                         {t('settings.invoiceCounter')}
                       </a>
-                   </li>
-                   <li className={showComponent === 'Expense Categories' ? 'active' : ''}>
-                      <a href="javascript:void(0)" onClick={() => {setShowComponent('Expense Categories') }}>
+                    </li>
+                    <li className={showComponent === 'Expense Categories' ? 'active' : ''}>
+                      <a 
+                        href={getMenuItemUrl('Expense Categories')}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleMenuClick('Expense Categories');
+                        }}
+                      >
                         <i className="fa fa-fw fa-sitemap" style={{ marginLeft: i18n.dir()==="rtl" ? '8px' : undefined, marginRight: i18n.dir()==="rtl" ? undefined : '8px'}}></i>
                         {t('settings.expenseCategories')}
                       </a>
-                   </li>
-                   {/* <li className="">
-                     <a href="#">Administrator
-                       <span className="role-action">
-                         <span className="action-circle large" data-bs-toggle="modal" data-bs-target="#edit_role">
-                           <i className="material-icons" onClick={() => setEditModal('hello')}>edit</i>
-                         </span>
-                         <span className="action-circle large delete-btn" data-bs-toggle="modal" data-bs-target="#delete_role">
-                           <i className="material-icons">delete</i>
-                         </span>
-                       </span>
-                     </a>
-                   </li>
-                   <li>
-                     <a href="#">CEO
-                       <span className="role-action">
-                         <span className="action-circle large" data-bs-toggle="modal" data-bs-target="#edit_role">
-                           <i className="material-icons">edit</i>
-                         </span>
-                         <span className="action-circle large delete-btn" data-bs-toggle="modal" data-bs-target="#delete_role">
-                           <i className="material-icons">delete</i>
-                         </span>
-                       </span>
-                     </a>
-                   </li>
-                   <li>
-                     <a href="">Manager
-                       <span className="role-action">
-                         <span className="action-circle large" data-bs-toggle="modal" data-bs-target="#edit_role">
-                           <i className="material-icons">edit</i>
-                         </span>
-                         <span className="action-circle large delete-btn" data-bs-toggle="modal" data-bs-target="#delete_role">
-                           <i className="material-icons">delete</i>
-                         </span>
-                       </span>
-                     </a>
-                   </li> */}
+                    </li>
                  </ul>
                </div>
              </div>
