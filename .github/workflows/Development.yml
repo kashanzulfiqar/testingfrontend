@@ -47,8 +47,11 @@ jobs:
             git checkout dev
             git pull origin dev
 
+            echo "Cleaning up old dependencies and build files..."
+            rm -rf node_modules dist
+
             echo "Installing dependencies..."
-            yarn install || { echo "Dependency installation failed"; exit 1; }
+            yarn install --frozen-lockfile || { echo "Dependency installation failed"; exit 1; }
 
             echo "Building project..."
             yarn build || { echo "Build failed"; exit 1; }
