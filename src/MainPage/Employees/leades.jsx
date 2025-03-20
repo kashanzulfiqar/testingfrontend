@@ -104,6 +104,7 @@ const Leads = () => {
     accountManager: "",
     projectType: "",
   });
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [phoneLengthError, setPhoneLengthError] = useState(false);
   const [emergValue, setEmergValue] = useState(null);
@@ -399,6 +400,45 @@ const Leads = () => {
       });
   };
 
+  // Add this function to handle the search
+  const handleGenericSearch = () => {
+    setIsLoading(true);
+    const params = {
+      ...filters,
+      search: searchQuery,
+      page: 1,
+      limit: pagination.pageSize,
+    };
+
+    apiServices(
+      "GET",
+      `leads?status=${filters.status}&projectType=${filters.projectType}&accountManager=${filters.accountManager}&firstReachOut=${filters.startDate}&lastReachOut=${filters.endDate}&search=${params.search}&page=${params.page}&limit=${params.limit}`,
+      null,
+      user_state
+    )
+      .then((res) => {
+        if (res.data.success === true) {
+          const leads = res?.data?.Lead?.docs;
+          setStats(res?.data?.stats);
+          setLeadObj(res?.data?.Lead);
+          setData(leads);
+          setPagination({
+            ...pagination,
+            current: parseInt(res?.data?.Lead?.page, 10),
+            total: res?.data?.Lead?.total,
+          });
+        }
+      })
+      .catch((err) => {
+        message.error(
+          err?.response?.data?.msg || "Error searching leads"
+        );
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  };
+  
   const handlePageChange = (page, pageSize) => {
     // Update the pagination state
     setPagination({
@@ -1521,7 +1561,24 @@ const Leads = () => {
             <div className="col">
               <h3 className="page-title">Leads</h3>
             </div>
-            <div className="col-auto float-end ms-auto">
+            <div className="col-auto float-end ms-auto" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              <div className="search-box" style={{ position: 'relative' }}>
+                <Input
+                  placeholder="Search leads..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onPressEnter={handleGenericSearch}
+                  style={{ width: '250px' }}
+                  suffix={
+                    <Button 
+                      type="text" 
+                      icon={<i className="fa fa-search" />}
+                      onClick={handleGenericSearch}
+                      style={{ border: 'none', position: 'absolute', right: '0' }}
+                    />
+                  }
+                />
+              </div>
               <a
                 href="javascript:void(0)"
                 className="btn add-btn"
