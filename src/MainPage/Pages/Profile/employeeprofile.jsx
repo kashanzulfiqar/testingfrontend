@@ -36,7 +36,7 @@ import PhoneNoInput from "../../../Components/PhoneNoInput";
 import moment from "moment";
 import ProfileInfoModal from "./modals/ProfileInfoModal";
 import { apiServices } from "../../../Services/apiServices";
-import { LoadingOutlined } from "@ant-design/icons";
+import { EyeInvisibleOutlined, EyeOutlined, LoadingOutlined } from "@ant-design/icons";
 import ImgCrop from "antd-img-crop";
 import { apiUploadToS3 } from "../../../Services/uploadImage";
 import EmployeeProjectsScreen from "./clientProfileScreens/EmployeeProjectsScreen";
@@ -62,7 +62,15 @@ const EmployeeProfile = () => {
   const ProfileName = UserName?.charAt(0).toUpperCase() + UserName?.slice(1);
   console.log(loginvalue, "loginvalue");
 
-  const [activeTab, setActiveTab] = useState("profile");
+  const [activeTab, setActiveTab] = useState(
+    employee_tab ? employee_tab : active ? active : "profile"
+  );
+  if (employee_tab) {
+    setTimeout(function () {
+      sessionStorage.removeItem("employee_tab");
+    }, 1000);
+  }
+  const [showSalary, setShowSalary] = useState(false);
   const [loader, setLoader] = useState(false);
   const [imageLoader, setImageLoader] = useState(false);
   const [dataLoading, setDataLoading] = useState(false);
@@ -264,7 +272,7 @@ const EmployeeProfile = () => {
         "updated_user",
         JSON.stringify({ imageUrl: d?.imageUrl, fullName: d?.fullName })
       );
-      nav("/profile/employee-profile", {
+      nav(`/profile/employee-profile/${user_state?.user?._id}`, {
         state: {
           updated_user: { imageUrl: d?.imageUrl, fullName: d?.fullName },
           user_data: user_data,
@@ -936,10 +944,27 @@ const EmployeeProfile = () => {
                                 <div className="title">
                                   {t("empProfile.salary")}:
                                 </div>
-                                <div className="text">
-                                  {allData?.salary
-                                    ?.toString()
-                                    .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                                <div className="text" style={{ display: 'flex', alignItems: 'center' }}>
+                                  {showSalary ? (
+                                    allData?.salary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                                  ) : (
+                                    "******"
+                                  )}
+                                  <button 
+                                    onClick={() => setShowSalary(!showSalary)}
+                                    style={{ 
+                                      background: 'none',
+                                      border: 'none',
+                                      cursor: 'pointer',
+                                      marginLeft: '10px',
+                                      padding: '0'
+                                    }}
+                                  >
+                                    {showSalary ? 
+                                      <EyeInvisibleOutlined style={{ color: '#666666', fontSize: '20px' }} /> :
+                                      <EyeOutlined style={{ color: '#666666', fontSize: '20px' }} />
+                                    }
+                                  </button>
                                 </div>
                               </li>
                               <li>
@@ -1034,6 +1059,19 @@ const EmployeeProfile = () => {
                       }}
                     >
                       {t("requests.requests")}
+                    </a>
+                  </li>
+                  <li className="nav-item">
+                    <a
+                      href="javascript:void(0)"
+                      className={`nav-link ${
+                        activeTab === "incrementhistory" ? "active" : ""
+                      }`}
+                      onClick={() => {
+                        setActiveTab("incrementhistory");
+                      }}
+                    >
+                      {t("empProfile.incrementHistory")}
                     </a>
                   </li>
                   <li className="nav-item">
@@ -1987,7 +2025,71 @@ const EmployeeProfile = () => {
                     return {
                       style: {
                         textAlign: i18n.dir() === "rtl" ? "right" : "left",
-                        // fontWeight: record.title === 'Total' ? 'bold' : 'normal', // Bold style for the "Total" row
+                      },
+                    };
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Increment History Tab */}
+            {activeTab === "incrementhistory" && allData?._id && (
+              <div className="tab-pane fade show active" id="emp_increment_history">
+                <Table
+                  loading={dataLoading}
+                  className="table-striped customCellWidth"
+                  style={{ overflowX: "auto" }}
+                  columns={[
+                    {
+                      title: "#",
+                      dataIndex: "index",
+                      key: "index",
+                      render: (text, record, index) => index + 1,
+                    },
+                    {
+                      title: t("empProfile.salaryFrom"),
+                      dataIndex: "startDate",
+                      key: "startDate",
+                      render: (text) => formatDate(text),
+                    },
+                    {
+                      title: t("empProfile.salaryTo"),
+                      dataIndex: "endDate",
+                      key: "endDate",
+                      render: (text) => text === null ? "Present" : formatDate(text),
+                    },
+                    {
+                      title: t("empProfile.salary"),
+                      dataIndex: "salary",
+                      key: "salary", 
+                      render: (text) => text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+                    },
+                  ]}
+                  dataSource={allData?.salaryHistory || []}
+                  pagination={false}
+                  locale={{
+                    emptyText: (
+                      <Empty
+                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                        description={t("empProfile.noIncrementHistory")}
+                      />
+                    ),
+                  }}
+                  components={
+                    i18n.dir() === "rtl"
+                      ? {
+                          header: {
+                            cell: ({ children }) => (
+                              <th style={{ textAlign: "right" }}>{children}</th>
+                            ),
+                          },
+                        }
+                      : null
+                  }
+                  onRow={(record, rowIndex) => {
+                    return {
+                      style: {
+                        textAlign: i18n.dir() === "rtl" ? "right" : "left",
                       },
                     };
                   }}
