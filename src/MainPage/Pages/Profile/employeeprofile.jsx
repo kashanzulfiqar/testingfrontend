@@ -36,7 +36,11 @@ import PhoneNoInput from "../../../Components/PhoneNoInput";
 import moment from "moment";
 import ProfileInfoModal from "./modals/ProfileInfoModal";
 import { apiServices } from "../../../Services/apiServices";
-import { EyeInvisibleOutlined, EyeOutlined, LoadingOutlined } from "@ant-design/icons";
+import {
+  EyeInvisibleOutlined,
+  EyeOutlined,
+  LoadingOutlined,
+} from "@ant-design/icons";
 import ImgCrop from "antd-img-crop";
 import { apiUploadToS3 } from "../../../Services/uploadImage";
 import EmployeeProjectsScreen from "./clientProfileScreens/EmployeeProjectsScreen";
@@ -51,6 +55,8 @@ const EmployeeProfile = () => {
   const [user_data, setUser_data] = useState(location?.state?.user_data);
   const allDataLocal = JSON.parse(localStorage.getItem("allDataLocal"));
 
+  let active = sessionStorage.getItem("emp_active_tab");
+  let employee_tab = sessionStorage.getItem("employee_tab");
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
   const { loginvalue } = useSelector((state) => state.user);
   const user_state = useSelector((state) => state.user.loginvalue);
@@ -138,7 +144,6 @@ const EmployeeProfile = () => {
                 : err?.response?.data?.validation?.body?.message
                 ? err?.response?.data?.validation?.body?.message
                 : t("empProfile.errors.getEmployeeInfoError")
-
             }!`
           );
         });
@@ -173,22 +178,24 @@ const EmployeeProfile = () => {
   useEffect(() => {
     // Clear any existing tab state
     sessionStorage.removeItem("employee_tab");
-    
+
     // Set profile as active tab
     setActiveTab("profile");
 
-     // Remove any lingering active/focus styles from tabs
-     const tabs = document.querySelectorAll('.nav-tabs .nav-link');
-     tabs.forEach(tab => {
-       tab.classList.remove('active');
-       tab.blur(); // Remove focus state
-     });
- 
-     // Set the profile tab as active
-     const profileTab = document.querySelector('.nav-tabs .nav-link:first-child');
-     if (profileTab) {
-       profileTab.classList.add('active');
-     }
+    // Remove any lingering active/focus styles from tabs
+    const tabs = document.querySelectorAll(".nav-tabs .nav-link");
+    tabs.forEach((tab) => {
+      tab.classList.remove("active");
+      tab.blur(); // Remove focus state
+    });
+
+    // Set the profile tab as active
+    const profileTab = document.querySelector(
+      ".nav-tabs .nav-link:first-child"
+    );
+    if (profileTab) {
+      profileTab.classList.add("active");
+    }
     // Cleanup when component unmounts
     return () => {
       sessionStorage.removeItem("employee_tab");
@@ -517,7 +524,7 @@ const EmployeeProfile = () => {
         apiServices("PUT", "user/update-user", d1, user_state)
           .then((res) => {
             if (res?.data?.success === true) {
-              setImage(res?.data?.result)
+              setImage(res?.data?.result);
               setImageLoader(false);
               getEmployeeOverview();
               message.success(
@@ -579,7 +586,10 @@ const EmployeeProfile = () => {
             "updated_user",
             JSON.stringify({ imageUrl: null })
           );
-          nav("/profile", { state: { updated_user: { imageUrl: null } }, replace: true });
+          nav("/profile", {
+            state: { updated_user: { imageUrl: null } },
+            replace: true,
+          });
 
           setImageLoader(false);
           getEmployeeOverview();
@@ -587,7 +597,6 @@ const EmployeeProfile = () => {
           message.success(
             t("empProfile.errors.profilePictureRemovedSuccessfully")
           );
-
         }
       })
       .catch((err) => {
@@ -944,26 +953,43 @@ const EmployeeProfile = () => {
                                 <div className="title">
                                   {t("empProfile.salary")}:
                                 </div>
-                                <div className="text" style={{ display: 'flex', alignItems: 'center' }}>
-                                  {showSalary ? (
-                                    allData?.salary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                                  ) : (
-                                    "******"
-                                  )}
-                                  <button 
+                                <div
+                                  className="text"
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                  }}
+                                >
+                                  {showSalary
+                                    ? allData?.salary
+                                        ?.toString()
+                                        .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                                    : "******"}
+                                  <button
                                     onClick={() => setShowSalary(!showSalary)}
-                                    style={{ 
-                                      background: 'none',
-                                      border: 'none',
-                                      cursor: 'pointer',
-                                      marginLeft: '10px',
-                                      padding: '0'
+                                    style={{
+                                      background: "none",
+                                      border: "none",
+                                      cursor: "pointer",
+                                      marginLeft: "10px",
+                                      padding: "0",
                                     }}
                                   >
-                                    {showSalary ? 
-                                      <EyeInvisibleOutlined style={{ color: '#666666', fontSize: '20px' }} /> :
-                                      <EyeOutlined style={{ color: '#666666', fontSize: '20px' }} />
-                                    }
+                                    {showSalary ? (
+                                      <EyeInvisibleOutlined
+                                        style={{
+                                          color: "#666666",
+                                          fontSize: "20px",
+                                        }}
+                                      />
+                                    ) : (
+                                      <EyeOutlined
+                                        style={{
+                                          color: "#666666",
+                                          fontSize: "20px",
+                                        }}
+                                      />
+                                    )}
                                   </button>
                                 </div>
                               </li>
@@ -2034,7 +2060,10 @@ const EmployeeProfile = () => {
 
             {/* Increment History Tab */}
             {activeTab === "incrementhistory" && allData?._id && (
-              <div className="tab-pane fade show active" id="emp_increment_history">
+              <div
+                className="tab-pane fade show active"
+                id="emp_increment_history"
+              >
                 <Table
                   loading={dataLoading}
                   className="table-striped customCellWidth"
@@ -2056,13 +2085,15 @@ const EmployeeProfile = () => {
                       title: t("empProfile.salaryTo"),
                       dataIndex: "endDate",
                       key: "endDate",
-                      render: (text) => text === null ? "Present" : formatDate(text),
+                      render: (text) =>
+                        text === null ? "Present" : formatDate(text),
                     },
                     {
                       title: t("empProfile.salary"),
                       dataIndex: "salary",
-                      key: "salary", 
-                      render: (text) => text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+                      key: "salary",
+                      render: (text) =>
+                        text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","),
                     },
                   ]}
                   dataSource={allData?.salaryHistory || []}
