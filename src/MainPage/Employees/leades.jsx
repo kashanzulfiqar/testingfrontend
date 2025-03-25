@@ -163,6 +163,13 @@ const Leads = () => {
     }
   }, [form.getFieldValue("status")]);
 
+  useEffect(() => {
+      // Only call handleGenericSearch if searchQuery is empty
+      if (searchQuery === "") {
+        handleGenericSearch();
+      }
+  }, [searchQuery]);
+
   const handleOk = () => {
     setLoader(true);
     if (selectedMedium) {
@@ -1562,22 +1569,44 @@ const Leads = () => {
               <h3 className="page-title">Leads</h3>
             </div>
             <div className="col-auto float-end ms-auto" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-              <div className="search-box" style={{ position: 'relative' }}>
-                <Input
-                  placeholder="Search leads..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onPressEnter={handleGenericSearch}
-                  style={{ width: '250px' }}
-                  suffix={
-                    <Button 
+              <div className="search-box" style={{ position: 'relative', width: '300px' }}>
+                <div className="top-nav-search">
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    handleGenericSearch();
+                  }}>
+                    <input 
+                      className="form-control" 
                       type="text" 
-                      icon={<i className="fa fa-search" />}
-                      onClick={handleGenericSearch}
-                      style={{ border: 'none', position: 'absolute', right: '0' }}
+                      placeholder="Search leads..." 
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          handleGenericSearch();
+                        }
+                      }}
+                      style={{
+                        backgroundColor: '#f3f3f3',
+                        border: 'none',
+                        borderRadius: '50px',
+                        padding: '10px 50px 10px 20px',
+                        width: '100%'
+                      }}
                     />
-                  }
-                />
+                    <button className="btn" type="submit" style={{
+                      position: 'absolute',
+                      right: '5px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'transparent',
+                      border: 'none',
+                      padding: '0 10px'
+                    }}>
+                      <i className="fa fa-search" />
+                    </button>
+                  </form>
+                </div>
               </div>
               <a
                 href="javascript:void(0)"
