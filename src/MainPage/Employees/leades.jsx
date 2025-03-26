@@ -105,7 +105,7 @@ const Leads = () => {
     projectType: "",
   });
   const [searchQuery, setSearchQuery] = useState("");
-
+  const [isSearching, setIsSearching] = useState(false);
   const [phoneLengthError, setPhoneLengthError] = useState(false);
   const [emergValue, setEmergValue] = useState(null);
   const [leadObj, setLeadObj] = useState();
@@ -164,21 +164,17 @@ const Leads = () => {
   }, [form.getFieldValue("status")]);
 
   useEffect(() => {
-      // Only call handleGenericSearch if searchQuery is empty
-      if (searchQuery === "") {
-        handleGenericSearch();
-      }
+    // Only call handleGenericSearch if searchQuery is empty
+    if (searchQuery === "") {
+      setIsSearching(false);
+      handleGenericSearch();
+    }
   }, [searchQuery]);
 
   const handleOk = () => {
     setLoader(true);
     if (selectedMedium) {
-      apiServices(
-        "DELETE",
-        "leads/delete-medium",
-        selectedMedium,
-        user_state
-      )
+      apiServices("DELETE", "leads/delete-medium", selectedMedium, user_state)
         .then((res) => {
           // console.log(res?.data);
           if (res?.data?.success === true) {
@@ -204,12 +200,7 @@ const Leads = () => {
         });
     }
     if (selectedSource) {
-      apiServices(
-        "DELETE",
-        "leads/delete-source",
-        selectedSource,
-        user_state
-      )
+      apiServices("DELETE", "leads/delete-source", selectedSource, user_state)
         .then((res) => {
           // console.log(res?.data);
           if (res?.data?.success === true) {
@@ -437,15 +428,13 @@ const Leads = () => {
         }
       })
       .catch((err) => {
-        message.error(
-          err?.response?.data?.msg || "Error searching leads"
-        );
+        message.error(err?.response?.data?.msg || "Error searching leads");
       })
       .finally(() => {
         setIsLoading(false);
       });
   };
-  
+
   const handlePageChange = (page, pageSize) => {
     // Update the pagination state
     setPagination({
@@ -1568,42 +1557,73 @@ const Leads = () => {
             <div className="col">
               <h3 className="page-title">Leads</h3>
             </div>
-            <div className="col-auto float-end ms-auto" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-              <div className="search-box" style={{ position: 'relative', width: '300px' }}>
+            <div
+              className="col-auto float-end ms-auto"
+              style={{ display: "flex", gap: "10px", alignItems: "center" }}
+            >
+              <div
+                className="search-box"
+                style={{ position: "relative", width: "300px" }}
+              >
                 <div className="top-nav-search">
-                  <form onSubmit={(e) => {
-                    e.preventDefault();
-                    handleGenericSearch();
-                  }}>
-                    <input 
-                      className="form-control" 
-                      type="text" 
-                      placeholder="Search leads..." 
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handleGenericSearch();
+                    }}
+                  >
+                    <input
+                      className="form-control"
+                      type="text"
+                      placeholder="Search leads..."
                       value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onChange={(e) => {
+                        setSearchQuery(e.target.value);
+                        // If we're in search mode and user starts typing new search,
+                        // switch back to search icon
+                        if (isSearching) {
+                          setIsSearching(false);
+                        }
+                      }}
                       onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
                           handleGenericSearch();
+                          setIsSearching(true);
                         }
                       }}
                       style={{
-                        backgroundColor: '#f3f3f3',
-                        border: 'none',
-                        borderRadius: '50px',
-                        padding: '10px 50px 10px 20px',
-                        width: '100%'
+                        backgroundColor: "#f3f3f3",
+                        border: "none",
+                        borderRadius: "50px",
+                        padding: "10px 50px 10px 20px",
+                        width: "100%",
                       }}
                     />
-                    <button className="btn" type="submit" style={{
-                      position: 'absolute',
-                      right: '5px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      background: 'transparent',
-                      border: 'none',
-                      padding: '0 10px'
-                    }}>
-                      <i className="fa fa-search" />
+                    <button
+                      className="btn"
+                      type="submit"
+                      onClick={() => {
+                        if (isSearching) {
+                          // Clear search and reset
+                          setSearchQuery("");
+                        } else {
+                          setIsSearching(true);
+                        }
+                      }}
+                      style={{
+                        position: "absolute",
+                        right: "5px",
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        background: "transparent",
+                        border: "none",
+                        padding: "0 10px",
+                      }}
+                    >
+                      <i
+                        className={`fa fa-${isSearching ? "times" : "search"}`}
+                      />
                     </button>
                   </form>
                 </div>
