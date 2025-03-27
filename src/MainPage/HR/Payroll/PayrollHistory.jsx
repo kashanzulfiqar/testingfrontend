@@ -128,7 +128,7 @@ const PayrollHistory = () => {
                 title: t('payroll.currentPayroll.salary'),
                 dataIndex: 'salary',
                 render: (text, record) => (
-                <span>{record?.user?.salary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
+                <span>{record?.basicSalary?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
                     ),
             },
             {
