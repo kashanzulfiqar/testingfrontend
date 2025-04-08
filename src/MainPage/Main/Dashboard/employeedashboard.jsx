@@ -1734,7 +1734,8 @@ const EmployeeDashboard = () => {
                                   todayMonth === birthdayMonth;
 
                                 return (
-                                  isBirthday && (
+                                  isBirthday &&
+                                  age > 0 && (
                                     <div
                                       key={index}
                                       className="employee-noti-content"
