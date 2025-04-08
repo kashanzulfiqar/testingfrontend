@@ -45,10 +45,12 @@ import { useSelector } from "react-redux";
 import { apiServices } from "../../Services/apiServices";
 import moment from "moment";
 import {
+  CloseOutlined,
   DeleteOutlined,
   LoadingOutlined,
   MinusCircleFilled,
   PlusOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import { getAllISOCodes } from "iso-country-currency";
 import PhoneNoInput from "../../Components/PhoneNoInput";
@@ -1621,9 +1623,7 @@ const Leads = () => {
                         padding: "0 10px",
                       }}
                     >
-                      <i
-                        className={`fa fa-${isSearching ? "times" : "search"}`}
-                      />
+                      {isSearching ? <CloseOutlined /> : <SearchOutlined />}
                     </button>
                   </form>
                 </div>

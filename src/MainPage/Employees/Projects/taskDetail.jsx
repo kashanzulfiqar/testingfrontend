@@ -261,9 +261,6 @@ const TaskDetails = () => {
   };
 
   const handleMemberChange = (values) => {
-    // Close dropdown and remove focus
-    setIsEditingMembers(false);
-
     // Update state first
     const selectedDevelopers = values
       .map((value) => availableMembers.find((member) => member._id === value))
@@ -271,15 +268,20 @@ const TaskDetails = () => {
 
     setSelectedMembers(selectedDevelopers);
 
-    // Remove focus from the select component
-    setTimeout(() => {
-      document.activeElement?.blur();
-      const selectInput = document.querySelector("#area .ant-select-selector");
-      if (selectInput) {
-        selectInput.blur();
-      }
-    }, 0);
+    // // Close dropdown and remove focus
+    // setTimeout(() => {
+    //   setIsEditingMembers(false);
 
+    //   // Remove focus from the select component
+    //   document.activeElement?.blur();
+    //   const selectInput = document.querySelector("#area .ant-select-selector");
+    //   if (selectInput) {
+    //     selectInput.blur();
+    //   }
+    // }, 50);
+
+    // Only close after successful update
+    setIsEditingMembers(false);
     // Debounce API call to avoid multiple calls at once
     clearTimeout(window.teamUpdateTimeout);
     window.teamUpdateTimeout = setTimeout(() => {
@@ -640,135 +642,242 @@ const TaskDetails = () => {
                       {t("Team Members")}
                     </label>
                     <div style={{ position: "relative" }} id="area">
-                      <Select
-                        mode="multiple"
-                        style={{ width: "100%" }}
-                        placeholder={t("Select team members")}
-                        onChange={(values, option) => {
-                          handleMemberChange(values);
-                        }}
-                        value={selectedMembers?.map((member) => member._id)}
-                        open={isEditingMembers}
-                        onDropdownVisibleChange={handleDropdownVisibility}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          if (!isEditingMembers) {
+                      {isEditingMembers ? (
+                        <Select
+                          mode="multiple"
+                          style={{ width: "100%" }}
+                          placeholder={t("Select team members")}
+                          onChange={(values, option) => {
+                            handleMemberChange(values);
+                          }}
+                          value={selectedMembers?.map((member) => member._id)}
+                          open={isEditingMembers}
+                          onDropdownVisibleChange={handleDropdownVisibility}
+                          onClick={(e) => {
                             e.preventDefault();
+                            e.stopPropagation();
+                            if (!isEditingMembers) {
+                              e.preventDefault();
+                            }
+                          }}
+                          showSearch={isEditingMembers}
+                          showArrow={false}
+                          optionFilterProp="children"
+                          filterOption={(input, option) =>
+                            option.children.props.children[1].props.children
+                              .toLowerCase()
+                              .indexOf(input.toLowerCase()) >= 0
                           }
-                        }}
-                        showSearch={isEditingMembers}
-                        showArrow={false}
-                        optionFilterProp="children"
-                        filterOption={(input, option) =>
-                          option.children.props.children[1].props.children
-                            .toLowerCase()
-                            .indexOf(input.toLowerCase()) >= 0
-                        }
-                        className="customselect-height custom-select"
-                        notFoundContent={
-                          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                        }
-                        maxTagCount={3}
-                        maxTagPlaceholder={(omittedValues) =>
-                          `+${omittedValues.length} more`
-                        }
-                        tagRender={(props) => {
-                          const member = selectedMembers.find(
-                            (m) => m._id === props.value
-                          );
-                          return (
-                            <span
-                              style={{
-                                display: "inline-flex",
-                                alignItems: "center",
-                                background: "rgba(247, 247, 248, 1)",
-                                padding: "4px 12px 4px 4px",
-                                borderRadius: "20px",
-                                gap: "8px",
-                                marginRight: "8px",
-                              }}
-                            >
-                              <Avatar
-                                size={24}
-                                src={member?.imageUrl || user_icon}
-                                style={{
-                                  minWidth: "24px",
-                                }}
-                              />
+                          className="customselect-height custom-select"
+                          notFoundContent={
+                            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                          }
+                          tagRender={(props) => {
+                            const member = selectedMembers.find(
+                              (m) => m._id === props.value
+                            );
+                            return (
                               <span
                                 style={{
-                                  color: "rgba(111, 125, 138, 1)",
-                                  fontSize: "14px",
-                                  overflowWrap: "break-word",
-                                  wordBreak: "break-word",
-                                }}
-                              >
-                                {member?.fullName}
-                              </span>
-                              {isEditingMembers && (
-                                <span
-                                  style={{
-                                    cursor: "pointer",
-                                    color: "#999",
-                                  }}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    const newValues = selectedMembers
-                                      .filter((m) => m._id !== props.value)
-                                      .map((m) => m._id);
-                                    handleMemberChange(newValues);
-                                  }}
-                                >
-                                  ×
-                                </span>
-                              )}
-                            </span>
-                          );
-                        }}
-                        dropdownStyle={{
-                          minWidth: "200px",
-                        }}
-                      >
-                        {availableMembers
-                          .filter(
-                            (developer) =>
-                              !selectedMembers.some(
-                                (member) => member._id === developer._id
-                              )
-                          )
-                          .map((developer) => (
-                            <Select.Option
-                              key={developer._id}
-                              value={developer._id}
-                            >
-                              <div
-                                style={{
-                                  display: "flex",
+                                  display: "inline-flex",
                                   alignItems: "center",
+                                  background: "rgba(247, 247, 248, 1)",
+                                  padding: "4px 12px 4px 4px",
+                                  borderRadius: "20px",
                                   gap: "8px",
+                                  marginRight: "8px",
                                 }}
                               >
                                 <Avatar
                                   size={24}
-                                  src={developer?.imageUrl || user_icon}
+                                  src={member?.imageUrl || user_icon}
+                                  style={{
+                                    minWidth: "24px",
+                                  }}
                                 />
-                                <span>{developer.fullName}</span>
-                              </div>
-                            </Select.Option>
-                          ))}
-                      </Select>
+                                <span
+                                  style={{
+                                    color: "rgba(111, 125, 138, 1)",
+                                    fontSize: "14px",
+                                    overflowWrap: "break-word",
+                                    wordBreak: "break-word",
+                                  }}
+                                >
+                                  {member?.fullName}
+                                </span>
+                                {isEditingMembers && (
+                                  <span
+                                    style={{
+                                      cursor: "pointer",
+                                      color: "#999",
+                                    }}
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      const newValues = selectedMembers
+                                        .filter((m) => m._id !== props.value)
+                                        .map((m) => m._id);
+                                      handleMemberChange(newValues);
+                                    }}
+                                  >
+                                    ×
+                                  </span>
+                                )}
+                              </span>
+                            );
+                          }}
+                          dropdownMatchSelectWidth={false}
+                          dropdownStyle={{ minWidth: "200px" }}
+                          onBlur={() => {
+                            // Only close if not clicking on a member or remove button
+                            setTimeout(() => {
+                              const activeElement = document.activeElement;
+                              if (
+                                !document
+                                  .getElementById("area")
+                                  ?.contains(activeElement)
+                              ) {
+                                setIsEditingMembers(false);
+                              }
+                            }, 200);
+                          }}
+                        >
+                          {availableMembers
+                            .filter(
+                              (developer) =>
+                                !selectedMembers.some(
+                                  (member) => member._id === developer._id
+                                )
+                            )
+                            .map((developer) => (
+                              <Select.Option
+                                key={developer._id}
+                                value={developer._id}
+                              >
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "8px",
+                                  }}
+                                >
+                                  <Avatar
+                                    size={24}
+                                    src={developer?.imageUrl || user_icon}
+                                  />
+                                  <span>{developer.fullName}</span>
+                                </div>
+                              </Select.Option>
+                            ))}
+                        </Select>
+                      ) : (
+                        <div className="project-members">
+                          <ul
+                            className="team-members"
+                            style={{
+                              display: "flex",
+                              flexWrap: "wrap",
+                              alignItems: "center",
+                              gap: "8px",
+                              border: "1px solid #d9d9d9",
+                              borderRadius: "4px",
+                              padding: "5px",
+                              minHeight: "38px",
+                            }}
+                          >
+                            {selectedMembers
+                              ?.slice(0, 3)
+                              .map((member, index) => (
+                                <span
+                                  key={index}
+                                  style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    background: "rgba(247, 247, 248, 1)",
+                                    padding: "4px 12px 4px 4px",
+                                    borderRadius: "20px",
+                                    marginRight: "8px",
+                                  }}
+                                >
+                                  <Avatar
+                                    size={24}
+                                    src={member?.imageUrl || user_icon}
+                                    style={{
+                                      minWidth: "24px",
+                                    }}
+                                  />
+                                  {member?.fullName}
+                                </span>
+                              ))}
+                            {selectedMembers?.length > 3 && (
+                              <li className="dropdown avatar-dropdown">
+                                <Link
+                                  className="all-users dropdown-toggle projectTeamMember"
+                                  style={{
+                                    display: "inline-flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    background: "#E9E9E9",
+                                    borderRadius: "50%",
+                                    color: "#777",
+                                    fontSize: "14px",
+                                  }}
+                                  data-bs-toggle="dropdown"
+                                  aria-expanded="false"
+                                >
+                                  +{selectedMembers?.length - 3}
+                                </Link>
+                                <div
+                                  className="dropdown-menu dropdown-menu-right"
+                                  style={{
+                                    minWidth: "150px",
+                                    padding: "10px",
+                                    marginTop: "5px",
+                                  }}
+                                >
+                                  <div className="avatar-group">
+                                    {selectedMembers
+                                      ?.slice(3)
+                                      .map((member, index) => (
+                                        <div
+                                          key={index}
+                                          className="avatar avatar-xs projectTeamMember"
+                                          // style={{
+                                          //   alignItems: "center",
+                                          //   gap: "-8px",
+                                          //   padding: "5px",
+                                          //   borderRadius: "4px",
+                                          //   cursor: "default"
+                                          // }}
+                                        >
+                                          <Tooltip title={member?.fullName}>
+                                            <Avatar
+                                              src={
+                                                member?.imageUrl || user_icon
+                                              }
+                                              style={{ cursor: "pointer" }}
+                                            />
+                                          </Tooltip>
+                                        </div>
+                                      ))}
+                                  </div>
+                                </div>
+                              </li>
+                            )}
+                          </ul>
+                        </div>
+                      )}
                       <div style={{ textAlign: "right", marginTop: "5px" }}>
                         <span
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             setIsEditingMembers(true);
-                            // Focus the select input to show the dropdown
-                            const selectInput = document.querySelector(
-                              "#area .ant-select-selector"
-                            );
-                            if (selectInput) {
-                              selectInput.click();
-                            }
+                            setTimeout(() => {
+                              const selectInput = document.querySelector(
+                                "#area .ant-select-selection-search-input"
+                              );
+                              selectInput?.focus();
+                            }, 100);
                           }}
                           style={{
                             cursor: "pointer",
