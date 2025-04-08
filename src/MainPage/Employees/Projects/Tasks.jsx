@@ -838,8 +838,11 @@ const onFinishEdit = (values) => {
                   onRow={(record) => {
                     const rowProps = {
                       onClick: () => {
-                        setViewTaskData(record);
-                        setViewTaskModal(true);
+                        // setViewTaskData(record);
+                        // setViewTaskModal(true);
+                        nav(`/tasks/${record._id}`, { 
+                          state: { taskData: record }
+                        });
                       },
                       style: { cursor: 'pointer' }
                     };
