@@ -2066,8 +2066,8 @@ const EmployeeProfile = () => {
               >
                 <Table
                   loading={dataLoading}
-                  className="table-striped customCellWidth"
-                  style={{ overflowX: "auto" }}
+                  className="table-striped"
+                  // style={{ overflowX: "auto" }}
                   columns={[
                     {
                       title: "#",
@@ -2076,24 +2076,37 @@ const EmployeeProfile = () => {
                       render: (text, record, index) => index + 1,
                     },
                     {
-                      title: t("empProfile.salaryFrom"),
+                      title: t("Effective From"),
                       dataIndex: "startDate",
                       key: "startDate",
                       render: (text) => formatDate(text),
                     },
                     {
-                      title: t("empProfile.salaryTo"),
+                      title: t("Effective To"),
                       dataIndex: "endDate",
                       key: "endDate",
                       render: (text) =>
                         text === null ? "Present" : formatDate(text),
                     },
                     {
-                      title: t("empProfile.salary"),
+                      title: t("Previous Salary"),
+                      dataIndex: "previousSalary",
+                      key: "previousSalary",
+                      render: (text) => 
+                        text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " PKR",
+                    },
+                    {
+                      title: t("New Salary"),
                       dataIndex: "salary",
                       key: "salary",
                       render: (text) =>
-                        text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+                        text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " PKR",
+                    },
+                    {
+                      title: t("Change (%)"),
+                      dataIndex: "change",
+                      key: "change",
+                      render: (text) => text + " %",
                     },
                   ]}
                   dataSource={allData?.salaryHistory || []}
@@ -2102,7 +2115,7 @@ const EmployeeProfile = () => {
                     emptyText: (
                       <Empty
                         image={Empty.PRESENTED_IMAGE_SIMPLE}
-                        description={t("empProfile.noIncrementHistory")}
+                        description={t("No Change in Salary")}
                       />
                     ),
                   }}
