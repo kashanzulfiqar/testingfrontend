@@ -18,6 +18,7 @@ import {
   Card,
   Row,
   Col,
+  Pagination,
 } from "antd";
 import {
   EditOutlined,
@@ -34,11 +35,16 @@ import CreateCandidateModal from "./CreateCandidateModal";
 import mail from '../../assets/iconsRecruitment/mail.svg';
 import phone from '../../assets/iconsRecruitment/phone.svg';
 import calander from '../../assets/iconsRecruitment/calander.svg';
+import { itemRender } from "../paginationfunction";
+import { useTranslation } from "react-i18next";
+import leftPageIcon from '../../assets/iconsRecruitment/fi_chevrons-left.svg';
+import rightPageIcon from '../../assets/iconsRecruitment/fi_chevrons-right.svg';
 
 
 // const { TextArea } = Input;
 
 const Candidates = () => {
+  const {t} = useTranslation();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [candidates, setCandidates] = useState([]);
@@ -55,6 +61,9 @@ const Candidates = () => {
   const [submitting, setSubmitting] = useState(false);
   const [viewType, setViewType] = useState('list');
   const [activeJobs, setActiveJobs] = useState([]);
+  const [paginationDetail , setPaginationDetail] = useState();
+  const [pageSize , setPageSize] =useState(20);
+  const [currentPage,setCurrentPage] =useState(1);
 
     useEffect(() => {
     const token =
@@ -69,7 +78,7 @@ const Candidates = () => {
     fetchCandidates();
     // Fetch active jobs initially
     fetchActiveJobs();
-  }, [filters, pagination.current, pagination.pageSize]);
+  }, [filters, currentPage, pageSize]);
 
   // Separate useEffect for fetching active jobs when modal opens
   useEffect(() => {
@@ -87,19 +96,21 @@ const Candidates = () => {
       navigate("/login");
       return;
     }
-
+  
     try {
       setLoading(true);
       const queryParams = {
-        page: pagination.current,
-        limit: pagination.pageSize,
-        ...(filters.name && { name: filters.name }),
+        page: currentPage,
+        limit: pageSize,
+        ...(filters.fullName && {fullName: filters.fullName}),
+        ...(filters.email && {email : filters.email}),
         ...(filters.appliedFor && { appliedFor: filters.appliedFor }),
         ...(filters.status && { status: filters.status }),
+        ...(filters.skillSet && {skillSet: filters.skillSet}), 
         includeInterviews: true,
         includeTasks: true,
       };
-
+      console.log('queryParams' ,queryParams, filters.fullName);
       const response = await apiServices(
         "GET", 
         `candidate/list?${new URLSearchParams(queryParams).toString()}`, 
@@ -124,6 +135,7 @@ const Candidates = () => {
             ...prev,
             total: candidateData.totalDocs || 0,
           }));
+          setPaginationDetail(candidateData.totalDocs)
         } else {
           message.error("Invalid data format received from server");
           setCandidates([]);
@@ -154,23 +166,21 @@ const Candidates = () => {
   };
 
   const handleSearch = (value) => {
-    setFilters((prev) => ({
-        ...prev,
-      name: value,
-    }));
-    setPagination((prev) => ({
-      ...prev,
+    console.log('Searched' , value)
+    setFilters(value),
+    setPagination({
+      ...pagination,
       current: 1,
-    }));
+    });
   };
 
-  const handleTableChange = (newPagination, filters, sorter) => {
-    setPagination((prev) => ({
-      ...prev,
-      current: newPagination.current,
-      pageSize: newPagination.pageSize,
-    }));
-  };
+  // const handleTableChange = (newPagination, filters, sorter) => {
+  //   setPagination((prev) => ({
+  //     ...prev,
+  //     current: newPagination.current,
+  //     pageSize: newPagination.pageSize,
+  //   }));
+  // };
 
   const handleDeleteCandidate = async (candidateId) => {
     const token =
@@ -257,21 +267,36 @@ const Candidates = () => {
       title: "Candidate Name",
       key: "name",
       render: (_, record) => {
-        const fullName = `${record.firstName} ${record.lastName}`;
         const initials = record.firstName[0].toUpperCase() + record.lastName[0].toUpperCase();
         return(
         <Link
           to={`/recruitment/candidates/${record._id}`}
           className="text-primary"
         >
-          <div style={{display:'flex', alignItems:'center'}}>
-            <span style={{height: '40px', width:'40px', border: '1px solid tranparent', borderRadius:'50%', display:'flex', justifyContent:'center', alignItems:'center', fontSize:'16px', fontWeight:'500', color:'#8326ff', background: '#f3eaff'}}>{initials}</span>
-            <span style={{marginLeft: '10px'}}>{fullName.split(' ').map(word=>word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}</span>
+          <div style={{display:'flex', alignItems:'center', alignSelf:'center'}}>
+            <label style={{minHeight: '40px', minWidth:'40px', border: '1px solid tranparent', borderRadius:'50%', display:'flex', justifyContent:'center', alignItems:'center', fontSize:'16px', fontWeight:'500', color:'#8326ff', background: '#f3eaff'}}>{initials}</label>
+            <label style={{marginLeft:'10px' , color: '#212529'}}>{record.firstName[0].toUpperCase() + record.firstName.slice(1).toLowerCase() + ' ' + record.lastName[0].toUpperCase() + record.lastName.slice(1).toLowerCase()}</label>
           </div>
         </Link>
         )
       },
-      sorter: true,
+      // sorter: true,
+    },
+    {
+      title: "Applied Position",
+      dataIndex: "appliedFor",
+      key: "appliedFor",
+      render: (appliedFor) => {
+        if (appliedFor?.title) {
+          return(
+            <span style={{marginLeft: "10px",maxWidth: "200px", display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 2, overflow: "hidden",textOverflow: "ellipsis",wordBreak: "break-word"}}>
+              {`${appliedFor.title}${appliedFor.department ? ` - ${appliedFor.department}` : "" }`}
+            </span>
+          )
+        }
+        return "N/A";
+      },
+      // sorter: true,
     },
     {
       title: "Candidate Status",
@@ -287,73 +312,59 @@ const Candidates = () => {
           {status?.charAt(0) + status?.slice(1).toLowerCase()}
         </Tag>
       ),
-      sorter: true,
-    },
-    {
-      title: "Applied Position",
-      dataIndex: "appliedFor",
-      key: "appliedFor",
-      render: (appliedFor) => {
-        if (appliedFor?.title) {
-          return `${appliedFor.title}${
-            appliedFor.department ? ` - ${appliedFor.department}` : ""
-          }`;
-        }
-        return "N/A";
-      },
-      sorter: true,
+      // sorter: true,
     },
     {
       title: "Experience",
       dataIndex: "experience",
       key: "experience",
       render: (experience) => `${experience} years`,
-      sorter: true,
+      // sorter: true,
     },
     {
       title: 'Rating',
       dataIndex: 'createdAt',
       key: 'createdAt',
       render: (date) => new Date(date).toLocaleDateString(),
-      sorter: true,
+      // sorter: true,
     },
     {
       title: "Current Salary",
       dataIndex: "currentSalary",
       key: "currentSalary",
-      sorter: true,
+      // sorter: true,
       },
     {
       title: "Expected Salary",
       dataIndex: "expectedSalary",
       key: "expectedSalary",
-      sorter: true,
+      // sorter: true,
     },
     {
       title: "Contact",
       dataIndex: "phoneNumber",
       key: "phoneNumber",
-      sorter: true,
+      // sorter: true,
     },
     {
       title: "Email",
       dataIndex: "email",
       key: "email",
-      sorter: true,
+      // sorter: true,
     },
     {
       title: "Applied Date",
       dataIndex: "appliedDate",
       key: "appliedDate",
       render: (date) => new Date(date).toLocaleDateString(),
-      sorter: true,
+      // sorter: true,
     },
     {
       title: "Notice Period",
       dataIndex: "noticePeriod",
       key: "noticePeriod",
       render: (noticePeriod)=>noticePeriod ? `${noticePeriod.replace('_', ' ').toLowerCase()}` : N/A,
-      sorter: true,
+      // sorter: true,
 
       },
     {
@@ -392,9 +403,9 @@ const Candidates = () => {
 
   const renderGridView = () => {
     return (
-      <Row gutter={[24, 24]}>
+      <Row gutter={[24, 24]} justify="flex-start">
         {candidates.map(candidate => {
-          const fullName = `${candidate.firstName} ${candidate.lastName}`;
+          const fullName = `${candidate.firstName.charAt(0).toUpperCase() + candidate.firstName.slice(1).toLowerCase()} ${candidate.lastName.charAt(0).toUpperCase() + candidate.lastName.slice(1).toLowerCase()}`;
           const initials = fullName.split(' ').map(name=>name.charAt(0).toUpperCase()).join('');
           return(
           <Col xs={24} sm={12} md={8} key={candidate._id}>
@@ -515,32 +526,36 @@ const Candidates = () => {
       <Form 
         form={form}
         onFinish={handleSearch} 
+        onValuesChange={(changedValues, allValues) => {
+          const clearedField = Object.keys(changedValues).find(
+            key => changedValues[key] === '' || changedValues[key] === undefined
+          );
+          if (clearedField) {
+            handleSearch(allValues);        
+          }
+        }}
         className="search-form"
         initialValues={filters}
       >
         <Row gutter={[12, 12]} align="middle">
           <Col xs={24} sm={12} md={4}>
-            <Form.Item name="name" className="mb-0">
+            <Form.Item name="fullName" className="mb-0">
               <Input style={{borderRadius:"8px", height:"40px"}} placeholder="Candidate Name" allowClear />
             </Form.Item>
           </Col>
           <Col xs={24} sm={12} md={4}>
-            <Form.Item name="contact" className="mb-0">
+            <Form.Item name="email" className="mb-0">
               <Input style={{borderRadius:"8px", height:"40px"}} placeholder="Email" allowClear />
             </Form.Item>
           </Col>
           <Col xs={24} sm={12} md={4}>
-            <Form.Item name="position" className="mb-0">
-              <Select placeholder="Position" allowClear
-              className='custom'
-                options={[
-                  // { value: 'FULL_TIME', label: 'Full Time' },
-                  // { value: 'PART_TIME', label: 'Part Time' },
-                  // { value: 'CONTRACT', label: 'Contract' },
-                  // { value: 'INTERNSHIP', label: 'Internship' },
-                  // { value: 'FREELANCE', label: 'Freelance' }
-                ]}
-              />
+            <Form.Item name="appliedFor" className="mb-0">
+              <Input style={{borderRadius:"8px", height:"40px"}} placeholder="Position" allowClear />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={12} md={4}>
+            <Form.Item name="skillSet" className="mb-0">
+              <Input style={{borderRadius:"8px", height:"40px"}} placeholder="Skill Set" allowClear />
             </Form.Item>
           </Col>
           <Col xs={24} sm={12} md={4}>
@@ -548,25 +563,12 @@ const Candidates = () => {
               <Select placeholder="Candidate Status" allowClear
               className='custom'
                 options={[
-                  // { value: 'FULL_TIME', label: 'Full Time' },
-                  // { value: 'PART_TIME', label: 'Part Time' },
-                  // { value: 'CONTRACT', label: 'Contract' },
-                  // { value: 'INTERNSHIP', label: 'Internship' },
-                  // { value: 'FREELANCE', label: 'Freelance' }
-                ]}
-              />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={12} md={4}>
-            <Form.Item name="rating" className="mb-0">
-              <Select placeholder="Candidate Rating" allowClear
-              className='custom'
-                options={[
-                  // { value: 'FULL_TIME', label: 'Full Time' },
-                  // { value: 'PART_TIME', label: 'Part Time' },
-                  // { value: 'CONTRACT', label: 'Contract' },
-                  // { value: 'INTERNSHIP', label: 'Internship' },
-                  // { value: 'FREELANCE', label: 'Freelance' }
+                  { value: 'NEW', label: 'New' },
+                  { value: 'SCREENING', label: 'Screening' },
+                  { value: 'SHORTLISTED', label: 'Shortlisted' },
+                  { value: 'OFFERED', label: 'Offered' },
+                  { value: 'HIRED', label: 'Hired' },
+                  { value: 'REJECTED', label: 'Rejected' },
                 ]}
               />
             </Form.Item>
@@ -585,27 +587,91 @@ const Candidates = () => {
         <div className="col-md-12">
           <Spin spinning={loading}>
             {viewType === 'list' ? (
-              <div className="table-responsive">
-                <Table 
-                  className="custom-table"
-                  columns={columns}
-                  dataSource={candidates}
-                  rowKey="_id"
-                  scroll={{ x: 1350 }}
-                  pagination={{
-                    ...pagination,
-                    showSizeChanger: true,
-                    showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                    pageSizeOptions: ['10', '20', '50']
-                  }}
-                  onChange={handleTableChange}
-                />
-              </div>
+              <>
+                {candidates?.length > 0 && (
+                  <Row justify="space-between" style={{ marginBottom: 16 }}>
+                    <Col>
+                      <div style={{display:'flex', alignItems:'center', gap:'5px'}}>
+                      <div style={{fontSize:'14px'}}>Show</div>
+                      <Select
+                        className='customized'
+                        value={pageSize}
+                        onChange={(size) => {
+                          setPageSize(size);
+                          setCurrentPage(1);
+                        }}
+                        style={{width:60}}
+                      >
+                        {['20', '30', '40', '50'].map((size) => (
+                          <Option key={size} value={parseInt(size, 10)}>
+                            {size}
+                          </Option>
+                        ))}
+                      </Select>
+                      <div style={{fontSize:'14px'}}>entries</div>
+                      </div>
+                    </Col>
+                  </Row>
+                )}
+                <div className="table-responsive">
+                  <Table 
+                    className="table-striped"
+                    columns={columns}
+                    dataSource={candidates}
+                    rowKey="_id"
+                    // scroll={{ x: 1350 }}
+                    // pagination={{
+                    //   ...pagination,
+                    //   showSizeChanger: true,
+                    //   showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+                    //   pageSizeOptions: ['10', '20', '50']
+                    // }}
+                    pagination={false}
+                    // onChange={handleTableChange}
+                  />
+                </div>
+                {candidates?.length > 0 && (
+                  <Row justify="space-between" align="middle" style={{ marginTop: 16 }}>
+                    <Col>
+                      <span style={{fontSize:'14px'}}>
+                        {t('paginationShow', {
+                          range1: (currentPage - 1) * pageSize + 1,
+                          range2: Math.min(currentPage * pageSize, paginationDetail),
+                          total: paginationDetail,
+                        })}
+                      </span>
+                    </Col>
+                    <Col>
+                      <Pagination
+                        total={paginationDetail}
+                        pageSize={pageSize}
+                        current={currentPage}
+                        showSizeChanger={false}
+                        onChange={(page, size) => {
+                          setPageSize(size);
+                          setCurrentPage(page);
+                        }}
+                        pageSizeOptions={['20', '30', '40', '50']}
+                        itemRender={(current, type, originalElement) =>{
+                            if (type === 'prev') {
+                              return <img src={leftPageIcon} style={{height:"24px" , width:"24px"}} />;
+                            }
+                            if (type === 'next') {
+                              return <img src={rightPageIcon} style={{height:"24px" , width:"24px"}} />;
+                            }
+                            return originalElement;
+                          }}
+                      />
+                    </Col>
+                  </Row>
+                )}
+              </>
             ) : (
               renderGridView()
             )}
           </Spin>
         </div>
+
       </div>
       {/* Create Candidate Modal */}
       <CreateCandidateModal
@@ -616,10 +682,32 @@ const Candidates = () => {
       />
 
       {/* Add some global styles */}
-      <style jsx global>{`
+      <style jsx>{`
         .custom-modal .ant-modal-header {
           border-bottom: none;
           padding: 24px 24px 0;
+        }
+
+        .customized .ant-select-selector{
+          height: 21px !important;
+          display: flex;
+          align-items: center;
+          padding: 7px !important;
+        }
+        .ant-pagination{
+          margin-top: 0px !important;
+          display: flex;
+          align-items: center;
+        }
+
+        .customized .ant-select-selection-item {
+          padding: 0 !important;
+          margin: 0;
+        }
+
+        .customized .ant-select-arrow {
+          transform: translateX(50%);
+          transform: translateY(20%);
         }
         .custom-modal .ant-modal-title {
           font-size: 24px;
@@ -716,12 +804,16 @@ const Candidates = () => {
           box-shadow: 0 2px 4px rgba(0,0,0,0.05);
           border: 1px solid #e0e3e6;
           box-sizing: border-box;
+          height: 100%;
         }
+
+
         .job-card .ant-card-body {
           padding: 16px;
         }
         .job-card-content {
           padding: 0;
+          min-height: 320ppx;
         }
         .job-details {
           width:98%;

@@ -160,6 +160,7 @@ const CandidateDetails = () => {
         console.log("Candidate Details Response:", response.data.data);
         console.log("Resume URL:", response.data.data.resume);
         setCandidate(response.data.data);
+        setOffer(response.data.data.status); 
       } else {
         if (response?.data?.message === "Invalid token") {
           message.error("Session expired. Please login again");
@@ -215,7 +216,6 @@ const CandidateDetails = () => {
 
       if (response?.data?.status) {
         message.success("Resume uploaded successfully");
-        // Optionally refresh candidate details
       } else {
         console.error("Upload failed:", response?.data);
         message.error(response?.data?.message || "Failed to upload resume");
@@ -226,33 +226,6 @@ const CandidateDetails = () => {
     }
   };
 
-
-
-  const getFileIcon = (fileUrl) => {
-    if (!fileUrl) return <FilePdfOutlined />;
-    const extension = fileUrl.split(".").pop().toLowerCase();
-    switch (extension) {
-      case "pdf":
-        return (
-          <FilePdfOutlined style={{ fontSize: "24px", color: "#ff4d4f" }} />
-        );
-      case "doc":
-      case "docx":
-        return (
-          <FileWordOutlined style={{ fontSize: "24px", color: "#1890ff" }} />
-        );
-      default:
-        return (
-          <FilePdfOutlined style={{ fontSize: "24px", color: "#ff4d4f" }} />
-        );
-    }
-  };
-
-  const getFileName = (fileUrl) => {
-    if (!fileUrl) return "Resume";
-    const parts = fileUrl.split("/");
-    return parts[parts.length - 1];
-  };
 
 
   const handleDrop = (event) => {
@@ -336,6 +309,7 @@ const CandidateDetails = () => {
 
 
   const handleStatusChange = async (newStatus) => {
+    console.log('is this function called? handleStatusChange')
     if (newStatus === 'BLACKLISTED') {
       // Show modal to get blacklist reason
       setSelectedStatus(newStatus);
@@ -490,9 +464,9 @@ const CandidateDetails = () => {
       }
 
       // Add flag to indicate this is an offer update if an offer exists
-      if (offer) {
-        formData.append('isUpdate', 'true');
-      }
+      // if (offer) {
+      //   formData.append('isUpdate', 'true');
+      // }
 
       const response = await apiServices(
         'POST',
@@ -508,8 +482,10 @@ const CandidateDetails = () => {
           },
         }
       );
+      
 
-      if (response?.data?.status) {
+      if (response?.data?.success) {
+        console.log("response of offer sent", response?.data?.success)
         message.success(offer ? 'Offer updated successfully' : 'Offer sent successfully');
         setIsOfferModalVisible(false);
         
@@ -521,6 +497,8 @@ const CandidateDetails = () => {
         
         // Fetch updated candidate details to refresh the page
         await fetchCandidateDetails();
+
+        
         
         // Redirect to offered candidates list
         navigate('/recruitment/candidates/offered');
@@ -528,8 +506,8 @@ const CandidateDetails = () => {
         throw new Error(response?.data?.message || 'Failed to send offer');
       }
     } catch (error) {
-      console.error('Error sending offer:', error);
-      message.error(error.message || 'Error sending offer');
+      // console.error('Error sending offer:', error);
+      // message.error(error.message || 'Error sending offer');
     } finally {
       setSubmittingOffer(false);
     }
@@ -572,6 +550,7 @@ const CandidateDetails = () => {
 
   const handleSendOfferClick = () => {
     console.log('Send Offer button clicked');
+    console.log('Current offer:', offer); // Debug log
     setIsOfferModalVisible(true);
   };
 
@@ -663,9 +642,9 @@ const CandidateDetails = () => {
       const formattedTime = moment(values.interviewTime).format("HH:mm");
 
       const payload = {
-        candidateId: id,
-        interviewerId: values.assignedTo, // ID of the employee selected in interviewer dropdown
-        interviewTitle: values.interviewTitle, // Value from interview title dropdown (Initial Interview, etc)
+        candidateId: candidate._id,
+        // interviewerId: values.assignedTo, // ID of the employee selected in interviewer dropdown
+        // interviewTitle: values.interviewTitle, // Value from interview title dropdown (Initial Interview, etc)
         interviewType: values.interviewType, // "ONLINE" or "IN_PERSON"
         assignTo: values.assignTo, // Array of additional interviewer IDs
         interviewDate: formattedDate, // YYYY-MM-DD
@@ -820,6 +799,7 @@ const CandidateDetails = () => {
       return;
     }
 
+
     try {
       // Create FormData for file upload
       const formData = new FormData();
@@ -828,17 +808,17 @@ const CandidateDetails = () => {
       if (values.taskFile?.length > 0) {
         formData.append("file", values.taskFile[0].originFileObj);
       }
-
       // Add all non-file fields
       formData.append("candidateId", id);
       formData.append("taskName", values.taskName);
-      formData.append("taskReviewers", JSON.stringify(values.taskReviewer));
+      formData.append("taskReviewers", JSON.stringify(values.taskReviewers));
       formData.append(
         "lastDateOfSubmission",
         moment(values.lastDateOfSubmission).format("YYYY-MM-DD")
       );
       formData.append("taskDuration", values.taskDuration);
-      formData.append("description", values.description);
+      // formData.append("description", values.description);
+      console.log('form' , values, formData);
 
       const response = await apiServices("POST", "task/create", formData, {
         access_token: {
@@ -1682,7 +1662,7 @@ const CandidateDetails = () => {
                     <Link to="/recruitment/dashboard">Dashboard</Link>
                   </li>
                   <li className="breadcrumb-item">
-                    <Link to="/recruitment/candidates">Candidates</Link>
+                    <Link to="/recruitment/candidates/processing">Candidates</Link>
                   </li>
                 </ul>
               </div>
@@ -1694,14 +1674,32 @@ const CandidateDetails = () => {
       <div style={{width:'100%',borderTop:'1px solid #CFD4D8', display:'flex', justifySelf:'center', height:'50px', alignItems:'flex-end', marginBottom:'15px'}}>
         <div style={{display:'flex', marginBottom:'6px'}}>
           <div>
-            <button onClick={()=>navigate("/recruitment/candidates")} style={{marginRight: '16px' ,padding:'0', border:'none', background:'transparent'}}>
+            <button onClick={() => navigate(
+              candidate?.status === "BLACKLISTED"
+              ? "/recruitment/candidates/blacklist"
+              : ["OFFERED", "HIRED"].includes(candidate?.status)
+              ? `/recruitment/candidates/${candidate.status.toLowerCase()}`
+              : "/recruitment/candidates/processing"
+              )} 
+              style={{marginRight: '16px' ,padding:'0', border:'none', background:'transparent'}}
+            >
               <img src={backBtn}></img>
             </button>
           </div>
           <div>
             <ul className="breadcrumb">
-              <li className="breadcrumb-item"><Link to="/recruitment/candidates">Candidate</Link></li>
-              <li className="breadcrumb-item active">{candidate?.firstName} {candidate?.lastName}</li>
+            <li className="breadcrumb-item">
+              <Link to={
+                candidate?.status === "BLACKLISTED"
+                ? "/recruitment/candidates/blacklist"
+                : ["OFFERED", "HIRED"].includes(candidate?.status)
+                ? `/recruitment/candidates/${candidate.status.toLowerCase()}`
+                : "/recruitment/candidates/processing"
+              }>
+                {["OFFERED", "HIRED", "BLACKLISTED"].includes(candidate?.status) ? candidate.status.charAt(0) + candidate.status.slice(1).toLowerCase() : "Candidates"}
+              </Link>
+            </li>           
+            <li className="breadcrumb-item active">{candidate?.firstName} {candidate?.lastName}</li>
             </ul>
           </div>
         </div>
@@ -1758,10 +1756,20 @@ const CandidateDetails = () => {
               {!viewMobile && (
                 <button
                   onClick={handleSendOfferClick}
-                  disabled={candidate?.status === "OFFERED"}
-                  style={{background: candidate.status === 'OFFERED' ? 'red' : '#ff9244'}}
-                  className= 'select-btn'
-                >{offer ? 'Edit Offer' : 'Send Offer'}</button>
+                  style={{
+                    background: '#ff9244',
+                    border: '1px solid #ff9244',
+                    borderRadius: '8px',
+                    height: '45px',
+                    width: '120px',
+                    fontSize: '16px',
+                    fontWeight: '500',
+                    color: '#ffffff'
+                  }}
+                  className='select-btn'
+                >
+                  {candidate?.status==='OFFERED' ? 'Update Offer' : 'Send Offer'}
+                </button>
               )}
               <div className="dropdown-style">
                 <Dropdown
@@ -1914,6 +1922,14 @@ const CandidateDetails = () => {
                     <Text strong  style={{marginBottom:"6px" ,fontSize:"14px", fontWeight:"450", color:"#56616b", width:"45%", marginLeft:"15px"}}>
                       PKR {candidate.expectedSalary?.toLocaleString()}
                     </Text>
+                  </div>
+                </div>
+                <div style={{borderTop: '1px solid #e8e8e8'}}>
+                  <h3 style={{fontSize:"16px", color:'#000', marginTop:'15px'}}>SkillSet:</h3>
+                  <div style={{margin:"10px 0px 10px 0px"}}>
+                    {candidate?.skillSet.map((skill)=>(
+                      <Tag style={{borderRadius:'8px', fontSize:'14px', padding:'5px'}}>{skill}</Tag>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -2072,7 +2088,7 @@ const CandidateDetails = () => {
                                     </div>
                                   </div>
                                   {task.Reviewers?.map((taskReviewer)=>(
-                                    <div style={{display:'flex'}}>
+                                    <div style={{display:'flex'}} key={taskReviewer._id}>
                                       <div style={{height:"32px" , width:"32px"}}><img src={taskReviewer.imageUrl} style={{height:"100%" ,width:"100%", borderRadius:"50%"}}></img></div>
                                       <div style={{marginLeft:"10px"}}>
                                         <h3 style={{fontSize:"14px" ,fontWeight:"500",marginBottom:"0"}}>{taskReviewer.fullName}</h3>
@@ -2264,14 +2280,11 @@ const CandidateDetails = () => {
       {/* Send Offer Modal */}
       <SendOfferModal
         visible={isOfferModalVisible}
-        onCancel={() => {
-          console.log('Modal cancel triggered');
-          setIsOfferModalVisible(false);
-        }}
+        onCancel={() => setIsOfferModalVisible(false)}
         onSubmit={handleSendOffer}
         loading={submittingOffer}
         candidate={candidate}
-        existingOffer={offer}
+        existingOffer={offer} // Pass the offer data here
       />
 
       {/* Status Change Reason Modal */}
@@ -2337,78 +2350,6 @@ const CandidateDetails = () => {
           </Form.Item>
         </Form>
       </Modal>
-
-      {offer && (
-        <div className="info-section">
-          <Title level={5} className="section-title">
-            Offer Details
-          </Title>
-          <div className="info-list">
-            <div className="info-item">
-              <div className="info-content">
-                <Text type="secondary" className="info-label">
-                  Offered Salary
-                </Text>
-                <Text strong className="info-value">
-                  {offer.currency} {offer.salary?.toLocaleString()}
-                </Text>
-              </div>
-            </div>
-            <div className="info-item">
-              <div className="info-content">
-                <Text type="secondary" className="info-label">
-                  Joining Date
-                </Text>
-                <Text strong className="info-value">
-                  {moment(offer.joiningDate).format('DD MMM YYYY')}
-                </Text>
-              </div>
-            </div>
-            <div className="info-item">
-              <div className="info-content">
-                <Text type="secondary" className="info-label">
-                  Offer Status
-                </Text>
-                <Tag color={
-                  offer.status === 'SENT' ? 'blue' :
-                  offer.status === 'ACCEPTED' ? 'green' :
-                  'red'
-                }>
-                  {offer.status}
-                </Tag>
-              </div>
-            </div>
-            {offer.contractUrl && (
-              <div className="info-item">
-                <div className="info-content">
-                  <Text type="secondary" className="info-label">
-                    Contract Document
-                  </Text>
-                  <Button 
-                    type="link" 
-                    icon={<DownloadOutlined />}
-                    onClick={() => window.open(offer.contractUrl, '_blank')}
-                  >
-                    Download Contract
-                  </Button>
-                </div>
-              </div>
-            )}
-            {!offer.contractUrl && (
-              <div className="info-item">
-                <div className="info-content">
-                  <Text type="secondary" className="info-label">
-                    Contract Document
-                  </Text>
-                  <Text type="secondary" italic>
-                    No contract uploaded
-                  </Text>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
       <style jsx>{`
         .btn-style{

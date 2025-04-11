@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Table, Button, Select, Input, Modal, Form, message, Spin, Tag, InputNumber, Checkbox, Dropdown, Menu, Card, Row, Col } from 'antd';
+import { Table, Button, Select, Input, Modal, Form, message, Spin, Tag, InputNumber, Checkbox, Dropdown, Menu, Card, Row, Col, Pagination } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, MoreOutlined, UnorderedListOutlined, AppstoreOutlined, UserAddOutlined } from '@ant-design/icons';
 import { apiServices } from '../../Services/apiServices';
 import { useSelector } from 'react-redux';
@@ -16,6 +16,9 @@ import circle from '../../assets/iconsRecruitment/circle.svg';
 import grid from '../../assets/iconsRecruitment/grid.svg';
 import list from '../../assets/iconsRecruitment/list.svg';
 import { render } from '@fullcalendar/core/preact.js';
+import { useTranslation } from "react-i18next";
+import leftPageIcon from '../../assets/iconsRecruitment/fi_chevrons-left.svg';
+import rightPageIcon from '../../assets/iconsRecruitment/fi_chevrons-right.svg';
 
 
 
@@ -24,6 +27,7 @@ import { render } from '@fullcalendar/core/preact.js';
 const { TextArea } = Input;
 
 const Jobs = () => {
+  const {t} = useTranslation();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [jobs, setJobs] = useState([]);
@@ -39,10 +43,12 @@ const Jobs = () => {
   const [modalForm] = Form.useForm();
   const [submitting, setSubmitting] = useState(false);
   const [viewType, setViewType] = useState('list');
+  const [paginationDetail, setPaginationDetail] = useState(0);
+  const [pageSize, setPageSize] = useState(20);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const handleApiError = (error) => {
     console.error('API Error:', error);
-    
     if (error.response) {
       switch (error.response.status) {
         case 401:
@@ -76,9 +82,10 @@ const Jobs = () => {
     }
     
     fetchJobs();
-  }, [filters, pagination.current, pagination.pageSize]);
+  }, [filters, currentPage, pageSize]);
 
   const fetchJobs = async () => {
+    console.log('filtered jobs', filters);
     const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
     
     if (!token) {
@@ -93,9 +100,10 @@ const Jobs = () => {
       const queryParams = {
         page: pagination.current,
         limit: pagination.pageSize,
-        title: filters.jobTitle,
+        title: filters.title,
         jobType: filters.jobType,
         workSetup: filters.workSetup,
+        department: filters.department,
       };
 
       // Remove undefined or empty values
@@ -124,8 +132,9 @@ const Jobs = () => {
         setJobs(response.data.data.docs || []);
         setPagination(prev => ({
           ...prev,
-          total: response.data.data.total || 0
+          total: response.data.data.totalDocs || 0
         }));
+        setPaginationDetail(response.data.data.totalDocs || 0);
       } else {
         console.error('Failed to fetch jobs:', response?.data);
         message.error(response?.data?.message || 'Unable to load jobs at this time. Please try again later.');
@@ -148,6 +157,7 @@ const Jobs = () => {
         ...prev,
         total: 0
       }));
+      setPaginationDetail(0);
     } finally {
       setLoading(false);
     }
@@ -162,6 +172,7 @@ const Jobs = () => {
   };
 
   const handleSearch = (values) => {
+    console.log('Searched Values' , values)
     setPagination({
       ...pagination,
       current: 1
@@ -169,18 +180,17 @@ const Jobs = () => {
     setFilters(values);
   };
 
-  const handleReset = () => {
-    form.resetFields();
-    setFilters({});
-    setPagination({
-      ...pagination,
-      current: 1
-    });
-  };
+  // const handleReset = () => {
+  //   form.resetFields();
+  //   setFilters({});
+  //   setPagination({
+  //     ...pagination,
+  //     current: 1
+  //   });
+  // };
 
   const handleDeleteJob = async (jobId) => {
     const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
-    
     try {
       setLoading(true);
       const response = await apiServices(
@@ -277,41 +287,39 @@ const Jobs = () => {
       dataIndex: 'title',
       key: 'title',
       render: (text, record) => (
-        <Link to={`/recruitment/jobs/${record._id}`} className="text-primary">
-          {text}
+        <Link to={`/recruitment/jobs/${record._id}`} style={{color: '#212529'}}>
+          {text.split(' ').map(word=>word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
         </Link>
       ),
-      sorter: true,
+      // sorter: true,
     },
     {
       title: 'Position Open',
       dataIndex: 'positions',
       key: 'positions',
-      sorter: true,
     },
     {
       title: 'Department',
       dataIndex: 'department',
       key: 'department',
-      sorter: true,
+      // sorter: true,
     },
     {
       title: 'Resume',
       dataIndex: 'applicationCount',
       key: 'applicationCount',
       render: (count, record) => (
-        <Link to={`/recruitment/jobs/${record._id}/applications`} className="text-primary">
+        <Link to={`/recruitment/jobs/${record._id}/applications`} style={{color: '#212529'}}>
           {count || 0}
         </Link>
       ),
-      sorter: true,
     },
     {
       title: 'Post Date',
       dataIndex: 'createdAt',
       key: 'createdAt',
       render: (date) => new Date(date).toLocaleDateString(),
-      sorter: true,
+      // sorter: true,
     },
 
     // {
@@ -395,21 +403,22 @@ const Jobs = () => {
             cancelText: 'No',
             onOk: () => handleDeleteJob(record._id)
           });
-        }}>Delete</Menu.Item>
+          }}>Delete
+        </Menu.Item>
         </Menu>}
         trigger={['click']}
         placement="bottomRight">
-<div style={{ cursor: 'pointer',height:'25px' }}>
-<img src={more} alt="More Options" />
-</div>
-</Dropdown>
+          <div style={{ cursor: 'pointer',height:'25px' }}>
+            <img src={more} alt="More Options" />
+          </div>
+        </Dropdown>
       ),
     },
   ];
 
   const renderGridView = () => {
     return (
-      <Row gutter={[24, 24]}>
+      <Row gutter={[24, 24]} justify='start'>
         {jobs.map(job => (
           <Col xs={24} sm={12} md={8} key={job._id}>
             <Card
@@ -419,7 +428,7 @@ const Jobs = () => {
                 <div style={{display:'flex', justifyContent:'space-between', width:"98%"}}>
                   <div>
                     <h3 className="job-title">
-                      <Link to={`/recruitment/jobs/${job._id}`}>{job.title}</Link>
+                      <Link to={`/recruitment/jobs/${job._id}`}>{job.title.split(' ').map(word=>word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}</Link>
                     </h3>
                     <p className="positions-count">{job.positions} open positions</p>
                   </div>
@@ -559,12 +568,20 @@ const Jobs = () => {
       <Form 
         form={form}
         onFinish={handleSearch} 
+        onValuesChange={(changedValues, allValues) => {
+          const clearedField = Object.keys(changedValues).find(
+            key => changedValues[key] === '' || changedValues[key] === undefined
+          );
+          if (clearedField) {
+            handleSearch(allValues);        
+          }
+        }}
         className="search-form"
         initialValues={filters}
       >
         <Row gutter={[12, 12]} align="middle">
           <Col xs={24} sm={12} md={5}>
-            <Form.Item name="jobTitle" className="mb-0">
+            <Form.Item name="title" className="mb-0">
               <Input style={{borderRadius:"8px", height:"40px"}} placeholder="Job Name" allowClear />
             </Form.Item>
           </Col>
@@ -602,8 +619,15 @@ const Jobs = () => {
             </Form.Item>
           </Col>
           <Col xs={24} sm={12} md={5}>
-            <Form.Item name="location" className="mb-0">
-              <Input style={{borderRadius:"8px", height:"40px"}}  placeholder="Location" allowClear />
+            <Form.Item name="workSetup" className="mb-0">
+              <Select placeholder="Work Setup" allowClear
+              className='custom'
+                options={[
+                  { text: 'On-Site', value: 'ONSITE' },
+                  { text: 'Remote', value: 'REMOTE' },
+                  { text: 'Hybrid', value: 'HYBRID' },
+                ]}
+              />
             </Form.Item>
           </Col>
           <Col xs={24} sm={12} md={4}>
@@ -624,6 +648,8 @@ const Jobs = () => {
         footer={null}
         width={800}
         className="custom-modal"
+        style={{ zIndex: 2000 }}
+        maskStyle={{ zIndex: 1999, background: 'rgba(0, 0, 0, 0.5)' }}
       >
         <Form
           form={modalForm}
@@ -658,7 +684,7 @@ const Jobs = () => {
             <div className="col-md-6">
               <Form.Item
                 name="title"
-                label={<>Job Title <span className="text-danger">*</span></>}
+                label={<>Job Title</>}
                 rules={[{ required: true, message: 'Please enter job title' }]}
               >
                 <Input placeholder="Enter Job" />
@@ -670,7 +696,7 @@ const Jobs = () => {
             <div className="col-md-6">
               <Form.Item
                 name="jobType"
-                label={<>Job Type <span className="text-danger">*</span></>}
+                label={<>Job Type</>}
                 rules={[{ required: true, message: 'Please select job type' }]}
               >
                 <Select placeholder="Full Time" className= 'customized'>
@@ -685,10 +711,10 @@ const Jobs = () => {
             <div className="col-md-6">
               <Form.Item
                 name="workSetup"
-                label={<>Work Setup <span className="text-danger">*</span></>}
+                label={<>Work Setup</>}
                 rules={[{ required: true, message: 'Please select work setup' }]}
               >
-                <Select placeholder="On-site" className= 'customized'>
+                <Select placeholder="Work Setup" className= 'customized'>
                   <Select.Option value="ONSITE">On-site</Select.Option>
                   <Select.Option value="REMOTE">Remote</Select.Option>
                   <Select.Option value="HYBRID">Hybrid</Select.Option>
@@ -701,7 +727,7 @@ const Jobs = () => {
             <div className="col-md-6">
               <Form.Item
                 name="salaryRange"
-                label={<>Salary Range <span className="text-danger">*</span></>}
+                label={<>Salary Range</>}
                 rules={[{ required: true, message: 'Please enter salary range' }]}
               >
                 <Input placeholder="100 - 200"/>
@@ -710,7 +736,7 @@ const Jobs = () => {
             <div className="col-md-6">
               <Form.Item
                 name="positions"
-                label={<>No of. Positions <span className="text-danger">*</span></>}
+                label={<>No of. Positions</>}
                 rules={[
                   { required: true, message: 'Please enter number of positions' },
                   { type: 'number', min: 1, message: 'Must be at least 1 position' }
@@ -723,7 +749,7 @@ const Jobs = () => {
 
           <Form.Item
             name="description"
-            label={<>Job Description <span className="text-danger">*</span></>}
+            label={<>Job Description</>}
             rules={[{ required: true, message: 'Please enter job description' }]}
           >
             <TextArea rows={6} placeholder="Add Description" />
@@ -781,21 +807,84 @@ const Jobs = () => {
         <div className="col-md-12">
           <Spin spinning={loading}>
             {viewType === 'list' ? (
-              <div className="table-responsive">
-                <Table 
+              <>
+                {jobs?.length > 0 && (
+                  <Row justify="space-between" style={{ marginBottom: 16 }}>
+                    <Col>
+                      <div style={{display:'flex', alignItems:'center', gap:'5px'}}>
+                      <div style={{fontSize:'14px'}}>Show</div>
+                      <Select
+                        className='new'
+                        value={pageSize}
+                        onChange={(size) => {
+                          setPageSize(size);
+                          setCurrentPage(1);
+                        }}
+                        style={{width:60}}
+                      >
+                        {['20', '30', '40', '50'].map((size) => (
+                          <Option key={size} value={parseInt(size, 10)}>
+                            {size}
+                          </Option>
+                        ))}
+                      </Select>
+                      <div style={{fontSize:'14px'}}>entries</div>
+                      </div>
+                    </Col>
+                  </Row>
+                )}
+                <div className="table-responsive">
+                  <Table 
                   className="table-striped"
                   columns={columns}
                   dataSource={jobs}
                   rowKey="_id"
-                  pagination={{
-                    ...pagination,
-                    showSizeChanger: true,
-                    showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                    pageSizeOptions: ['10', '20', '50']
-                  }}
-                  onChange={handleTableChange}
+                  // pagination={{
+                  //   ...pagination,
+                  //   showSizeChanger: true,
+                  //   showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+                  //   pageSizeOptions: ['10', '20', '50']
+                  // }}
+                  // onChange={handleTableChange}
+                  pagination = {false}
                 />
               </div>
+              {jobs?.length > 0 && (
+                  <Row justify="space-between" align="middle" style={{ marginTop: 16 }}>
+                    <Col>
+                      <span style={{fontSize:'14px'}}>
+                        {t('paginationShow', {
+                          range1: (currentPage - 1) * pageSize + 1,
+                          range2: Math.min(currentPage * pageSize, paginationDetail),
+                          total: paginationDetail,
+                        })}
+                      </span>
+                    </Col>
+                    <Col>
+                      <Pagination
+                        total={paginationDetail}
+                        pageSize={pageSize}
+                        current={currentPage}
+                        showSizeChanger={false}
+                        onChange={(page, size) => {
+                          setPageSize(size);
+                          setCurrentPage(page);
+                        }}
+                        pageSizeOptions={['20', '30', '40', '50']}
+                        itemRender={(current, type, originalElement) =>{
+                            if (type === 'prev') {
+                              return <img src={leftPageIcon} style={{height:"24px" , width:"24px"}} />;
+                            }
+                            if (type === 'next') {
+                              return <img src={rightPageIcon} style={{height:"24px" , width:"24px"}} />;
+                            }
+                            return originalElement;
+                          }}
+                      />
+                    </Col>
+                  </Row>
+                )}
+              </>
             ) : (
               renderGridView()
             )}
@@ -804,7 +893,7 @@ const Jobs = () => {
       </div>
 
       {/* Add some global styles */}
-      <style jsx global>{`
+      <style jsx>{`
         .custom-modal .ant-modal-header {
           border-bottom: none;
           padding: 24px 24px 0;
@@ -827,6 +916,7 @@ const Jobs = () => {
         .custom-modal .ant-form-item-label > label {
           font-weight: 500;
         }
+
         .custom-modal .ant-input,
         .custom-modal .ant-select-selector,
         .custom-modal .ant-input-number {
@@ -914,9 +1004,12 @@ const Jobs = () => {
           font-size: 20px;
           font-weight: 500;
           margin-bottom: 4px;
+          height: 48px;
         }
         .job-title a {
           color: #212529;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
         .positions-count {
           color: #56616B;
@@ -1054,6 +1147,23 @@ const Jobs = () => {
         color: white !important;
         }
 
+        .new .ant-select-selector{
+          height: 21px !important;
+          display: flex;
+          align-items: center;
+          padding: 7px !important;
+        }
+
+        .new .ant-select-selection-item {
+          padding: 0 !important;
+          margin: 0;
+        }
+
+        .new .ant-select-arrow {
+          transform: translateX(50%);
+          transform: translateY(20%);
+        }
+
         .customized .ant-select-selector{
         height: 56px !important;
         border-radius: 8px !important;
@@ -1061,6 +1171,7 @@ const Jobs = () => {
         align-items: center;
         padding-left: 10px;
         }
+
 
         .add-candidate-btn{
           border-radius: 40px !important;
@@ -1122,11 +1233,22 @@ const Jobs = () => {
           }
         }
 
-
-
+        .ant-modal-mask {
+          z-index: 1999 !important;
+        }
+        .ant-modal, 
+        .ant-modal-wrap,
+        .ant-modal-mask {
+          z-index: 2000 !important;
+        }
         
-  
+        body.modal-open {
+          overflow: hidden;
+        }
       `}</style>
+      
+
+
     </div>
   );
 };

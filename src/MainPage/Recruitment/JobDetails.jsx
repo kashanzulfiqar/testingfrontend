@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Tabs, Spin, message, Tag, Button, Modal } from 'antd';
+import { Tabs, Spin, message, Tag, Button, Modal, Select } from 'antd';
 import { apiServices } from '../../Services/apiServices';
 import { useSelector } from 'react-redux';
 import { 
@@ -41,8 +41,9 @@ const JobDetails = () => {
   const [candidates, setCandidates] = useState([]);
   const authState = useSelector((state) => state.user.loginvalue);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [active, setActive] = useState('timeline');
-  const [status ,setstatus] = useState('');
+  const [active, setActive] = useState('candidates');
+  const [jobStatus, setJobStatus] = useState('');
+  const [statusLoading, setStatusLoading] = useState(false);
   const [isOpen ,setisOpen] = useState(false);
 
   console.log('JobDetails component mounted with jobId:', jobId);
@@ -52,6 +53,13 @@ const JobDetails = () => {
     fetchJobDetails();
     fetchJobCandidates();
   }, [jobId]);
+
+  useEffect(() => {
+    // Set job status from job details when data is loaded
+    if (jobDetails && jobDetails.status) {
+      setJobStatus(jobDetails.status);
+    }
+  }, [jobDetails]);
 
   const fetchJobDetails = async () => {
     const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
@@ -133,37 +141,43 @@ const JobDetails = () => {
 
   const handleAddCandidate = () => {
     setIsModalVisible(true);
+    // Add modal-open class to body to prevent scrolling
+    document.body.classList.add('modal-open');
   };
 
   const handleModalCancel = () => {
     setIsModalVisible(false);
+    // Remove modal-open class from body when modal is closed
+    document.body.classList.remove('modal-open');
   };
 
   const handleModalSuccess = () => {
     setIsModalVisible(false);
+    // Remove modal-open class from body when modal is closed after success
+    document.body.classList.remove('modal-open');
     fetchJobCandidates();
   };
 
 
   
   const items = [
-    {
-      key: 'timeline',
-      label: (
-        <div className='tab-container-items' style={{padding:"8px 0"}}>
-          <img className= 'tab-image' src={Timeline}></img>
-          <span style={{ fontSize: '16px', fontWeight: 500, marginLeft:"5px" }}>Timeline</span>
-        </div>
-      ),
-      children : (
-        <div>
-          <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Culpa nisi 
-           ex id expedita error eum delectus consequuntur vero, at, ab dolores
-           quisquam quibusdam deserunt consequatur?
-          </p>
-        </div>
-      )
-    },
+    // {
+    //   key: 'timeline',
+    //   label: (
+    //     <div className='tab-container-items' style={{padding:"8px 0"}}>
+    //       <img className= 'tab-image' src={Timeline}></img>
+    //       <span style={{ fontSize: '16px', fontWeight: 500, marginLeft:"5px" }}>Timeline</span>
+    //     </div>
+    //   ),
+    //   children : (
+    //     <div>
+    //       <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Culpa nisi 
+    //        ex id expedita error eum delectus consequuntur vero, at, ab dolores
+    //        quisquam quibusdam deserunt consequatur?
+    //       </p>
+    //     </div>
+    //   )
+    // },
     {
       key: 'candidates',
       label: (
@@ -178,10 +192,10 @@ const JobDetails = () => {
             candidates.map((candidate) => (
               <div key={candidate._id} className="candidate-card">
                 <div className="candidate-info">
-                  <div className="d-flex justify-content-between align-items-start">
+                  <div className="d-flex justify-content-between align-items-center">
                     <div>
                       <h4>
-                        <Link to={`/recruitment/candidates/${candidate._id}`} className="text-primary">
+                        <Link to={`/recruitment/candidates/${candidate._id}`} style={{fontWeight:"500", color:"#212529"}}>
                           {candidate.firstName} {candidate.lastName}
                         </Link>
                       </h4>
@@ -193,11 +207,11 @@ const JobDetails = () => {
                         candidate.status === 'SHORTLISTED' ? 'green' :
                         candidate.status === 'REJECTED' ? 'red' :
                         'default'
-                      }>
+                      } style={{borderRadius:"70px"}}>
                         {candidate.status?.charAt(0) + candidate.status?.slice(1).toLowerCase()}
                       </Tag>
                     </div>
-                    <Button type="primary" onClick={() => navigate(`/recruitment/candidates/${candidate._id}`)}>
+                    <Button onClick={() => navigate(`/recruitment/candidates/${candidate._id}`)} style={{backgroundColor:"#ff9244", color:"#ffffff", borderRadius:"12px"}}>
                       View Details
                     </Button>
                   </div>
@@ -213,23 +227,23 @@ const JobDetails = () => {
         </div>
       ),
     },
-    {
-      key: 'interview',
-      label: (
-        <div  className='tab-container-items'  style={{padding:"8px 0"}}>
-          <img className='tab-image' src={interview}></img>
-          <span style={{ fontSize: '16px', fontWeight: 500, marginLeft:"5px" }}>Interview</span>
-        </div>
-      ),
-      children:(
-        <div>
-          <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Magni culpa nobis
-            doloribus voluptatum dolorum eveniet, eligendi accusamus! Assumenda quos,
-            expedita harum aliquid voluptate, ipsam odio est sit eveniet nihil rerum!
-          </p>
-        </div>
-      )
-    },
+    // {
+    //   key: 'interview',
+    //   label: (
+    //     <div  className='tab-container-items'  style={{padding:"8px 0"}}>
+    //       <img className='tab-image' src={interview}></img>
+    //       <span style={{ fontSize: '16px', fontWeight: 500, marginLeft:"5px" }}>Interview</span>
+    //     </div>
+    //   ),
+    //   children:(
+    //     <div>
+    //       <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Magni culpa nobis
+    //         doloribus voluptatum dolorum eveniet, eligendi accusamus! Assumenda quos,
+    //         expedita harum aliquid voluptate, ipsam odio est sit eveniet nihil rerum!
+    //       </p>
+    //     </div>
+    //   )
+    // },
     {
       key: 'description',
       label: (
@@ -251,7 +265,7 @@ const JobDetails = () => {
   const activeItem = items.find((item)=> item.key === active);
 
   const handleStatus = (status)=>{
-    setstatus(status);
+    setJobStatus(status);
     setisOpen(false);
   }
 
@@ -259,11 +273,45 @@ const JobDetails = () => {
     setisOpen(!isOpen);
   }
 
+  const handleStatusChange = async (value) => {
+    const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
+    
+    if (!token) {
+      console.error('No authentication token found');
+      message.error('Authentication required');
+      return;
+    }
 
+    setStatusLoading(true);
+    
+    try {
+      const response = await apiServices(
+        "PUT",
+        `job/${jobId}`,
+        { status: value,
+          jobId: jobId
+        },
+        {
+          access_token: {
+            accessToken: token
+          }
+        }
+      );
 
-
-
-
+      if (response?.data?.status) {
+        setJobStatus(value);
+        setJobDetails({...jobDetails, status: value});
+        message.success('Job status updated successfully');
+      } else {
+        message.error(response?.data?.message || 'Failed to update job status');
+      }
+    } catch (error) {
+      console.error('Error updating job status:', error);
+      message.error('Failed to update job status');
+    } finally {
+      setStatusLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -325,31 +373,22 @@ const JobDetails = () => {
           <div style={{height:'80px' ,width:"80px", border:"1px solid transparent" , borderRadius:"50%", background:'#f5f1fd', color:'#9368e9', display:"flex", justifyContent:"center", alignItems:'center', marginLeft:"20px"}}>{jobDetails.title.split(' ').map(word=>word.charAt(0).toUpperCase()).join('')}</div>
           <div>
           <h3 className="ms-3 mt-2 mb-0">{jobDetails?.title.split(' ').map(word=>word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}</h3>
-          <Tag color="success" className="ms-3" style={{background:'#f5f1fd', borderRadius:"70px"}}>Open</Tag>
+          <Tag color="success" className="ms-3 mt-1" style={{background:'#f5f1fd', borderRadius:"70px"}}>{jobDetails?.status?.charAt(0) + jobDetails?.status?.slice(1).toLowerCase()}</Tag>
           </div>
         </div>
         <div className='me-4' style={{position:'relative'}}>
-          <button className='dropdown-btn' style={{
-           backgroundColor: status === 'Open' ? 'green' : status === 'On-Hold' ? '#ff9244' : status === 'Filled'  ? 'yellowgreen' : status === 'Cancelled' ? 'red' : 'grey',
-           color: 'white' ,
-           height:'40px', 
-           width:"80px", 
-           border:'1px solid transparent' ,
-           borderRadius:'8px',
-           fontSize: "16px",
-           fontWeight:"450",
-           fontSize: status === 'Cancelled' ? '12px' : '16px'}} 
-           onClick={()=>{setisOpen(!isOpen)}}>{status || 'Status'}
-          </button>
-          {isOpen&&(
-            <div style={{position: 'absolute',top: '100%', left: 0,zIndex: 1,backgroundColor: 'white',border: '1px solid #ddd',borderRadius: '5px',width: '100%',boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)'}}>
-              {['Open' , 'On-Hold' , 'Filled' , 'Cancelled'].map((option)=>(
-                <button key={option} onClick={()=>{handleStatus(option)}} style={{backgroundColor: 'white',color: 'black',textAlign: 'left',width: '100%',cursor: 'pointer',fontSize: '10px', border:"none", borderBottom:"1px solid #ddd", borderBottom: option === 'Cancelled'? 'none' : '1px solid #ddd' }}>
-                  {option} 
-                </button>
-              ))}
-            </div>
-          )}
+          <Select
+            placeholder="Job Status"
+            loading={statusLoading}
+            className='custom'
+            value={jobDetails?.status}
+            onChange={handleStatusChange}
+            options={[
+              { value: 'ACTIVE', label: 'Active' },
+              { value: 'CLOSED', label: 'Closed' },
+              { value: 'DRAFT', label: 'Draft' },
+            ]}
+          />
         </div>      
       </div>
 
@@ -450,7 +489,7 @@ const JobDetails = () => {
         }}
       />
 
-      <style jsx global>{`
+      <style jsx>{`
         .tab-container{
           display: flex;
           gap: 10px;
@@ -556,6 +595,19 @@ const JobDetails = () => {
           display: flex;
           justify-content: center;
           align-items: center;
+        }
+
+
+        .custom  .ant-select-selector {
+        height: 40px !important;
+        border-radius: 8px !important;
+        display: flex;
+        align-items: center;
+        padding-left: 10px;
+        }
+
+        .custom .ant-select-placeholder {
+        color: white !important;
         }
 
         .tab-label {

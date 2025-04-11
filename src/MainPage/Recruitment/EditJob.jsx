@@ -139,7 +139,7 @@ const EditJob = () => {
         </div>
       </div>
 
-      <style jsx global>{`
+      <style jsx>{`
         .job-card {
           background: white;
           border-radius: 8px;

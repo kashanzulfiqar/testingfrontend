@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, Routes, Route, Navigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
 import { useTranslation } from "react-i18next";
 import Header from '../../initialpage/Sidebar/header';
 import Dashboard from './Dashboard';
@@ -27,104 +26,213 @@ const RecruitmentLayout = () => {
   const location = useLocation();
   const { t } = useTranslation();
   const pathname = location.pathname;
-  const [openMenus, setOpenMenus] = useState([]);
 
-  const toggleSubmenu = (menu) => {
-    if (openMenus.includes(menu)) {
-      setOpenMenus(openMenus.filter(item => item !== menu));
+  const [oldOpenMenu, setOldOpenMenu] = useState("");
+  const [isSideMenu, setSideMenu] = useState("");
+  const [isSideMenunew, setSideMenuNew] = useState("dashboard");
+  const [menuState, setMenuState] = useState(false);
+  const [windowSize, setWindowSize] = useState(window.innerWidth);
+
+  useEffect(() => {
+    if (location?.pathname !== "/settings") {
+      sessionStorage.removeItem("active_setting");
+    }
+  }, [location]);
+
+  useEffect(() => {
+    if (document.body.classList.contains("mini-sidebar")) {
+      setOldOpenMenu(isSideMenu);
+      setSideMenu("");
     } else {
-      setOpenMenus([...openMenus, menu]);
+      setSideMenu(oldOpenMenu);
+    }
+  }, []);
+
+  // Add window resize event handler
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowSize(window.innerWidth);
+      
+      // Remove mini-sidebar class on small screens
+      if (window.innerWidth <= 991) {
+        document.body.classList.remove("mini-sidebar");
+        document.body.classList.remove("expand-menu");
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    // Initial check
+    handleResize();
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  // Add an effect to monitor the mini-sidebar class and close submenus when it's added
+  useEffect(() => {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          const isMiniSidebar = document.body.classList.contains('mini-sidebar');
+          if (isMiniSidebar) {
+            // Close submenu when sidebar is toggled to mini mode
+            setSideMenu("");
+          }
+        }
+      });
+    });
+
+    observer.observe(document.body, { attributes: true });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  const mouseHandle = (type) => {
+    // Skip hover effects on small screens
+    if (window.innerWidth <= 991) {
+      return;
+    }
+    
+    if (document.body.classList.contains("mini-sidebar")) {
+      document.body.classList.toggle("expand-menu", type !== "leave");
+
+      // Close submenu when mouse leaves
+      if (type === "leave") {
+        setSideMenu(""); // Close submenu
+      } else {
+        setSideMenu(oldOpenMenu); // Open submenu again
+      }
+    }
+  };
+
+  const toggleSidebar = (value) => {
+    // If sidebar is already in mini mode, don't allow submenu to open
+    if (document.body.classList.contains("mini-sidebar") && !document.body.classList.contains("expand-menu")) {
+      return;
+    }
+    
+    setSideMenu(value === isSideMenu ? "" : value);
+    setSideMenuNew(value);
+  };
+
+  // Handle mobile menu toggle
+  const onMenuClick = () => {
+    setMenuState(!menuState);
+    document.body.classList.toggle('slide-nav');
+    document.querySelector('.sidebar').classList.toggle('opened');
+  };
+
+  // Function to close sidebar on mobile when menu item is clicked
+  const closeSidebarOnMobile = () => {
+    const windowWidth = window.innerWidth;
+    if (windowWidth <= 991) {
+      setMenuState(false);
+      document.body.classList.remove('slide-nav');
+      document.querySelector('.sidebar').classList.remove('opened');
     }
   };
 
   return (
     <div className="main-wrapper">
-      <Header />
-      
-      {/* Recruitment-specific sidebar */}
-      <div className="sidebar" id="sidebar">
-        <div className="sidebar-inner slimscroll">
-          <div id="sidebar-menu" className="sidebar-menu">
-            <ul>
-              <li className="menu-title align-items-center" style={{gap:'5px'}}>
-                <div style={{height:"4px" , width:"4px" , borderRadius:"50%" , background:"#ff9244"}}></div>
-                <span>Main</span>
-              </li>
+      <Header onMenuClick={onMenuClick} />
 
-              <li className={pathname.includes("/recruitment/dashboard") ? "active" : ""}>
-                <Link to="/recruitment/dashboard">
-                  <img src={dashboard}></img> <span>Dashboard</span>
-                </Link>
-              </li>
-            </ul>
-            <ul style={{marginTop:"10px"}}>
-              <li className="menu-title align-items-center" style={{gap:'5px'}}>
-                <div style={{height:"4px" , width:"4px" , borderRadius:"50%" , background:"#ff9244"}}></div>
-                <span>Recruitment</span>
-              </li>
-
-              <li className={pathname.includes("/recruitment/jobs") ? "active" : ""}>
-                <Link to="/recruitment/jobs">
-                  <img src={jobsIcon}></img> <span>Jobs</span>
-                </Link>
-              </li>
-
-              <li className={`submenu ${pathname.includes("/recruitment/candidates") || openMenus.includes('candidates') ? "active" : ""}`}>
-                <a href="#" onClick={(e) => {
-                  e.preventDefault();
-                  toggleSubmenu('candidates');
-                }}>
-                  <img src={candidateIcon}></img> 
-                  <span>Candidates</span>
-                  <span className={`menu-arrow ${openMenus.includes('candidates') ? 'active' : ''}`} />
-                </a>
-                <ul style={{ 
-                  display: pathname.includes("/recruitment/candidates") || openMenus.includes('candidates') ? "block" : "none",
-                }}>
-                  <li className={pathname.includes("/recruitment/candidates/processing") ? "active" : ""}>
-                    <Link to="/recruitment/candidates/processing"  style={{display:"flex" , alignItems:"center"}}>
-                      <div style={{background:"#ff9244" , height:'4px' , width:"4px" , borderRadius:"50%"}}></div>
-                      <span>Processing</span>
-                    </Link>
+      {/* Sidebar */}
+      <div
+        className="sidebar"
+        id="sidebar"
+        onMouseEnter={() => mouseHandle("enter")}
+        onMouseLeave={() => mouseHandle("leave")}
+      >
+        <div style={{ position: 'relative', overflow: 'hidden', width: '100%', height: '100%' }}>
+          <div style={{ position: "absolute", inset: "0px", overflowX: "hidden", marginRight: "-15px", marginBottom: "-15px" }}>
+            <div className="sidebar-inner slimscroll">
+              <div id="sidebar-menu" className="sidebar-menu">
+                <ul>
+                  <li className="menu-title align-items-center" style={{ gap: '5px' }}>
+                    <div style={{ height: "4px", width: "4px", borderRadius: "50%", background: "#ff9244" }}></div>
+                    <span>Main</span>
                   </li>
-                  <li className={pathname.includes("/recruitment/candidates/offered") ? "active" : ""}>
-                    <Link to="/recruitment/candidates/offered" style={{display:"flex" , alignItems:"center"}}>
-                      <div style={{background:"#ff9244" , height:'4px' , width:"4px" , borderRadius:"50%"}}></div>
-                      <span>Offered</span>
-                    </Link>
-                  </li>
-                  <li className={pathname.includes("/recruitment/candidates/hired") ? "active" : ""}>
-                    <Link to="/recruitment/candidates/hired" style={{display:"flex" , alignItems:"center"}}>
-                      <div style={{background:"#ff9244" , height:'4px' , width:"4px" , borderRadius:"50%"}}></div>
-                      <span>Hired</span>
-                    </Link>
-                  </li>
-                  <li className={pathname.includes("/recruitment/candidates/blacklist") ? "active" : ""}>
-                    <Link to="/recruitment/candidates/blacklist" style={{display:"flex" , alignItems:"center"}}>
-                      <div style={{background:"#ff9244" , height:'4px' , width:"4px" , borderRadius:"50%"}}></div>
-                      <span>Blacklist</span>
+                  <li className={pathname.includes("/recruitment/dashboard") ? "active" : ""}>
+                    <Link to="/recruitment/dashboard" onClick={closeSidebarOnMobile}>
+                      <img src={dashboard} style={{ minHeight: "20px", minWidth: "20px" }} /> <span>Dashboard</span>
                     </Link>
                   </li>
                 </ul>
-              </li>
 
-              <li className={pathname.includes("/recruitment/interviews") ? "active" : ""}>
-                <Link to="/recruitment/interviews">
-                  <img src={interviewIcon}></img> <span>Interviews</span>
-                </Link>
-              </li>
+                <ul style={{ marginTop: "10px" }}>
+                  <li className="menu-title align-items-center" style={{ gap: '5px' }}>
+                    <div style={{ height: "4px", width: "4px", borderRadius: "50%", background: "#ff9244" }}></div>
+                    <span>Recruitment</span>
+                  </li>
 
-              <li className={pathname.includes("/recruitment/tasks") ? "active" : ""}>
-                <Link to="/recruitment/tasks">
-                  <img src={taskIcon}></img> <span>Tasks</span>
-                </Link>
-              </li>
-            </ul>
+                  <li className={pathname.includes("/recruitment/jobs") ? "active" : ""}>
+                    <Link to="/recruitment/jobs" onClick={closeSidebarOnMobile}>
+                      <img src={jobsIcon} style={{ minHeight: "20px", minWidth: "20px" }} /> <span>Jobs</span>
+                    </Link>
+                  </li>
+
+                  <li className={`submenu ${isSideMenu === "candidates" ? "active subdrop" : ""}`}>
+                    <a
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        toggleSidebar("candidates");
+                      }}
+                    >
+                      <img src={candidateIcon} style={{ minHeight: "20px", minWidth: "20px" }} />
+                      <span>Candidates</span>
+                      <span className="menu-arrow" />
+                    </a>
+                    <ul style={{ display: isSideMenu === "candidates" ? "block" : "none" }}>
+                      <li className={pathname.includes("/recruitment/candidates/processing") ? "active" : ""}>
+                        <Link to="/recruitment/candidates/processing" onClick={closeSidebarOnMobile} style={{ display: "flex", alignItems: "center" }}>
+                          <div style={{ background: "#ff9244", height: '4px', width: "4px", borderRadius: "50%" }}></div>
+                          <span>Processing</span>
+                        </Link>
+                      </li>
+                      <li className={pathname.includes("/recruitment/candidates/offered") ? "active" : ""}>
+                        <Link to="/recruitment/candidates/offered" onClick={closeSidebarOnMobile} style={{ display: "flex", alignItems: "center" }}>
+                          <div style={{ background: "#ff9244", height: '4px', width: "4px", borderRadius: "50%" }}></div>
+                          <span>Offered</span>
+                        </Link>
+                      </li>
+                      <li className={pathname.includes("/recruitment/candidates/hired") ? "active" : ""}>
+                        <Link to="/recruitment/candidates/hired" onClick={closeSidebarOnMobile} style={{ display: "flex", alignItems: "center" }}>
+                          <div style={{ background: "#ff9244", height: '4px', width: "4px", borderRadius: "50%" }}></div>
+                          <span>Hired</span>
+                        </Link>
+                      </li>
+                      <li className={pathname.includes("/recruitment/candidates/blacklist") ? "active" : ""}>
+                        <Link to="/recruitment/candidates/blacklist" onClick={closeSidebarOnMobile} style={{ display: "flex", alignItems: "center" }}>
+                          <div style={{ background: "#ff9244", height: '4px', width: "4px", borderRadius: "50%" }}></div>
+                          <span>Blacklist</span>
+                        </Link>
+                      </li>
+                    </ul>
+                  </li>
+
+                  <li className={pathname.includes("/recruitment/interviews") ? "active" : ""}>
+                    <Link to="/recruitment/interviews" onClick={closeSidebarOnMobile}>
+                      <img src={interviewIcon} style={{ minHeight: "20px", minWidth: "20px" }} /> <span>Interviews</span>
+                    </Link>
+                  </li>
+
+                  <li className={pathname.includes("/recruitment/tasks") ? "active" : ""}>
+                    <Link to="/recruitment/tasks" onClick={closeSidebarOnMobile}>
+                      <img src={taskIcon} style={{ minHeight: "20px", minWidth: "20px" }} /> <span>Tasks</span>
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Main content */}
+      {/* Main Content */}
       <div className="page-wrapper">
         <Routes>
           <Route path="/" element={<Navigate to="dashboard" replace />} />
@@ -149,4 +257,4 @@ const RecruitmentLayout = () => {
   );
 };
 
-export default RecruitmentLayout; 
+export default RecruitmentLayout;

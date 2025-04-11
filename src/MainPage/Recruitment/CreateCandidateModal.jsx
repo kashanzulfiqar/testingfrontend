@@ -91,6 +91,7 @@ const CreateCandidateModal = ({
         noticePeriod: values.noticePeriod,
         source: values.source,
         resume: resumeData,
+        skillSet: values.skillSet,
       };
 
       console.log("Creating candidate with payload:", formattedValues);
@@ -145,6 +146,8 @@ const CreateCandidateModal = ({
       footer={null}
       width={800}
       className="custom-modal"
+      style={{ zIndex: 2000 }}
+      maskStyle={{ zIndex: 1999, background: 'rgba(0, 0, 0, 0.5)' }}
     >
       <Form
         form={form}
@@ -205,7 +208,7 @@ const CreateCandidateModal = ({
               name="firstName"
               label={
                 <>
-                  First Name <span className="text-danger">*</span>
+                  First Name
                 </>
               }
               rules={[
@@ -227,7 +230,7 @@ const CreateCandidateModal = ({
               name="lastName"
               label={
                 <>
-                  Last Name <span className="text-danger">*</span>
+                  Last Name
                 </>
               }
               rules={[
@@ -252,7 +255,7 @@ const CreateCandidateModal = ({
               name="email"
               label={
                 <>
-                  Email <span className="text-danger">*</span>
+                  Email
                 </>
               }
               rules={[
@@ -268,7 +271,7 @@ const CreateCandidateModal = ({
               name="phoneNumber"
               label={
                 <>
-                  Phone Number <span className="text-danger">*</span>
+                  Phone Number
                 </>
               }
               rules={[
@@ -292,7 +295,7 @@ const CreateCandidateModal = ({
               name="appliedFor"
               label={
                 <>
-                  Applied For <span className="text-danger">*</span>
+                  Applied For
                 </>
               }
               rules={[
@@ -326,7 +329,7 @@ const CreateCandidateModal = ({
               name="appliedDate"
               label={
                 <>
-                  Applied Date <span className="text-danger">*</span>
+                  Applied Date
                 </>
               }
               rules={[
@@ -360,7 +363,7 @@ const CreateCandidateModal = ({
               name="status"
               label={
                 <>
-                  Application Status <span className="text-danger">*</span>
+                  Application Status
                 </>
               }
               rules={[
@@ -381,7 +384,7 @@ const CreateCandidateModal = ({
               name="experience"
               label={
                 <>
-                  Experience (Years) <span className="text-danger">*</span>
+                  Experience (Years)
                 </>
               }
               rules={[
@@ -433,7 +436,7 @@ const CreateCandidateModal = ({
               name="currentSalary"
               label={
                 <>
-                  Current Salary <span className="text-danger">*</span>
+                  Current Salary 
                 </>
               }
               rules={[
@@ -457,7 +460,7 @@ const CreateCandidateModal = ({
               name="expectedSalary"
               label={
                 <>
-                  Expected Salary <span className="text-danger">*</span>
+                  Expected Salary
                 </>
               }
               rules={[
@@ -485,7 +488,7 @@ const CreateCandidateModal = ({
               name="noticePeriod"
               label={
                 <>
-                  Notice Period <span className="text-danger">*</span>
+                  Notice Period 
                 </>
               }
               rules={[
@@ -506,7 +509,7 @@ const CreateCandidateModal = ({
               name="source"
               label={
                 <>
-                  Source <span className="text-danger">*</span>
+                  Source
                 </>
               }
               rules={[{ required: true, message: "Please select source" }]}
@@ -524,19 +527,19 @@ const CreateCandidateModal = ({
         <div className="row">
           <div className="col-md-6">
             <Form.Item
-              name="skillset"
+              name="skillSet"
               label={
                 <>
-                  Skill Set <span className="text-danger">*</span>
+                  Skill Set
                 </>
               }
               rules={[
                 { required: true, message: "Please enter atleast one skill" },
               ]}
             >
-               <Select  className='customized'
+               <Select  className='custom'
                   mode="tags"
-                  style={{ width: "100%" }}
+                  style={{ width: "100%" , minHeight: "unset", height: "auto"}}
                   placeholder="Enter your Skills"
                   tokenSeparators={[" "]}
                 />
@@ -576,7 +579,7 @@ const CreateCandidateModal = ({
         </Form.Item>
       </Form>
 
-      <style jsx global>{`
+      <style jsx>{`
         .custom-modal .ant-modal-content{
           border: 1px solid transparent;
           border-radius: 10px;
@@ -627,6 +630,21 @@ const CreateCandidateModal = ({
         padding-left: 10px;
         }
 
+      .custom .ant-select-selector {
+        border-radius: 8px !important;
+        display: flex;
+        align-items: flex-start !important;
+        flex-wrap: wrap !important;
+        height: auto !important;
+        padding: 4px 10px !important;
+        overflow: hidden !important;
+      }
+
+      .custom .ant-select-selection-item {
+        max-width: 100% !important;
+        white-space: normal !important;
+        word-break: break-word !important;
+      }
         
         .upload-resume {
           padding: 16px;
@@ -642,6 +660,18 @@ const CreateCandidateModal = ({
           border: 1px solid #ff9244;
           border-radius: 40px;
           color: #ff9244;
+        }
+
+        /* Z-index overrides to ensure modal appears above sidebar */
+        .ant-modal, 
+        .ant-modal-wrap,
+        .ant-modal-mask {
+          z-index: 2000 !important;
+        }
+        
+        /* Additional styles to prevent scrolling when modal is open */
+        body.modal-open {
+          overflow: hidden;
         }
       `}</style>
     </Modal>

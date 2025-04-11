@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Input, Space, Tag, Modal, Form, message, Col, Select, DatePicker, Row, Empty, Dropdown, Menu } from 'antd';
+import { Table, Button, Input, Space, Tag, Modal, Form, message, Col, Select, DatePicker, Row, Empty, Dropdown, Menu, Pagination } from 'antd';
 import { Link } from 'react-router-dom';
 import {  UserOutlined , CheckCircleOutlined ,EyeOutlined } from '@ant-design/icons';
 import { apiServices } from '../../Services/apiServices';
@@ -8,8 +8,14 @@ import moment from 'moment';
 import calander from '../../assets/iconsRecruitment/calander.svg';
 import circle from '../../assets/iconsRecruitment/circle.svg';
 import more from '../../assets/iconsRecruitment/vertical.svg';
+import { useTranslation } from "react-i18next";
+import leftPageIcon from '../../assets/iconsRecruitment/fi_chevrons-left.svg';
+import rightPageIcon from '../../assets/iconsRecruitment/fi_chevrons-right.svg';
+import { useNavigate } from 'react-router-dom';
 
 const BlacklistedCandidates = () => {
+  const {t} = useTranslation();
+  const [filters , setFilters] = useState({});
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -20,14 +26,26 @@ const BlacklistedCandidates = () => {
     pageSize: 10,
     total: 0
   });
+  const [paginationDetail , setPaginationDetail] = useState(0);
+  const [pageSize , setPageSize] =useState(20);
+  const [currentPage,setCurrentPage] =useState(1);
+  const navigate = useNavigate();
   // const [filters, setFilters] = useState({});
 
 
   useEffect(() => {
+    const token = authState?.access_token?.accessToken || localStorage.getItem("token");
+    
+    if (!token) {
+      message.error("Please login again to continue");
+      navigate('/login');
+      return;
+    }
+    
     fetchBlacklistedCandidates();
-  }, []);
+  }, [currentPage, pageSize]);
 
-  const fetchBlacklistedCandidates = async (page = 1, limit = 10) => {
+  const fetchBlacklistedCandidates = async (page = 1, limit = 10, filters = {}) => {
     try {
       setLoading(true);
       const token = authState?.access_token?.accessToken || localStorage.getItem("token");
@@ -35,14 +53,20 @@ const BlacklistedCandidates = () => {
       if (!token) {
         console.log('No token found');
         setCandidates([]);
+        setPaginationDetail(0);
         return;
       }
 
-      const url = `candidate/list?status=BLACKLISTED&page=${page}&limit=${limit}`;
+      const queryParams = {
+        status: 'BLACKLISTED',
+        page: currentPage,
+        limit: pageSize,
+        ...(filters.fullName && {fullName: filters.fullName}),
+        ...(filters.email && {email : filters.email}),
+        ...(filters.reason && { reason: filters.reason }),   
+      };
+      const url = `candidate/list?${new URLSearchParams(queryParams).toString()}`;
       console.log('Making API call to:', url);
-      console.log('Request headers:', {
-        Authorization: `Bearer ${token}`,
-      });
 
       const response = await apiServices(
         'GET', 
@@ -75,35 +99,33 @@ const BlacklistedCandidates = () => {
           total: response.data.pagination?.total || 0,
           pageSize: limit
         });
+        setPaginationDetail(response.data.data.totalDocs || 0);
       } else {
         console.log('No candidates found or error in response');
         setCandidates([]);
+        setPaginationDetail(0);
       }
     } catch (error) {
-      console.error('Error details:', {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status
-      });
+      console.error('Error fetching blacklisted candidates:', error);
       message.error('Failed to fetch blacklisted candidates');
       setCandidates([]);
+      setPaginationDetail(0);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleTableChange = (newPagination) => {
-    fetchBlacklistedCandidates(newPagination.current, newPagination.pageSize);
-  };
+  // const handleTableChange = (newPagination) => {
+  //   fetchBlacklistedCandidates(newPagination.current, newPagination.pageSize);
+  // };
 
-  const handleSearch = (value) => {
-    // Reset pagination when searching
-    setPagination(prev => ({
-      ...prev,
+  const handleSearch = (values) => {
+    setFilters(values);
+    setPagination({
+      ...pagination,
       current: 1
-    }));
-    // TODO: Implement search functionality
-    console.log('Search value:', value);
+    });
+    fetchBlacklistedCandidates(1, pageSize, values);
   };
 
   const handleAddToBlacklist = async (values) => {
@@ -115,12 +137,18 @@ const BlacklistedCandidates = () => {
         return;
       }
 
+      // Log the values to check the status
+      console.log('Form Values:', values);
+
       // Format the request body according to the API requirements
       const requestBody = {
         candidateName: values.name,
         email: values.email,
-        blacklistReason: values.reason
+        blacklistReason: values.reason,
+        status: values.status // Ensure this is being set correctly
       };
+
+      console.log('Request Body:', requestBody);
 
       const response = await apiServices(
         'POST', 
@@ -186,7 +214,7 @@ const BlacklistedCandidates = () => {
         const candidateName = `${record.firstName} ${record.lastName}`
         return(
           <div style={{display:"flex", alignItems:'center'}}>
-            <div style={{height:'40px' ,width:"40px", border:"1px solid transparent" , borderRadius:"50%", background:'#f5f1fd', color:'#9368e9', display:"flex", justifyContent:"center", alignItems:'center', marginRight:"10px"}}>{initials}</div>
+            <div style={{minHeight:'40px' ,minWidth:"40px", border:"1px solid transparent" , borderRadius:"50%", background:'#f5f1fd', color:'#9368e9', display:"flex", justifyContent:"center", alignItems:'center', marginRight:"10px"}}>{initials}</div>
             <Link to={`/recruitment/candidates/${record._id}`} style={{color:"#212529" ,fontSize:"14px" ,fontWight:"500"}}>
               {candidateName}
             </Link>
@@ -286,42 +314,23 @@ const BlacklistedCandidates = () => {
       className="search-form"
       initialValues={pagination}
     >
-      <Row gutter={[12, 12]} align="middle">
-        <Col xs={24} sm={12} md={5}>
-          <Form.Item name="candidateName" className="mb-0">
+      <Row gutter={[12, 12]} align="middle" justify='flex-start'>
+        <Col xs={24} sm={12} md={8}>
+          <Form.Item name="fullName" className="mb-0">
             <Input style={{borderRadius:"8px", height:"40px"}} placeholder="Name" allowClear />
           </Form.Item>
         </Col>
-        <Col xs={24} sm={12} md={5}>
-          <Form.Item name="appliedPosition" className="mb-0">
-            <Input style={{borderRadius:"8px", height:"40px"}} placeholder="Position" allowClear />
+        <Col xs={24} sm={12} md={8}>
+          <Form.Item name="email" className="mb-0">
+            <Input style={{borderRadius:"8px", height:"40px"}} placeholder="Email" allowClear />
           </Form.Item>
         </Col>
-        <Col xs={24} sm={12} md={5}>
-          <Form.Item name="status" className="mb-0">
-            <DatePicker
-            placeholder="Blacklist Date"
-            className="custom"
-            allowClear
-            suffixIcon= {<img src={calander}></img>}
-          />
+        {/* <Col xs={24} sm={12} md={6}>
+          <Form.Item name="reason" className="mb-0">
+            <Input style={{borderRadius:"8px", height:"40px"}} placeholder="Blacklist Reason" allowClear />
           </Form.Item>
-        </Col>
-        <Col xs={24} sm={12} md={5}>
-          <Form.Item name="blacklistReason" className="mb-0">
-            <Select placeholder="Blacklist Reason" allowClear
-            className='custom'
-              options={[
-                // { value: 'FULL_TIME', label: 'Full Time' },
-                // { value: 'PART_TIME', label: 'Part Time' },
-                // { value: 'CONTRACT', label: 'Contract' },
-                // { value: 'INTERNSHIP', label: 'Internship' },
-                // { value: 'FREELANCE', label: 'Freelance' }
-              ]}
-            />
-          </Form.Item>
-        </Col>
-        <Col xs={24} sm={12} md={4}>
+        </Col> */}
+        <Col xs={24} sm={12} md={5} style={{ marginLeft:'auto' }}>
           <Form.Item className="mb-0">
             <Button type="primary" htmlType="submit" className="search-btn" block>
               Search
@@ -330,24 +339,87 @@ const BlacklistedCandidates = () => {
         </Col>
       </Row>
     </Form>
-
-    <Table
-      className="custom-table mt-4"
+          <>
+          {candidates?.length > 0 && (
+      <Row justify="space-between" style={{ marginTop:16}}>
+        <Col>
+          <div style={{display:'flex', alignItems:'center', gap:'5px'}}>
+            <div style={{fontSize:'14px'}}>Show</div>
+            <Select
+              className='customized'
+              value={pageSize}
+              onChange={(size) => {
+                setPageSize(size);
+                setCurrentPage(1);
+              }}
+              style={{width:60}}
+            >
+              {['20', '30', '40', '50'].map((size) => (
+                <Option key={size} value={parseInt(size, 10)}>
+                  {size}
+                </Option>
+              ))}
+            </Select>
+            <div style={{fontSize:'14px'}}>entries</div>
+          </div>
+        </Col>
+      </Row>
+    )}
+        <Table
+      className="custom-table mt-3"
       columns={columns}
       dataSource={candidates}
       rowKey="_id"
       loading={loading}
-      pagination={{
-        ...pagination,
-        showSizeChanger: true,
-        showTotal: (total, range) =>
-          `${range[0]}-${range[1]} of ${total} candidates`,
-      }}
-        onChange={handleTableChange}
+      // pagination={{
+      //   ...pagination,
+      //   showSizeChanger: true,
+      //   showTotal: (total, range) =>
+      //     `${range[0]}-${range[1]} of ${total} candidates`,
+      // }}
+      //   onChange={handleTableChange}
+      pagination={false}
         locale={{
           emptyText: <Empty description="No blacklisted candidates found" />
         }}
     />
+        {candidates?.length > 0 && (
+      <Row justify="space-between" align="middle" style={{ marginTop: 16 }}>
+        <Col>
+          <span style={{fontSize:'14px'}}>
+            {t('paginationShow', {
+              range1: (currentPage - 1) * pageSize + 1,
+              range2: Math.min(currentPage * pageSize, paginationDetail),
+              total: paginationDetail,
+            })}
+          </span>
+        </Col>
+        <Col>
+          <Pagination
+            total={paginationDetail}
+            pageSize={pageSize}
+            current={currentPage}
+            showSizeChanger={false}
+            onChange={(page, size) => {
+              setPageSize(size);
+              setCurrentPage(page);
+            }}
+            pageSizeOptions={['20', '30', '40', '50']}
+            itemRender={(current, type, originalElement) => {
+              if (type === 'prev') {
+                return <img src={leftPageIcon} style={{height:"24px" , width:"24px"}} />;
+              }
+              if (type === 'next') {
+                return <img src={rightPageIcon} style={{height:"24px" , width:"24px"}} />;
+              }
+              return originalElement;
+            }}
+          />
+        </Col>
+      </Row>
+    )}
+          </>
+
 
       <Modal
         title="Add to Blacklist"
@@ -426,7 +498,7 @@ const BlacklistedCandidates = () => {
         </Form>
       </Modal>
 
-      <style jsx global>{`
+      <style jsx>{`
         .add-candidate-btn{
           border-radius: 40px !important;
           height: 44px !important;
@@ -559,7 +631,6 @@ const BlacklistedCandidates = () => {
         background-color: #f7f7f8;
         color: #181d27;
         font-size: 14px;
-        font-weight: 450;
       }
 
       .custom-table tr:nth-child(even){
@@ -570,6 +641,22 @@ const BlacklistedCandidates = () => {
         background-color: #f1f1f1;
       }
 
+      .customized .ant-select-selector {
+        height: 21px !important;
+        display: flex;
+        align-items: center;
+        padding: 7px !important;
+      }
+
+      .customized .ant-select-selection-item {
+        padding: 0 !important;
+        margin: 0;
+      }
+
+      .customized .ant-select-arrow {
+        transform: translateX(50%);
+        transform: translateY(20%);
+      }
         
       `}</style>
     </div>

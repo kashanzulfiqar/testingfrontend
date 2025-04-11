@@ -269,7 +269,7 @@ const TaskDetails = () => {
           <div>
             <ul className="breadcrumb">
               <li className="breadcrumb-item"><Link to="/recruitment/tasks">Tasks</Link></li>
-              <li className="breadcrumb-item active">{FullName}</li>
+              <li className="breadcrumb-item active">{FullName.split(' ').map(word=>word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}</li>
             </ul>
           </div>
         </div>
@@ -280,14 +280,14 @@ const TaskDetails = () => {
         <div style={{display:"flex", alignItems:'center'}}>
           <div className='initials-details'>{task?.candidateId.firstName?.[0].toUpperCase()}{task?.candidateId.lastName?.[0].toUpperCase()}</div>
           <div>
-            <h3 className="ms-3 mt-2 mb-0" style={{fontSize:'20px', fontweight:'500', color:"#000000"}}>{FirstName + ' ' + LastName} </h3>
-            <h5 className='ms-3' style={{fontSize:'14px', fontweight:'450', color:"#444444"}} >Hello</h5> 
+            <h3 className="ms-3 mt-2 mb-0" style={{fontSize:'20px', fontweight:'500', color:"#000000"}}>{FirstName.charAt(0).toUpperCase() + FirstName.slice(1).toLowerCase() + ' ' + LastName.charAt(0).toUpperCase() + LastName.slice(1).toLowerCase()} </h3>
+            <h5 className='ms-3' style={{fontSize:'14px', fontweight:'450', color:"#444444"}} >{task?.candidateId?.appliedFor?.title. split(' ').map(word=>word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}</h5> 
             <div style={{paddingLeft:"10px"}}>
               <img src={starIcon}></img>
               <span style={{ marginLeft:'10px'}}>{task?.feedback.rating}</span>
             </div>   
           </div>
-          <Tag className='tag-style'>{task?.candidateId?.appliedFor.status[0] + task?.candidateId?.appliedFor.status.slice(1).toLowerCase()}</Tag>
+          <Tag className='tag-style'style={{borderRadius:"70px"}}>{task?.candidateId?.appliedFor.status[0] + task?.candidateId?.appliedFor.status.slice(1).toLowerCase()}</Tag>
         </div>
         <div className="custom">
           <div
@@ -338,7 +338,7 @@ const TaskDetails = () => {
         <Row gutter={[24, 16]} wrap={true} style={{ marginTop: "10px", display: 'flex', flexWrap: 'wrap' }}>
           <Col xs={12} sm={12} md={8} lg={6} style={{ paddingTop: "10px" }}>
             <p className="text-muted mb-1" style={{ fontSize: "14px", fontWeight: "450", color: '#212529' }}>Task Type</p>
-            <p style={{ fontSize: "16px", fontWeight: "500", color: '#3b4249' }}>{task?.taskType}</p>
+            <p style={{ fontSize: "16px", fontWeight: "500", color: '#3b4249' }}>{task?.taskName.split(' ').map(word=>word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}</p>
           </Col>
           <Col xs={12} sm={12} md={8} lg={6} style={{ paddingTop: "10px" }}>
             <p className="text-muted mb-1" style={{ fontSize: "14px", fontWeight: "450", color: '#212529' }}>Duration</p>

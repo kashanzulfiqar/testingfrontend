@@ -102,6 +102,8 @@ const CreateTaskModal = ({ isVisible, onCancel, onSubmit, candidate, authState }
       footer={null}
       width={800}
       className="custom-modal"
+      style={{ zIndex: 2000 }}
+      maskStyle={{ zIndex: 1999, background: 'rgba(0, 0, 0, 0.5)' }}
     >
       <Form
         form={form}
@@ -117,7 +119,7 @@ const CreateTaskModal = ({ isVisible, onCancel, onSubmit, candidate, authState }
           <div className="col-md-6">
             <Form.Item
               name="candidateName"
-              label={<>Candidate Name <span className="text-danger">*</span></>}
+              label={<>Candidate Name</>}
               rules={[{ required: true, message: 'Please enter candidate name' }]}
             >
               <Input placeholder="Enter Name" />
@@ -126,7 +128,7 @@ const CreateTaskModal = ({ isVisible, onCancel, onSubmit, candidate, authState }
           <div className="col-md-6">
             <Form.Item
               name="candidateEmail"
-              label={<>Candidate Email <span className="text-danger">*</span></>}
+              label={<>Candidate Email</>}
               rules={[{ required: true, message: 'Please enter candidate email' }]}
             >
               <Input placeholder="Enter Email"/>
@@ -138,7 +140,7 @@ const CreateTaskModal = ({ isVisible, onCancel, onSubmit, candidate, authState }
           <div className="col-md-6">
             <Form.Item
               name="taskName"
-              label={<>Task Name <span className="text-danger">*</span></>}
+              label={<>Task Name</>}
               rules={[{ required: true, message: 'Please enter task name' }]}
             >
               <Input placeholder="Enter Task Name" />
@@ -182,8 +184,8 @@ const CreateTaskModal = ({ isVisible, onCancel, onSubmit, candidate, authState }
         <div className="row">
           <div className="col-md-6">
             <Form.Item
-              name="taskReviewer"
-              label={<>Task Reviewer <span className="text-danger">*</span></>}
+              name="taskReviewers"
+              label={<>Task Reviewer</>}
               rules={[{ required: true, message: 'Please select task reviewer' }]}
             >
               <Select
@@ -211,7 +213,7 @@ const CreateTaskModal = ({ isVisible, onCancel, onSubmit, candidate, authState }
           <div className="col-md-6">
             <Form.Item
               name="lastDateOfSubmission"
-              label={<>Last Date of Submission <span className="text-danger">*</span></>}
+              label={<>Last Date of Submission</>}
               rules={[{ required: true, message: 'Please select submission date' }]}
             >
               <DatePicker 
@@ -228,7 +230,7 @@ const CreateTaskModal = ({ isVisible, onCancel, onSubmit, candidate, authState }
           <div className="col-md-6">
             <Form.Item
               name="taskDuration"
-              label={<>Task Duration <span className="text-danger">*</span></>}
+              label={<>Task Duration</>}
               rules={[
                 { required: true, message: 'Please enter task duration' },
                 { 
@@ -294,7 +296,7 @@ const CreateTaskModal = ({ isVisible, onCancel, onSubmit, candidate, authState }
         </div>
       </Form>
 
-      <style jsx global>{`
+      <style jsx>{`
         .custom-modal .ant-modal-header {
           border-bottom: none;
           padding: 24px 24px 0;
@@ -390,6 +392,16 @@ const CreateTaskModal = ({ isVisible, onCancel, onSubmit, candidate, authState }
           border: none;
           cursor: pointer;
           height: 100%;
+        }
+
+        .ant-modal, 
+        .ant-modal-wrap,
+        .ant-modal-mask {
+          z-index: 2000 !important;
+        }
+        
+        body.modal-open {
+          overflow: hidden;
         }
 
       `}</style>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Input, Card, Tag, Empty, message, Button, Select, Modal, Form, Tooltip, Row, Col, Statistic} from 'antd';
+import { Table, Input, Card, Tag, Empty, message, Button, Select, Modal, Form, Tooltip, Row, Col, Statistic, Pagination} from 'antd';
 import { Link, useNavigate } from 'react-router-dom';
 import { SearchOutlined, DownloadOutlined, InfoCircleOutlined, StarFilled } from '@ant-design/icons';
 import moment from 'moment';
@@ -11,10 +11,16 @@ import calander from '../../assets/iconsRecruitment/calander.svg';
 import phone from '../../assets/iconsRecruitment/phone.svg';
 import email from '../../assets/iconsRecruitment/mail.svg';
 import starIcon from '../../assets/iconsRecruitment/starIcon.svg';
+import { useTranslation } from "react-i18next";
+import leftPageIcon from '../../assets/iconsRecruitment/fi_chevrons-left.svg';
+import rightPageIcon from '../../assets/iconsRecruitment/fi_chevrons-right.svg';
+
 
 const { Option } = Select;
 
 const OfferedCandidates = () => {
+  const {t} = useTranslation();
+  const [filters ,setFilters] = useState({});
   const [candidates, setCandidates] = useState([]);
   const [viewType, setViewType] =useState('list')
   const [loading, setLoading] = useState(false);
@@ -35,6 +41,9 @@ const OfferedCandidates = () => {
   });
   const navigate = useNavigate();
   const loginState = useSelector((state) => state.user.loginvalue);
+  const [paginationDetail , setPaginationDetail] = useState();
+  const [pageSize , setPageSize] =useState(20);
+  const [currentPage,setCurrentPage] =useState(1);
 
   const handleStatusChange = async (candidateId, newStatus) => {
     if (newStatus === 'OFFER_REJECTED') {
@@ -77,7 +86,7 @@ const OfferedCandidates = () => {
 
       if (response?.data?.status) {
         message.success('Status updated successfully');
-        fetchOfferedCandidates(pagination.current, pagination.pageSize);
+        fetchOfferedCandidates(currentPage,pageSize);
       } else {
         throw new Error(response?.data?.message || 'Failed to update status');
       }
@@ -95,7 +104,7 @@ const OfferedCandidates = () => {
     await updateCandidateStatus(selectedCandidate, 'OFFER_REJECTED', values.rejectionReason);
   };
 
-  const fetchOfferedCandidates = async (page = 1, limit = 10) => {
+  const fetchOfferedCandidates = async (page = 1, limit = 10, filters = {}) => {
     try {
       setLoading(true);
       const token = loginState?.access_token?.accessToken || localStorage.getItem("token");
@@ -106,9 +115,18 @@ const OfferedCandidates = () => {
         return;
       }
 
+      const queryParams = {
+        status: 'OFFERED',
+        page: currentPage,
+        limit: pageSize,
+        ...(filters.fullName && {fullName: filters.fullName}),
+        ...(filters.email && {email : filters.email}),
+        ...(filters.appliedFor && { appliedFor: filters.appliedFor}),
+      };
+
       const response = await apiServices(
         'GET',
-        `candidate/list?status=SHORTLISTED&page=${page}&limit=${limit}`,
+        `candidate/list?${new URLSearchParams(queryParams).toString()}`,
         null,
         {
           access_token: {
@@ -139,10 +157,14 @@ const OfferedCandidates = () => {
           current: page,
           total: response.data.data.totalDocs || 0
         });
+
+        setPaginationDetail(response.data.data.totalDocs || 0);
       }
     } catch (error) {
       console.error('Error fetching offered candidates:', error);
       message.error('Failed to fetch offered candidates');
+      setCandidates([]);
+      setPaginationDetail(0);
     } finally {
       setLoading(false);
     }
@@ -158,15 +180,20 @@ const OfferedCandidates = () => {
     }
     
     fetchOfferedCandidates();
-  }, []);
+  }, [currentPage, pageSize]);
 
-  const handleTableChange = (newPagination) => {
-    fetchOfferedCandidates(newPagination.current, newPagination.pageSize);
-  };
+  // const handleTableChange = (newPagination) => {
+  //   fetchOfferedCandidates(newPagination.current, newPagination.pageSize);
+  // };
 
-  const handleSearch = (value) => {
-    // Implement search functionality here
-    console.log('Search value:', value);
+  const handleSearch = (values) => {
+    console.log('Search Values:', values);
+    setPagination({
+      ...pagination,
+      currentPage: 1
+    });
+    fetchOfferedCandidates(1,pageSize, values);
+    setFilters(values);
   };
 
   const getStatusTag = (status) => {
@@ -186,9 +213,9 @@ const OfferedCandidates = () => {
       width: 200,
       render: (_, record) => (
         <div style={{display:"flex", alignItems:'center'}}>
-          <div style={{height:'40px' ,width:"40px", border:"1px solid transparent" , borderRadius:"50%", background:'#f5f1fd', color:'#9368e9', display:"flex", justifyContent:"center", alignItems:'center', marginLeft:"10px", marginRight:"10px"}}>{`${record.firstName.charAt(0).toUpperCase()}${record.lastName.charAt(0).toUpperCase()}`}</div>
-          <Link to={`/recruitment/candidates/${record._id}`}>
-            {record.firstName} {record.lastName}
+          <div style={{minHeight:'40px' ,minWidth:"40px", border:"1px solid transparent" , borderRadius:"50%", background:'#f5f1fd', color:'#9368e9', display:"flex", justifyContent:"center", alignItems:'center', marginLeft:"10px", marginRight:"10px"}}>{`${record.firstName.charAt(0).toUpperCase()}${record.lastName.charAt(0).toUpperCase()}`}</div>
+          <Link to={`/recruitment/candidates/${record._id}`} style={{fontSize:"14px", color:"#212529"}}>
+            {record.firstName.charAt(0).toUpperCase() + record.firstName.slice(1).toLowerCase()} {record.lastName.charAt(0).toUpperCase() + record.lastName.slice(1).toLowerCase()}
           </Link>
         </div>
       ),
@@ -278,7 +305,7 @@ const OfferedCandidates = () => {
           record?.status.toLowerCase() === 'hired' ? 'green' :
           record?.status.toLowerCase() === 'offer_rejected' ? 'red' :
           'default'
-        }>
+        } style={{borderRadius:"70px"}}>
           {record?.status.charAt(0).toUpperCase() + record?.status.slice(1).toLowerCase()}
         </Tag>
       ),
@@ -366,7 +393,7 @@ const OfferedCandidates = () => {
                     <div  style={{paddingTop:"3px", marginLeft:"12px",color:"#56616b"}}>{selected?.rating || 'N/A'}</div>
                   </div>
                   <Tag color={
-                        selected?.status.toLowerCase() === 'offered' || 'shortlisted' ?  'blue' :
+                        selected?.status.toLowerCase() === 'offered' ?  'blue' :
                         selected?.status.toLowerCase() === 'hired' ? 'green' :
                         selected?.status.toLowerCase() === 'offer_rejected' ? 'red' : ' '
                       } style={{borderRadius:'70px', marginTop:"13px"}}
@@ -405,7 +432,7 @@ const OfferedCandidates = () => {
           <h3 className="page-title">Offered</h3>
           <ul className="breadcrumb">
             <li className="breadcrumb-item"><Link to="/recruitment/dashboard">Dashboard</Link></li>
-            <li className="breadcrumb-item"><Link to="/recruitment/candidates">Candidates</Link></li>
+            <li className="breadcrumb-item"><Link to="/recruitment/candidates/processing">Candidates</Link></li>
             <li className="breadcrumb-item active">Offered</li>
           </ul>
         </div>
@@ -426,42 +453,31 @@ const OfferedCandidates = () => {
     <Form 
       form={form}
       onFinish={handleSearch} 
+      onValuesChange={(changedValues, allValues) => {
+        const clearedField = Object.keys(changedValues).find(
+          key => changedValues[key] === '' || changedValues[key] === undefined
+        );
+        if (clearedField) {
+          handleSearch(allValues);        
+        }
+      }}
       className="search-form"
-      // initialValues={filters}
+      initialValues={filters}
     >
       <Row gutter={[12, 12]} align="middle">
-        <Col xs={24} sm={12} md={5}>
-          <Form.Item name="candidateName" className="mb-0">
+        <Col xs={24} sm={12} md={7}>
+          <Form.Item name="fullName" className="mb-0">
             <Input style={{borderRadius:"8px", height:"40px"}} placeholder="Candidate Name" allowClear />
           </Form.Item>
         </Col>
-        <Col xs={24} sm={12} md={5}>
+        <Col xs={24} sm={12} md={7}>
           <Form.Item name="email" className="mb-0">
             <Input style={{borderRadius:"8px", height:"40px"}} placeholder="Email" allowClear />
           </Form.Item>
         </Col>
-        <Col xs={24} sm={12} md={5}>
-          <Form.Item name="position" className="mb-0">
+        <Col xs={24} sm={12} md={6}>
+          <Form.Item name="appliedFor" className="mb-0">
             <Input style={{borderRadius:"8px", height:"40px"}} placeholder="Applied Position" allowClear />
-          </Form.Item>
-        </Col>
-        <Col xs={24} sm={12} md={5}>
-          <Form.Item name="status" className="mb-0">
-            <Select
-              placeholder="Interview Status"
-              allowClear
-              className='custom'
-              options={[
-                { value: 'Engineering', label: 'Engineering' },
-                { value: 'Marketing', label: 'Marketing' },
-                { value: 'Sales', label: 'Sales' },
-                { value: 'HR', label: 'HR' },
-                { value: 'Finance', label: 'Finance' },
-                { value: 'Operations', label: 'Operations' },
-                { value: 'Design', label: 'Design' },
-                { value: 'Product', label: 'Product' }
-              ]}
-            />
           </Form.Item>
         </Col>
         <Col xs={24} sm={12} md={4}>
@@ -504,24 +520,87 @@ const OfferedCandidates = () => {
         </Col>
       </Row> */}
       {viewType === 'list' ? (
-      <Table
-        className="mt-4"
+        <>
+                {candidates?.length > 0 && (
+                  <Row justify="space-between" style={{ marginTop:16}}>
+                    <Col>
+                      <div style={{display:'flex', alignItems:'center', gap:'5px'}}>
+                      <div style={{fontSize:'14px'}}>Show</div>
+                      <Select
+                        className='customized'
+                        value={pageSize}
+                        onChange={(size) => {
+                          setPageSize(size);
+                          setCurrentPage(1);
+                        }}
+                        style={{width:60}}
+                      >
+                        {['20', '30', '40', '50'].map((size) => (
+                          <Option key={size} value={parseInt(size, 10)}>
+                            {size}
+                          </Option>
+                        ))}
+                      </Select>
+                      <div style={{fontSize:'14px'}}>entries</div>
+                      </div>
+                    </Col>
+                  </Row>
+                )}
+        <Table
+        className="mt-2"
         columns={columns}
         dataSource={candidates}
         rowKey={(record) => record._id}
         loading={loading}
         // scroll={{ x: 1350 }}
-        pagination={{
-          ...pagination,
-          showSizeChanger: true,
-          showTotal: (total, range) =>
-            `${range[0]}-${range[1]} of ${total} candidates`,
-        }}
-        onChange={handleTableChange}
+        // pagination={{
+        //   ...pagination,
+        //   showSizeChanger: true,
+        //   showTotal: (total, range) =>
+        //     `${range[0]}-${range[1]} of ${total} candidates`,
+        // }}
+        // onChange={handleTableChange}
+        pagination={false}
         locale={{
           emptyText: <Empty description="No offered candidates found" />
         }}
       />
+                      {candidates?.length > 0 && (
+                  <Row justify="space-between" align="middle" style={{ marginTop: 16 }}>
+                    <Col>
+                      <span style={{fontSize:'14px'}}>
+                        {t('paginationShow', {
+                          range1: (currentPage - 1) * pageSize + 1,
+                          range2: Math.min(currentPage * pageSize, paginationDetail),
+                          total: paginationDetail,
+                        })}
+                      </span>
+                    </Col>
+                    <Col>
+                      <Pagination
+                        total={paginationDetail}
+                        pageSize={pageSize}
+                        current={currentPage}
+                        showSizeChanger={false}
+                        onChange={(page, size) => {
+                          setPageSize(size);
+                          setCurrentPage(page);
+                        }}
+                        pageSizeOptions={['20', '30', '40', '50']}
+                        itemRender={(current, type, originalElement) =>{
+                            if (type === 'prev') {
+                              return <img src={leftPageIcon} style={{height:"24px" , width:"24px"}} />;
+                            }
+                            if (type === 'next') {
+                              return <img src={rightPageIcon} style={{height:"24px" , width:"24px"}} />;
+                            }
+                            return originalElement;
+                          }}
+                      />
+                    </Col>
+                  </Row>
+                )}
+        </>
       ) : renderGridView()}
           {/* <div className="row filter-row">
           <div className="col-sm-6 col-md-3">
@@ -583,6 +662,23 @@ const OfferedCandidates = () => {
       </Modal>
 
       <style>{`
+        .customized .ant-select-selector{
+          height: 21px !important;
+          display: flex;
+          align-items: center;
+          padding: 7px !important;
+        }
+
+        .customized .ant-select-selection-item {
+          padding: 0 !important;
+          margin: 0;
+        }
+
+        .customized .ant-select-arrow {
+          transform: translateX(50%);
+          transform: translateY(20%);
+        }
+
       .view-icons {
         display: flex;
         align-items: center;

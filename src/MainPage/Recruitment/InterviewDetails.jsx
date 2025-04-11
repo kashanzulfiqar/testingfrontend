@@ -303,7 +303,7 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
           <div>
             <ul className="breadcrumb">
               <li className="breadcrumb-item"><Link to="/recruitment/interviews">Interviews</Link></li>
-              <li className="breadcrumb-item active">{interview?.candidateName}</li>
+              <li className="breadcrumb-item active">{interview?.candidateName.split(' ').map(word=>word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}</li>
             </ul>
           </div>
         </div>
@@ -314,7 +314,7 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
         <div style={{display:"flex", alignItems:'center'}}>
           <div className='initials-details'>{interview?.candidateId.firstName?.[0].toUpperCase()}{interview?.candidateId.lastName?.[0].toUpperCase()}</div>
           <div>
-            <h3 className="ms-3 mt-2 mb-0" style={{fontSize:'20px', fontweight:'500', color:"#000000"}}>{interview?.candidateName}</h3>
+            <h3 className="ms-3 mt-2 mb-0" style={{fontSize:'20px', fontweight:'500', color:"#000000"}}>{interview?.candidateName.split(' ').map(word=>word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}</h3>
             <h5 className='ms-3' style={{fontSize:'14px', fontweight:'450', color:"#444444"}} >Hello</h5> 
             <div style={{paddingLeft:"10px"}}>
               <img src={starIcon}></img>
@@ -393,7 +393,7 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
         {/* {interview?.candidateId?.resume && ( */}
           <div style={{marginTop:"10px", border:"1px solid #cfd4d8" , borderRadius:"8px", display:'flex', alignItems:'center', justifyContent:"space-between", padding:"10px" ,height:"90px" ,width:"230px"}}>
             <div style={{display:"flex"}}>
-              <div style={{height:"50px" ,width:"50px" ,borderRadius:"50%" ,background:'#55ce63', display:"flex", justifyContent:'center' ,alignItems:"center", alignSelf:"center"}}><img src={description}></img></div>
+              <div style={{height:"50px" ,width:"50px" ,borderRadius:"50%" ,background:'lightgrey', display:"flex", justifyContent:'center' ,alignItems:"center", alignSelf:"center"}}><img src={description}></img></div>
               <div style={{padding:"10px 0px 10px 10px"}}>
                 <p style={{marginBottom:'0px' ,fontSize:"14px" ,fontWeight:"500"}}>{interview.candidateId.resume ? interview.candidateId.resume : 'undefined'}</p>
                 <p style={{marginBottom:'0px',fontSize:"12px" ,fontWeight:"450"}}>{interview.candidateId.resume ? interview.candidateId.resume : 'undefined'}</p>

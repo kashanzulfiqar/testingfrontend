@@ -5,18 +5,19 @@ import moment from 'moment';
 import onCloseIcon from '../../assets/iconsRecruitment/x.svg';
 import { CloseOutlined } from '@ant-design/icons';
 
-const CreateInterviewModal = ({ isVisible, onCancel, candidate, authState }) => {
+const CreateInterviewModal = ({ isVisible, onCancel, candidate, authState, interview }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [employees, setEmployees] = useState([]);
   const [sendEmail, setSendEmail] = useState(true);
 
-
+  console.log("aa ja yaar", candidate)
   useEffect(() => {
     if (isVisible) {
       fetchEmployees();
     }
   }, [isVisible]);
+
 
   const fetchEmployees = async () => {
     try {
@@ -56,16 +57,18 @@ const CreateInterviewModal = ({ isVisible, onCancel, candidate, authState }) => 
       // Prepare interview data
       const interviewData = {
         candidateId: candidate._id,
-        interviewerId: values.assignedTo,
-        interviewTitle: values.interviewTitle,
-        interviewType: values.interviewType,
-        assignTo: values.assignTo || [],
+        candidateName: values?.candidateName,
+        // interviewerId: values?.assignedTo,
+        interviewTitle: values?.interviewTitle,
+        interviewType: values?.interviewType,
+        assignTo: values.assignTo,
         interviewDate: formattedDate,
         interviewTime: formattedTime,
         meetingLink: values.meetingLink || '',
         shouldSendEmail: sendEmail // Flag for backend to handle email sending
       };
 
+      console.log('interview' , interviewData);
       // Create interview
       const response = await apiServices(
         'POST',
@@ -109,6 +112,8 @@ const CreateInterviewModal = ({ isVisible, onCancel, candidate, authState }) => 
       footer={null}
       width={800}
       className="custom-modal"
+      style={{ zIndex: 2000 }}
+      maskStyle={{ zIndex: 1999, background: 'rgba(0, 0, 0, 0.5)' }}
     >
       <Form
         form={form}
@@ -117,7 +122,9 @@ const CreateInterviewModal = ({ isVisible, onCancel, candidate, authState }) => 
         initialValues={{
           interviewDate: moment(),
           interviewTime: moment(),
-          sendEmail: true
+          sendEmail: true,
+          candidateName: `${candidate?.firstName} ${candidate?.lastName}`,
+          candidateEmail: candidate.email,
         }}
       >
         <div className="row">
@@ -125,7 +132,7 @@ const CreateInterviewModal = ({ isVisible, onCancel, candidate, authState }) => 
           <div className="col-md-6">
           <Form.Item
               name="candidateName"
-              label={<>Candidate Name <span className="text-danger">*</span></>}
+              label={<>Candidate Name</>}
               rules={[{ required: true, message: 'Please enter candidate name' }]}
             >
               <Input placeholder="Enter Name"  />
@@ -134,7 +141,7 @@ const CreateInterviewModal = ({ isVisible, onCancel, candidate, authState }) => 
           <div className="col-md-6">
           <Form.Item
               name="candidateEmail"
-              label={<>Candidate Email <span className="text-danger">*</span></>}
+              label={<>Candidate Email</>}
               rules={[{ required: true, message: 'Please enter candidate email' }]}
             >
               <Input placeholder="Enter Email"/>
@@ -156,36 +163,43 @@ const CreateInterviewModal = ({ isVisible, onCancel, candidate, authState }) => 
             </Form.Item>
           </div>
           <div className="col-md-6">
-            <Form.Item
-              name="taskReviewer"
-              label={<>Assign To <span className="text-danger">*</span></>}
-              rules={[{ required: true, message: 'Please select Interviewer' }]}
-            >
-              <Select
-                className='customized'
-                mode="multiple"
-                showSearch
-                filterOption={(input, option) => 
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                }
-                optionFilterProp="children"
-                notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
-                placeholder="Select Reviewer"
-              >
-                {employees?.map((employee) => (
-                  <Select.Option
-                    key={employee._id}
-                    value={employee._id}
-                  >
-                    {employee.fullName}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
+        <Form.Item
+          name="assignTo"
+          label="Primary Interviewer"
+          rules={[{ required: true, message: 'Please select an interviewer' }]}
+        >
+          <Select
+            className='customized'
+            mode= 'multiple'
+            placeholder="Select interviewer"
+            showSearch
+            optionFilterProp="children"
+          >
+            {employees.map((emp) => (
+              <Select.Option key={emp._id} value={emp._id}>
+                {emp.fullName}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
           </div>
         </div>
 
         <div className='row'>
+          <div class='col-md-6'>
+            <Form.Item
+            name="interviewTitle"
+            label="Interview Title"
+            rules={[{ required: true, message: 'Please select interview title' }]}
+            >
+              <Select placeholder="Select interview title" className='customized'>
+                <Select.Option value="Initial Interview">Initial Interview</Select.Option>
+                <Select.Option value="Technical Interview">Technical Interview</Select.Option>
+                <Select.Option value="HR Interview">HR Interview</Select.Option>
+                <Select.Option value="Final Interview">Final Interview</Select.Option>
+              </Select>
+            </Form.Item>  
+          </div> 
           <div className='col-md-6'>
             <Form.Item
             name="interviewDate"
@@ -199,6 +213,9 @@ const CreateInterviewModal = ({ isVisible, onCancel, candidate, authState }) => 
               />
             </Form.Item>
           </div>
+        </div>
+
+        <div className='row'>
           <div className='col-md-6'>
             <Form.Item
               name="interviewTime"
@@ -213,16 +230,25 @@ const CreateInterviewModal = ({ isVisible, onCancel, candidate, authState }) => 
               />
             </Form.Item>
           </div>
-        </div>
-
-        <div className='row'>
           <div className='col-md-6'>
             <Form.Item
-              name="interviewLink"
-              label={<>Interview Link <span className="text-danger">*</span></>}
-              rules={[{ required: true, message: 'Please enter interview link' }]}
+            noStyle
+            shouldUpdate={(prevValues, currentValues) => prevValues.interviewType !== currentValues.interviewType}
             >
-              <Input placeholder="www.zoom.com"/>
+              {({ getFieldValue }) =>
+                getFieldValue('interviewType') === 'ONLINE' && (
+                  <Form.Item
+                  name="meetingLink"
+                  label="Meeting Link"
+                  rules={[
+                    { required: true, message: 'Please enter meeting link' },
+                    { type: 'url', message: 'Please enter a valid URL' }
+                  ]}
+                  >
+                    <Input placeholder="Enter meeting link" />
+                  </Form.Item>
+                )
+              }
             </Form.Item>
           </div>
         </div>
@@ -370,7 +396,7 @@ const CreateInterviewModal = ({ isVisible, onCancel, candidate, authState }) => 
           />
         </Form.Item>*/}
       </Form>
-      <style jsx global>{`
+      <style jsx>{`
         .custom-modal .ant-modal-header {
           border-bottom: none;
           padding: 24px 24px 0;
@@ -454,6 +480,17 @@ const CreateInterviewModal = ({ isVisible, onCancel, candidate, authState }) => 
           display: flex;
           justify-content: center;
           align-items: center;
+        }
+
+        
+        .ant-modal, 
+        .ant-modal-wrap,
+        .ant-modal-mask {
+          z-index: 2000 !important;
+        }
+        
+        body.modal-open {
+          overflow: hidden;
         }
 
 

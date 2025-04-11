@@ -298,7 +298,7 @@ const JobForm = ({
             </Button>
           </Form.Item>
 
-          <style jsx global>{`
+          <style jsx>{`
         .ant-input,
         .ant-select-selector,
         .ant-input-number {

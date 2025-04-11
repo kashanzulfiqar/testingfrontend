@@ -703,7 +703,7 @@ const Dashboard = () => {
                     <div style={{display:'flex', justifyContent:'space-between', width:"98%"}}>
                       <div>
                         <h3 className="job-title">
-                          <Link to={`/recruitment/jobs/${position._id}`}>{position.title}</Link>
+                          <Link to={`/recruitment/jobs/${position._id}`}>{position.title.split(' ').map(word=>word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}</Link>
                         </h3>
                         <p className="positions-count">{position.positions} open positions</p>
                       </div>
@@ -779,23 +779,29 @@ const Dashboard = () => {
           />
         )}
       </div>
-      <style jsx global>{`
+      <style jsx>{`
         .job-card {
           background: white;
           border-radius: 8px;
           box-shadow: 0 2px 4px rgba(0,0,0,0.05);
           border: 1px solid #e0e3e6;
+          height: 100%;
         }
         .job-card .ant-card-body {
           padding: 16px;
         }
         .job-card-content {
           padding: 0;
+          min-height: 230px;
         }
         .job-title {
           font-size: 20px;
           font-weight: 500;
           margin-bottom: 4px;
+          height: 48px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+
         }
         .job-title a {
           color: #212529;

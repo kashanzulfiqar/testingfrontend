@@ -26,6 +26,8 @@ const InterviewFeedback = ({ visible, onCancel, onSubmit }) => {
       footer={null}
       width={450}
       className='custom-modal'
+      style={{ zIndex: 2000 }}
+      maskStyle={{ zIndex: 1999, background: 'rgba(0, 0, 0, 0.5)' }}
     >
       <Form
         form={form}
@@ -111,6 +113,7 @@ const InterviewFeedback = ({ visible, onCancel, onSubmit }) => {
 
         <Form.Item
           label="Recommendation"
+          style={{marginTop: '10px'}}
           required
           help={!selectedRecommendation && 'Please select a recommendation'}
           validateStatus={!selectedRecommendation ? 'error' : 'success'}
@@ -160,6 +163,19 @@ const InterviewFeedback = ({ visible, onCancel, onSubmit }) => {
         align-items: center;
         justify-content: center;
       }
+
+      /* Z-index overrides to ensure modal appears above sidebar */
+        .ant-modal, 
+        .ant-modal-wrap,
+        .ant-modal-mask {
+          z-index: 2000 !important;
+        }
+        
+        /* Additional styles to prevent scrolling when modal is open */
+        body.modal-open {
+          overflow: hidden;
+        }
+
       `}</style>
     </Modal>
   );

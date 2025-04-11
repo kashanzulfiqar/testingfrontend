@@ -1,165 +1,104 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Input, Select, DatePicker, Upload, Button, Row, Col, Alert, message } from 'antd';
-import { InboxOutlined } from '@ant-design/icons';
-import moment from 'moment';
+import { Modal, Form, Input, Upload, Button, Alert, message } from 'antd';
 import uploadIcon from '../../assets/iconsRecruitment/cloud.svg';
-import FormItem from 'antd/es/form/FormItem';
 import deleteIcon from '../../assets/iconsRecruitment/deleteIcon.svg';
 
-const SendOfferModal = ({ 
-  visible, 
-  onCancel, 
-  onSubmit, 
-  loading,
-  candidate,
-  existingOffer 
-}) => {
+const SendOfferModal = ({ visible, onCancel, onSubmit, loading, candidate, existingOffer }) => {
   const [form] = Form.useForm();
   const [uploadedContract, setUploadedContract] = useState(null);
-  const [fileInfo ,setFileinfo] = useState(null);
-
-  // Set initial values when existing offer is present
-  // useEffect(() => {
-  //   if (existingOffer && visible) {
-  //     form.setFieldsValue({
-  //       salary: existingOffer.title,
-  //       currency: existingOffer.currency,
-  //       joiningDate: moment(existingOffer.joiningDate)
-  //     });
-  //   }
-  // }, [existingOffer, visible, form]);
-
-  // const handleCancel = () => {
-  //   form.resetFields();
-  //   setUploadedContract(null);
-  //   onCancel();
-  // };
-
-    // const handleSubmit = async (values) => {
-  //   const formData = new FormData();
-    
-  //   // Append form fields to FormData
-  //   formData.append('candidateId', candidate._id);
-  //   formData.append('salary', Number(values.salary)); // Convert to number
-  //   formData.append('currency', values.currency);
-  //   formData.append('joiningDate', values.joiningDate.format('YYYY-MM-DD'));
-    
-  //   // Only append contract if one is uploaded
-  //   if (uploadedContract) {
-  //     formData.append('contract', uploadedContract);
-  //   } else if (existingOffer?.contract) {
-  //     // If no new contract uploaded but existing offer has one, keep the existing contract
-  //     formData.append('contract', existingOffer.contract);
-  //   }
-
-  //   onSubmit(formData);
-  // };
-
-  // const handleContractUpload = ({ file }) => {
-  //   if (file.status === 'done' || file.status === 'uploading') {
-  //     setUploadedContract(file.originFileObj);
-  //   }
-  // };
-
-    // Validate file size and type
-  // const beforeUpload = (file) => {
-  //   const isValidType = [
-  //     'application/pdf',
-  //     'application/msword',
-  //     'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-  //   ].includes(file.type);
-    
-  //   if (!isValidType) {
-  //     message.error('You can only upload PDF or Word documents!');
-  //     return false;
-  //   }
-
-  //   const isLt5M = file.size / 1024 / 1024 < 5;
-  //   if (!isLt5M) {
-  //     message.error('File must be smaller than 5MB!');
-  //     return false;
-  //   }
-
-  //   return false; 
-  // };
-
-
+  const [fileInfo, setFileInfo] = useState(null);
+  const [hasExistingOffer, setHasExistingOffer] = useState(false);
 
   useEffect(() => {
-    if (existingOffer && visible) {
-      form.setFieldsValue({
-        title: existingOffer.title,
-        description: existingOffer.description,
-      });
+    if (visible) {
+      if (existingOffer === 'OFFERED') {
+        setHasExistingOffer(true);
+        form.setFieldsValue({
+          title: existingOffer.title,
+          description: existingOffer.description,
+        });
+      } else {
+        setHasExistingOffer(false);
+        form.resetFields();
+      }
     }
   }, [existingOffer, visible, form]);
+
+  const handleSubmit = async (values) => {
+    try {
+      if (!uploadedContract && !hasExistingOffer) {
+        message.error('Please upload a contract file');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('candidateId', candidate._id);
+      formData.append('title', values.title);
+      formData.append('description', values.description);
+      if (uploadedContract) {
+        formData.append('contract', uploadedContract);
+      }
+
+      // if (hasExistingOffer) {
+      //   formData.append('isUpdate', true);
+      // }
+
+      await onSubmit(formData);
+      message.success(hasExistingOffer ? 'Offer updated successfully' : 'Offer sent successfully');
+      handleCancel();
+    } catch (error) {
+      console.error('Error in form submission:', error);
+      message.error('Error submitting form');
+    }
+  };
 
   const handleCancel = () => {
     form.resetFields();
     setUploadedContract(null);
+    setFileInfo(null);
     onCancel();
   };
 
-  const handleSubmit = async (values) => {
-    const formData = new FormData();
-    
-    // Append form fields to FormData
-    formData.append('candidateId', candidate._id);
-    formData.append('title', values.title);
-    formData.append('description', values.description);
-    
-    // Only append contract if one is uploaded
-    if (uploadedContract) {
-      formData.append('contract', uploadedContract);
-    } else if (existingOffer?.contract) {
-      // If no new contract uploaded but existing offer has one, keep the existing contract
-      formData.append('contract', existingOffer.contract);
-    }
-
-    onSubmit(formData);
-  };
-
-  const handleContractUpload = ({ file }) => {
-    if (file.status !== 'removed') {
-      setUploadedContract(file.originFileObj);
-      setFileinfo({name: file.name, size:(file.size/1024).toFixed(2)+'KB'})
-    }
-  };
-
-  const beforeUpload = (file) => {
+  const handleFileUpload = (file) => {
     const isValidType = [
       'application/pdf',
       'application/msword',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     ].includes(file.type);
-    
+
     if (!isValidType) {
-      message.error('You can only upload PDF or Word documents!');
+      message.error('Please upload a PDF or Word document');
       return false;
     }
 
     const isLt5M = file.size / 1024 / 1024 < 5;
     if (!isLt5M) {
-      message.error('File must be smaller than 5MB!');
+      message.error('File must be smaller than 5MB');
       return false;
     }
 
-    return false; 
+    setUploadedContract(file);
+    setFileInfo({
+      name: file.name,
+      size: (file.size / 1024 / 1024).toFixed(2) + ' MB'
+    });
+
+    return false;
   };
 
   return (
     <Modal
-      title={existingOffer ? "Update Offer" : "Send Offer"}
+      title={hasExistingOffer ? "Update Offer" : "Send Offer"}
       visible={visible}
       onCancel={handleCancel}
       footer={null}
       width={600}
       className="custom-modal"
     >
-      {existingOffer && (
+      {hasExistingOffer && (
         <Alert
           message="Updating Existing Offer"
-          description="You are updating an existing offer. The candidate will be notified of these changes and their status will be reset to 'OFFERED'."
+          description="You are updating an existing offer. The candidate will be notified of these changes."
           type="info"
           showIcon
           style={{ marginBottom: 24 }}
@@ -171,112 +110,73 @@ const SendOfferModal = ({
         layout="vertical"
         onFinish={handleSubmit}
       >
-        {/* <Row gutter={16}>
-          <Col span={24}>
-            <Form.Item
-              name="salary"
-              label="Salary"
-              rules={[
-                { required: true, message: 'Please enter salary' },
-                { validator: (_, value) => value > 0 ? Promise.resolve() : Promise.reject('Salary must be greater than 0') }
-              ]}
-            >
-              <Input type="number" placeholder="Enter salary amount" />
-            </Form.Item>
-          </Col>
-          <Col span={12}>
-            <Form.Item
-              name="currency"
-              label="Currency"
-              rules={[{ required: true, message: 'Please select currency' }]}
-              initialValue="PKR"
-            >
-              <Select>
-                <Select.Option value="PKR">PKR</Select.Option>
-                <Select.Option value="USD">USD</Select.Option>
-                <Select.Option value="EUR">EUR</Select.Option>
-                <Select.Option value="GBP">GBP</Select.Option>
-              </Select>
-            </Form.Item>
-          </Col>
-        </Row> */}
+        <div style={{ height: "20px", width: "100%", display: "flex", justifyContent: "center", borderTop: "1px solid #E2E8F0" }}></div>
 
-        {/* <Form.Item
-          name="joiningDate"
-          label="Joining Date"
-          rules={[{ required: true, message: 'Please select joining date' }]}
-        >
-          <DatePicker 
-            style={{ width: '100%' }} 
-            format="DD-MM-YYYY"
-            disabledDate={(current) => current && current < moment().startOf('day')}
-          />
-        </Form.Item> */}
-
-        
-
-        <div style={{height:"20px", width:"100%", display:"flex", justifyContent:"center", borderTop:"1px solid #E2E8F0"}}></div>
         <Form.Item
           name="title"
           label="Title"
-          rules={[{required: true, message: 'Please enter the Title'}]}
+          rules={[{ required: true, message: 'Please enter the Title' }]}
         >
-          <Input type="text" placeholder="Enter Title" />
+          <Input placeholder="Enter Title" />
         </Form.Item>
 
         <Form.Item
           name="description"
           label="Description"
-          rules={[{required: true, message: 'Please enter the Description'}]}
+          rules={[{ required: true, message: 'Please enter the Description' }]}
         >
-          <Input.TextArea 
+          <Input.TextArea
             placeholder="Enter Description"
             autoSize={{ minRows: 4, maxRows: 6 }}
           />
         </Form.Item>
 
         <Form.Item
-          name="attachment"
-          label={
-            <span>
-              Attachment
-            </span>
-          }
-          // extra="Supported formats: PDF, DOC, DOCX. Max file size: 5MB"
+          label="Contract"
+          required
+          // help="Supported formats: PDF, DOC, DOCX. Max size: 5MB"
         >
           <Upload.Dragger
-            name="attachment"
-            maxCount={1}
             accept=".pdf,.doc,.docx"
-            onChange={handleContractUpload}
-            beforeUpload={beforeUpload}
+            beforeUpload={handleFileUpload}
             showUploadList={false}
+            maxCount={1}
           >
-            <div style={{display:"flex", justifyContent:"center" ,alignItems:"center"}}>
-              <img src={uploadIcon} style={{height:"25px", width:"25px", marginRight:"10px"}}></img>
-              <p>
-                {existingOffer ? 'Upload new contract or keep existing' : 'Drag and Drop your Files'}
-              </p>
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+              <img src={uploadIcon} style={{ height: "25px", width: "25px", marginRight: "10px" }} alt="upload" />
+              <p>{hasExistingOffer ? 'Upload new contract or keep existing' : 'Drag and Drop your Files'}</p>
             </div>
           </Upload.Dragger>
         </Form.Item>
 
-        <Form.Item name='uploadedfiles' label='Uploaded files'>
-            {fileInfo &&(
-              <div className='pt-2 pb-2 ps-3 pe-3' style={{display:"flex", justifyContent:"space-between" ,alignItems:"center", background:"#cfd4d8", borderRadius:"8px"}}>
-                <div style={{display:"flex" , flexDirection:'column'}}>
-                  <span>{fileInfo.name}</span>
-                  <span  style={{marginTop:"6px"}}>{fileInfo.size}</span>
-                </div>
-                <img src={deleteIcon} style={{height:'20px' ,width:"20px"}}></img>
-              </div>
-            )}
-        </Form.Item>  
+        {fileInfo && (
+          <div className='pt-2 pb-2 ps-3 pe-3 mb-3' style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            background: "#cfd4d8",
+            borderRadius: "8px"
+          }}>
+            <div style={{ display: "flex", flexDirection: 'column' }}>
+              <span>{fileInfo.name}</span>
+              <span style={{ marginTop: "6px" }}>{fileInfo.size}</span>
+            </div>
+            <img
+              onClick={() => {
+                setUploadedContract(null);
+                setFileInfo(null);
+              }}
+              src={deleteIcon}
+              style={{ height: '20px', width: "20px", cursor: "pointer" }}
+              alt="delete"
+            />
+          </div>
+        )}
 
-        <div className="text-end mt-4 pt-2 pb-4">
-          <Button 
+        <div className="text-end mb-4 mt-4">
+          <Button
             onClick={handleCancel}
-            style={{ 
+            style={{
               marginRight: '12px',
               padding: '6px 24px',
               height: '40px',
@@ -285,21 +185,21 @@ const SendOfferModal = ({
               border: 'none'
             }}
           >
-            Reset
+            Cancel
           </Button>
-          <Button 
-            type="primary" 
+          <Button
+            type="primary"
             htmlType="submit"
-            style={{ 
+            style={{
               padding: '6px 24px',
               height: '40px',
               borderRadius: '20px',
               background: '#F4A261',
               border: 'none'
             }}
-            onClick={()=>{handleSubmit}}
+            loading={loading}
           >
-            Send Offer
+            {hasExistingOffer ? 'Update Offer' : 'Send Offer'}
           </Button>
         </div>
       </Form>
@@ -316,25 +216,20 @@ const SendOfferModal = ({
         .custom-modal .ant-modal-close {
           background-color: #F8F9FA;
           border-radius: 50%;
-          border:"1px solid #F8F9FA";
-          margin:16px 16px 0 0;
+          border: 1px solid #F8F9FA;
+          margin: 16px 16px 0 0;
           width: 32px;
           height: 32px;
           display: flex;
           align-items: center;
           justify-content: center;
         }
-
-        .custom-modal .ant-input,
-        .custom-modal .ant-select-selector,
-        .custom-modal .ant-input-number {
+        .custom-modal .ant-input {
           border-radius: 8px;
           padding: 8px 12px;
-          height: 56px;
           font-size: 16px;
           font-weight: 450;
         }
-
       `}</style>
     </Modal>
   );

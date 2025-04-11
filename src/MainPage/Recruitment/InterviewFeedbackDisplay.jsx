@@ -62,7 +62,7 @@ const InterviewFeedbackDisplay = ({ feedback }) => {
         </Col>
       ))}
     </Row>
-    <style jsx global>{`
+    <style jsx>{`
     .date-time-style{
       text-align: right;
       min-width: 190px;

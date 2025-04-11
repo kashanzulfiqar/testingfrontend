@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Card, Input, Space, Tag, Empty, message, Select, Button, Modal, Form, Tooltip, Row ,Col, DatePicker } from 'antd';
+import { Table, Card, Input, Space, Tag, Empty, message, Select, Button, Modal, Form, Tooltip, Row ,Col, DatePicker, Pagination } from 'antd';
 import { SearchOutlined, UserOutlined, DownloadOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { apiServices } from '../../Services/apiServices';
@@ -7,11 +7,17 @@ import { useSelector } from 'react-redux';
 import moment from 'moment';
 import calander from '../../assets/iconsRecruitment/calander.svg';
 import circle from '../../assets/iconsRecruitment/circle.svg';
+import { useTranslation } from "react-i18next";
+import leftPageIcon from '../../assets/iconsRecruitment/fi_chevrons-left.svg';
+import rightPageIcon from '../../assets/iconsRecruitment/fi_chevrons-right.svg';
+
 
 const { Option } = Select;
 const { TextArea } = Input;
 
 const HiredCandidates = () => {
+  const {t} = useTranslation();
+  const [filters ,setFilters] = useState({}); 
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updatingStatus, setUpdatingStatus] = useState(false);
@@ -25,10 +31,13 @@ const HiredCandidates = () => {
     pageSize: 10,
     total: 0
   });
+  const [paginationDetail , setPaginationDetail] = useState();
+  const [pageSize , setPageSize] =useState(20);
+  const [currentPage,setCurrentPage] =useState(1);
   const navigate = useNavigate();
   const loginState = useSelector((state) => state.user.loginvalue);
 
-  const fetchHiredCandidates = async (page = 1, limit = 10) => {
+  const fetchHiredCandidates = async (page = 1, limit = 10, filters = {}) => {
     try {
       setLoading(true);
       const token = loginState?.access_token?.accessToken || localStorage.getItem("token");
@@ -39,9 +48,18 @@ const HiredCandidates = () => {
         return;
       }
 
+      const queryParams = {
+        status: 'HIRED',
+        page: currentPage,
+        limit: pageSize,
+        ...(filters.fullName && {fullName: filters.fullName}),
+        ...(filters.email && {email : filters.email}),
+        ...(filters.appliedFor && { appliedFor: filters.appliedFor }),
+      };
+
       const response = await apiServices(
         'GET',
-        `candidate/list?status=HIRED&page=${page}&limit=${limit}`,
+        `candidate/list?${new URLSearchParams(queryParams).toString()}`,
         null,
         {
           access_token: {
@@ -54,16 +72,15 @@ const HiredCandidates = () => {
       );
 
       if (response?.data?.status) {
-        setCandidates(response.data.data.docs || []);
-        setPagination({
-          ...pagination,
-          current: page,
-          total: response.data.data.totalDocs || 0
-        });
+        const candidatesList = response.data.data.docs || [];
+        setCandidates(candidatesList);
+        setPaginationDetail(response.data.data.totalDocs || 0);
       }
     } catch (error) {
       console.error('Error fetching hired candidates:', error);
       message.error('Failed to fetch hired candidates');
+      setCandidates([]);
+      setPaginationDetail(0);
     } finally {
       setLoading(false);
     }
@@ -106,7 +123,7 @@ const HiredCandidates = () => {
 
       if (response?.data?.status) {
         message.success('Status updated successfully');
-        fetchHiredCandidates(pagination.current, pagination.pageSize);
+        fetchHiredCandidates(currentPage, pageSize);
       } else {
         throw new Error(response?.data?.message || 'Failed to update status');
       }
@@ -143,15 +160,20 @@ const HiredCandidates = () => {
     }
     
     fetchHiredCandidates();
-  }, []);
+  }, [currentPage, pageSize]);
 
-  const handleTableChange = (newPagination) => {
-    fetchHiredCandidates(newPagination.current, newPagination.pageSize);
-  };
+  // const handleTableChange = (newPagination) => {
+  //   fetchHiredCandidates(newPagination.current, newPagination.pageSize);
+  // };
 
-  const handleSearch = (value) => {
-    // Implement search functionality here
-    console.log('Search value:', value);
+  const handleSearch = (values) => {
+    console.log('Search Values:', values);
+    setFilters(values);
+    setPagination({
+      ...pagination,
+      current: 1
+    });
+    fetchHiredCandidates(1, pageSize, values);
   };
 
   const columns = [
@@ -161,10 +183,10 @@ const HiredCandidates = () => {
       width: 150,
       render: (_, record) =>{
         const initials = `${record.firstName.charAt(0).toUpperCase()}${record.lastName.charAt(0).toUpperCase()}`;
-        const candidateName = `${record.firstName} ${record.lastName}`
+        const candidateName = `${record.firstName.charAt(0).toUpperCase() + record.firstName.slice(1).toLowerCase()} ${record.lastName.charAt(0).toUpperCase() + record.lastName.slice(1).toLowerCase()}`
         return(
           <div style={{display:"flex", alignItems:'center'}}>
-            <div style={{height:'40px' ,width:"40px", border:"1px solid transparent" , borderRadius:"50%", background:'#f5f1fd', color:'#9368e9', display:"flex", justifyContent:"center", alignItems:'center', marginRight:"10px"}}>{initials}</div>
+            <div style={{minHeight:'40px' ,minWidth:"40px", border:"1px solid transparent" , borderRadius:"50%", background:'#f5f1fd', color:'#9368e9', display:"flex", justifyContent:"center", alignItems:'center', marginRight:"10px"}}>{initials}</div>
             <Link to={`/recruitment/candidates/${record._id}`} style={{color:"#212529" ,fontSize:"14px" ,fontWight:"500"}}>
               {candidateName}
             </Link>
@@ -223,7 +245,7 @@ const HiredCandidates = () => {
           loading={updatingStatus && selectedCandidate === record._id}
         >
           <Option value="HIRED" style={{color:"green"}}>HIRED</Option>
-          <Option value="JOINED" style={{color:"blue"}}>JOINED</Option>
+          {/* <Option value="JOINED" style={{color:"blue"}}>JOINED</Option> */}
           <Option value="DID_NOT_JOIN" style={{color:"red"}}>DID NOT JOIN</Option>
           <Option value="BLACKLISTED" style={{color:"black"}}>BLACKLISTED</Option>
         </Select>
@@ -329,42 +351,31 @@ const HiredCandidates = () => {
     <Form 
       form={form}
       onFinish={handleSearch} 
+      onValuesChange={(changedValues, allValues) => {
+        const clearedField = Object.keys(changedValues).find(
+          key => changedValues[key] === '' || changedValues[key] === undefined
+        );
+        if (clearedField) {
+          handleSearch(allValues);        
+        }
+      }}
       className="search-form"
-      initialValues={pagination}
+      initialValues={filters}
     >
       <Row gutter={[12, 12]} align="middle">
-        <Col xs={24} sm={12} md={5}>
-          <Form.Item name="candidateName" className="mb-0">
+        <Col xs={24} sm={12} md={7}>
+          <Form.Item name="fullName" className="mb-0">
             <Input style={{borderRadius:"8px", height:"40px"}} placeholder="Name" allowClear />
           </Form.Item>
         </Col>
-        <Col xs={24} sm={12} md={5}>
-          <Form.Item name="appliedPosition" className="mb-0">
+        <Col xs={24} sm={12} md={7}>
+          <Form.Item name="email" className="mb-0">
+            <Input style={{borderRadius:"8px", height:"40px"}} placeholder="Email" allowClear />
+          </Form.Item>
+        </Col>
+        <Col xs={24} sm={12} md={6}>
+          <Form.Item name="appliedFor" className="mb-0">
             <Input style={{borderRadius:"8px", height:"40px"}} placeholder="Position" allowClear />
-          </Form.Item>
-        </Col>
-        <Col xs={24} sm={12} md={5}>
-          <Form.Item name="status" className="mb-0">
-            <DatePicker
-            placeholder="Blacklist Date"
-            className="custom"
-            allowClear
-            suffixIcon= {<img src={calander}></img>}
-          />
-          </Form.Item>
-        </Col>
-        <Col xs={24} sm={12} md={5}>
-          <Form.Item name="blacklistReason" className="mb-0">
-            <Select placeholder="Blacklist Reason" allowClear
-            className='custom'
-              options={[
-                // { value: 'FULL_TIME', label: 'Full Time' },
-                // { value: 'PART_TIME', label: 'Part Time' },
-                // { value: 'CONTRACT', label: 'Contract' },
-                // { value: 'INTERNSHIP', label: 'Internship' },
-                // { value: 'FREELANCE', label: 'Freelance' }
-              ]}
-            />
           </Form.Item>
         </Col>
         <Col xs={24} sm={12} md={4}>
@@ -376,27 +387,83 @@ const HiredCandidates = () => {
         </Col>
       </Row>
     </Form>
-
+    <>
+    {candidates?.length > 0 && (
+      <Row justify="space-between" style={{ marginTop:16}}>
+        <Col>
+          <div style={{display:'flex', alignItems:'center', gap:'5px'}}>
+            <div style={{fontSize:'14px'}}>Show</div>
+            <Select
+              className='customized'
+              value={pageSize}
+              onChange={(size) => {
+                setPageSize(size);
+                setCurrentPage(1);
+              }}
+              style={{width:60}}
+            >
+              {['20', '30', '40', '50'].map((size) => (
+                <Option key={size} value={parseInt(size, 10)}>
+                  {size}
+                </Option>
+              ))}
+            </Select>
+            <div style={{fontSize:'14px'}}>entries</div>
+          </div>
+        </Col>
+      </Row>
+    )}
     <Table
       className="mt-4"
       columns={columns}
       dataSource={candidates}
       rowKey={(record) => record._id}
       loading={loading}
-      pagination={{
-        ...pagination,
-        showSizeChanger: true,
-        showTotal: (total, range) =>
-          `${range[0]}-${range[1]} of ${total} candidates`,
-      }}
-      onChange={handleTableChange}
+      pagination={false}
       locale={{
         emptyText: <Empty description="No hired candidates found" />
       }}
     />
+    {candidates?.length > 0 && (
+      <Row justify="space-between" align="middle" style={{ marginTop: 16 }}>
+        <Col>
+          <span style={{fontSize:'14px'}}>
+            {t('paginationShow', {
+              range1: (currentPage - 1) * pageSize + 1,
+              range2: Math.min(currentPage * pageSize, paginationDetail),
+              total: paginationDetail,
+            })}
+          </span>
+        </Col>
+        <Col>
+          <Pagination
+            total={paginationDetail}
+            pageSize={pageSize}
+            current={currentPage}
+            showSizeChanger={false}
+            onChange={(page, size) => {
+              setPageSize(size);
+              setCurrentPage(page);
+            }}
+            pageSizeOptions={['20', '30', '40', '50']}
+            itemRender={(current, type, originalElement) => {
+              if (type === 'prev') {
+                return <img src={leftPageIcon} style={{height:"24px" , width:"24px"}} />;
+              }
+              if (type === 'next') {
+                return <img src={rightPageIcon} style={{height:"24px" , width:"24px"}} />;
+              }
+              return originalElement;
+            }}
+          />
+        </Col>
+      </Row>
+    )}
+    </>
+
 
       <Modal
-        title={`Update Candidate Status ${selectedStatus?.replace(/_/g, ' ')}`}
+        title={`Update Status ${selectedStatus?.replace(/_/g, ' ')}`}
         visible={isReasonModalVisible}
         onCancel={() => {
           setIsReasonModalVisible(false);
@@ -453,25 +520,42 @@ const HiredCandidates = () => {
             />
           </Form.Item>
 
-          <Form.Item className="mb-0 text-right">
-            <Button
-              style={{ marginRight: 8 }}
+          <Form.Item className="text-end mt-3">
+          <Button
               onClick={() => {
                 setIsReasonModalVisible(false);
                 reasonForm.resetFields();
-              }}
-            >
-              Cancel
-            </Button>
-            <Button type="primary" htmlType="submit" loading={updatingStatus}>
-              Submit
-            </Button>
-          </Form.Item>
+              }}            
+              style={{
+              marginRight: 12,
+              padding: "6px 24px",
+              height: "50px",
+              borderRadius: "32px",
+              background: "#F7F7F8",
+              border: "none",
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            Button type="primary" htmlType="submit" loading={updatingStatus}
+            style={{
+              fontSize: '16px',
+              padding: "6px 24px",
+              height: "50px",
+              borderRadius: "32px",
+              background: "#FF9244",
+              border: "none",
+            }}
+          >
+            Submit
+          </Button>
+        </Form.Item>
         </Form>
       </Modal>
 
       
-      <style jsx global>{`
+      <style jsx>{`
         .add-candidate-btn{
           border-radius: 40px !important;
           height: 44px !important;

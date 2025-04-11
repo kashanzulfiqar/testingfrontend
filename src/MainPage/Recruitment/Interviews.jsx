@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Table, Button, Select, Input, Modal, Form, message, Spin, Tag, Row, Col, Card, Dropdown, Menu } from 'antd';
+import { Table, Button, Select, Input, Modal, Form, message, Spin, Tag, Row, Col, Card, Dropdown, Menu, Pagination } from 'antd';
 import { UnorderedListOutlined, AppstoreOutlined, StarFilled, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { apiServices } from '../../Services/apiServices';
 import { useSelector } from 'react-redux';
@@ -13,6 +13,9 @@ import clock from '../../assets/iconsRecruitment/clock.svg';
 import calander from '../../assets/iconsRecruitment/calander.svg';
 import more from '../../assets/iconsRecruitment/vertical.svg';
 import CreateInterviewModal from './CreateInterviewModal';
+import { useTranslation } from "react-i18next";
+import leftPageIcon from '../../assets/iconsRecruitment/fi_chevrons-left.svg';
+import rightPageIcon from '../../assets/iconsRecruitment/fi_chevrons-right.svg';
 
 const Interviews = ()=>{
 const [pagination, setPagination] = useState({
@@ -27,6 +30,11 @@ const [pagination, setPagination] = useState({
   const [loading,setLoading] =useState();
   const [interviews, setInterviews] = useState([]);
   const [isModalVisible ,setIsModalVisible] = useState(false);
+  const [paginationDetail, setPaginationDetail] = useState(0);
+  const [pageSize, setPageSize] = useState(20);
+  const [currentPage, setCurrentPage] = useState(1);
+  const {t} = useTranslation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
@@ -38,7 +46,7 @@ const [pagination, setPagination] = useState({
     }
     
     fetchInterviews();
-  }, [filters, pagination.current, pagination.pageSize]);
+  }, [filters, currentPage, pageSize]);
 
   const fetchInterviews = async () => {
     const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
@@ -51,13 +59,13 @@ const [pagination, setPagination] = useState({
 
     try {
       setLoading(true);
+      console.log('Fetching interviews with filters:', filters);
       const queryParams = {
-        page: pagination.current,
-        limit: pagination.pageSize,
-        ...(filters.candidateName ? { candidateName: filters.candidateName } : {}),
-        ...(filters.status ? { status: filters.status } : {}),
-        ...(filters.appliedPosition ? { appliedPosition: filters.appliedPosition } : {}),
-        ...(filters.rating ? { rating: filters.rating } : {}),
+        page: currentPage,
+        limit: pageSize,
+        ...(filters.candidateName && { candidateName: filters.candidateName }),
+        ...(filters.status && { status: filters.status }),
+        ...(filters.appliedPosition && { appliedPosition: filters.appliedPosition }),
       };
 
       console.log('Fetching interviews with params:', queryParams);
@@ -75,35 +83,38 @@ const [pagination, setPagination] = useState({
       
       if (response?.data?.success) {
         const interviewsData = response.data.data;
-        console.log('Interviews Data with feedback:', interviewsData.docs.map(interview => ({
-          id: interview._id,
-          feedback: interview.feedback,
-          interviewName : interview.interviewTitle,
-        })));
+        console.log('Interviews Data:', interviewsData);
         
         setInterviews(interviewsData.docs || []);
+        setPaginationDetail(interviewsData.totalDocs || 0);
+        
         setPagination(prev => ({
           ...prev,
           total: interviewsData.totalDocs || 0
         }));
       } else {
         message.error(response?.data?.message || 'Failed to fetch interviews');
+        setInterviews([]);
+        setPaginationDetail(0);
       }
     } catch (error) {
       console.error('Error fetching interviews:', error);
       message.error('Error fetching interviews. Please try again');
+      setInterviews([]);
+      setPaginationDetail(0);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleTableChange = (newPagination, filters, sorter) => {
-    setPagination({
-      ...pagination,
-      current: newPagination.current,
-      pageSize: newPagination.pageSize
-    });
-  };
+
+  // const handleTableChange = (newPagination, filters, sorter) => {
+  //   setPagination({
+  //     ...pagination,
+  //     current: newPagination.current,
+  //     pageSize: newPagination.pageSize
+  //   });
+  // };
 
   const handleSearch = (values) => {
     console.log('Search Values:', values);
@@ -162,6 +173,43 @@ const [pagination, setPagination] = useState({
     setIsModalVisible(false);
   };
 
+  const handleDeleteInterview = async (interviewId) => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
+      
+      if (!token) {
+        message.error('Authentication required');
+        navigate('/login');
+        return;
+      }
+
+      const response = await apiServices(
+        "DELETE", 
+        `interview/${interviewId}`, 
+        null, 
+        {
+          access_token: {
+            accessToken: token
+          }
+        }
+      );
+      
+      if (response?.data?.success) {
+        message.success('Interview deleted successfully');
+        // Refresh the interviews list
+        fetchInterviews();
+      } else {
+        message.error(response?.data?.message || 'Failed to delete interview');
+      }
+    } catch (error) {
+      console.error('Error deleting interview:', error);
+      message.error('Error deleting interview. Please try again');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const columns = [
     {
       title: 'Candidate Name',
@@ -169,14 +217,14 @@ const [pagination, setPagination] = useState({
       dataIndex: 'candidateName',
       render: (_, record) => (
         <div style={{display:"flex", alignItems:'center'}}>
-          <div style={{height:'40px' ,width:"40px", border:"1px solid transparent" , borderRadius:"50%", background:'#f5f1fd', color:'#9368e9', display:"flex", justifyContent:"center", alignItems:'center', marginLeft:"10px", marginRight:"10px"}}>{getInitials(record.candidateName)}</div>
-          <Link to={`/recruitment/interviews/${record._id}`}>
-            {record.candidateName}
+          <div style={{minHeight:'40px' ,minWidth:"40px", border:"1px solid transparent" , borderRadius:"50%", background:'#f5f1fd', color:'#9368e9', display:"flex", justifyContent:"center", alignItems:'center', marginLeft:"10px", marginRight:"10px"}}>{getInitials(record.candidateName)}</div>
+          <Link to={`/recruitment/interviews/${record._id}`} style={{fontSize:"14px", color:"#212529"}}>
+            {record.candidateName.split(' ').map(word=>word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
           </Link>
         </div>
 
       ),
-      sorter: true,
+      // sorter: true,
     },
     {
       title: 'Position',
@@ -185,7 +233,7 @@ const [pagination, setPagination] = useState({
       render: (appliedFor)=>{
         return appliedFor?.title || 'N/A';
       },
-      sorter: true,
+      // sorter: true,
     },
 
     {
@@ -206,7 +254,7 @@ const [pagination, setPagination] = useState({
           </div>
         )
       },
-      sorter: true,
+      // sorter: true,
     },
     {
       title: 'Interview Status',
@@ -218,7 +266,7 @@ const [pagination, setPagination] = useState({
           status?.toLowerCase() === 'completed' ? 'green' :
           status?.toLowerCase() === 'cancelled' ? 'red' :
           'default'
-        }>
+        } style={{borderRadius:"70px"}}>
           {status?.charAt(0).toUpperCase() + status?.slice(1).toLowerCase()}
         </Tag>
       ),
@@ -230,7 +278,7 @@ const [pagination, setPagination] = useState({
       render: (_, record) => (
          <div>{record.interviewTitle}</div>
       ),
-      sorter: true,
+      // sorter: true,
     },
     {
       title: 'Interview Date',
@@ -240,8 +288,39 @@ const [pagination, setPagination] = useState({
           {moment(record.interviewDate).format('DD MMM YYYY')}
         </span>
       ),
-      sorter: true,
+      // sorter: true,
     },
+    // {
+    //   title: "Actions",
+    //   key: "actions",
+    //   width: 80,
+    //   render: (_, record) => (
+    //     <Dropdown
+    //       overlay={<Menu>
+    //     <Menu.Item key="edit" icon={<EditOutlined />}onClick={() =>navigate(`/recruitment/Interviews/${record._id}/CreateInterviewModal`)}>Edit</Menu.Item>
+    //     <Menu.Item key="delete" icon={<DeleteOutlined />} danger onClick={() => {
+    //      Modal.confirm({
+    //        title: "Delete Interview",
+    //        content:"Are you sure you want to delete this interview? This action cannot be undone.",
+    //        okText: "Yes, Delete",
+    //        okType: "danger",
+    //        cancelText: "No",
+    //        onOk: () => handleDeleteInterview(record._id),
+    //        okButtonProps: {
+    //                   loading: loading,
+    //                 },
+    //               });
+    //             }}
+    //           >Delete</Menu.Item>
+    //     </Menu>}
+    //     trigger={['click']}
+    //     placement="bottomRight">
+    //     <div style={{ cursor: 'pointer',height:'25px' }}>
+    //       <img src={more} alt="More Options" />
+    //     </div>
+    //     </Dropdown>
+    //   ),
+    // },
     // {
     //   title: 'Decision',
     //   key: 'decision',
@@ -289,9 +368,9 @@ const [pagination, setPagination] = useState({
 
   const renderGridView = () => {
     return (
-      <Row gutter={[24, 24]}>
+      <Row gutter={[24, 24]} justify='start'>
         {interviews.map(interview => {
-          const fullName = interview?.candidateName;
+          const fullName = interview?.candidateName.split(' ').map(word=>word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
           const initials = fullName.split(' ').map(name=>name.charAt(0).toUpperCase()).join('');
           const MainInterviewer = interview?.interviewerId?.imageUrl;
           const OptionalInterviewer = interview?.assignedTo || [];
@@ -308,10 +387,10 @@ const [pagination, setPagination] = useState({
                         {fullName}
                       </Link>
                       </div>
-                      <div  style={{color:'#56616b', fontSize:'12px', fontWeight:"450"}}>Hello</div>
+                      <div  style={{color:'#56616b', fontSize:'12px', fontWeight:"450"}}>{interview?.appliedFor?.title || 'N/A'}</div>
                     </div>
                   </div>
-                  <Dropdown 
+                  {/* <Dropdown 
                     overlay={<Menu>
                       <Menu.Item key="edit" icon={<EditOutlined />}onClick={() => navigate(`/recruitment/interviews/${candidate._id}/edit`)}>Edit</Menu.Item>
                       <Menu.Item key="delete" icon={<DeleteOutlined />} danger onClick={() => {
@@ -321,7 +400,7 @@ const [pagination, setPagination] = useState({
                           okText: 'Yes, Delete',
                           okType: 'danger',
                           cancelText: 'No',
-                          onOk: () => handleDeleteInterview(candidate._id)
+                          onOk: () => handleDeleteInterview(interview._id)
                         });
                       }}>Delete</Menu.Item>
                     </Menu>}
@@ -330,7 +409,7 @@ const [pagination, setPagination] = useState({
                     <div style={{ cursor: 'pointer',height:'25px', marginTop:"5px" }}>
                       <img src={more} alt="More Options" />
                     </div>
-                  </Dropdown>
+                  </Dropdown> */}
                 </div>
                 <div style={{marginTop:"12px"}}>
                   <div style={{display:"flex", marginTop:'7px'}}>
@@ -359,7 +438,7 @@ const [pagination, setPagination] = useState({
                     </Tag>
                 </div>
                 <div style={{marginTop:"12px"}}>
-                  <h3>Interviewers:</h3>
+                  <h3 style={{fontSize: '15px'}}>Interviewers:</h3>
                   <div>
                     <img src={MainInterviewer} style={{height:"30px" ,width:"30px" ,borderRadius:"50%", border:'2px solid white'}}></img>
                     {OptionalInterviewer.map((interviewer, index)=>(
@@ -400,7 +479,7 @@ const [pagination, setPagination] = useState({
               <img src={grid}></img>
             </button>
           </div>
-          <Button
+          {/* <Button
             className="add-candidate-btn"
             onClick={showModal}
           >
@@ -408,7 +487,7 @@ const [pagination, setPagination] = useState({
               <img src={circle} style={{marginRight:'8px', marginBottom:'20px'}}></img>
               <p>Create Interview</p>  
             </div>
-          </Button>
+          </Button> */}
         </div>
       </div>
     </div>
@@ -417,36 +496,44 @@ const [pagination, setPagination] = useState({
     <Form 
       form={form}
       onFinish={handleSearch} 
+      onValuesChange={(changedValues, allValues) => {
+        const clearedField = Object.keys(changedValues).find(
+          key => changedValues[key] === '' || changedValues[key] === undefined
+        );
+        if (clearedField) {
+          handleSearch(allValues);        
+        }
+      }}
       className="search-form"
       initialValues={filters}
     >
       <Row gutter={[12, 12]} align="middle">
-        <Col xs={24} sm={12} md={5}>
+        <Col xs={24} sm={12} md={7}>
           <Form.Item name="candidateName" className="mb-0">
             <Input style={{borderRadius:"8px", height:"40px"}} placeholder="Candidate Name" allowClear />
           </Form.Item>
         </Col>
-        <Col xs={24} sm={12} md={5}>
+        <Col xs={24} sm={12} md={7}>
           <Form.Item name="appliedPosition" className="mb-0">
             <Input style={{borderRadius:"8px", height:"40px"}} placeholder="Applied Position" allowClear />
           </Form.Item>
         </Col>
-        <Col xs={24} sm={12} md={5}>
+        <Col xs={24} sm={12} md={6}>
           <Form.Item name="status" className="mb-0">
             <Select
               placeholder="Interview Status"
               allowClear
               className='custom'
               options={[
-                { value: 'SCHEDULED', label: 'Scheduled' },
-                { value: 'COMPLETED', label: 'Completed' },
-                { value: 'CANCELLED', label: 'Cancelled' },
-                { value: 'RESCHEDULED', label: 'Rescheduled' },
+                { value: 'scheduled', label: 'Scheduled' },
+                { value: 'completed', label: 'Completed' },
+                { value: 'cancelled', label: 'Cancelled' },
+                { value: 'rescheduled', label: 'Rescheduled' },
               ]}
             />
           </Form.Item>
         </Col>
-        <Col xs={24} sm={12} md={5}>
+        {/* <Col xs={24} sm={12} md={5}>
           <Form.Item name="jobType" className="mb-0">
             <Select placeholder="Interview Rating" allowClear
             className='custom'
@@ -459,7 +546,7 @@ const [pagination, setPagination] = useState({
               ]}
             />
           </Form.Item>
-        </Col>
+        </Col> */}
         <Col xs={24} sm={12} md={4}>
           <Form.Item className="mb-0">
             <Button type="primary" htmlType="submit" className="search-btn" block>
@@ -471,33 +558,96 @@ const [pagination, setPagination] = useState({
     </Form>
 
     {/* Render the CreateInterviewModal */}
-    <CreateInterviewModal
+    {/* <CreateInterviewModal
       isVisible={isModalVisible}
       onCancel={handleCancel}
       interview={interviews}
       authState={authState}
-    />
+    /> */}
 
     {/* Jobs View */}
     <div className="row">
       <div className="col-md-12">
         <Spin spinning={loading}>
           {viewType === 'list' ? (
-            <div className="table-responsive">
+            <>
+                {interviews?.length > 0 && (
+                  <Row justify="space-between" style={{ marginBottom: 16 }}>
+                    <Col>
+                      <div style={{display:'flex', alignItems:'center', gap:'5px'}}>
+                      <div style={{fontSize:'14px'}}>Show</div>
+                      <Select
+                        className='new'
+                        value={pageSize}
+                        onChange={(size) => {
+                          setPageSize(size);
+                          setCurrentPage(1);
+                        }}
+                        style={{width:60}}
+                      >
+                        {['20', '30', '40', '50'].map((size) => (
+                          <Option key={size} value={parseInt(size, 10)}>
+                            {size}
+                          </Option>
+                        ))}
+                      </Select>
+                      <div style={{fontSize:'14px'}}>entries</div>
+                      </div>
+                    </Col>
+                  </Row>
+                )}
+                            <div className="table-responsive">
               <Table 
                 className="table-striped"
                 columns={columns}
                 dataSource={interviews}
                 rowKey="_id"
-                pagination={{
-                  ...pagination,
-                  showSizeChanger: true,
-                  showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                  pageSizeOptions: ['10', '20', '50']
-                }}
-                onChange={handleTableChange}
+                // pagination={{
+                //   ...pagination,
+                //   showSizeChanger: true,
+                //   showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+                //   pageSizeOptions: ['10', '20', '50']
+                // }}
+                // onChange={handleTableChange}
+                pagination={false}
               />
             </div>
+            {interviews?.length > 0 && (
+                  <Row justify="space-between" align="middle" style={{ marginTop: 16 }}>
+                    <Col>
+                      <span style={{fontSize:'14px'}}>
+                        {t('paginationShow', {
+                          range1: (currentPage - 1) * pageSize + 1,
+                          range2: Math.min(currentPage * pageSize, paginationDetail),
+                          total: paginationDetail,
+                        })}
+                      </span>
+                    </Col>
+                    <Col>
+                      <Pagination
+                        total={paginationDetail}
+                        pageSize={pageSize}
+                        current={currentPage}
+                        showSizeChanger={false}
+                        onChange={(page, size) => {
+                          setPageSize(size);
+                          setCurrentPage(page);
+                        }}
+                        pageSizeOptions={['20', '30', '40', '50']}
+                        itemRender={(current, type, originalElement) =>{
+                            if (type === 'prev') {
+                              return <img src={leftPageIcon} style={{height:"24px" , width:"24px"}} />;
+                            }
+                            if (type === 'next') {
+                              return <img src={rightPageIcon} style={{height:"24px" , width:"24px"}} />;
+                            }
+                            return originalElement;
+                          }}
+                      />
+                    </Col>
+                  </Row>
+                )}
+            </>
           ) : (
             renderGridView()
           )}
@@ -506,7 +656,7 @@ const [pagination, setPagination] = useState({
     </div>
 
     {/* Add some global styles */}
-    <style jsx global>{`
+    <style jsx>{`
       .custom-modal .ant-modal-header {
         border-bottom: none;
         padding: 24px 24px 0;
@@ -741,6 +891,7 @@ const [pagination, setPagination] = useState({
         margin-right: -12px !important;
         margin-left: -12px !important;
       }
+
       .ant-col {
         padding-right: 12px !important;
         padding-left: 12px !important;
@@ -757,13 +908,22 @@ const [pagination, setPagination] = useState({
       color: white !important;
       }
 
-      .customized .ant-select-selector{
-      height: 56px !important;
-      border-radius: 8px !important;
-      display: flex;
-      align-items: center;
-      padding-left: 10px;
-      }
+        .new .ant-select-selector{
+          height: 21px !important;
+          display: flex;
+          align-items: center;
+          padding: 7px !important;
+        }
+
+        .new .ant-select-selection-item {
+          padding: 0 !important;
+          margin: 0;
+        }
+
+        .new .ant-select-arrow {
+          transform: translateX(50%);
+          transform: translateY(20%);
+        }
 
       .add-candidate-btn{
         border-radius: 40px !important;

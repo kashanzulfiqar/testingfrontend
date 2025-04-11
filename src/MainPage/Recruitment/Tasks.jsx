@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Table, Button, Select, Input, Modal, Form, message, Spin, Tag, Row, Col, Card, Dropdown, Menu } from 'antd';
+import { Table, Button, Select, Input, Modal, Form, message, Spin, Tag, Row, Col, Card, Dropdown, Menu, Pagination } from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { apiServices } from '../../Services/apiServices';
 import { useSelector } from 'react-redux';
@@ -13,6 +13,9 @@ import more from '../../assets/iconsRecruitment/vertical.svg';
 import description from '../../assets/iconsRecruitment/description.svg';
 import clock from '../../assets/iconsRecruitment/clock.svg';
 import calander from '../../assets/iconsRecruitment/calander.svg';
+import { useTranslation } from "react-i18next";
+import leftPageIcon from '../../assets/iconsRecruitment/fi_chevrons-left.svg';
+import rightPageIcon from '../../assets/iconsRecruitment/fi_chevrons-right.svg';
 
 
 const Tasks = () => {
@@ -29,6 +32,10 @@ const Tasks = () => {
   const authState = useSelector((state) => state.user.loginvalue);
   const [viewType, setViewType] = useState('list');
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [paginationDetail, setPaginationDetail] = useState(0);
+  const [pageSize, setPageSize] = useState(20);
+  const [currentPage, setCurrentPage] = useState(1);
+  const {t} = useTranslation();
 
   useEffect(() => {
     const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
@@ -40,7 +47,7 @@ const Tasks = () => {
     }
     
     fetchTasks();
-  }, [filters, pagination.current, pagination.pageSize]);
+  }, [filters, currentPage, pageSize]);
 
   const fetchTasks = async () => {
     const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
@@ -56,8 +63,8 @@ const Tasks = () => {
       console.log('Fetching tasks with filters:', filters);
       
       const queryParams = {
-        page: pagination.current,
-        limit: pagination.pageSize,
+        page: currentPage,
+        limit: pageSize,
         ...(filters.candidateName && { candidateName: filters.candidateName }),
         ...(filters.status && { status: filters.status }),
       };
@@ -81,6 +88,7 @@ const Tasks = () => {
         const tasksData = response.data.data;
         console.log('Tasks data:', tasksData);
         setTasks(tasksData.docs || []);
+        setPaginationDetail(tasksData.totalDocs || 0);
         setPagination(prev => ({
           ...prev,
           total: tasksData.totalDocs || 0
@@ -97,13 +105,13 @@ const Tasks = () => {
     }
   };
 
-  const handleTableChange = (newPagination, filters, sorter) => {
-    setPagination({
-      ...pagination,
-      current: newPagination.current,
-      pageSize: newPagination.pageSize
-    });
-  };
+  // const handleTableChange = (newPagination, filters, sorter) => {
+  //   setPagination({
+  //     ...pagination,
+  //     current: newPagination.current,
+  //     pageSize: newPagination.pageSize
+  //   });
+  // };
 
   const handleSearch = (values) => {
     setPagination({
@@ -254,25 +262,25 @@ const Tasks = () => {
       dataIndex: 'candidateName',
       render: (_, record) => (
         <div style={{display:"flex", alignItems:'center'}}>
-          <div style={{height:'40px' ,width:"40px", border:"1px solid transparent" , borderRadius:"50%", background:'#f5f1fd', color:'#9368e9', display:"flex", justifyContent:"center", alignItems:'center', marginLeft:"10px", marginRight:"10px"}}>{record.candidateId.firstName[0].toUpperCase() + record.candidateId.lastName[0].toUpperCase()}</div>
-            <Link to={`/recruitment/tasks/${record._id}`}>
-              {record.candidateId.firstName} {record.candidateId.lastName}
+          <div style={{minHeight:'40px' ,minWidth:"40px", border:"1px solid transparent" , borderRadius:"50%", background:'#f5f1fd', color:'#9368e9', display:"flex", justifyContent:"center", alignItems:'center', marginLeft:"10px", marginRight:"10px"}}>{record.candidateId.firstName[0].toUpperCase() + record.candidateId.lastName[0].toUpperCase()}</div>
+            <Link to={`/recruitment/tasks/${record._id}`} style={{color:"#212529"}}>
+              {record.candidateId.firstName.charAt(0).toUpperCase() + record.candidateId.firstName.slice(1).toLowerCase()} {record.candidateId.lastName.charAt(0).toUpperCase() + record.candidateId.lastName.slice(1).toLowerCase()}
             </Link>
         </div>
 
       ),
-      sorter: true,
+      // sorter: true,
     },
     {
        title: 'Task Name',
       dataIndex: 'taskName',
       key: 'taskName',
       render: (_, record) => (
-        <Link>
-          {record.taskName}
-        </Link>
+        <div style={{ color:"#212529"}}>
+          {record.taskName.split(' ').map(word=>word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
+        </div>
       ),
-      sorter: true,
+      // sorter: true,
     },
     {
       title: 'Reviewers',
@@ -289,7 +297,7 @@ const Tasks = () => {
           </div>
         )
       },
-      sorter: true,
+      // sorter: true,
     },
   {
     title: 'Status',
@@ -302,7 +310,7 @@ const Tasks = () => {
         status === 'COMPLETED' ? 'green' :
         status === 'OVERDUE' ? 'red' :
         'default'
-      }>
+      } style={{borderRadius:"70px"}}>
         {status?.charAt(0).toUpperCase() + status?.slice(1).toLowerCase()}
       </Tag>
     ),
@@ -315,7 +323,7 @@ const Tasks = () => {
         {moment(record.lastDateOfSubmission).format('DD MMM YYYY')}
       </span>
     ),
-    sorter: true,
+    // sorter: true,
   },
   {
     title: 'Duration',
@@ -345,8 +353,8 @@ const Tasks = () => {
     return (
       <Row gutter={[24, 24]}>
         {tasks.map(task => {
-          const FirstName = task?.candidateId.firstName;
-          const LastName = task?.candidateId.lastName;
+          const FirstName = task?.candidateId.firstName.charAt(0).toUpperCase() + task?.candidateId.firstName.slice(1).toLowerCase();
+          const LastName = task?.candidateId.lastName.charAt(0).toUpperCase() + task?.candidateId.lastName.slice(1).toLowerCase();
           const fullName = FirstName + " "  + LastName;
           const initials = FirstName[0].toUpperCase() + LastName[0].toUpperCase();
           return(
@@ -358,14 +366,14 @@ const Tasks = () => {
                     <div style={{height:'50px' ,width:'50px', border:'1px solid transparent', borderRadius:'50%', background:"#f3eaff", color:'#8326ff', display:"flex", justifyContent:"center", alignItems:'center'}}>{initials}</div>
                     <div style={{marginLeft:"12px"}}>
                       <div style={{fontSize:"18px" ,fontWeight:"500", color:'#212529', paddingTop:"3px"}}>
-                      <Link to={`/recruitment/tasks/${task._id}`}>
+                      <Link to={`/recruitment/tasks/${task._id}`} style={{color:"#212529"}}>
                         {fullName}
                       </Link>
                       </div>
-                      <div style={{color:'#56616b', fontSize:'12px', fontWeight:"450"}}>Hello</div>
+                      <div style={{color:'#56616b', fontSize:'12px', fontWeight:"450"}}>{task?.taskName.split(' ').map(word=>word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}</div>
                     </div>
                   </div>
-                  <Dropdown 
+                  {/* <Dropdown 
                     overlay={<Menu>
                       <Menu.Item key="edit" icon={<EditOutlined />}onClick={() => navigate(`/recruitment/tasks/${task._id}/edit`)}>Edit</Menu.Item>
                       <Menu.Item key="delete" icon={<DeleteOutlined />} danger onClick={() => {
@@ -384,7 +392,7 @@ const Tasks = () => {
                     <div style={{ cursor: 'pointer',height:'25px', marginTop:"5px" }}>
                       <img src={more} alt="More Options" />
                     </div>
-                  </Dropdown>
+                  </Dropdown> */}
                 </div>
                 <div style={{marginTop:"12px"}}>
                   <div style={{display:"flex", marginTop:'7px'}}>
@@ -413,7 +421,7 @@ const Tasks = () => {
                     </Tag>
                 </div>
                 <div style={{marginTop:"12px"}}>
-                  <h3>Reviewers:</h3>
+                  <h3 style={{fontSize: '15px'}}>Reviewers:</h3>
                   <div>
                     {task?.taskReviewers.map((Reviewer, index)=>(
                       <Link>
@@ -483,7 +491,7 @@ const Tasks = () => {
               <img src={grid}></img>
             </button>
           </div>
-          <Button
+          {/* <Button
             className="add-candidate-btn"
             onClick={showModal}
           >
@@ -491,7 +499,7 @@ const Tasks = () => {
               <img src={circle} style={{marginRight:'8px', marginBottom:'20px'}}></img>
               <p>Create Task</p>  
             </div>
-          </Button>
+          </Button> */}
         </div>
       </div>
     </div>
@@ -541,6 +549,14 @@ const Tasks = () => {
     <Form 
       form={form}
       onFinish={handleSearch} 
+      onValuesChange={(changedValues, allValues) => {
+        const clearedField = Object.keys(changedValues).find(
+          key => changedValues[key] === '' || changedValues[key] === undefined
+        );
+        if (clearedField) {
+          handleSearch(allValues);        
+        }
+      }}
       className="search-form"
       initialValues={filters}
     >
@@ -548,7 +564,7 @@ const Tasks = () => {
     
     <Col xs={24} sm={18} md={18}>
       <Row gutter={[12, 12]}>
-        <Col xs={24} sm={12} md={5}>
+        <Col xs={24} sm={12} md={8}>
           <Form.Item name="candidateName" className="mb-0">
             <Input 
               style={{ borderRadius: "8px", height: "40px" }} 
@@ -557,7 +573,7 @@ const Tasks = () => {
             />
           </Form.Item>
         </Col>
-        <Col xs={24} sm={12} md={5}>
+        <Col xs={24} sm={12} md={8}>
           <Form.Item name="status" className="mb-0">
             <Select
               placeholder="Task Status"
@@ -575,7 +591,7 @@ const Tasks = () => {
       </Row>
     </Col>
 
-    <Col xs={24} sm={12} md={4} style={{ textAlign: "right" }}>
+    <Col xs={24} sm={12} md={5} style={{ textAlign: "right" }}>
       <Form.Item className="mb-0">
         <Button type="primary" htmlType="submit" className="search-btn" block>
           Search
@@ -624,21 +640,84 @@ const Tasks = () => {
       <div className="col-md-12">
         <Spin spinning={loading}>
           {viewType === 'list' ? (
-            <div className="table-responsive">
+            <>
+                {tasks?.length > 0 && (
+                  <Row justify="space-between" style={{ marginBottom: 16 }}>
+                    <Col>
+                      <div style={{display:'flex', alignItems:'center', gap:'5px'}}>
+                      <div style={{fontSize:'14px'}}>Show</div>
+                      <Select
+                        className='new'
+                        value={pageSize}
+                        onChange={(size) => {
+                          setPageSize(size);
+                          setCurrentPage(1);
+                        }}
+                        style={{width:60}}
+                      >
+                        {['20', '30', '40', '50'].map((size) => (
+                          <Option key={size} value={parseInt(size, 10)}>
+                            {size}
+                          </Option>
+                        ))}
+                      </Select>
+                      <div style={{fontSize:'14px'}}>entries</div>
+                      </div>
+                    </Col>
+                  </Row>
+                )}
+                            <div className="table-responsive">
               <Table 
                 className="table-striped"
                 columns={columns}
                 dataSource={tasks}
                 rowKey="_id"
-                pagination={{
-                  ...pagination,
-                  showSizeChanger: true,
-                  showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                  pageSizeOptions: ['10', '20', '50']
-                }}
-                onChange={handleTableChange}
+                // pagination={{
+                //   ...pagination,
+                //   showSizeChanger: true,
+                //   showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+                //   pageSizeOptions: ['10', '20', '50']
+                // }}
+                // onChange={handleTableChange}
+                pagination={false}
               />
             </div>
+            {tasks?.length > 0 && (
+                  <Row justify="space-between" align="middle" style={{ marginTop: 16 }}>
+                    <Col>
+                      <span style={{fontSize:'14px'}}>
+                        {t('paginationShow', {
+                          range1: (currentPage - 1) * pageSize + 1,
+                          range2: Math.min(currentPage * pageSize, paginationDetail),
+                          total: paginationDetail,
+                        })}
+                      </span>
+                    </Col>
+                    <Col>
+                      <Pagination
+                        total={paginationDetail}
+                        pageSize={pageSize}
+                        current={currentPage}
+                        showSizeChanger={false}
+                        onChange={(page, size) => {
+                          setPageSize(size);
+                          setCurrentPage(page);
+                        }}
+                        pageSizeOptions={['20', '30', '40', '50']}
+                        itemRender={(current, type, originalElement) =>{
+                            if (type === 'prev') {
+                              return <img src={leftPageIcon} style={{height:"24px" , width:"24px"}} />;
+                            }
+                            if (type === 'next') {
+                              return <img src={rightPageIcon} style={{height:"24px" , width:"24px"}} />;
+                            }
+                            return originalElement;
+                          }}
+                      />
+                    </Col>
+                  </Row>
+                )}
+            </>
           ) : (
             renderGridView()
           )}
@@ -689,7 +768,24 @@ const Tasks = () => {
         }
       `}</style> */}
 
-<style jsx global>{`
+<style jsx>{`
+        .new .ant-select-selector{
+          height: 21px !important;
+          display: flex;
+          align-items: center;
+          padding: 7px !important;
+        }
+
+        .new .ant-select-selection-item {
+          padding: 0 !important;
+          margin: 0;
+        }
+
+        .new .ant-select-arrow {
+          transform: translateX(50%);
+          transform: translateY(20%);
+        }
+
       .custom-modal .ant-modal-header {
         border-bottom: none;
         padding: 24px 24px 0;
