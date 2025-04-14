@@ -226,15 +226,14 @@ const [pagination, setPagination] = useState({
       ),
       // sorter: true,
     },
-    {
-      title: 'Position',
-      dataIndex: 'appliedFor',
-      key: 'appliedFor',
-      render: (appliedFor)=>{
-        return appliedFor?.title || 'N/A';
-      },
-      // sorter: true,
-    },
+    // {
+    //   title: 'Position',
+    //   dataIndex: 'appliedFor',
+    //   key: 'appliedFor',
+    //   render: (appliedFor)=>{
+    //     return appliedFor?.title || 'N/A';
+    //   },
+    // },
 
     {
       title: 'Interviewers',
@@ -387,7 +386,7 @@ const [pagination, setPagination] = useState({
                         {fullName}
                       </Link>
                       </div>
-                      <div  style={{color:'#56616b', fontSize:'12px', fontWeight:"450"}}>{interview?.appliedFor?.title || 'N/A'}</div>
+                      {/* <div  style={{color:'#56616b', fontSize:'12px', fontWeight:"450"}}>{interview?.appliedFor?.title || 'N/A'}</div> */}
                     </div>
                   </div>
                   {/* <Dropdown 
@@ -507,33 +506,25 @@ const [pagination, setPagination] = useState({
       className="search-form"
       initialValues={filters}
     >
-      <Row gutter={[12, 12]} align="middle">
-        <Col xs={24} sm={12} md={7}>
-          <Form.Item name="candidateName" className="mb-0">
-            <Input style={{borderRadius:"8px", height:"40px"}} placeholder="Candidate Name" allowClear />
-          </Form.Item>
-        </Col>
-        <Col xs={24} sm={12} md={7}>
+<Row justify="space-between" align="middle" gutter={[12, 12]}>
+  {/* Grouping all inputs into one Col */}
+  <Col xs={24} md={18}>
+    <Row gutter={[12, 12]}>
+      <Col xs={24} sm={12} md={12}>
+        <Form.Item name="candidateName" className="mb-0">
+          <Input
+            style={{ borderRadius: "8px", height: "40px" }}
+            placeholder="Candidate Name"
+            allowClear
+          />
+        </Form.Item>
+      </Col>
+              {/* <Col xs={24} sm={12} md={7}>
           <Form.Item name="appliedPosition" className="mb-0">
             <Input style={{borderRadius:"8px", height:"40px"}} placeholder="Applied Position" allowClear />
           </Form.Item>
-        </Col>
-        <Col xs={24} sm={12} md={6}>
-          <Form.Item name="status" className="mb-0">
-            <Select
-              placeholder="Interview Status"
-              allowClear
-              className='custom'
-              options={[
-                { value: 'scheduled', label: 'Scheduled' },
-                { value: 'completed', label: 'Completed' },
-                { value: 'cancelled', label: 'Cancelled' },
-                { value: 'rescheduled', label: 'Rescheduled' },
-              ]}
-            />
-          </Form.Item>
-        </Col>
-        {/* <Col xs={24} sm={12} md={5}>
+        </Col> */}
+                {/* <Col xs={24} sm={12} md={5}>
           <Form.Item name="jobType" className="mb-0">
             <Select placeholder="Interview Rating" allowClear
             className='custom'
@@ -547,14 +538,34 @@ const [pagination, setPagination] = useState({
             />
           </Form.Item>
         </Col> */}
-        <Col xs={24} sm={12} md={4}>
-          <Form.Item className="mb-0">
-            <Button type="primary" htmlType="submit" className="search-btn" block>
-              Search
-            </Button>
-          </Form.Item>
-        </Col>
-      </Row>
+      <Col xs={24} sm={12} md={12}>
+        <Form.Item name="status" className="mb-0">
+          <Select
+            placeholder="Interview Status"
+            allowClear
+            className="custom"
+            options={[
+              { value: 'scheduled', label: 'Scheduled' },
+              { value: 'completed', label: 'Completed' },
+              { value: 'cancelled', label: 'Cancelled' },
+              { value: 'rescheduled', label: 'Rescheduled' },
+            ]}
+          />
+        </Form.Item>
+      </Col>
+    </Row>
+  </Col>
+
+  {/* Button on the right */}
+  <Col xs={24} md={5} style={{ display: 'flex', justifyContent: 'flex-end' }}>
+    <Form.Item className="mb-0" style={{ width: '100%' }}>
+      <Button type="primary" htmlType="submit" className="search-btn" block>
+        Search
+      </Button>
+    </Form.Item>
+  </Col>
+</Row>
+
     </Form>
 
     {/* Render the CreateInterviewModal */}

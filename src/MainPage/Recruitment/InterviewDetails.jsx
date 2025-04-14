@@ -952,6 +952,13 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
           }
         }
 
+        @media (max-width: 410px){
+          .select-btn{
+            text-align: center;
+            padding: 10px;
+          }
+        }
+
         @media (max-width: 500px){
           .initials-details{
             margin-left: 7px !important; 

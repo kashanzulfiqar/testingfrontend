@@ -273,9 +273,9 @@ const Candidates = () => {
           to={`/recruitment/candidates/${record._id}`}
           className="text-primary"
         >
-          <div style={{display:'flex', alignItems:'center', alignSelf:'center'}}>
+          <div style={{display:'flex', alignItems:'center', justifyContent: 'space-between' }}>
             <label style={{minHeight: '40px', minWidth:'40px', border: '1px solid tranparent', borderRadius:'50%', display:'flex', justifyContent:'center', alignItems:'center', fontSize:'16px', fontWeight:'500', color:'#8326ff', background: '#f3eaff'}}>{initials}</label>
-            <label style={{marginLeft:'10px' , color: '#212529'}}>{record.firstName[0].toUpperCase() + record.firstName.slice(1).toLowerCase() + ' ' + record.lastName[0].toUpperCase() + record.lastName.slice(1).toLowerCase()}</label>
+            <label style={{marginLeft:'10px' , color: '#212529', flex:1, textAlign:'left', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', maxWidth:'100%'}}>{record.firstName[0].toUpperCase() + record.firstName.slice(1).toLowerCase() + ' ' + record.lastName[0].toUpperCase() + record.lastName.slice(1).toLowerCase()}</label>
           </div>
         </Link>
         )
@@ -290,7 +290,7 @@ const Candidates = () => {
         if (appliedFor?.title) {
           return(
             <span style={{marginLeft: "10px",maxWidth: "200px", display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 2, overflow: "hidden",textOverflow: "ellipsis",wordBreak: "break-word"}}>
-              {`${appliedFor.title}${appliedFor.department ? ` - ${appliedFor.department}` : "" }`}
+              {appliedFor.title}
             </span>
           )
         }

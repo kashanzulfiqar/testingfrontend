@@ -1755,7 +1755,18 @@ const CandidateDetails = () => {
               </Select>
               {!viewMobile && (
                 <button
-                  onClick={handleSendOfferClick}
+                  // onClick={handleSendOfferClick}
+                  onClick={()=>{
+                    if(candidate?.status==='OFFERED'){
+                      handleSendOfferClick()
+                    }
+                    if(candidate?.status==='HIRED'){
+                      navigate(`/recruitment/candidates/hired`)
+                    }
+                    if(candidate?.status==='BLACKLISTED'){
+                      navigate(`/recruitment/candidates/blacklist`)
+                    }
+                  }}
                   style={{
                     background: '#ff9244',
                     border: '1px solid #ff9244',
@@ -1764,11 +1775,18 @@ const CandidateDetails = () => {
                     width: '120px',
                     fontSize: '16px',
                     fontWeight: '500',
-                    color: '#ffffff'
+                    color: '#ffffff',
+                    cursor: candidate?.status==='REJECTED' ? 'not-allowed' : 'pointer'
                   }}
                   className='select-btn'
+                  disabled={candidate?.status==='REJECTED'}
+
                 >
-                  {candidate?.status==='OFFERED' ? 'Update Offer' : 'Send Offer'}
+                   {candidate?.status === 'OFFERED' ? 'Update Offer' :
+                    candidate?.status === 'REJECTED' ? 'Rejected' :
+                    candidate?.status === 'HIRED' ? 'View Hired' :
+                    candidate?.status === 'BLACKLISTED' ? 'Blacklisted' :
+                  'Send Offer'}
                 </button>
               )}
               <div className="dropdown-style">

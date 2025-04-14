@@ -229,9 +229,9 @@ const TaskDetails = () => {
     );
   }
 
-  const FirstName = task?.candidateId.firstName;
-  const LastName = task?.candidateId.lastName;
-  const FullName = FirstName + LastName;
+  const FirstName = task?.candidateId.firstName.charAt(0).toUpperCase() + task?.candidateId.firstName.slice(1).toLowerCase();
+  const LastName = task?.candidateId.lastName.charAt(0).toUpperCase() + task?.candidateId.lastName.slice(1).toLowerCase();
+  const FullName = FirstName + ' ' + LastName;
 
   
   return (
@@ -269,7 +269,7 @@ const TaskDetails = () => {
           <div>
             <ul className="breadcrumb">
               <li className="breadcrumb-item"><Link to="/recruitment/tasks">Tasks</Link></li>
-              <li className="breadcrumb-item active">{FullName.split(' ').map(word=>word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}</li>
+              <li className="breadcrumb-item active">{FullName}</li>
             </ul>
           </div>
         </div>
@@ -280,7 +280,7 @@ const TaskDetails = () => {
         <div style={{display:"flex", alignItems:'center'}}>
           <div className='initials-details'>{task?.candidateId.firstName?.[0].toUpperCase()}{task?.candidateId.lastName?.[0].toUpperCase()}</div>
           <div>
-            <h3 className="ms-3 mt-2 mb-0" style={{fontSize:'20px', fontweight:'500', color:"#000000"}}>{FirstName.charAt(0).toUpperCase() + FirstName.slice(1).toLowerCase() + ' ' + LastName.charAt(0).toUpperCase() + LastName.slice(1).toLowerCase()} </h3>
+            <h3 className="ms-3 mt-2 mb-0" style={{fontSize:'20px', fontweight:'500', color:"#000000"}}>{FirstName + ' ' + LastName} </h3>
             <h5 className='ms-3' style={{fontSize:'14px', fontweight:'450', color:"#444444"}} >{task?.candidateId?.appliedFor?.title. split(' ').map(word=>word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}</h5> 
             <div style={{paddingLeft:"10px"}}>
               <img src={starIcon}></img>

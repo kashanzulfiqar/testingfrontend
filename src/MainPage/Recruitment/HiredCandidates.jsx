@@ -187,7 +187,7 @@ const HiredCandidates = () => {
         return(
           <div style={{display:"flex", alignItems:'center'}}>
             <div style={{minHeight:'40px' ,minWidth:"40px", border:"1px solid transparent" , borderRadius:"50%", background:'#f5f1fd', color:'#9368e9', display:"flex", justifyContent:"center", alignItems:'center', marginRight:"10px"}}>{initials}</div>
-            <Link to={`/recruitment/candidates/${record._id}`} style={{color:"#212529" ,fontSize:"14px" ,fontWight:"500"}}>
+            <Link to={`/recruitment/candidates/${record._id}`} style={{color:"#212529" ,fontSize:"14px" ,fontWight:"500", whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', maxWidth:'100%'}}>
               {candidateName}
             </Link>
           </div>

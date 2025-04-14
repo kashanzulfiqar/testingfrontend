@@ -212,7 +212,7 @@ const OfferedCandidates = () => {
       fixed: 'left',
       width: 200,
       render: (_, record) => (
-        <div style={{display:"flex", alignItems:'center'}}>
+        <div style={{display:"flex", alignItems:'center', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', maxWidth:'190px'}}>
           <div style={{minHeight:'40px' ,minWidth:"40px", border:"1px solid transparent" , borderRadius:"50%", background:'#f5f1fd', color:'#9368e9', display:"flex", justifyContent:"center", alignItems:'center', marginLeft:"10px", marginRight:"10px"}}>{`${record.firstName.charAt(0).toUpperCase()}${record.lastName.charAt(0).toUpperCase()}`}</div>
           <Link to={`/recruitment/candidates/${record._id}`} style={{fontSize:"14px", color:"#212529"}}>
             {record.firstName.charAt(0).toUpperCase() + record.firstName.slice(1).toLowerCase()} {record.lastName.charAt(0).toUpperCase() + record.lastName.slice(1).toLowerCase()}
@@ -340,7 +340,7 @@ const OfferedCandidates = () => {
               <div>
                 <div style={{display:'flex', justifyContent:'space-between', width:"98%"}} >
                   <div style={{display:"flex"}}>
-                    <div style={{height:'50px' ,width:'50px', border:'1px solid transparent', borderRadius:'50%', background:"#f3eaff", color:'#8326ff', display:"flex", justifyContent:"center", alignItems:'center'}}>{initials}</div>
+                    <div style={{height:'50px' ,width:'50px', border:'1px solid transparent', borderRadius:'50%', background:"#f3eaff", color:'#8326ff', display:"flex", justifyContent:"center", alignItems:'center'}}>{initials.toUpperCase()}</div>
                     <div style={{marginLeft:"12px"}}>
                       <div className='job-title' style={{fontSize:"18px" ,fontWeight:"500", color:'#212529', paddingTop:"3px"}}>
                       <Link to={`/recruitment/candidates/${selected._id}`}>

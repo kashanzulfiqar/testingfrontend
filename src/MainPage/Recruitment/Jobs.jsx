@@ -1004,12 +1004,10 @@ const Jobs = () => {
           font-size: 20px;
           font-weight: 500;
           margin-bottom: 4px;
-          height: 48px;
+          whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', maxWidth:'190px'
         }
         .job-title a {
           color: #212529;
-          overflow: hidden;
-          text-overflow: ellipsis;
         }
         .positions-count {
           color: #56616B;

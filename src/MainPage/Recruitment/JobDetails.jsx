@@ -192,7 +192,7 @@ const JobDetails = () => {
             candidates.map((candidate) => (
               <div key={candidate._id} className="candidate-card">
                 <div className="candidate-info">
-                  <div className="d-flex justify-content-between align-items-center">
+                  <div className='candidate-info-container'>
                     <div>
                       <h4>
                         <Link to={`/recruitment/candidates/${candidate._id}`} style={{fontWeight:"500", color:"#212529"}}>
@@ -211,7 +211,7 @@ const JobDetails = () => {
                         {candidate.status?.charAt(0) + candidate.status?.slice(1).toLowerCase()}
                       </Tag>
                     </div>
-                    <Button onClick={() => navigate(`/recruitment/candidates/${candidate._id}`)} style={{backgroundColor:"#ff9244", color:"#ffffff", borderRadius:"12px"}}>
+                    <Button onClick={() => navigate(`/recruitment/candidates/${candidate._id}`)} className='view-details-btn'>
                       View Details
                     </Button>
                   </div>
@@ -370,7 +370,7 @@ const JobDetails = () => {
       </div>
       <div style={{height:'130px', background:'#ffffff' ,border:'1px solid transparent' , borderRadius:'8px', marginBottom:"20px", display:"flex", alignItems:"center", justifyContent:"space-between"}}>
         <div style={{display:"flex", alignItems:'center'}}>
-          <div style={{height:'80px' ,width:"80px", border:"1px solid transparent" , borderRadius:"50%", background:'#f5f1fd', color:'#9368e9', display:"flex", justifyContent:"center", alignItems:'center', marginLeft:"20px"}}>{jobDetails.title.split(' ').map(word=>word.charAt(0).toUpperCase()).join('')}</div>
+          <div style={{height:'80px' ,width:"80px", border:"1px solid transparent" , borderRadius:"50%", background:'#f5f1fd', color:'#9368e9', display:"flex", justifyContent:"center", alignItems:'center', marginLeft:"20px"}}>{jobDetails?.title.split(' ').map(word=>word.charAt(0).toUpperCase()).join('')}</div>
           <div>
           <h3 className="ms-3 mt-2 mb-0">{jobDetails?.title.split(' ').map(word=>word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}</h3>
           <Tag color="success" className="ms-3 mt-1" style={{background:'#f5f1fd', borderRadius:"70px"}}>{jobDetails?.status?.charAt(0) + jobDetails?.status?.slice(1).toLowerCase()}</Tag>
@@ -513,9 +513,6 @@ const JobDetails = () => {
           line-height: 1.6;
           color: #333;
         }
-        .info-section {
-          // padding-bottom: 10px;
-        }
         .info-section:last-child {
           border-bottom: none;
           padding-bottom: 0;
@@ -630,16 +627,34 @@ const JobDetails = () => {
          margin-bottom:7px;
         }
 
+        .candidate-info-container{
+          display:flex;
+          justify-content: space-between;
+          align-items:center;
+        }
+
         .tab-image .active{
          color: #ff9244;
         }
 
-        // media queries for responsivness
+        .view-details-btn{
+          background-color:#ff9244;
+          color:#ffffff;
+          border-radius:12px;
+        }
 
         @media (min-width: 768px) and (max-width: 1024px) {
           .dropdown-btn{
             height: 30px !important;
           }
+        }
+
+        @media (max-width: 450px){
+        .candidate-info-container{
+          display:flex;
+          flex-direction: column;
+          align-items:flex-start;
+        }
         }
         
         @media (min-width: 300px) and (max-width: 450px) {
@@ -648,6 +663,9 @@ const JobDetails = () => {
             height: 30px !important;
             width: 60px !important;
             font-size: 10px !important;
+          }
+          .view-details-btn{
+            margin-top: 20px;
           }
         }
 
