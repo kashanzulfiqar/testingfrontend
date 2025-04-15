@@ -960,37 +960,49 @@ const EmployeeProfile = () => {
                                     alignItems: "center",
                                   }}
                                 >
-                                  {showSalary
-                                    ? allData?.salary
-                                        ?.toString()
-                                        .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                                    : "******"}
-                                  <button
-                                    onClick={() => setShowSalary(!showSalary)}
-                                    style={{
-                                      background: "none",
-                                      border: "none",
-                                      cursor: "pointer",
-                                      marginLeft: "10px",
-                                      padding: "0",
-                                    }}
-                                  >
-                                    {showSalary ? (
-                                      <EyeInvisibleOutlined
+                                  {allData?.salaryType === "Unpaid" ? (
+                                    allData?.salaryType // Only show salaryType if it's "Unpaid"
+                                  ) : (
+                                    <>
+                                      {" "}
+                                      {showSalary
+                                        ? `${allData?.salary
+                                            ?.toString()
+                                            .replace(
+                                              /\B(?=(\d{3})+(?!\d))/g,
+                                              ","
+                                            )} ${allData?.salaryType}` // Show salary and salaryType with a space
+                                        : "******"}
+                                      <button
+                                        onClick={() =>
+                                          setShowSalary(!showSalary)
+                                        }
                                         style={{
-                                          color: "#666666",
-                                          fontSize: "20px",
+                                          background: "none",
+                                          border: "none",
+                                          cursor: "pointer",
+                                          marginLeft: "10px",
+                                          padding: "0",
                                         }}
-                                      />
-                                    ) : (
-                                      <EyeOutlined
-                                        style={{
-                                          color: "#666666",
-                                          fontSize: "20px",
-                                        }}
-                                      />
-                                    )}
-                                  </button>
+                                      >
+                                        {showSalary ? (
+                                          <EyeInvisibleOutlined
+                                            style={{
+                                              color: "#666666",
+                                              fontSize: "20px",
+                                            }}
+                                          />
+                                        ) : (
+                                          <EyeOutlined
+                                            style={{
+                                              color: "#666666",
+                                              fontSize: "20px",
+                                            }}
+                                          />
+                                        )}
+                                      </button>
+                                    </>
+                                  )}
                                 </div>
                               </li>
                               <li>
@@ -2092,15 +2104,17 @@ const EmployeeProfile = () => {
                       title: t("Previous Salary"),
                       dataIndex: "previousSalary",
                       key: "previousSalary",
-                      render: (text) => 
-                        text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " PKR",
+                      render: (text) =>
+                        text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") +
+                        " PKR",
                     },
                     {
                       title: t("New Salary"),
                       dataIndex: "salary",
                       key: "salary",
                       render: (text) =>
-                        text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " PKR",
+                        text?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") +
+                        " PKR",
                     },
                     {
                       title: t("Change (%)"),
