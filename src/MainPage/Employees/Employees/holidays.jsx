@@ -233,9 +233,8 @@ const Holidays = () => {
     },
     {
       title: t('holiday.day'),
-      dataIndex: "holidayDate",
-      key: "holidayDate",
-      render: (text) => moment(text).format("dddd"),
+      dataIndex: "holidayDay",
+      key: "holidayDay",
     },
     {
       title: t('holiday.actions'),

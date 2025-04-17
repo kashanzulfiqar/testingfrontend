@@ -90,6 +90,7 @@ import RefundPolicy from "../LandingPage/refundPolicy";
 import TermsAndConditions from "../LandingPage/TermsConditions";
 import ClientForgotPassword from "./ClientForgotPassword";
 import ClientResetPassword from "./ClientResetPassword";
+import TaskDetails from "../MainPage/Employees/Projects/taskDetail.jsx";
 
 const App = () => {
   const loginState = useSelector((state) => state.user.loginvalue);
@@ -295,6 +296,7 @@ const App = () => {
             path="/projects/projects-view/:_id"
             element={<ProjectView />}
           />
+          <Route path="/tasks/:_id" element={<TaskDetails />} />
           <Route path="/profit-loss/view" element={<ViewPL />} />
 
           <Route path="/attendance-report" element={<AttendanceReport />} />

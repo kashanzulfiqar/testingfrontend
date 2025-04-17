@@ -166,12 +166,13 @@ const TaskBoardList = () => {
   }, []); // Only run on mount
 
   const handlePaginationChange = (page, pageSize) => {
+    setPage(page);
+    setSize(pageSize);
     setPagination({
       ...pagination,
       current: page,
       pageSize: pageSize,
     });
-    setIsLoading(true);
     GetListTaskBoards(page, pageSize);
   };
 
@@ -309,6 +310,7 @@ const TaskBoardList = () => {
   };
 
   const GetListTaskBoards = (page, pageSize, archivedStatus = isArchived) => {
+    setIsLoading(true);
     const params = {
       ...filters,
       page: page || pagination.current,
@@ -327,13 +329,12 @@ const TaskBoardList = () => {
           const taskBoards = res?.data?.taskBoards || [];
           setCategoryObj(taskBoards);
           setTableData(taskBoards);
-          setPagination((prev) => ({
-            ...prev,
-            current: res?.data?.currentPage,
+          setPagination({
+            ...pagination,
+            current: parseInt(params.page, 10),
+            pageSize: parseInt(params.limit, 10),
             total: res?.data?.totalItems,
-          }));
-          setPage(parseInt(params.page, 10));
-          setSize(parseInt(params.limit, 10));
+          });
         }
         setIsLoading(false);
       })
@@ -833,8 +834,8 @@ const TaskBoardList = () => {
                   <div>
                     <Pagination
                       style={{ display: "flex", float: "right" }}
-                      current={pagination.current}
-                      pageSize={pagination.pageSize}
+                      current={page}
+                      pageSize={size}
                       total={pagination.total}
                       showTotal={(total, range) =>
                         t("paginationShow", {
