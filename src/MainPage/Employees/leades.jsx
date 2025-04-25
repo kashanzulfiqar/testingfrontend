@@ -523,7 +523,7 @@ const Leads = () => {
   };
 
   const viewSources = () => {
-    apiServices("GET", `api/leads/view-source`, null, user_state)
+    apiServices("GET", `leads/view-source`, null, user_state)
       .then((res) => {
         if (res.data.success === true) {
           const sources = res?.data?.Sources;
@@ -537,7 +537,7 @@ const Leads = () => {
   };
 
   const viewMediums = () => {
-    apiServices("GET", `api/leads/view-medium`, null, user_state)
+    apiServices("GET", `leads/view-medium`, null, user_state)
       .then((res) => {
         if (res.data.success === true) {
           const mediums = res?.data?.Mediums;
