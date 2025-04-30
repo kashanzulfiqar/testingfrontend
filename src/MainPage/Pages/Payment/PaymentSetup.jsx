@@ -1,12 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import { Helmet } from "react-helmet";
-import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { apiServices } from '../../../Services/apiServices';
-import { LoadingOutlined, LockOutlined, CreditCardOutlined, LogoutOutlined } from '@ant-design/icons';
-import { loginSuccess } from '../../../Entryfile/features/users';
-import { useTranslation } from 'react-i18next';
+import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import { apiServices } from "../../../Services/apiServices";
+import {
+  LoadingOutlined,
+  LockOutlined,
+  CreditCardOutlined,
+  LogoutOutlined,
+} from "@ant-design/icons";
+import { loginSuccess } from "../../../Entryfile/features/users";
+import { useTranslation } from "react-i18next";
 
 const PaymentSetup = () => {
   const { t } = useTranslation();
@@ -16,13 +21,30 @@ const PaymentSetup = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const user_state = useSelector(state => state.user.loginvalue);
+  const user_state = useSelector((state) => state.user.loginvalue);
 
   const handleLogout = () => {
     localStorage.clear();
     sessionStorage.clear();
     dispatch(loginSuccess(null));
-    navigate('/login', { replace: true });
+    navigate("/login", { replace: true });
+  };
+
+  const createSubscription = async () => {
+    const res = await apiServices(
+      "POST",
+      "api/stripe/create-subscription",
+      {
+        companyId: user_state?.user?.companyId,
+      },
+      user_state
+    );
+
+    if (res.data.status) {
+      console.log("Subscription created!", res.data.subscriptionId);
+    } else {
+      alert("Subscription failed: " + res.data.message);
+    }
   };
 
   const handleSubmit = async (event) => {
@@ -31,31 +53,53 @@ const PaymentSetup = () => {
     setError(null);
 
     if (!stripe || !elements) {
-      setError(t('payment.stripeNotLoaded'));
+      setError(t("payment.stripeNotLoaded"));
       setLoading(false);
       return;
     }
 
     const cardElement = elements.getElement(CardElement);
-    const { paymentMethod, error: stripeError } = await stripe.createPaymentMethod({
-      type: 'card',
-      card: cardElement,
-    });
-
-    if (stripeError) {
-      setError(stripeError.message);
-      setLoading(false);
-      return;
-    }
+    console.log("element in card elements", cardElement);
 
     try {
+      // Step 1: Request server to create a SetupIntent
+      const setupIntentResponse = await apiServices(
+        "POST",
+        "payment/create-setup-intent",
+        { companyId: user_state?.user?.companyId },
+        user_state
+      );
+
+      console.log(setupIntentResponse);
+
+      const clientSecret = setupIntentResponse?.data?.data?.client_secret;
+
+      if (!clientSecret) {
+        throw new Error(t("payment.missingClientSecret"));
+      }
+
+      // Step 2: Confirm the card setup
+      const { setupIntent, error: confirmError } =
+        await stripe.confirmCardSetup(clientSecret, {
+          payment_method: {
+            card: cardElement,
+          },
+        });
+
+      if (confirmError) {
+        setError(confirmError.message);
+        setLoading(false);
+        return;
+      }
+
+      // Step 3: Send payment method to server to attach
       const response = await apiServices(
-        'POST', 
-        'payment/setup', 
-        { 
-          paymentMethodId: paymentMethod.id,
-          companyId: user_state?.user?.companyId 
-        }, 
+        "POST",
+        "payment/setup",
+        {
+          paymentMethodId: setupIntent.payment_method,
+          companyId: user_state?.user?.companyId,
+        },
         user_state
       );
 
@@ -67,17 +111,20 @@ const PaymentSetup = () => {
             companyDetails: {
               ...user_state.user.companyDetails,
               subscriptionStatus: response.data.data.subscriptionStatus,
-              isActive: response.data.data.isActive
-            }
-          }
+              isActive: response.data.data.isActive,
+            },
+          },
         };
         dispatch(loginSuccess(updatedUserState));
-        navigate('/main/dashboard', { replace: true });
+        createSubscription();
+        navigate("/main/dashboard", { replace: true });
       } else {
-        setError(response?.data?.message || t('payment.setupFailed'));
+        setError(response?.data?.message || t("payment.setupFailed"));
       }
     } catch (err) {
-      setError(err?.response?.data?.msg || t('payment.processingError'));
+      setError(
+        err?.response?.data?.msg || err.message || t("payment.processingError")
+      );
     }
 
     setLoading(false);
@@ -86,25 +133,25 @@ const PaymentSetup = () => {
   const cardElementOptions = {
     style: {
       base: {
-        fontSize: '16px',
-        fontFamily: 'Inter, system-ui, Avenir, Helvetica, Arial, sans-serif',
-        color: '#424770',
-        '::placeholder': {
-          color: '#aab7c4',
+        fontSize: "16px",
+        fontFamily: "Inter, system-ui, Avenir, Helvetica, Arial, sans-serif",
+        color: "#424770",
+        "::placeholder": {
+          color: "#aab7c4",
         },
-        ':focus': {
-          color: '#32325d',
+        ":focus": {
+          color: "#32325d",
         },
-        ':-webkit-autofill': {
-          color: '#32325d',
+        ":-webkit-autofill": {
+          color: "#32325d",
         },
       },
       invalid: {
-        color: '#dc3545',
-        ':focus': {
-          color: '#dc3545',
+        color: "#dc3545",
+        ":focus": {
+          color: "#dc3545",
         },
-        iconColor: '#dc3545',
+        iconColor: "#dc3545",
       },
     },
     hidePostalCode: true,
@@ -113,13 +160,13 @@ const PaymentSetup = () => {
   return (
     <div className="payment-setup-page">
       <Helmet>
-        <title>{t('payment.setupTitle')} - DaftarPro</title>
-        <meta name="description" content={t('payment.setupDescription')} />
+        <title>{t("payment.setupTitle")} - DaftarPro</title>
+        <meta name="description" content={t("payment.setupDescription")} />
       </Helmet>
 
       <button onClick={handleLogout} className="logout-button">
         <LogoutOutlined />
-        <span>{t('common.logout')}</span>
+        <span>{t("common.logout")}</span>
       </button>
 
       <div className="payment-setup-container">
@@ -128,46 +175,42 @@ const PaymentSetup = () => {
             <div className="logo-container">
               <CreditCardOutlined className="card-icon" />
             </div>
-            <h1>{t('payment.setupRequired')}</h1>
-            <p>{t('payment.setupDescription')}</p>
+            <h1>{t("payment.setupRequired")}</h1>
+            <p>{t("payment.setupDescription")}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="payment-setup-form">
             <div className="secure-badge">
-              <LockOutlined /> {t('payment.securePayment')}
+              <LockOutlined /> {t("payment.securePayment")}
             </div>
 
             <div className="form-group">
-              <label>{t('payment.cardDetails')}</label>
+              <label>{t("payment.cardDetails")}</label>
               <div className="card-element-container">
                 <CardElement options={cardElementOptions} />
               </div>
             </div>
 
-            {error && (
-              <div className="error-message">
-                {error}
-              </div>
-            )}
+            {error && <div className="error-message">{error}</div>}
 
             <button
               type="submit"
               disabled={!stripe || loading}
-              className={`submit-button ${loading ? 'loading' : ''}`}
+              className={`submit-button ${loading ? "loading" : ""}`}
             >
               {loading ? (
                 <>
                   <LoadingOutlined spin />
-                  <span>{t('payment.processing')}</span>
+                  <span>{t("payment.processing")}</span>
                 </>
               ) : (
-                t('payment.addPaymentMethod')
+                t("payment.addPaymentMethod")
               )}
             </button>
 
             <div className="secure-info">
               <small>
-                <LockOutlined /> {t('payment.secureInfo')}
+                <LockOutlined /> {t("payment.secureInfo")}
               </small>
             </div>
           </form>
@@ -367,4 +410,4 @@ const PaymentSetup = () => {
   );
 };
 
-export default PaymentSetup; 
+export default PaymentSetup;

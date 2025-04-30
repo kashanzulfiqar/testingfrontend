@@ -91,6 +91,7 @@ import TermsAndConditions from "../LandingPage/TermsConditions";
 import ClientForgotPassword from "./ClientForgotPassword";
 import ClientResetPassword from "./ClientResetPassword";
 import PaymentSetup from '../MainPage/Pages/Payment/PaymentSetup';
+import Billing from "../MainPage/Pages/Billing/Billing.jsx"
 
 const App = () => {
   const loginState = useSelector((state) => state.user.loginvalue);
@@ -277,7 +278,9 @@ const App = () => {
           <Route path="/settings" element={<Settings />} />
           {/* <Route path="/settings/roles-permissions" element={<RolePermisson />} /> */}
 
-          {/* Settings  */}
+          {/* Billing  */}
+          <Route path="/billing" element={<Billing />} />
+
           <Route
             path="/employee/attendance-employee"
             element={<AttendanceEmployee />}
