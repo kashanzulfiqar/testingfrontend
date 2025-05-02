@@ -37,11 +37,14 @@ const Billing = () => {
 
         const currentInvoiceRes = await apiServices(
           "GET",
-          `payment/current-invoice?companyId=${companyId}`,
+          `payment/upcoming-invoice?companyId=${companyId}`,
           null,
           user_state
         );
-        setCurrentInvoice(currentInvoiceRes.data.data);
+
+        console.log("current invoice from stripe :::: ", currentInvoiceRes);
+        console.log("data in current invoice from stripe ::!!:: ", currentInvoiceRes.data);
+        setCurrentInvoice(currentInvoiceRes.data);
 
         const historyRes = await apiServices(
           "GET",
@@ -191,14 +194,17 @@ const Billing = () => {
                   Payment Date
                   <br />
                   <strong>
-                    {new Date(currentInvoice.dueDate).toLocaleDateString(
-                      "en-GB"
-                    )}
+                  {new Date(currentInvoice.due_date).toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })}
                   </strong>
                 </p>
               </div>
               <div className="invoice-amount">
-                <h2>${currentInvoice.totalAmount.toFixed(1)}</h2>
+                <h2>${(currentInvoice.amount_due / 100).toFixed(2)}{" "}
+                {currentInvoice.currency.toUpperCase()}</h2>
                 <p>
                   Your current charges are based on active user seats linked to
                   your subscription plan.
@@ -238,7 +244,7 @@ const Billing = () => {
                   </span>
                 </div>
                 <div>
-                  Tax (2%){" "}
+                  Tax {" "}
                   <span>
                     $
                     {(
@@ -249,7 +255,7 @@ const Billing = () => {
                   </span>
                 </div>
                 <div className="total-line">
-                  Total <span>${currentInvoice.totalAmount.toFixed(1)}</span>
+                  Total <span>${(currentInvoice.amount_due / 100).toFixed(2)}</span>
                 </div>
               </div>
               <a href="/billing-history" className="link">
