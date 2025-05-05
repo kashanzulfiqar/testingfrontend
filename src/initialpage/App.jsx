@@ -90,8 +90,9 @@ import RefundPolicy from "../LandingPage/refundPolicy";
 import TermsAndConditions from "../LandingPage/TermsConditions";
 import ClientForgotPassword from "./ClientForgotPassword";
 import ClientResetPassword from "./ClientResetPassword";
-import PaymentSetup from '../MainPage/Pages/Payment/PaymentSetup';
-import Billing from "../MainPage/Pages/Billing/Billing.jsx"
+import PaymentSetup from "../MainPage/Pages/Payment/PaymentSetup";
+import Billing from "../MainPage/Pages/Billing/Billing.jsx";
+import BillingHistory from "../MainPage/Pages/Billing/BillingHistory.jsx";
 
 const App = () => {
   const loginState = useSelector((state) => state.user.loginvalue);
@@ -280,6 +281,9 @@ const App = () => {
 
           {/* Billing  */}
           <Route path="/billing" element={<Billing />} />
+
+          {/* Billing History  */}
+          <Route path="/billing-history" element={<BillingHistory />} />
 
           <Route
             path="/employee/attendance-employee"

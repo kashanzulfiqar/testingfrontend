@@ -1,5 +1,5 @@
 // src/MainPage/Pages/Billing/Billing.jsx
-import React, { useState, useEffect, useRef  } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { useSelector } from "react-redux";
 import { apiServices } from "../../../Services/apiServices";
@@ -17,7 +17,6 @@ const Billing = () => {
   const [error, setError] = useState(null);
   const [cardDetails, setCardDetails] = useState(null);
   const [currentInvoice, setCurrentInvoice] = useState(null);
-  const [invoiceHistory, setInvoiceHistory] = useState([]);
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -41,18 +40,7 @@ const Billing = () => {
           null,
           user_state
         );
-
-        console.log("current invoice from stripe :::: ", currentInvoiceRes);
-        console.log("data in current invoice from stripe ::!!:: ", currentInvoiceRes.data);
         setCurrentInvoice(currentInvoiceRes.data);
-
-        const historyRes = await apiServices(
-          "GET",
-          `payment/invoices-history?companyId=${companyId}`,
-          null,
-          user_state
-        );
-        setInvoiceHistory(historyRes.data.data || []);
       } catch (err) {
         console.error("Error fetching billing data:", err);
       }
@@ -118,14 +106,16 @@ const Billing = () => {
       <Menu.Item
         key="edit"
         onClick={() => {
-          document.getElementById("updateCardForm").scrollIntoView()({ behavior: "smooth" });
+          document.getElementById("updateCardForm").scrollIntoView()({
+            behavior: "smooth",
+          });
           setDropdownVisible(false);
         }}
       >
         {t("billing.updateCard")}
       </Menu.Item>
       <Menu.Item key="delete" onClick={() => setDropdownVisible(false)}>
-      {t("billing.delete")}
+        {t("billing.delete")}
       </Menu.Item>
     </Menu>
   );
@@ -189,22 +179,27 @@ const Billing = () => {
           {currentInvoice && (
             <div className="box invoice-box">
               <div className="box-header">
-                <h3>Current Invoice</h3>
+                <h3>Upcoming Invoice</h3>
                 <p className="payment-date">
                   Payment Date
                   <br />
                   <strong>
-                  {new Date(currentInvoice.due_date).toLocaleDateString(undefined, {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })}
+                    {new Date(currentInvoice.due_date).toLocaleDateString(
+                      undefined,
+                      {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      }
+                    )}
                   </strong>
                 </p>
               </div>
               <div className="invoice-amount">
-                <h2>${(currentInvoice.amount_due / 100).toFixed(2)}{" "}
-                {currentInvoice.currency.toUpperCase()}</h2>
+                <h2>
+                  ${(currentInvoice.amount_due / 100).toFixed(2)}{" "}
+                  {currentInvoice.currency.toUpperCase()}
+                </h2>
                 <p>
                   Your current charges are based on active user seats linked to
                   your subscription plan.
@@ -214,7 +209,6 @@ const Billing = () => {
                 <thead>
                   <tr>
                     <th>Description</th>
-                    <th>Invoice ID</th>
                     <th>Amount Per User</th>
                     <th>Active Users</th>
                     <th>Amount</th>
@@ -222,14 +216,18 @@ const Billing = () => {
                 </thead>
                 <tbody>
                   <tr>
-                    <td>Daftar pro Plan</td>
-                    <td>D 000-4</td>
-                    <td>${currentInvoice.amountPerEmployee}</td>
-                    <td>{currentInvoice.totalEmployees}</td>
+                    <td>{currentInvoice.line_items[0].description}</td>
                     <td>
                       $
-                      {currentInvoice.amountPerEmployee *
-                        currentInvoice.totalEmployees}
+                      {(currentInvoice.line_items[0].unit_amount / 100).toFixed(
+                        2
+                      )}{" "}
+                      {currentInvoice.currency.toUpperCase()}
+                    </td>
+                    <td>{currentInvoice.line_items[0].quantity}</td>
+                    <td>
+                      ${(currentInvoice.line_items[0].amount / 100).toFixed(2)}{" "}
+                      {currentInvoice.currency.toUpperCase()}
                     </td>
                   </tr>
                 </tbody>
@@ -238,24 +236,23 @@ const Billing = () => {
                 <div>
                   Sub Total{" "}
                   <span>
-                    $
-                    {currentInvoice.amountPerEmployee *
-                      currentInvoice.totalEmployees}
+                    ${(currentInvoice.line_items[0].amount / 100).toFixed(2)}{" "}
+                    {currentInvoice.currency.toUpperCase()}
                   </span>
                 </div>
                 <div>
-                  Tax {" "}
+                  Tax{" "}
                   <span>
-                    $
-                    {(
-                      currentInvoice.totalAmount -
-                      currentInvoice.amountPerEmployee *
-                        currentInvoice.totalEmployees
-                    ).toFixed(1)}
+                    {currentInvoice.tax !== null
+                      ? `$${(currentInvoice.tax / 100).toFixed(
+                          2
+                        )} ${currentInvoice.currency.toUpperCase()}`
+                      : "-"}
                   </span>
                 </div>
                 <div className="total-line">
-                  Total <span>${(currentInvoice.amount_due / 100).toFixed(2)}</span>
+                  Total{" "}
+                  <span>${(currentInvoice.amount_due / 100).toFixed(2)}</span>
                 </div>
               </div>
               <a href="/billing-history" className="link">
