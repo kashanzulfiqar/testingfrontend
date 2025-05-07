@@ -2754,7 +2754,7 @@ const Sidebar = (props) => {
                     >
                       <Link to="/billing">
                         <i className="la la-money" />{" "}
-                        <span>{t("sideBar.billing")}</span>
+                        <span>Subscription Billing</span>
                       </Link>
                     </li>
                     <li

@@ -5,8 +5,19 @@ import { useSelector } from "react-redux";
 import { apiServices } from "../../../Services/apiServices";
 import { LoadingOutlined, MoreOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
-import { Dropdown, Menu, Table, Tag } from "antd";
+import {
+  Button,
+  Dropdown,
+  Form,
+  Input,
+  Menu,
+  message,
+  Spin,
+  Table,
+  Tag,
+} from "antd";
 import { Helmet } from "react-helmet";
+import { Modal } from "@mui/material";
 
 const Billing = () => {
   const { t } = useTranslation();
@@ -19,10 +30,16 @@ const Billing = () => {
   const [currentInvoice, setCurrentInvoice] = useState(null);
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const dropdownRef = useRef(null);
-
+  const [cardName, setCardName] = useState("");
   const userId = user_state?.user?._id;
   const companyId = user_state?.user?.companyId;
-
+  const [promoCode, setPromoCode] = useState("");
+  const [loadings, setLoadings] = useState(false);
+  const customerId = currentInvoice?.customerId;
+  const subscriptionId = currentInvoice?.subscriptionId;
+  const [open, setOpen] = useState({
+    isUpdateOpen: false,
+  });
   useEffect(() => {
     const fetchBillingData = async () => {
       try {
@@ -62,7 +79,7 @@ const Billing = () => {
   }, []);
 
   const handleUpdateCard = async (event) => {
-    event.preventDefault();
+    // event.preventDefault();
     setLoading(true);
     setError(null);
 
@@ -97,7 +114,9 @@ const Billing = () => {
     } catch (err) {
       setError(err?.response?.data?.msg || t("payment.processingError"));
     }
-
+    setOpen({
+      isUpdateOpen: false,
+    });
     setLoading(false);
   };
 
@@ -158,6 +177,68 @@ const Billing = () => {
     },
   ];
 
+  const handleClose = () => {
+    setOpen({ isUpdateOpen: false });
+    setLoading(false);
+  };
+
+  const brandLogos = {
+    visa: "https://img.icons8.com/color/48/visa.png",
+    mastercard: "https://img.icons8.com/color/48/mastercard-logo.png",
+    amex: "https://img.icons8.com/color/48/amex.png",
+    discover: "https://img.icons8.com/color/48/discover.png",
+    diners: "https://img.icons8.com/color/48/diners-club.png",
+    jcb: "https://img.icons8.com/color/48/jcb.png",
+    unionpay: "https://img.icons8.com/color/48/unionpay.png",
+    default: "https://img.icons8.com/color/48/bank-card-back-side.png",
+  };
+
+  const antIcon = (
+    <LoadingOutlined
+      style={{
+        fontSize: 24,
+        color: "#fff",
+      }}
+      spin
+    />
+  );
+
+  const handleApply = async () => {
+    if (!promoCode) {
+      message.error("Please enter a promo code.");
+      return;
+    }
+
+    setLoadings(true);
+    try {
+      const response = await apiServices(
+        "POST",
+        "payment/apply-promo-code",
+        { customerId, subscriptionId, promoCode },
+        user_state
+      );
+
+      message.success("Promo code applied to next invoice!");
+    } catch (err) {
+      message.error(err.response?.data?.error || "Failed to apply promo code.");
+    } finally {
+      setLoadings(false);
+    }
+  };
+
+  const handleCancellation = async () => {
+    const response = await apiServices(
+      "POST",
+      "payment/cancel-subscription",
+      { customerId, subscriptionId, userId },
+      user_state
+    );
+    if (response?.data?.status === true){
+      console.log("status is true");
+      
+      window.location.reload();
+    }
+  };
   return (
     <div className="main-wrapper">
       <Helmet>
@@ -265,7 +346,16 @@ const Billing = () => {
           <div className="box">
             <div className="box-header">
               <h3>Payment Method</h3>
-              <button className="button-secondary">Add Payment Method</button>
+              <button
+                className="button-secondary"
+                onClick={() => {
+                  setOpen({
+                    isUpdateOpen: true,
+                  });
+                }}
+              >
+                Update Payment Method
+              </button>
             </div>
             <p>
               The payment is automatically charged every month using your saved
@@ -273,31 +363,29 @@ const Billing = () => {
             </p>
 
             <div className="payment-method active">
-              <div>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "10px" }}
+              >
                 <img
-                  src="https://img.icons8.com/color/48/mastercard-logo.png"
-                  alt="mastercard"
+                  src={brandLogos[cardDetails?.brand] || brandLogos.default}
+                  alt={cardDetails?.brand}
                   height="20"
                 />
-                <span>Master ending in {cardDetails?.last4}</span>
-                <div className="meta">
-                  Expiry {cardDetails?.exp_month}/{cardDetails?.exp_year}
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  <span style={{ color: "black" }}>
+                    {cardDetails?.brand?.charAt(0).toUpperCase() +
+                      cardDetails?.brand?.slice(1)}{" "}
+                    ending in {cardDetails?.last4}
+                  </span>
+                  <div className="meta">
+                    Expiry {cardDetails?.exp_month}/{cardDetails?.exp_year}
+                  </div>
+                  <span className="badge green">Default</span>
                 </div>
-                <span className="badge green">Default</span>
-              </div>
-              <div ref={dropdownRef}>
-                <Dropdown
-                  overlay={cardMenu}
-                  trigger={["click"]}
-                  visible={dropdownVisible}
-                  onVisibleChange={(flag) => setDropdownVisible(flag)}
-                >
-                  <MoreOutlined className="dropdown-icon" />
-                </Dropdown>
               </div>
             </div>
 
-            <div className="payment-method">
+            {/* <div className="payment-method">
               <div>
                 <img
                   src="https://img.icons8.com/color/48/visa.png"
@@ -308,7 +396,7 @@ const Billing = () => {
                 <div className="meta">Expiry 06/27</div>
                 <span className="badge orange">Set as Default</span>
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Promos */}
@@ -318,12 +406,85 @@ const Billing = () => {
               If you have promo code, Enter it below to receive your credit.
             </p>
             <div className="promo-row">
-              <input type="text" placeholder="Add New Promo Code" />
-              <button className="button-secondary">Apply Code</button>
+              <input
+                type="text"
+                placeholder="Add New Promo Code"
+                value={promoCode}
+                onChange={(e) => setPromoCode(e.target.value)}
+              />
+              <button
+                className="button-secondary"
+                onClick={handleApply}
+                disabled={loadings}
+              >
+                {loadings ? "Applying..." : "Apply Code"}
+              </button>
             </div>
-            <button className="button-danger">Cancel Subscription</button>
           </div>
+          <button className="button-danger" onClick={handleCancellation}>
+            Cancel Subscription
+          </button>
         </div>
+        <Modal
+          open={open.isUpdateOpen}
+          onClose={handleClose}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+          disableRestoreFocus
+          BackdropProps={{
+            style: { backgroundColor: "rgb(0 0 0 / 87%)" },
+          }}
+        >
+          <div className="modal-dialog modal-dialog-centered" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <div className="centered-header-content">
+                  <h5 className="modal-title">Update Payment Method</h5>
+                  <p>
+                    Please add a payment method to <br></br> continue using the
+                    system
+                  </p>
+                  <span className="badge secure">🔒 Secure Payment</span>
+                </div>
+                <button type="button" className="close" onClick={handleClose}>
+                  <span aria-hidden="true">×</span>
+                </button>
+              </div>
+              <div className="modal-body">
+                <Form
+                  onFinish={handleUpdateCard}
+                  autoComplete="off"
+                  layout="vertical"
+                >
+                  <div className="form-group">
+                    <label>Card Number</label>
+                    <div className="custom-border card-element-wrapper">
+                      <CardElement className="card-element" />
+                    </div>
+                  </div>
+
+                  {error && <p className="text-danger">{error}</p>}
+
+                  <div className="submit-section">
+                    <Form.Item>
+                      <Button
+                        htmlType="submit"
+                        className="btn btn-primary submit-btn"
+                        disabled={loading}
+                      >
+                        {loading ? (
+                          <Spin size="small" indicator={antIcon} />
+                        ) : (
+                          "Update"
+                        )}
+                      </Button>
+                    </Form.Item>
+                  </div>
+                </Form>
+              </div>
+            </div>
+          </div>
+        </Modal>
       </div>
 
       <style jsx>{`
@@ -406,10 +567,11 @@ const Billing = () => {
         .badge.green {
           background: #dcfce7;
           color: #15803d;
+          width: fit-content;
         }
-        .badge.orange {
-          background: #ffedd5;
-          color: #c2410c;
+        .badge.secure {
+          background: #55ce631a;
+          color: #55ce63;
         }
         .dropdown-icon {
           font-size: 20px;
@@ -419,6 +581,7 @@ const Billing = () => {
           display: flex;
           gap: 12px;
           margin: 12px 0;
+          width: 50%;
         }
         .promo-row input {
           flex: 1;
@@ -449,84 +612,15 @@ const Billing = () => {
           margin-top: 16px;
           display: inline-block;
         }
-      `}</style>
-      {/* .page-header h1 {
-          margin: 8px 0;
-          font-size: 24px;
-          font-weight: 500;
-        }
-
-        .page-content {
+        .centered-header-content {
           display: flex;
           flex-direction: column;
-          gap: 24px;
-        }
-
-        .billing-content {
-          background: white;
-          padding: 24px;
-          border-radius: 8px;
-          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .billing-form {
-          margin-top: 20px;
-        }
-
-        .card-element {
-          padding: 10px;
-          border: 1px solid #e5e7eb;
-          border-radius: 4px;
-          margin-bottom: 10px;
-        }
-
-        .error-message {
-          color: #dc2626;
-          background-color: #fef2f2;
-          border: 1px solid #fee2e2;
-          border-radius: 4px;
-          padding: 10px;
-          margin-bottom: 10px;
-        }
-
-        .submit-button {
-          width: 100%;
-          height: 48px;
-          background: #1890ff;
-          color: white;
-          border: none;
-          border-radius: 4px;
-          font-size: 16px;
-          font-weight: 500;
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-
-        .submit-button:hover:not(:disabled) {
-          background: #096dd9;
-        }
-
-        .submit-button:disabled {
-          background: #bfbfbf;
-          cursor: not-allowed;
-        }
-
-        .card-info-header {
-          display: flex;
-          justify-content: space-between;
           align-items: center;
+          justify-content: center;
+          text-align: center;
+          width: 100%;
         }
-
-        @media (max-width: 640px) {
-          .page-container {
-            padding: 16px;
-          }
-
-          .billing-content {
-            padding: 16px;
-          }
-        }
-      `}</style> */}
+      `}</style>
     </div>
   );
 };

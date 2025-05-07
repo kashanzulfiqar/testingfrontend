@@ -12,11 +12,10 @@ const BillingHistory = () => {
   const dropdownRefs = useRef({});
   const user_state = useSelector((state) => state.user.loginvalue);
   const [isLoading, setIsLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(false);
-  const [lastInvoiceId, setLastInvoiceId] = useState(null);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
+    total: 0,
   });
   const companyId = user_state?.user?.companyId;
 
@@ -24,9 +23,11 @@ const BillingHistory = () => {
     setOpenDropdownId((prevId) => (prevId === invoiceId ? null : invoiceId));
   };
 
-   const closeDropdowns = (e) => {
+  const closeDropdowns = (e) => {
     if (
-      !Object.values(dropdownRefs.current).some(ref => ref?.contains(e.target))
+      !Object.values(dropdownRefs.current).some((ref) =>
+        ref?.contains(e.target)
+      )
     ) {
       setOpenDropdownId(null);
     }
@@ -38,15 +39,11 @@ const BillingHistory = () => {
   }, []);
 
   useEffect(() => {
-    if (companyId) {
-      setInvoices([]);
-      setPagination({ current: 1, pageSize: 10 });
-      fetchInvoices(null, true);
-    }
+    if (companyId) fetchInvoices(pagination.current, pagination.pageSize);
   }, [companyId]);
 
-  const formatAmount = (amount, currency) => {
-    return `${(amount / 100).toFixed(2)} ${currency.toUpperCase()}`;
+  const formatAmount = (amount) => {
+    return `${(amount / 100).toFixed(2)} $`;
   };
 
   const columns = [
@@ -57,54 +54,102 @@ const BillingHistory = () => {
       render: (text) => text || "-",
     },
     {
-      title: "Date",
-      dataIndex: "created",
-      key: "created",
-      render: (text) => 
+      title: "Invoice Month",
+      dataIndex: "period_start",
+      key: "period_start",
+      render: (text) =>
         text ? new Date(text * 1000).toLocaleDateString() : "-",
+    },
+    {
+      title: "Payment Date",
+      dataIndex: "period_end",
+      key: "period_end",
+      render: (text) =>
+        text ? new Date(text * 1000).toLocaleDateString() : "-",
+    },
+    {
+      title: "Payment Method",
+      dataIndex: "card",
+      key: "card",
+      render: (card) =>
+        card ? `${card.brand.toUpperCase()} •••• ${card.last4}` : "-",
     },
     {
       title: "Amount",
       dataIndex: "amount_due",
       key: "amount_due",
-      render: (amount, record) => formatAmount(amount, record.currency),
+      render: (amount) => formatAmount(amount),
     },
     {
       title: "Status",
       dataIndex: "status",
       key: "status",
+      render: (status) => {
+        const mapStatusToLabelAndStyle = (status) => {
+          switch (status) {
+            case "paid":
+              return { label: "Paid", color: "#55CE63", bg: "#EFFAF1" };
+            case "open":
+              return { label: "Pending", color: "#FFBC34", bg: "#FFF7E5" };
+            case "uncollectible":
+              return { label: "Failed", color: "#F62D51", bg: "#FEE7Eb" };
+            case "void":
+              return { label: "Cancelled", color: "#999999", bg: "#F2F2F2" };
+            default:
+              return {
+                label: status.charAt(0).toUpperCase() + status.slice(1),
+                color: "#999",
+                bg: "#f5f5f5",
+              };
+          }
+        };
+
+        const { label, color, bg } = mapStatusToLabelAndStyle(status);
+
+        return (
+          <span
+            style={{
+              // display: "inline-block",
+              padding: "4px 8px",
+              borderRadius: "70px",
+              color: color,
+              backgroundColor: bg,
+            }}
+          >
+            {label}
+          </span>
+        );
+      },
     },
     {
       title: "Actions",
       key: "actions",
       render: (_, record) => (
         <div
-          className="dropdown"
+          className="dropdown dropdown-action text-end"
           ref={(el) => (dropdownRefs.current[record.id] = el)}
         >
-          <button
+          <a
+            href="javascript:void(0)"
+            className="action-icon dropdown-toggle"
             onClick={() => toggleDropdown(record.id)}
-            className="dropdown-toggle"
           >
-            ⋮
-          </button>
+            <i className="material-icons">more_vert</i>
+          </a>
           {openDropdownId === record.id && (
-            <ul className="dropdown-menu">
-              <li>
-                <a
-                  href={record.invoice_pdf}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Preview
-                </a>
-              </li>
-              <li>
-                <a href={record.invoice_pdf} download>
-                  Download
-                </a>
-              </li>
-            </ul>
+            <div className="dropdown-menu dropdown-menu-right show">
+              <a
+                className="dropdown-item"
+                href={record.hosted_invoice_url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <i className="fa fa-eye m-r-5" /> Preview
+              </a>
+              <a className="dropdown-item" href={record.invoice_pdf} download>
+                <i className="fa fa-download m-r-5" /> Download
+              </a>
+            </div>
           )}
         </div>
       ),
@@ -112,36 +157,25 @@ const BillingHistory = () => {
   ];
 
   const handlePageChange = (page, pageSize) => {
-    const isNextPage = page > pagination.current;
-
-    setPagination({
-      current: page,
-      pageSize,
-    });
-
-    if (isNextPage && hasMore) {
-      fetchInvoices(lastInvoiceId);
-    }
+    setPagination({ ...pagination, current: page, pageSize });
+    fetchInvoices(page, pageSize);
   };
 
-  const fetchInvoices = async (startAfter = null, reset = false) => {
+  const fetchInvoices = async (page, limit) => {
     try {
       setIsLoading(true);
-      const limit = pagination.pageSize;
 
-      const url = `payment/history?companyId=${companyId}&limit=${limit}${startAfter ? `&starting_after=${startAfter}` : ""}`;
+      const url = `payment/history?companyId=${companyId}&page=${page}&limit=${limit}`;
 
       const response = await apiServices("GET", url, null, user_state);
-      const fetched = response.data.data || [];
 
-      if (reset) {
-        setInvoices(fetched);
-      } else {
-        setInvoices((prev) => [...prev, ...fetched]);
-      }
-
-      setHasMore(response.data.has_more);
-      setLastInvoiceId(response.data.last_invoice_id);
+      const { data, total, page: currentPage, limit: pageSize } = response.data;
+      setInvoices(data || []);
+      setPagination({
+        current: parseInt(currentPage),
+        pageSize: parseInt(pageSize),
+        total: parseInt(total),
+      });
     } catch (error) {
       console.error("Error fetching invoices:", error);
       setInvoices([]);
@@ -173,6 +207,7 @@ const BillingHistory = () => {
                   loading={isLoading}
                   className={invoices?.length > 0 ? "table-striped" : ""}
                   pagination={false}
+                  style={{ overflowX: "auto" }}
                   columns={columns}
                   dataSource={invoices}
                   rowKey={(record) => record.id}
@@ -181,12 +216,17 @@ const BillingHistory = () => {
               {invoices?.length > 0 && (
                 <div>
                   <Pagination
-                    style={{display: 'flex', float: 'right'}}
+                    style={{ display: "flex", float: "right" }}
                     current={pagination.current}
                     pageSize={pagination.pageSize}
-                    total={invoices.length}
+                    total={pagination.total}
                     showTotal={(total, range) =>
-                      t('paginationShow', { range1: range[0], range2: range[1], total: total })}
+                      t("paginationShow", {
+                        range1: range[0],
+                        range2: range[1],
+                        total: total,
+                      })
+                    }
                     pageSizeOptions={["10", "20", "30", "40", "50"]}
                     showSizeChanger
                     onChange={handlePageChange}
