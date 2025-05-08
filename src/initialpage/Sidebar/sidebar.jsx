@@ -2750,11 +2750,11 @@ const Sidebar = (props) => {
                     permissions?.companyManagement) && (
                     <>
                     <li
-                      className={pathname.includes("/billing") ? "active" : ""}
+                      className={pathname.includes("/subscription-details") ? "active" : ""}
                     >
-                      <Link to="/billing">
+                      <Link to="/subscription-details">
                         <i className="la la-money" />{" "}
-                        <span>Subscription Billing</span>
+                        <span>Subscription Details</span>
                       </Link>
                     </li>
                     <li

@@ -280,10 +280,10 @@ const App = () => {
           {/* <Route path="/settings/roles-permissions" element={<RolePermisson />} /> */}
 
           {/* Billing  */}
-          <Route path="/billing" element={<Billing />} />
+          <Route path="/subscription-details" element={<Billing />} />
 
           {/* Billing History  */}
-          <Route path="/billing-history" element={<BillingHistory />} />
+          <Route path="/invoice-history" element={<BillingHistory />} />
 
           <Route
             path="/employee/attendance-employee"

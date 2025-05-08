@@ -166,7 +166,7 @@ const PaymentSetup = () => {
 
       <button onClick={handleLogout} className="logout-button">
         <LogoutOutlined />
-        <span>{t("common.logout")}</span>
+        <span>{t("Log-Out")}</span>
       </button>
 
       <div className="payment-setup-container">
@@ -177,26 +177,26 @@ const PaymentSetup = () => {
             </div>
             <h1>{t("payment.setupRequired")}</h1>
             <p>{t("payment.setupDescription")}</p>
+            <div className="secure-badge">
+              <LockOutlined /> {t("Secure Payment")}
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="payment-setup-form">
-            <div className="secure-badge">
-              <LockOutlined /> {t("payment.securePayment")}
-            </div>
-
             <div className="form-group">
-              <label>{t("payment.cardDetails")}</label>
+              <label>Card Number</label>
               <div className="card-element-container">
-                <CardElement options={cardElementOptions} />
+                <CardElement className="card-element" />
               </div>
             </div>
 
-            {error && <div className="error-message">{error}</div>}
+            {error && <p className="text-danger">{error}</p>}
 
             <button
+              style={{display: "block", justifySelf: "center"}}
               type="submit"
               disabled={!stripe || loading}
-              className={`submit-button ${loading ? "loading" : ""}`}
+              className="btn btn-primary submit-btn"
             >
               {loading ? (
                 <>
@@ -207,12 +207,6 @@ const PaymentSetup = () => {
                 t("payment.addPaymentMethod")
               )}
             </button>
-
-            <div className="secure-info">
-              <small>
-                <LockOutlined /> {t("payment.secureInfo")}
-              </small>
-            </div>
           </form>
         </div>
       </div>
@@ -251,7 +245,7 @@ const PaymentSetup = () => {
 
         .card-icon {
           font-size: 48px;
-          color: #1890ff;
+          color: #ff9b44;
         }
 
         .payment-setup-header h1 {
@@ -273,8 +267,8 @@ const PaymentSetup = () => {
           align-items: center;
           gap: 8px;
           padding: 8px 16px;
-          background: #f0f9ff;
-          color: #0369a1;
+          background: #55ce631a;
+          color: #55ce63;
           border-radius: 20px;
           font-size: 14px;
           margin-bottom: 24px;

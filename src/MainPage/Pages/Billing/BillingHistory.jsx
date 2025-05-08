@@ -5,6 +5,7 @@ import { t } from "i18next";
 import { useSelector } from "react-redux";
 import { Pagination, Table } from "antd";
 import { itemRender } from "../../paginationfunction";
+import { Link } from "react-router-dom";
 
 const BillingHistory = () => {
   const [invoices, setInvoices] = useState([]);
@@ -58,21 +59,28 @@ const BillingHistory = () => {
       dataIndex: "period_start",
       key: "period_start",
       render: (text) =>
-        text ? new Date(text * 1000).toLocaleDateString() : "-",
+        text ? new Date(text * 1000).toLocaleDateString("en-US", {
+          month: "long",
+          year: "numeric",
+        }) : "-",
     },
     {
       title: "Payment Date",
       dataIndex: "period_end",
       key: "period_end",
       render: (text) =>
-        text ? new Date(text * 1000).toLocaleDateString() : "-",
+        text ? new Date(text * 1000).toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+        }) : "-",
     },
     {
       title: "Payment Method",
       dataIndex: "card",
       key: "card",
       render: (card) =>
-        card ? `${card.brand.toUpperCase()} •••• ${card.last4}` : "-",
+        card ? `${card.brand.toUpperCase()} **** ${card.last4}` : "-",
     },
     {
       title: "Amount",
@@ -137,7 +145,8 @@ const BillingHistory = () => {
             <i className="material-icons">more_vert</i>
           </a>
           {openDropdownId === record.id && (
-            <div className="dropdown-menu dropdown-menu-right show">
+            <div className="dropdown-menu dropdown-menu-right show" style={{inset: "0px 0px auto auto", 
+              transform: "translate3d(0px, 35px, 0px)"}}>
               <a
                 className="dropdown-item"
                 href={record.hosted_invoice_url}
@@ -196,7 +205,20 @@ const BillingHistory = () => {
           <div className="page-header">
             <div className="row align-items-center">
               <div className="col">
-                <h3 className="page-title">{t("billing.title")}</h3>
+                <h3 className="page-title">{t("Invoice History")}</h3>
+                <ul className="breadcrumb">
+                <li className="breadcrumb-item">
+                  <Link
+                    to={
+                      "/subscription-details"
+                    }
+                  >
+                    <span className="arrow_routes"></span>
+                    {t('Subscription Details')}
+                  </Link>
+                </li>
+                <li className="breadcrumb-item active">{t('Invoice History')}</li>
+              </ul>
               </div>
             </div>
           </div>

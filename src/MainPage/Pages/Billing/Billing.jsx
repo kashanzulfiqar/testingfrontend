@@ -3,7 +3,12 @@ import React, { useState, useEffect, useRef } from "react";
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { useSelector } from "react-redux";
 import { apiServices } from "../../../Services/apiServices";
-import { LoadingOutlined, MoreOutlined } from "@ant-design/icons";
+import {
+  CreditCardOutlined,
+  InfoCircleOutlined,
+  LoadingOutlined,
+  MoreOutlined,
+} from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import {
   Button,
@@ -219,6 +224,7 @@ const Billing = () => {
       );
 
       message.success("Promo code applied to next invoice!");
+      window.location.reload();
     } catch (err) {
       message.error(err.response?.data?.error || "Failed to apply promo code.");
     } finally {
@@ -233,9 +239,7 @@ const Billing = () => {
       { customerId, subscriptionId, userId },
       user_state
     );
-    if (response?.data?.status === true){
-      console.log("status is true");
-      
+    if (response?.data?.status === true) {
       window.location.reload();
     }
   };
@@ -251,136 +255,153 @@ const Billing = () => {
           <div className="page-header">
             <div className="row align-items-center">
               <div className="col">
-                <h3 className="page-title">{t("billing.title")}</h3>
+                <h3 className="page-title">{t("Subscription Details")}</h3>
               </div>
             </div>
           </div>
 
-          {/* Current Invoice Box */}
-          {currentInvoice && (
-            <div className="box invoice-box">
-              <div className="box-header">
-                <h3>Upcoming Invoice</h3>
-                <p className="payment-date">
-                  Payment Date
-                  <br />
-                  <strong>
-                    {new Date(currentInvoice.due_date).toLocaleDateString(
-                      undefined,
-                      {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      }
-                    )}
-                  </strong>
-                </p>
-              </div>
-              <div className="invoice-amount">
-                <h2>
-                  ${(currentInvoice.amount_due / 100).toFixed(2)}{" "}
-                  {currentInvoice.currency.toUpperCase()}
-                </h2>
-                <p>
-                  Your current charges are based on active user seats linked to
-                  your subscription plan.
-                </p>
-              </div>
-              <table className="invoice-table">
-                <thead>
-                  <tr>
-                    <th>Description</th>
-                    <th>Amount Per User</th>
-                    <th>Active Users</th>
-                    <th>Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>{currentInvoice.line_items[0].description}</td>
-                    <td>
-                      $
-                      {(currentInvoice.line_items[0].unit_amount / 100).toFixed(
-                        2
-                      )}{" "}
-                      {currentInvoice.currency.toUpperCase()}
-                    </td>
-                    <td>{currentInvoice.line_items[0].quantity}</td>
-                    <td>
-                      ${(currentInvoice.line_items[0].amount / 100).toFixed(2)}{" "}
-                      {currentInvoice.currency.toUpperCase()}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              <div className="invoice-summary">
-                <div>
-                  Sub Total{" "}
-                  <span>
-                    ${(currentInvoice.line_items[0].amount / 100).toFixed(2)}{" "}
-                    {currentInvoice.currency.toUpperCase()}
-                  </span>
-                </div>
-                <div>
-                  Tax{" "}
-                  <span>
-                    {currentInvoice.tax !== null
-                      ? `$${(currentInvoice.tax / 100).toFixed(
-                          2
-                        )} ${currentInvoice.currency.toUpperCase()}`
-                      : "-"}
-                  </span>
-                </div>
-                <div className="total-line">
-                  Total{" "}
-                  <span>${(currentInvoice.amount_due / 100).toFixed(2)}</span>
-                </div>
-              </div>
-              <a href="/billing-history" className="link">
-                View Your Past Invoices Billing History
-              </a>
-            </div>
-          )}
-
-          {/* Payment Methods */}
           <div className="box">
-            <div className="box-header">
-              <h3>Payment Method</h3>
-              <button
-                className="button-secondary"
-                onClick={() => {
-                  setOpen({
-                    isUpdateOpen: true,
-                  });
-                }}
-              >
-                Update Payment Method
-              </button>
-            </div>
-            <p>
-              The payment is automatically charged every month using your saved
-              payment method.
-            </p>
-
-            <div className="payment-method active">
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "10px" }}
-              >
-                <img
-                  src={brandLogos[cardDetails?.brand] || brandLogos.default}
-                  alt={cardDetails?.brand}
-                  height="20"
-                />
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                  <span style={{ color: "black" }}>
-                    {cardDetails?.brand?.charAt(0).toUpperCase() +
-                      cardDetails?.brand?.slice(1)}{" "}
-                    ending in {cardDetails?.last4}
-                  </span>
-                  <div className="meta">
-                    Expiry {cardDetails?.exp_month}/{cardDetails?.exp_year}
+            {/* Current Invoice Box */}
+            {currentInvoice && (
+              <div className="invoice-box">
+                <h3>Upcoming Invoice</h3>
+                <div className="section-box">
+                  <div className="box-header">
+                    <div>
+                      <h4>Amount Due</h4>
+                      <h3>${(currentInvoice.amount_due / 100).toFixed(2)}</h3>
+                    </div>
+                    <p className="payment-date">
+                      Payment Date
+                      <br />
+                      <strong>
+                        {new Date(currentInvoice.due_date).toLocaleDateString(
+                          undefined,
+                          {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          }
+                        )}
+                      </strong>
+                    </p>
                   </div>
-                  <span className="badge green">Default</span>
+                  <div className="invoice-amount">
+                    <p>
+                      Your current charges are based on active user seats linked
+                      to your subscription plan.
+                    </p>
+                  </div>
+                  <table className="invoice-table">
+                    <thead style={{ backgroundColor: "#F8F8F8" }}>
+                      <tr>
+                        <th>Description</th>
+                        <th>Amount Per User</th>
+                        <th>Active Users</th>
+                        <th>Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>{currentInvoice.line_items[0].description}</td>
+                        <td>
+                          $
+                          {(
+                            currentInvoice.line_items[0].unit_amount / 100
+                          ).toFixed(2)}
+                        </td>
+                        <td>{currentInvoice.line_items[0].quantity}</td>
+                        <td>
+                          $
+                          {(currentInvoice.line_items[0].amount / 100).toFixed(
+                            2
+                          )}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <div className="invoice-summary">
+                    <div className="summary-row">
+                      <span className="label">Sub Total</span>
+                      <span className="value">
+                        $
+                        {(currentInvoice.line_items[0].amount / 100).toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="summary-row">
+                      <span className="label">Discount</span>
+                      <span className="value">
+                      {currentInvoice.discount !== null
+                      ? `${(currentInvoice.discount / 100).toFixed(2)}`
+                      : "-"}
+                      </span>
+                    </div>
+                    <div className="summary-row">
+                      <span className="label">Tax</span>
+                      <span className="value">
+                        {currentInvoice.tax !== null
+                          ? `$${(currentInvoice.tax / 100).toFixed(2)}`
+                          : "-"}
+                      </span>
+                    </div>
+
+                    <div className="total-line">
+                      <div className="summary-row total">
+                        <span className="label">Total</span>
+                        <span className="value">
+                          ${(currentInvoice.amount_due / 100).toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <span>View Your Past </span>
+                <a href="/invoice-history" className="link">
+                  Invoices History
+                </a>
+              </div>
+            )}
+
+            {/* Payment Methods */}
+            <div className="section-box">
+              <div className="box-header">
+                <h3>Payment Method</h3>
+                <button
+                  className="button-secondary"
+                  onClick={() => {
+                    setOpen({
+                      isUpdateOpen: true,
+                    });
+                  }}
+                >
+                  Update Payment Method
+                </button>
+              </div>
+              <p>
+                The payment is automatically charged every month using your
+                saved payment method.
+              </p>
+
+              <div className="payment-method">
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "10px" }}
+                >
+                  <img
+                    src={brandLogos[cardDetails?.brand] || brandLogos.default}
+                    alt={cardDetails?.brand}
+                    height="20"
+                  />
+                  <div style={{ display: "flex", flexDirection: "column" }}>
+                    <span style={{ color: "black" }}>
+                      {cardDetails?.brand?.charAt(0).toUpperCase() +
+                        cardDetails?.brand?.slice(1)}{" "}
+                      ending in {cardDetails?.last4}
+                    </span>
+                    <div className="meta">
+                      Expiry {cardDetails?.exp_month}/{cardDetails?.exp_year}
+                    </div>
+                    <span className="badge green">Default</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -397,33 +418,38 @@ const Billing = () => {
                 <span className="badge orange">Set as Default</span>
               </div>
             </div> */}
-          </div>
 
-          {/* Promos */}
-          <div className="box">
-            <h3>Promos</h3>
-            <p>
-              If you have promo code, Enter it below to receive your credit.
+            <p style={{ marginTop: "16px" }}>
+              <InfoCircleOutlined /> Your payment information is securely
+              encrypted and processed through trusted payment gateways.
             </p>
-            <div className="promo-row">
-              <input
-                type="text"
-                placeholder="Add New Promo Code"
-                value={promoCode}
-                onChange={(e) => setPromoCode(e.target.value)}
-              />
-              <button
-                className="button-secondary"
-                onClick={handleApply}
-                disabled={loadings}
-              >
-                {loadings ? "Applying..." : "Apply Code"}
-              </button>
+            {/* Promos */}
+            <div className="section-box" style={{ width: "50%" }}>
+              <h3>Promos</h3>
+              <p>
+                If you have promo code, Enter it below to receive your credit.
+              </p>
+              <div className="promo-row">
+                <input
+                  type="text"
+                  placeholder="Add New Promo Code"
+                  value={promoCode}
+                  onChange={(e) => setPromoCode(e.target.value)}
+                />
+                <button
+                  style={{ color: "white", backgroundColor: "#ff9b44", borderRadius: "8px" }}
+                  className="button-secondary"
+                  onClick={handleApply}
+                  disabled={loadings}
+                >
+                  {loadings ? "Applying..." : "Apply Code"}
+                </button>
+              </div>
             </div>
+            <button className="button-danger" onClick={handleCancellation}>
+              Cancel Subscription
+            </button>
           </div>
-          <button className="button-danger" onClick={handleCancellation}>
-            Cancel Subscription
-          </button>
         </div>
         <Modal
           open={open.isUpdateOpen}
@@ -439,6 +465,9 @@ const Billing = () => {
             <div className="modal-content">
               <div className="modal-header">
                 <div className="centered-header-content">
+                  <div className="logo-container">
+                    <CreditCardOutlined className="card-icon" />
+                  </div>
                   <h5 className="modal-title">Update Payment Method</h5>
                   <p>
                     Please add a payment method to <br></br> continue using the
@@ -506,10 +535,17 @@ const Billing = () => {
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
           margin-bottom: 24px;
         }
+        .section-box {
+          margin-top: 20px;
+          border-radius: 8px;
+          border: 1px solid #00000026;
+          padding: 20px 10px;
+        }
         .box-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
+          margin-bottom: 16px;
         }
         .invoice-amount h2 {
           font-size: 28px;
@@ -529,11 +565,31 @@ const Billing = () => {
         .invoice-summary {
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: 12px;
           font-weight: 500;
+          max-width: 300px; /* optional: restrict width */
+          margin-left: auto; /* aligns summary with the right column */
         }
-        .invoice-summary span {
-          float: right;
+
+        .summary-row {
+          display: flex;
+          justify-content: space-between;
+        }
+
+        .summary-row.total {
+          font-weight: bold;
+          border-top: 2px solid #e0e0e0;
+          padding-top: 12px;
+        }
+
+        .summary-row .label {
+          flex: 1;
+          text-align: left;
+        }
+
+        .summary-row .value {
+          margin-right: 24px;
+          text-align: right;
         }
         .total-line {
           font-size: 18px;
@@ -581,7 +637,6 @@ const Billing = () => {
           display: flex;
           gap: 12px;
           margin: 12px 0;
-          width: 50%;
         }
         .promo-row input {
           flex: 1;
@@ -591,19 +646,21 @@ const Billing = () => {
         }
         .button-secondary {
           background: #fff;
-          border: 1px solid #f97316;
-          color: #f97316;
+          border: 1px solid #ff9b44;
+          color: #ff9b44;
           padding: 8px 16px;
-          border-radius: 8px;
+          border-radius: 25px;
           font-weight: 500;
         }
         .button-danger {
+          display: block;
+          justify-self: end;
           margin-top: 16px;
-          border: 1px solid #ef4444;
-          color: #ef4444;
+          border: 1px solid #f62d51;
+          color: #f62d51;
           background: #fff;
           padding: 8px 16px;
-          border-radius: 8px;
+          border-radius: 25px;
           font-weight: 500;
         }
         .link {
@@ -611,6 +668,14 @@ const Billing = () => {
           text-decoration: underline;
           margin-top: 16px;
           display: inline-block;
+        }
+        .logo-container {
+          margin-bottom: 24px;
+        }
+
+        .card-icon {
+          font-size: 48px;
+          color: #ff9b44;
         }
         .centered-header-content {
           display: flex;
