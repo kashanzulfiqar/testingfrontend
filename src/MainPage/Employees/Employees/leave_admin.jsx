@@ -31,6 +31,7 @@ import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { user_icon } from "../../../Entryfile/imagepath";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { useTranslation } from "react-i18next";
+import { LoadingOutlined } from "@ant-design/icons";
 
 const { Option } = Select;
 
@@ -68,11 +69,17 @@ const LeaveAdmin = () => {
     total: 0,
   });
 
+  const [loader, setLoader] = useState(false);
+  const [loading, setLoading] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [selectedfromTo, setSelectedfromTo] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [statdata, setStatdata] = useState("");
+  const [isDeclineModalVisible, setIsDeclineModalVisible] = useState(false);
+  const [declineReason, setDeclineReason] = useState("");
+  const [pendingRecord, setPendingRecord] = useState(null);
+  const [pendingDeclineRecord, setPendingDeclineRecord] = useState(null);
 
   const leaveTypeTranslations = {
     casual: t('aRequests.casual'),
@@ -105,6 +112,12 @@ const LeaveAdmin = () => {
   // }, [selectedRecord]);
 
   const handleUpdateStatus = (record, newStatus) => {
+    setLoading((prev) => ({ ...prev, [record._id]: true }));
+    if (newStatus === "Declined") {
+      setPendingDeclineRecord(record);
+      setIsDeclineModalVisible(true);
+      return;
+    }
     const {
       _id,
       userId,
@@ -138,7 +151,7 @@ const LeaveAdmin = () => {
 
           //handleReset();
           //navigate('/employee/request-admin')
-          fetchleaves();
+          fetchleaves(record._id);
 
           dispatch(counter(pending_counter - 1));
         }
@@ -152,6 +165,64 @@ const LeaveAdmin = () => {
       });
   };
 
+  // Add new function to handle decline submission
+const handleDeclineSubmit = () => {
+  setLoader(true)
+  setLoading((prev) => ({ ...prev, [pendingDeclineRecord._id]: true }))
+    if (!declineReason.trim()) {
+      message.error(t('aRequests.errors.declineReasonRequired'));
+      setLoader(false)
+      setLoading((prev) => ({ ...prev, [pendingDeclineRecord._id]: false }))
+      return;
+    }
+
+    const {
+      _id,
+      userId,
+      companyId,
+      requestType,
+      leaveType,
+      startDate,
+      endDate,
+      description,
+      approvedBy,
+    } = pendingDeclineRecord;
+
+    const updatedData = {
+      _id,
+      userId,
+      companyId,
+      requestType,
+      leaveType,
+      startDate,
+      endDate,
+      status: "Declined",
+      description,
+      approvedBy,
+      declineReason: declineReason
+    };
+
+    const apiUrl = `requests/update-request`;
+    apiServices("PUT", apiUrl, updatedData, user_state)
+      .then((res) => {
+        if (res.data.success === true) {
+          message.success(t('aRequests.errors.leaveRequestUpdated', {newStatus: t('aRequests.Declined')}));
+          fetchleaves();
+          dispatch(counter(pending_counter - 1));
+        }
+      })
+      .catch((error) => {
+        console.log("error", error);
+        message.error(t('aRequests.errors.failedToUpdateLeaveRequest'));
+      })
+      .finally(() => {
+        setIsDeclineModalVisible(false);
+        setDeclineReason("");
+        setPendingDeclineRecord(null);
+        setLoader(false)
+        closeModal();
+      });
+  };
   const [filters, setFilters] = useState({
     name: "",
     type: "",
@@ -241,7 +312,7 @@ const LeaveAdmin = () => {
     }
   }, [filters, pagination.current, pagination.pageSize]);
 
-  const fetchleaves = async () => {
+  const fetchleaves = async (recordId) => {
     const params = {
       ...filters,
       page: pagination.current,
@@ -273,6 +344,9 @@ const LeaveAdmin = () => {
           console.log("error", error);
         })
         .finally(() => {
+          if (pendingDeclineRecord){
+            setLoading((prev) => ({ ...prev, [pendingDeclineRecord._id]: false }))}
+            setLoading((prev) => ({ ...prev, [recordId]: false }))
           setIsLoading(false);
           setIsStatLoading(false);
         });
@@ -302,6 +376,9 @@ const LeaveAdmin = () => {
           console.log("error", error);
         })
         .finally(() => {
+          if (pendingDeclineRecord){
+            setLoading((prev) => ({ ...prev, [pendingDeclineRecord._id]: false }))}
+            setLoading((prev) => ({ ...prev, [recordId]: false }))
           setIsLoading(false);
           setIsStatLoading(false);
         });
@@ -502,37 +579,30 @@ const LeaveAdmin = () => {
     {
       title: t('status'),
       dataIndex: "status",
-      render: (text, record) => (
+      render: (text, record) => {
+        const isDropdownDisabled =
+          loading[record._id] ||
+          text === "Approved" ||
+          text === "Declined" ||
+          text === "Cancelled" ||
+          (text === "Pending" && user_state?.user?._id === record?.user?._id);
+        return (
         <div>
           <a
             className={`btn btn-white btn-sm btn-rounded ${
-              text == "Approved"
-                ? ""
-                : text === "Declined"
-                ? ""
-                : text === "Cancelled"
-                ? ""
-                : (text === "Pending" && user_state?.user?._id === record?.user?._id)
-                ? ""
-                : "dropdown-toggle"
+              !isDropdownDisabled ? "dropdown-toggle" : ""
             }`}
-            href={
-              text !== "Approved" && text !== "Declined" && text !== "Cancelled"
-                ? "javascript:void(0)"
-                : undefined
-            }
-            data-bs-toggle={
-              text !== "Approved" &&
-              text !== "Declined" &&
-              text !== "Cancelled" &&
-              (permissions?.requestApproval || role === "admin") &&
-              !(text === "Pending" && user_state?.user?._id === record?.user?._id)
+            href={!isDropdownDisabled ? "javascript:void(0)" : undefined}
+            data-bs-toggle={!isDropdownDisabled &&
+              (permissions?.requestApproval || role === "admin")
                 ? "dropdown"
                 : ""
-            }
+              }
             aria-expanded="false"
             onClick={(e) => e.preventDefault()}
           >
+            {loading[record._id] ? ( <Spin /> ) : (
+              <>
             <i
               className={`fa ${
                 text === "New"
@@ -543,15 +613,12 @@ const LeaveAdmin = () => {
                   ? "fa-dot-circle-o text-success"
                   : "fa-dot-circle-o text-danger"
               }`}
-            />{" "}
-            {text === "Pending" ? t("aRequests.Pending") : text === "Approved" ? t("aRequests.Approved") : text === "Declined" ? t("aRequests.Declined") : text === "Cancelled" ? t("aRequests.cancelled") : text}
+            />
+            {text === "Pending" ? t("aRequests.Pending") : text === "Approved" ? t("aRequests.Approved") : text === "Declined" ? t("aRequests.Declined") : text === "Cancelled" ? t("aRequests.cancelled") : text}</>)}
           </a>
           <div
             className={`dropdown-menu dropdown-menu-right ${
-              (text === "Approved" || text === "Declined" || text === "Cancelled" ||
-              (text === "Pending" && user_state?.user?._id === record?.user?._id))
-                ? "disabled"
-                : ""
+              isDropdownDisabled ? "disabled" : ""
             }`}
           >
             <a
@@ -576,7 +643,8 @@ const LeaveAdmin = () => {
             </a>
           </div>
         </div>
-      ),
+      );
+    }
       //sorter: (a, b) => a.status.localeCompare(b.status), // Sort by status
     },
 
@@ -595,6 +663,16 @@ const LeaveAdmin = () => {
       ),
     },
   ];
+
+  const antIcon = (
+    <LoadingOutlined
+      style={{
+        fontSize: 24,
+        color: "#fff",
+      }}
+      spin
+    />
+  );
 
   return (
     <>
@@ -972,6 +1050,8 @@ const LeaveAdmin = () => {
                       totalDays: selectedRecord?.totalDays || "",
 
                       description: selectedRecord?.description || "",
+
+                      declineReason: selectedRecord?.declineReason || "",
                     }}
                     autoComplete="off"
                   >
@@ -1072,6 +1152,18 @@ const LeaveAdmin = () => {
                       </Form.Item>
                     </div>
 
+                    { (selectedRecord?.status === 'Declined') ? ( 
+                      <div className="form-group">
+                        <label style={{display: 'flex', justifyContent: 'space-between'}}>
+                          <div>{t('requests.declineReason')} <span className="text-danger">*</span></div>
+                        </label>
+                        <Form.Item
+                          name="declineReason"
+                          className="custom-border"
+                        >
+                          <Input.TextArea rows={3} className="form-control" readOnly />
+                        </Form.Item>
+                      </div>) : null }
                     <div
                       style={{
                         display: "flex",
@@ -1127,6 +1219,97 @@ const LeaveAdmin = () => {
           {/* Delete Leave Modal */}
           <Delete />
           {/* /Delete Leave Modal */}
+          {/* Decline Reason Modal */}
+        <Modal
+          open={isDeclineModalVisible}
+          onClose={() => {
+            setIsDeclineModalVisible(false);
+            setDeclineReason("");
+            setPendingDeclineRecord(null);
+            setLoading((prev) => ({ ...prev, [pendingDeclineRecord._id]: false }))
+          }}
+          aria-labelledby="decline-modal-title"
+          className="modalScroll"
+          aria-describedby="decline-modal-description"
+          BackdropProps={{
+            style: { backgroundColor: "rgb(0 0 0 / 87%)" },
+          }}
+        >
+          <div className="modal-dialog modal-dialog-centered" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">{t('aRequests.declineModal.title')}</h5>
+                <button
+                  type="button"
+                  className="close"
+                  onClick={() => {
+                    setIsDeclineModalVisible(false);
+                    setDeclineReason("");
+                    setPendingDeclineRecord(null);
+                    setLoading((prev) => ({ ...prev, [pendingDeclineRecord._id]: false }))
+                  }}
+                >
+                  <span aria-hidden="true">×</span>
+                </button>
+              </div>
+              <div className="modal-body">
+              <Form>
+                    <div className="form-group">
+                      <label>
+                        {t("aRequests.declineModal.reason")} <span className="text-danger">*</span>
+                      </label>
+                      <div style={{ position: "relative" }} id="area">
+                        <Form.Item name="declineReason"
+                          rules={[
+                            {
+                              whitespace: true,
+                              required: true,
+                              validator: (_, value) => {
+                                if(!value || value.trim() === ''){
+                                  return Promise.reject(t('requests.errors.pleaseEnterReason'));
+                                }
+                                else if (/\s{2,}/.test(value)) {
+                                  return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
+                                }
+                                else if (value.length < 5) {
+                                  return Promise.reject(t('requests.errors.reasonLengthMin'));
+                                }
+                                return Promise.resolve();
+                              },
+                            },
+                          ]} 
+                          className="custom-border">
+                          <Input.TextArea
+                            className="form-control"
+                            value={declineReason}
+                            onChange={(e) => setDeclineReason(e.target.value)}
+                            rows={4}
+                            maxLength={100}
+                            placeholder={t(
+                              "aRequests.declineModal.placeholder"
+                            )}
+                          />
+                        </Form.Item>
+                      </div>
+                    </div>
+                    <div className="submit-section">
+                      <Button
+                        onClick={handleDeclineSubmit}
+                        className="btn btn-primary submit-btn"
+                        disabled={loader}
+                      >
+                        {loader ? (
+                        <Spin size="small" indicator={antIcon} />
+                      ) : (
+                        t('submit')
+                      )}
+                      </Button>
+                    </div>
+                  </Form>
+              </div>
+            </div>
+          </div>
+        </Modal>
         </div>
       </div>
       <Offcanvas />

@@ -90,6 +90,7 @@ import RefundPolicy from "../LandingPage/refundPolicy";
 import TermsAndConditions from "../LandingPage/TermsConditions";
 import ClientForgotPassword from "./ClientForgotPassword";
 import ClientResetPassword from "./ClientResetPassword";
+import TaskDetails from "../MainPage/Employees/Projects/taskDetail.jsx";
 import PaymentSetup from "../MainPage/Pages/Payment/PaymentSetup";
 import Billing from "../MainPage/Pages/Billing/Billing.jsx";
 import BillingHistory from "../MainPage/Pages/Billing/BillingHistory.jsx";
@@ -303,6 +304,7 @@ const App = () => {
             path="/projects/projects-view/:_id"
             element={<ProjectView />}
           />
+          <Route path="/tasks/:_id" element={<TaskDetails />} />
           <Route path="/profit-loss/view" element={<ViewPL />} />
 
           <Route path="/attendance-report" element={<AttendanceReport />} />

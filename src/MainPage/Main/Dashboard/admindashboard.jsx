@@ -958,9 +958,9 @@ const AdminDashboard = () => {
                 We only change these columns from col-md-6 to col-xl-3 col-lg-3 col-md-6 col-sm-12 to line them in 1 row. ===== */}
             <div className="row">
               <div className="col-md-12">
-                <div className="row g-0">
+                <div className="row">
                   {/* NEW EMPLOYEES */}
-                  <div className="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+                  <div className="col-xl-3 col-lg-6 col-md-6 col-sm-12">
                     <div
                       className="card"
                       dir="ltr"
@@ -1022,7 +1022,7 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                   {/* EARNINGS */}
-                  <div className="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+                  <div className="col-xl-3 col-lg-6 col-md-6 col-sm-12">
                     <div
                       className="card"
                       dir="ltr"
@@ -1094,7 +1094,7 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                   {/* EXPENSES */}
-                  <div className="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+                  <div className="col-xl-3 col-lg-6 col-md-6 col-sm-12">
                     <div
                       className="card"
                       dir="ltr"
@@ -1166,7 +1166,7 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                   {/* PROFIT */}
-                  <div className="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+                  <div className="col-xl-3 col-lg-6 col-md-6 col-sm-12">
                     <div
                       className="card"
                       dir="ltr"
