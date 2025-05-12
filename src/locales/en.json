@@ -1497,5 +1497,16 @@
       "taxStatusUpdated": "Tax status updated to {{newStatus}}",
       "failedToUpdateTaxStatus": "Failed to update tax status"
     }
+  },
+  "payment": {
+    "setupTitle": "Payment Setup",
+    "setupDescription": "Please add a payment method to continue using the system",
+    "setupRequired": "Payment Setup Required",
+    "cardDetails": "Card Details",
+    "addPaymentMethod": "Add Payment Method",
+    "stripeNotLoaded": "Payment system is not ready yet. Please try again.",
+    "setupSuccess": "Payment method added successfully",
+    "setupFailed": "Failed to save payment method",
+    "processingError": "Failed to process payment setup"
   }
 }

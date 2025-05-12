@@ -2748,6 +2748,15 @@ const Sidebar = (props) => {
                 </li> */}
                   {(user_state?.role === "admin" ||
                     permissions?.companyManagement) && (
+                    <>
+                    <li
+                      className={pathname.includes("/subscription-details") ? "active" : ""}
+                    >
+                      <Link to="/subscription-details">
+                        <i className="la la-money" />{" "}
+                        <span>Subscription Details</span>
+                      </Link>
+                    </li>
                     <li
                       className={pathname.includes("/settings") ? "active" : ""}
                     >
@@ -2756,6 +2765,7 @@ const Sidebar = (props) => {
                         <span>{t("sideBar.settings")}</span>
                       </Link>
                     </li>
+                    </>
                   )}
                 </ul>
               )}
