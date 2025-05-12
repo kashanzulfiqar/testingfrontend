@@ -45,6 +45,9 @@ const Billing = () => {
   const [open, setOpen] = useState({
     isUpdateOpen: false,
   });
+  const [cancelModal, setCancelModal] = useState({
+    isOpen: false
+  });
   useEffect(() => {
     const fetchBillingData = async () => {
       try {
@@ -232,6 +235,18 @@ const Billing = () => {
     }
   };
 
+  const handleCancel = () => {
+    setCancelModal({
+      isOpen: true,
+    });
+  };
+
+  const handleCloseCancelModal = () => {
+    setCancelModal({
+      isOpen: false,
+    });
+  };
+
   const handleCancellation = async () => {
     const response = await apiServices(
       "POST",
@@ -331,9 +346,9 @@ const Billing = () => {
                     <div className="summary-row">
                       <span className="label">Discount</span>
                       <span className="value">
-                      {currentInvoice.discount !== null
-                      ? `${(currentInvoice.discount / 100).toFixed(2)}`
-                      : "-"}
+                        {currentInvoice.discount !== null
+                          ? `${(currentInvoice.discount / 100).toFixed(2)}`
+                          : "-"}
                       </span>
                     </div>
                     <div className="summary-row">
@@ -437,7 +452,11 @@ const Billing = () => {
                   onChange={(e) => setPromoCode(e.target.value)}
                 />
                 <button
-                  style={{ color: "white", backgroundColor: "#ff9b44", borderRadius: "8px" }}
+                  style={{
+                    color: "white",
+                    backgroundColor: "#ff9b44",
+                    borderRadius: "8px",
+                  }}
                   className="button-secondary"
                   onClick={handleApply}
                   disabled={loadings}
@@ -446,11 +465,62 @@ const Billing = () => {
                 </button>
               </div>
             </div>
-            <button className="button-danger" onClick={handleCancellation}>
+            <button className="button-danger" onClick={handleCancel}>
               Cancel Subscription
             </button>
           </div>
         </div>
+        <Modal
+          open={cancelModal.isOpen}
+          onClose={handleCloseCancelModal}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+          disableRestoreFocus
+          BackdropProps={{
+            style: { backgroundColor: "rgb(0 0 0 / 87%)" },
+          }}
+        >
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content" style={{ height: "280px" }}>
+              <div
+                className="modal-body"
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                }}
+              >
+                <div className="form-header">
+                  <h3 style={{ marginBottom: "30px" }}>Cancel Subscription</h3>
+                  <p>Are you sure you want to cancel this subscription?</p>
+                </div>
+                <div className="modal-btn delete-action">
+                  <div className="row">
+                    <div className="col-6">
+                      <Button
+                        className="btn btn-primary continue-btn"
+                        onClick={handleCancellation}
+                        style={{ width: "100%" }}
+                      >
+                        Confirm
+                      </Button>
+                    </div>
+                    <div className="col-6">
+                      <Button
+                        onClick={handleCloseCancelModal}
+                        className="btn btn-primary submit-btn"
+                        style={{ width: "100%" }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Modal>
+
         <Modal
           open={open.isUpdateOpen}
           onClose={handleClose}

@@ -36,6 +36,7 @@ import { apiServices } from "../../../Services/apiServices.js";
 import { getAllISOCodes } from "iso-country-currency";
 import { LoadingOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
+import { NotificationBox } from "./stripeNotification.jsx";
 
 const amountFormatter = (value) => {
   // Handle zero separately
@@ -656,8 +657,9 @@ const AdminDashboard = () => {
             <title>{t("aDash.pageTitle")}</title>
             <meta name="description" content="Dashboard" />
           </Helmet>
-          {/* Page Content */}
+          {/* Page Content */}<NotificationBox user_state={user_state} />
           <div className="content container-fluid">
+          
             {/* Page Header */}
             <div className="page-header">
               <div className="row">
