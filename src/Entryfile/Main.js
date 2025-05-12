@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import App from '../initialpage/App';
 import config from 'config';
 import 'bootstrap'
-import StripeWrapper from '../components/StripeWrapper';
+import StripeWrapper from '../components/StripeWrapper.jsx';
 
 import 'bootstrap/dist/js/bootstrap.bundle';
 // import 'font-awesome/css/font-awesome.min.css';
