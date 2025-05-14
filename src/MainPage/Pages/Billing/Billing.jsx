@@ -115,7 +115,7 @@ const Billing = () => {
       const response = await apiServices(
         "POST",
         "payment/update-card",
-        { paymentMethodId: paymentMethod.id, userId },
+        { paymentMethodId: paymentMethod.id, userId, subscriptionId },
         user_state
       );
       setCardDetails(response.data.data);
