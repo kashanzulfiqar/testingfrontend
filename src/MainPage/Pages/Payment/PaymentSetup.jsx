@@ -33,7 +33,7 @@ const PaymentSetup = () => {
   const createSubscription = async () => {
     const res = await apiServices(
       "POST",
-      "api/stripe/create-subscription",
+      "stripe/create-subscription",
       {
         companyId: user_state?.user?.companyId,
       },
