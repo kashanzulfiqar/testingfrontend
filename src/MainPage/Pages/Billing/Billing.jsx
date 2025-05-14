@@ -40,13 +40,14 @@ const Billing = () => {
   const companyId = user_state?.user?.companyId;
   const [promoCode, setPromoCode] = useState("");
   const [loadings, setLoadings] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
   const customerId = currentInvoice?.customerId;
   const subscriptionId = currentInvoice?.subscriptionId;
   const [open, setOpen] = useState({
     isUpdateOpen: false,
   });
   const [cancelModal, setCancelModal] = useState({
-    isOpen: false
+    isOpen: false,
   });
   useEffect(() => {
     const fetchBillingData = async () => {
@@ -248,14 +249,21 @@ const Billing = () => {
   };
 
   const handleCancellation = async () => {
-    const response = await apiServices(
-      "POST",
-      "payment/cancel-subscription",
-      { customerId, subscriptionId, userId },
-      user_state
-    );
-    if (response?.data?.status === true) {
-      window.location.reload();
+    setIsCancelling(true);
+    try {
+      const response = await apiServices(
+        "POST",
+        "payment/cancel-subscription",
+        { customerId, subscriptionId, userId },
+        user_state
+      );
+      if (response?.data?.status === true) {
+        window.location.reload();
+      }
+    } catch (error) {
+      message.error("Failed to cancel subscription");
+    } finally {
+      setIsCancelling(false);
     }
   };
   return (
@@ -501,6 +509,7 @@ const Billing = () => {
                         className="btn btn-primary continue-btn"
                         onClick={handleCancellation}
                         style={{ width: "100%" }}
+                        disabled={isCancelling}
                       >
                         Confirm
                       </Button>
@@ -510,6 +519,7 @@ const Billing = () => {
                         onClick={handleCloseCancelModal}
                         className="btn btn-primary submit-btn"
                         style={{ width: "100%" }}
+                        disabled={isCancelling}
                       >
                         Cancel
                       </Button>
