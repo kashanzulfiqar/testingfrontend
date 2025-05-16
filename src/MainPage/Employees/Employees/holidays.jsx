@@ -233,9 +233,8 @@ const Holidays = () => {
     },
     {
       title: t('holiday.day'),
-      dataIndex: "holidayDate",
-      key: "holidayDate",
-      render: (text) => moment(text).format("dddd"),
+      dataIndex: "holidayDay",
+      key: "holidayDay",
     },
     {
       title: t('holiday.actions'),
@@ -286,9 +285,9 @@ const Holidays = () => {
     },
   ];
 
-  const onHandleDelete = (id) => {
+  const onHandleDelete = (data) => {
     setLoader(true);
-    apiServices("DELETE", "holidays", id, user_state)
+    apiServices("DELETE", "holidays", data, user_state)
       .then((res) => {
         // console.log(res?.data);
         if (res?.data?.success === true) {
@@ -652,7 +651,7 @@ const Holidays = () => {
                   <Button
                       htmlType="submit"
                       className="btn btn-primary continue-btn"
-                      onClick={() => onHandleDelete(open?.data?._id)}
+                      onClick={() => onHandleDelete(open?.data)}
                       disabled={loader}
                       style={{ width: "100%" }}
                     >

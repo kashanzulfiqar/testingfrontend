@@ -5093,9 +5093,8 @@ input[type=file].form-control {
   padding: 16px;
   font-size: 14px;
   font-weight: 500;
-  color: #212529;
-  background: #FFFFFF;
-  height: 40px;
+  color: #1C2D40;
+  background: #EDF3F9;
 }
 .table-new thead tr th:first-child {
   border-radius: 10px 0 0 0;
@@ -5975,7 +5974,7 @@ table.table-new.dataTable > thead .sorting_desc_disabled:focus:before {
   margin-top: 5px;
 }
 @media (max-width: 991px) {
-  .search-box {
+  .header .search-box {
     display: none;
   }
 }
@@ -9504,7 +9503,13 @@ padding: 10px 20px !important;
 .avatar-dropdown .avatar-group {
   min-height: 88px;
   white-space: normal;
-  padding: 2px;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-wrap: wrap; /* Allow items to wrap into multiple lines */
+  gap: 0; /* No gap to maintain overlap */
+  box-sizing: border-box; /* Ensure padding fits within the container */
+  max-height: 200px; /* Limit height to prevent overflow */
+  overflow-y: auto; /* Scroll if content exceeds height */
 }
 .avatar-dropdown .avatar-group .avatar {
   margin: 2px;

@@ -1,0 +1,76 @@
+// Payment Setup Page Styles
+.payment-setup-form {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+
+  .card-element-container {
+    background-color: #fff;
+    border: 1px solid #e3e3e3;
+    border-radius: 4px;
+    padding: 12px;
+    transition: all 0.2s ease;
+    margin-bottom: 1rem;
+
+    &:hover {
+      border-color: #80bdff;
+    }
+
+    &:focus-within {
+      border-color: #80bdff;
+      box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+  }
+
+  .submit-btn {
+    height: 44px;
+    font-size: 16px;
+    font-weight: 500;
+
+    .ant-spin {
+      margin-right: 8px;
+    }
+  }
+
+  .alert {
+    margin-bottom: 1rem;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .btn-submit {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .error-message {
+    color: #fa755a;
+    margin-top: 10px;
+    font-size: 14px;
+  }
+}
+
+// Stripe Element Styles
+.StripeElement {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  color: #424770;
+  background-color: transparent;
+
+  &--focus {
+    color: #32325d;
+  }
+
+  &--invalid {
+    border-color: #fa755a;
+  }
+
+  &--webkit-autofill {
+    background-color: #fefde5 !important;
+  }
+} 

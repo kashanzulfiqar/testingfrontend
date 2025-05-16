@@ -45,10 +45,12 @@ import { useSelector } from "react-redux";
 import { apiServices } from "../../Services/apiServices";
 import moment from "moment";
 import {
+  CloseOutlined,
   DeleteOutlined,
   LoadingOutlined,
   MinusCircleFilled,
   PlusOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import { getAllISOCodes } from "iso-country-currency";
 import PhoneNoInput from "../../Components/PhoneNoInput";
@@ -104,7 +106,8 @@ const Leads = () => {
     accountManager: "",
     projectType: "",
   });
-
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
   const [phoneLengthError, setPhoneLengthError] = useState(false);
   const [emergValue, setEmergValue] = useState(null);
   const [leadObj, setLeadObj] = useState();
@@ -162,15 +165,18 @@ const Leads = () => {
     }
   }, [form.getFieldValue("status")]);
 
+  useEffect(() => {
+    // Only call handleGenericSearch if searchQuery is empty
+    if (searchQuery === "") {
+      setIsSearching(false);
+      handleGenericSearch();
+    }
+  }, [searchQuery]);
+
   const handleOk = () => {
     setLoader(true);
     if (selectedMedium) {
-      apiServices(
-        "DELETE",
-        "leads/delete-medium",
-        selectedMedium?._id,
-        user_state
-      )
+      apiServices("DELETE", "leads/delete-medium", selectedMedium, user_state)
         .then((res) => {
           // console.log(res?.data);
           if (res?.data?.success === true) {
@@ -196,12 +202,7 @@ const Leads = () => {
         });
     }
     if (selectedSource) {
-      apiServices(
-        "DELETE",
-        "leads/delete-source",
-        selectedSource?._id,
-        user_state
-      )
+      apiServices("DELETE", "leads/delete-source", selectedSource, user_state)
         .then((res) => {
           // console.log(res?.data);
           if (res?.data?.success === true) {
@@ -399,6 +400,43 @@ const Leads = () => {
       });
   };
 
+  // Add this function to handle the search
+  const handleGenericSearch = () => {
+    setIsLoading(true);
+    const params = {
+      ...filters,
+      search: searchQuery,
+      page: 1,
+      limit: pagination.pageSize,
+    };
+
+    apiServices(
+      "GET",
+      `leads?status=${filters.status}&projectType=${filters.projectType}&accountManager=${filters.accountManager}&firstReachOut=${filters.startDate}&lastReachOut=${filters.endDate}&search=${params.search}&page=${params.page}&limit=${params.limit}`,
+      null,
+      user_state
+    )
+      .then((res) => {
+        if (res.data.success === true) {
+          const leads = res?.data?.Lead?.docs;
+          setStats(res?.data?.stats);
+          setLeadObj(res?.data?.Lead);
+          setData(leads);
+          setPagination({
+            ...pagination,
+            current: parseInt(res?.data?.Lead?.page, 10),
+            total: res?.data?.Lead?.total,
+          });
+        }
+      })
+      .catch((err) => {
+        message.error(err?.response?.data?.msg || "Error searching leads");
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  };
+
   const handlePageChange = (page, pageSize) => {
     // Update the pagination state
     setPagination({
@@ -485,7 +523,7 @@ const Leads = () => {
   };
 
   const viewSources = () => {
-    apiServices("GET", `api/leads/view-source`, null, user_state)
+    apiServices("GET", `leads/view-source`, null, user_state)
       .then((res) => {
         if (res.data.success === true) {
           const sources = res?.data?.Sources;
@@ -499,7 +537,7 @@ const Leads = () => {
   };
 
   const viewMediums = () => {
-    apiServices("GET", `api/leads/view-medium`, null, user_state)
+    apiServices("GET", `leads/view-medium`, null, user_state)
       .then((res) => {
         if (res.data.success === true) {
           const mediums = res?.data?.Mediums;
@@ -695,7 +733,11 @@ const Leads = () => {
       });
   };
   const handleStatusChange = (record, newStatus) => {
-    if (newStatus === "Converted") {
+    if (newStatus === "Lost") {
+      setSelectedRecord(record);
+      setIsLostReasonModalVisible(true);
+      setActiveDropdown(null);
+    } else if (newStatus === "Converted") {
       setSelectedRecord(record);
       setIsConversionDateModalVisible(true);
       setActiveDropdown(null);
@@ -723,18 +765,13 @@ const Leads = () => {
     lostReason = null,
     conversionDate = null
   ) => {
+    setLoadStatus(true);
     try {
       const data = {
         status: newStatus,
+        ...(lostReason && { lost_reason: lostReason }),
+        ...(conversionDate && { conversion_date: conversionDate }),
       };
-
-      if (newStatus === "Lost" && lostReason) {
-        data.lost_reason = lostReason;
-      }
-
-      if (newStatus === "Converted" && conversionDate) {
-        data.conversion_date = conversionDate;
-      }
 
       const response = await apiServices(
         "PUT",
@@ -752,6 +789,8 @@ const Leads = () => {
     } catch (err) {
       console.error("Error updating status:", err);
       message.error(err?.response?.data?.msg || "Error updating status");
+    } finally {
+      setLoadStatus(false);
     }
   };
   const closeDropDown = (e) => {
@@ -1520,7 +1559,75 @@ const Leads = () => {
             <div className="col">
               <h3 className="page-title">Leads</h3>
             </div>
-            <div className="col-auto float-end ms-auto">
+            <div
+              className="col-auto float-end ms-auto"
+              style={{ display: "flex", gap: "10px", alignItems: "center" }}
+            >
+              <div
+                className="search-box"
+                style={{ position: "relative", width: "300px" }}
+              >
+                <div className="top-nav-search">
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handleGenericSearch();
+                    }}
+                  >
+                    <input
+                      className="form-control"
+                      type="text"
+                      placeholder="Search leads..."
+                      value={searchQuery}
+                      onChange={(e) => {
+                        setSearchQuery(e.target.value);
+                        // If we're in search mode and user starts typing new search,
+                        // switch back to search icon
+                        if (isSearching) {
+                          setIsSearching(false);
+                        }
+                      }}
+                      onKeyPress={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleGenericSearch();
+                          setIsSearching(true);
+                        }
+                      }}
+                      style={{
+                        backgroundColor: "#f3f3f3",
+                        border: "none",
+                        borderRadius: "50px",
+                        padding: "10px 50px 10px 20px",
+                        width: "100%",
+                      }}
+                    />
+                    <button
+                      className="btn"
+                      type="submit"
+                      onClick={() => {
+                        if (isSearching) {
+                          // Clear search and reset
+                          setSearchQuery("");
+                        } else {
+                          setIsSearching(true);
+                        }
+                      }}
+                      style={{
+                        position: "absolute",
+                        right: "5px",
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        background: "transparent",
+                        border: "none",
+                        padding: "0 10px",
+                      }}
+                    >
+                      {isSearching ? <CloseOutlined /> : <SearchOutlined />}
+                    </button>
+                  </form>
+                </div>
+              </div>
               <a
                 href="javascript:void(0)"
                 className="btn add-btn"
@@ -3099,7 +3206,7 @@ const Leads = () => {
           style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
         }}
       >
-        <div className="modal-dialog modal-dialog-centered modal-lg">
+        <div className="modal-dialog modal-dialog-centered">
           <div className="modal-content" style={{ height: "280px" }}>
             <div
               className="modal-body"

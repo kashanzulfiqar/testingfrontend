@@ -11,6 +11,7 @@ import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import Modal from "@mui/material/Modal";
 import { apiServices } from '../../../Services/apiServices';
 import { useTranslation } from 'react-i18next';
+import TaskModal from './taskModal';
 
 const Tasks = () => {
   const { t, i18n } = useTranslation();
@@ -28,7 +29,7 @@ const Tasks = () => {
   const [allProjects, setAllProjects] = useState([]);
   const [allTaskboards, setAllTaskboards] = useState([]);
   const [descLength, setDescLength] = useState(0);
-  const [isProjectAssociated, setIsProjectAssociated] = useState(false);
+  const [isProjectAssociated, setIsProjectAssociated] = useState(null);
   const [originalTaskboard, setOriginalTaskboard] = useState(null);
   const [tableLoader, setTableLoader] = useState(true);
   const [loader, setLoader] = useState(false)
@@ -45,6 +46,8 @@ const Tasks = () => {
   const [isArchived, setIsArchived] = useState(false);
   const [openDropdownId, setOpenDropdownId] = useState(null);
   const [openStatusDropdownId, setOpenStatusDropdownId] = useState(null);
+  const [viewTaskData, setViewTaskData] = useState(null);
+  const [viewTaskModal, setViewTaskModal] = useState(false);
 
   useEffect(() => {
     if(role !== 'client' && role !== 'focalperson') {
@@ -71,16 +74,17 @@ useEffect(() => {
           }
       } else {
           // Adding mode
-          setIsProjectAssociated(false); // Default to task board
+          setIsProjectAssociated(null); // Default to task board
       }
   }
 }, [open]);
 
   const getAllTasks = (values, current_page, page_size, archivedStatus = isArchived) => {
     setTableLoader(true);
-    apiServices("GET", `tasks?${values === '' ? '' : values?.projectId === '' ? '' : values?.projectId ? `projectId=${values?.projectId}` : filterValues?.projectId ? `projectId=${filterValues?.projectId}` : ''}${values === '' ? '' : values?.title === '' ? '' : values?.title ? `&title=${values?.title}` : filterValues?.title ? `&title=${filterValues?.title}` : ''}${values === '' ? '' : values?.tag === '' ? '' : values?.tag ? `&tag=${values?.tag}` : filterValues?.tag ? `&tag=${filterValues?.tag}` : ''}&page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}&isArchived=${archivedStatus}`, null, user_state)
+    apiServices("GET", `tasks?${values === '' ? '' : values?.projectId === '' ? '' : values?.projectId ? `&projectId=${values?.projectId}` : filterValues?.projectId ? `&projectId=${filterValues?.projectId}` : ''}${values === '' ? '' : values?.boardId === '' ? '' : values?.boardId ? `&boardId=${values?.boardId}` : filterValues?.boardId ? `&boardId=${filterValues?.boardId}` : ''}${values === '' ? '' : values?.title === '' ? '' : values?.title ? `&title=${values?.title}` : filterValues?.title ? `&title=${filterValues?.title}` : ''}${values === '' ? '' : values?.tag === '' ? '' : values?.tag ? `&tag=${values?.tag}` : filterValues?.tag ? `&tag=${filterValues?.tag}` : ''}&page=${current_page ? current_page : currentPage ? currentPage : 1}&limit=${page_size ? page_size : pageSize ? pageSize : 20}&isArchived=${archivedStatus}`, null, user_state)
       .then((res) => {
           if (res?.data?.success === true) {
+              console.log("res", res?.data?.Task);
               setAllTasks(res?.data?.Task?.docs);
               setPaginationDetail(res?.data?.Task)
               setTableLoader(false);
@@ -188,10 +192,11 @@ useEffect(() => {
   const onFilterFinish = (values) => {
     let formatted_data = {
       projectId: values?.projectId ? values?.projectId : '',
+      boardId: values?.boardId ? values?.boardId : '',
       title: values?.title ? values?.title : '',
       tag: values?.tag ? values?.tag : '',
     }
-    if(formatted_data?.projectId || formatted_data?.title || formatted_data?.tag){
+    if(formatted_data?.projectId || formatted_data?.boardId || formatted_data?.title || formatted_data?.tag){
       getAllTasks(formatted_data, 1, pageSize);
       setFilterValues(formatted_data);
       setCurrentPage(1);
@@ -254,6 +259,10 @@ const searchHandler = (val, type) => {
     allProjects.forEach((proj)=>{
       dropdownValues.push(proj.projectName.toLowerCase())
    })
+  }else if(type === 'taskboard'){
+    allTaskboards.forEach((taskboard)=>{
+      dropdownValues.push(taskboard.boardTitle.toLowerCase())
+   })
   }
 
   if(val !== ''){
@@ -271,8 +280,14 @@ const searchHandler = (val, type) => {
 }
 
 const onFinishAdd = (values) => {
+  const { associateWith, ...payloadData } = values;
+  
+  let updated_data = {
+    ...payloadData,
+    // Add other necessary fields
+  };
     setLoader(true)
-    apiServices("POST", 'tasks', values, user_state)
+    apiServices("POST", 'tasks', updated_data, user_state)
       .then((res) => {
           if (res?.data?.success === true) {
               handleClose('update')
@@ -295,8 +310,9 @@ const onFinishAdd = (values) => {
 }
 
 const onFinishEdit = (values) => {
+  const { associateWith, ...payloadData } = values;
     const data = {
-        ...values,
+        ...payloadData,
         _id: open?.data?._id
     }
 
@@ -356,11 +372,11 @@ const onFinishEdit = (values) => {
       dataIndex: 'title',
       fixed: 'left',
       render: (text, record) => (            
-      <label>{text}</label>
+      <label className="taskLongDesc">{text}</label>
       ),
     }, 
     {
-      title: t('Tasks.projectName'),
+      title: t('Tasks.project'),
       dataIndex: 'projectId',
       render: (text, record) => (
         record?.projectId ? (
@@ -370,7 +386,7 @@ const onFinishEdit = (values) => {
             style={{ color: '#333333' }}
             onClick={(e) => e.stopPropagation()} // Stop row click event
           >
-            <label style={{ cursor: 'pointer' }} className="longText">
+            <label style={{ cursor: 'pointer' }} className="taskLongDesc">
               {record?.projectId?.projectName}
             </label>
           </Link>
@@ -381,15 +397,60 @@ const onFinishEdit = (values) => {
           </span>
         )
       ),
+    },  
+    {
+      title: t('sideBar.taskBoard'),
+      dataIndex: 'boardId',
+      render: (text, record) => (
+        record?.boardId ? (
+          <Link 
+            to={`/task-board/${record?.boardId?._id}`}
+            state={{ board: record?.boardId }}
+            style={{ color: '#333333' }}
+            onClick={(e) => e.stopPropagation()} // Stop row click event
+          >
+            <label style={{ cursor: 'pointer' }} className="taskLongDesc">
+              {record?.boardId?.boardTitle}
+            </label>
+          </Link>
+        ) : (
+          // If boardId is null, show a dash
+          <span style={{ color: '#666666' }}>
+            -
+          </span>
+        )
+      ),
     },       
     {
       title: t('Tasks.tags'),
       dataIndex: 'tags',
-      render: (text, record) => (
-          text?.map((tag) => (
-          <Tag style={{fontSize: '13px', padding: '3px 8px'}}>{tag}</Tag>
-          ))
-          ),
+      render: (text, record) => {
+        if (!text || text.length === 0) return null;
+        
+        const MAX_TAGS = 2; // Set maximum number of tags to display
+        const remainingCount = text.length - MAX_TAGS;
+        
+        return (
+          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+            {text.slice(0, MAX_TAGS).map((tag, index) => (
+              <Tag 
+                key={index}
+                style={{fontSize: '13px', padding: '3px 8px'}} 
+                className="taskLongDesc"
+              >
+                {tag}
+              </Tag>
+            ))}
+            {remainingCount > 0 && (
+              <Tooltip title={text.slice(MAX_TAGS).join(', ')}>
+                <Tag style={{fontSize: '13px', padding: '3px 8px'}}>
+                  +{remainingCount}
+                </Tag>
+              </Tooltip>
+            )}
+          </div>
+        );
+      },
     },     
     {
       title: t('finance.Invoices.description'),
@@ -402,11 +463,11 @@ const onFinishEdit = (values) => {
       title: "Status",
       dataIndex: 'lane',
       render: (text, record) => (
-        <div className="dropdown action-label text-center" onClick={(e) => e.stopPropagation()}>
+        <div className="dropdown action-label text-center">
           <a
             className="btn btn-white btn-sm btn-rounded dropdown-toggle"
             href="javascript:void(0)"
-            onClick={(e) => handleStatusDropdownClick(e, record._id)}
+            onClick={(e) => {e.stopPropagation(), handleStatusDropdownClick(e, record._id)}}
             aria-expanded={openStatusDropdownId === record._id}
           >
               <i
@@ -423,8 +484,8 @@ const onFinishEdit = (values) => {
                 // className={`dropdown-item ${text === option.title && "disabled"}`}
                 href="javascript:void(0)"
                 onClick={(e) => {
-                  e.preventDefault();
-                  handleUpdateStatus(record?.boardId, record?._id, record?.columnId, option.columnId);
+                  e.stopPropagation();
+                  handleUpdateStatus(record?.boardId?._id || record?.projectId?._id, record?._id, record?.columnId, option.columnId);
                   setOpenStatusDropdownId(null); // Close the dropdown
                 }}
               >
@@ -480,7 +541,8 @@ const onFinishEdit = (values) => {
                 form2.setFieldsValue({
                   ...record,
                   projectId: record?.projectId?._id,
-                  boardId: record?.boardId
+                  boardId: record?.boardId?._id,
+                  associateWith: record?.projectId ? 'project' : 'taskboard'
                 });
               }}
             >
@@ -580,11 +642,11 @@ const onFinishEdit = (values) => {
                 size="large"
                 options={[
                 {
-                    label: t('Active'),
+                    label: t('active'),
                     value: 'Active',
                 },
                 {
-                    label: t('Archived'),
+                    label: t('projectScreen.Modal.archived'),
                     value: 'Archived', 
                 },
                 ]}
@@ -604,7 +666,7 @@ const onFinishEdit = (values) => {
             autoComplete='off'
           >
           <div className="row filter-row">
-          <div className="col-sm-6 col-md-3">  
+          <div className="col-sm-6 col-md-2">  
               <div className=' form-groupfilterDateMonth'>
                   <Form.Item
                     name="title"
@@ -624,7 +686,7 @@ const onFinishEdit = (values) => {
                   </Form.Item>
               </div>
             </div>
-            <div className="col-sm-6 col-md-3">  
+            <div className="col-sm-6 col-md-2">  
               <div style={{ position: 'relative' }} id='area11'>
                 <Form.Item
                   name="projectId"
@@ -662,7 +724,45 @@ const onFinishEdit = (values) => {
                 </Form.Item>
               </div>
             </div>
-            <div className="col-sm-6 col-md-3">  
+            <div className="col-sm-6 col-md-2">  
+              <div style={{ position: 'relative' }} id='area11'>
+                <Form.Item
+                  name="boardId"
+                  className="custom-border"
+                >
+                  <Select
+                    showSearch
+                    onSearch={(val) => {
+                      searchHandler(val, 'taskboard')
+                    }}
+                    filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                    optionFilterProp="children"
+                    notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                    dropdownRender={(menu) => (
+                      <>
+                        {menu}
+                      </>
+                    )}
+                    className="custom-select searchCenter"
+                    style={{
+                      width: '100%',
+                    }}
+                    placeholder={t('Tasks.selecttaskboard')}
+                    size='large'
+                    getPopupContainer={() => document.getElementById('area11')}
+                  >
+                    {
+                      allTaskboards?.map((taskboard, index) => {
+                      return (
+                          <Option key={index} value={taskboard?._id}>{taskboard?.boardTitle}</Option>
+                      )
+                      })
+                    }
+                  </Select>
+                </Form.Item>
+              </div>
+            </div>
+            <div className="col-sm-6 col-md-2">  
               <div className=' form-groupfilterDateMonth'>
                   <Form.Item
                     name="tag"
@@ -682,7 +782,11 @@ const onFinishEdit = (values) => {
                   </Form.Item>
               </div>
             </div>
-            <div className="col-sm-6 col-md-3" style={{display: 'flex', gap: '10px'}}>  
+            <div className="col-sm-12 col-md-4" style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: "24px",
+                  }}>  
               <button 
                 href="javascript:void(0)"
                 type="submit"
@@ -734,18 +838,13 @@ const onFinishEdit = (values) => {
                   onRow={(record) => {
                     const rowProps = {
                       onClick: () => {
-                      setOpen({ 
-                        isAddOpen: true, 
-                        isViewMode: true,
-                        data: record 
-                      });
-                      form2.setFieldsValue({ 
-                        ...record, 
-                        projectId: record?.projectId?._id,
-                        boardId: record?.boardId
-                      });
-                    },
-                    style: { cursor: 'pointer' }
+                        // setViewTaskData(record);
+                        // setViewTaskModal(true);
+                        nav(`/tasks/${record._id}`, { 
+                          state: { taskData: record }
+                        });
+                      },
+                      style: { cursor: 'pointer' }
                     };
 
                     if (i18n.dir() === "rtl") {
@@ -803,7 +902,7 @@ const onFinishEdit = (values) => {
             <div className="modal-content">
                 <div className="modal-header">
                 <h5 className="modal-title">
-                  {open?.isViewMode ? t('View') : open?.data ? t('edit') : t('holiday.add')} {t('Timesheetemployee.task')}
+                  {open?.data ? t('edit') : t('holiday.add')} {t('Timesheetemployee.task')}
                 </h5>
                 <button type="button" className="close" onClick={handleClose}>
                     <span aria-hidden="true">×</span>
@@ -813,7 +912,7 @@ const onFinishEdit = (values) => {
                 <Form
                 form={form2}
                 onFinish={(values) => {
-                    open?.data && !open.isViewMode ? onFinishEdit(values) : onFinishAdd(values)
+                    open?.data ? onFinishEdit(values) : onFinishAdd(values)
                   }}
                 onFinishFailed={({errorFields}) => {
                     const phoneErrorExists = errorFields.find(field => field.errors.toString().includes('please enter phone number'));
@@ -833,7 +932,7 @@ const onFinishEdit = (values) => {
                     <div className="col-12">
                         <div className="form-group">
                         <label>
-                        {t('Tasks.title')} {!open.isViewMode && <span className="text-danger">*</span>}
+                        {t('Tasks.title')} <span className="text-danger">*</span>
                         </label>
                         <Form.Item
                             name='title'
@@ -841,7 +940,7 @@ const onFinishEdit = (values) => {
                             rules={[
                             {
                                 whitespace: true,
-                                required: !open.isViewMode,
+                                required: true,
                                 validator: (_, value) => {
                                 if (!value || value.trim() === '') {
                                     return Promise.reject(t('Tasks.pleaseentertitle'));
@@ -855,39 +954,47 @@ const onFinishEdit = (values) => {
                             },
                             ]}
                         >
-                            <Input className='form-control' maxLength={50} disabled={open.isViewMode} style={open.isViewMode ? { color: '#333333' } : {}} />
+                            <Input className='form-control' placeholder={t("Tasks.title")} maxLength={50}/>
                         </Form.Item>
                         </div>
                     </div>
                     {/* Toggle button to switch between Taskboard and Project */}
-                    {!open.isViewMode && (
+                    
                     <div className="col-12">
                         <div className="form-group">
                             <label>
                                 {t('Associate with')} <span className="text-danger">*</span>
                             </label>
                             <Form.Item
-                            className="custom-border">
+                            name="associateWith"
+                            // initialValue={open?.data ? (open?.data?.projectId ? 'project' : 'taskboard') : undefined}
+                            className="custom-border"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: t('please select associate with'),
+                                },
+                            ]}
+                            >
                               <Select
-                                value={isProjectAssociated ? 'project' : 'taskboard'}
+                                placeholder={t('please select associate with')}
                                 onChange={(value) => setIsProjectAssociated(value === 'project')}
                                 className="custom-select custom-normal"
                             >
-                                <Select.Option value="project">{t('Project')}</Select.Option>
-                                <Select.Option value="taskboard">{t('TaskBoard')}</Select.Option>
+                                <Select.Option value="project">{t('Tasks.project')}</Select.Option>
+                                <Select.Option value="taskboard">{t('sideBar.taskBoard')}</Select.Option>
                             </Select>
                             </Form.Item>
                         </div>
                     </div>
-                    )}
 
                     {/* Conditionally render Taskboard or Project Selection */}
                     <div className="col-12">
                         <div className="form-group">
-                            {isProjectAssociated ? (
+                            {isProjectAssociated === true && (
                                 <>
                                     <label>
-                                        {t('Project')} {!open.isViewMode && <span className="text-danger">*</span>}
+                                        {t('Tasks.project')}<span className="text-danger">*</span>
                                     </label>
                                     <Form.Item
                                         name="projectId"
@@ -895,13 +1002,12 @@ const onFinishEdit = (values) => {
                                         rules={[
                                             {
                                                 whitespace: true,
-                                                required: !open.isViewMode,
-                                                message: t('please select project'),
+                                                required: true,
+                                                message: t('Tasks.pleaseselectproject'),
                                             },
                                         ]}
                                     >
                                         <Select
-                                            disabled={open.isViewMode}
                                             showSearch
                                             onSearch={(val) => searchHandler(val, 'project')}
                                             filterOption={(input, option) =>
@@ -909,8 +1015,7 @@ const onFinishEdit = (values) => {
                                             }
                                             notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
                                             className="custom-select custom-normal"
-                                            placeholder={t('Select Project')}
-                                            style={open.isViewMode ? { color: '#333333' } : {}}
+                                            placeholder={t('Tasks.selectproject')}
                                         >
                                             {allProjects.map((project, index) => (
                                                 <Select.Option key={index} value={project._id}>
@@ -920,10 +1025,11 @@ const onFinishEdit = (values) => {
                                         </Select>
                                     </Form.Item>
                                 </>
-                            ) : (
+                            )}
+                            {isProjectAssociated === false && (
                                 <>
                                     <label>
-                                        {t('TaskBoard')} {!open.isViewMode && <span className="text-danger">*</span>}
+                                        {t('sideBar.taskBoard')} <span className="text-danger">*</span>
                                     </label>
                                     <Form.Item
                                         name="boardId"
@@ -931,13 +1037,12 @@ const onFinishEdit = (values) => {
                                         rules={[
                                             {
                                                 whitespace: true,
-                                                required: !open.isViewMode,
-                                                message: t('please select taskboard'),
+                                                required: true,
+                                                message: t('Tasks.pleaseselecttaskboard'),
                                             },
                                         ]}
                                     >
-                                        <Select
-                                            disabled={open.isViewMode}
+                                          <Select
                                             showSearch
                                             onSearch={(val) => searchHandler(val, 'taskboard')}
                                             filterOption={(input, option) =>
@@ -945,8 +1050,7 @@ const onFinishEdit = (values) => {
                                             }
                                             notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
                                             className="custom-select custom-normal"
-                                            placeholder={t('Select Taskboard')}
-                                            style={open.isViewMode ? { color: '#333333' } : {}}
+                                            placeholder={t('Tasks.selecttaskboard')}
                                         >
                                             {allTaskboards.map((taskBoard, index) => (
                                                 <Select.Option key={index} value={taskBoard._id}>
@@ -962,7 +1066,7 @@ const onFinishEdit = (values) => {
                     <div className="col-12">
                         <div className="form-group">
                         <label>
-                        {t('Tasks.tags')} {!open.isViewMode && <span className="text-danger">*</span>}
+                        {t('Tasks.tags')} <span className="text-danger">*</span>
                         </label>
                         <div style={{ position: "relative" }} className='hideDropdownMenu' id="area22">
                         <Form.Item
@@ -970,19 +1074,17 @@ const onFinishEdit = (values) => {
                             className='addTeamHeight'
                             rules={[
                             {
-                                required: !open.isViewMode,
+                                required: true,
                                 message: t('Tasks.pleaseentertags'),
                             },
                             ]}
                         >
                                 <Select
-                                    disabled={open.isViewMode}
                                     mode="tags"
                                     className="custom-select customselect-height"
                                     getPopupContainer={() =>
                                         document.getElementById("area22")
                                     }
-                                    style={open.isViewMode ? { color: '#333333' } : {}}
                                 />
                         </Form.Item>
                         </div>
@@ -991,21 +1093,21 @@ const onFinishEdit = (values) => {
                     <div className="col-12">
                         <div className="form-group">
                         <label>
-                            {t('finance.Invoices.description')} {!open.isViewMode && <span className="text-danger">*</span>}
+                            {t('finance.Invoices.description')} <span className="text-danger">*</span>
                         </label>
                         <Form.Item
                             name="description"
                             rules={[
                             {
                                 whitespace: true,
-                                required: !open.isViewMode,
+                                required: true,
                                 validator: (_, value) => {
                                 if(!value || value.trim() === ''){
                                     return Promise.reject(t('Tasks.pleaseenterdescription'));
                                 }
-                                else if (/\s{2,}/.test(value)) {
-                                    return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
-                                }
+                                // else if (/\s{2,}/.test(value)) {
+                                //     return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
+                                // }
                                 else if (value.length <= 4) {
                                     return Promise.reject(t('Tasks.descriptionLength'));
                                 }
@@ -1015,17 +1117,15 @@ const onFinishEdit = (values) => {
                             ]}
                             className="custom-border"
                         >
-                            <Input.TextArea rows={3} className='form-control' disabled={open.isViewMode} style={open.isViewMode ? { color: '#333333' } : {}} />
+                            <Input.TextArea rows={3} className='form-control' />
                         </Form.Item>
                         </div>
                     </div>
                 </div>
                 <div className="submit-section">
-                    {!open.isViewMode && (
                       <button type='submit' className="btn btn-primary submit-btn" disabled={loader}>
                         {loader ? <Spin size="small" indicator={antIcon} /> : t('submit')}
                       </button>
-                    )}
                 </div>
                 </Form>
                 </div>
@@ -1033,7 +1133,15 @@ const onFinishEdit = (values) => {
             </div>
         </Modal>
         {/* Task Modal */}
-        
+        <TaskModal
+            data={viewTaskData}
+            viewModal={viewTaskModal}
+            closeViewModal={() => setViewTaskModal(false)}
+            getAllTasks={() => getAllTasks(filterValues, currentPage, pageSize)}
+            getTaskBoard={getAllTaskBoards}
+            isFromTasksPage={true}
+        />
+
         {/* Delete Task Modal */}
         <Modal
           open={open.isDelOpen}

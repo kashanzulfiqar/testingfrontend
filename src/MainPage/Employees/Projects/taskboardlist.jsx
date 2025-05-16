@@ -16,6 +16,7 @@ import {
   Avatar,
   Checkbox,
   Segmented,
+  Switch,
 } from "antd";
 import Modal from "@mui/material/Modal";
 import "antd/dist/antd.css";
@@ -25,7 +26,7 @@ import Sidebar from "../../../initialpage/Sidebar/sidebar";
 import Offcanvas from "../../../Entryfile/offcanvance";
 import { useSelector } from "react-redux";
 import { apiServices } from "../../../Services/apiServices";
-import { LoadingOutlined } from "@ant-design/icons";
+import { LoadingOutlined, MinusCircleFilled } from "@ant-design/icons";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { useTranslation } from "react-i18next";
 import { user_icon } from "../../../Entryfile/imagepath";
@@ -50,7 +51,8 @@ const TaskBoardList = () => {
   const [holidayObj, setHolidayObj] = useState();
   const [tableData, setTableData] = useState([]);
   const [holidays, setHolidays] = useState([]);
-
+  const [selectValue, setSelectValue] = useState(undefined);
+  const [isProjectAssociated, setIsProjectAssociated] = useState(false);
 
   const [open, setOpen] = useState({
     isAddOpen: false,
@@ -104,9 +106,9 @@ const TaskBoardList = () => {
       setOpenTeamDropdownId(null);
     };
 
-    document.addEventListener('click', handleClickOutside);
+    document.addEventListener("click", handleClickOutside);
     return () => {
-      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener("click", handleClickOutside);
     };
   }, []);
 
@@ -145,7 +147,6 @@ const TaskBoardList = () => {
       pageSize: 20,
       total: 0,
     });
-
   };
 
   useEffect(() => {
@@ -165,98 +166,134 @@ const TaskBoardList = () => {
   }, []); // Only run on mount
 
   const handlePaginationChange = (page, pageSize) => {
+    setPage(page);
+    setSize(pageSize);
     setPagination({
       ...pagination,
       current: page,
       pageSize: pageSize,
     });
-    setIsLoading(true);
     GetListTaskBoards(page, pageSize);
   };
 
   const searchHandler = (val, type) => {
-    let dropdownValues = []
-    if (type === 'project'){
-      allProjects.forEach((proj)=>{
-        dropdownValues.push(proj.projectName.toLowerCase())
-     })
+    let dropdownValues = [];
+    if (type === "project") {
+      allProjects.forEach((proj) => {
+        dropdownValues.push(proj.projectName.toLowerCase());
+      });
     }
-  
-    if(val !== ''){
+
+    if (val !== "") {
       dropdownValues.some((team) => {
-        if(team.includes(val.toLowerCase())){
+        if (team.includes(val.toLowerCase())) {
           // setNoData(false);
-          return true
-        }else{
+          return true;
+        } else {
           // setNoData(true);
         }
-      })
-    }else{
+      });
+    } else {
       // setNoData(false)
     }
-  }
+  };
 
   const fetchEmployees = () => {
-      setLoadingEmployee(true)
-      apiServices("GET", `user/all-employees`, null, user_state)
-        .then((res) => {
-          if (res.data.success === true) {
-            const emps = res?.data?.User;
-            const sortedData = emps
-              .slice()
-              .sort((a, b) => a.fullName.localeCompare(b.fullName));
-            setEmployees(sortedData);
-            setLoadingEmployee(false)
-          }
-        })
-        .catch((err) => {
-          setLoadingEmployee(false)
-          message.error(
-            `${
-              err?.response?.data?.msg
-                ? err?.response?.data?.msg
-                : err?.response?.data?.validation?.body?.message
-                ? err?.response?.data?.validation?.body?.message
-                : t("aAttend.errors.getEmployeesError")
-            }`
-          );
-        });
-    };
-
-    const getTeamMemberOptions = () => {
-        return employees?.map((employee) => (
-          <Select.Option key={employee._id} value={employee._id}>
-            {employee.fullName}
-          </Select.Option>
-        ));
-      }
-
-      const handleChange = (values) => {
-
-        const selectedEmployees = values?.map((value) =>
-          employees?.find((employee) => employee._id === value)
+    setLoadingEmployee(true);
+    apiServices("GET", `user/all-employees`, null, user_state)
+      .then((res) => {
+        if (res.data.success === true) {
+          const emps = res?.data?.User;
+          const sortedData = emps
+            .slice()
+            .sort((a, b) => a.fullName.localeCompare(b.fullName));
+          setEmployees(sortedData);
+          setLoadingEmployee(false);
+        }
+      })
+      .catch((err) => {
+        setLoadingEmployee(false);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : t("aAttend.errors.getEmployeesError")
+          }`
         );
-        setSelectedTeamMembers(selectedEmployees);
-      }
+      });
+  };
+
+  const showTeamSearch = (val, type) => {
+    let dropdownValues = [];
+    if (type === "Team") {
+      employees.forEach((team) => {
+        dropdownValues.push(team.fullName.toLowerCase());
+      });
+    }
+
+    if (val !== "") {
+      dropdownValues.some((team) => {
+        if (team.includes(val.toLowerCase())) {
+          // setNoData(false);
+          return true;
+        } else {
+          // setNoData(true);
+        }
+      });
+    } else {
+      // setNoData(false)
+    }
+  };
+  
+  const getTeamMemberOptions = () => {
+    return employees?.filter((emp) => !selectedTeamMembers.some((selected) => selected._id === emp._id))
+    ?.map((employee) => (
+      <Select.Option key={employee._id} value={employee._id}>
+        {employee.fullName}
+      </Select.Option>
+    ));
+  };
+  const handleSelectDeveloper = (value) => {
+    const developer = employees?.find((emp) => emp._id === value);
+    setSelectedTeamMembers([...selectedTeamMembers, developer]);
+    form.resetFields(["assignedDevelopers"])
+  };
+
+  const handleRemoveDeveloper = (developerId) => {
+    setSelectedTeamMembers(selectedTeamMembers.filter((dev) => dev._id !== developerId));
+    setSelectValue(undefined);
+  };
+  const handleChange = (values) => {
+    const selectedEmployees = values?.map((value) =>
+      employees?.find((employee) => employee._id === value)
+    );
+    setSelectedTeamMembers(selectedEmployees);
+  };
   const getProjects = (page, pageSize) => {
     //setLoader(true);
 
     apiServices(
       "GET",
       // `project-management/?clientName=${filters.clientName}&projectName=${filters.projectName}&page=${params.page}&limit=${params.limit}`,
-      `project-management/?taskBoard=false&employeeId=${(role === '' && !permissions?.projectManagement) ? employee_id : ''}&page=1&limit=999999`,
+      `project-management/?taskBoard=false&employeeId=${
+        role === "" && !permissions?.projectManagement ? employee_id : ""
+      }&page=1&limit=999999`,
       null,
       user_state
     )
       .then((res) => {
         if (res.data.success === true) {
           //setCategoryObj(res?.data?.projects);
-          const sortedData = res?.data?.projects?.docs?.slice().sort((a, b) => a.projectName.localeCompare(b.projectName));
-          console.log("project in taskboard dropdown:",sortedData);
-          
+          const sortedData = res?.data?.projects?.docs
+            ?.slice()
+            .sort((a, b) => a.projectName.localeCompare(b.projectName));
+          console.log("project in taskboard dropdown:", sortedData);
+
           setAllProjects(sortedData);
-          setIsLoading(false);          
-      }
+          setIsLoading(false);
+        }
       })
       .catch((err) => {
         message.error(
@@ -265,14 +302,15 @@ const TaskBoardList = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : t('projectScreen.errors.getEmployeeProjectsError')
+              : t("projectScreen.errors.getEmployeeProjectsError")
           }`
         );
         setIsLoading(false);
-      })
+      });
   };
 
   const GetListTaskBoards = (page, pageSize, archivedStatus = isArchived) => {
+    setIsLoading(true);
     const params = {
       ...filters,
       page: page || pagination.current,
@@ -291,13 +329,12 @@ const TaskBoardList = () => {
           const taskBoards = res?.data?.taskBoards || [];
           setCategoryObj(taskBoards);
           setTableData(taskBoards);
-          setPagination(prev => ({
-            ...prev,
-            current: res?.data?.currentPage,
+          setPagination({
+            ...pagination,
+            current: parseInt(params.page, 10),
+            pageSize: parseInt(params.limit, 10),
             total: res?.data?.totalItems,
-          }));
-          setPage(parseInt(params.page, 10));
-          setSize(parseInt(params.limit, 10));
+          });
         }
         setIsLoading(false);
       })
@@ -308,7 +345,7 @@ const TaskBoardList = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : t('projectScreen.errors.getEmployeeProjectsError')
+              : t("projectScreen.errors.getEmployeeProjectsError")
           }`
         );
         setIsLoading(false);
@@ -316,8 +353,11 @@ const TaskBoardList = () => {
   };
 
   const handleClose = () => {
-    setSelectedTeamMembers([])
+    setSelectedTeamMembers([]);
+    form.resetFields();
+    setSelectValue(undefined);
     setOpen({ isAddOpen: false, isDelOpen: false, data: "" });
+    setIsProjectAssociated(false);
     setLoader(false);
   };
 
@@ -325,7 +365,8 @@ const TaskBoardList = () => {
     let updated_data = {
       ...values,
       companyId: info?.companyId,
-    }
+      assignedDevelopers: selectedTeamMembers.map((member) => member._id),
+    };
     setLoader(true);
     apiServices("POST", "taskBoard/add-taskBoard", updated_data, user_state)
       .then((res) => {
@@ -333,7 +374,7 @@ const TaskBoardList = () => {
         if (res?.data?.success === true) {
           handleClose();
           GetListTaskBoards();
-          message.success('Task board added successfully');
+          message.success("Task board added successfully");
           setLoader(false);
         }
       })
@@ -346,11 +387,10 @@ const TaskBoardList = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : 'Error adding taskboard'
+              : "Error adding taskboard"
           }!`
         );
       });
-
   };
 
   const columns = [
@@ -358,11 +398,10 @@ const TaskBoardList = () => {
       title: "#",
       dataIndex: "index",
       key: "index",
-      render: (text, record, index) =>
-        (page - 1) * size + index + 1,
+      render: (text, record, index) => (page - 1) * size + index + 1,
     },
     {
-      title: t('TaskBoard Name'),
+      title: t("TaskBoard Name"),
       dataIndex: "boardTitle",
       key: "boardTitle",
       render: (text, record) => (
@@ -384,14 +423,14 @@ const TaskBoardList = () => {
                 fontSize: "12px",
               }}
             >
-              {t('Taskboard')}
+              {t("Taskboard")}
             </span>
           )}
         </div>
       ),
     },
     {
-      title: t('Tasks.project'),
+      title: t("Tasks.project"),
       dataIndex: "project",
       key: "project",
       render: (text, record) => (
@@ -415,62 +454,71 @@ const TaskBoardList = () => {
       ),
     },
     {
-          title: t('projectScreen.team'),
-          dataIndex: "assignedDevelopers",
-          key: "assignedDevelopers",
-          render: (assignedDevelopers, record) => (
-            <div className="project-members" style={{margin: '4px auto'}}>
-            <ul className="team-members" style={{minWidth: 'max-content'}}>
-              {assignedDevelopers?.slice(0, 4).map((developer, index) => (
-                <li key={index}>
-                  <Tooltip title={developer?.fullName}>
-                    <Avatar 
-                      style={{cursor: 'pointer'}} 
-                      src={developer?.imageUrl || user_icon} 
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  </Tooltip>
-                </li>
-              ))}
-              {assignedDevelopers?.length > 4 && (
-                <li className="dropdown avatar-dropdown">
-                  <Link
-                    className="all-users dropdown-toggle projectTeamMember"
-                    style={{display:'inline-flex', height: '33px', width: '33px'}}
-                    data-bs-toggle="dropdown"
-                    aria-expanded={openTeamDropdownId === record._id}
-                    onClick={(e) => handleTeamDropdownClick(e, record._id)}
-                  >
-                    +{assignedDevelopers?.length - 4}
-                  </Link>
-                  {/* Dropdown menu for additional team members */}
-                  <div className={`dropdown-menu dropdown-menu-right ${openTeamDropdownId === record._id ? 'show' : ''}`}>
-                    <div className="avatar-group">
-                      {assignedDevelopers?.slice(4).map((developer, index) => (
-                        <a
-                          className="avatar avatar-xs projectTeamMember"
-                          key={index}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Tooltip title={developer?.fullName}>
-                            <Avatar
-                              src={developer?.imageUrl || user_icon}
-                              style={{cursor: 'pointer'}}
-                              onClick={(e) => e.stopPropagation()}
-                            />
-                          </Tooltip>
-                        </a>
-                      ))}
-                    </div>
+      title: t("projectScreen.team"),
+      dataIndex: "assignedDevelopers",
+      key: "assignedDevelopers",
+      render: (assignedDevelopers, record) => (
+        <div className="project-members" style={{ margin: "4px auto" }}>
+          <ul className="team-members" style={{ minWidth: "max-content" }}>
+            {assignedDevelopers?.slice(0, 4).map((developer, index) => (
+              <li key={index}>
+                <Tooltip title={developer?.fullName}>
+                  <Avatar
+                    style={{ cursor: "pointer" }}
+                    src={developer?.imageUrl || user_icon}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </Tooltip>
+              </li>
+            ))}
+            {assignedDevelopers?.length > 4 && (
+              <li className="dropdown avatar-dropdown">
+                <Link
+                  className="all-users dropdown-toggle projectTeamMember"
+                  style={{
+                    display: "inline-flex",
+                    height: "33px",
+                    width: "33px",
+                  }}
+                  data-bs-toggle="dropdown"
+                  aria-expanded={openTeamDropdownId === record._id}
+                  onClick={(e) => handleTeamDropdownClick(e, record._id)}
+                >
+                  +{assignedDevelopers?.length - 4}
+                </Link>
+                {/* Dropdown menu for additional team members */}
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className={`dropdown-menu dropdown-menu-right ${
+                    openTeamDropdownId === record._id ? "show" : ""
+                  }`}
+                >
+                  <div className="avatar-group">
+                    {assignedDevelopers?.slice(4).map((developer, index) => (
+                      <a
+                        className="avatar avatar-xs projectTeamMember"
+                        key={index}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Tooltip title={developer?.fullName}>
+                          <Avatar
+                            src={developer?.imageUrl || user_icon}
+                            style={{ cursor: "pointer" }}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </Tooltip>
+                      </a>
+                    ))}
                   </div>
-                </li>
-              )}
-            </ul>
-            </div>
-          ),
-        },
+                </div>
+              </li>
+            )}
+          </ul>
+        </div>
+      ),
+    },
     {
-      title: t('Actions'),
+      title: t("Actions"),
       render: (text, record) => (
         <div className="dropdown dropdown-action text-end">
           <a
@@ -482,7 +530,11 @@ const TaskBoardList = () => {
           >
             <i className="material-icons">more_vert</i>
           </a>
-          <div className={`dropdown-menu dropdown-menu-right ${openDropdownId === record._id ? 'show' : ''}`}>
+          <div
+            className={`dropdown-menu dropdown-menu-right ${
+              openDropdownId === record._id ? "show" : ""
+            }`}
+          >
             <a
               className="dropdown-item"
               href="#"
@@ -496,8 +548,12 @@ const TaskBoardList = () => {
                 });
               }}
             >
-              <i className={`fa ${record.isArchived ? 'fa-undo' : 'fa-archive'} m-r-5`} /> 
-              {record.isArchived ? t('Activate') : t('Archive')}
+              <i
+                className={`fa ${
+                  record.isArchived ? "fa-undo" : "fa-archive"
+                } m-r-5`}
+              />
+              {record.isArchived ? t("Activate") : t("Archive")}
             </a>
             <a
               className="dropdown-item"
@@ -512,7 +568,7 @@ const TaskBoardList = () => {
                 });
               }}
             >
-              <i className="fa fa-trash-o m-r-5" /> {t('Delete')}
+              <i className="fa fa-trash-o m-r-5" /> {t("Delete")}
             </a>
           </div>
         </div>
@@ -522,22 +578,28 @@ const TaskBoardList = () => {
 
   const onHandleDelete = (id, isDelete = false) => {
     setLoader(true);
-    const endpoint = isDelete ? "taskBoard/delete-taskBoard" : "taskBoard/add-taskBoard";
+    const endpoint = isDelete
+      ? "taskBoard/delete-taskBoard"
+      : "taskBoard/add-taskBoard";
     const method = isDelete ? "DELETE" : "PUT";
-    const data = isDelete ? { _id: id } : { _id: id, isArchived: !open?.data?.isArchived };
+    const data = isDelete
+      ? { _id: id }
+      : { _id: id, isArchived: !open?.data?.isArchived };
 
     apiServices(method, endpoint, data, user_state)
       .then((res) => {
         if (res?.data?.success === true) {
           handleClose();
           message.success(
-            isDelete ? 'Task board deleted successfully' :
-            `Task board ${open?.data?.isArchived ? 'activated' : 'archived'} successfully`
+            isDelete
+              ? "Task board deleted successfully"
+              : `Task board ${
+                  open?.data?.isArchived ? "activated" : "archived"
+                } successfully`
           );
-          if(categoryObj?.docs?.length === 1){
-            GetListTaskBoards((categoryObj.totalPages-1), null);
-          }
-          else{
+          if (categoryObj?.docs?.length === 1) {
+            GetListTaskBoards(categoryObj.totalPages - 1, null);
+          } else {
             GetListTaskBoards();
           }
           setLoader(false);
@@ -551,7 +613,9 @@ const TaskBoardList = () => {
               ? err?.response?.data?.msg
               : err?.response?.data?.validation?.body?.message
               ? err?.response?.data?.validation?.body?.message
-              : isDelete ? 'Error deleting taskboard' : 'Error updating taskboard'
+              : isDelete
+              ? "Error deleting taskboard"
+              : "Error updating taskboard"
           }!`
         );
       });
@@ -592,7 +656,8 @@ const TaskBoardList = () => {
               fontSize: "14px",
               margin: "7px 0px 4px 0px",
             }}
-          >No TaskBoards found
+          >
+            No TaskBoards found
           </div>
           {/* <div
                     style={{ color: "#464665", fontWeight: "300", fontSize: "13px" }}
@@ -626,7 +691,7 @@ const TaskBoardList = () => {
         {/* <Sidebar /> */}
         <div className="page-wrapper">
           <Helmet>
-            <title>{t('Task Boards - DaftarPro')}</title>
+            <title>{t("Task Boards - DaftarPro")}</title>
             <meta name="description" content="Login page" />
           </Helmet>
           {/* Page Content */}
@@ -635,34 +700,38 @@ const TaskBoardList = () => {
             <div className="page-header">
               <div className="row align-items-center">
                 <div className="col">
-                  <h3 className="page-title">{t('Task Boards')}</h3>
+                  <h3 className="page-title">{t("Task Boards")}</h3>
                 </div>
-                
+
                 <div className="col-auto float-end ms-auto">
                   <div className="d-flex flex-wrap gap-2 justify-content-end">
-                    <div style={{ minWidth: '180px' }}>
+                    <div style={{ minWidth: "180px" }}>
                       <Segmented
-                          onChange={(val) => {
-                            const isArchivedValue = val === 'Archived';
-                            setIsArchived(isArchivedValue);
-                            setIsLoading(true);
-                            GetListTaskBoards(1, pagination.pageSize, isArchivedValue);
-                          }}
-                          value={isArchived ? 'Archived' : 'Active'} 
-                          className='segmentStyle'
-                          block
-                          size="large"
-                          options={[
+                        onChange={(val) => {
+                          const isArchivedValue = val === "Archived";
+                          setIsArchived(isArchivedValue);
+                          setIsLoading(true);
+                          GetListTaskBoards(
+                            1,
+                            pagination.pageSize,
+                            isArchivedValue
+                          );
+                        }}
+                        value={isArchived ? "Archived" : "Active"}
+                        className="segmentStyle"
+                        block
+                        size="large"
+                        options={[
                           {
-                              label: t('Active'),
-                              value: 'Active',
+                            label: t("Active"),
+                            value: "Active",
                           },
                           {
-                              label: t('Archived'),
-                              value: 'Archived', 
+                            label: t("Archived"),
+                            value: "Archived",
                           },
-                          ]}
-                          style={{ width: '100%' }}
+                        ]}
+                        style={{ width: "100%" }}
                       />
                     </div>
                     {(role === "admin" || permissions?.projectManagement) && (
@@ -679,7 +748,7 @@ const TaskBoardList = () => {
                             });
                           }}
                         >
-                          <i className="fa fa-plus" /> {t('Add TaskBoard')}
+                          <i className="fa fa-plus" /> {t("Add TaskBoard")}
                         </a>
                       </div>
                     )}
@@ -689,48 +758,51 @@ const TaskBoardList = () => {
             </div>
             {/* /Page Header */}
             <div className="row">
-          <div className="col-md-12">
-            <div className="table-responsive">
-              <Table
-                loading={isLoading}
-                className={
-                  tableData?.length > 0 ? "table-striped" : ""
-                }
-                locale={{
-                    emptyText: isLoading ? null : customEmptyText,
-                  }}
-                pagination={false}
-                // pagination={{
-                //   current: pagination.current,
-                //   pageSize: pagination.pageSize,
-                //   total: pagination.total,
-                //   showTotal: (total, range) =>
-                //     `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                //   pageSizeOptions: ["10", "20", "40", "50"], // Options to change page size
-                //   showSizeChanger: true, // Show the page size changer
-                //   onChange: (page, pageSize) => {
-                //     setPagination({
-                //       ...pagination,
-                //       current: page,
-                //       pageSize: pageSize,
-                //     });
-                //     setIsLoading(true);
-                //     getHolidays(page, pageSize)
-                //   },
-                //   itemRender: itemRender,
-                // }}
-                style = {{overflowX : 'auto'}}
-                columns={columns}
-                bordered
-                dataSource={tableData}
-                rowKey={(record) => record.id}
-                components={i18n.dir()==="rtl" ?
-                      {
-                      header: {
-                        cell: ({ children }) => <th style={{ textAlign: 'right' }}>{children}</th>,
-                      },
-                    } :
-                    null
+              <div className="col-md-12">
+                <div className="table-responsive">
+                  <Table
+                    loading={isLoading}
+                    className={tableData?.length > 0 ? "table-striped" : ""}
+                    locale={{
+                      emptyText: isLoading ? null : customEmptyText,
+                    }}
+                    pagination={false}
+                    // pagination={{
+                    //   current: pagination.current,
+                    //   pageSize: pagination.pageSize,
+                    //   total: pagination.total,
+                    //   showTotal: (total, range) =>
+                    //     `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+                    //   pageSizeOptions: ["10", "20", "40", "50"], // Options to change page size
+                    //   showSizeChanger: true, // Show the page size changer
+                    //   onChange: (page, pageSize) => {
+                    //     setPagination({
+                    //       ...pagination,
+                    //       current: page,
+                    //       pageSize: pageSize,
+                    //     });
+                    //     setIsLoading(true);
+                    //     getHolidays(page, pageSize)
+                    //   },
+                    //   itemRender: itemRender,
+                    // }}
+                    style={{ overflowX: "auto" }}
+                    columns={columns}
+                    bordered
+                    dataSource={tableData}
+                    rowKey={(record) => record.id}
+                    components={
+                      i18n.dir() === "rtl"
+                        ? {
+                            header: {
+                              cell: ({ children }) => (
+                                <th style={{ textAlign: "right" }}>
+                                  {children}
+                                </th>
+                              ),
+                            },
+                          }
+                        : null
                     }
                     // onRow={ i18n.dir()==="rtl" ?
                     //   (record, rowIndex) => {
@@ -740,374 +812,398 @@ const TaskBoardList = () => {
                     // } :
                     // null
                     // }
-                    onRow={
-                      (record, rowIndex) => {
-                          // Add conditional styles based on i18n direction
-                          const rowStyle = i18n.dir() === "rtl" ? { textAlign: "right" } : {};
-                  
-                          // Return combined properties for the row
-                          return {
-                              style: { ...rowStyle, cursor: 'pointer' },
-                              onClick: () => {
-                                  nav(`/task-board/${record._id}`, {
-                                      state: { board: record},
-                                  });
-                              }, // Add click handler
-                          };
+                    onRow={(record, rowIndex) => {
+                      // Add conditional styles based on i18n direction
+                      const rowStyle =
+                        i18n.dir() === "rtl" ? { textAlign: "right" } : {};
+
+                      // Return combined properties for the row
+                      return {
+                        style: { ...rowStyle, cursor: "pointer" },
+                        onClick: () => {
+                          nav(`/task-board/${record._id}`, {
+                            state: { board: record },
+                          });
+                        }, // Add click handler
+                      };
+                    }}
+                    // onChange={this.handleTableChange}
+                  />
+                </div>
+                {tableData?.length > 0 && (
+                  <div>
+                    <Pagination
+                      style={{ display: "flex", float: "right" }}
+                      current={page}
+                      pageSize={size}
+                      total={pagination.total}
+                      showTotal={(total, range) =>
+                        t("paginationShow", {
+                          range1: range[0],
+                          range2: range[1],
+                          total: total,
+                        })
                       }
-                  }
-                // onChange={this.handleTableChange}
-              />
+                      pageSizeOptions={["20", "30", "40", "50"]}
+                      showSizeChanger
+                      onChange={handlePaginationChange}
+                      itemRender={(current, type, originalElement) =>
+                        itemRender(current, type, originalElement, t)
+                      }
+                      disabled={isLoading}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
-            {
-                    tableData?.length > 0 &&
-                    <div>
-                      <Pagination
-                        style={{display: 'flex', float: 'right'}}
-                        current={pagination.current}
-                        pageSize={pagination.pageSize}
-                        total={pagination.total}
-                        showTotal={(total, range) =>
-                          t('paginationShow', { range1: range[0], range2: range[1], total: total })
-                        }
-                        pageSizeOptions={["20", "30", "40", "50"]}
-                        showSizeChanger
-                        onChange={handlePaginationChange}
-                        itemRender={(current, type, originalElement) =>
-                          itemRender(current, type, originalElement, t)
-                        }
-                        disabled={isLoading}
-                      />
-                    </div>
-                  }
-          </div>
-        </div>
           </div>
 
           <Modal
-        open={open.isAddOpen}
-        onClose={handleClose}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
-        disableRestoreFocus
-        BackdropProps={{
-          style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
-        }}
-      >
-        <div className="modal-dialog modal-dialog-centered" role="document">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title">
-                Add Task Board
-              </h5>
-              <button type="button" className="close" onClick={handleClose}>
-                <span aria-hidden="true">×</span>
-              </button>
-            </div>
-            <div className="modal-body">
-              <Form
-                // form={form}
-                name="control-hooks"
-                onFinish={(val) => onFinish(val, open?.data)}
-                onFinishFailed={({errorFields}) => {
-                  const consecutiveSpacesError = errorFields.find(field => field.errors.toString().includes('consecutive spaces'));
-                  if(consecutiveSpacesError){
-                    message.error(t('allEmp.errors.removeConsecutiveSpaces'))
-                 }else{
-                    message.error(t('allEmp.errors.fillRequiredFields'))
-                  } 
-                }}
-                initialValues={{
-                  holidayTitle: open?.data ? open?.data?.holidayTitle : "",
-                  holidayDate: open?.data ? moment(open?.data.holidayDate, "YYYY-MM-DD") : "",
-                }}
-                autoComplete="off"
-              >
-              <div className="form-group">
-                <label>
-                  {t("Title")} <span className="text-danger">*</span>
-                </label>
-                <Form.Item
-                  name="boardTitle"
-                  rules={[{ required: true, message: t("Please enter a Title") }]}
-                >
-                  <Input
-                    className="form-control"
-                    placeholder="Enter Title for your Taskboard"
-                  />
-                </Form.Item>
-              </div>
-                <div className="form-group">
+            open={open.isAddOpen}
+            onClose={handleClose}
+            aria-labelledby="modal-modal-title"
+            className="modalScroll"
+            aria-describedby="modal-modal-description"
+            disableRestoreFocus
+            BackdropProps={{
+              style: { backgroundColor: "rgb(0 0 0 / 87%)" }, // Set the backdrop color here
+            }}
+            sx={{ overflowY: "auto" }}
+          >
+            <div className="modal-dialog modal-dialog-centered" role="document">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Add Task Board</h5>
+                  <button type="button" className="close" onClick={handleClose}>
+                    <span aria-hidden="true">×</span>
+                  </button>
+                </div>
+                <div className="modal-body">
+                  <Form
+                    form={form}
+                    name="control-hooks"
+                    onFinish={(val) => onFinish(val, open?.data)}
+                    onFinishFailed={({ errorFields }) => {
+                      const consecutiveSpacesError = errorFields.find((field) =>
+                        field.errors.toString().includes("consecutive spaces")
+                      );
+                      if (consecutiveSpacesError) {
+                        message.error(
+                          t("allEmp.errors.removeConsecutiveSpaces")
+                        );
+                      } else {
+                        message.error(t("allEmp.errors.fillRequiredFields"));
+                      }
+                    }}
+                    initialValues={{
+                      holidayTitle: open?.data ? open?.data?.holidayTitle : "",
+                      holidayDate: open?.data
+                        ? moment(open?.data.holidayDate, "YYYY-MM-DD")
+                        : "",
+                    }}
+                    autoComplete="off"
+                  >
+                    <div className="form-group">
+                      <label>
+                        {t("Title")} <span className="text-danger">*</span>
+                      </label>
+                      <Form.Item
+                        name="boardTitle"
+                        rules={[
+                          {
+                            required: true,
+                            message: t("Please enter a Title"),
+                          },
+                        ]}
+                      >
+                        <Input
+                          maxLength={50}
+                          className="form-control"
+                          placeholder="Enter Title for your Taskboard"
+                        />
+                      </Form.Item>
+                    </div>
+                    <div className="col-12">
+                      <div className="form-group">
+                        <label
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                          }}
+                        >
+                          <span>{t("Associated with project")}</span>
+                          <Switch
+                            checked={isProjectAssociated}
+                            onChange={(checked) =>
+                              setIsProjectAssociated(checked)
+                            }
+                            // style={{ marginLeft: "10px" }}
+                          />
+                        </label>
+                      </div>
+                    </div>
+                    {isProjectAssociated ? (
+                      <div className="form-group">
                         <label>
-                        {t('Tasks.project')} {/* <span className="text-danger">*</span> */}
+                          {t("Tasks.project")}{" "}
+                          <span className="text-danger">*</span>
                         </label>
                         <div style={{ position: "relative" }} id="area">
-                        <Form.Item
-                            name='projectId'
-                            className='custom-border'
+                          <Form.Item
+                            name="projectId"
+                            className="custom-border"
                             rules={[
-                            {
-                                whitespace: true,
-                                // required: true,
-                                message: t('Tasks.pleaseselectproject'),
-                            },
+                              {
+                                required: true,
+                                message: t("Tasks.pleaseselectproject"),
+                              },
                             ]}
-                        >
-                                <Select
-                                    showSearch
-                                    onSearch={(val) => {
-                                      searchHandler(val, 'project')
-                                    }}
-                                    filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                                    optionFilterProp="children"
-                                    notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
-                                    dropdownRender={(menu) => (
-                                      <>
-                                        {menu}
-                                      </>
-                                    )}
-                                    className="custom-select custom-normal"
-                                    getPopupContainer={() =>
-                                        document.getElementById("area")
-                                    }
-                                    placeholder={t('Tasks.selectproject')}
-                                    >
-                                    {
-                                        allProjects.map((project, index) => (
-                                        <Select.Option key={index} value={project._id}>
-                                            {project.projectName}
-                                        </Select.Option>
-                                        ))
-                                    }
-                                </Select>
-                        </Form.Item>
-                        </div>
-                        </div>
-                        <div className="row">
-                  <div className="col-sm-6">
-                    <div className="form-group">
-                      <label>{t("projectScreen.Modal.addTeam")}{" "}
-                      <span className="text-danger">*</span></label>
-                      <div style={{ position: "relative" }} id="area">
-                        <Form.Item
-                          name="assignedDevelopers"
-                          className="addTeamHeight"
-                          rules={[
-                            {
-                              required: true,
-                              message: t(
-                                "projectScreen.Modal.teamCannotBeEmpty"
-                              ),
-                            },
-                          ]}
-                        >
-                          <Select
-                            showSearch
-                            onSearch={(val) => {
-                              showTeamSearch(val, "Team");
-                              // onTeamChange(val)
-                            }}
-                            filterOption={(input, option) =>
-                              option.children
-                                .toLowerCase()
-                                .indexOf(input.toLowerCase()) >= 0
-                            }
-                            optionFilterProp="children"
-                            notFoundContent={
-                              loadingEmployee ? (
-                                <Spin style={{
-                                  height: "38px",
-                                  width: "100%",
-                                  display: "flex",
-                                  justifyContent: "center",
-                                  alignItems: "center",
-                                }} />
-                              ) : (
-                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                              )}
-                            dropdownRender={(menu) => <>{menu}</>}
-                            getPopupContainer={() =>
-                              document.getElementById("area")
-                            }
-                            className="customselect-height custom-select"
-                            mode="multiple"
-                            placeholder={t(
-                              "projectScreen.Modal.selectTeamMembers"
-                            )}
-                            
-                            onChange={handleChange}
                           >
-                            {getTeamMemberOptions()}
-                          </Select>
-                        </Form.Item>
+                            <Select
+                              showSearch
+                              onSearch={(val) => {
+                                searchHandler(val, "project");
+                              }}
+                              filterOption={(input, option) =>
+                                option.children
+                                  .toLowerCase()
+                                  .indexOf(input.toLowerCase()) >= 0
+                              }
+                              optionFilterProp="children"
+                              notFoundContent={
+                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                              }
+                              dropdownRender={(menu) => <>{menu}</>}
+                              className="custom-select custom-normal"
+                              getPopupContainer={() =>
+                                document.getElementById("area")
+                              }
+                              placeholder={t("Tasks.selectproject")}
+                            >
+                              {allProjects.map((project, index) => (
+                                <Select.Option key={index} value={project._id}>
+                                  {project.projectName}
+                                </Select.Option>
+                              ))}
+                            </Select>
+                          </Form.Item>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                  <div className="col-sm-6">
-                    <div className="form-group">
-                      <label>{t("projectScreen.Modal.teamMembers")}</label>
-                      <div
-                        className="project-members"
-                        style={{ margin: "4px auto" }}
-                      >
-                        <ul
-                          className="team-members"
-                          style={{ minWidth: "max-content" }}
-                        >
-                          {selectedTeamMembers
-                            ?.slice(0, 4)
-                            .map((teamMember, index) => (
-                              <li key={index}>
-                                <Tooltip
-                                  title={teamMember?.fullName}
+                    ) : (
+                      <div className="row">
+                        <div className="form-group">
+                          <label>
+                            {t("projectScreen.Modal.addTeam")}{" "}
+                            <span className="text-danger">*</span>
+                          </label>
+                          <div style={{ position: "relative" }} id="area">
+                            <Form.Item
+                              name="assignedDevelopers"
+                              className="custom-border"
+                              // rules={[
+                              //   {
+                              //     required: true,
+                              //     message: t(
+                              //       "projectScreen.Modal.teamCannotBeEmpty"
+                              //     ),
+                              //   },
+                              // ]}
+                            >
+                              <Select
+                                showSearch
+                                onSearch={(val) => {
+                                  showTeamSearch(val, "Team");
+                                  // onTeamChange(val)
+                                }}
+                                filterOption={(input, option) =>
+                                  option.children
+                                    .toLowerCase()
+                                    .indexOf(input.toLowerCase()) >= 0
+                                }
+                                optionFilterProp="children"
+                                notFoundContent={
+                                  loadingEmployee ? (
+                                    <Spin
+                                      style={{
+                                        height: "38px",
+                                        width: "100%",
+                                        display: "flex",
+                                        justifyContent: "center",
+                                        alignItems: "center",
+                                      }}
+                                    />
+                                  ) : (
+                                    <Empty
+                                      image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                    />
+                                  )
+                                }
+                                dropdownRender={(menu) => <>{menu}</>}
+                                getPopupContainer={() =>
+                                  document.getElementById("area")
+                                }
+                                className="custom-select custom-normal"
+                                placeholder={t(
+                                  "projectScreen.Modal.selectTeamMembers"
+                                )}
+                                onSelect={handleSelectDeveloper}
+                              >
+                                {getTeamMemberOptions()}
+                              </Select>
+                            </Form.Item>
+                          </div>
+                          <ul className="chat-user-list">
+                            {selectedTeamMembers?.map((developer) => (
+                              <li key={developer._id}>
+                                <div
+                                  className="employee-selection"
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                  }}
                                 >
-                                  <Avatar
-                                    style={{ cursor: "pointer" }}
-                                    src={
-                                      teamMember?.imageUrl || user_icon
+                                  <div>
+                                    <img
+                                      alt=""
+                                      className="avatar"
+                                      src={developer?.imageUrl || user_icon}
+                                    />
+                                    <span className="employee-name">
+                                      {developer?.fullName}
+                                    </span>
+                                  </div>
+
+                                  <MinusCircleFilled
+                                    style={{ color: "red", cursor: "pointer" }}
+                                    onClick={() =>
+                                      handleRemoveDeveloper(developer?._id)
                                     }
                                   />
-                                </Tooltip>
+                                </div>
+                                <hr
+                                  className="developer-divider"
+                                  style={{ opacity: "0.1" }}
+                                />
                               </li>
                             ))}
-                          {selectedTeamMembers?.length > 4 && (
-                            <li className="dropdown avatar-dropdown">
-                              <Link
-                                className="all-users dropdown-toggle projectTeamMember"
-                                style={{
-                                  display: "inline-flex",
-                                  height: "33px",
-                                  width: "33px",
-                                }}
-                                data-bs-toggle="dropdown"
-                                aria-expanded="false"
-                              >
-                                +{selectedTeamMembers?.length - 4}
-                              </Link>
-                              {/* Dropdown menu for additional team members */}
-                              <div className="dropdown-menu dropdown-menu-right">
-                                <div className="avatar-group">
-                                  {selectedTeamMembers
-                                    ?.slice(4)
-                                    .map((teamMember, index) => (
-                                      <a
-                                        className="avatar avatar-xs projectTeamMember"
-                                        key={index}
-                                      >
-                                        <Tooltip
-                                          title={
-                                            teamMember?.fullName
-                                          }
-                                        >
-                                          <Avatar
-                                            src={
-                                              teamMember?.imageUrl ||
-                                              user_icon
-                                            }
-                                            style={{ cursor: "pointer" }}
-                                          />
-                                        </Tooltip>
-                                      </a>
-                                    ))}
-                                </div>
-                              </div>
-                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    )}
+                    <div className="submit-section">
+                      <Form.Item>
+                        <Button
+                          htmlType="submit"
+                          className="btn btn-primary submit-btn"
+                          disabled={loader}
+                        >
+                          {loader ? (
+                            <Spin size="small" indicator={antIcon} />
+                          ) : (
+                            t("submit")
                           )}
-                        </ul>
+                        </Button>
+                      </Form.Item>
+                    </div>
+                  </Form>
+                </div>
+              </div>
+            </div>
+          </Modal>
+
+          {/* Update the delete modal content to handle both archive and delete cases */}
+          <Modal
+            open={open.isDelOpen}
+            onClose={handleClose}
+            aria-labelledby="modal-modal-title"
+            aria-describedby="modal-modal-description"
+            disableRestoreFocus
+            BackdropProps={{
+              style: { backgroundColor: "rgb(0 0 0 / 87%)" },
+            }}
+          >
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content" style={{ height: "280px" }}>
+                <div
+                  className="modal-body"
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                  }}
+                >
+                  <div className="form-header">
+                    <h3 style={{ marginBottom: "30px" }}>
+                      {open?.data?.isDelete
+                        ? "Delete TaskBoard"
+                        : open?.data?.isArchived
+                        ? "Activate TaskBoard"
+                        : "Archive TaskBoard"}
+                    </h3>
+                    <p>
+                      {open?.data?.isDelete ? (
+                        <span
+                          dangerouslySetInnerHTML={{
+                            __html: t(
+                              "Are you sure you want to <b>delete</b> this taskboard?<br/> deleting this taskboard will delete all the tasks associated with it."
+                            ),
+                          }}
+                        />
+                      ) : (
+                        <span
+                          dangerouslySetInnerHTML={{
+                            __html: t(
+                              `Are you sure you want to <b>${
+                                open?.data?.isArchived ? "activate" : "archive"
+                              }</b>`
+                            ),
+                          }}
+                        />
+                      )}
+                    </p>
+                  </div>
+                  <div className="modal-btn delete-action">
+                    <div className="row">
+                      <div className="col-6">
+                        <Button
+                          htmlType="submit"
+                          className="btn btn-primary continue-btn"
+                          onClick={() =>
+                            open?.data?.isDelete
+                              ? onHandleDelete(open?.data?._id, true)
+                              : onHandleDelete(open?.data?._id)
+                          }
+                          disabled={loader}
+                          style={{ width: "100%" }}
+                        >
+                          {loader ? (
+                            <Spin size="small" indicator={antIcon} />
+                          ) : open?.data?.isDelete ? (
+                            t("Delete")
+                          ) : open?.data?.isArchived ? (
+                            t("Activate")
+                          ) : (
+                            t("Archive")
+                          )}
+                        </Button>
+                      </div>
+                      <div className="col-6">
+                        <Button
+                          onClick={handleClose}
+                          className="btn btn-primary submit-btn"
+                          style={{ width: "100%" }}
+                        >
+                          {t("cancel")}
+                        </Button>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div className="submit-section">
-                  <Form.Item>
-                    <Button
-                      htmlType="submit"
-                      className="btn btn-primary submit-btn"
-                      disabled={loader}
-                    >
-                      {loader ? (
-                        <Spin size="small" indicator={antIcon} />
-                      ) : (
-                        t('submit')
-                      )}
-                    </Button>
-                  </Form.Item>
-                </div>
-              </Form>
-            </div>
-            
-            
-          </div>
-        </div>
-      </Modal>
-
-      {/* Update the delete modal content to handle both archive and delete cases */}
-      <Modal
-        open={open.isDelOpen}
-        onClose={handleClose}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
-        disableRestoreFocus
-        BackdropProps={{
-          style: { backgroundColor: "rgb(0 0 0 / 87%)" },
-        }}
-      >
-        <div className="modal-dialog modal-dialog-centered">
-          <div className="modal-content" style={{ height: "280px" }}>
-            <div
-              className="modal-body"
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-              }}
-            >
-              <div className="form-header">
-                <h3 style={{ marginBottom: "30px" }}>
-                  {open?.data?.isDelete ? 'Delete TaskBoard' : 
-                    open?.data?.isArchived ? 'Activate TaskBoard' : 'Archive TaskBoard'}
-                </h3>
-                <p>
-                  {open?.data?.isDelete ? (
-                    <span dangerouslySetInnerHTML={{ __html: t('Are you sure you want to <b>delete</b> this taskboard?') }} />
-                  ) : (
-                    <span dangerouslySetInnerHTML={{ __html: t(`Are you sure you want to <b>${open?.data?.isArchived ? 'activate' : 'archive'}</b>`) }} />
-                  )}
-                </p>
-              </div>
-              <div className="modal-btn delete-action">
-                <div className="row">
-                  <div className="col-6">
-                    <Button
-                      htmlType="submit"
-                      className="btn btn-primary continue-btn"
-                      onClick={() => open?.data?.isDelete ? onHandleDelete(open?.data?._id, true) : onHandleDelete(open?.data?._id)}
-                      disabled={loader}
-                      style={{ width: "100%" }}
-                    >
-                      {loader ? (
-                        <Spin size="small" indicator={antIcon} />
-                      ) : open?.data?.isDelete ? t('Delete') :
-                          open?.data?.isArchived ? t('Activate') : t('Archive')
-                      }
-                    </Button>
-                  </div>
-                  <div className="col-6">
-                    <Button
-                      onClick={handleClose}
-                      className="btn btn-primary submit-btn"
-                      style={{ width: "100%" }}
-                    >
-                      {t('cancel')}
-                    </Button>
-                  </div>
-                </div>
               </div>
             </div>
-          </div>
-        </div>
-      </Modal>
-
+          </Modal>
         </div>
       </div>
       <Offcanvas />

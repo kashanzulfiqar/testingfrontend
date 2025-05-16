@@ -26,6 +26,7 @@ import Select2 from "react-select";
 import styled from "styled-components";
 import { LoadingOutlined } from '@ant-design/icons';
 import { getAllISOCodes } from 'iso-country-currency';
+import { useTranslation } from "react-i18next";
 
 
 const options = [
@@ -35,6 +36,7 @@ const options = [
 
 const Registrationpage = (props) => {
   const [form] = Form.useForm();
+  const { t, i18n } = useTranslation();
   const [regValues, setRegValues] = useState({});
   const [adminValues, setAdminValues] = useState({ password: "" });
   const [current, setCurrent] = useState(0);
@@ -43,6 +45,12 @@ const Registrationpage = (props) => {
   const [compId, setCompId] = useState("");
   const [loader, setLoader] = useState(false)
   const [allCurrencies, setAllCurrencies] = useState([]);
+  const [countries, setCountries] = useState([]);
+  const [states, setStates] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [selectedCountry, setSelectedCountry] = useState(null);
+  const [selectedState, setSelectedState] = useState(null);
+  const [loadingLocations, setLoadingLocations] = useState(false);
 
   useEffect(() => {
     // Detect Safari using more robust feature detection (for both mobile and desktop)
@@ -74,6 +82,7 @@ const Registrationpage = (props) => {
   
   useEffect(() => {
     getAllCurrencies();
+    fetchCountries();
   }, [])
 
   const getAllCurrencies = () => {
@@ -94,10 +103,100 @@ const Registrationpage = (props) => {
     setAllCurrencies(sorted_data)
   };
 
+  const fetchCountries = async () => {
+    setLoadingLocations(true);
+    try {
+      const response = await fetch('https://countriesnow.space/api/v0.1/countries');
+      const data = await response.json();
+      if (data.data) {
+        const formattedCountries = data.data.map(country => ({
+          value: country.country,
+          label: country.country
+        }));
+        setCountries(formattedCountries);
+      }
+    } catch (error) {
+      message.error(t('settings.companySettings.errorFetchingCountries'));
+    }
+    setLoadingLocations(false);
+  };
+
+  const fetchStates = async (country) => {
+    setLoadingLocations(true);
+    try {
+      const response = await fetch('https://countriesnow.space/api/v0.1/countries/states', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ country }),
+      });
+      const data = await response.json();
+      if (data.data?.states) {
+        const formattedStates = data.data.states.map(state => ({
+          value: state.name,
+          label: state.name
+        }));
+        setStates(formattedStates);
+      }
+    } catch (error) {
+      message.error(t('settings.companySettings.errorFetchingStates'));
+    }
+    setLoadingLocations(false);
+  };
+
+  const fetchCities = async (country, state) => {
+    setLoadingLocations(true);
+    try {
+      const response = await fetch('https://countriesnow.space/api/v0.1/countries/state/cities', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ country, state }),
+      });
+      const data = await response.json();
+      if (data.data) {
+        const formattedCities = data.data.map(city => ({
+          value: city,
+          label: city
+        }));
+        setCities(formattedCities);
+      }
+    } catch (error) {
+      message.error(t('settings.companySettings.errorFetchingCities'));
+    }
+    setLoadingLocations(false);
+  };
+
+  const handleCountryChange = (value) => {
+    form.setFieldsValue({ state: undefined, city: undefined });
+    setSelectedCountry(value);
+    setSelectedState(null);
+    setStates([]);
+    setCities([]);
+    if (value) {
+      fetchStates(value);
+    }
+  };
+
+  const handleStateChange = (value) => {
+    form.setFieldsValue({ city: undefined });
+    setSelectedState(value);
+    setCities([]);
+    if (value && selectedCountry) {
+      fetchCities(selectedCountry, value);
+    }
+  };
+
   const next = () => {
+    console.log("Moving to next step. Current step:", current);
+    console.log("Company ID before transition:", compId);
     setCurrent(current + 1);
   };
   const prev = () => {
+    console.log("Moving to previous step. Current step:", current);
+    console.log("Company ID before transition:", compId);
     setCurrent(current - 1);
   };
 
@@ -218,19 +317,39 @@ const Registrationpage = (props) => {
 
   const onRegFinish = (values) => {
     setLoader(true)
+    console.log("Starting company registration with values:", values);
+    
     apiServices("POST", "company/addcompany", values)
       .then((res) => {
         if (res?.data?.success) {
-          setLoader(false)
-          // console.log("values==", values, "handleChange----", regValues);
-          // console.log("res======", res?.data);
-          setCompId(res?.data?.Company?._id);
+          console.log("Company registration API response:", res.data);
+          
+          // Get company ID from the correct path in response
+          const newCompanyId = res?.data?.data?.companyId;
+          console.log("New Company ID received:", newCompanyId);
+          
+          if (!newCompanyId) {
+            console.error("Company ID not found in response");
+            setLoader(false);
+            message.error("Error getting company ID. Please try again.");
+            return;
+          }
+          
+          // Update state and proceed
+          setCompId(newCompanyId);
+          setLoader(false);
           message.success("Company Registered Successfully!");
-          next();
-          window.scrollTo(0, 0);
+          
+          // Use the ID directly from response rather than state
+          setTimeout(() => {
+            console.log("Moving to admin registration with company ID:", newCompanyId);
+            next();
+            window.scrollTo(0, 0);
+          }, 100);
         }
       })
       .catch((err) => {
+        console.error("Company registration error:", err);
         setLoader(false)
         message.error(
           `${
@@ -243,16 +362,31 @@ const Registrationpage = (props) => {
         );
       });
   };
+
   const onAdminFinish = (values) => {
     setLoader(true)
-    let data = {
+    console.log("Starting admin registration. Current step:", current);
+    console.log("Company ID at admin registration:", compId);
+    
+    if (!compId) {
+      console.error("Company ID missing at admin registration");
+      setLoader(false);
+      message.error("Company registration incomplete. Please try registering the company again.");
+      setCurrent(0);
+      return;
+    }
+
+    const data = {
       ...values,
       role: 'admin',
-      companyId: `${compId}`,
+      companyId: compId
     };
+
+    console.log("Sending admin signup request with data:", data);
 
     apiServices("POST", "user/admin-signup", data, null)
       .then((res) => {
+        console.log("Admin registration API response:", res.data);
         if (res?.data?.success) {
           setLoader(false)
           message.success("Admin Account Created Successfully!");
@@ -260,6 +394,7 @@ const Registrationpage = (props) => {
         }
       })
       .catch((err) => {
+        console.error("Admin registration error:", err);
         setLoader(false)
         message.error(
           `${
@@ -559,124 +694,104 @@ const Registrationpage = (props) => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                  City <span className="text-danger">*</span>
+                {t('settings.companySettings.country')} <span className="text-danger">*</span>
                 </label>
-                <Form.Item
-                  name="city"
-                  rules={[
-                    {
-                      whitespace: true,
-                      required: true,
-                      validator: (_, value) => {
-                        if(!value || value?.trim() === ''){
-                          return Promise.reject("please enter city name");
-                        }
-                        else if (/\s{2,}/.test(value)) {
-                          return Promise.reject("please remove consecutive spaces");
-                        }
-                        return Promise.resolve();
-                      },
-                    },
-                    {
-                      min: 3,
-                      message: "city length must be at least 3 characters long",
-                    },
-                  ]}
-                >
-                  <Input style={{ display: "none" }} value={regValues?.city} />
-                  <input
-                    className="form-control"
-                    onInput={(e) => {
-                      onHandleRegChange("city", e.target.value);
-                    }}
-                    maxLength={50}
-                  />
-                </Form.Item>
-              </div>
-            </div>
-            <div className="col-sm-6">
-              <div className="form-group">
-                <label className="col-form-label">
-                  State <span className="text-danger">*</span>
-                </label>
-                <Form.Item
-                  name="state"
-                  rules={[
-                    {
-                      whitespace: true,
-                      required: true,
-                      validator: (_, value) => {
-                        if(!value || value?.trim() === ''){
-                          return Promise.reject("please enter state name");
-                        }
-                        else if (/\s{2,}/.test(value)) {
-                          return Promise.reject("please remove consecutive spaces");
-                        }
-                        return Promise.resolve();
-                      },
-                    },
-                    {
-                      min: 2,
-                      message: "state length must be at least 2 characters long",
-                    },
-                  ]}
-                >
-                  <Input style={{ display: "none" }} value={regValues?.state} />
-                  <input
-                    className="form-control"
-                    onInput={(e) => {
-                      onHandleRegChange("state", e.target.value);
-                    }}
-                    maxLength={50}
-                  />
-                </Form.Item>
-              </div>
-            </div>
-            <div className="col-sm-6">
-              <div className="form-group">
-                <label className="col-form-label">
-                  Country <span className="text-danger">*</span>
-                </label>
+                <div style={{ position: "relative" }} id="area">
                 <Form.Item
                   name="country"
+                  className="custom-border"
                   rules={[
                     {
-                      whitespace: true,
                       required: true,
-                      validator: (_, value) => {
-                        if(!value || value?.trim() === ''){
-                          return Promise.reject("please enter country name");
-                        }
-                        else if (/\s{2,}/.test(value)) {
-                          return Promise.reject("please remove consecutive spaces");
-                        }
-                        return Promise.resolve();
-                      },
-                    },
-                    {
-                      min: 3,
-                      message: "country length must be at least 3 characters long",
-                    },
+                      message: t('settings.companySettings.pleaseSelectCountry')
+                    }
                   ]}
                 >
-                  <Input
-                    style={{ display: "none" }}
-                    value={regValues?.country}
-                  />
-                  <input
-                    className="form-control"
-                    onInput={(e) => {
-                      onHandleRegChange("country", e.target.value);
-                    }}
-                    maxLength={50}
+                  <Select
+                    showSearch
+                    placeholder={t('settings.companySettings.selectCountry')}
+                    loading={loadingLocations}
+                    onChange={handleCountryChange}
+                    filterOption={(input, option) =>
+                      option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    }
+                    options={countries}
+                    style={{ width: '100%' }}
+                    className="custom-select custom-normal"
                   />
                 </Form.Item>
+                </div>
               </div>
             </div>
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                  Company Email <span className="text-danger">*</span>
+                {t('settings.companySettings.state')} <span className="text-danger">*</span>
+                </label>
+                <div style={{ position: "relative" }} id="area">
+                <Form.Item
+                  name="state"
+                  className="custom-border"
+                  rules={[
+                    {
+                      required: true,
+                      message: t('settings.companySettings.pleaseSelectState')
+                    }
+                  ]}
+                >
+                  <Select
+                    showSearch
+                    placeholder={t('settings.companySettings.selectState')}
+                    loading={loadingLocations}
+                    onChange={handleStateChange}
+                    filterOption={(input, option) =>
+                      option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    }
+                    options={states}
+                    disabled={!selectedCountry}
+                    style={{ width: '100%' }}
+                    className="custom-select custom-normal"
+                  />
+                </Form.Item>
+                </div>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
+                {t('settings.companySettings.city')} <span className="text-danger">*</span>
+                </label>
+                <div style={{ position: "relative" }} id="area">
+                <Form.Item
+                  name="city"
+                  className="custom-border"
+                  rules={[
+                    {
+                      required: true,
+                      message: t('settings.companySettings.pleaseSelectCity')
+                    }
+                  ]}
+                >
+                  <Select
+                    showSearch
+                    placeholder={t('settings.companySettings.selectCity')}
+                    loading={loadingLocations}
+                    filterOption={(input, option) =>
+                      option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    }
+                    options={cities}
+                    disabled={!selectedState}
+                    style={{ width: '100%' }}
+                    className="custom-select custom-normal"
+                  />
+                </Form.Item>
+                </div>
+              </div>
+            </div>
+            <div className="col-sm-6">
+              <div className="form-group">
+                <label className="col-form-label">
+                {t('settings.companySettings.companyEmail')} <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="companyEmail"
@@ -714,7 +829,7 @@ const Registrationpage = (props) => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                  Registration No <span className="text-danger">*</span>
+                {t('settings.companySettings.registrationNo')} <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="companyRegistrationNo"
@@ -758,7 +873,7 @@ const Registrationpage = (props) => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                  Phone Number <span className="text-danger">*</span>
+                {t('settings.companySettings.phoneNumber')} <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="companyPhoneNo"
@@ -790,7 +905,7 @@ const Registrationpage = (props) => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                  Mobile Number <span className="text-danger">*</span>
+                {t('settings.companySettings.mobileNumber')} <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="mobileNumber"
@@ -827,7 +942,7 @@ const Registrationpage = (props) => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                  Website <span className="text-danger">*</span>
+                {t('settings.companySettings.website')} <span className="text-danger">*</span>
                 </label>
                 <Form.Item
                   name="website"
@@ -868,7 +983,7 @@ const Registrationpage = (props) => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                  Fax
+                    {t('settings.companySettings.fax')}
                 </label>
                 <Form.Item
                   name="fax"

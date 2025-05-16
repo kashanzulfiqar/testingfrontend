@@ -36,6 +36,7 @@ import { apiServices } from "../../../Services/apiServices.js";
 import { getAllISOCodes } from "iso-country-currency";
 import { LoadingOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
+import { NotificationBox } from "./stripeNotification.jsx";
 
 const amountFormatter = (value) => {
   // Handle zero separately
@@ -656,8 +657,9 @@ const AdminDashboard = () => {
             <title>{t("aDash.pageTitle")}</title>
             <meta name="description" content="Dashboard" />
           </Helmet>
-          {/* Page Content */}
+          {/* Page Content */}<NotificationBox user_state={user_state} />
           <div className="content container-fluid">
+          
             {/* Page Header */}
             <div className="page-header">
               <div className="row">
@@ -956,9 +958,9 @@ const AdminDashboard = () => {
                 We only change these columns from col-md-6 to col-xl-3 col-lg-3 col-md-6 col-sm-12 to line them in 1 row. ===== */}
             <div className="row">
               <div className="col-md-12">
-                <div className="row g-0">
+                <div className="row">
                   {/* NEW EMPLOYEES */}
-                  <div className="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+                  <div className="col-xl-3 col-lg-6 col-md-6 col-sm-12">
                     <div
                       className="card"
                       dir="ltr"
@@ -1020,7 +1022,7 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                   {/* EARNINGS */}
-                  <div className="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+                  <div className="col-xl-3 col-lg-6 col-md-6 col-sm-12">
                     <div
                       className="card"
                       dir="ltr"
@@ -1092,7 +1094,7 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                   {/* EXPENSES */}
-                  <div className="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+                  <div className="col-xl-3 col-lg-6 col-md-6 col-sm-12">
                     <div
                       className="card"
                       dir="ltr"
@@ -1164,7 +1166,7 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                   {/* PROFIT */}
-                  <div className="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+                  <div className="col-xl-3 col-lg-6 col-md-6 col-sm-12">
                     <div
                       className="card"
                       dir="ltr"
@@ -1435,7 +1437,7 @@ const AdminDashboard = () => {
                       <>
                         <div className="progress mb-4">
                           <div
-                            className="progress-bar bg-purple"
+                            className="progress-bar bg-success"
                             role="progressbar"
                             style={{
                               width: `${allData?.statistics?.percentCompletedTasks}%`,
@@ -1463,7 +1465,7 @@ const AdminDashboard = () => {
                             {allData?.statistics?.percentInProgressTasks}%
                           </div>
                           <div
-                            className="progress-bar bg-success"
+                            className="progress-bar bg-purple"
                             role="progressbar"
                             style={{
                               width: `${allData?.statistics?.percentToDoTasks}%`,

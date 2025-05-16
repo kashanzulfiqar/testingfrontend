@@ -146,7 +146,7 @@ const LeaveEmployee = () => {
                   {
                     text === 'sick' ? 'Sick Leave' : text === 'wfh' ? 'Work From Home' : text === 'casual' ? 'Casual Leave' : text === 'bereavement' ? 'Bereavement Leave' : 
                     text === 'marriage' ? 'Marriage Leave' : text === 'maternity' ? 'Maternity Leave' : text === 'paternity' ? 'Paternity Leave' : text === 'annual' ? 'Annual Leave' : 
-                    text === 'half' ? 'Half Leave' : text === 'unpaid' ? 'Unpaid Leave' : ''
+                    text === 'half' ? 'Half Leave' : text === 'Unpaid' ? 'Unpaid Leave' : ''
                   }
                 </>
             )},
@@ -433,9 +433,9 @@ const leaves = [
           }
       }
 
-      const onHandleDelete = (id) => {
+      const onHandleDelete = (Data) => {
         setLoader(true)
-        apiServices("DELETE", "requests", id, user_state)
+        apiServices("DELETE", "requests", Data, user_state)
           .then((res) => {
             // console.log(res?.data);
             if (res?.data?.success === true) {
@@ -444,7 +444,7 @@ const leaves = [
               // setPaginationDetail(prev => prev-1)
               setData(
                 data.map((req) => {
-                  if (req._id === id) {
+                  if (req._id === Data?._id) {
                     return {
                       ...req,
                       status: 'Cancelled'
@@ -871,6 +871,36 @@ const leaves = [
                     <Input.TextArea rows={3} disabled={open?.data?.status === 'Approved' || open?.data?.status === 'Declined' || open?.data?.status === 'Cancelled'} className={(open?.data?.status === 'Approved' || open?.data?.status === 'Declined' || open?.data?.status === 'Cancelled') ? 'dateDisable form-control' : 'form-control'} onChange={(e) => setReasonLength(e.target.value.length)} maxLength={150} />
                   </Form.Item>
                 </div>
+                { (open?.data?.status === 'Declined') ? (
+                <div className="form-group">
+                  <label style={{display: 'flex', justifyContent: 'space-between'}}>
+                    <div>{t('requests.declineReason')} <span className="text-danger">*</span></div>
+                  </label>
+                  <Form.Item
+                    name="declineReason"
+                    // rules={[
+                    //   {
+                    //     whitespace: true,
+                    //     required: true,
+                    //     validator: (_, value) => {
+                    //       if(!value || value.trim() === ''){
+                    //         return Promise.reject(t('requests.errors.pleaseEnterReason'));
+                    //       }
+                    //       else if (/\s{2,}/.test(value)) {
+                    //         return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
+                    //       }
+                    //       else if (value.length < 5) {
+                    //         return Promise.reject(t('requests.errors.reasonLengthMin'));
+                    //       }
+                    //       return Promise.resolve();
+                    //     },
+                    //   },
+                    // ]}
+                    className="custom-border"
+                  >
+                    <Input.TextArea rows={3} className="dateDisable form-control" disabled />
+                  </Form.Item>
+                </div>) : null }
                 {
                   !(open?.data?.status === 'Approved' || open?.data?.status === 'Declined' || open?.data?.status === 'Cancelled') && 
                   
@@ -1041,7 +1071,7 @@ const leaves = [
                     <Button
                       htmlType="submit"
                       className="btn btn-primary continue-btn"
-                      onClick={() => onHandleDelete(open?.data?._id)}
+                      onClick={() => onHandleDelete(open?.data)}
                       disabled={loader}
                       style={{width: '100%'}}
                     >

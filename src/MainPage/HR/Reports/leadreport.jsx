@@ -60,7 +60,7 @@ const LeadReport = () => {
             ...new Set(leads.map((lead) => moment(lead.reachOut).year())),
           ].sort((a, b) => b - a); // Sort in descending order
 
-          setAvailableYears(years);
+          setAvailableYears([...years, '2024', '2023', '2022', '2021']);
           // Set selected year to most recent year with data
           if (years.length > 0) {
             setSelectedYear(years[0]);

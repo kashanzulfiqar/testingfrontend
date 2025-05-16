@@ -187,7 +187,7 @@
     "projects": "المشاريع",
     "clients": "العملاء",
     "tasks": "المهام",
-    "leads": "Active Leads",
+    "leads": "العملاء المحتملين النشطين",
     "employees": "الموظفين",
     "totalRevenue": "إجمالي الإيرادات",
     "salesOverview": "نظرة عامة على المبيعات",
@@ -497,6 +497,7 @@
     "noOfDays": "عدد الأيام",
     "reason": "السبب",
     "approvedBy": "تمت الموافقة من قبل",
+    "declineReason": "سبب الرفض",
     "addModal": {
       "request": "طلب",
       "requestType": "نوع الطلب",
@@ -558,11 +559,17 @@
       "annual": "سنوي",
       "wfh": "WFH"
     },
+    "declineModal": {
+      "title": "رفض الطلب",
+      "reason": "سبب الرفض",
+      "placeholder": "يرجى إدخال سبب رفض الطلب"
+    },
     "errors": {
       "leaveRequestUpdated": "تم تحديث طلب الإجازة إلى {{newStatus}}",
       "failedToUpdateLeaveRequest": "فشل تحديث حالة طلب الإجازة",
       "noRecordFound": "لم يتم العثور على سجل!",
-      "bothStartEndDateRequired": "كل من تاريخ البداية والنهاية مطلوبين"
+      "bothStartEndDateRequired": "كل من تاريخ البداية والنهاية مطلوبين",
+      "declineReasonRequired": "من فضلك قدم سببًا لرفض الطلب"
     }
   },
   "empProfile": {
@@ -574,6 +581,9 @@
     "address": "العنوان",
     "gender": "الجنس",
     "salary": "الراتب",
+    "salaryFrom": "الراتب من",
+    "salaryTo": "الراتب إلى",
+    "incrementHistory": "تاريخ الزيادات",
     "reportsTo": "التقارير لـ",
     "projects": "المشاريع",
     "bankAndStatutory": "البنك والشرعية",
@@ -878,12 +888,12 @@
     "submitUpdates": "تقديم التحديثات",
     "viewTimesheetError": "خطأ في عرض الجدول الزمني!",
     "getAllTasksError": "خطأ في الحصول على جميع المهام",
-    "timesheetAddedSuccessfully": "تمت إضافة الجدول الزمني بنجاح!",
-    "addTimesheetError": "خطأ في إضافة الجدول الزمني",
-    "timesheetUpdatedSuccessfully": "تم تحديث الجدول الزمني بنجاح!",
-    "updateTimesheetError": "خطأ في تحديث الجدول الزمني",
-    "timesheetDeletedSuccessfully": "تم حذف الجدول الزمني بنجاح!",
-    "deleteTimesheetError": "خطأ في حذف الجدول الزمني",
+    "timesheetAddedSuccessfully": "تمت إضافة الإدخال بنجاح!",
+    "addTimesheetError": "خطأ في إضافة الإدخال",
+    "timesheetUpdatedSuccessfully": "تم تحديث الإدخال بنجاح!",
+    "updateTimesheetError": "خطأ في تحديث الإدخال",
+    "timesheetDeletedSuccessfully": "تم حذف الإدخال بنجاح!",
+    "deleteTimesheetError": "خطأ في حذف الإدخال",
     "timesheetSubmittedSuccessfully": "تم تقديم الجدول الزمني بنجاح!",
     "submitTimesheetError": "خطأ في تقديم الجدول الزمني",
     "taskDurationCannotBeZero": "لا يمكن أن يكون مدة المهمة صفرًا",
@@ -891,8 +901,8 @@
     "dataAlreadyExistError": "البيانات موجودة بالفعل لهذا المشروع والمهمة!",
     "taskDurationZeroError": "لا يمكن أن تكون مدة المهمة صفرًا!",
     "row": "الصف",
-    "deleteTimesheet": "حذف الجدول الزمني",
-    "confirmDeleteTimesheet": "هل أنت متأكد أنك تريد حذف الجدول الزمني؟"
+    "deleteTimesheet": "حذف الإدخال",
+    "confirmDeleteTimesheet": "هل أنت متأكد أنك تريد حذف الإدخال؟"
   },
   "Timesheetadmin": {
     "timesheetTitle": "ورقة الحضور - دفتربرو",
@@ -944,11 +954,14 @@
     "addtask": "إضافة مهمة",
     "title": "العنوان",
     "project": "المشروع",
+    "taskboard":"لوحة المهام",
     "selectproject": "اختر المشروع",
+    "selecttaskboard":"اختر لوحة المهام",
     "tags": "العلامات",
     "description": "الوصف",
     "pleaseentertitle": "يرجى إدخال العنوان",
     "pleaseselectproject": "يرجى تحديد المشروع",
+    "pleaseselecttaskboard":"يرجى اختيار لوحة المهام",
     "pleaseentertags": "يرجى إدخال العلامات",
     "pleaseenterdescription": "يرجى إدخال الوصف",
     "taginstruction": "لإنشاء علامة، اضغط على زر الإدخال بعد الكتابة",
@@ -1285,6 +1298,9 @@
       "city": "المدينة",
       "state": "الولاية",
       "country": "البلد",
+      "selectCountry": "اختر الدولة",
+      "selectState": "اختر الولاية",
+      "selectCity": "اختر المدينة",
       "companyEmail": "البريد الإلكتروني للشركة",
       "registrationNo": "رقم التسجيل",
       "phoneNumber": "رقم الهاتف",
@@ -1297,9 +1313,9 @@
       "pleaseEnterAddress": "يرجى إدخال العنوان",
       "pleaseEnterPostalCode": "يرجى إدخال الرمز البريدي",
       "validEmail": "الرجاء إدخال بريد إلكتروني صالح",
-      "pleaseEnterCityName": "يرجى إدخال اسم المدينة",
-      "pleaseEnterStateName": "يرجى إدخال اسم الولاية",
-      "pleaseEnterCountryName": "يرجى إدخال اسم البلد",
+      "pleaseSelectCity": "يرجى اختيار مدينة",
+      "pleaseSelectState": "يرجى اختيار ولاية",
+      "pleaseSelectCountry": "يرجى اختيار دولة",
       "pleaseEnterCompanyEmail": "يرجى إدخال بريد الشركة الإلكتروني",
       "pleaseEnterRegistrationNo": "يرجى إدخال رقم التسجيل",
       "pleaseEnterPhoneNumber": "يرجى إدخال رقم الهاتف",
@@ -1308,7 +1324,10 @@
       "pleaseEnterFax": "يرجى إدخال الفاكس",
       "companyInfoError": "خطأ في الحصول على معلومات الشركة",
       "companySettingsUpdated": "تم تحديث إعدادات الشركة بنجاح!",
-      "updateCompanyInfoError": "خطأ في تحديث معلومات الشركة"
+      "updateCompanyInfoError": "خطأ في تحديث معلومات الشركة",
+      "errorFetchingCountries": "حدث خطأ أثناء جلب الدول",
+      "errorFetchingStates": "حدث خطأ أثناء جلب الولايات",
+      "errorFetchingCities": "حدث خطأ أثناء جلب المدن"
     },
     "LeaveSettings": {
       "leaveSettings": "إعدادات الإجازة",
@@ -1475,5 +1494,16 @@
       "taxStatusUpdated": "تم تحديث حالة الضريبة إلى {{newStatus}}",
       "failedToUpdateTaxStatus": "فشل في تحديث حالة الضريبة"
     }
+  },
+  "payment": {
+    "setupTitle": "إعداد الدفع",
+    "setupDescription": "يرجى إضافة طريقة دفع للاستمرار في استخدام النظام",
+    "setupRequired": "مطلوب إعداد الدفع",
+    "cardDetails": "تفاصيل البطاقة",
+    "addPaymentMethod": "إضافة طريقة دفع",
+    "stripeNotLoaded": "نظام الدفع غير جاهز بعد. يرجى المحاولة مرة أخرى.",
+    "setupSuccess": "تمت إضافة طريقة الدفع بنجاح",
+    "setupFailed": "فشل في حفظ طريقة الدفع",
+    "processingError": "فشل في معالجة إعداد الدفع"
   }
 }
