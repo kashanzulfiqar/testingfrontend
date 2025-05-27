@@ -90,6 +90,14 @@ import RefundPolicy from "../LandingPage/refundPolicy";
 import TermsAndConditions from "../LandingPage/TermsConditions";
 import ClientForgotPassword from "./ClientForgotPassword";
 import ClientResetPassword from "./ClientResetPassword";
+import Recruitment from "../MainPage/Recruitment";
+import RecruitmentLayout from '../MainPage/Recruitment/RecruitmentLayout';
+import RecruitmentDashboard from '../MainPage/Recruitment/Dashboard';
+import Jobs from '../MainPage/Recruitment/Jobs';
+import JobDetails from "../MainPage/Recruitment/JobDetails";
+import EditJob from "../MainPage/Recruitment/EditJob";
+import Interviews from '../MainPage/Recruitment/Interviews';
+import PublicInterviewPage from '../MainPage/Recruitment/PublicInterviewPage';
 import TaskDetails from "../MainPage/Employees/Projects/taskDetail.jsx";
 import PaymentSetup from "../MainPage/Pages/Payment/PaymentSetup";
 import Billing from "../MainPage/Pages/Billing/Billing.jsx";
@@ -188,8 +196,11 @@ const App = () => {
         <Route path="/reset/:token" element={<AdminResetPassword />} />
         <Route path="/register" element={<RegistrationPage />} />
 
+        {/* Public Interview Page - No authentication required */}
+        <Route path="/interview/public/:token" element={<PublicInterviewPage />} />
         {/* <Route path="/app/*" element={<DefaultLayout />} /> */}
 
+        {/* Protected Routes */}
         {/* <Route element={<Layout />}> */}
         <Route
           path="/"
@@ -309,6 +320,21 @@ const App = () => {
 
           <Route path="/attendance-report" element={<AttendanceReport />} />
           <Route path="/lead-report" element={<LeadReport />} />
+          <Route path="/recruitment/*" element={
+            <RecruitmentLayout>
+              <Routes>
+                <Route path="/" element={<Navigate to="/recruitment/dashboard" replace />} />
+                <Route path="dashboard" element={<RecruitmentDashboard />} />
+                <Route path="jobs" element={<Jobs />} />
+                <Route path="jobs/:jobId" element={<JobDetails />} />
+                <Route path="jobs/:jobId/edit" element={<EditJob />} />
+                <Route path="candidates" element={<div>Candidates Page</div>} />
+                <Route path="interviews" element={<Interviews />} />
+                <Route path="offers" element={<div>Offers Page</div>} />
+                <Route path="settings" element={<div>Settings Page</div>} />
+              </Routes>
+            </RecruitmentLayout>
+          } />
 
           {/* <Link to={`/projects/projects-view/${record?._id}`} style={{color: '#333333'}}>
           <label style={{cursor: 'pointer'}} className="longText">{text}</label>

@@ -12,6 +12,7 @@ import {
 } from "@ant-design/icons";
 import { loginSuccess } from "../../../Entryfile/features/users";
 import { useTranslation } from "react-i18next";
+import { Spin } from "antd";
 
 const PaymentSetup = () => {
   const { t } = useTranslation();
@@ -157,6 +158,16 @@ const PaymentSetup = () => {
     hidePostalCode: true,
   };
 
+  const antIcon = (
+    <LoadingOutlined
+      style={{
+        fontSize: 24,
+        color: "#fff",
+      }}
+      spin
+    />
+  );
+
   return (
     <div className="payment-setup-page">
       <Helmet>
@@ -199,10 +210,7 @@ const PaymentSetup = () => {
               className="btn btn-primary submit-btn"
             >
               {loading ? (
-                <>
-                  <LoadingOutlined spin />
-                  <span>{t("payment.processing")}</span>
-                </>
+                <Spin size="small" indicator={antIcon} />
               ) : (
                 t("payment.addPaymentMethod")
               )}

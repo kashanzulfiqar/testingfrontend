@@ -2292,6 +2292,51 @@ const Sidebar = (props) => {
                     )}
                     {/* <Link to="/app/employees/leads"><i className="la la-user-secret" /> <span>Leads</span> </Link> */}
                   </li>
+                  <li className="submenu">
+                    <a
+                      href="javascript:"
+                      className={isSideMenu == "recruitment" ? "subdrop" : ""}
+                      onClick={() => toggleSidebar(isSideMenu == "recruitment" ? "" : "recruitment")}
+                    >
+                      <i className="la la-users" /> <span>Recruitment</span>{" "}
+                      <span className="menu-arrow" />
+                    </a>
+                    {isSideMenu == "recruitment" ? (
+                      <ul>
+                        <li>
+                          <Link
+                            className={pathname.includes("recruitment/dashboard") ? "active" : ""}
+                            to="/recruitment/dashboard"
+                          >
+                            Dashboard
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            className={pathname.includes("recruitment/interviews") ? "active" : ""}
+                            to="/recruitment/interviews"
+                          >
+                            Interviews
+                          </Link>
+                        </li>
+                      </ul>
+                    ) : (
+                      ""
+                    )}
+                  </li>
+                  <li
+                    className={
+                      pathname.includes("tickets")
+                        ? "active"
+                        : pathname.includes("ticket-view")
+                        ? "active"
+                        : ""
+                    }
+                  >
+                    <Link to="/app/employees/tickets">
+                      <i className="la la-ticket" /> <span>Tickets</span>{" "}
+                    </Link>
+                  </li>
                   {/* <li className={pathname.includes('tickets') ? "active" : pathname.includes('ticket-view') ? "active" : ""}>
                 {
                   (user_state?.role === 'client' || user_state?.role === 'focalperson') ? 
