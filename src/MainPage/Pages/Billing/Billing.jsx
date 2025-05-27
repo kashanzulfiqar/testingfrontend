@@ -354,9 +354,9 @@ const Billing = () => {
                     <div className="summary-row">
                       <span className="label">Discount</span>
                       <span className="value">
-                        {currentInvoice.discount !== null
-                          ? `${(currentInvoice.discount / 100).toFixed(2)}`
-                          : "-"}
+                        {typeof currentInvoice.discount === "number"
+                          ? (currentInvoice.discount / 100).toFixed(2)
+                          : "0"}
                       </span>
                     </div>
                     <div className="summary-row">
