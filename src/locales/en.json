@@ -479,7 +479,8 @@
     "projectManagement": "Project Management",
     "expenseManagement": "Expense Management",
     "timesheetManagement": "Timesheet Management",
-    "reportManagement": "Report Management"
+    "reportManagement": "Report Management",
+    "manageStripe": "Manage Stripe"
   },
   "requests": {
     "pageTitle": "Requests - DaftarPro",
