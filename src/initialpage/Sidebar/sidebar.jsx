@@ -2792,8 +2792,7 @@ const Sidebar = (props) => {
                 }
                 </li> */}
                   {(user_state?.role === "admin" ||
-                    permissions?.companyManagement) && (
-                    <>
+                    permissions?.stripeManagement) && (
                     <li
                       className={pathname.includes("/subscription-details") ? "active" : ""}
                     >
@@ -2802,7 +2801,10 @@ const Sidebar = (props) => {
                         <span>Subscription Details</span>
                       </Link>
                     </li>
-                    <li
+                  )}
+                  {(user_state?.role === "admin" ||
+                    permissions?.companyManagement) && (
+                  <li
                       className={pathname.includes("/settings") ? "active" : ""}
                     >
                       <Link to="/settings">
@@ -2810,7 +2812,6 @@ const Sidebar = (props) => {
                         <span>{t("sideBar.settings")}</span>
                       </Link>
                     </li>
-                    </>
                   )}
                 </ul>
               )}

@@ -204,7 +204,7 @@ const PaymentSetup = () => {
             {error && <p className="text-danger">{error}</p>}
 
             <button
-              style={{display: "block", justifySelf: "center"}}
+              style={{ display: "block", justifySelf: "center" }}
               type="submit"
               disabled={!stripe || loading}
               className="btn btn-primary submit-btn"

@@ -478,7 +478,8 @@
     "projectManagement": "إدارة المشاريع",
     "expenseManagement": "إدارة المصروفات",
     "timesheetManagement": "إدارة الجدول الزمني",
-    "reportManagement": "إدارة التقارير"
+    "reportManagement": "إدارة التقارير",
+    "manageStripe": "إدارة السترايب"
   },
   "requests": {
     "pageTitle": "الطلبات - دفتربرو",
