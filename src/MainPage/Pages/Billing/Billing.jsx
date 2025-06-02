@@ -23,11 +23,14 @@ import {
 } from "antd";
 import { Helmet } from "react-helmet";
 import { Modal } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 const Billing = () => {
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const stripe = useStripe();
   const elements = useElements();
+  const permissions = useSelector((state) => state?.permissionsSlice?.data);
   const user_state = useSelector((state) => state.user.loginvalue);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -51,24 +54,28 @@ const Billing = () => {
   });
   useEffect(() => {
     const fetchBillingData = async () => {
-      try {
-        const cardRes = await apiServices(
-          "GET",
-          `payment/card-details/?userId=${userId}`,
-          null,
-          user_state
-        );
-        setCardDetails(cardRes.data.data);
+      if (user_state?.user?.role === "admin" || permissions?.stripeManagement) {
+        try {
+          const cardRes = await apiServices(
+            "GET",
+            `payment/card-details/?userId=${userId}`,
+            null,
+            user_state
+          );
+          setCardDetails(cardRes.data.data);
 
-        const currentInvoiceRes = await apiServices(
-          "GET",
-          `payment/upcoming-invoice?companyId=${companyId}`,
-          null,
-          user_state
-        );
-        setCurrentInvoice(currentInvoiceRes.data);
-      } catch (err) {
-        console.error("Error fetching billing data:", err);
+          const currentInvoiceRes = await apiServices(
+            "GET",
+            `payment/upcoming-invoice?companyId=${companyId}`,
+            null,
+            user_state
+          );
+          setCurrentInvoice(currentInvoiceRes.data);
+        } catch (err) {
+          console.error("Error fetching billing data:", err);
+        }
+      } else {
+        navigate("/restricted", { state: { unAuthorize: true } });
       }
     };
 
