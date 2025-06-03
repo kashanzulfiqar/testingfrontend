@@ -8,6 +8,7 @@ import { apiServices } from '../Services/apiServices';
 import Header from '../initialpage/Sidebar/header';
 import Sidebar from '../initialpage/Sidebar/sidebar';
 import PaymentSetup from '../MainPage/Pages/Payment/PaymentSetup';
+import DaftarProLogo from '../files/Icons/DaftraProLogo.svg';
 
 const RequireAuth = ({Role}) => {
     const nav = useNavigate();
@@ -28,6 +29,13 @@ const RequireAuth = ({Role}) => {
     const [isLoading, setIsLoading] = useState(true);
     const [isCheckingSubscription, setIsCheckingSubscription] = useState(false);
 
+    const handleLogout = () => {
+      localStorage.clear();
+      sessionStorage.clear();
+      dispatch(loginSuccess(null));
+      nav("/login", { replace: true });
+    };
+
     // Enhanced Debug logs
     useEffect(() => {
       if (value?.user) {
@@ -43,7 +51,7 @@ const RequireAuth = ({Role}) => {
     useEffect(() => {
       const fetchSubscriptionStatus = async () => {
         // Only fetch for admin users and if we haven't checked yet
-        if (role === 'admin' && !isCheckingSubscription && !hasCheckedSubscriptionRef.current) {
+        if (!isCheckingSubscription && !hasCheckedSubscriptionRef.current) {
           try {
             setIsCheckingSubscription(true);
             console.log('Fetching subscription status for admin...');
@@ -135,6 +143,46 @@ const RequireAuth = ({Role}) => {
 
     if (!AuthRole) {
       return <Navigate to='/login' replace={true} />;
+    }
+
+    // Check for non-admin roles with incomplete subscription
+    if (role === '' && companyDetails?.subscriptionStatus === 'incomplete') {
+      return (
+        <div style={{padding: '20px 0px'}}>
+          <div className="account-logo pt-3 pb-2" style={{ textAlign: 'center' }}>
+            <img src={DaftarProLogo} alt="DaftarPro" />
+          </div>
+          <div className="account-content" style={{ 
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <div className="container">
+              {/* Account Logo */}
+              <div className="account-box" style={{ width: '100%', maxWidth: '514px', height: 'auto', paddingInline: '55px', margin: '0 auto' }}>
+                <div className="account-wrapper">
+                  {/* <h3 className="account-title" style={{ padding: '17px 0px 40px 0px' }}>Subscription Status</h3> */}
+                  <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+                    <h2 style={{ color: '#333', marginBottom: '15px' }}>Subscription Cancelled</h2>
+                    <p style={{ color: '#666', fontSize: '16px', lineHeight: '1.5' }}>
+                      Please contact your administrator to activate the subscription.
+                    </p>
+                  </div>
+                  <div className="form-group text-center" style={{ marginTop: '35px' }}>
+                    <button
+                      className="btn btn-primary account-btn"
+                      onClick={handleLogout}
+                      style={{ width: '100%' }}
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
     }
 
     // Check for incomplete subscription before any other logic
