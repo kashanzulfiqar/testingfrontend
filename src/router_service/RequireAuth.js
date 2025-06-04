@@ -163,7 +163,7 @@ const RequireAuth = ({Role}) => {
                 <div className="account-wrapper">
                   {/* <h3 className="account-title" style={{ padding: '17px 0px 40px 0px' }}>Subscription Status</h3> */}
                   <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-                    <h2 style={{ color: '#333', marginBottom: '15px' }}>Subscription Cancelled</h2>
+                    <h2 style={{ color: '#333', marginBottom: '15px' }}>Subscription Expired</h2>
                     <p style={{ color: '#666', fontSize: '16px', lineHeight: '1.5' }}>
                       Please contact your administrator to activate the subscription.
                     </p>
