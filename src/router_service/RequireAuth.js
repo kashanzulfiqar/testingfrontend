@@ -21,7 +21,8 @@ const RequireAuth = ({Role}) => {
     const location = useLocation();
     const superAdmin = useSelector((state) => state.superAdmin);
     const hasCheckedSubscriptionRef = useRef(false);
-
+    const permissions = useSelector((state) => state.permissionsSlice.data);
+    
     let AuthRole = value ? true : false
 
     const [menu, setMenu] = useState(false);
@@ -146,7 +147,7 @@ const RequireAuth = ({Role}) => {
     }
 
     // Check for non-admin roles with incomplete subscription
-    if (role === '' && companyDetails?.subscriptionStatus === 'incomplete') {
+    if (role === '' && companyDetails?.subscriptionStatus === 'incomplete' && !permissions?.stripeManagement) {
       return (
         <div style={{padding: '20px 0px'}}>
           <div className="account-logo pt-3 pb-2" style={{ textAlign: 'center' }}>
@@ -186,7 +187,7 @@ const RequireAuth = ({Role}) => {
     }
 
     // Check for incomplete subscription before any other logic
-    if (role === 'admin' && companyDetails?.subscriptionStatus === 'incomplete') {
+    if (role === 'admin' || permissions?.stripeManagement && companyDetails?.subscriptionStatus === 'incomplete') {
       // If we're already on the payment setup page, show it
       if (location.pathname === '/payment/setup') {
         return <PaymentSetup />;
