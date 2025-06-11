@@ -187,7 +187,7 @@ const RequireAuth = ({Role}) => {
     }
 
     // Check for incomplete subscription before any other logic
-    if (role === 'admin' || permissions?.stripeManagement && companyDetails?.subscriptionStatus === 'incomplete') {
+    if ((role === 'admin' || permissions?.stripeManagement) && companyDetails?.subscriptionStatus === 'incomplete') {
       // If we're already on the payment setup page, show it
       if (location.pathname === '/payment/setup') {
         return <PaymentSetup />;
