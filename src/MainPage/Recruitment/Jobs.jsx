@@ -98,8 +98,8 @@ const Jobs = () => {
     try {
       setLoading(true);
       const queryParams = {
-        page: pagination.current,
-        limit: pagination.pageSize,
+        page: currentPage,
+        limit: pageSize,
         title: filters.title,
         jobType: filters.jobType,
         workSetup: filters.workSetup,
