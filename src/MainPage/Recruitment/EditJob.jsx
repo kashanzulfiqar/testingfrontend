@@ -13,6 +13,7 @@ const EditJob = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const authState = useSelector((state) => state.user.loginvalue);
+  const [originalJobData, setOriginalJobData] = useState(null);
 
   useEffect(() => {
     fetchJobDetails();
@@ -42,6 +43,7 @@ const EditJob = () => {
 
       if (response?.data?.status) {
         const jobData = response.data.data;
+        setOriginalJobData(jobData);
         form.setFieldsValue({
           title: jobData.title,
           department: jobData.department,
@@ -86,7 +88,7 @@ const EditJob = () => {
 
       const response = await apiServices(
         "PUT",
-        'job/update',
+        `job/${jobData.jobId}`,
         jobData,
         {
           access_token: {
@@ -133,6 +135,7 @@ const EditJob = () => {
                 onCancel={() => navigate('/recruitment/jobs')}
                 loading={submitting}
                 isEdit={true}
+                initialValues={originalJobData}
               />
             </Spin>
           </Card>

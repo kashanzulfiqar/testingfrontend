@@ -12,6 +12,22 @@ const JobForm = ({
   loading, 
   isEdit = false 
 }) => {
+
+  const handleReset = () => {
+    if (initialValues) {
+      form.setFieldsValue({
+        title: initialValues.title,
+        department: initialValues.department,
+        jobType: initialValues.jobType,
+        workSetup: initialValues.workSetup,
+        salaryRange: initialValues.salaryRange,
+        positions: initialValues.positions,
+        description: initialValues.description,
+        postingPlatforms: initialValues.postingPlatforms || ['WEBSITE']
+      });
+    }
+  };
+
   return (
     <Form
       form={form}
@@ -185,7 +201,7 @@ const JobForm = ({
                 label={<>Job Title <span className="text-danger">*</span></>}
                 rules={[{ required: true, message: 'Please enter job title' }]}
               >
-                <Input placeholder="Enter Job" />
+                <Input placeholder="Enter Job" maxLength={30}/>
               </Form.Item>
             </div>
           </div>
@@ -223,13 +239,42 @@ const JobForm = ({
 
           <div className="row">
             <div className="col-md-6">
-              <Form.Item
-                name="salaryRange"
-                label={<>Salary Range <span className="text-danger">*</span></>}
-                rules={[{ required: true, message: 'Please enter salary range' }]}
-              >
-                <Input placeholder="100 - 200"/>
-              </Form.Item>
+            <Form.Item
+              name="salaryRange"
+              label={<>Salary Range <span className="text-danger">*</span></>}
+              rules={[
+                {
+                  required: true,
+                  message: 'Please enter salary range'
+                },
+                {
+                  pattern: /^\d+\s*-\s*\d+$/,
+                  message: 'Enter valid format: e.g. 1000 - 5000'
+                },
+                {
+                  validator: (_, value) => {
+                    if (!value) return Promise.resolve();
+
+                    const [min, max] = value.split('-').map(s => parseInt(s.trim(), 10));
+                    if (isNaN(min) || isNaN(max) || min >= max) {
+                      return Promise.reject('Minimum must be less than maximum salary');
+                    }
+
+                    return Promise.resolve();
+                  }
+                }
+              ]}
+            >
+              <Input
+                placeholder="1000 - 5000"
+                onKeyPress={(e) => {
+                  const allowedChars = /[0-9-]/;
+                  if (!allowedChars.test(e.key)) {
+                    e.preventDefault();
+                  }
+                }}
+              />
+            </Form.Item>
             </div>
             <div className="col-md-6">
               <Form.Item
@@ -250,7 +295,7 @@ const JobForm = ({
             label={<>Job Description <span className="text-danger">*</span></>}
             rules={[{ required: true, message: 'Please enter job description' }]}
           >
-            <TextArea rows={6} placeholder="Add Description" />
+            <TextArea rows={3} placeholder="Add Description" maxLength={1100}/>
           </Form.Item>
 
           <Form.Item
@@ -263,13 +308,14 @@ const JobForm = ({
                 <Checkbox value="FACEBOOK">Facebook</Checkbox>
                 <Checkbox value="LINKEDIN">LinkedIn</Checkbox>
                 <Checkbox value="WEBSITE">Website</Checkbox>
+                <Checkbox value="INDEED">Indeed</Checkbox>
               </div>
             </Checkbox.Group>
           </Form.Item>
 
           <Form.Item className="text-end mt-3" style={{backgroundColor:'transparent', height:"70px"}}>
             <Button 
-              onClick={onCancel} 
+              onClick={handleReset} 
               style={{ 
                 marginRight: 12,
                 padding: '6px 24px',

@@ -10,7 +10,7 @@ import department from '../../assets/iconsRecruitment/department.svg';
 import facebook from '../../assets/iconsRecruitment/Facebook.svg';
 import indeed from '../../assets/iconsRecruitment/indeed.svg';
 import linkdin from '../../assets/iconsRecruitment/linkedin-icon.svg';
-import instagram from '../../assets/iconsRecruitment/insta.svg';
+import website from '../../assets/iconsRecruitment/websiteGlobe.svg';
 import more from '../../assets/iconsRecruitment/vertical.svg';
 import circle from '../../assets/iconsRecruitment/circle.svg';
 import grid from '../../assets/iconsRecruitment/grid.svg';
@@ -226,6 +226,9 @@ const Jobs = () => {
     setIsModalVisible(false);
   };
 
+  const handleModalReset = () => {
+    modalForm.resetFields();
+  };
   const handleModalSubmit = async (values) => {
     const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
     
@@ -376,14 +379,33 @@ const Jobs = () => {
     {
       title: 'Posted On',
       key: 'postedOn',
-      render:(text,record)=>(
-        <div className= 'social-icons'>
-        <Link to="#" className="social-icon-one"><img src={indeed}></img></Link>
-        <Link to="#" className="social-icon-two"><img src={linkdin}></img></Link>
-        <Link to="#" className="social-icon-three"><img src={instagram}></img></Link> 
-        <Link to="#" className="social-icon-four"><img src={facebook}></img></Link> 
-      </div>
-      )
+      render: (text, record) => {
+        const platforms = record.postingPlatforms || [];
+        return (
+          <div className='social-icons'>
+            {platforms.includes('WEBSITE') && (
+              <Link to="#" className="social-icon-one">
+                <img src={website}></img>
+              </Link>
+            )}
+            {platforms.includes('LINKEDIN') && (
+              <Link to="#" className="social-icon-two">
+                <img src={linkdin}></img>
+              </Link>
+            )}
+            {platforms.includes('FACEBOOK') && (
+              <Link to="#" className="social-icon-three">
+                <img src={facebook}></img>
+              </Link>
+            )}
+            {platforms.includes('INDEED') && (
+              <Link to="#" className="social-icon-four">
+                <img src={indeed}></img>
+              </Link>
+            )}
+          </div>
+        );
+      }
     },
 
     {
@@ -480,26 +502,29 @@ const Jobs = () => {
                 </div>
 
                 <div className="card-foot">
-                  {/* <div className="posted-on">
-                    <span>Posted on:</span> */}
-                    {/* <div className="social-icons">
-                      <Link to="#" className="social-icon"><FaLinkedin /></Link>
-                      <Link to="#" className="social-icon"><FaInstagram /></Link>
-                      <Link to="#" className="social-icon"><FaFacebook /></Link>
-                    </div> */}
-                  {/* </div>
-                  <div className="applications-count">
-                    <Link to={`/recruitment/jobs/${job._id}/applications`}>
-                      {job.applicationCount || 0} Applications
-                    </Link>
-                  </div> */}
                   <div style={{width:'60%'}}>
                     <div className='post-on'><span>Posted on:</span></div>
-                    <div className= 'social-icons'>
-                      <Link to="#" className="social-icon-one"><img src={indeed}></img></Link>
-                      <Link to="#" className="social-icon-two"><img src={linkdin}></img></Link>
-                      <Link to="#" className="social-icon-three"><img src={instagram}></img></Link> 
-                      <Link to="#" className="social-icon-four"><img src={facebook}></img></Link> 
+                    <div className='social-icons'>
+                      {Array.isArray(job.postingPlatforms) && job.postingPlatforms.includes('WEBSITE') && (
+                        <Link to="#" className="social-icon-one">
+                          <img src={website}></img>
+                        </Link>
+                      )}
+                      {Array.isArray(job.postingPlatforms) && job.postingPlatforms.includes('LINKEDIN') && (
+                        <Link to="#" className="social-icon-two">
+                          <img src={linkdin}></img>
+                        </Link>
+                      )}
+                      {Array.isArray(job.postingPlatforms) && job.postingPlatforms.includes('FACEBOOK') && (
+                        <Link to="#" className="social-icon-three">
+                          <img src={facebook}></img>
+                        </Link>
+                      )}
+                      {Array.isArray(job.postingPlatforms) && job.postingPlatforms.includes('INDEED') && (
+                        <Link to="#" className="social-icon-four">
+                          <img src={indeed}></img>
+                        </Link>
+                      )}
                     </div>
                   </div>
                   <div className="applications-count">
@@ -687,7 +712,7 @@ const Jobs = () => {
                 label={<>Job Title</>}
                 rules={[{ required: true, message: 'Please enter job title' }]}
               >
-                <Input placeholder="Enter Job" />
+                <Input placeholder="Enter Job" maxLength={30}/>
               </Form.Item>
             </div>
           </div>
@@ -725,13 +750,43 @@ const Jobs = () => {
 
           <div className="row">
             <div className="col-md-6">
-              <Form.Item
-                name="salaryRange"
-                label={<>Salary Range</>}
-                rules={[{ required: true, message: 'Please enter salary range' }]}
-              >
-                <Input placeholder="100 - 200"/>
-              </Form.Item>
+            <Form.Item
+              name="salaryRange"
+              label={<>Salary Range <span className="text-danger">*</span></>}
+              rules={[
+                {
+                  required: true,
+                  message: 'Please enter salary range'
+                },
+                {
+                  pattern: /^\d+\s*-\s*\d+$/,
+                  message: 'Enter valid format: e.g. 1000 - 5000'
+                },
+                {
+                  validator: (_, value) => {
+                    if (!value) return Promise.resolve();
+
+                    const [min, max] = value.split('-').map(s => parseInt(s.trim(), 10));
+                    if (isNaN(min) || isNaN(max) || min >= max) {
+                      return Promise.reject('Minimum must be less than maximum salary');
+                    }
+
+                    return Promise.resolve();
+                  }
+                }
+              ]}
+            >
+              <Input
+                placeholder="1000 - 5000"
+                maxLength={17}
+                onKeyPress={(e) => {
+                  const allowedChars = /[0-9-]/;
+                  if (!allowedChars.test(e.key)) {
+                    e.preventDefault();
+                  }
+                }}
+              />
+            </Form.Item>
             </div>
             <div className="col-md-6">
               <Form.Item
@@ -752,7 +807,7 @@ const Jobs = () => {
             label={<>Job Description</>}
             rules={[{ required: true, message: 'Please enter job description' }]}
           >
-            <TextArea rows={6} placeholder="Add Description" />
+            <TextArea rows={3} placeholder="Add Description"  maxLength={1100}/>
           </Form.Item>
 
           <Form.Item
@@ -765,13 +820,14 @@ const Jobs = () => {
                 <Checkbox value="FACEBOOK">Facebook</Checkbox>
                 <Checkbox value="LINKEDIN">LinkedIn</Checkbox>
                 <Checkbox value="WEBSITE">Website</Checkbox>
+                <Checkbox value="INDEED">Indeed</Checkbox>
               </div>
             </Checkbox.Group>
           </Form.Item>
 
           <Form.Item className="text-end mt-3" style={{backgroundColor:'transparent', height:"70px"}}>
             <Button 
-              onClick={handleModalCancel} 
+              onClick={handleModalReset} 
               style={{ 
                 marginRight: 12,
                 padding: '6px 24px',
