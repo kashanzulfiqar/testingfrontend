@@ -438,7 +438,7 @@ const SuperAdminMain = () => {
     const url = data?.disabled == false ? 'newApi/disable' : 'newApi/enable'
     const method = data?.disabled == false ? 'DELETE' : 'PUT'
     setLoader(true);
-    apiServices(method, url, data?.disabled == false ? id : payload, user_state)
+    apiServices(method, url, data?.disabled == false ? data : payload, user_state)
       .then((res) => {
         // console.log(res?.data);
         if (res?.data?.success === true) {
