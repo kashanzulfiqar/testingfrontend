@@ -478,7 +478,8 @@
     "projectManagement": "إدارة المشاريع",
     "expenseManagement": "إدارة المصروفات",
     "timesheetManagement": "إدارة الجدول الزمني",
-    "reportManagement": "إدارة التقارير"
+    "reportManagement": "إدارة التقارير",
+    "manageStripe": "إدارة السترايب"
   },
   "requests": {
     "pageTitle": "الطلبات - دفتربرو",
@@ -1494,5 +1495,16 @@
       "taxStatusUpdated": "تم تحديث حالة الضريبة إلى {{newStatus}}",
       "failedToUpdateTaxStatus": "فشل في تحديث حالة الضريبة"
     }
+  },
+  "payment": {
+    "setupTitle": "إعداد الدفع",
+    "setupDescription": "يرجى إضافة طريقة دفع للاستمرار في استخدام النظام",
+    "setupRequired": "مطلوب إعداد الدفع",
+    "cardDetails": "تفاصيل البطاقة",
+    "addPaymentMethod": "إضافة طريقة دفع",
+    "stripeNotLoaded": "نظام الدفع غير جاهز بعد. يرجى المحاولة مرة أخرى.",
+    "setupSuccess": "تمت إضافة طريقة الدفع بنجاح",
+    "setupFailed": "فشل في حفظ طريقة الدفع",
+    "processingError": "فشل في معالجة إعداد الدفع"
   }
 }

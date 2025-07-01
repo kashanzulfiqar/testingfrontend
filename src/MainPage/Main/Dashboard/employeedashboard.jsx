@@ -14,6 +14,7 @@ import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { Spin, Table, Empty, DatePicker, message, Tooltip, Avatar } from "antd";
 import { GiftOutlined, PushpinOutlined } from "@ant-design/icons";
 import { Cake, Celebration, PushPin } from "@mui/icons-material";
+import { NotificationBox } from "./stripeNotification.jsx";
 
 const EmployeeDashboard = () => {
   const moment = require("moment");
@@ -1172,6 +1173,7 @@ const EmployeeDashboard = () => {
       {/* Page Wrapper */}
       <div className="page-wrapper">
         {/* Page Content */}
+        <NotificationBox></NotificationBox>
         <div className="content container-fluid pb-0">
           {/* Leave Alert */}
           {/* <div className="row">

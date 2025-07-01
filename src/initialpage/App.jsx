@@ -91,6 +91,9 @@ import TermsAndConditions from "../LandingPage/TermsConditions";
 import ClientForgotPassword from "./ClientForgotPassword";
 import ClientResetPassword from "./ClientResetPassword";
 import TaskDetails from "../MainPage/Employees/Projects/taskDetail.jsx";
+import PaymentSetup from "../MainPage/Pages/Payment/PaymentSetup";
+import Billing from "../MainPage/Pages/Billing/Billing.jsx";
+import BillingHistory from "../MainPage/Pages/Billing/BillingHistory.jsx";
 
 const App = () => {
   const loginState = useSelector((state) => state.user.loginvalue);
@@ -277,7 +280,12 @@ const App = () => {
           <Route path="/settings" element={<Settings />} />
           {/* <Route path="/settings/roles-permissions" element={<RolePermisson />} /> */}
 
-          {/* Settings  */}
+          {/* Billing  */}
+          <Route path="/subscription-details" element={<Billing />} />
+
+          {/* Billing History  */}
+          <Route path="/invoice-history" element={<BillingHistory />} />
+
           <Route
             path="/employee/attendance-employee"
             element={<AttendanceEmployee />}
@@ -305,6 +313,14 @@ const App = () => {
           {/* <Link to={`/projects/projects-view/${record?._id}`} style={{color: '#333333'}}>
           <label style={{cursor: 'pointer'}} className="longText">{text}</label>
         </Link> */}
+
+          {/* Add payment setup route */}
+          <Route path={`client/focal-profile`} element={<FocalProfile />} />
+          <Route path={`invoices`} element={<Invoices />} />
+          <Route path={`invoices/create-invoice`} element={<Invoicecreate />} />
+          <Route path={`invoices/edit-invoice`} element={<EditInvoice />} />
+          <Route path={`invoices/view-invoice`} element={<Invoiceview />} />
+          <Route path={`payment/setup`} element={<PaymentSetup />} />
         </Route>
 
         {/* <Route path="/404" element={<Error404 />}></Route> */}

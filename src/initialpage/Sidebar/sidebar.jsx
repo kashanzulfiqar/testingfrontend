@@ -2747,8 +2747,19 @@ const Sidebar = (props) => {
                 }
                 </li> */}
                   {(user_state?.role === "admin" ||
-                    permissions?.companyManagement) && (
+                    permissions?.stripeManagement) && (
                     <li
+                      className={pathname.includes("/subscription-details") ? "active" : ""}
+                    >
+                      <Link to="/subscription-details">
+                        <i className="la la-money" />{" "}
+                        <span>Subscription Details</span>
+                      </Link>
+                    </li>
+                  )}
+                  {(user_state?.role === "admin" ||
+                    permissions?.companyManagement) && (
+                  <li
                       className={pathname.includes("/settings") ? "active" : ""}
                     >
                       <Link to="/settings">
