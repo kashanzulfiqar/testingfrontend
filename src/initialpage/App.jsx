@@ -195,7 +195,7 @@ const App = () => {
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/reset/:token" element={<AdminResetPassword />} />
         <Route path="/register" element={<RegistrationPage />} />
-
+        <Route path="/change-password" element={<ChangePassword />} />
         {/* Public Interview Page - No authentication required */}
         <Route path="/interview/public/:token" element={<PublicInterviewPage />} />
         {/* <Route path="/app/*" element={<DefaultLayout />} /> */}
@@ -248,7 +248,6 @@ const App = () => {
             element={<EmployeeProfile />}
           />
           <Route path={`/profile`} element={<EmployeeProfile />} />
-          <Route path={`/change-password`} element={<ChangePassword />} />
           <Route path={`payroll/payslip`} element={<SalarySlip />} />
           <Route
             path={`payroll/payroll-histroy`}
