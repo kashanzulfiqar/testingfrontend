@@ -187,7 +187,7 @@ const App = () => {
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/reset/:token" element={<AdminResetPassword />} />
         <Route path="/register" element={<RegistrationPage />} />
-
+        <Route path={`/change-password`} element={<ChangePassword />} />
         {/* <Route path="/app/*" element={<DefaultLayout />} /> */}
 
         {/* <Route element={<Layout />}> */}
@@ -237,7 +237,6 @@ const App = () => {
             element={<EmployeeProfile />}
           />
           <Route path={`/profile`} element={<EmployeeProfile />} />
-          <Route path={`/change-password`} element={<ChangePassword />} />
           <Route path={`payroll/payslip`} element={<SalarySlip />} />
           <Route
             path={`payroll/payroll-histroy`}
