@@ -31,6 +31,7 @@ const BlacklistedCandidates = () => {
   const [currentPage,setCurrentPage] =useState(1);
   const navigate = useNavigate();
   const [allCandidates, setAllCandidates] = useState([]);
+  const [candidatePositions, setCandidatePositions] = useState([]);
 
 
   useEffect(() => {
@@ -146,36 +147,36 @@ const BlacklistedCandidates = () => {
     }
   };
 
-  // const fetchCandidatePositions = async (candidateId) => {
-  //   try {
-  //     const token = authState?.access_token?.accessToken || localStorage.getItem("token");
-  //     if (!token) {
-  //       message.error("Please login again to continue");
-  //       return;
-  //     }
-  //     const response = await apiServices(
-  //       'GET',
-  //       `candidate/${candidateId}/positions`, // Adjust the endpoint/params as per your API
-  //       null,
-  //       {
-  //         access_token: {
-  //           accessToken: token
-  //         },
-  //         headers: {
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //       }
-  //     );
-  //     if (response?.data?.status) {
-  //       setAllCandidates(response.data.data.docs || []);
-  //     } else {
-  //       setAllCandidates([]);
-  //     }
-  //   } catch (error) {
-  //     message.error('Failed to fetch candidates');
-  //     setAllCandidates([]);
-  //   }
-  // };
+  const fetchCandidatePositions = async (candidateId) => {
+    try {
+      const token = authState?.access_token?.accessToken || localStorage.getItem("token");
+      if (!token) {
+        message.error("Please login again to continue");
+        return;
+      }
+      const response = await apiServices(
+        'GET',
+        `candidate/${candidateId}/positions`, // Adjust the endpoint/params as per your API
+        null,
+        {
+          access_token: {
+            accessToken: token
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (response?.data?.status) {
+        setCandidatePositions(response.data.data || []);
+      } else {
+        setCandidatePositions([]);
+      }
+    } catch (error) {
+      message.error('Failed to fetch candidates');
+      setCandidatePositions([]);
+    }
+  };
 
   // const handleTableChange = (newPagination) => {
   //   fetchBlacklistedCandidates(newPagination.current, newPagination.pageSize);
@@ -201,20 +202,19 @@ const BlacklistedCandidates = () => {
 
       // Log the values to check the status
       console.log('Form Values:', values);
+      const id = values.name;
 
       // Format the request body according to the API requirements
       const requestBody = {
-        candidateName: values.name,
-        email: values.email,
         blacklistReason: values.reason,
-        status: values.status // Ensure this is being set correctly
+        status: 'BLACKLISTED' // Ensure this is being set correctly
       };
 
       console.log('Request Body:', requestBody);
 
       const response = await apiServices(
-        'POST', 
-        'candidate/blacklist', 
+        'PATCH', 
+        `candidate/${id}/status`, 
         requestBody,
         {
           access_token: {
@@ -516,9 +516,11 @@ const BlacklistedCandidates = () => {
           >
             <Select 
               placeholder="Select a candidate"
-              // onChange={(candidateId, option) => {
-              //   fetchCandidatePositions(candidateId);
-              // }}
+              onChange={(candidateId, option) => {
+                fetchCandidatePositions(candidateId);
+                setCandidatePositions([]);
+                form.setFieldsValue({ position: undefined });
+              }}
             >
               {allCandidates.map(candidate => (
                 <Select.Option key={candidate._id} value={candidate._id}>
@@ -536,7 +538,15 @@ const BlacklistedCandidates = () => {
               { required: true, message: 'Please Enter Applied Postion' }
             ]}
           >
-            <Input placeholder="Enter email address" />
+            <Select 
+              placeholder="Select a position"
+            >
+              {candidatePositions.map(position => (
+                <Select.Option key={position._id} value={position._id}>
+                  {position.title}
+                </Select.Option>
+              ))}
+            </Select>
           </Form.Item>
 
           <Form.Item
