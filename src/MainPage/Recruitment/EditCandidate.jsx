@@ -11,6 +11,7 @@ const EditCandidate = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [form] = Form.useForm();
+  const [activeJobs, setActiveJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [resumeFile, setResumeFile] = useState(null);
@@ -20,6 +21,7 @@ const EditCandidate = () => {
 
   useEffect(() => {
     fetchCandidateDetails();
+    fetchActiveJobs()
   }, [id]);
 
   const fetchCandidateDetails = async () => {
@@ -80,6 +82,46 @@ const EditCandidate = () => {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchActiveJobs = async () => {
+    const token =
+      localStorage.getItem("token") || authState?.access_token?.accessToken;
+
+    if (!token) return;
+
+    try {
+      const response = await apiServices("GET", "job/active", null, {
+          access_token: {
+          accessToken: token,
+          },
+          headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log("Active Jobs API Response:", response);
+
+      if (response?.data?.status) {
+        // Access the docs array from the response data
+        const jobs = response.data.data.docs || [];
+        console.log("Jobs data before setting:", jobs);
+
+        if (Array.isArray(jobs)) {
+          setActiveJobs(jobs);
+          console.log("Active jobs set successfully:", jobs.length, "jobs");
+      } else {
+          console.error("Jobs data is not an array:", jobs);
+          setActiveJobs([]);
+        }
+        } else {
+        console.error("Failed to fetch active jobs:", response?.data);
+        setActiveJobs([]);
+      }
+    } catch (error) {
+      console.error("Error fetching active jobs:", error);
+      setActiveJobs([]);
     }
   };
 
@@ -373,12 +415,30 @@ const EditCandidate = () => {
                     name="appliedFor"
                     label={<>Applied For <span className="text-danger">*</span></>}
                     rules={[
-                      { required: true, message: 'Please enter position' },
-                      { min: 2, message: 'Position must be at least 2 characters' },
-                      { max: 100, message: 'Position cannot exceed 100 characters' }
+                      { required: true, message: 'Please enter position' }
                     ]}
                   >
-                    <Input placeholder="Enter Position" />
+                    <Select
+                      className="customized"
+                      placeholder="Select Job Position"
+                      showSearch
+                      optionFilterProp="children"
+                      filterOption={(input, option) =>
+                        option.children.toLowerCase().indexOf(input.toLowerCase()) >=
+                        0
+                      }
+                      notFoundContent={
+                        activeJobs.length === 0 ? "No active jobs available" : null
+                      }
+                    >
+                      {Array.isArray(activeJobs) &&
+                        activeJobs.map((job) => (
+                          <Select.Option key={job._id} value={job._id}>
+                            {job.title} {job.department ? `- ${job.department}` : ""}
+                          </Select.Option>
+                        ))}
+                    </Select>
+                    {/* <Input placeholder="Enter Position" /> */}
                   </Form.Item>
                 </div>
                 <div className="col-md-6">

@@ -30,7 +30,7 @@ const BlacklistedCandidates = () => {
   const [pageSize , setPageSize] =useState(20);
   const [currentPage,setCurrentPage] =useState(1);
   const navigate = useNavigate();
-  // const [filters, setFilters] = useState({});
+  const [allCandidates, setAllCandidates] = useState([]);
 
 
   useEffect(() => {
@@ -114,6 +114,68 @@ const BlacklistedCandidates = () => {
       setLoading(false);
     }
   };
+
+  const fetchNonBlackListedCandidates = async () => {
+    try {
+      const token = authState?.access_token?.accessToken || localStorage.getItem("token");
+      if (!token) {
+        message.error("Please login again to continue");
+        return;
+      }
+      const response = await apiServices(
+        'GET',
+        'candidate/nonBlackListed', // Adjust the endpoint/params as per your API
+        null,
+        {
+          access_token: {
+            accessToken: token
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (response?.data?.status) {
+        setAllCandidates(response.data.data.docs || []);
+      } else {
+        setAllCandidates([]);
+      }
+    } catch (error) {
+      message.error('Failed to fetch candidates');
+      setAllCandidates([]);
+    }
+  };
+
+  // const fetchCandidatePositions = async (candidateId) => {
+  //   try {
+  //     const token = authState?.access_token?.accessToken || localStorage.getItem("token");
+  //     if (!token) {
+  //       message.error("Please login again to continue");
+  //       return;
+  //     }
+  //     const response = await apiServices(
+  //       'GET',
+  //       `candidate/${candidateId}/positions`, // Adjust the endpoint/params as per your API
+  //       null,
+  //       {
+  //         access_token: {
+  //           accessToken: token
+  //         },
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       }
+  //     );
+  //     if (response?.data?.status) {
+  //       setAllCandidates(response.data.data.docs || []);
+  //     } else {
+  //       setAllCandidates([]);
+  //     }
+  //   } catch (error) {
+  //     message.error('Failed to fetch candidates');
+  //     setAllCandidates([]);
+  //   }
+  // };
 
   // const handleTableChange = (newPagination) => {
   //   fetchBlacklistedCandidates(newPagination.current, newPagination.pageSize);
@@ -297,7 +359,10 @@ const BlacklistedCandidates = () => {
           <div className="col-auto float-end ms-auto d-flex align-items-center">
             <Button
               className="add-candidate-btn"
-              onClick={() => setIsModalVisible(true)}
+              onClick={() => {
+                fetchNonBlackListedCandidates();
+                setIsModalVisible(true);
+              }}
             >
               <div className='btn-content'>
                 <img src={circle} style={{marginRight:'8px', marginBottom:'20px'}}></img>
@@ -310,7 +375,15 @@ const BlacklistedCandidates = () => {
 
     <Form 
       form={form}
-      onFinish={handleSearch} 
+      onFinish={handleSearch}
+      onValuesChange={(changedValues, allValues) => {
+        const clearedField = Object.keys(changedValues).find(
+          key => changedValues[key] === '' || changedValues[key] === undefined
+        );
+        if (clearedField) {
+          handleSearch(allValues);        
+        }
+      }}
       className="search-form"
       initialValues={pagination}
     >
@@ -436,12 +509,23 @@ const BlacklistedCandidates = () => {
           onFinish={handleAddToBlacklist}
         >
           <Form.Item
-            className= 'custom-input'
+            // className= 'custom-input'
             name="name"
             label="Candidate Name"
-            rules={[{ required: true, message: 'Please enter candidate name' }]}
+            rules={[{ required: true, message: 'Please select candidate name' }]}
           >
-            <Input placeholder="Enter candidate name" />
+            <Select 
+              placeholder="Select a candidate"
+              // onChange={(candidateId, option) => {
+              //   fetchCandidatePositions(candidateId);
+              // }}
+            >
+              {allCandidates.map(candidate => (
+                <Select.Option key={candidate._id} value={candidate._id}>
+                  {candidate.firstName} {candidate.lastName} ({candidate.email})
+                </Select.Option>
+              ))}
+            </Select>
           </Form.Item>
 
           <Form.Item
