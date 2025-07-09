@@ -79,6 +79,22 @@ const RequireAuth = ({Role}) => {
               dispatch(loginSuccess(updatedUserState));
             }
           } catch (error) {
+            const errorMsg = error?.response?.data?.msg || error?.message || "";
+            const errorName = error?.response?.data?.error?.name || "";
+
+            if (
+              error?.response?.status === 500 ||
+              errorName === "TokenExpiredError" ||
+              errorMsg.toLowerCase().includes("token expired") ||
+              errorMsg.toLowerCase().includes("jwt expired")
+            ) {
+              // Clear user state and redirect to login
+              localStorage.clear();
+              sessionStorage.clear();
+              dispatch(loginSuccess(null));
+              nav("/login", { replace: true });
+              return; // Stop further execution
+            } else {
             console.error('Error fetching subscription status:', error?.response?.data || error);
             // If there's an error, we'll assume the subscription is incomplete
             const updatedUserState = {
@@ -91,7 +107,7 @@ const RequireAuth = ({Role}) => {
                 }
               }
             };
-            dispatch(loginSuccess(updatedUserState));
+            dispatch(loginSuccess(updatedUserState));}
           } finally {
             setIsCheckingSubscription(false);
             hasCheckedSubscriptionRef.current = true;
