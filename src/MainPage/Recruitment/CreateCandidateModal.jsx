@@ -28,6 +28,7 @@ const CreateCandidateModal = ({
   const [submitting, setSubmitting] = useState(false);
   const [resumeFile, setResumeFile] = useState(null);
   const [fileList, setFileList] = useState([]);
+  const [skillError, setSkillError] = useState("");
   const authState = useSelector((state) => state.user.loginvalue);
 
   // Debug log when activeJobs changes
@@ -131,6 +132,11 @@ const CreateCandidateModal = ({
     }
   };
 
+  const handleReset = () => {
+    form.resetFields();
+    setResumeFile(null);
+    setFileList([]);
+  };
   const handleCancel = () => {
     form.resetFields();
     setResumeFile(null);
@@ -147,7 +153,7 @@ const CreateCandidateModal = ({
       width={800}
       className="custom-modal"
       style={{ zIndex: 2000 }}
-      maskStyle={{ zIndex: 1999, background: 'rgba(0, 0, 0, 0.5)' }}
+      maskStyle={{ zIndex: 1999, background: "rgba(0, 0, 0, 0.5)" }}
     >
       <Form
         form={form}
@@ -169,7 +175,7 @@ const CreateCandidateModal = ({
               // Validate file size (5MB)
               if (file.size > 5 * 1024 * 1024) {
                 message.error("Resume file size should not exceed 5MB");
-                return false;
+                return Upload.LIST_IGNORE;
               }
 
               // Validate file type
@@ -180,7 +186,7 @@ const CreateCandidateModal = ({
               ];
               if (!allowedTypes.includes(file.type)) {
                 message.error("Only PDF, DOC, and DOCX files are allowed");
-                return false;
+                return Upload.LIST_IGNORE;
               }
 
               setResumeFile(file);
@@ -193,12 +199,11 @@ const CreateCandidateModal = ({
             }}
             fileList={fileList}
             onChange={({ fileList: newFileList }) => {
-              setFileList(newFileList);
+              console.log("file", newFileList);
+              setFileList(newFileList.slice(-1));
             }}
           >
-            <Button className='resume-upload-btn' disabled={fileList.length > 0}>
-              Upload Resume
-            </Button>
+            <Button className="resume-upload-btn">Upload Resume</Button>
           </Upload>
         </div>
 
@@ -206,11 +211,7 @@ const CreateCandidateModal = ({
           <div className="col-md-6">
             <Form.Item
               name="firstName"
-              label={
-                <>
-                  First Name
-                </>
-              }
+              label={<>First Name</>}
               rules={[
                 { required: true, message: "Please enter first name" },
                 { min: 2, message: "First name must be at least 2 characters" },
@@ -228,11 +229,7 @@ const CreateCandidateModal = ({
           <div className="col-md-6">
             <Form.Item
               name="lastName"
-              label={
-                <>
-                  Last Name
-                </>
-              }
+              label={<>Last Name</>}
               rules={[
                 { required: true, message: "Please enter last name" },
                 { min: 2, message: "Last name must be at least 2 characters" },
@@ -253,11 +250,7 @@ const CreateCandidateModal = ({
           <div className="col-md-6">
             <Form.Item
               name="email"
-              label={
-                <>
-                  Email
-                </>
-              }
+              label={<>Email</>}
               rules={[
                 { required: true, message: "Please enter email" },
                 { type: "email", message: "Please enter a valid email" },
@@ -269,11 +262,7 @@ const CreateCandidateModal = ({
           <div className="col-md-6">
             <Form.Item
               name="phoneNumber"
-              label={
-                <>
-                  Phone Number
-                </>
-              }
+              label={<>Phone Number</>}
               rules={[
                 { required: true, message: "Please enter phone number" },
                 { min: 10, message: "Phone number must be at least 10 digits" },
@@ -293,17 +282,13 @@ const CreateCandidateModal = ({
           <div className="col-md-6">
             <Form.Item
               name="appliedFor"
-              label={
-                <>
-                  Applied For
-                </>
-              }
+              label={<>Applied For</>}
               rules={[
                 { required: true, message: "Please select job position" },
               ]}
             >
               <Select
-                className= 'customized'
+                className="customized"
                 placeholder="Select Job Position"
                 showSearch
                 optionFilterProp="children"
@@ -327,11 +312,7 @@ const CreateCandidateModal = ({
           <div className="col-md-6">
             <Form.Item
               name="appliedDate"
-              label={
-                <>
-                  Applied Date
-                </>
-              }
+              label={<>Applied Date</>}
               rules={[
                 { required: true, message: "Please select date" },
                 {
@@ -354,23 +335,16 @@ const CreateCandidateModal = ({
             </Form.Item>
           </div>
         </div>
-        
 
         <div className="row">
           {/*  */}
           <div className="col-md-6">
             <Form.Item
               name="status"
-              label={
-                <>
-                  Application Status
-                </>
-              }
-              rules={[
-                { required: true, message: "Select Status" },
-              ]}
+              label={<>Application Status</>}
+              rules={[{ required: true, message: "Select Status" }]}
             >
-              <Select className='customized' placeholder="Select Status">
+              <Select className="customized" placeholder="Select Status">
                 <Select.Option value="OPEN">Open</Select.Option>
                 <Select.Option value="ON_HOLD">On-Hold</Select.Option>
                 <Select.Option value="FILLED">Filled</Select.Option>
@@ -382,11 +356,7 @@ const CreateCandidateModal = ({
           <div className="col-md-6">
             <Form.Item
               name="experience"
-              label={
-                <>
-                  Experience (Years)
-                </>
-              }
+              label={<>Experience (Years)</>}
               rules={[
                 { required: true, message: "Please enter experience" },
                 {
@@ -403,7 +373,7 @@ const CreateCandidateModal = ({
                 precision={1}
               />
             </Form.Item>
-          </div>       
+          </div>
           {/* <div className="col-md-6">
             <Form.Item
               name="currentSalary"
@@ -434,11 +404,7 @@ const CreateCandidateModal = ({
           <div className="col-md-6">
             <Form.Item
               name="currentSalary"
-              label={
-                <>
-                  Current Salary 
-                </>
-              }
+              label={<>Current Salary</>}
               rules={[
                 { required: true, message: "Please enter current salary" },
                 {
@@ -458,11 +424,7 @@ const CreateCandidateModal = ({
           <div className="col-md-6">
             <Form.Item
               name="expectedSalary"
-              label={
-                <>
-                  Expected Salary
-                </>
-              }
+              label={<>Expected Salary</>}
               rules={[
                 { required: true, message: "Please enter expected salary" },
                 {
@@ -480,22 +442,17 @@ const CreateCandidateModal = ({
             </Form.Item>
           </div>
         </div>
-        
 
         <div className="row">
           <div className="col-md-6">
             <Form.Item
               name="noticePeriod"
-              label={
-                <>
-                  Notice Period 
-                </>
-              }
+              label={<>Notice Period</>}
               rules={[
                 { required: true, message: "Please select notice period" },
               ]}
             >
-              <Select className='customized' placeholder="Select Notice Period">
+              <Select className="customized" placeholder="Select Notice Period">
                 <Select.Option value="IMMEDIATE">Immediate</Select.Option>
                 <Select.Option value="15_DAYS">15 Days</Select.Option>
                 <Select.Option value="30_DAYS">30 Days</Select.Option>
@@ -507,14 +464,10 @@ const CreateCandidateModal = ({
           <div className="col-md-6">
             <Form.Item
               name="source"
-              label={
-                <>
-                  Source
-                </>
-              }
+              label={<>Source</>}
               rules={[{ required: true, message: "Please select source" }]}
             >
-              <Select className='customized' placeholder="Select source">
+              <Select className="customized" placeholder="Select source">
                 <Select.Option value="LINKEDIN">LinkedIn</Select.Option>
                 <Select.Option value="WEBSITE">Website</Select.Option>
                 <Select.Option value="REFERRAL">Referral</Select.Option>
@@ -528,28 +481,33 @@ const CreateCandidateModal = ({
           <div className="col-md-6">
             <Form.Item
               name="skillSet"
-              label={
-                <>
-                  Skill Set
-                </>
-              }
+              label={"Skill Set"}
               rules={[
                 { required: true, message: "Please enter atleast one skill" },
               ]}
             >
-               <Select  className='custom'
-                  mode="tags"
-                  style={{ width: "100%" , minHeight: "unset", height: "auto"}}
-                  placeholder="Enter your Skills"
-                  tokenSeparators={[" "]}
-                />
+              <Select
+                mode="tags"
+                className="custom-select customselect-height"
+                placeholder="Enter Your Skills"
+                getPopupContainer={() => document.getElementById("area22")}
+                onChange={(value) => {
+                  // Filter out tags longer than 20 characters
+                  const filtered = value.filter(tag => tag.length <= 20);
+                  if (filtered.length < value.length) {
+                    message.error("Each skill can be at most 20 characters.");
+                  }
+                  // Set only valid tags in the form
+                  form.setFieldsValue({ skillSet: filtered });
+                }}
+              />
             </Form.Item>
           </div>
         </div>
 
         <Form.Item className="text-end mt-3">
           <Button
-            onClick={handleCancel}
+            onClick={handleReset}
             style={{
               marginRight: 12,
               padding: "6px 24px",
@@ -566,7 +524,7 @@ const CreateCandidateModal = ({
             htmlType="submit"
             loading={submitting}
             style={{
-              fontSize: '16px',
+              fontSize: "16px",
               padding: "6px 24px",
               height: "50px",
               borderRadius: "32px",
@@ -580,9 +538,12 @@ const CreateCandidateModal = ({
       </Form>
 
       <style jsx>{`
-        .custom-modal .ant-modal-content{
+        .custom-modal .ant-modal-content {
           border: 1px solid transparent;
           border-radius: 10px;
+        }
+        .customselect-height > div {
+          height: auto !important;
         }
         .custom-modal .ant-modal-header {
           border-bottom: none;
@@ -594,10 +555,10 @@ const CreateCandidateModal = ({
           font-weight: 600;
         }
         .custom-modal .ant-modal-close {
-          background-color: #F8F9FA;
+          background-color: #f8f9fa;
           border-radius: 50%;
-          border:"1px solid #F8F9FA";
-          margin:16px 16px 0 0;
+          border: "1px solid #F8F9FA";
+          margin: 16px 16px 0 0;
           width: 32px;
           height: 32px;
           display: flex;
@@ -622,30 +583,30 @@ const CreateCandidateModal = ({
           color: #6c757d;
         }
 
-        .customized .ant-select-selector{
-        height: 56px !important;
-        border-radius: 8px !important;
-        display: flex;
-        align-items: center;
-        padding-left: 10px;
+        .customized .ant-select-selector {
+          height: 56px !important;
+          border-radius: 8px !important;
+          display: flex;
+          align-items: center;
+          padding-left: 10px;
         }
 
-      .custom .ant-select-selector {
-        border-radius: 8px !important;
-        display: flex;
-        align-items: flex-start !important;
-        flex-wrap: wrap !important;
-        height: auto !important;
-        padding: 4px 10px !important;
-        overflow: hidden !important;
-      }
+        .custom .ant-select-selector {
+          border-radius: 8px !important;
+          display: flex;
+          align-items: flex-start !important;
+          flex-wrap: wrap !important;
+          height: auto !important;
+          padding: 4px 10px !important;
+          overflow: hidden !important;
+        }
 
-      .custom .ant-select-selection-item {
-        max-width: 100% !important;
-        white-space: normal !important;
-        word-break: break-word !important;
-      }
-        
+        .custom .ant-select-selection-item {
+          max-width: 100% !important;
+          white-space: normal !important;
+          word-break: break-word !important;
+        }
+
         .upload-resume {
           padding: 16px;
           padding-left: 3px;
@@ -656,19 +617,19 @@ const CreateCandidateModal = ({
           margin-bottom: 12px;
         }
 
-        .resume-upload-btn{
+        .resume-upload-btn {
           border: 1px solid #ff9244;
           border-radius: 40px;
           color: #ff9244;
         }
 
         /* Z-index overrides to ensure modal appears above sidebar */
-        .ant-modal, 
+        .ant-modal,
         .ant-modal-wrap,
         .ant-modal-mask {
           z-index: 2000 !important;
         }
-        
+
         /* Additional styles to prevent scrolling when modal is open */
         body.modal-open {
           overflow: hidden;

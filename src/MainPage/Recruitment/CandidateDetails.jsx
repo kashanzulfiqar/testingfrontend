@@ -79,6 +79,7 @@ const CandidateDetails = () => {
   const [isOfferModalVisible, setIsOfferModalVisible] = useState(false);
   const [submittingOffer, setSubmittingOffer] = useState(false);
   const [offer, setOffer] = useState(null);
+  const [offerStatus, setOfferStatus] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [isReasonModalVisible, setIsReasonModalVisible] = useState(false);
   const [filter ,setfilter] =useState('history');
@@ -160,7 +161,7 @@ const CandidateDetails = () => {
         console.log("Candidate Details Response:", response.data.data);
         console.log("Resume URL:", response.data.data.resume);
         setCandidate(response.data.data);
-        setOffer(response.data.data.status); 
+        setOfferStatus(response.data.data.status); 
       } else {
         if (response?.data?.message === "Invalid token") {
           message.error("Session expired. Please login again");
@@ -423,7 +424,7 @@ const CandidateDetails = () => {
         }
       );
 
-      if (response?.data?.status) {
+      if (response?.data?.success) {
         setOffer(response.data.data);
       }
     } catch (error) {
@@ -804,9 +805,23 @@ const CandidateDetails = () => {
       // Create FormData for file upload
       const formData = new FormData();
 
-      // Add task file if exists
-      if (values.taskFile?.length > 0) {
-        formData.append("file", values.taskFile[0].originFileObj);
+      // Upload task file to S3 if exists
+      let fileUrl = null;
+      if (values.taskFile) {
+        try {
+          const uploadResponse = await apiUploadToS3(values.taskFile);
+          if (uploadResponse?.data?.result?.secure_url) {
+            fileUrl = uploadResponse.data.result.secure_url;
+          }
+        } catch (error) {
+          message.error('Failed to upload task file');
+          return;
+        }
+      }
+
+      // Add file URL if uploaded
+      if (fileUrl) {
+        formData.append("file", fileUrl);
       }
       // Add all non-file fields
       formData.append("candidateId", id);
@@ -1374,10 +1389,12 @@ const CandidateDetails = () => {
         }
       );
       if (response?.data?.status) {
-        message.success('Job deleted successfully');
+        message.success('Candidate deleted successfully');
+        return Promise.resolve();
         fetchJobs();
       } else {
         message.error(response?.data?.message || 'Failed to delete job');
+        return Promise.reject();
       }
     } catch (error) {
       console.error('Delete job error:', error.response?.data || error.message);
@@ -1757,6 +1774,9 @@ const CandidateDetails = () => {
                 <button
                   // onClick={handleSendOfferClick}
                   onClick={()=>{
+                    if(candidate?.status==='SHORTLISTED'){
+                      handleSendOfferClick()
+                    }
                     if(candidate?.status==='OFFERED'){
                       handleSendOfferClick()
                     }
@@ -1796,8 +1816,8 @@ const CandidateDetails = () => {
                     <Menu.Item key="delete" icon={<img src={DeleteIcon} style={{height:"15px" ,width:"20px"}}></img>}
                      onClick={() => {
                       Modal.confirm({
-                      title: 'Delete Job',
-                      content: 'Are you sure you want to delete this job?',
+                      title: 'Delete Candidate',
+                      content: 'Are you sure you want to delete this candidate?',
                       okText: 'Yes, Delete',
                       okType: 'danger',
                       cancelText: 'No',
@@ -2302,6 +2322,7 @@ const CandidateDetails = () => {
         onSubmit={handleSendOffer}
         loading={submittingOffer}
         candidate={candidate}
+        offerStatus={offerStatus}
         existingOffer={offer} // Pass the offer data here
       />
 

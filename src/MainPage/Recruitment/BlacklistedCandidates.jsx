@@ -19,7 +19,8 @@ const BlacklistedCandidates = () => {
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [form] = Form.useForm();
+  const [searchForm] = Form.useForm();
+  const [modalForm] = Form.useForm();
   const authState = useSelector((state) => state.user.loginvalue);
   const [pagination, setPagination] = useState({
     current: 1,
@@ -30,7 +31,8 @@ const BlacklistedCandidates = () => {
   const [pageSize , setPageSize] =useState(20);
   const [currentPage,setCurrentPage] =useState(1);
   const navigate = useNavigate();
-  // const [filters, setFilters] = useState({});
+  const [allCandidates, setAllCandidates] = useState([]);
+  const [candidatePositions, setCandidatePositions] = useState([]);
 
 
   useEffect(() => {
@@ -115,6 +117,68 @@ const BlacklistedCandidates = () => {
     }
   };
 
+  const fetchNonBlackListedCandidates = async () => {
+    try {
+      const token = authState?.access_token?.accessToken || localStorage.getItem("token");
+      if (!token) {
+        message.error("Please login again to continue");
+        return;
+      }
+      const response = await apiServices(
+        'GET',
+        'candidate/nonBlackListed', // Adjust the endpoint/params as per your API
+        null,
+        {
+          access_token: {
+            accessToken: token
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (response?.data?.status) {
+        setAllCandidates(response.data.data.docs || []);
+      } else {
+        setAllCandidates([]);
+      }
+    } catch (error) {
+      message.error('Failed to fetch candidates');
+      setAllCandidates([]);
+    }
+  };
+
+  const fetchCandidatePositions = async (candidateId) => {
+    try {
+      const token = authState?.access_token?.accessToken || localStorage.getItem("token");
+      if (!token) {
+        message.error("Please login again to continue");
+        return;
+      }
+      const response = await apiServices(
+        'GET',
+        `candidate/${candidateId}/positions`, // Adjust the endpoint/params as per your API
+        null,
+        {
+          access_token: {
+            accessToken: token
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (response?.data?.status) {
+        setCandidatePositions(response.data.data || []);
+      } else {
+        setCandidatePositions([]);
+      }
+    } catch (error) {
+      message.error('Failed to fetch candidates');
+      setCandidatePositions([]);
+    }
+  };
+
   // const handleTableChange = (newPagination) => {
   //   fetchBlacklistedCandidates(newPagination.current, newPagination.pageSize);
   // };
@@ -139,20 +203,19 @@ const BlacklistedCandidates = () => {
 
       // Log the values to check the status
       console.log('Form Values:', values);
+      const id = values.name;
 
       // Format the request body according to the API requirements
       const requestBody = {
-        candidateName: values.name,
-        email: values.email,
         blacklistReason: values.reason,
-        status: values.status // Ensure this is being set correctly
+        status: 'BLACKLISTED' // Ensure this is being set correctly
       };
 
       console.log('Request Body:', requestBody);
 
       const response = await apiServices(
-        'POST', 
-        'candidate/blacklist', 
+        'PATCH', 
+        `candidate/${id}/status`, 
         requestBody,
         {
           access_token: {
@@ -167,7 +230,7 @@ const BlacklistedCandidates = () => {
       if (response?.data?.status) {
         message.success('Candidate added to blacklist successfully');
         setIsModalVisible(false);
-        form.resetFields();
+        modalForm.resetFields();
         fetchBlacklistedCandidates();
       } else {
         throw new Error(response?.data?.message || 'Failed to add candidate to blacklist');
@@ -297,7 +360,10 @@ const BlacklistedCandidates = () => {
           <div className="col-auto float-end ms-auto d-flex align-items-center">
             <Button
               className="add-candidate-btn"
-              onClick={() => setIsModalVisible(true)}
+              onClick={() => {
+                fetchNonBlackListedCandidates();
+                setIsModalVisible(true);
+              }}
             >
               <div className='btn-content'>
                 <img src={circle} style={{marginRight:'8px', marginBottom:'20px'}}></img>
@@ -309,8 +375,16 @@ const BlacklistedCandidates = () => {
       </div>
 
     <Form 
-      form={form}
-      onFinish={handleSearch} 
+      form={searchForm}
+      onFinish={handleSearch}
+      onValuesChange={(changedValues, allValues) => {
+        const clearedField = Object.keys(changedValues).find(
+          key => changedValues[key] === '' || changedValues[key] === undefined
+        );
+        if (clearedField) {
+          handleSearch(allValues);        
+        }
+      }}
       className="search-form"
       initialValues={pagination}
     >
@@ -426,33 +500,54 @@ const BlacklistedCandidates = () => {
         visible={isModalVisible}
         onCancel={() => {
           setIsModalVisible(false);
-          form.resetFields();
+          modalForm.resetFields();
         }}
         footer={null}
       >
         <Form
-          form={form}
+          form={modalForm}
           layout="vertical"
           onFinish={handleAddToBlacklist}
         >
           <Form.Item
-            className= 'custom-input'
+            className= 'custom-border'
             name="name"
             label="Candidate Name"
-            rules={[{ required: true, message: 'Please enter candidate name' }]}
+            rules={[{ required: true, message: 'Please select candidate name' }]}
           >
-            <Input placeholder="Enter candidate name" />
+            <Select 
+              placeholder="Select a candidate"
+              onChange={(candidateId, option) => {
+                fetchCandidatePositions(candidateId);
+                setCandidatePositions([]);
+                modalForm.setFieldsValue({ position: undefined });
+              }}
+            >
+              {allCandidates.map(candidate => (
+                <Select.Option key={candidate._id} value={candidate._id}>
+                  {candidate.firstName} {candidate.lastName} ({candidate.email})
+                </Select.Option>
+              ))}
+            </Select>
           </Form.Item>
 
           <Form.Item
-            className= 'custom-input'
+            className= 'custom-border'
             name="position"
             label="Position Applied"
             rules={[
               { required: true, message: 'Please Enter Applied Postion' }
             ]}
           >
-            <Input placeholder="Enter email address" />
+            <Select 
+              placeholder="Select a position"
+            >
+              {candidatePositions.map(position => (
+                <Select.Option key={position._id} value={position._id}>
+                  {position.title}
+                </Select.Option>
+              ))}
+            </Select>
           </Form.Item>
 
           <Form.Item
@@ -485,7 +580,7 @@ const BlacklistedCandidates = () => {
                 style={{marginRight:'8px' , height:"40px"  ,borderRadius:"32px" ,background:"#f7f7f8" ,color:"#a5adb6" }}
                 onClick={() => {
                   setIsModalVisible(false);
-                  form.resetFields();
+                  modalForm.resetFields();
                 }}
               >
                 Cancel

@@ -49,7 +49,7 @@ const CreateTaskModal = ({ isVisible, onCancel, onSubmit, candidate, authState }
       );
 
       if (response?.data?.success === true) {
-        const emps = response?.data?.data || [];
+        const emps = response?.data?.User || [];
         const sortedData = emps
           .slice()
           .sort((a, b) => a.fullName.localeCompare(b.fullName));
@@ -66,6 +66,10 @@ const CreateTaskModal = ({ isVisible, onCancel, onSubmit, candidate, authState }
       );
     }
   };
+
+  const handleReset = () => {
+    form.resetFields();
+  }; 
 
   const validateFile = (file) => {
     // Check file size
@@ -84,8 +88,10 @@ const CreateTaskModal = ({ isVisible, onCancel, onSubmit, candidate, authState }
   };
 
   const handleFinish = (values) => {
-    console.log('Form submitted with values:', values); // Debug log
-    onSubmit(values); // Call the onSubmit function passed as a prop
+    // Append the selected file (if any) to values as 'taskFile'
+    const fileObj = fileList && fileList.length > 0 ? fileList[0].originFileObj : null;
+    const submitValues = { ...values, taskFile: fileObj };
+    onSubmit(submitValues); // Call the onSubmit function passed as a prop
   };
 
   const handleCancel = () => {
@@ -183,12 +189,14 @@ const CreateTaskModal = ({ isVisible, onCancel, onSubmit, candidate, authState }
 
         <div className="row">
           <div className="col-md-6">
+          <div style={{ position: 'relative' }} id='area'>
             <Form.Item
               name="taskReviewers"
               label={<>Task Reviewer</>}
               rules={[{ required: true, message: 'Please select task reviewer' }]}
             >
               <Select
+                getPopupContainer={() => document.getElementById('area')} 
                 mode="multiple"
                 showSearch
                 filterOption={(input, option) => 
@@ -209,6 +217,7 @@ const CreateTaskModal = ({ isVisible, onCancel, onSubmit, candidate, authState }
                 ))}
               </Select>
             </Form.Item>
+            </div>
           </div>
           <div className="col-md-6">
             <Form.Item
@@ -268,7 +277,7 @@ const CreateTaskModal = ({ isVisible, onCancel, onSubmit, candidate, authState }
 
         <div className="text-end mt-4 pt-2 pb-4">
           <Button 
-            onClick={handleCancel}
+            onClick={handleReset}
             style={{ 
               marginRight: '12px',
               padding: '6px 24px',

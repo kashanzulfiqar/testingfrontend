@@ -26,6 +26,7 @@ import department from '../../assets/iconsRecruitment/department.svg';
 import facebook from '../../assets/iconsRecruitment/Facebook.svg';
 import indeed from '../../assets/iconsRecruitment/indeed.svg';
 import linkdin from '../../assets/iconsRecruitment/linkedin-icon.svg';
+import website from '../../assets/iconsRecruitment/websiteGlobe.svg';
 import instagram from '../../assets/iconsRecruitment/insta.svg';
 import Timeline from '../../assets/iconsRecruitment/Timeline.svg';
 import candidate from '../../assets/iconsRecruitment/candidate.svg';
@@ -450,10 +451,18 @@ const JobDetails = () => {
               <div className="info-section">
                 <h5 className="mb-3" style={{fontSize:'18px', fontWeight:"500", color:'#212529'}}>Posted on</h5>
                 <div className="d-flex gap-2">
-                  <img src={indeed}></img>
-                  <img src={linkdin}></img>
-                  <img src={instagram}></img>
-                  <img src={facebook}></img>
+                  {jobDetails?.postingPlatforms.includes("WEBSITE") && (
+                    <img src={website}></img>
+                  )}
+                  {jobDetails?.postingPlatforms.includes("LINKEDIN") && (
+                    <img src={linkdin}></img>
+                  )}
+                  {jobDetails?.postingPlatforms.includes("FACEBOOK") && (
+                    <img src={facebook}></img>
+                  )}
+                  {jobDetails?.postingPlatforms.includes("INDEED") && (
+                    <img src={indeed}></img>
+                  )}
                 </div>
               </div>
             </div>

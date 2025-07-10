@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Table, Button, Select, Input, Modal, Form, message, Spin, Tag, Row, Col, Card, Dropdown, Menu, Pagination } from 'antd';
+import { Table, Button, Select, Input, Modal, Form, message, Spin, Tag, Row, Col, Card, Dropdown, Menu, Pagination, Tooltip, Avatar } from 'antd';
 import { UnorderedListOutlined, AppstoreOutlined, StarFilled, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { apiServices } from '../../Services/apiServices';
 import { useSelector } from 'react-redux';
@@ -244,11 +244,15 @@ const [pagination, setPagination] = useState({
         console.log("record of interviwers",record);
         return(
           <div className='social-icons'>
-            <Link to="#" className="social-icon-one"><img src={MainInterviewer} style={{height:"40px" ,width:"40px" ,borderRadius:"50%", border:'2px solid white'}}></img></Link>
+            <Tooltip title={record?.interviewerId?.fullName}>
+                <Avatar style={{cursor: 'pointer'}} src={MainInterviewer || user_icon} />
+              </Tooltip>
             {OptionalInterviewer.map((interviewer, index) => (
-              <Link key={index} to="#" className="social-icon-two" style={{ marginLeft: "-10px" }}>
-                <img src={interviewer?.imageUrl} style={{ height: "40px", width: "40px", borderRadius: "50%", border:'2px solid white'}}/>
-              </Link>
+              <li key={index}>
+              <Tooltip title={interviewer?.fullName}>
+                <Avatar style={{cursor: 'pointer'}} src={interviewer?.imageUrl || user_icon} />
+              </Tooltip>
+            </li>
             ))}
           </div>
         )
