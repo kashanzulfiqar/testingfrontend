@@ -11,7 +11,6 @@ const CreateInterviewModal = ({ isVisible, onCancel, candidate, authState, inter
   const [employees, setEmployees] = useState([]);
   const [sendEmail, setSendEmail] = useState(true);
 
-  console.log("aa ja yaar", candidate)
   useEffect(() => {
     if (isVisible) {
       fetchEmployees();
@@ -35,16 +34,21 @@ const CreateInterviewModal = ({ isVisible, onCancel, candidate, authState, inter
       );
 
       if (response?.data?.success) {
-        const sortedData = response.data.data
+        const sortedData = response.data.User
           .slice()
           .sort((a, b) => a.fullName.localeCompare(b.fullName));
         setEmployees(sortedData);
+        console.log("sorted data od all employees", employees)
       }
     } catch (error) {
       console.error('Error fetching employees:', error);
       message.error('Failed to fetch employees');
     }
   };
+
+  const onReset = () => {
+    form.resetFields();
+  }; 
 
   const handleSubmit = async (values) => {
     try {
@@ -151,29 +155,33 @@ const CreateInterviewModal = ({ isVisible, onCancel, candidate, authState, inter
 
         <div className='row'>
           <div className='col-md-6'>
+          <div style={{ position: 'relative' }} id='area'>
             <Form.Item
             name="interviewType"
             label="Interview Type"
             rules={[{ required: true, message: 'Please select interview type' }]}
             >
-            <Select placeholder="Select interview type" className='customized'>
+            <Select placeholder="Select interview type" getPopupContainer={() => document.getElementById('area')} className='customized'>
               <Select.Option value="ONLINE">Online</Select.Option>
               <Select.Option value="IN_PERSON">In Person</Select.Option>
             </Select>
             </Form.Item>
+            </div>
           </div>
           <div className="col-md-6">
+          <div style={{ position: 'relative' }} id='area'>
         <Form.Item
           name="assignTo"
           label="Primary Interviewer"
           rules={[{ required: true, message: 'Please select an interviewer' }]}
         >
           <Select
-            className='customized'
+            className='customselect-height'
             mode= 'multiple'
             placeholder="Select interviewer"
             showSearch
             optionFilterProp="children"
+            getPopupContainer={() => document.getElementById('area')}
           >
             {employees.map((emp) => (
               <Select.Option key={emp._id} value={emp._id}>
@@ -182,23 +190,26 @@ const CreateInterviewModal = ({ isVisible, onCancel, candidate, authState, inter
             ))}
           </Select>
         </Form.Item>
+        </div>
           </div>
         </div>
 
         <div className='row'>
           <div class='col-md-6'>
+          <div style={{ position: 'relative' }} id='area'>
             <Form.Item
             name="interviewTitle"
             label="Interview Title"
             rules={[{ required: true, message: 'Please select interview title' }]}
             >
-              <Select placeholder="Select interview title" className='customized'>
+              <Select placeholder="Select interview title" getPopupContainer={() => document.getElementById('area')} className='customized'>
                 <Select.Option value="Initial Interview">Initial Interview</Select.Option>
                 <Select.Option value="Technical Interview">Technical Interview</Select.Option>
                 <Select.Option value="HR Interview">HR Interview</Select.Option>
                 <Select.Option value="Final Interview">Final Interview</Select.Option>
               </Select>
-            </Form.Item>  
+            </Form.Item>
+            </div>  
           </div> 
           <div className='col-md-6'>
             <Form.Item
@@ -263,7 +274,7 @@ const CreateInterviewModal = ({ isVisible, onCancel, candidate, authState, inter
         </Form.Item>  */}
         <Form.Item className="text-end mt-3" style={{backgroundColor:'transparent', height:"70px"}}>
             <Button 
-              onClick={onCancel} 
+              onClick={onReset} 
               style={{ 
                 marginRight: '12px',
                 padding: '6px 24px',

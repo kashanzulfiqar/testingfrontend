@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Typography, Tag, Button, Dropdown, Menu, Table, Modal} from 'antd';
+import { Card, Row, Col, Typography, Tag, Button, Dropdown, Menu, Table, Modal, message} from 'antd';
 import { Link ,useNavigate  } from 'react-router-dom';
 import { 
   MoreOutlined, 
@@ -79,6 +79,7 @@ const Dashboard = () => {
   });
   const [viewType , setViewType] = useState('grid');
   const [openPositions, setOpenPositions] = useState([]);
+  const [TotalPositions, setTotalPositions] = useState([]);
   const authState = useSelector((state) => state.user.loginvalue);
   const [pagination , setPagination] = useState({
     current: 1,
@@ -88,9 +89,10 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchDashboardData();
+    fetchJobs();
   }, []);
 
-  const fetchDashboardData = async () => {
+  const fetchJobs = async () => {
     const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
     
     if (!token) {
@@ -115,7 +117,25 @@ const Dashboard = () => {
 
       if (jobsResponse?.data?.status) {
         setOpenPositions(jobsResponse.data.data.docs || []);
+        setTotalPositions(jobsResponse.data.data.totalDocs || []);
       }
+    } catch (error) {
+      console.error('Error fetching jobs data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchDashboardData = async () => {
+    const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
+    
+    if (!token) {
+      console.error('No authentication token found');
+      return;
+    }
+
+    try {
+      setLoading(true);
 
       // Fetch candidate statistics
       const statsResponse = await apiServices(
@@ -192,9 +212,9 @@ const Dashboard = () => {
         dataIndex: 'applicationCount',
         key: 'applicationCount',
         render: (count, record) => (
-          <Link to={`/recruitment/jobs/${record._id}/applications`} className="text-primary">
+          <div className="text-primary">
             {count || 0}
-          </Link>
+          </div>
         ),
         sorter: true,
       },
@@ -210,10 +230,10 @@ const Dashboard = () => {
         key: 'postedOn',
         render:(text,record)=>(
           <div className= 'social-icons'>
-          <Link to="#" className="social-icon-one"><img src={indeed}></img></Link>
-          <Link to="#" className="social-icon-two"><img src={linkedin}></img></Link>
-          <Link to="#" className="social-icon-three"><img src={instagram}></img></Link> 
-          <Link to="#" className="social-icon-four"><img src={facebook}></img></Link> 
+          <img className="social-icon-one" src={indeed}></img>
+          <img className="social-icon-two" src={linkedin}></img>
+          <img className="social-icon-three" src={instagram}></img> 
+          <img className="social-icon-four" src={facebook}></img> 
         </div>
         )
       },
@@ -270,11 +290,14 @@ const Dashboard = () => {
             }
           }
         );
+        
         if (response?.data?.status) {
           message.success('Job deleted successfully');
-          fetchJobs();
+          await fetchJobs();
+          return Promise.resolve();
         } else {
           message.error(response?.data?.message || 'Failed to delete job');
+          return Promise.reject();
         }
       } catch (error) {
         console.error('Delete job error:', error.response?.data || error.message);
@@ -678,7 +701,7 @@ const Dashboard = () => {
           alignItems: 'center', 
           marginBottom: 16 
         }}>
-          <Title level={5} style={{display:'flex' , alignItems:"center",fontSize:"24px" , fontWeight:"500"}}>Open Positions <Tag style={{height:"20px" ,width:"20px" ,borderRadius:"50%" ,color:"#ff9244" ,background:"#fff1e5" ,display:"flex", justifyContent:"center" ,alignItems:"center" , border:"1px solid transparent", margin:"0px 0px 0px 7px" ,paddingBottom:"0px"}}>{openPositions.length}</Tag></Title>
+          <Title level={5} style={{display:'flex' , alignItems:"center",fontSize:"24px" , fontWeight:"500"}}>Open Positions <Tag style={{height:"20px" ,width:"20px" ,borderRadius:"50%" ,color:"#ff9244" ,background:"#fff1e5" ,display:"flex", justifyContent:"center" ,alignItems:"center" , border:"1px solid transparent", margin:"0px 0px 0px 7px" ,paddingBottom:"0px"}}>{TotalPositions}</Tag></Title>
           <div style={{ display: 'flex', gap: 8 }}>
             <div style={{height:"40px" , width:"40px" , border:'1px solid #EEF0F1' , borderRadius:"8px", display:'flex' ,justifyContent:"center" , alignItems:'center' , cursor:"pointer" }} onClick={()=>{setViewType('grid')}}>
               <img src={grid}></img>
@@ -709,7 +732,7 @@ const Dashboard = () => {
                       </div>
                       <Dropdown
                         overlay={<Menu>
-                          {/* <Menu.Item key="edit" icon={<EditOutlined />}onClick={() => navigate(`/recruitment/jobs/${position._id}/edit`)}>Edit</Menu.Item> */}
+                          <Menu.Item key="edit" icon={<EditOutlined />}onClick={() => navigate(`/recruitment/jobs/${position._id}/edit`)}>Edit</Menu.Item>
                           <Menu.Item key="delete" icon={<DeleteOutlined />} danger onClick={() => {
                             Modal.confirm({
                             title: 'Delete Job',
@@ -744,17 +767,15 @@ const Dashboard = () => {
                       <div style={{width:'60%'}}>
                         <div className='post-on'><span>Posted on:</span></div>
                         <div className= 'social-icons'>
-                          <Link to="#" className="social-icon-one"><img src={indeed}></img></Link>
-                          <Link to="#" className="social-icon-two"><img src={linkedin}></img></Link>
-                          <Link to="#" className="social-icon-three"><img src={instagram}></img></Link> 
-                          <Link to="#" className="social-icon-four"><img src={facebook}></img></Link> 
+                          <img className="social-icon-one" src={indeed}></img>
+                          <img className="social-icon-two" src={linkedin}></img>
+                          <img className="social-icon-three" src={instagram}></img> 
+                          <img className="social-icon-four" src={facebook}></img>
                         </div>
                       </div>
                       <div className="applications-count">
-                        <Link to={`/recruitment/jobs/${position._id}/applications`}>
-                          <div className= 'applications-count-number'>{position.applicationCount || 0}</div>
-                          <div className='applications-count-text'>Applications</div>
-                        </Link>
+                        <div className= 'applications-count-number'>{position.applicationCount || 0}</div>
+                        <div className='applications-count-text'>Applications</div>
                       </div> 
                     </div>
                   </div>

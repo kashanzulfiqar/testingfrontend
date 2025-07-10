@@ -19,7 +19,8 @@ const BlacklistedCandidates = () => {
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [form] = Form.useForm();
+  const [searchForm] = Form.useForm();
+  const [modalForm] = Form.useForm();
   const authState = useSelector((state) => state.user.loginvalue);
   const [pagination, setPagination] = useState({
     current: 1,
@@ -229,7 +230,7 @@ const BlacklistedCandidates = () => {
       if (response?.data?.status) {
         message.success('Candidate added to blacklist successfully');
         setIsModalVisible(false);
-        form.resetFields();
+        modalForm.resetFields();
         fetchBlacklistedCandidates();
       } else {
         throw new Error(response?.data?.message || 'Failed to add candidate to blacklist');
@@ -374,7 +375,7 @@ const BlacklistedCandidates = () => {
       </div>
 
     <Form 
-      form={form}
+      form={searchForm}
       onFinish={handleSearch}
       onValuesChange={(changedValues, allValues) => {
         const clearedField = Object.keys(changedValues).find(
@@ -499,17 +500,17 @@ const BlacklistedCandidates = () => {
         visible={isModalVisible}
         onCancel={() => {
           setIsModalVisible(false);
-          form.resetFields();
+          modalForm.resetFields();
         }}
         footer={null}
       >
         <Form
-          form={form}
+          form={modalForm}
           layout="vertical"
           onFinish={handleAddToBlacklist}
         >
           <Form.Item
-            // className= 'custom-input'
+            className= 'custom-border'
             name="name"
             label="Candidate Name"
             rules={[{ required: true, message: 'Please select candidate name' }]}
@@ -519,7 +520,7 @@ const BlacklistedCandidates = () => {
               onChange={(candidateId, option) => {
                 fetchCandidatePositions(candidateId);
                 setCandidatePositions([]);
-                form.setFieldsValue({ position: undefined });
+                modalForm.setFieldsValue({ position: undefined });
               }}
             >
               {allCandidates.map(candidate => (
@@ -531,7 +532,7 @@ const BlacklistedCandidates = () => {
           </Form.Item>
 
           <Form.Item
-            className= 'custom-input'
+            className= 'custom-border'
             name="position"
             label="Position Applied"
             rules={[
@@ -579,7 +580,7 @@ const BlacklistedCandidates = () => {
                 style={{marginRight:'8px' , height:"40px"  ,borderRadius:"32px" ,background:"#f7f7f8" ,color:"#a5adb6" }}
                 onClick={() => {
                   setIsModalVisible(false);
-                  form.resetFields();
+                  modalForm.resetFields();
                 }}
               >
                 Cancel

@@ -26,6 +26,7 @@ import department from '../../assets/iconsRecruitment/department.svg';
 import facebook from '../../assets/iconsRecruitment/Facebook.svg';
 import indeed from '../../assets/iconsRecruitment/indeed.svg';
 import linkdin from '../../assets/iconsRecruitment/linkedin-icon.svg';
+import website from '../../assets/iconsRecruitment/websiteGlobe.svg';
 import instagram from '../../assets/iconsRecruitment/insta.svg';
 import Timeline from '../../assets/iconsRecruitment/Timeline.svg';
 import candidate from '../../assets/iconsRecruitment/candidate.svg';

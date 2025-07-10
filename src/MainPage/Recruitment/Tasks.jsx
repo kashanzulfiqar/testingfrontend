@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Table, Button, Select, Input, Modal, Form, message, Spin, Tag, Row, Col, Card, Dropdown, Menu, Pagination } from 'antd';
+import { Table, Button, Select, Input, Modal, Form, message, Spin, Tag, Row, Col, Card, Dropdown, Menu, Pagination, Tooltip, Avatar } from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { apiServices } from '../../Services/apiServices';
 import { useSelector } from 'react-redux';
@@ -290,9 +290,11 @@ const Tasks = () => {
         return(
           <div className='social-icons'>
             {Reviewers.map((reviewer, index) => (
-              <Link key={index} to="#" className="social-icon-two">
-                <img src={reviewer?.imageUrl} style={{ height: "40px", width: "40px", borderRadius: "50%", border: '2px solid white' }} />
-              </Link>
+              <li key={index}>
+              <Tooltip title={reviewer?.fullName}>
+                <Avatar style={{cursor: 'pointer'}} src={reviewer?.imageUrl || user_icon} />
+              </Tooltip>
+            </li>
             ))}
           </div>
         )

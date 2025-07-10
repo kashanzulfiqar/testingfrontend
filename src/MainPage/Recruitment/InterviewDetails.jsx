@@ -239,7 +239,7 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
       return;
     }
 
-    window.open(interview.candidateId.resume, "_blank");
+    window.open(interview?.candidateId?.resume, "_blank");
   };
 
   const handleDownloadResume = async () => {
@@ -249,12 +249,12 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
     }
 
     try {
-      const response = await fetch(interview?.candidateId.resume);
+      const response = await fetch(interview?.candidateId?.resume);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = interview.candidateId.resume.split("/").pop();
+      link.download = interview?.candidateId?.resume.split("/").pop();
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -312,7 +312,7 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
 
       <div className='initials-div'>
         <div style={{display:"flex", alignItems:'center'}}>
-          <div className='initials-details'>{interview?.candidateId.firstName?.[0].toUpperCase()}{interview?.candidateId.lastName?.[0].toUpperCase()}</div>
+          <div className='initials-details'>{interview?.candidateId?.firstName?.[0].toUpperCase()}{interview?.candidateId?.lastName?.[0].toUpperCase()}</div>
           <div>
             <h3 className="ms-3 mt-2 mb-0" style={{fontSize:'20px', fontweight:'500', color:"#000000"}}>{interview?.candidateName.split(' ').map(word=>word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}</h3>
             <h5 className='ms-3' style={{fontSize:'14px', fontweight:'450', color:"#444444"}} >Hello</h5> 
@@ -325,7 +325,7 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
         </div>
         <div className="custom">
           <div
-            onClick={() => window.open(interview.interviewLink, '_blank')}
+            onClick={() => window.open(interview?.interviewLink, '_blank')}
             className= 'select-btn'
           >
             <div className='joinImg'><img src={camera} style={{height:"20px", width:'20px'}}></img></div>
@@ -386,7 +386,7 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
           {interview?.status !== 'in-review' && (
             <Col  xs={12} sm={12} md={8} lg={6}  style={{paddingTop:"10px"}}>
               <p className="text-muted mb-1" style={{fontSize:"14px" ,fontWeight:"450",color:'#212529'}}>Medium</p>
-              <p onClick={() => window.open(interview.interviewLink, '_blank')} style={{cursor:"pointer" ,textDecoration:"underLine" ,color:"#009efb"}}>www.zoom.com</p>
+              <p onClick={() => window.open(interview?.interviewLink, '_blank')} style={{cursor:"pointer" ,textDecoration:"underLine" ,color:"#009efb"}}>www.zoom.com</p>
             </Col>
           )}
         </Row>
@@ -395,8 +395,8 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
             <div style={{display:"flex"}}>
               <div style={{height:"50px" ,width:"50px" ,borderRadius:"50%" ,background:'lightgrey', display:"flex", justifyContent:'center' ,alignItems:"center", alignSelf:"center"}}><img src={description}></img></div>
               <div style={{padding:"10px 0px 10px 10px"}}>
-                <p style={{marginBottom:'0px' ,fontSize:"14px" ,fontWeight:"500"}}>{interview.candidateId.resume ? interview.candidateId.resume : 'undefined'}</p>
-                <p style={{marginBottom:'0px',fontSize:"12px" ,fontWeight:"450"}}>{interview.candidateId.resume ? interview.candidateId.resume : 'undefined'}</p>
+                <p style={{marginBottom:'0px' ,fontSize:"14px" ,fontWeight:"500"}}>{interview?.candidateId?.resume ? interview?.candidateId?.resume : 'undefined'}</p>
+                <p style={{marginBottom:'0px',fontSize:"12px" ,fontWeight:"450"}}>{interview?.candidateId?.resume ? interview?.candidateId?.resume : 'undefined'}</p>
               </div>
               </div>
               <div>
@@ -425,7 +425,7 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
             </div>
         {/* )} */}
         
-        {interview.status === 'completed' && (
+        {interview?.status === 'completed' && (
           <div>
             {interview?.feedback?.map((feedback, index) => (
               <InterviewFeedbackDisplay key={index} feedback={feedback} />

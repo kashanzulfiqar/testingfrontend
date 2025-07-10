@@ -3,15 +3,16 @@ import { Modal, Form, Input, Upload, Button, Alert, message } from 'antd';
 import uploadIcon from '../../assets/iconsRecruitment/cloud.svg';
 import deleteIcon from '../../assets/iconsRecruitment/deleteIcon.svg';
 
-const SendOfferModal = ({ visible, onCancel, onSubmit, loading, candidate, existingOffer }) => {
+const SendOfferModal = ({ visible, onCancel, onSubmit, loading, candidate, offerStatus, existingOffer }) => {
   const [form] = Form.useForm();
   const [uploadedContract, setUploadedContract] = useState(null);
   const [fileInfo, setFileInfo] = useState(null);
   const [hasExistingOffer, setHasExistingOffer] = useState(false);
 
   useEffect(() => {
+    console.log("whats inside existing Offer",existingOffer)
     if (visible) {
-      if (existingOffer === 'OFFERED') {
+      if (offerStatus === 'OFFERED') {
         setHasExistingOffer(true);
         form.setFieldsValue({
           title: existingOffer.title,
