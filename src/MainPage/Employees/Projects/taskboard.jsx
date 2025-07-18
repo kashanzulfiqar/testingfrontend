@@ -23,6 +23,8 @@ import {
   LoadingOutlined,
   MinusCircleFilled,
   PlusOutlined,
+  CheckOutlined,
+  CloseOutlined,
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { Modal } from "@mui/material";
@@ -31,6 +33,9 @@ import { useSelector } from "react-redux";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { useForm } from "react-hook-form";
 import TaskModal from "./taskModal";
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import moment from 'moment';
 
 const TaskBoard = () => {
   const [form] = Form.useForm();
@@ -75,6 +80,10 @@ const TaskBoard = () => {
   const [employees, setEmployees] = useState([]);
   const [allEmployees, setAllEmployees] = useState([]);
   const [loadingAllEmployees, setLoadingAllEmployees] = useState(false);
+  const [descValue, setDescValue] = useState('');
+  const [editingDueDate, setEditingDueDate] = useState(false);
+  const [dueDateValue, setDueDateValue] = useState(null);
+  const [originalDueDate, setOriginalDueDate] = useState(null);
 
   const handleEditClick = () => {
     setIsEditing(true);
@@ -1124,6 +1133,21 @@ const TaskBoard = () => {
       });
     }
   };
+
+  useEffect(() => {
+    if (addTask.isAddOpen) {
+      setDescValue(addTask.data?.description || '');
+      setDueDateValue(addTask.data?.dueDate ? moment(addTask.data.dueDate) : null);
+      setOriginalDueDate(addTask.data?.dueDate ? moment(addTask.data.dueDate) : null);
+      // Fetch employees if not already loaded
+      if (allEmployees.length === 0) {
+        apiServices("GET", `user/all-employees`, null, user_state)
+          .then(res => {
+            if (res?.data?.success) setAllEmployees(res.data.User || []);
+          });
+      }
+    }
+  }, [addTask.isAddOpen]);
 
   return (
     <>
@@ -2749,7 +2773,7 @@ const TaskBoard = () => {
               <Form
                 form={form2}
                 onFinish={(values) => {
-                  onFinishAdd(values);
+                  onFinishAdd({ ...values, description: descValue, dueDate: dueDateValue });
                 }}
                 onFinishFailed={({ errorFields }) => {
                   const consecutiveSpacesError = errorFields.find((field) =>
@@ -2767,32 +2791,25 @@ const TaskBoard = () => {
                   <div className="col-12">
                     <div className="form-group">
                       <label>
-                        {t("Tasks.title")}{" "}
-                        <span className="text-danger">*</span>
+                        {t("Tasks.title")} <span className="text-danger">*</span>
                       </label>
                       <Form.Item
                         name="title"
                         className="custom-border"
-                        rules={[
-                          {
+                        rules={[{
                             whitespace: true,
                             required: true,
                             validator: (_, value) => {
                               if (!value || value.trim() === "") {
-                                return Promise.reject(
-                                  t("Tasks.pleaseentertitle")
-                                );
+                              return Promise.reject(t("Tasks.pleaseentertitle"));
                               } else if (/\s{2,}/.test(value)) {
-                                return Promise.reject(
-                                  t("allEmp.errors.removeConsecutiveSpaces2")
-                                );
+                              return Promise.reject(t("allEmp.errors.removeConsecutiveSpaces2"));
                               } else if (value.length < 3) {
                                 return Promise.reject(t("Tasks.titleLength"));
                               }
                               return Promise.resolve();
                             },
-                          },
-                        ]}
+                        }]}
                       >
                         <Input className="form-control" maxLength={50} />
                       </Form.Item>
@@ -2802,49 +2819,22 @@ const TaskBoard = () => {
                     <div className="form-group">
                       <label>
                         {t("Tasks.tags")} <span className="text-danger">*</span>
-                        <Tooltip
-                          className="custom-tooltip"
-                          placement="rightBottom"
-                          title={<label>{t("Tasks.taginstruction")}</label>}
-                        >
-                          <span
-                            style={{
-                              border: "1px solid grey",
-                              color: "grey",
-                              fontSize: "12px",
-                              borderRadius: "50%",
-                              padding: "1.5px 4px 1px",
-                              margin: "5px",
-                              cursor: "pointer",
-                            }}
-                          >
+                        <Tooltip className="custom-tooltip" placement="rightBottom" title={<label>{t("Tasks.taginstruction")}</label>}>
+                          <span style={{border: '1px solid grey', color: 'grey', fontSize: '12px', borderRadius: '50%', padding: '1.5px 4px 1px', margin: '5px', cursor: 'pointer'}}>
                             {t("Tasks.Qmark")}
                           </span>
                         </Tooltip>
                       </label>
-                      <div
-                        style={{ position: "relative" }}
-                        className="hideDropdownMenu"
-                        id="area22"
-                      >
+                      <div style={{ position: "relative" }} className="hideDropdownMenu" id="area22">
                         <Form.Item
                           name="tags"
                           className="addTeamHeight"
-                          rules={[
-                            {
-                              // whitespace: true,
-                              required: true,
-                              message: t("Tasks.pleaseentertags"),
-                            },
-                          ]}
+                          rules={[{ required: true, message: t("Tasks.pleaseentertags") }]}
                         >
                           <Select
                             mode="tags"
-                            // className="custom-select custom-normal"
                             className="custom-select customselect-height"
-                            getPopupContainer={() =>
-                              document.getElementById("area22")
-                            }
+                            getPopupContainer={() => document.getElementById("area22")}
                           />
                         </Form.Item>
                       </div>
@@ -2852,54 +2842,95 @@ const TaskBoard = () => {
                   </div>
                   <div className="col-12">
                     <div className="form-group">
-                      <label
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                        }}
-                      >
-                        <div>
-                          {t("finance.Invoices.description")}{" "}
-                          <span className="text-danger">*</span>
-                        </div>
+                      <label style={{display: 'flex', justifyContent: 'space-between'}}>
+                        <div>{t('finance.Invoices.description')} <span className="text-danger">*</span></div>
                       </label>
                       <Form.Item
                         name="description"
-                        rules={[
-                          {
-                            whitespace: true,
+                        rules={[{
                             required: true,
                             validator: (_, value) => {
-                              if (!value || value.trim() === "") {
-                                return Promise.reject(
-                                  t("Tasks.pleaseenterdescription")
-                                );
-                              } else if (/\s{2,}/.test(value)) {
-                                return Promise.reject(
-                                  t("allEmp.errors.removeConsecutiveSpaces2")
-                                );
-                              } else if (value.length <= 4) {
-                                return Promise.reject(
-                                  t("Tasks.descriptionLength")
-                                );
+                            const plain = descValue.replace(/<(.|\n)*?>/g, '');
+                            if (!plain || plain.trim() === '') {
+                              return Promise.reject(t('Tasks.pleaseenterdescription'));
+                            }
+                            if (/\s{2,}/.test(plain)) {
+                              return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
+                            }
+                            if (plain.length <= 4) {
+                              return Promise.reject(t('Tasks.descriptionLength'));
                               }
                               return Promise.resolve();
                             },
-                          },
-                        ]}
+                        }]}
                         className="custom-border"
                       >
-                        <Input.TextArea rows={3} className="form-control" />
+                        <ReactQuill value={descValue} onChange={setDescValue} theme="snow" style={{ minHeight: 100 }} />
                       </Form.Item>
                     </div>
                   </div>
+                  <div className="col-12">
+                    <Form.Item name="assignee" label="Assignee" className="custom-border">
+                      <Select
+                        showSearch
+                        placeholder="Select assignee"
+                        allowClear
+                        optionFilterProp="children"
+                        filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                      >
+                        <Select.Option value="">Unassigned</Select.Option>
+                        {allEmployees.map(user => (
+                          <Select.Option key={user._id} value={user._id}>{user.fullName}</Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </div>
+                  <div className="col-12">
+                    <Form.Item name="priority" label="Priority" className="custom-border">
+                      <Select placeholder="Select priority" allowClear>
+                        <Select.Option value="Highest">Highest</Select.Option>
+                        <Select.Option value="High">High</Select.Option>
+                        <Select.Option value="Medium">Medium</Select.Option>
+                        <Select.Option value="Low">Low</Select.Option>
+                        <Select.Option value="Lowest">Lowest</Select.Option>
+                      </Select>
+                    </Form.Item>
+                  </div>
+                  <div className="col-12">
+                    <Form.Item name="dueDate" label="Due date" className="custom-border">
+                      {editingDueDate ? (
+                        <span style={{display: 'flex', alignItems: 'center', gap: 8}}>
+                          <DatePicker
+                            value={dueDateValue}
+                            onChange={setDueDateValue}
+                            allowClear
+                            style={{minWidth: 120}}
+                          />
+                          <CheckOutlined style={{color: '#52c41a', cursor: 'pointer'}} onClick={() => {
+                            form2.setFieldsValue({ dueDate: dueDateValue });
+                            setEditingDueDate(false);
+                            setOriginalDueDate(dueDateValue);
+                          }} />
+                          <CloseOutlined style={{color: '#f5222d', cursor: 'pointer'}} onClick={() => {
+                            setEditingDueDate(false);
+                            setDueDateValue(originalDueDate);
+                          }} />
+                        </span>
+                      ) : (
+                        <span style={{cursor: 'pointer'}} onClick={() => setEditingDueDate(true)}>
+                          {dueDateValue ? dueDateValue.format('YYYY-MM-DD') : 'None'}
+                        </span>
+                      )}
+                    </Form.Item>
+                  </div>
+                  <div className="col-12">
+                    <Form.Item name="labels" label="Labels" className="custom-border">
+                      <Select mode="tags" style={{ width: '100%' }} placeholder="Add labels" />
+                    </Form.Item>
+                  </div>
                 </div>
                 <div className="submit-section">
-                  <button
-                    type="submit"
-                    className="btn btn-primary submit-btn"
-                    disabled={loader}
-                  >
+                  <button type="submit" className="btn btn-primary submit-btn" disabled={loader}>
                     {loader ? (
                       <Spin size="small" indicator={antIcon} />
                     ) : (
