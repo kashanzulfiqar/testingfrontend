@@ -10,11 +10,19 @@ import {
   Tag,
   Tooltip,
   Empty,
+  Button,
+  DatePicker,
+  Card,
+  Dropdown,
+  Menu,
 } from "antd";
-import { PlusCircleOutlined } from "@ant-design/icons";
+import { PlusCircleOutlined, UserOutlined, ArrowUpOutlined, ArrowDownOutlined, MinusOutlined, CloseCircleOutlined, CheckOutlined, CloseOutlined, UploadOutlined, PaperClipOutlined, DeleteOutlined, EyeOutlined, DownloadOutlined, EllipsisOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 import { apiServices } from "../../../Services/apiServices";
 import { useSelector } from "react-redux";
 import { user_icon } from "../../../Entryfile/imagepath";
+import moment from 'moment';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 const TaskDetails = () => {
   const { t } = useTranslation();
@@ -36,12 +44,35 @@ const TaskDetails = () => {
   const [descriptionDropdownOpen, setDescriptionDropdownOpen] = useState(false);
   const [isDescriptionLoading, setIsDescriptionLoading] = useState(false);
   const [isStatusLoading, setIsStatusLoading] = useState(false);
+  const [comments, setComments] = useState([]);
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const [comment, setComment] = useState("");
+  const [postingComment, setPostingComment] = useState(false);
+  const [history, setHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [activityTab, setActivityTab] = useState("comments");
+  const [assignee, setAssignee] = useState(taskData?.assignee || null);
+  const [priority, setPriority] = useState(taskData?.priority || null);
+  const [priorityLoading, setPriorityLoading] = useState(false);
+  const [assigneeLoading, setAssigneeLoading] = useState(false);
+  const [allEmployees, setAllEmployees] = useState([]);
+  const [assigneeSelectOpen, setAssigneeSelectOpen] = useState(false);
+  const [editingDueDate, setEditingDueDate] = useState(false);
+  const [editingLabels, setEditingLabels] = useState(false);
+  const [dueDateValue, setDueDateValue] = useState(taskData.dueDate ? moment(taskData.dueDate) : null);
+  const [labelsValue, setLabelsValue] = useState(taskData.labels || []);
+  const [labelsInput, setLabelsInput] = useState('');
+  const [attachments, setAttachments] = useState([]);
+  const [attachmentsLoading, setAttachmentsLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   // Add refs for dropdowns
   const statusDropdownRef = React.useRef(null);
   const membersDropdownRef = React.useRef(null);
   const addMembersRef = React.useRef(null);
   const descriptionDropdownRef = React.useRef(null);
+  const fileInputRef = React.useRef();
 
   // Add user state from Redux
   const user_state = useSelector((state) => state?.user?.loginvalue);
@@ -64,6 +95,14 @@ const TaskDetails = () => {
       setMemberLoading(false);
     }
   }, [taskData]);
+
+  // Fetch all employees for assignee dropdown
+  useEffect(() => {
+    apiServices("GET", `user/all-employees`, null, user_state)
+      .then(res => {
+        if (res?.data?.success) setAllEmployees(res.data.User || []);
+      });
+  }, []);
 
   // Function to close all dropdowns
   const closeAllDropdowns = () => {
@@ -388,6 +427,247 @@ const TaskDetails = () => {
     }
   };
 
+  // Fetch comments for a task
+  const fetchComments = async (taskId) => {
+    setCommentsLoading(true);
+    try {
+      const res = await apiServices("GET", `tasks/${taskId}/comments`, null, user_state);
+      if (res?.data?.success) {
+        setComments(res.data.comments);
+      } else {
+        setComments([]);
+      }
+    } catch (err) {
+      setComments([]);
+    }
+    setCommentsLoading(false);
+  };
+  // Post a new comment
+  const postComment = async () => {
+    if (!comment.trim() || !taskData?._id) return;
+    setPostingComment(true);
+    try {
+      const res = await apiServices("POST", `tasks/${taskData._id}/comments`, { text: comment }, user_state);
+      if (res?.data?.success) {
+        setComment("");
+        fetchComments(taskData._id);
+      }
+    } catch (err) {}
+    setPostingComment(false);
+  };
+  // Fetch comments when taskData changes
+  useEffect(() => {
+    if (taskData?._id) {
+      fetchComments(taskData._id);
+    } else {
+      setComments([]);
+    }
+  }, [taskData?._id]);
+
+  const fetchHistory = async (taskId) => {
+    setHistoryLoading(true);
+    try {
+      const res = await apiServices("GET", `tasks/${taskId}/history`, null, user_state);
+      if (res?.data?.success) {
+        setHistory(res.data.history);
+      } else {
+        setHistory([]);
+      }
+    } catch (err) {
+      setHistory([]);
+    }
+    setHistoryLoading(false);
+  };
+  console.log("Active Tab",activeTab)
+
+  useEffect(() => {
+    if (activeTab === "activity" && taskData?._id) {
+      fetchHistory(taskData._id);
+    }
+  }, [activeTab, taskData?._id]);
+
+  const handleAssignToMe = async () => {
+    setAssigneeLoading(true);
+    try {
+      const res = await apiServices("PUT", "tasks", { _id: taskData._id, assignee: user_state.user }, user_state);
+      if (res?.data?.success) {
+        setAssignee(user_state.user);
+        fetchTaskDetails();
+        message.success("Assigned to you");
+      }
+    } catch (err) {
+      message.error("Failed to assign");
+    }
+    setAssigneeLoading(false);
+  };
+  const handlePriorityChange = async (value) => {
+    setPriorityLoading(true);
+    try {
+      const res = await apiServices("PUT", "tasks", { _id: taskData._id, priority: value }, user_state);
+      if (res?.data?.success) {
+        setPriority(value);
+        fetchTaskDetails();
+        message.success("Priority updated");
+      }
+    } catch (err) {
+      message.error("Failed to update priority");
+    }
+    setPriorityLoading(false);
+  };
+  const priorityOptions = [
+    { value: 'Highest', label: (<><ArrowUpOutlined style={{color: '#e74c3c'}} /> Highest</>) },
+    { value: 'High', label: (<><ArrowUpOutlined style={{color: '#e67e22'}} /> High</>) },
+    { value: 'Medium', label: (<><MinusOutlined style={{color: '#f1c40f'}} /> Medium</>) },
+    { value: 'Low', label: (<><ArrowDownOutlined style={{color: '#3498db'}} /> Low</>) },
+    { value: 'Lowest', label: (<><ArrowDownOutlined style={{color: '#2980b9'}} /> Lowest</>) },
+  ];
+
+  const handleAssignToUser = async (userId) => {
+    setAssigneeLoading(true);
+    try {
+      const res = await apiServices("PUT", "tasks", { _id: taskData._id, assignee: userId }, user_state);
+      if (res?.data?.success) {
+        setAssignee(allEmployees.find(u => u._id === userId) || null);
+        fetchTaskDetails();
+        message.success("Assignee updated");
+      }
+    } catch (err) {
+      message.error("Failed to assign");
+    }
+    setAssigneeLoading(false);
+  };
+  const handleUnassign = async () => {
+    setAssigneeLoading(true);
+    try {
+      const res = await apiServices("PUT", "tasks", { _id: taskData._id, assignee: null }, user_state);
+      if (res?.data?.success) {
+        setAssignee(null);
+        fetchTaskDetails();
+        message.success("Unassigned");
+      }
+    } catch (err) {
+      message.error("Failed to unassign");
+    }
+    setAssigneeLoading(false);
+  };
+
+  const handleDueDateSave = async () => {
+    try {
+      await apiServices('PUT', 'tasks', { _id: taskData._id, dueDate: dueDateValue ? dueDateValue.toISOString() : null }, user_state);
+      message.success('Due date updated');
+      setEditingDueDate(false);
+      fetchTaskDetails();
+    } catch (err) {
+      message.error('Failed to update due date');
+    }
+  };
+  const handleLabelsSave = async () => {
+    try {
+      await apiServices('PUT', 'tasks', { _id: taskData._id, labels: labelsValue }, user_state);
+      message.success('Labels updated');
+      setEditingLabels(false);
+      fetchTaskDetails();
+    } catch (err) {
+      message.error('Failed to update labels');
+    }
+  };
+
+  // Fetch attachments
+  const fetchAttachments = async () => {
+    if (!taskData?._id) return;
+    setAttachmentsLoading(true);
+    try {
+      const res = await apiServices("GET", `tasks/${taskData._id}/attachments`, null, user_state);
+      if (res?.data?.success) {
+        setAttachments(res.data.files || []);
+      } else {
+        setAttachments([]);
+      }
+    } catch (err) {
+      setAttachments([]);
+    }
+    setAttachmentsLoading(false);
+  };
+
+  useEffect(() => {
+    fetchAttachments();
+  }, [taskData?._id]);
+
+  const API_URL = process.env.REACT_APP_API_BASE_URL || '';
+  // Upload handler
+  const handleAttachmentUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !taskData?._id) return;
+    setUploading(true);
+    setUploadProgress(0);
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const xhr = new XMLHttpRequest();
+      // Use the correct token path and fallback
+      const token = user_state?.access_token?.accessToken || localStorage.getItem('token');
+      console.log('Uploading with token:', token);
+      // Use environment variable for backend API URL
+      xhr.open('POST', `${API_URL}/tasks/${taskData._id}/attachments`);
+      xhr.setRequestHeader('Authorization', token ? `Bearer ${token}` : '');
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          setUploadProgress(Math.round((event.loaded / event.total) * 100));
+        }
+      };
+      xhr.onload = () => {
+        setUploading(false);
+        setUploadProgress(0);
+        if (xhr.status === 200) {
+          fetchAttachments();
+          message.success('Attachment uploaded');
+        } else {
+          message.error('Failed to upload attachment');
+        }
+      };
+      xhr.onerror = () => {
+        setUploading(false);
+        setUploadProgress(0);
+        message.error('Failed to upload attachment');
+      };
+      xhr.send(formData);
+    } catch (err) {
+      setUploading(false);
+      setUploadProgress(0);
+      message.error('Failed to upload attachment');
+    }
+  };
+
+  const handleUploadButtonClick = () => {
+    if (!uploading && fileInputRef.current) {
+      fileInputRef.current.value = null; // reset so same file can be picked again
+      fileInputRef.current.click();
+    }
+  };
+
+  // Delete handler
+  const handleDeleteAttachment = async (fileId) => {
+    if (!taskData?._id || !fileId) return;
+    setAttachmentsLoading(true);
+    try {
+      const res = await apiServices('DELETE', `tasks/${taskData._id}/attachments/${fileId}`, null, user_state);
+      if (res?.data?.success) {
+        message.success('Attachment deleted');
+        fetchAttachments();
+      } else {
+        message.error('Failed to delete attachment');
+      }
+    } catch (err) {
+      message.error('Failed to delete attachment');
+    }
+    setAttachmentsLoading(false);
+  };
+
+  const handleHideAttachment = (fileId) => {
+    // Implement hide logic or just stub for now
+    message.info('Hide on card clicked (not implemented)');
+  };
+
   return (
     <div className="page-wrapper">
       <div className="content container-fluid">
@@ -481,67 +761,132 @@ const TaskDetails = () => {
           </div>
           <div className={`col-xl-3`}>
             <div className="stickybar">
-              <div className="card contact-sidebar">
-                {taskData?.projectId && (
-                  <h5>
-                    <label
-                      className="other-title"
-                      style={{ minWidth: "120px" }}
+              <div className="card">
+                <div className="card-body">
+                  <h5 style={{fontWeight: 600, marginBottom: 24}}>Details</h5>
+                  {/* Assignee */}
+                  <div style={{marginBottom: 20}}>
+                    <div style={{fontWeight: 500}}>Assignee <span><i className="fa fa-thumb-tack" style={{fontSize: 13}} /></span></div>
+                    <Select
+                      showSearch
+                      style={{width: '100%', marginTop: 4}}
+                      placeholder="Assignee"
+                      value={assignee?._id || 'unassigned'}
+                      onChange={val => {
+                        if (val === 'unassigned') handleUnassign();
+                        else handleAssignToUser(val);
+                      }}
+                      loading={assigneeLoading}
+                      optionFilterProp="children"
+                      filterOption={(input, option) =>
+                        option.props.children[1]?.props?.children?.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                      }
+                      dropdownMatchSelectWidth={false}
+                      open={assigneeSelectOpen}
+                      onDropdownVisibleChange={setAssigneeSelectOpen}
+                      dropdownRender={menu => (
+                        <div>
+                          {menu}
+                        </div>
+                      )}
                     >
-                      {t("Tasks.project")}
-                    </label>
-                  </h5>
-                )}
-                {taskData?.boardId && (
-                  <h5>
-                    <label
-                      className="other-title"
-                      style={{ minWidth: "120px" }}
+                      <Select.Option key="unassigned" value="unassigned">
+                        <span style={{display: 'flex', alignItems: 'center', gap: 8}}>
+                          <UserOutlined style={{fontSize: 18}} />
+                          <span>Unassigned</span>
+                        </span>
+                      </Select.Option>
+                      {allEmployees.map(user => (
+                        <Select.Option key={user._id} value={user._id}>
+                          <span style={{display: 'flex', alignItems: 'center', gap: 8}}>
+                            <Avatar size={24} src={user.imageUrl} style={{background: '#2d3e50', fontWeight: 600}}>
+                              {user.fullName?.split(' ').map(n => n[0]).join('').toUpperCase()}
+                            </Avatar>
+                            <span>{user.fullName}</span>
+                          </span>
+                        </Select.Option>
+                      ))}
+                    </Select>
+                    {/* Assign to me button below dropdown */}
+                    {(!assignee || assignee?._id !== user_state?.user?._id) && (
+                      <div style={{marginTop: 8}}>
+                        <a style={{color: '#1890ff', fontSize: 13, cursor: 'pointer'}} onClick={handleAssignToMe} disabled={assigneeLoading}>
+                          Assign to me
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                  {/* Priority */}
+                  <div style={{marginBottom: 20}}>
+                    <div style={{fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6}}>Priority <span><i className="fa fa-thumb-tack" style={{fontSize: 13}} /></span></div>
+                    <Select
+                      style={{width: '100%', marginTop: 4}}
+                      placeholder="Select Priority"
+                      value={priority}
+                      onChange={handlePriorityChange}
+                      loading={priorityLoading}
+                      optionLabelProp="label"
                     >
-                      {t("Tasks.taskboard")}
-                    </label>
-                  </h5>
-                )}
-                <ul className="other-info">
-                  <li>
-                    {taskData?.projectId && (
-                      <>
-                        <label
-                          className="other-title"
-                          style={{ minWidth: "120px" }}
-                        >
-                          {`${t("Tasks.project")} Name`}
-                        </label>
-                        <label
-                          style={{
-                            overflowWrap: "break-word",
-                            wordBreak: "break-word",
-                          }}
-                        >
-                          {taskData.projectId.projectName}
-                        </label>
-                      </>
-                    )}
-                    {taskData?.boardId && (
-                      <>
-                        <label
-                          className="other-title"
-                          style={{ minWidth: "120px" }}
-                        >
-                          {`${t("Tasks.taskboard")} Name`}
-                        </label>
-                        <label
-                          style={{
-                            overflowWrap: "break-word",
-                            wordBreak: "break-word",
-                          }}
-                        >
-                          {taskData.boardId.boardTitle}
-                        </label>
-                      </>
-                    )}
-                  </li>
-                </ul>
+                      {priorityOptions.map(opt => (
+                        <Select.Option key={opt.value} value={opt.value} label={opt.label}>
+                          {opt.label}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </div>
+                  {/* Due Date */}
+                  <div style={{marginBottom: 20}}>
+                    <div style={{fontWeight: 500}}>Due date</div>
+                    <div style={{marginTop: 4, color: '#555'}}>
+                      {editingDueDate ? (
+                        <span style={{display: 'flex', alignItems: 'center', gap: 8}}>
+                          <DatePicker
+                            value={dueDateValue}
+                            onChange={setDueDateValue}
+                            allowClear
+                            style={{minWidth: 120}}
+                          />
+                          <CheckOutlined style={{color: '#52c41a', cursor: 'pointer'}} onClick={handleDueDateSave} />
+                          <CloseOutlined style={{color: '#f5222d', cursor: 'pointer'}} onClick={() => { setEditingDueDate(false); setDueDateValue(taskData.dueDate ? moment(taskData.dueDate) : null); }} />
+                        </span>
+                      ) : (
+                        <span style={{cursor: 'pointer'}} onClick={() => setEditingDueDate(true)}>
+                          {taskData.dueDate ? moment(taskData.dueDate).format('YYYY-MM-DD') : 'None'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {/* Labels */}
+                  <div style={{marginBottom: 20}}>
+                    <div style={{fontWeight: 500}}>Labels</div>
+                    <div style={{marginTop: 4, display: 'flex', gap: 4, flexWrap: 'wrap'}}>
+                      {editingLabels ? (
+                        <span style={{display: 'flex', alignItems: 'center', gap: 8}}>
+                          <Select
+                            mode="tags"
+                            style={{minWidth: 180}}
+                            value={labelsValue}
+                            onChange={setLabelsValue}
+                            open={true}
+                            tokenSeparators={[',']}
+                            placeholder="Add labels"
+                          />
+                          <CheckOutlined style={{color: '#52c41a', cursor: 'pointer'}} onClick={handleLabelsSave} />
+                          <CloseOutlined style={{color: '#f5222d', cursor: 'pointer'}} onClick={() => { setEditingLabels(false); setLabelsValue(taskData.labels || []); }} />
+                        </span>
+                      ) : (
+                        <span style={{cursor: 'pointer'}} onClick={() => setEditingLabels(true)}>
+                          {taskData.labels && taskData.labels.length > 0 ? (
+                            taskData.labels.map((label, idx) => (
+                              <Tag key={idx} color="blue">{label}</Tag>
+                            ))
+                          ) : (
+                            <span style={{color: '#888'}}>None</span>
+                          )}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 <div className="d-flex align-items-center justify-content-between flex-wrap">
                   <h5>
                     <label>Other Information</label>
@@ -890,6 +1235,7 @@ const TaskDetails = () => {
                     </div>
                   </li>
                 </ul>
+                </div>
               </div>
             </div>
           </div>
@@ -899,17 +1245,19 @@ const TaskDetails = () => {
                 <li>
                   <a
                     onClick={() => setActiveTab("description")}
-                    data-bs-toggle="tab"
-                    data-bs-target="#description"
-                    style={{
-                      display: "flex",
-                      flexDirection: "row",
-                      alignItems: "flex-start",
-                    }}
                     className={activeTab === "description" ? "active" : ""}
                   >
                     <i className="las la-file" />
                     Description
+                  </a>
+                </li>
+                <li>
+                  <a
+                    onClick={() => setActiveTab("activity")}
+                    className={activeTab === "activity" ? "active" : ""}
+                  >
+                    <i className="las la-history" />
+                    Activity
                   </a>
                 </li>
               </ul>
@@ -918,9 +1266,7 @@ const TaskDetails = () => {
               <div className="tab-content pt-0">
                 {/* Description Tab */}
                 <div
-                  className={`tab-pane fade ${
-                    activeTab === "description" ? "active show" : ""
-                  }`}
+                  className={`tab-pane fade ${activeTab === "description" ? "active show" : ""}`}
                   id="description"
                 >
                   <div className="view-header">
@@ -970,24 +1316,11 @@ const TaskDetails = () => {
                       className="editor-container"
                       style={{ margin: "15px 0" }}
                     >
-                      <Input.TextArea
-                        style={{
-                          width: "100%",
-                          minHeight: "150px",
-                          padding: "20px",
-                          backgroundColor: "rgba(247, 247, 248, 1)",
-                          borderRadius: "8px",
-                          resize: "vertical",
-                          wordBreak: "break-word",
-                          whiteSpace: "pre-wrap",
-                          fontFamily: "inherit",
-                          fontSize: "14px",
-                          lineHeight: "1.6",
-                          color: "#6c757d",
-                          border: "none",
-                        }}
+                      <ReactQuill
                         value={descriptionValue}
-                        onChange={(e) => setDescriptionValue(e.target.value)}
+                        onChange={setDescriptionValue}
+                        theme="snow"
+                        style={{ minHeight: 150 }}
                       />
                       <div
                         style={{
@@ -1029,23 +1362,256 @@ const TaskDetails = () => {
                         whiteSpace: "pre-wrap",
                         wordBreak: "break-word",
                       }}
-                    >
-                      {isDescriptionLoading ? (
-                        <div
-                          style={{
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                            height: "150px",
-                          }}
-                        >
-                          <Spin size="large" />
+                      dangerouslySetInnerHTML={{ __html: descriptionValue || taskData?.description || '' }}
+                    />
+                  )}
+                </div>
+                {/* Attachments Section (inside Description tab, after description) */}
+                {activeTab === "description" && (
+                  <div style={{ margin: '24px 0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+                      <span style={{ fontWeight: 600, fontSize: 16 }}><PaperClipOutlined /> Attachments</span>
+                      <span style={{
+                        background: '#eee',
+                        borderRadius: 8,
+                        fontSize: 12,
+                        fontWeight: 500,
+                        marginLeft: 8,
+                        padding: '2px 8px',
+                      }}>{attachments.length}</span>
+                      <input
+                        type="file"
+                        style={{ display: 'none' }}
+                        ref={fileInputRef}
+                        onChange={handleAttachmentUpload}
+                        disabled={uploading}
+                      />
+                      <Button
+                        icon={<UploadOutlined />}
+                        loading={uploading}
+                        disabled={uploading}
+                        size="small"
+                        style={{ marginLeft: 'auto' }}
+                        onClick={handleUploadButtonClick}
+                        type="button"
+                      >
+                        Upload
+                      </Button>
+                    </div>
+                    {uploading && (
+                      <div style={{ marginBottom: 8 }}>
+                        <div style={{ width: 200 }}>
+                          <div style={{ background: '#f0f0f0', borderRadius: 4, height: 8, overflow: 'hidden' }}>
+                            <div style={{ width: `${uploadProgress}%`, background: '#1890ff', height: 8 }} />
+                          </div>
+                          <span style={{ fontSize: 12 }}>{uploadProgress}%</span>
                         </div>
-                      ) : (
-                        taskData?.description || "No description available"
+                      </div>
+                    )}
+                    <div style={{ minHeight: 40 }}>
+                      {attachmentsLoading ? <Spin /> : attachments.length === 0 ? <Empty description="No attachments" /> : (
+                        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                          {attachments.map(file => {
+                            const isImage = file.imageUrl && /\.(jpg|jpeg|png|gif)$/i.test(file.fileName || '');
+                            const menu = (
+                              <Menu>
+                                <Menu.Item key="delete" icon={<DeleteOutlined />} onClick={() => handleDeleteAttachment(file._id)}>
+                                  Delete
+                                </Menu.Item>
+                              </Menu>
+                            );
+                            return (
+                              <Card
+                                key={file._id}
+                                hoverable
+                                style={{ width: 180, borderRadius: 12, boxShadow: '0 2px 8px #f0f1f2', padding: 0, position: 'relative' }}
+                                cover={
+                                  <div style={{ position: 'relative' }}>
+                                    {isImage
+                                      ? <img alt={file.fileName} src={file.imageUrl} style={{ borderRadius: '12px 12px 0 0', height: 100, objectFit: 'cover', width: '100%' }} />
+                                      : <div style={{ height: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5', borderRadius: '12px 12px 0 0' }}>No Preview</div>
+                                    }
+                                    <div style={{ position: 'absolute', top: 8, right: 8, display: 'flex', gap: 4, zIndex: 2 }}>
+                                      <Tooltip title="Download">
+                                        <a
+                                          href={file.imageUrl}
+                                          download={file.fileName}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          style={{
+                                            background: '#fff',
+                                            borderRadius: '50%',
+                                            boxShadow: '0 1px 4px rgba(0,0,0,0.12)',
+                                            width: 32,
+                                            height: 32,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            marginRight: 4,
+                                            transition: 'box-shadow 0.2s',
+                                            cursor: 'pointer',
+                                          }}
+                                        >
+                                          <DownloadOutlined style={{ fontSize: 18 }} />
+                                        </a>
+                                      </Tooltip>
+                                      <Dropdown overlay={menu} trigger={['click']}>
+                                        <Button
+                                          shape="circle"
+                                          icon={<EllipsisOutlined style={{ fontSize: 18 }} />}
+                                          style={{
+                                            background: '#fff',
+                                            border: 'none',
+                                            boxShadow: '0 1px 4px rgba(0,0,0,0.12)',
+                                            width: 32,
+                                            height: 32,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            transition: 'box-shadow 0.2s',
+                                            cursor: 'pointer',
+                                          }}
+                                        />
+                                      </Dropdown>
+                                    </div>
+                                  </div>
+                                }
+                              >
+                                <div style={{ fontWeight: 500, fontSize: 13, wordBreak: 'break-all' }}>{file.fileName}</div>
+                                <div style={{ fontSize: 11, color: '#888' }}>
+                                  {file.createdAt ? new Date(file.createdAt).toLocaleString() : ''}
+                                </div>
+                              </Card>
+                            );
+                          })}
+                        </div>
                       )}
                     </div>
-                  )}
+                  </div>
+                )}
+                {/* Activity Tab */}
+                <div className={`tab-pane fade ${activeTab === "activity" ? "active show" : ""}`}>
+                  <div style={{marginTop: 24}}>
+                    <div style={{ borderBottom: '1px solid #eee', marginBottom: 16, display: 'flex', gap: 24 }}>
+                      <div
+                        style={{
+                          padding: '8px 0',
+                          cursor: 'pointer',
+                          borderBottom: activityTab === 'comments' ? '2px solid #1890ff' : 'none',
+                          fontWeight: activityTab === 'comments' ? 600 : 400
+                        }}
+                        onClick={() => setActivityTab('comments')}
+                      >
+                        Comments
+              </div>
+                      <div
+                        style={{
+                          padding: '8px 0',
+                          cursor: 'pointer',
+                          borderBottom: activityTab === 'history' ? '2px solid #1890ff' : 'none',
+                          fontWeight: activityTab === 'history' ? 600 : 400
+                        }}
+                        onClick={() => setActivityTab('history')}
+                      >
+                        History
+            </div>
+          </div>
+                    {activityTab === 'comments' && (
+                      <div className="comments-section">
+                        <h5>Comments</h5>
+                        <div style={{ maxHeight: 250, overflowY: 'auto', paddingRight: 8 }}>
+                          {commentsLoading ? (
+                            <Spin />
+                          ) : comments.length === 0 ? (
+                            <Empty description="No comments yet" />
+                          ) : (
+                            comments.map((c, idx) => (
+                              <div key={idx} style={{display: 'flex', alignItems: 'flex-start', marginBottom: 12}}>
+                                <div style={{
+                                  width: 32, height: 32, borderRadius: '50%',
+                                  background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                  fontWeight: 600, marginRight: 12
+                                }}>
+                                  {c.userName ? c.userName.split(' ').map(n => n[0]).join('').toUpperCase() : 'U'}
+                                </div>
+                                <div>
+                                  <div style={{fontWeight: 500}}>{c.userName || 'User'} <span style={{color: '#888', fontSize: 12, marginLeft: 8}}>{new Date(c.createdAt).toLocaleString()}</span></div>
+                                  <div>{c.text}</div>
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                        <div style={{marginTop: 16}}>
+                          <Input.TextArea
+                            value={comment}
+                            onChange={e => setComment(e.target.value)}
+                            placeholder="Add a comment..."
+                            autoSize={{ minRows: 2, maxRows: 4 }}
+                            onPressEnter={e => { e.preventDefault(); postComment(); }}
+                            disabled={postingComment}
+                          />
+                          <div style={{marginTop: 8, display: 'flex', gap: 8}}>
+                            {["Who is working on this...?", "Status update...", "Thanks..."].map((txt, i) => (
+                              <Button key={i} size="small" onClick={() => setComment(txt)}>{txt}</Button>
+                            ))}
+                            <Button type="primary" onClick={postComment} loading={postingComment} style={{marginLeft: 'auto'}}>Post</Button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {activityTab === 'history' && (
+                      <div>
+                        <h5>Activity</h5>
+                        <div style={{ maxHeight: 250, overflowY: 'auto', paddingRight: 8 }}>
+                          {historyLoading ? (
+                            <Spin />
+                          ) : history.length === 0 ? (
+                            <Empty description="No history yet" />
+                          ) : (
+                            history.map((h, idx) => (
+                              <div key={idx} style={{display: 'flex', alignItems: 'flex-start', marginBottom: 18}}>
+                                <div style={{
+                                  width: 32, height: 32, borderRadius: '50%',
+                                  background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                  fontWeight: 600, marginRight: 12
+                                }}>
+                                  {h.userName ? h.userName.split(' ').map(n => n[0]).join('').toUpperCase() : 'U'}
+                                </div>
+                                <div>
+                                  <div style={{fontWeight: 500}}>
+                                    {h.userName || 'User'} {h.action}
+                                    {h.field && (
+                                      <>
+                                        {" "}
+                                        <span style={{fontWeight: 400}}>
+                                          {h.field === "status" && (
+                                            <>
+                                              <span style={{border: '1px solid #bbb', borderRadius: 4, padding: '2px 8px', margin: '0 4px'}}>{h.from || "None"}</span>
+                                              <span style={{margin: '0 4px'}}>→</span>
+                                              <span style={{border: '1px solid #bbb', borderRadius: 4, padding: '2px 8px', margin: '0 4px'}}>{h.to || "None"}</span>
+                                            </>
+                                          )}
+                                          {h.field !== "status" && (
+                                            <>
+                                              <span style={{color: '#888', margin: '0 4px'}}>{h.from || "None"}</span>
+                                              <span style={{margin: '0 4px'}}>→</span>
+                                              <span style={{color: '#888', margin: '0 4px'}}>{h.to || "None"}</span>
+                                            </>
+                                          )}
+                                        </span>
+                                      </>
+                                    )}
+                                  </div>
+                                  <div style={{color: '#888', fontSize: 12}}>{new Date(h.createdAt).toLocaleString()}</div>
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
