@@ -16,6 +16,7 @@ import TaskDetails from './TaskDetails';
 import HiredCandidates from './HiredCandidates';
 import BlacklistedCandidates from './BlacklistedCandidates';
 import OfferedCandidates from './OfferedCandidates';
+import ScreenedCandidates from './ScreenedCandidates';
 import dashboard from '../../assets/iconsRecruitment/DashBoard.svg';
 import interviewIcon from '../../assets/iconsRecruitment/interview.svg';
 import candidateIcon from '../../assets/iconsRecruitment/candidate.svg';
@@ -193,6 +194,12 @@ const RecruitmentLayout = () => {
                           <span>Processing</span>
                         </Link>
                       </li>
+                      <li className={pathname.includes("/recruitment/candidates/screened") ? "active" : ""}>
+                        <Link to="/recruitment/candidates/screened" onClick={closeSidebarOnMobile} style={{ display: "flex", alignItems: "center" }}>
+                          <div style={{ background: "#ff9244", height: '4px', width: "4px", borderRadius: "50%" }}></div>
+                          <span>Screening</span>
+                        </Link>
+                      </li>
                       <li className={pathname.includes("/recruitment/candidates/offered") ? "active" : ""}>
                         <Link to="/recruitment/candidates/offered" onClick={closeSidebarOnMobile} style={{ display: "flex", alignItems: "center" }}>
                           <div style={{ background: "#ff9244", height: '4px', width: "4px", borderRadius: "50%" }}></div>
@@ -244,6 +251,7 @@ const RecruitmentLayout = () => {
           <Route path="candidates/hired" element={<HiredCandidates />} />
           <Route path="candidates/offered" element={<OfferedCandidates />} />
           <Route path="candidates/blacklist" element={<BlacklistedCandidates />} />
+          <Route path="candidates/screened" element={<ScreenedCandidates />} />
           <Route path="candidates/:id" element={<CandidateDetails />} />
           <Route path="candidates/:id/edit" element={<EditCandidate />} />
           <Route path="interviews" element={<Interviews />} />

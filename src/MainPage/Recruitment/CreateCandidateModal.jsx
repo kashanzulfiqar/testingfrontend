@@ -61,13 +61,14 @@ const CreateCandidateModal = ({
           uploadResult.length > 0 &&
           uploadResult[0].imageUrl
         ) {
-          resumeData = {
+          resumeData = [{
             url: uploadResult[0].imageUrl,
             fileName: uploadResult[0].fileName,
             asset_id: uploadResult[0].asset_id,
             public_id: uploadResult[0].public_id,
             resource_type: uploadResult[0].resource_type,
-          };
+            uploadedAt: new Date().toISOString(),
+          }];
           console.log("Resume uploaded successfully:", resumeData);
         } else {
           console.error("Invalid upload result:", uploadResult);
@@ -126,7 +127,7 @@ const CreateCandidateModal = ({
       }
     } catch (error) {
       console.error("Error in submission:", error);
-      message.error(error.message || "Error creating candidate");
+      message.error(error.response.data.message || "Error creating candidate");
     } finally {
       setSubmitting(false);
     }

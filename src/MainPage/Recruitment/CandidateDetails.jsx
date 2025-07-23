@@ -16,51 +16,68 @@ import {
   Modal,
   Form,
   Input,
+  Upload,
 } from "antd";
 import {
   FilePdfOutlined,
   FileWordOutlined,
   DownloadOutlined,
+  ArrowLeftOutlined,
 } from "@ant-design/icons";
 import { apiServices } from "../../Services/apiServices";
 import { useSelector } from "react-redux";
 import moment, { min } from "moment";
 import CreateInterviewModal from "./CreateInterviewModal";
 import CreateTaskModal from "./CreateTaskModal";
-import SendOfferModal from './SendOfferModal';
+import SendOfferModal from "./SendOfferModal";
 import { apiUploadToS3 } from "../../Services/uploadImage";
-import backBtn from '../../assets/iconsRecruitment/arrow-left.svg';
-import more from '../../assets/iconsRecruitment/vertical.svg';
-import mail from '../../assets/iconsRecruitment/mail.svg';
-import phone from '../../assets/iconsRecruitment/phone.svg';
-import location from '../../assets/iconsRecruitment/location.svg';
-import timeline from '../../assets/iconsRecruitment/Timeline.svg';
-import files from '../../assets/iconsRecruitment/description.svg';
-import interviewIcon from '../../assets/iconsRecruitment/interview.svg';
-import star from '../../assets/iconsRecruitment/star.svg';
-import colored from '../../assets/iconsRecruitment/Colored.svg';
-import cloudUpload from '../../assets/iconsRecruitment/cloud.svg';
-import EditIcon from '../../assets/iconsRecruitment/editIcon.svg';
-import DeleteIcon from '../../assets/iconsRecruitment/deleteIcon.svg';
-import NoInterview from '../../assets/iconsRecruitment/NoInterviewIcon.svg';
-import InterviewFeedbackDisplay from './InterviewFeedbackDisplay';
-import  newEditIcon from '../../assets/iconsRecruitment/newEditIcon.svg';
-import  newCalanderIcon from '../../assets/iconsRecruitment/newCalanderIcon.svg';
-import  blacklistIcon from '../../assets/iconsRecruitment/BlacklistIcon.svg';
-import taskIcon from '../../assets/iconsRecruitment/taskIcon.svg';
-import fileCheck from '../../assets/iconsRecruitment/RightArrow.svg';
+import backBtn from "../../assets/iconsRecruitment/arrow-left.svg";
+import more from "../../assets/iconsRecruitment/vertical.svg";
+import mail from "../../assets/iconsRecruitment/mail.svg";
+import phone from "../../assets/iconsRecruitment/phone.svg";
+import location from "../../assets/iconsRecruitment/location.svg";
+import timeline from "../../assets/iconsRecruitment/Timeline.svg";
+import files from "../../assets/iconsRecruitment/description.svg";
+import interviewIcon from "../../assets/iconsRecruitment/interview.svg";
+import star from "../../assets/iconsRecruitment/star.svg";
+import colored from "../../assets/iconsRecruitment/Colored.svg";
+import cloudUpload from "../../assets/iconsRecruitment/cloud.svg";
+import EditIcon from "../../assets/iconsRecruitment/editIcon.svg";
+import DeleteIcon from "../../assets/iconsRecruitment/deleteIcon.svg";
+import NoInterview from "../../assets/iconsRecruitment/NoInterviewIcon.svg";
+import InterviewFeedbackDisplay from "./InterviewFeedbackDisplay";
+import newEditIcon from "../../assets/iconsRecruitment/newEditIcon.svg";
+import newCalanderIcon from "../../assets/iconsRecruitment/newCalanderIcon.svg";
+import blacklistIcon from "../../assets/iconsRecruitment/BlacklistIcon.svg";
+import taskIcon from "../../assets/iconsRecruitment/taskIcon.svg";
+import fileCheck from "../../assets/iconsRecruitment/RightArrow.svg";
+import {
+  DeleteFiles,
+  uploadFunction,
+} from "../Employees/Projects/UploadAndDeleteFunc";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowLeft, faDownload } from "@fortawesome/free-solid-svg-icons"; // or free-regular-svg-icons if you want the regular style
 
-
-
-
-
-
-
-
-
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_FILE_TYPES = [
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/zip",
+  "application/x-zip-compressed",
+];
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
 const { Panel } = Collapse;
+
+function splitFileName(fileName) {
+  const lastDot = fileName.lastIndexOf(".");
+  if (lastDot === -1) return { base: fileName, ext: "" };
+  return {
+    base: fileName.substring(0, lastDot),
+    ext: fileName.substring(lastDot),
+  };
+}
 
 const CandidateDetails = () => {
   const { id } = useParams();
@@ -82,22 +99,21 @@ const CandidateDetails = () => {
   const [offerStatus, setOfferStatus] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [isReasonModalVisible, setIsReasonModalVisible] = useState(false);
-  const [filter ,setfilter] =useState('history');
+  const [filter, setfilter] = useState("history");
   const [file, setFile] = useState(null);
-  const [dragging ,setDragging] = useState(false);
-  const [resume, setResume] = useState([]); 
+  const [dragging, setDragging] = useState(false);
+  const [resume, setResume] = useState([]);
   const [openModalIndex, setOpenModalIndex] = useState(null);
-  const [editingIndex ,setEditingIndex] = useState(null);
-  const [tempName ,setTempName] = useState('');
+  const [editingIndex, setEditingIndex] = useState(null);
+  const [tempName, setTempName] = useState("");
   const fileInputRef = useRef(null);
-  const [viewMore ,setViewMore] = useState(false);
-  const [viewMobile ,setViewMobile] = useState(window.innerWidth < 768);
-
-
-  
+  const [viewMore, setViewMore] = useState(false);
+  const [viewMobile, setViewMobile] = useState(window.innerWidth < 768);
+  const [previewFile, setPreviewFile] = useState(null);
+  const dropdownRef = useRef(null); // Add this line for dropdown ref
 
   useEffect(() => {
-    console.log('isOfferModalVisible changed:', isOfferModalVisible);
+    console.log("isOfferModalVisible changed:", isOfferModalVisible);
   }, [isOfferModalVisible]);
 
   useEffect(() => {
@@ -110,7 +126,7 @@ const CandidateDetails = () => {
 
   useEffect(() => {
     if (id && activeTab === "interview") {
-      console.log('Hello' )
+      console.log("Hello");
       fetchCandidateInterviews();
     }
   }, [id, activeTab]);
@@ -131,10 +147,28 @@ const CandidateDetails = () => {
     const handleResize = () => {
       setViewMobile(window.innerWidth < 768);
     };
-  
+
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setOpenModalIndex(null);
+      }
+    }
+
+    if (openModalIndex !== null) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [openModalIndex]);
 
   const fetchCandidateDetails = async () => {
     const token =
@@ -161,7 +195,8 @@ const CandidateDetails = () => {
         console.log("Candidate Details Response:", response.data.data);
         console.log("Resume URL:", response.data.data.resume);
         setCandidate(response.data.data);
-        setOfferStatus(response.data.data.status); 
+        setResume(response?.data?.data?.resume);
+        setOfferStatus(response.data.data.status);
       } else {
         if (response?.data?.message === "Invalid token") {
           message.error("Session expired. Please login again");
@@ -191,12 +226,24 @@ const CandidateDetails = () => {
     }
   };
 
-  const handleUpload = async () => {
-    if (!file) {
-      message.error("No file selected");
-      return;
+  const validateFile = (file) => {
+    console.log("validateFile called with:", file);
+    // Check file size
+    if (file.size > MAX_FILE_SIZE) {
+      message.error("File size should not exceed 10MB");
+      return false;
     }
 
+    // Check file type
+    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+      message.error("Only PDF, DOC, DOCX, and ZIP files are allowed");
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleUpload = async (resumeData) => {
     const token = localStorage.getItem("token");
 
     if (!token) {
@@ -204,16 +251,20 @@ const CandidateDetails = () => {
       return;
     }
 
-    const formData = new FormData();
-    formData.append("resume", file);
-
     try {
-      const response = await apiServices("POST", `candidate/${id}/uploadResume`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const response = await apiServices(
+        "PUT",
+        `candidate/${id}`,
+        { resume: resumeData },
+        {
+          access_token: {
+            accessToken: token,
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (response?.data?.status) {
         message.success("Resume uploaded successfully");
@@ -227,38 +278,6 @@ const CandidateDetails = () => {
     }
   };
 
-
-
-  const handleDrop = (event) => {
-    event.preventDefault();
-    setDragging(false);
-    const droppedFiles = Array.from(event.dataTransfer.files);
-    if (droppedFiles.length > 0) {
-      setResume((prevFiles) => [...prevFiles, ...droppedFiles]);
-      console.log("Files dropped:", droppedFiles);
-    }
-  };
-
-    const handleDragOver = (event) => {
-    event.preventDefault();
-    setDragging(true);
-  };
-
-  const handleDragLeave = () => {
-    setDragging(false);
-  };
-
-  const handleFileChange = (event) => {
-    const selectedFiles = Array.from(event.target.files);
-    if (selectedFiles.length > 0) {
-      setResume((prevFiles) => [...prevFiles, ...selectedFiles]);
-      console.log("Files selected:", selectedFiles);
-    }
-    event.target.value = '';
-  };
-
-
-
   const handlePreviewResume = () => {
     if (!candidate?.resume) {
       message.error("No resume available for preview");
@@ -268,50 +287,78 @@ const CandidateDetails = () => {
     window.open(candidate.resume, "_blank");
   };
 
-  const handleDownloadResume = async () => {
-    if (!candidate?.resume) {
-      message.error("No resume available for download");
-      return;
-    }
+  // const handleDownloadResume = async () => {
+  //   if (!candidate?.resume) {
+  //     message.error("No resume available for download");
+  //     return;
+  //   }
 
-    try {
-      const response = await fetch(candidate.resume);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = candidate.resume.split("/").pop();
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      message.error("Failed to download resume");
-    }
-  };
+  //   try {
+  //     const response = await fetch(candidate.resume);
+  //     const blob = await response.blob();
+  //     const url = window.URL.createObjectURL(blob);
+  //     const link = document.createElement("a");
+  //     link.href = url;
+  //     link.download = candidate.resume.split("/").pop();
+  //     document.body.appendChild(link);
+  //     link.click();
+  //     document.body.removeChild(link);
+  //     window.URL.revokeObjectURL(url);
+  //   } catch (error) {
+  //     message.error("Failed to download resume");
+  //   }
+  // };
 
-  const startEditing = (index, name)=>{
+  const startEditing = (index, fileName) => {
+    const { base } = splitFileName(fileName);
     setEditingIndex(index);
-    setTempName(name);
-  }
-
-  const saveRename = (index)=>{
-    setResume((prev)=>prev.map((file,i)=>
-       (i === index) ? {...file , name : tempName} : file
-    ))
-    setEditingIndex(null);
+    setTempName(base);
   };
 
-  const handleViewMore = (id)=>{
+  const saveRename = async (index) => {
+    const { ext } = splitFileName(resume[index].fileName);
+    const newFileName = tempName + ext;
+    const updatedResume = resume.map((file, i) =>
+      i === index ? { ...file, fileName: newFileName } : file
+    );
+    setResume(updatedResume);
+    setEditingIndex(null);
+
+    // Call backend to update resume array
+    try {
+      const token =
+        localStorage.getItem("token") || authState?.access_token?.accessToken;
+      if (!token) {
+        message.error("Authentication required");
+        return;
+      }
+
+      const response = await apiServices(
+        "PUT",
+        `candidate/${id}`,
+        { resume: updatedResume },
+        {
+          access_token: { accessToken: token },
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (response?.data?.status) {
+        message.success("File name updated successfully");
+      } else {
+        message.error(response?.data?.message || "Failed to update file name");
+      }
+    } catch (error) {
+      message.error("Error updating file name");
+    }
+  };
+
+  const handleViewMore = (id) => {
     setViewMore(viewMore === id ? null : id);
-  }
-
-
-
+  };
 
   const handleStatusChange = async (newStatus) => {
-    console.log('is this function called? handleStatusChange')
-    if (newStatus === 'BLACKLISTED') {
+    console.log("is this function called? handleStatusChange");
+    if (newStatus === "BLACKLISTED") {
       // Show modal to get blacklist reason
       setSelectedStatus(newStatus);
       setIsReasonModalVisible(true);
@@ -320,15 +367,17 @@ const CandidateDetails = () => {
 
     try {
       setUpdatingStatus(true);
-      const token = authState?.access_token?.accessToken || localStorage.getItem("token");
-      
+      setLoading(true);
+      const token =
+        authState?.access_token?.accessToken || localStorage.getItem("token");
+
       if (!token) {
         message.error("Authentication required");
         return;
       }
 
       const response = await apiServices(
-        'PATCH',
+        "PATCH",
         `candidate/${id}/status`,
         { status: newStatus },
         {
@@ -342,24 +391,29 @@ const CandidateDetails = () => {
       );
 
       if (response?.data?.status) {
-        message.success('Status updated successfully');
-        await fetchCandidateDetails();
+        message.success("Status updated successfully");
+        // await fetchCandidateDetails();
+        setCandidate(response.data.data);
+        setOfferStatus(response.data.data.status);
       } else {
-        throw new Error(response?.data?.message || 'Failed to update status');
+        throw new Error(response?.data?.message || "Failed to update status");
       }
     } catch (error) {
-      console.error('Error updating status:', error);
-      message.error(error.message || 'Error updating status');
+      console.error("Error updating status:", error);
+      message.error(error.message || "Error updating status");
     } finally {
       setUpdatingStatus(false);
+      setLoading(false);
     }
   };
 
   const handleReasonSubmit = async (values) => {
     try {
       setUpdatingStatus(true);
-      const token = authState?.access_token?.accessToken || localStorage.getItem("token");
-      
+      setLoading(true);
+      const token =
+        authState?.access_token?.accessToken || localStorage.getItem("token");
+
       if (!token) {
         message.error("Authentication required");
         return;
@@ -371,12 +425,12 @@ const CandidateDetails = () => {
       };
 
       // Add specific reason field based on status
-      if (selectedStatus === 'BLACKLISTED') {
+      if (selectedStatus === "BLACKLISTED") {
         payload.blacklistReason = values.blacklistReason;
       }
 
       const response = await apiServices(
-        'PATCH',
+        "PATCH",
         `candidate/${id}/status`,
         payload,
         {
@@ -390,39 +444,38 @@ const CandidateDetails = () => {
       );
 
       if (response?.data?.status) {
-        message.success('Status updated successfully');
+        message.success("Status updated successfully");
         setIsReasonModalVisible(false);
-        await fetchCandidateDetails();
+        // await fetchCandidateDetails();
+        setCandidate(response.data.data);
+        setOfferStatus(response.data.data.status);
       } else {
-        throw new Error(response?.data?.message || 'Failed to update status');
+        throw new Error(response?.data?.message || "Failed to update status");
       }
     } catch (error) {
-      console.error('Error updating status:', error);
-      message.error(error.message || 'Error updating status');
+      console.error("Error updating status:", error);
+      message.error(error.message || "Error updating status");
     } finally {
       setUpdatingStatus(false);
+      setLoading(false);
     }
   };
 
   const fetchOfferDetails = async () => {
     try {
-      const token = authState?.access_token?.accessToken || localStorage.getItem("token");
-      
+      const token =
+        authState?.access_token?.accessToken || localStorage.getItem("token");
+
       if (!token) return;
 
-      const response = await apiServices(
-        'GET',
-        `candidate/${id}/offer`,
-        null,
-        {
-          access_token: {
-            accessToken: token,
-          },
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await apiServices("GET", `candidate/${id}/offer`, null, {
+        access_token: {
+          accessToken: token,
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (response?.data?.success) {
         setOffer(response.data.data);
@@ -433,33 +486,34 @@ const CandidateDetails = () => {
         setOffer(null);
         return;
       }
-      console.error('Error fetching offer details:', error);
+      console.error("Error fetching offer details:", error);
     }
   };
 
   const handleSendOffer = async (formData) => {
     try {
       setSubmittingOffer(true);
-      const token = authState?.access_token?.accessToken || localStorage.getItem("token");
-      
+      const token =
+        authState?.access_token?.accessToken || localStorage.getItem("token");
+
       if (!token) {
         message.error("Authentication required");
         return;
       }
 
       // First upload the contract file
-      const contractFile = formData.get('contract');
+      const contractFile = formData.get("contract");
       if (contractFile) {
         try {
           const uploadResponse = await apiUploadToS3(contractFile);
           if (uploadResponse?.data?.result?.secure_url) {
             // Replace the file with the secure URL in the formData
-            formData.delete('contract');
-            formData.append('contract', uploadResponse.data.result.secure_url);
+            formData.delete("contract");
+            formData.append("contract", uploadResponse.data.result.secure_url);
           }
         } catch (error) {
-          console.error('Error uploading contract:', error);
-          message.error('Failed to upload contract file');
+          console.error("Error uploading contract:", error);
+          message.error("Failed to upload contract file");
           return;
         }
       }
@@ -470,8 +524,8 @@ const CandidateDetails = () => {
       // }
 
       const response = await apiServices(
-        'POST',
-        'candidate/send-offer',
+        "POST",
+        "candidate/send-offer",
         formData,
         {
           access_token: {
@@ -479,32 +533,31 @@ const CandidateDetails = () => {
           },
           headers: {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data',
+            "Content-Type": "multipart/form-data",
           },
         }
       );
-      
 
       if (response?.data?.success) {
-        console.log("response of offer sent", response?.data?.success)
-        message.success(offer ? 'Offer updated successfully' : 'Offer sent successfully');
+        console.log("response of offer sent", response?.data?.success);
+        message.success(
+          offer ? "Offer updated successfully" : "Offer sent successfully"
+        );
         setIsOfferModalVisible(false);
-        
+
         // Always update candidate status to "OFFERED" and clear any previous status/reasons
-        await handleStatusChange('OFFERED');
-        
+        await handleStatusChange("OFFERED");
+
         // Fetch updated offer details
         await fetchOfferDetails();
-        
+
         // Fetch updated candidate details to refresh the page
         await fetchCandidateDetails();
 
-        
-        
         // Redirect to offered candidates list
-        navigate('/recruitment/candidates/offered');
+        navigate("/recruitment/candidates/offered");
       } else {
-        throw new Error(response?.data?.message || 'Failed to send offer');
+        throw new Error(response?.data?.message || "Failed to send offer");
       }
     } catch (error) {
       // console.error('Error sending offer:', error);
@@ -516,15 +569,16 @@ const CandidateDetails = () => {
 
   const handleUpdateOfferStatus = async (offerId, status) => {
     try {
-      const token = authState?.access_token?.accessToken || localStorage.getItem("token");
-      
+      const token =
+        authState?.access_token?.accessToken || localStorage.getItem("token");
+
       if (!token) {
         message.error("Authentication required");
         return;
       }
 
       const response = await apiServices(
-        'PATCH',
+        "PATCH",
         `candidate/offer/${offerId}/status`,
         { status },
         {
@@ -538,25 +592,27 @@ const CandidateDetails = () => {
       );
 
       if (response?.data?.success) {
-        message.success('Offer status updated successfully');
+        message.success("Offer status updated successfully");
         await fetchOfferDetails();
       } else {
-        throw new Error(response?.data?.message || 'Failed to update offer status');
+        throw new Error(
+          response?.data?.message || "Failed to update offer status"
+        );
       }
     } catch (error) {
-      console.error('Error updating offer status:', error);
-      message.error(error.message || 'Error updating offer status');
+      console.error("Error updating offer status:", error);
+      message.error(error.message || "Error updating offer status");
     }
   };
 
   const handleSendOfferClick = () => {
-    console.log('Send Offer button clicked');
-    console.log('Current offer:', offer); // Debug log
+    console.log("Send Offer button clicked");
+    console.log("Current offer:", offer); // Debug log
     setIsOfferModalVisible(true);
   };
 
   const handleContractUpload = ({ file }) => {
-    if (file.status === 'done') {
+    if (file.status === "done") {
       setUploadedContract(file.originFileObj);
     }
   };
@@ -800,7 +856,6 @@ const CandidateDetails = () => {
       return;
     }
 
-
     try {
       // Create FormData for file upload
       const formData = new FormData();
@@ -814,7 +869,7 @@ const CandidateDetails = () => {
             fileUrl = uploadResponse.data.result.secure_url;
           }
         } catch (error) {
-          message.error('Failed to upload task file');
+          message.error("Failed to upload task file");
           return;
         }
       }
@@ -833,7 +888,7 @@ const CandidateDetails = () => {
       );
       formData.append("taskDuration", values.taskDuration);
       // formData.append("description", values.description);
-      console.log('form' , values, formData);
+      console.log("form", values, formData);
 
       const response = await apiServices("POST", "task/create", formData, {
         access_token: {
@@ -1358,54 +1413,53 @@ const CandidateDetails = () => {
     }
   };
 
-  const today = moment().format('DD MM');
-  const filteredInterviews = interviews.filter((interview)=>{
-    const interviewDate = moment(interview.interviewDate).format('DD MMM');
-    return filter=== 'present' ? interviewDate === today : interviewDate < today;
-  })
-  const handleFilterChange =(changer)=>{
+  const today = moment().format("DD MM");
+  const filteredInterviews = interviews.filter((interview) => {
+    const interviewDate = moment(interview.interviewDate).format("DD MMM");
+    return filter === "present"
+      ? interviewDate === today
+      : interviewDate < today;
+  });
+  const handleFilterChange = (changer) => {
     setfilter(changer);
     console.log(filteredInterviews);
-  }
+  };
 
-  const handleActiveTab =(key)=>{
+  const handleActiveTab = (key) => {
     setActiveTab(key);
-
-  }
+  };
 
   const handleDeleteCandidate = async (candidateId) => {
-    const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
-    
+    const token =
+      localStorage.getItem("token") || authState?.access_token?.accessToken;
+
     try {
       setLoading(true);
       const response = await apiServices(
-        "DELETE", 
+        "DELETE",
         `candidate/${candidateId}`,
-        null, 
+        null,
         {
           access_token: {
-            accessToken: token
-          }
+            accessToken: token,
+          },
         }
       );
       if (response?.data?.status) {
-        message.success('Candidate deleted successfully');
+        message.success("Candidate deleted successfully");
         return Promise.resolve();
         fetchJobs();
       } else {
-        message.error(response?.data?.message || 'Failed to delete job');
+        message.error(response?.data?.message || "Failed to delete job");
         return Promise.reject();
       }
     } catch (error) {
-      console.error('Delete job error:', error.response?.data || error.message);
+      console.error("Delete job error:", error.response?.data || error.message);
       handleApiError(error);
     } finally {
       setLoading(false);
     }
   };
-
-
-
 
   // const renderTaskContent = () => {
   //   if (loadingTasks) {
@@ -1625,7 +1679,6 @@ const CandidateDetails = () => {
     );
   }
 
-
   if (!candidate) return null;
   const calculateAverageRating = (feedbackArray) => {
     if (!feedbackArray || feedbackArray.length === 0) {
@@ -1634,33 +1687,104 @@ const CandidateDetails = () => {
 
     const totalRatings = feedbackArray.reduce((sum, feedback) => {
       const ratings = feedback.ratings;
-      const ratingSum = (
+      const ratingSum =
         ratings.technicalSkills1 +
         ratings.behavior +
         ratings.softSkills +
         ratings.technicalSkills2 +
-        ratings.technicalSkills3
-      );
-      return sum + (ratingSum / 5); // Average of all skills for this feedback
+        ratings.technicalSkills3;
+      return sum + ratingSum / 5; // Average of all skills for this feedback
     }, 0);
 
     return (totalRatings / feedbackArray.length).toFixed(1);
   };
 
+  const deleteResume = async (index) => {
+    const fileToDelete = resume[index];
+    // Call DeleteFiles with the file to delete
+    await DeleteFiles([fileToDelete], authState); // Pass user state if required
 
-  const deleteResume = (index) => {
-    setResume((prevResume) => prevResume.filter((_, i) => i !== index));
+    // Remove from local state
+    const updatedResume = resume.filter((_, i) => i !== index);
+    setResume(updatedResume);
     if (editingIndex === index) {
       setEditingIndex(null);
       setTempName("");
-    }  
-    if(fileInputRef.current){
-      fileInputRef.current.value = '';
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+
+    console.log("U P D A T E D D E L E T E D # ", updatedResume);
+
+    // Update backend
+    try {
+      const token =
+        localStorage.getItem("token") || authState?.access_token?.accessToken;
+      if (!token) {
+        message.error("Authentication required");
+        return;
+      }
+      const response = await apiServices(
+        "PUT",
+        `candidate/${id}`,
+        { resume: updatedResume },
+        {
+          access_token: { accessToken: token },
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (response?.data?.status) {
+        message.success("File deleted successfully");
+      } else {
+        message.error(response?.data?.message || "Failed to update resume");
+      }
+    } catch (error) {
+      message.error("Error updating resume");
     }
   };
 
   const toggleModal = (index) => {
     setOpenModalIndex(openModalIndex === index ? null : index);
+  };
+
+  const getPreviewIframe = (file) => {
+    if (!file) return null;
+    if (file.url.endsWith(".pdf")) {
+      return (
+        <iframe
+          src={file.url}
+          title={file.fileName}
+          width="100%"
+          height="100%"
+          style={{ border: "none" }}
+        />
+      );
+    } else if (
+      file.fileName.endsWith(".doc") ||
+      file.fileName.endsWith(".docx")
+    ) {
+      return (
+        <iframe
+          src={`https://docs.google.com/gview?url=${encodeURIComponent(
+            file.url
+          )}&embedded=true`}
+          title={file.fileName}
+          width="100%"
+          height="100%"
+          style={{ border: "none" }}
+        />
+      );
+    } else {
+      return (
+        <div>
+          <p>Preview not available for this file type.</p>
+          <a href={file.url} target="_blank" rel="noopener noreferrer">
+            Open in new tab
+          </a>
+        </div>
+      );
+    }
   };
 
   return (
@@ -1671,208 +1795,418 @@ const CandidateDetails = () => {
           <div className="col">
             <div className="d-flex align-items-center">
               <div>
-                <h3 className="page-title mb-0">
-                  Candidates
-                </h3>
+                <h3 className="page-title mb-0">Candidates</h3>
                 <ul className="breadcrumb">
                   <li className="breadcrumb-item">
                     <Link to="/recruitment/dashboard">Dashboard</Link>
                   </li>
                   <li className="breadcrumb-item">
-                    <Link to="/recruitment/candidates/processing">Candidates</Link>
+                    <Link to="/recruitment/candidates/processing">
+                      Candidates
+                    </Link>
                   </li>
                 </ul>
               </div>
             </div>
           </div>
-
         </div>
       </div>
-      <div style={{width:'100%',borderTop:'1px solid #CFD4D8', display:'flex', justifySelf:'center', height:'50px', alignItems:'flex-end', marginBottom:'15px'}}>
-        <div style={{display:'flex', marginBottom:'6px'}}>
+      <div
+        style={{
+          width: "100%",
+          borderTop: "1px solid #CFD4D8",
+          display: "flex",
+          justifySelf: "center",
+          height: "50px",
+          alignItems: "flex-end",
+          marginBottom: "15px",
+        }}
+      >
+        <div style={{ display: "flex", marginBottom: "6px" }}>
           <div>
-            <button onClick={() => navigate(
-              candidate?.status === "BLACKLISTED"
-              ? "/recruitment/candidates/blacklist"
-              : ["OFFERED", "HIRED"].includes(candidate?.status)
-              ? `/recruitment/candidates/${candidate.status.toLowerCase()}`
-              : "/recruitment/candidates/processing"
-              )} 
-              style={{marginRight: '16px' ,padding:'0', border:'none', background:'transparent'}}
+            <button
+              onClick={() =>
+                navigate(
+                  candidate?.status === "BLACKLISTED"
+                    ? "/recruitment/candidates/blacklist"
+                    : ["OFFERED", "HIRED"].includes(candidate?.status)
+                    ? `/recruitment/candidates/${candidate.status.toLowerCase()}`
+                    : "/recruitment/candidates/processing"
+                )
+              }
+              style={{
+                marginRight: "16px",
+                padding: "0",
+                border: "none",
+                background: "transparent",
+              }}
             >
               <img src={backBtn}></img>
             </button>
           </div>
           <div>
             <ul className="breadcrumb">
-            <li className="breadcrumb-item">
-              <Link to={
-                candidate?.status === "BLACKLISTED"
-                ? "/recruitment/candidates/blacklist"
-                : ["OFFERED", "HIRED"].includes(candidate?.status)
-                ? `/recruitment/candidates/${candidate.status.toLowerCase()}`
-                : "/recruitment/candidates/processing"
-              }>
-                {["OFFERED", "HIRED", "BLACKLISTED"].includes(candidate?.status) ? candidate.status.charAt(0) + candidate.status.slice(1).toLowerCase() : "Candidates"}
-              </Link>
-            </li>           
-            <li className="breadcrumb-item active">{candidate?.firstName} {candidate?.lastName}</li>
+              <li className="breadcrumb-item">
+                <Link
+                  to={
+                    candidate?.status === "BLACKLISTED"
+                      ? "/recruitment/candidates/blacklist"
+                      : ["OFFERED", "HIRED"].includes(candidate?.status)
+                      ? `/recruitment/candidates/${candidate.status.toLowerCase()}`
+                      : "/recruitment/candidates/processing"
+                  }
+                >
+                  {["OFFERED", "HIRED", "BLACKLISTED"].includes(
+                    candidate?.status
+                  )
+                    ? candidate.status.charAt(0) +
+                      candidate.status.slice(1).toLowerCase()
+                    : "Candidates"}
+                </Link>
+              </li>
+              <li className="breadcrumb-item active">
+                {candidate?.firstName} {candidate?.lastName}
+              </li>
             </ul>
           </div>
         </div>
-      <div>
-        </div>
+        <div></div>
       </div>
 
-      <div className='initial-section'>
-        <div className='initial-section-first-child'>
-          <div className='candidate-initials'>{candidate.firstName?.[0].toUpperCase()}{candidate.lastName?.[0].toUpperCase()}</div>
-          <div>
-            <h3 className="ms-3 mt-2 mb-0 candidate-title" >{candidate.firstName} {candidate.lastName}</h3>
-            <h5 className='ms-3 candidate-job' >{candidate?.appliedFor.title}</h5> 
-            <div style={{paddingLeft:"10px"}}>
-              <img src={star}></img>
-              <span style={{ marginLeft:'10px'}}>{calculateAverageRating()}</span>
-            </div>   
+      <div className="initial-section">
+        <div className="initial-section-first-child">
+          <div className="candidate-initials">
+            {candidate.firstName?.[0].toUpperCase()}
+            {candidate.lastName?.[0].toUpperCase()}
           </div>
           <div>
-            <Tag
-              className='tag-styles'
-            >{candidate.status?.charAt(0) + candidate.status?.slice(1).toLowerCase()}</Tag>
+            <h3 className="ms-3 mt-2 mb-0 candidate-title">
+              {candidate.firstName} {candidate.lastName}
+            </h3>
+            <h5 className="ms-3 candidate-job">
+              {candidate?.appliedFor.title}
+            </h5>
+            <div style={{ paddingLeft: "10px" }}>
+              <img src={star}></img>
+              <span style={{ marginLeft: "10px" }}>
+                {calculateAverageRating()}
+              </span>
+            </div>
+          </div>
+          <div>
+            <Tag className="tag-styles">
+              {candidate.status?.charAt(0) +
+                candidate.status?.slice(1).toLowerCase()}
+            </Tag>
           </div>
         </div>
-          <div className=" initial-section-sec-child">
-            {/* <Space> */}
-              <Select
-                value={candidate?.status}
-                onChange={handleStatusChange}
-                loading={updatingStatus}
-                style={{
-                  background:
-                  candidate?.status?.toLowerCase() === "SHORTLISTED" ? "#FFF7E6": "transparent",
-                  zIndex: 1000,
-                  position: 'relative',
-                  marginRight: viewMobile ? '3px' : '10px', 
-                }}
-                className={`status-${candidate?.status?.toLowerCase()} customized`}
-                dropdownStyle={{
-                  minWidth: "120px",
-                  borderRadius: "8px",
-                }}
-                dropdownMatchSelectWidth={false}
-                popupClassName="status-dropdown"
-              >
-                <Select.Option value="NEW">New</Select.Option>
-                <Select.Option value="SCREENING">Screening</Select.Option>
-                <Select.Option value="SHORTLISTED">Shortlisted</Select.Option>
-                <Select.Option value="OFFERED">Offer Sent</Select.Option>
-                <Select.Option value="HIRED">Hired</Select.Option>
-                <Select.Option value="REJECTED">Rejected</Select.Option>
-                <Select.Option value="BLACKLISTED">Blacklisted</Select.Option>
-              </Select>
-              {!viewMobile && (
-                <button
-                  // onClick={handleSendOfferClick}
-                  onClick={()=>{
-                    if(candidate?.status==='SHORTLISTED'){
-                      handleSendOfferClick()
+        <div className=" initial-section-sec-child">
+          {/* <Space> */}
+          <Select
+            value={candidate?.status}
+            onChange={handleStatusChange}
+            loading={updatingStatus}
+            style={{
+              background:
+                candidate?.status?.toLowerCase() === "SHORTLISTED"
+                  ? "#FFF7E6"
+                  : "transparent",
+              zIndex: 1000,
+              position: "relative",
+              marginRight: viewMobile ? "3px" : "10px",
+            }}
+            className={`status-${candidate?.status?.toLowerCase()} customized`}
+            dropdownStyle={{
+              minWidth: "120px",
+              borderRadius: "8px",
+            }}
+            dropdownMatchSelectWidth={false}
+            popupClassName="status-dropdown"
+          >
+            <Select.Option value="NEW">New</Select.Option>
+            <Select.Option value="SCREENING">Screening</Select.Option>
+            <Select.Option value="SHORTLISTED">Shortlisted</Select.Option>
+            <Select.Option value="OFFERED">Offer Sent</Select.Option>
+            <Select.Option value="HIRED">Hired</Select.Option>
+            <Select.Option value="REJECTED">Rejected</Select.Option>
+            <Select.Option value="BLACKLISTED">Blacklisted</Select.Option>
+          </Select>
+          {!viewMobile && (
+            <button
+              // onClick={handleSendOfferClick}
+              onClick={() => {
+                if (candidate?.status === "SHORTLISTED") {
+                  handleSendOfferClick();
+                }
+                if (candidate?.status === "OFFERED") {
+                  handleSendOfferClick();
+                }
+                if (candidate?.status === "HIRED") {
+                  navigate(`/recruitment/candidates/hired`);
+                }
+                if (candidate?.status === "BLACKLISTED") {
+                  navigate(`/recruitment/candidates/blacklist`);
+                }
+              }}
+              style={{
+                background: "#ff9244",
+                border: "1px solid #ff9244",
+                borderRadius: "8px",
+                height: "45px",
+                width: "120px",
+                fontSize: "16px",
+                fontWeight: "500",
+                color: "#ffffff",
+                cursor:
+                  candidate?.status === "REJECTED" ? "not-allowed" : "pointer",
+              }}
+              className="select-btn"
+              disabled={candidate?.status === "REJECTED"}
+            >
+              {candidate?.status === "OFFERED"
+                ? "Update Offer"
+                : candidate?.status === "REJECTED"
+                ? "Rejected"
+                : candidate?.status === "HIRED"
+                ? "View Hired"
+                : candidate?.status === "BLACKLISTED"
+                ? "Blacklisted"
+                : "Send Offer"}
+            </button>
+          )}
+          <div className="dropdown-style">
+            <Dropdown
+              overlay={
+                <Menu>
+                  <Menu.Item
+                    key="edit"
+                    icon={
+                      <img
+                        src={newEditIcon}
+                        style={{ height: "20px", width: "20px" }}
+                      ></img>
                     }
-                    if(candidate?.status==='OFFERED'){
-                      handleSendOfferClick()
+                    onClick={() =>
+                      navigate(`/recruitment/candidates/${candidate._id}/edit`)
                     }
-                    if(candidate?.status==='HIRED'){
-                      navigate(`/recruitment/candidates/hired`)
+                  >
+                    Edit
+                  </Menu.Item>
+                  <Menu.Item
+                    key="delete"
+                    icon={
+                      <img
+                        src={DeleteIcon}
+                        style={{ height: "15px", width: "20px" }}
+                      ></img>
                     }
-                    if(candidate?.status==='BLACKLISTED'){
-                      navigate(`/recruitment/candidates/blacklist`)
-                    }
-                  }}
-                  style={{
-                    background: '#ff9244',
-                    border: '1px solid #ff9244',
-                    borderRadius: '8px',
-                    height: '45px',
-                    width: '120px',
-                    fontSize: '16px',
-                    fontWeight: '500',
-                    color: '#ffffff',
-                    cursor: candidate?.status==='REJECTED' ? 'not-allowed' : 'pointer'
-                  }}
-                  className='select-btn'
-                  disabled={candidate?.status==='REJECTED'}
-
-                >
-                   {candidate?.status === 'OFFERED' ? 'Update Offer' :
-                    candidate?.status === 'REJECTED' ? 'Rejected' :
-                    candidate?.status === 'HIRED' ? 'View Hired' :
-                    candidate?.status === 'BLACKLISTED' ? 'Blacklisted' :
-                  'Send Offer'}
-                </button>
-              )}
-              <div className="dropdown-style">
-                <Dropdown
-                  overlay={<Menu>
-                    <Menu.Item key="edit" icon={<img src={newEditIcon} style={{height:"20px" ,width:"20px"}}></img>}onClick={() => navigate(`/recruitment/candidates/${candidate._id}/edit`)}>Edit</Menu.Item>
-                    <Menu.Item key="delete" icon={<img src={DeleteIcon} style={{height:"15px" ,width:"20px"}}></img>}
-                     onClick={() => {
+                    onClick={() => {
                       Modal.confirm({
-                      title: 'Delete Candidate',
-                      content: 'Are you sure you want to delete this candidate?',
-                      okText: 'Yes, Delete',
-                      okType: 'danger',
-                      cancelText: 'No',
-                      onOk: () => handleDeleteCandidate(candidate._id)
-                    });
+                        title: "Delete Candidate",
+                        content:
+                          "Are you sure you want to delete this candidate?",
+                        okText: "Yes, Delete",
+                        okType: "danger",
+                        cancelText: "No",
+                        onOk: () => handleDeleteCandidate(candidate._id),
+                      });
                     }}
-                    >Delete</Menu.Item>
-                    <Menu.Item key="scheduled" icon={<img src={newCalanderIcon} style={{height:"20px" ,width:"20px"}}></img>} onClick={()=>setIsInterviewModalVisible(true)}>Schedule Interview</Menu.Item>
-                    <Menu.Item key="blacklisted" icon={<img src={blacklistIcon} style={{height:"20px" ,width:"20px"}}></img>}  onClick={()=>setIsReasonModalVisible(true)}>Add to Blacklist</Menu.Item>  
-                    {viewMobile && (
-                      <Menu.Item key='send' icon={<img src={fileCheck} style={{height:"20px" ,width:"20px"}}></img>} onClick={handleSendOfferClick}>Send Offer</Menu.Item>
-                    )}
-                  </Menu>}
-                  overlayStyle = {{paddingTop:"15px"}}
-                  trigger={['click']}
-                  placement="bottomRight">
-                  <div style={{ cursor: 'pointer',height:'25px' ,width:'25px' }}>
-                    <img src={more} alt="More Options" />
-                  </div>
-                </Dropdown>
+                  >
+                    Delete
+                  </Menu.Item>
+                  <Menu.Item
+                    key="scheduled"
+                    icon={
+                      <img
+                        src={newCalanderIcon}
+                        style={{ height: "20px", width: "20px" }}
+                      ></img>
+                    }
+                    onClick={() => setIsInterviewModalVisible(true)}
+                  >
+                    Schedule Interview
+                  </Menu.Item>
+                  <Menu.Item
+                    key="blacklisted"
+                    icon={
+                      <img
+                        src={blacklistIcon}
+                        style={{ height: "20px", width: "20px" }}
+                      ></img>
+                    }
+                    onClick={() => {
+                      setSelectedStatus("BLACKLISTED");
+                      setIsReasonModalVisible(true);
+                    }}
+                  >
+                    Add to Blacklist
+                  </Menu.Item>
+                  {viewMobile && (
+                    <Menu.Item
+                      key="send"
+                      icon={
+                        <img
+                          src={fileCheck}
+                          style={{ height: "20px", width: "20px" }}
+                        ></img>
+                      }
+                      onClick={handleSendOfferClick}
+                    >
+                      Send Offer
+                    </Menu.Item>
+                  )}
+                </Menu>
+              }
+              overlayStyle={{ paddingTop: "15px" }}
+              trigger={["click"]}
+              placement="bottomRight"
+            >
+              <div style={{ cursor: "pointer", height: "25px", width: "25px" }}>
+                <img src={more} alt="More Options" />
               </div>
-            {/* </Space> */}
+            </Dropdown>
           </div>
+          {/* </Space> */}
+        </div>
       </div>
 
       <div className="row">
         {/* Left Panel - Basic Information */}
         <div className="col-md-3 custom-col">
-          {activeTab === 'timeline' &&(
-            <div className="p-3" style={{display:"flex" ,height:"90px", marginBottom:"30px", borderRadius:"8px",boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)"}}>
-              <button className='btn-style' onClick={()=>{handleFilterChange('present')}} style={{color: filter === 'present' ? '#ff9244' : '#a5adb6', boxShadow: filter === 'present' ?"0px 4px 10px rgba(0, 0, 0, 0.2)" : 'none'}}>Present</button>
-              <button  className='btn-style' onClick={()=>{handleFilterChange('history')}} style={{color: filter === 'history' ? '#ff9244' : '#a5adb6', boxShadow: filter === 'history' ?"0px 4px 10px rgba(0, 0, 0, 0.2)" : 'none'}}>Old History</button>
+          {activeTab === "timeline" && (
+            <div
+              className="p-3"
+              style={{
+                display: "flex",
+                height: "90px",
+                marginBottom: "30px",
+                borderRadius: "8px",
+                boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
+              }}
+            >
+              <button
+                className="btn-style"
+                onClick={() => {
+                  handleFilterChange("present");
+                }}
+                style={{
+                  color: filter === "present" ? "#ff9244" : "#a5adb6",
+                  boxShadow:
+                    filter === "present"
+                      ? "0px 4px 10px rgba(0, 0, 0, 0.2)"
+                      : "none",
+                }}
+              >
+                Present
+              </button>
+              <button
+                className="btn-style"
+                onClick={() => {
+                  handleFilterChange("history");
+                }}
+                style={{
+                  color: filter === "history" ? "#ff9244" : "#a5adb6",
+                  boxShadow:
+                    filter === "history"
+                      ? "0px 4px 10px rgba(0, 0, 0, 0.2)"
+                      : "none",
+                }}
+              >
+                Old History
+              </button>
             </div>
           )}
-          <Card style={{borderRadius:"8px"}}>
+          <Card style={{ borderRadius: "8px" }}>
             <div className="info-section">
               <Title level={5} className="section-title">
                 Basic Information
               </Title>
               <div className="info-item">
-                <div className='info-items-children'>
-                  <div style={{display:'flex', justifyContent:'center', alignItems:"center", border:"1px solid transparent", borderRadius:"50%", background:"#f7f7f8", height:"32px" ,width:"32px"}}><img src={mail}></img></div>
-                  <Text strong style={{color:"#56616b", marginLeft:"7px", display:'flex', alignSelf:"center"}}>{candidate.email}</Text>
+                <div className="info-items-children">
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      border: "1px solid transparent",
+                      borderRadius: "50%",
+                      background: "#f7f7f8",
+                      height: "32px",
+                      width: "32px",
+                    }}
+                  >
+                    <img src={mail}></img>
+                  </div>
+                  <Text
+                    strong
+                    style={{
+                      color: "#56616b",
+                      marginLeft: "7px",
+                      display: "flex",
+                      alignSelf: "center",
+                    }}
+                  >
+                    {candidate.email}
+                  </Text>
                 </div>
               </div>
               <div className="info-item">
-                <div style={{display:"flex"}}>
-                <div style={{display:'flex', justifyContent:'center', alignItems:"center", border:"1px solid transparent", borderRadius:"50%", background:"#f7f7f8", height:"32px" ,width:"32px"}}><img src={phone}></img></div>
-                  <Text strong style={{color:"#56616b", marginLeft:"7px", display:'flex', alignSelf:"center"}}>{candidate.phoneNumber}</Text>
+                <div style={{ display: "flex" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      border: "1px solid transparent",
+                      borderRadius: "50%",
+                      background: "#f7f7f8",
+                      height: "32px",
+                      width: "32px",
+                    }}
+                  >
+                    <img src={phone}></img>
+                  </div>
+                  <Text
+                    strong
+                    style={{
+                      color: "#56616b",
+                      marginLeft: "7px",
+                      display: "flex",
+                      alignSelf: "center",
+                    }}
+                  >
+                    {candidate.phoneNumber}
+                  </Text>
                 </div>
               </div>
               <div className="info-item">
-                <div style={{display:"flex"}}>
-                <div style={{display:'flex', justifyContent:'center', alignItems:"center", border:"1px solid transparent", borderRadius:"50%", background:"#f7f7f8", height:"32px" ,width:"32px"}}><img src={location}></img></div>
-                  <Text strong style={{color:"#56616b", marginLeft:"7px", display:'flex', alignSelf:"center"}}> Not Specified</Text>
+                <div style={{ display: "flex" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      border: "1px solid transparent",
+                      borderRadius: "50%",
+                      background: "#f7f7f8",
+                      height: "32px",
+                      width: "32px",
+                    }}
+                  >
+                    <img src={location}></img>
+                  </div>
+                  <Text
+                    strong
+                    style={{
+                      color: "#56616b",
+                      marginLeft: "7px",
+                      display: "flex",
+                      alignSelf: "center",
+                    }}
+                  >
+                    {" "}
+                    Not Specified
+                  </Text>
                 </div>
               </div>
             </div>
@@ -1884,89 +2218,256 @@ const CandidateDetails = () => {
               <div className="info-list">
                 <div className="info-item">
                   <div className="info-content">
-                    <Text type="secondary" style={{marginBottom:"6px" ,fontSize:"14px", fontWeight:"450", color:"#212529", width:"45%"}}>
+                    <Text
+                      type="secondary"
+                      style={{
+                        marginBottom: "6px",
+                        fontSize: "14px",
+                        fontWeight: "450",
+                        color: "#212529",
+                        width: "45%",
+                      }}
+                    >
                       Applied Position
                     </Text>
-                    <Text style={{marginBottom:"6px" ,fontSize:"14px", fontWeight:"450", color:"#56616b", width:"45%", marginLeft:"15px"}}>
+                    <Text
+                      style={{
+                        marginBottom: "6px",
+                        fontSize: "14px",
+                        fontWeight: "450",
+                        color: "#56616b",
+                        width: "45%",
+                        marginLeft: "15px",
+                      }}
+                    >
                       {candidate.appliedFor?.title}
                     </Text>
                   </div>
                 </div>
                 <div className="info-item">
                   <div className="info-content">
-                    <Text type="secondary" style={{marginBottom:"6px" ,fontSize:"14px", fontWeight:"450", color:"#212529", width:"45%"}}>
+                    <Text
+                      type="secondary"
+                      style={{
+                        marginBottom: "6px",
+                        fontSize: "14px",
+                        fontWeight: "450",
+                        color: "#212529",
+                        width: "45%",
+                      }}
+                    >
                       Applied On
                     </Text>
-                    <Text style={{marginBottom:"6px" ,fontSize:"14px", fontWeight:"450", color:"#56616b", width:"45%", marginLeft:"15px"}}>
-                    {moment(candidate.appliedDate).format("DD MMM YYYY")}
+                    <Text
+                      style={{
+                        marginBottom: "6px",
+                        fontSize: "14px",
+                        fontWeight: "450",
+                        color: "#56616b",
+                        width: "45%",
+                        marginLeft: "15px",
+                      }}
+                    >
+                      {moment(candidate.appliedDate).format("DD MMM YYYY")}
                     </Text>
                   </div>
                 </div>
                 <div className="info-item">
                   <div className="info-content">
-                    <Text type="secondary"  style={{marginBottom:"6px" ,fontSize:"14px", fontWeight:"450", color:"#212529", width:"45%"}}>
+                    <Text
+                      type="secondary"
+                      style={{
+                        marginBottom: "6px",
+                        fontSize: "14px",
+                        fontWeight: "450",
+                        color: "#212529",
+                        width: "45%",
+                      }}
+                    >
                       Department
                     </Text>
-                    <Text strong  style={{marginBottom:"6px" ,fontSize:"14px", fontWeight:"450", color:"#56616b", width:"45%", marginLeft:"15px"}}>
+                    <Text
+                      strong
+                      style={{
+                        marginBottom: "6px",
+                        fontSize: "14px",
+                        fontWeight: "450",
+                        color: "#56616b",
+                        width: "45%",
+                        marginLeft: "15px",
+                      }}
+                    >
                       {candidate.appliedFor?.department || "Not specified"}
                     </Text>
                   </div>
                 </div>
                 <div className="info-item">
                   <div className="info-content">
-                    <Text type="secondary"  style={{marginBottom:"6px" ,fontSize:"14px", fontWeight:"450", color:"#212529", width:"45%"}}>
+                    <Text
+                      type="secondary"
+                      style={{
+                        marginBottom: "6px",
+                        fontSize: "14px",
+                        fontWeight: "450",
+                        color: "#212529",
+                        width: "45%",
+                      }}
+                    >
                       Job Type
                     </Text>
-                    <Text strong  style={{marginBottom:"6px" ,fontSize:"14px", fontWeight:"450", color:"#56616b", width:"45%",  marginLeft:"15px"}}>
-                      {candidate.appliedFor?.jobType.replace('_' , ' ') || "Not specified"}
+                    <Text
+                      strong
+                      style={{
+                        marginBottom: "6px",
+                        fontSize: "14px",
+                        fontWeight: "450",
+                        color: "#56616b",
+                        width: "45%",
+                        marginLeft: "15px",
+                      }}
+                    >
+                      {candidate.appliedFor?.jobType.replace("_", " ") ||
+                        "Not specified"}
                     </Text>
                   </div>
                 </div>
                 <div className="info-item">
                   <div className="info-content">
-                    <Text type="secondary" style={{marginBottom:"6px" ,fontSize:"14px", fontWeight:"450", color:"#212529", width:"45%"}}>
+                    <Text
+                      type="secondary"
+                      style={{
+                        marginBottom: "6px",
+                        fontSize: "14px",
+                        fontWeight: "450",
+                        color: "#212529",
+                        width: "45%",
+                      }}
+                    >
                       Experience
                     </Text>
-                    <Text strong  style={{marginBottom:"6px" ,fontSize:"14px", fontWeight:"450", color:"#56616b", width:"45%",  marginLeft:"15px"}}>
+                    <Text
+                      strong
+                      style={{
+                        marginBottom: "6px",
+                        fontSize: "14px",
+                        fontWeight: "450",
+                        color: "#56616b",
+                        width: "45%",
+                        marginLeft: "15px",
+                      }}
+                    >
                       {candidate.experience} Years
                     </Text>
                   </div>
                 </div>
                 <div className="info-item">
                   <div className="info-content">
-                    <Text type="secondary"  style={{marginBottom:"6px" ,fontSize:"14px", fontWeight:"450", color:"#212529", width:"45%"}}>
+                    <Text
+                      type="secondary"
+                      style={{
+                        marginBottom: "6px",
+                        fontSize: "14px",
+                        fontWeight: "450",
+                        color: "#212529",
+                        width: "45%",
+                      }}
+                    >
                       Notice Period
                     </Text>
-                    <Text strong  style={{marginBottom:"6px" ,fontSize:"14px", fontWeight:"450", color:"#56616b", width:"45%", marginLeft:"15px"}}>
+                    <Text
+                      strong
+                      style={{
+                        marginBottom: "6px",
+                        fontSize: "14px",
+                        fontWeight: "450",
+                        color: "#56616b",
+                        width: "45%",
+                        marginLeft: "15px",
+                      }}
+                    >
                       {candidate.noticePeriod?.replace("_", " ").toLowerCase()}
                     </Text>
                   </div>
                 </div>
                 <div className="info-item">
                   <div className="info-content">
-                    <Text type="secondary"  style={{marginBottom:"6px" ,fontSize:"14px", fontWeight:"450", color:"#212529", width:"45%"}}>
+                    <Text
+                      type="secondary"
+                      style={{
+                        marginBottom: "6px",
+                        fontSize: "14px",
+                        fontWeight: "450",
+                        color: "#212529",
+                        width: "45%",
+                      }}
+                    >
                       Current Salary
                     </Text>
-                    <Text strong  style={{marginBottom:"6px" ,fontSize:"14px", fontWeight:"450", color:"#56616b", width:"45%",  marginLeft:"15px"}}>
+                    <Text
+                      strong
+                      style={{
+                        marginBottom: "6px",
+                        fontSize: "14px",
+                        fontWeight: "450",
+                        color: "#56616b",
+                        width: "45%",
+                        marginLeft: "15px",
+                      }}
+                    >
                       PKR {candidate.currentSalary?.toLocaleString()}
                     </Text>
                   </div>
                 </div>
                 <div className="info-item">
                   <div className="info-content">
-                    <Text type="secondary"  style={{marginBottom:"6px" ,fontSize:"14px", fontWeight:"450", color:"#212529", width:"45%"}}>
+                    <Text
+                      type="secondary"
+                      style={{
+                        marginBottom: "6px",
+                        fontSize: "14px",
+                        fontWeight: "450",
+                        color: "#212529",
+                        width: "45%",
+                      }}
+                    >
                       Expected Salary
                     </Text>
-                    <Text strong  style={{marginBottom:"6px" ,fontSize:"14px", fontWeight:"450", color:"#56616b", width:"45%", marginLeft:"15px"}}>
+                    <Text
+                      strong
+                      style={{
+                        marginBottom: "6px",
+                        fontSize: "14px",
+                        fontWeight: "450",
+                        color: "#56616b",
+                        width: "45%",
+                        marginLeft: "15px",
+                      }}
+                    >
                       PKR {candidate.expectedSalary?.toLocaleString()}
                     </Text>
                   </div>
                 </div>
-                <div style={{borderTop: '1px solid #e8e8e8'}}>
-                  <h3 style={{fontSize:"16px", color:'#000', marginTop:'15px'}}>SkillSet:</h3>
-                  <div style={{margin:"10px 0px 10px 0px"}}>
-                    {candidate?.skillSet.map((skill)=>(
-                      <Tag style={{borderRadius:'8px', fontSize:'14px', padding:'5px'}}>{skill}</Tag>
+                <div style={{ borderTop: "1px solid #e8e8e8" }}>
+                  <h3
+                    style={{
+                      fontSize: "16px",
+                      color: "#000",
+                      marginTop: "15px",
+                    }}
+                  >
+                    SkillSet:
+                  </h3>
+                  <div style={{ margin: "10px 0px 10px 0px" }}>
+                    {candidate?.skillSet.map((skill) => (
+                      <Tag
+                        style={{
+                          borderRadius: "8px",
+                          fontSize: "14px",
+                          padding: "5px",
+                        }}
+                      >
+                        {skill}
+                      </Tag>
                     ))}
                   </div>
                 </div>
@@ -1975,249 +2476,1198 @@ const CandidateDetails = () => {
           </Card>
         </div>
 
-
-        <div className='col-md-9 custom-col-two'>
-          <div className="card p-4" style={{border:"1px solid transparent" ,borderRadius:"8px", display:"flex", flexDirection:"row", justifyContent:"space-between"}}>
-            <div className='tab-container'>
-              <div className='active-tab-timeline' style={{color:activeTab === 'timeline' ? '#ff9244' : '#a5adb6', cursor: 'pointer',borderBottom: activeTab === 'timeline' ? '2px solid #ff9244' : 'none'}} key='timeline' onClick={()=>{handleActiveTab('timeline')}}><span className='span-timeline'><img src={timeline} style={{marginRight:'8px'}}></img>Timeline</span></div>
-              <div  className='active-tab-files'  style={{color:activeTab === 'files' ? '#ff9244' : '#a5adb6', cursor: 'pointer',borderBottom: activeTab === 'files' ? '2px solid #ff9244' : 'none'}}  key='files' onClick={()=>{handleActiveTab('files')}}><span  className='span-files'><img src={files} style={{marginRight:'8px'}}></img>Files</span></div>
-              <div  className='active-tab-interview'  style={{color:activeTab === 'interview' ? '#ff9244' : '#a5adb6', cursor: 'pointer',borderBottom: activeTab === 'interview' ? '2px solid #ff9244' : 'none'}}  key='interview'  onClick={()=>{handleActiveTab('interview')}}><span  className='span-interview'><img src={interviewIcon} style={{marginRight:'8px'}}></img>Interview</span></div>
-              <div className = 'active-tab-tasks' style={{color: activeTab === 'tasks' ? "#ff9244" : "#a5adb6" , cursor:"pointer" ,borderBottom: activeTab === 'tasks' ? '2px solid #ff9244' : 'none'}} key='tasks' onClick={()=>{handleActiveTab('tasks')}}><span  className='span-tasks'><img src={taskIcon} style={{marginRight:'8px'}}></img>Tasks</span></div>
+        <div className="col-md-9 custom-col-two">
+          <div
+            className="card p-4"
+            style={{
+              border: "1px solid transparent",
+              borderRadius: "8px",
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-between",
+            }}
+          >
+            <div className="tab-container">
+              <div
+                className="active-tab-timeline"
+                style={{
+                  color: activeTab === "timeline" ? "#ff9244" : "#a5adb6",
+                  cursor: "pointer",
+                  borderBottom:
+                    activeTab === "timeline" ? "2px solid #ff9244" : "none",
+                }}
+                key="timeline"
+                onClick={() => {
+                  handleActiveTab("timeline");
+                }}
+              >
+                <span className="span-timeline">
+                  <img src={timeline} style={{ marginRight: "8px" }}></img>
+                  Timeline
+                </span>
+              </div>
+              <div
+                className="active-tab-files"
+                style={{
+                  color: activeTab === "files" ? "#ff9244" : "#a5adb6",
+                  cursor: "pointer",
+                  borderBottom:
+                    activeTab === "files" ? "2px solid #ff9244" : "none",
+                }}
+                key="files"
+                onClick={() => {
+                  handleActiveTab("files");
+                }}
+              >
+                <span className="span-files">
+                  <img src={files} style={{ marginRight: "8px" }}></img>Files
+                </span>
+              </div>
+              <div
+                className="active-tab-interview"
+                style={{
+                  color: activeTab === "interview" ? "#ff9244" : "#a5adb6",
+                  cursor: "pointer",
+                  borderBottom:
+                    activeTab === "interview" ? "2px solid #ff9244" : "none",
+                }}
+                key="interview"
+                onClick={() => {
+                  handleActiveTab("interview");
+                }}
+              >
+                <span className="span-interview">
+                  <img src={interviewIcon} style={{ marginRight: "8px" }}></img>
+                  Interview
+                </span>
+              </div>
+              <div
+                className="active-tab-tasks"
+                style={{
+                  color: activeTab === "tasks" ? "#ff9244" : "#a5adb6",
+                  cursor: "pointer",
+                  borderBottom:
+                    activeTab === "tasks" ? "2px solid #ff9244" : "none",
+                }}
+                key="tasks"
+                onClick={() => {
+                  handleActiveTab("tasks");
+                }}
+              >
+                <span className="span-tasks">
+                  <img src={taskIcon} style={{ marginRight: "8px" }}></img>Tasks
+                </span>
+              </div>
             </div>
           </div>
           {/* Files Tab Upload File Section */}
-          {activeTab === 'files' && (
-              <div className='col-md-12 custom-col-two mb-4'>
-                <div style={{border: '1px dashed #a5adb6', borderRadius:"8px",display:"flex", justifyContent:"center", cursor:"pointer"}}>
-                  <div style={{display:'flex', gap:'12px'}}  onClick={() => document.getElementById("resume-upload").click()} onDrop={handleDrop} onDragOver={handleDragOver} onDragLeave={handleDragLeave}><img src={cloudUpload}></img><p style={{marginTop:"15px", color:"#a5adb6" ,width:"100%"}}>
-                  <input type='file' accept='.pdf, .doc, .docx,' onChange={handleFileChange} id='resume-upload' style={{display:'none' ,width:"100%"}}></input> Drop file here or click to upload file</p>
+          {activeTab === "files" && (
+            <div className="col-md-12 custom-col-two mb-4">
+              <div
+                style={{
+                  border: "1px dashed #a5adb6",
+                  borderRadius: "8px",
+                  width: "100%",
+                  minHeight: "60px",
+                  background: "transparent",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  position: "relative",
+                }}
+              >
+                <Upload
+                  className="full-width-upload"
+                  maxCount={1}
+                  showUploadList={false}
+                  beforeUpload={() => {
+                    return false; // Prevent AntD's default upload, handle in onChange
+                  }}
+                  onChange={async (info) => {
+                    const file = info.file;
+                    let resumeData = null;
+                    const isValid = validateFile(file);
+                    if (!isValid) {
+                      return;
+                    }
+                    try {
+                      const uploadResult = await uploadFunction([file]);
+                      console.log("Upload result:", uploadResult);
+
+                      if (
+                        Array.isArray(uploadResult) &&
+                        uploadResult.length > 0 &&
+                        uploadResult[0].imageUrl
+                      ) {
+                        resumeData = [
+                          {
+                            url: uploadResult[0].imageUrl,
+                            fileName: uploadResult[0].fileName,
+                            asset_id: uploadResult[0].asset_id,
+                            public_id: uploadResult[0].public_id,
+                            resource_type: uploadResult[0].resource_type,
+                            uploadedAt: new Date().toISOString(),
+                          },
+                        ];
+                        console.log(
+                          "Resume uploaded successfully:",
+                          resumeData
+                        );
+                        const newResumeList = [
+                          ...(Array.isArray(resume) ? resume : []),
+                          {
+                            url: uploadResult[0].imageUrl,
+                            fileName: uploadResult[0].fileName,
+                            asset_id: uploadResult[0].asset_id,
+                            public_id: uploadResult[0].public_id,
+                            resource_type: uploadResult[0].resource_type,
+                            uploadedAt: new Date().toISOString(),
+                          },
+                        ];
+                        setResume(newResumeList);
+                        await handleUpload(newResumeList);
+                      } else {
+                        console.error("Invalid upload result:", uploadResult);
+                        message.error("Failed to upload resume");
+                        setSubmitting(false);
+                        return;
+                      }
+                    } catch (error) {
+                      console.log("E R R O R : ", error);
+                      message.error("Error uploading file");
+                    }
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "100%",
+                      minHeight: "60px",
+                      background: "transparent",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <span
+                      style={{
+                        color: "#aaa",
+                        display: "flex",
+                        alignItems: "center",
+                        pointerEvents: "none",
+                      }}
+                    >
+                      <img
+                        src={cloudUpload}
+                        alt=""
+                        style={{ height: 16, marginRight: 8 }}
+                      />
+                      {"Drop file here or click to upload file"}
+                    </span>
+                  </div>
+                </Upload>
+              </div>
+            </div>
+          )}
+          <div
+            className="card p-4"
+            style={{
+              border: "1px solid transparent",
+              borderRadius: "8px",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            {/* Interview Tab Content */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <h3>
+                {activeTab === "timeline"
+                  ? "Timeline"
+                  : activeTab === "files"
+                  ? `Files (${Array.isArray(resume) ? resume.length : 0})`
+                  : activeTab === "interview"
+                  ? "Interview"
+                  : activeTab === "tasks"
+                  ? "Tasks"
+                  : "null"}
+              </h3>
+              {activeTab === "interview" && (
+                <div>
+                  <div>
+                    <button
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        fontSize: "14px",
+                        fontWeight: "450",
+                        color: "#ff9244",
+                      }}
+                      onClick={handleCreateInterview}
+                    >
+                      <img
+                        src={colored}
+                        style={{
+                          height: "16px",
+                          width: "16px",
+                          marginRight: "4px",
+                          marginBottom: "3px",
+                        }}
+                      ></img>
+                      Create Interview
+                    </button>
                   </div>
                 </div>
-              </div>
-          )}
-          <div className="card p-4" style={{ border: "1px solid transparent", borderRadius: "8px", display: 'flex', flexDirection: 'column' }}>
-          {/* Interview Tab Content */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-            <h3>{activeTab === 'timeline' ? "Timeline" : activeTab === 'files' ? `Files (${resume ? resume.length : ''})` : activeTab === 'interview' ? 'Interview' : activeTab === 'tasks' ? 'Tasks' : 'null'}</h3>
-            {activeTab === 'interview' && (
-            <div>
-              <div><button style={{background:"transparent" ,border:"none", fontSize:'14px' ,fontWeight:"450", color:"#ff9244"}}onClick={handleCreateInterview}><img src={colored} style={{height:"16px", width:"16px", marginRight:"4px", marginBottom:'3px'}}></img>Create Interview</button></div>
-            </div>
-            )}
-            {activeTab === 'tasks' && (
-            <div>
-              <div><button style={{background:"transparent" ,border:"none", fontSize:'14px' ,fontWeight:"450", color:"#ff9244"}} onClick={handleCreateTask}><img src={colored} style={{height:"16px", width:"16px", marginRight:"4px", marginBottom:'3px'}}></img>Create Task</button></div>
-            </div>
-            )}
-          </div>
-
-          {activeTab === 'interview' && (
-            <div style={{borderTop:'2px solid #e0e3e6' ,marginTop:"20px"}}>
-              {interviews.length > 0 ? (
+              )}
+              {activeTab === "tasks" && (
                 <div>
-                  {interviews.map(interview=>(
-                    <div key={interview._id}  style={{ border: '2px solid #cfd4d8', borderRadius: '8px', marginTop: "20px", padding: '15px' }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <div style={{display:'flex', alignItems:'center'}}>
-                          <div style={{height:'40px', width:"40px",background:'#f7f7f8' ,borderRadius:'50%', display:"flex", justifyContent:"center", alignItems:'center'}}><img src={interviewIcon}></img></div>
-                          <div style={{marginLeft:"15px"}}>
-                            <div style={{fontSize:"14px" ,fontWeight:"500"}}>{interview.interviewTitle || "Untitled Interview"}</div>
-                            <div  style={{fontSize:"12px" ,fontWeight:"450"}}>{moment(interview.interviewDate).format("DD MMM YYYY") + ' at ' + moment(interview.interviewTime, 'Hh:mm').format('hh:mm A')}</div>
-                          </div>
-                          <div className={`status-${interview.status?.toLowerCase()}`} style={{borderRadius:'70px',height:"26px", width:"90px", marginLeft:"15px", display:'flex', justifyContent:'center', alignItems:'center'}}>{interview.status}</div>
-                        </div>
-                        <div onClick={()=>{handleViewMore(interview._id)}} style={{display:'flex', alignItems:"center"}}><button style={{border:'none' , background:"transparent"}}>{viewMore? 'View Less' : 'View Details'}</button></div>
-                      </div>
-                      {viewMore === interview._id &&(
-                        <div>
-                          {interview.status === 'completed' ? (
-                            <div>
-                              {interview?.feedback?.map((feedback, index) => (
-                                <InterviewFeedbackDisplay key={index} feedback={feedback} />
-                              ))}
-                            </div>
-                          ) : 
-                          <div style={{borderTop:'1px solid #eef0f1', padding:"10px", marginTop:"10px"}}>
-                          <div>
-                            <h2 style={{fontSize:"14px" ,fontWeight:"500"}}>Assigners</h2>
-                            <div style={{display:'flex', gap:"20px"}}>
-                              <div style={{display:"flex"}}>
-                                <div style={{height:"32px" , width:"32px"}}><img src={interview?.interviewerId?.imageUrl} style={{height:"100%" ,width:"100%", borderRadius:"50%"}}></img></div>
-                                <div style={{marginLeft:"10px"}}>
-                                  <h3 style={{fontSize:"14px" ,fontWeight:"500",marginBottom:"0"}}>{interview.interviewerId?.fullName}</h3>
-                                  <p style={{fontSize:"12px" ,fontWeight:"450",color:"#56616b"}}>Hello</p>
-                                </div>
-                              </div>
-                              {interview.assignedTo?.map((interviewer)=>(
-                                <div style={{display:'flex'}}>
-                                  <div style={{height:"32px" , width:"32px"}}><img src={interviewer.imageUrl} style={{height:"100%" ,width:"100%", borderRadius:"50%"}}></img></div>
-                                  <div style={{marginLeft:"10px"}}>
-                                    <h3 style={{fontSize:"14px" ,fontWeight:"500",marginBottom:"0"}}>{interviewer.fullName}</h3>
-                                    <p style={{fontSize:"12px" ,fontWeight:"450",color:"#56616b"}}>Hello</p>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                          <div>
-                            <h2 style={{fontSize:"14px" ,fontWeight:"500"}}>Created By</h2>
-                            <div style={{display:"flex"}}>
-                                <div style={{height:"32px" , width:"32px"}}><img src={interview?.createdBy?.imageUrl} style={{height:"100%" ,width:"100%", borderRadius:"50%"}}></img></div>
-                                <div style={{marginLeft:"10px"}}>
-                                  <h3 style={{fontSize:"14px" ,fontWeight:"500",marginBottom:"0"}}>{interview?.createdBy?.fullName}</h3>
-                                  <p style={{fontSize:"12px" ,fontWeight:"450",color:"#56616b"}}>Hello</p>
-                                </div>
-                              </div>
-                          </div>
-                        </div>
-                          }
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                  <div>
+                    <button
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        fontSize: "14px",
+                        fontWeight: "450",
+                        color: "#ff9244",
+                      }}
+                      onClick={handleCreateTask}
+                    >
+                      <img
+                        src={colored}
+                        style={{
+                          height: "16px",
+                          width: "16px",
+                          marginRight: "4px",
+                          marginBottom: "3px",
+                        }}
+                      ></img>
+                      Create Task
+                    </button>
+                  </div>
                 </div>
-              ) : 
-              <div style={{height:'400px' ,width:"100%", border:'2px solid #cfd4d8' ,borderRadius:"4px", display:"flex", justifyContent:"center", alignItems:"center", marginTop:'20px'}}>
-                <div>
-                < img src={NoInterview} style={{display:'flex', justifySelf:"center"}}></img>
-                  <p>No Interview Created</p>
-                </div>
-              </div> 
-            }
+              )}
             </div>
-          )}
 
-          {/* tasks module  */}
-          {activeTab === 'tasks' && (
-            <div>
-              {tasks.length > 0 && (
-                <div>
-                  {tasks.map(task=>(
-                    <div key={task._id}  style={{ border: '2px solid #cfd4d8', borderRadius: '8px', marginTop: "20px", padding: '15px' }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <div style={{display:'flex', alignItems:'center'}}>
-                          <div style={{height:'40px', width:"40px",background:'#f7f7f8' ,borderRadius:'50%', display:"flex", justifyContent:"center", alignItems:'center'}}><img src={files}></img></div>
-                          <div style={{marginLeft:"15px"}}>
-                            <div style={{fontSize:"14px" ,fontWeight:"500"}}>{task.taskName || "Untitled Task"}</div>
-                            <div  style={{fontSize:"12px" ,fontWeight:"450"}}>{moment(task.createdAt).format("DD MMM YYYY") + ' at ' + moment(task.createdAt, 'Hh:mm').format('hh:mm A')}</div>
-                          </div>
-                          <div className={`status-${task.status?.toLowerCase()}`} style={{borderRadius:'70px',height:"26px", width:"90px", marginLeft:"15px", display:'flex', justifyContent:'center', alignItems:'center'}}>{task.status.toLowerCase()}</div>
-                        </div>
-                        <div onClick={()=>{handleViewMore(task._id)}} style={{display:'flex', alignItems:"center"}}><button style={{border:'none' , background:"transparent"}}>{viewMore? 'View Less' : 'View Details'}</button></div>
-                      </div>
-                      {viewMore === task._id &&(
-                        <div>
-                          {task.status === 'COMPLETED' ? (
-                            <div>
-                              {interviews.feedback?.map((feedback, index) => (
-                                <InterviewFeedbackDisplay key={index} feedback={feedback} />
-                              ))}
+            {activeTab === "interview" && (
+              <div
+                style={{ borderTop: "2px solid #e0e3e6", marginTop: "20px" }}
+              >
+                {interviews.length > 0 ? (
+                  <div>
+                    {interviews.map((interview) => (
+                      <div
+                        key={interview._id}
+                        style={{
+                          border: "2px solid #cfd4d8",
+                          borderRadius: "8px",
+                          marginTop: "20px",
+                          padding: "15px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                          }}
+                        >
+                          <div
+                            style={{ display: "flex", alignItems: "center" }}
+                          >
+                            <div
+                              style={{
+                                height: "40px",
+                                width: "40px",
+                                background: "#f7f7f8",
+                                borderRadius: "50%",
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                              }}
+                            >
+                              <img src={interviewIcon}></img>
                             </div>
-                            ) : 
-                            <div style={{borderTop:'1px solid #eef0f1', padding:"10px", marginTop:"10px"}}>
+                            <div style={{ marginLeft: "15px" }}>
+                              <div
+                                style={{ fontSize: "14px", fontWeight: "500" }}
+                              >
+                                {interview.interviewTitle ||
+                                  "Untitled Interview"}
+                              </div>
+                              <div
+                                style={{ fontSize: "12px", fontWeight: "450" }}
+                              >
+                                {moment(interview.interviewDate).format(
+                                  "DD MMM YYYY"
+                                ) +
+                                  " at " +
+                                  moment(
+                                    interview.interviewTime,
+                                    "Hh:mm"
+                                  ).format("hh:mm A")}
+                              </div>
+                            </div>
+                            <div
+                              className={`status-${interview.status?.toLowerCase()}`}
+                              style={{
+                                borderRadius: "70px",
+                                height: "26px",
+                                width: "90px",
+                                marginLeft: "15px",
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                              }}
+                            >
+                              {interview.status}
+                            </div>
+                          </div>
+                          <div
+                            onClick={() => {
+                              handleViewMore(interview._id);
+                            }}
+                            style={{ display: "flex", alignItems: "center" }}
+                          >
+                            <button
+                              style={{
+                                border: "none",
+                                background: "transparent",
+                              }}
+                            >
+                              {viewMore ? "View Less" : "View Details"}
+                            </button>
+                          </div>
+                        </div>
+                        {viewMore === interview._id && (
+                          <div>
+                            {interview.status === "completed" ? (
                               <div>
-                                <h2 style={{fontSize:"14px" ,fontWeight:"500"}}>Reviewers</h2>
-                                <div style={{display:'flex', gap:"20px"}}>
-                                  <div style={{display:"flex"}}>
-                                    <div style={{height:"32px" , width:"32px"}}><img src={task?.taskReviewers?.imageUrl} style={{height:"100%" ,width:"100%", borderRadius:"50%"}}></img></div>
-                                    <div style={{marginLeft:"10px"}}>
-                                      <h3 style={{fontSize:"14px" ,fontWeight:"500",marginBottom:"0"}}>{task.taskReviewers?.fullName}</h3>
-                                      <p style={{fontSize:"12px" ,fontWeight:"450",color:"#56616b"}}>Hello</p>
-                                    </div>
-                                  </div>
-                                  {task.Reviewers?.map((taskReviewer)=>(
-                                    <div style={{display:'flex'}} key={taskReviewer._id}>
-                                      <div style={{height:"32px" , width:"32px"}}><img src={taskReviewer.imageUrl} style={{height:"100%" ,width:"100%", borderRadius:"50%"}}></img></div>
-                                      <div style={{marginLeft:"10px"}}>
-                                        <h3 style={{fontSize:"14px" ,fontWeight:"500",marginBottom:"0"}}>{taskReviewer.fullName}</h3>
-                                        <p style={{fontSize:"12px" ,fontWeight:"450",color:"#56616b"}}>Hello</p>
+                                {interview?.feedback?.map((feedback, index) => (
+                                  <InterviewFeedbackDisplay
+                                    key={index}
+                                    feedback={feedback}
+                                  />
+                                ))}
+                              </div>
+                            ) : (
+                              <div
+                                style={{
+                                  borderTop: "1px solid #eef0f1",
+                                  padding: "10px",
+                                  marginTop: "10px",
+                                }}
+                              >
+                                <div>
+                                  <h2
+                                    style={{
+                                      fontSize: "14px",
+                                      fontWeight: "500",
+                                    }}
+                                  >
+                                    Assigners
+                                  </h2>
+                                  <div style={{ display: "flex", gap: "20px" }}>
+                                    <div style={{ display: "flex" }}>
+                                      <div
+                                        style={{
+                                          height: "32px",
+                                          width: "32px",
+                                        }}
+                                      >
+                                        <img
+                                          src={
+                                            interview?.interviewerId?.imageUrl
+                                          }
+                                          style={{
+                                            height: "100%",
+                                            width: "100%",
+                                            borderRadius: "50%",
+                                          }}
+                                        ></img>
+                                      </div>
+                                      <div style={{ marginLeft: "10px" }}>
+                                        <h3
+                                          style={{
+                                            fontSize: "14px",
+                                            fontWeight: "500",
+                                            marginBottom: "0",
+                                          }}
+                                        >
+                                          {interview.interviewerId?.fullName}
+                                        </h3>
+                                        <p
+                                          style={{
+                                            fontSize: "12px",
+                                            fontWeight: "450",
+                                            color: "#56616b",
+                                          }}
+                                        >
+                                          Hello
+                                        </p>
                                       </div>
                                     </div>
-                                  ))}
+                                    {interview.assignedTo?.map(
+                                      (interviewer) => (
+                                        <div style={{ display: "flex" }}>
+                                          <div
+                                            style={{
+                                              height: "32px",
+                                              width: "32px",
+                                            }}
+                                          >
+                                            <img
+                                              src={interviewer.imageUrl}
+                                              style={{
+                                                height: "100%",
+                                                width: "100%",
+                                                borderRadius: "50%",
+                                              }}
+                                            ></img>
+                                          </div>
+                                          <div style={{ marginLeft: "10px" }}>
+                                            <h3
+                                              style={{
+                                                fontSize: "14px",
+                                                fontWeight: "500",
+                                                marginBottom: "0",
+                                              }}
+                                            >
+                                              {interviewer.fullName}
+                                            </h3>
+                                            <p
+                                              style={{
+                                                fontSize: "12px",
+                                                fontWeight: "450",
+                                                color: "#56616b",
+                                              }}
+                                            >
+                                              Hello
+                                            </p>
+                                          </div>
+                                        </div>
+                                      )
+                                    )}
+                                  </div>
                                 </div>
-                              </div>
-                              <div>
-                                <h2 style={{fontSize:"14px" ,fontWeight:"500" ,marginTop:"10px"}}>Created By</h2>
-                                  <div style={{display:"flex"}}>
-                                    <div style={{height:"32px" , width:"32px"}}><img src={task?.createdBy?.imageUrl} style={{height:"100%" ,width:"100%", borderRadius:"50%"}}></img></div>
-                                    <div style={{marginLeft:"10px"}}>
-                                      <h3 style={{fontSize:"14px" ,fontWeight:"500",marginBottom:"0"}}>{task?.createdBy?.fullName}</h3>
-                                      <p style={{fontSize:"12px" ,fontWeight:"450",color:"#56616b"}}>Hello</p>
+                                <div>
+                                  <h2
+                                    style={{
+                                      fontSize: "14px",
+                                      fontWeight: "500",
+                                    }}
+                                  >
+                                    Created By
+                                  </h2>
+                                  <div style={{ display: "flex" }}>
+                                    <div
+                                      style={{ height: "32px", width: "32px" }}
+                                    >
+                                      <img
+                                        src={interview?.createdBy?.imageUrl}
+                                        style={{
+                                          height: "100%",
+                                          width: "100%",
+                                          borderRadius: "50%",
+                                        }}
+                                      ></img>
+                                    </div>
+                                    <div style={{ marginLeft: "10px" }}>
+                                      <h3
+                                        style={{
+                                          fontSize: "14px",
+                                          fontWeight: "500",
+                                          marginBottom: "0",
+                                        }}
+                                      >
+                                        {interview?.createdBy?.fullName}
+                                      </h3>
+                                      <p
+                                        style={{
+                                          fontSize: "12px",
+                                          fontWeight: "450",
+                                          color: "#56616b",
+                                        }}
+                                      >
+                                        Hello
+                                      </p>
                                     </div>
                                   </div>
                                 </div>
                               </div>
-                            }
+                            )}
                           </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                )}
-            </div>
-          )}   
-          {/* Timeline Tab Content */}
-          {activeTab === 'timeline' && (
-            <div className='mt-2'>
-              <div className="p-3" style={{ background: '#f7f7f8', display: "flex", justifyContent: "space-between" }}>
-                <div style={{ fontSize: '14px', fontWeight: "500", color: "#000000" }}>{`${candidate.firstName} is ${candidate.status}`}</div>
-                <div style={{ fontSize: '12px', fontWeight: "450", color: "#495057" }}>{moment(candidate.appliedDate).format("DD MMM") + ' at ' + moment(candidate.appliedTime).format("HH:mm A")}</div>
-              </div>
-              {filteredInterviews.length > 0 ? (
-                filteredInterviews.map((interview) => (
-                  <div className="p-3 mt-3" style={{ background: '#f7f7f8', display: "flex", justifyContent: "space-between" }}>
-                    <div style={{ fontSize: '14px', fontWeight: "500", color: "#000000" }}>
-                      {`${interview.interviewTitle} is scheduled with ${interview.createdBy.fullName}`}
-                    </div>
-                    <div style={{ fontSize: '12px', fontWeight: "450", color: "#495057" }}>
-                      {moment(interview.interviewDate).format("DD MMM") + ' at ' + moment(interview.interviewTime, "HH:mm").format("hh:mm A")}
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div
+                    style={{
+                      height: "400px",
+                      width: "100%",
+                      border: "2px solid #cfd4d8",
+                      borderRadius: "4px",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      marginTop: "20px",
+                    }}
+                  >
+                    <div>
+                      <img
+                        src={NoInterview}
+                        style={{ display: "flex", justifySelf: "center" }}
+                      ></img>
+                      <p>No Interview Created</p>
                     </div>
                   </div>
-                ))
-              ) : ''}
-            </div>
-          )}
-          {activeTab === 'files' && (
-            <div className='mt-2'>
-              {resume.map((file,index)=>(
-                <div className="p-3" style={{ background: '#f7f7f8', display: "flex", justifyContent: "space-between", marginTop:"8px"}} key={index}>
-                    {editingIndex === index ? (
-                      <div style={{ fontSize: '14px', fontWeight: "500", color: "#000000"}}>
-                        <input style={{border: '1px solid #a5adb6' , borderRadius:"8px" , height:'28px', paddingLeft:"8px"}} type='text' value={tempName} onChange={(e)=>setTempName(e.target.value)} onBlur={()=>saveRename(index)} onKeyDown={(e)=>e.key === 'Enter' && saveRename(index)}></input>
-                      </div>
-                    ) :
-                      <div style={{ fontSize: '14px', fontWeight: "500", color: "#000000", cursor: 'pointer' }} onClick={()=>{handlePreviewResume()}}>
-                        {file.name}
-                      </div>
-                    }
+                )}
+              </div>
+            )}
 
-                  <div style={{display:"flex", gap:"15px"}}>
-                    <div style={{ fontSize: '12px', fontWeight: "450", color: "#495057",  paddingTop:"5px" }}>{moment().format("DD MMM YYYY") + ' at ' + moment().format("HH:mm A")}</div>
-                    <div style={{marginRight:"10px", cursor:"pointer", position:"relative"}} onClick={()=>{toggleModal(index)}}><img src={more}></img>
-                      {openModalIndex === index && (
-                        <div style={{position:'absolute',top:'100%',right:'10%',background: 'white',border:'1px solid #ddd',
-                        borderRadius:'5px',boxShadow:'0px 4px 6px rgba(0, 0, 0, 0.1)',padding:'5px',display:'flex',
-                        flexDirection:'column', marginTop:"10px", width:"120px"}}
+            {/* tasks module  */}
+            {activeTab === "tasks" && (
+              <div>
+                {tasks.length > 0 && (
+                  <div>
+                    {tasks.map((task) => (
+                      <div
+                        key={task._id}
+                        style={{
+                          border: "2px solid #cfd4d8",
+                          borderRadius: "8px",
+                          marginTop: "20px",
+                          padding: "15px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                          }}
                         >
-                          <div style={{background: 'none',border: 'none',marginTop: '7px',marginBottom:"7px" ,cursor: 'pointer',width:'100%',display:'flex'}} onClick={()=>{startEditing(index, file.name)}}>
-                            <div style={{width:"30%",paddingLeft:"7px"}}><img src={EditIcon}></img></div>
-                            <div style={{ width:"70%", paddingTop:"3px"}} ><span style={{fontSize:"14px", fontWeight:'500', color:'#56616b'}}>Edit</span></div>
+                          <div
+                            style={{ display: "flex", alignItems: "center" }}
+                          >
+                            <div
+                              style={{
+                                height: "40px",
+                                width: "40px",
+                                background: "#f7f7f8",
+                                borderRadius: "50%",
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                              }}
+                            >
+                              <img src={files}></img>
+                            </div>
+                            <div style={{ marginLeft: "15px" }}>
+                              <div
+                                style={{ fontSize: "14px", fontWeight: "500" }}
+                              >
+                                {task.taskName || "Untitled Task"}
+                              </div>
+                              <div
+                                style={{ fontSize: "12px", fontWeight: "450" }}
+                              >
+                                {moment(task.createdAt).format("DD MMM YYYY") +
+                                  " at " +
+                                  moment(task.createdAt, "Hh:mm").format(
+                                    "hh:mm A"
+                                  )}
+                              </div>
+                            </div>
+                            <div
+                              className={`status-${task.status?.toLowerCase()}`}
+                              style={{
+                                borderRadius: "70px",
+                                height: "26px",
+                                width: "90px",
+                                marginLeft: "15px",
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                              }}
+                            >
+                              {task.status.toLowerCase()}
+                            </div>
                           </div>
-                          <div style={{background: 'none',border: 'none',marginTop: '10px',cursor: 'pointer',width:'100%',display:"flex"}}  onClick={()=>{deleteResume(index)}}>
-                            <div  style={{width:"30%",paddingLeft:"7px"}}><img src={DeleteIcon}></img></div>
-                            <div style={{ width:"70%", paddingTop:"3px"}}><span style={{fontSize:"14px", fontWeight:'500', color:'#56616b'}}>Delete</span></div>
+                          <div
+                            onClick={() => {
+                              handleViewMore(task._id);
+                            }}
+                            style={{ display: "flex", alignItems: "center" }}
+                          >
+                            <button
+                              style={{
+                                border: "none",
+                                background: "transparent",
+                              }}
+                            >
+                              {viewMore ? "View Less" : "View Details"}
+                            </button>
                           </div>
+                        </div>
+                        {viewMore === task._id && (
+                          <div>
+                            {task.status === "COMPLETED" ? (
+                              <div>
+                                {interviews.feedback?.map((feedback, index) => (
+                                  <InterviewFeedbackDisplay
+                                    key={index}
+                                    feedback={feedback}
+                                  />
+                                ))}
+                              </div>
+                            ) : (
+                              <div
+                                style={{
+                                  borderTop: "1px solid #eef0f1",
+                                  padding: "10px",
+                                  marginTop: "10px",
+                                }}
+                              >
+                                <div>
+                                  <h2
+                                    style={{
+                                      fontSize: "14px",
+                                      fontWeight: "500",
+                                    }}
+                                  >
+                                    Reviewers
+                                  </h2>
+                                  <div style={{ display: "flex", gap: "20px" }}>
+                                    <div style={{ display: "flex" }}>
+                                      <div
+                                        style={{
+                                          height: "32px",
+                                          width: "32px",
+                                        }}
+                                      >
+                                        <img
+                                          src={task?.taskReviewers?.imageUrl}
+                                          style={{
+                                            height: "100%",
+                                            width: "100%",
+                                            borderRadius: "50%",
+                                          }}
+                                        ></img>
+                                      </div>
+                                      <div style={{ marginLeft: "10px" }}>
+                                        <h3
+                                          style={{
+                                            fontSize: "14px",
+                                            fontWeight: "500",
+                                            marginBottom: "0",
+                                          }}
+                                        >
+                                          {task.taskReviewers?.fullName}
+                                        </h3>
+                                        <p
+                                          style={{
+                                            fontSize: "12px",
+                                            fontWeight: "450",
+                                            color: "#56616b",
+                                          }}
+                                        >
+                                          Hello
+                                        </p>
+                                      </div>
+                                    </div>
+                                    {task.Reviewers?.map((taskReviewer) => (
+                                      <div
+                                        style={{ display: "flex" }}
+                                        key={taskReviewer._id}
+                                      >
+                                        <div
+                                          style={{
+                                            height: "32px",
+                                            width: "32px",
+                                          }}
+                                        >
+                                          <img
+                                            src={taskReviewer.imageUrl}
+                                            style={{
+                                              height: "100%",
+                                              width: "100%",
+                                              borderRadius: "50%",
+                                            }}
+                                          ></img>
+                                        </div>
+                                        <div style={{ marginLeft: "10px" }}>
+                                          <h3
+                                            style={{
+                                              fontSize: "14px",
+                                              fontWeight: "500",
+                                              marginBottom: "0",
+                                            }}
+                                          >
+                                            {taskReviewer.fullName}
+                                          </h3>
+                                          <p
+                                            style={{
+                                              fontSize: "12px",
+                                              fontWeight: "450",
+                                              color: "#56616b",
+                                            }}
+                                          >
+                                            Hello
+                                          </p>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                                <div>
+                                  <h2
+                                    style={{
+                                      fontSize: "14px",
+                                      fontWeight: "500",
+                                      marginTop: "10px",
+                                    }}
+                                  >
+                                    Created By
+                                  </h2>
+                                  <div style={{ display: "flex" }}>
+                                    <div
+                                      style={{ height: "32px", width: "32px" }}
+                                    >
+                                      <img
+                                        src={task?.createdBy?.imageUrl}
+                                        style={{
+                                          height: "100%",
+                                          width: "100%",
+                                          borderRadius: "50%",
+                                        }}
+                                      ></img>
+                                    </div>
+                                    <div style={{ marginLeft: "10px" }}>
+                                      <h3
+                                        style={{
+                                          fontSize: "14px",
+                                          fontWeight: "500",
+                                          marginBottom: "0",
+                                        }}
+                                      >
+                                        {task?.createdBy?.fullName}
+                                      </h3>
+                                      <p
+                                        style={{
+                                          fontSize: "12px",
+                                          fontWeight: "450",
+                                          color: "#56616b",
+                                        }}
+                                      >
+                                        Hello
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+            {/* Timeline Tab Content */}
+            {activeTab === "timeline" && (
+              <div className="mt-2">
+                {/* Map over candidate.timeline here */}
+                {candidate?.timeline && candidate.timeline.length > 0 ? (
+                  <div style={{ display: "flex", flexDirection: "column" }}>
+                    {candidate.timeline.map((event, idx) => {
+                      // Status event
+                      if (event.status && event.updatedAt) {
+                        return (
+                          <div
+                            key={event._id || idx}
+                            style={{
+                              background: "#f5f5f5",
+                              borderRadius: "10px",
+                              padding: "16px 20px",
+                              marginBottom: "16px",
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  fontSize: "15px",
+                                  fontWeight: 500,
+                                  color: "#222",
+                                }}
+                              >
+                                {`${candidate.firstName} is ${
+                                  event.status.charAt(0) +
+                                  event.status.slice(1).toLowerCase()
+                                }`}
+                              </div>
+                              <div style={{ fontSize: "14px", color: "#666" }}>
+                                {moment(event.updatedAt).format(
+                                  "Do MMM [at] h:mm a"
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+                      // Interview event
+                      if (event.InterviewCreator && event.createdAt) {
+                        return (
+                          <div
+                            key={event._id || idx}
+                            style={{
+                              background: "#f5f5f5",
+                              borderRadius: "10px",
+                              padding: "16px 20px",
+                              marginBottom: "16px",
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                              }}
+                            >
+                              <div
+                                style={{ fontSize: "15px", fontWeight: 500 }}
+                              >
+                                <span
+                                  style={{
+                                    color: "#1890ff",
+                                    textDecoration: "underline",
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  Interview
+                                </span>
+                                <span
+                                  style={{ color: "#222", fontWeight: 400 }}
+                                >
+                                  {" "}
+                                  scheduled by {event.InterviewCreator}
+                                </span>
+                              </div>
+                              <div style={{ fontSize: "14px", color: "#666" }}>
+                                {moment(event.createdAt).format(
+                                  "Do MMM [at] h:mm a"
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+                      // Unknown event type (optional: skip or show fallback)
+                      return null;
+                    })}
+                  </div>
+                ) : null}
+                {/* {filteredInterviews.length > 0
+                  ? filteredInterviews.map((interview) => (
+                      <div
+                        className="p-3 mt-3"
+                        style={{
+                          background: "#f7f7f8",
+                          display: "flex",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: "14px",
+                            fontWeight: "500",
+                            color: "#000000",
+                          }}
+                        >
+                          {`${interview.interviewTitle} is scheduled with ${interview.createdBy.fullName}`}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: "12px",
+                            fontWeight: "450",
+                            color: "#495057",
+                          }}
+                        >
+                          {moment(interview.interviewDate).format("DD MMM") +
+                            " at " +
+                            moment(interview.interviewTime, "HH:mm").format(
+                              "hh:mm A"
+                            )}
+                        </div>
+                      </div>
+                    ))
+                  : ""} */}
+              </div>
+            )}
+            {activeTab === "files" && (
+              <div className="mt-2">
+                {!previewFile ? (
+                  Array.isArray(resume) &&
+                  resume.map((file, index) => (
+                    <div
+                      className="p-3"
+                      style={{
+                        background: "#f7f7f8",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        marginTop: "8px",
+                      }}
+                      key={index}
+                    >
+                      {editingIndex === index ? (
+                        <div style={{ display: "flex", alignItems: "center" }}>
+                          <input
+                            style={{
+                              border: "1px solid #a5adb6",
+                              borderRadius: "8px",
+                              height: "28px",
+                              paddingLeft: "8px",
+                              width: "auto",
+                            }}
+                            type="text"
+                            value={tempName}
+                            onChange={(e) => setTempName(e.target.value)}
+                            onBlur={() => saveRename(index)}
+                            onKeyDown={(e) =>
+                              e.key === "Enter" && saveRename(index)
+                            }
+                          />
+                          <span style={{ marginLeft: 4, color: "#888" }}>
+                            {splitFileName(file.fileName).ext}
+                          </span>
+                        </div>
+                      ) : (
+                        <div
+                          style={{
+                            fontSize: "14px",
+                            fontWeight: "500",
+                            color: "#000000",
+                            cursor: "pointer",
+                          }}
+                          onClick={() => setPreviewFile(file)}
+                        >
+                          {file.fileName}
                         </div>
                       )}
+
+                      <div style={{ display: "flex", gap: "15px" }}>
+                        <div
+                          style={{
+                            fontSize: "12px",
+                            fontWeight: "450",
+                            color: "#495057",
+                            paddingTop: "5px",
+                          }}
+                        >
+                          {moment(file?.uploadedAt).format("DD MMM YYYY") +
+                            " at " +
+                            moment(file?.uploadedAt).format("HH:mm A")}
+                        </div>
+                        <div
+                          style={{
+                            marginRight: "10px",
+                            cursor: "pointer",
+                            position: "relative",
+                          }}
+                          onClick={() => {
+                            toggleModal(index);
+                          }}
+                        >
+                          <img src={more}></img>
+                          {openModalIndex === index && (
+                            <div
+                              ref={dropdownRef}
+                              style={{
+                                position: "absolute",
+                                top: "100%",
+                                right: "10%",
+                                background: "white",
+                                border: "1px solid #ddd",
+                                borderRadius: "5px",
+                                boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+                                padding: "5px",
+                                display: "flex",
+                                flexDirection: "column",
+                                marginTop: "10px",
+                                width: "120px",
+                                zIndex: 1,
+                              }}
+                            >
+                              <div
+                                style={{
+                                  background: "none",
+                                  border: "none",
+                                  marginTop: "7px",
+                                  marginBottom: "7px",
+                                  cursor: "pointer",
+                                  width: "100%",
+                                  display: "flex",
+                                }}
+                                onClick={() => {
+                                  startEditing(index, file.fileName);
+                                }}
+                              >
+                                <div
+                                  style={{ width: "30%", paddingLeft: "7px" }}
+                                >
+                                  <img src={EditIcon}></img>
+                                </div>
+                                <div
+                                  style={{ width: "70%", paddingTop: "3px" }}
+                                >
+                                  <span
+                                    style={{
+                                      fontSize: "14px",
+                                      fontWeight: "500",
+                                      color: "#56616b",
+                                    }}
+                                  >
+                                    Rename
+                                  </span>
+                                </div>
+                              </div>
+                              <div
+                                style={{
+                                  background: "none",
+                                  border: "none",
+                                  marginTop: "10px",
+                                  cursor: "pointer",
+                                  width: "100%",
+                                  display: "flex",
+                                }}
+                                onClick={() => {
+                                  Modal.confirm({
+                                    title: "Delete File",
+                                    content:
+                                      "Are you sure you want to delete this file?",
+                                    okText: "Yes, Delete",
+                                    okType: "danger",
+                                    cancelText: "No",
+                                    onOk: () => deleteResume(index),
+                                  });
+                                }}
+                              >
+                                <div
+                                  style={{ width: "30%", paddingLeft: "7px" }}
+                                >
+                                  <img src={DeleteIcon}></img>
+                                </div>
+                                <div
+                                  style={{ width: "70%", paddingTop: "3px" }}
+                                >
+                                  <span
+                                    style={{
+                                      fontSize: "14px",
+                                      fontWeight: "500",
+                                      color: "#56616b",
+                                    }}
+                                  >
+                                    Delete
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
+                  ))
+                ) : (
+                  <div>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        position: "relative",
+                        width: "100%",
+                        minHeight: 40,
+                      }}
+                    >
+                      <Button
+                        icon={<FontAwesomeIcon icon={faArrowLeft} />}
+                        onClick={() => setPreviewFile(null)}
+                        type="text"
+                        style={{
+                          boxShadow: "none",
+                          background: "none",
+                          border: "none",
+                          marginRight: 16,
+                        }}
+                      />
+                      <span
+                        style={{
+                          fontWeight: 500,
+                          position: "absolute",
+                          left: "50%",
+                          transform: "translateX(-50%)",
+                          whiteSpace: "nowrap",
+                          pointerEvents: "none", // so clicks go through to buttons if overlapped
+                        }}
+                      >
+                        {previewFile.fileName}
+                      </span>
+                      <Button
+                        icon={<FontAwesomeIcon icon={faDownload} />}
+                        type="text"
+                        style={{
+                          boxShadow: "none",
+                          background: "none",
+                          border: "none",
+                          marginLeft: "auto",
+                        }}
+                        onClick={async () => {
+                          try {
+                            const response = await fetch(previewFile.url, {
+                              mode: "cors",
+                            });
+                            const blob = await response.blob();
+                            const url = window.URL.createObjectURL(blob);
+                            const link = document.createElement("a");
+                            link.href = url;
+                            link.download = previewFile.fileName;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            window.URL.revokeObjectURL(url);
+                          } catch (e) {
+                            window.open(previewFile.url, "_blank");
+                          }
+                        }}
+                      />
+                    </div>
+                    <div
+                      style={{
+                        width: "100%",
+                        height: "70vh",
+                        background: "#fff",
+                      }}
+                    >
+                      {getPreviewIframe(previewFile)}
                     </div>
                   </div>
-              ))}
-            </div>
-          )}
+                )}
+              </div>
+            )}
           </div>
-          </div>
-
+        </div>
 
         {/* <div className="col-md-9 custom-col-two">
           <Card>
@@ -2337,17 +3787,15 @@ const CandidateDetails = () => {
         footer={null}
         className="custom-modal"
       >
-        <Form
-          onFinish={handleReasonSubmit}
-          layout="vertical"
-        >
+        <Form onFinish={handleReasonSubmit} layout="vertical">
           <Form.Item
             name="blacklistReason"
             label="Reason for Blacklisting"
             rules={[
               {
                 required: true,
-                message: 'Please provide a reason for blacklisting the candidate',
+                message:
+                  "Please provide a reason for blacklisting the candidate",
               },
             ]}
           >
@@ -2361,13 +3809,13 @@ const CandidateDetails = () => {
 
           <Form.Item className="text-end pb-3 mt-2">
             <Button
-              style={{ 
+              style={{
                 marginRight: 12,
-                padding: '6px 24px',
-                height: '40px',
-                borderRadius: '20px',
-                background: '#F8F9FA',
-                border: 'none'
+                padding: "6px 24px",
+                height: "40px",
+                borderRadius: "20px",
+                background: "#F8F9FA",
+                border: "none",
               }}
               onClick={() => {
                 setIsReasonModalVisible(false);
@@ -2376,14 +3824,18 @@ const CandidateDetails = () => {
             >
               Cancel
             </Button>
-            <Button type="primary" htmlType="submit" loading={updatingStatus}
-              style={{ 
-                padding: '6px 24px',
-                height: '40px',
-                borderRadius: '20px',
-                background: '#F4A261',
-                border: 'none'
-              }}>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={updatingStatus}
+              style={{
+                padding: "6px 24px",
+                height: "40px",
+                borderRadius: "20px",
+                background: "#F4A261",
+                border: "none",
+              }}
+            >
               Submit
             </Button>
           </Form.Item>
@@ -2960,6 +4412,16 @@ const CandidateDetails = () => {
         font-weight: 450;
       }
 
+      .full-width-upload {
+        display: block !important;
+        width: 100% !important;
+      }
+
+      .ant-upload.ant-upload-select.ant-upload-select-text {
+        display: block !important;
+        width: 100% !important;
+      }
+
       .initial-section{
        height: 130px;
         background: #ffffff;
@@ -3050,16 +4512,6 @@ const CandidateDetails = () => {
           margin-right: 5px !important; 
         }
       }
-
-
-
-
-
-       
-        
-
-
-
       `}</style>
     </div>
   );

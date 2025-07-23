@@ -10,9 +10,6 @@ import {
   message,
   Spin,
   Tag,
-  DatePicker,
-  Upload,
-  InputNumber,
   Dropdown,
   Menu,
   Card,
@@ -23,23 +20,19 @@ import {
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { apiServices } from "../../Services/apiServices";
 import { useSelector } from "react-redux";
-import { getCurrentStage } from "./CandidateList";
 import more from "../../assets/iconsRecruitment/vertical.svg";
-import circle from "../../assets/iconsRecruitment/circle.svg";
 import grid from "../../assets/iconsRecruitment/grid.svg";
 import list from "../../assets/iconsRecruitment/list.svg";
-import CreateCandidateModal from "./CreateCandidateModal";
 import mail from "../../assets/iconsRecruitment/mail.svg";
 import phone from "../../assets/iconsRecruitment/phone.svg";
 import calander from "../../assets/iconsRecruitment/calander.svg";
-import { itemRender } from "../paginationfunction";
 import { useTranslation } from "react-i18next";
 import leftPageIcon from "../../assets/iconsRecruitment/fi_chevrons-left.svg";
 import rightPageIcon from "../../assets/iconsRecruitment/fi_chevrons-right.svg";
 
 // const { TextArea } = Input;
 
-const Candidates = () => {
+const ScreenedCandidates = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -52,11 +45,7 @@ const Candidates = () => {
   const [filters, setFilters] = useState({});
   const [form] = Form.useForm();
   const authState = useSelector((state) => state.user.loginvalue);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [modalForm] = Form.useForm();
-  const [submitting, setSubmitting] = useState(false);
   const [viewType, setViewType] = useState("list");
-  const [activeJobs, setActiveJobs] = useState([]);
   const [paginationDetail, setPaginationDetail] = useState();
   const [pageSize, setPageSize] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
@@ -72,16 +61,7 @@ const Candidates = () => {
     }
 
     fetchCandidates();
-    // Fetch active jobs initially
-    fetchActiveJobs();
   }, [filters, currentPage, pageSize]);
-
-  // Separate useEffect for fetching active jobs when modal opens
-  useEffect(() => {
-    if (isModalVisible) {
-      fetchActiveJobs();
-    }
-  }, [isModalVisible]);
 
   const fetchCandidates = async () => {
     const token =
@@ -96,17 +76,15 @@ const Candidates = () => {
     try {
       setLoading(true);
       const queryParams = {
+        status: "SCREENING",
         page: currentPage,
         limit: pageSize,
         ...(filters.fullName && { fullName: filters.fullName }),
         ...(filters.email && { email: filters.email }),
         ...(filters.appliedFor && { appliedFor: filters.appliedFor }),
-        ...(filters.status && { status: filters.status }),
-        ...(filters.skillSet && { skillSet: filters.skillSet }),
         includeInterviews: true,
         includeTasks: true,
       };
-      console.log("queryParams", queryParams, filters.fullName);
       const response = await apiServices(
         "GET",
         `candidate/list?${new URLSearchParams(queryParams).toString()}`,
@@ -160,7 +138,6 @@ const Candidates = () => {
       setLoading(false);
     }
   };
-
   const handleSearch = (value) => {
     console.log("Searched", value);
     setFilters(value),
@@ -169,15 +146,6 @@ const Candidates = () => {
         current: 1,
       });
   };
-
-  // const handleTableChange = (newPagination, filters, sorter) => {
-  //   setPagination((prev) => ({
-  //     ...prev,
-  //     current: newPagination.current,
-  //     pageSize: newPagination.pageSize,
-  //   }));
-  // };
-
   const handleDeleteCandidate = async (candidateId) => {
     const token =
       localStorage.getItem("token") || authState?.access_token?.accessToken;
@@ -217,47 +185,6 @@ const Candidates = () => {
       setLoading(false);
     }
   };
-
-  const fetchActiveJobs = async () => {
-    const token =
-      localStorage.getItem("token") || authState?.access_token?.accessToken;
-
-    if (!token) return;
-
-    try {
-      const response = await apiServices("GET", "job/active", null, {
-        access_token: {
-          accessToken: token,
-        },
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      console.log("Active Jobs API Response:", response);
-
-      if (response?.data?.status) {
-        // Access the docs array from the response data
-        const jobs = response.data.data.docs || [];
-        console.log("Jobs data before setting:", jobs);
-
-        if (Array.isArray(jobs)) {
-          setActiveJobs(jobs);
-          console.log("Active jobs set successfully:", jobs.length, "jobs");
-        } else {
-          console.error("Jobs data is not an array:", jobs);
-          setActiveJobs([]);
-        }
-      } else {
-        console.error("Failed to fetch active jobs:", response?.data);
-        setActiveJobs([]);
-      }
-    } catch (error) {
-      console.error("Error fetching active jobs:", error);
-      setActiveJobs([]);
-    }
-  };
-
   const columns = [
     {
       title: "Candidate Name",
@@ -761,32 +688,18 @@ const Candidates = () => {
       </Row>
     );
   };
-
-  const handleAddCandidate = () => {
-    setIsModalVisible(true);
-  };
-
-  const handleModalCancel = () => {
-    setIsModalVisible(false);
-  };
-
-  const handleModalSuccess = () => {
-    setIsModalVisible(false);
-    fetchCandidates();
-  };
-
   return (
     <div className="content container-fluid">
       {/* Page Header */}
       <div className="page-header">
         <div className="row align-items-center">
           <div className="col">
-            <h3 className="page-title">Candidates</h3>
+            <h3 className="page-title">ScreenedCandidates</h3>
             <ul className="breadcrumb">
               <li className="breadcrumb-item">
                 <Link to="/recruitment/dashboard">Dashboard</Link>
               </li>
-              <li className="breadcrumb-item active">Candidates</li>
+              <li className="breadcrumb-item active">ScreenedCandidates</li>
             </ul>
           </div>
           <div className="col-auto float-end ms-auto d-flex align-items-center">
@@ -818,15 +731,6 @@ const Candidates = () => {
                 <img src={grid}></img>
               </button>
             </div>
-            <Button className="add-candidate-btn" onClick={handleAddCandidate}>
-              <div className="btn-content">
-                <img
-                  src={circle}
-                  style={{ marginRight: "8px", marginBottom: "20px" }}
-                ></img>
-                <p>Add Candidate</p>
-              </div>
-            </Button>
           </div>
         </div>
       </div>
@@ -872,32 +776,6 @@ const Candidates = () => {
                 style={{ borderRadius: "8px", height: "40px" }}
                 placeholder="Position"
                 allowClear
-              />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={12} md={4}>
-            <Form.Item name="skillSet" className="mb-0">
-              <Input
-                style={{ borderRadius: "8px", height: "40px" }}
-                placeholder="Skill Set"
-                allowClear
-              />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={12} md={4}>
-            <Form.Item name="status" className="mb-0">
-              <Select
-                placeholder="Candidate Status"
-                allowClear
-                className="custom"
-                options={[
-                  { value: "NEW", label: "New" },
-                  { value: "SCREENING", label: "Screening" },
-                  { value: "SHORTLISTED", label: "Shortlisted" },
-                  { value: "OFFERED", label: "Offered" },
-                  { value: "HIRED", label: "Hired" },
-                  { value: "REJECTED", label: "Rejected" },
-                ]}
               />
             </Form.Item>
           </Col>
@@ -1028,20 +906,9 @@ const Candidates = () => {
           </Spin>
         </div>
       </div>
-      {/* Create Candidate Modal */}
-      <CreateCandidateModal
-        visible={isModalVisible}
-        onCancel={handleModalCancel}
-        onSuccess={handleModalSuccess}
-        activeJobs={activeJobs}
-      />
 
       {/* Add some global styles */}
       <style jsx>{`
-        .custom-modal .ant-modal-header {
-          border-bottom: none;
-          padding: 24px 24px 0;
-        }
 
         .customized .ant-select-selector {
           height: 21px !important;
@@ -1063,24 +930,6 @@ const Candidates = () => {
         .customized .ant-select-arrow {
           transform: translateX(50%);
           transform: translateY(20%);
-        }
-        .custom-modal .ant-modal-title {
-          font-size: 24px;
-          font-weight: 600;
-        }
-        .custom-modal .ant-modal-close {
-          background-color: #f8f9fa;
-          border-radius: 50%;
-          border: "1px solid #F8F9FA";
-          margin: 16px 16px 0 0;
-          width: 32px;
-          height: 32px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .custom-modal .ant-form-item-label > label {
-          font-weight: 500;
         }
         .custom-modal .ant-input,
         .custom-modal .ant-select-selector,
@@ -1321,4 +1170,4 @@ const Candidates = () => {
   );
 };
 
-export default Candidates;
+export default ScreenedCandidates;

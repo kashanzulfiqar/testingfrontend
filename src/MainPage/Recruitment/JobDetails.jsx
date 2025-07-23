@@ -450,7 +450,7 @@ const JobDetails = () => {
 
               <div className="info-section">
                 <h5 className="mb-3" style={{fontSize:'18px', fontWeight:"500", color:'#212529'}}>Posted on</h5>
-                <div className="d-flex gap-2">
+                <div className="d-flex gap-1">
                   {jobDetails?.postingPlatforms.includes("WEBSITE") && (
                     <img src={website}></img>
                   )}

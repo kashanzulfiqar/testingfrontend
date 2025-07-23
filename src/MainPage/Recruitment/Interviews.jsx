@@ -16,6 +16,7 @@ import CreateInterviewModal from './CreateInterviewModal';
 import { useTranslation } from "react-i18next";
 import leftPageIcon from '../../assets/iconsRecruitment/fi_chevrons-left.svg';
 import rightPageIcon from '../../assets/iconsRecruitment/fi_chevrons-right.svg';
+import { user_icon } from '../../Entryfile/imagepath';
 
 const Interviews = ()=>{
 const [pagination, setPagination] = useState({
