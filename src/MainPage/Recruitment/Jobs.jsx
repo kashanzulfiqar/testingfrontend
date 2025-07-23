@@ -1,40 +1,64 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Table, Button, Select, Input, Modal, Form, message, Spin, Tag, InputNumber, Checkbox, Dropdown, Menu, Card, Row, Col, Pagination } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, MoreOutlined, UnorderedListOutlined, AppstoreOutlined, UserAddOutlined } from '@ant-design/icons';
-import { apiServices } from '../../Services/apiServices';
-import { useSelector } from 'react-redux';
-import { isSessionExpired } from '../../utils/errorHandler';
-import calander from '../../assets/iconsRecruitment/calander.svg';
-import department from '../../assets/iconsRecruitment/department.svg';
-import facebook from '../../assets/iconsRecruitment/Facebook.svg';
-import indeed from '../../assets/iconsRecruitment/indeed.svg';
-import linkdin from '../../assets/iconsRecruitment/linkedin-icon.svg';
-import website from '../../assets/iconsRecruitment/websiteGlobe.svg';
-import more from '../../assets/iconsRecruitment/vertical.svg';
-import circle from '../../assets/iconsRecruitment/circle.svg';
-import grid from '../../assets/iconsRecruitment/grid.svg';
-import list from '../../assets/iconsRecruitment/list.svg';
-import { render } from '@fullcalendar/core/preact.js';
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  Table,
+  Button,
+  Select,
+  Input,
+  Modal,
+  Form,
+  message,
+  Spin,
+  Tag,
+  InputNumber,
+  Checkbox,
+  Dropdown,
+  Menu,
+  Card,
+  Row,
+  Col,
+  Pagination,
+} from "antd";
+import {
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  MoreOutlined,
+  UnorderedListOutlined,
+  AppstoreOutlined,
+  UserAddOutlined,
+} from "@ant-design/icons";
+import { apiServices } from "../../Services/apiServices";
+import { useSelector } from "react-redux";
+import { isSessionExpired } from "../../utils/errorHandler";
+import calander from "../../assets/iconsRecruitment/calander.svg";
+import department from "../../assets/iconsRecruitment/department.svg";
+import facebook from "../../assets/iconsRecruitment/Facebook.svg";
+import indeed from "../../assets/iconsRecruitment/indeed.svg";
+import linkdin from "../../assets/iconsRecruitment/linkedin-icon.svg";
+import website from "../../assets/iconsRecruitment/websiteGlobe.svg";
+import more from "../../assets/iconsRecruitment/vertical.svg";
+import circle from "../../assets/iconsRecruitment/circle.svg";
+import grid from "../../assets/iconsRecruitment/grid.svg";
+import list from "../../assets/iconsRecruitment/list.svg";
+import { render } from "@fullcalendar/core/preact.js";
 import { useTranslation } from "react-i18next";
-import leftPageIcon from '../../assets/iconsRecruitment/fi_chevrons-left.svg';
-import rightPageIcon from '../../assets/iconsRecruitment/fi_chevrons-right.svg';
-
-
+import leftPageIcon from "../../assets/iconsRecruitment/fi_chevrons-left.svg";
+import rightPageIcon from "../../assets/iconsRecruitment/fi_chevrons-right.svg";
 
 // import { FaFacebook, FaLinkedin, FaInstagram } from 'react-icons/fa';
 
 const { TextArea } = Input;
 
 const Jobs = () => {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [jobs, setJobs] = useState([]);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
-    total: 0
+    total: 0,
   });
   const [filters, setFilters] = useState({});
   const [form] = Form.useForm();
@@ -42,56 +66,71 @@ const Jobs = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [modalForm] = Form.useForm();
   const [submitting, setSubmitting] = useState(false);
-  const [viewType, setViewType] = useState('list');
+  const [viewType, setViewType] = useState("list");
   const [paginationDetail, setPaginationDetail] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
+  const [departments, setDepartments] = useState([]);
+
+  useEffect(() => {
+    // Fetch departments when component mounts
+    apiServices("GET", "team/view-team", null, authState).then((res) => {
+      if (res?.data?.success === true) {
+        setDepartments(res?.data?.Team || []);
+      }
+    });
+  }, [isModalVisible]);
 
   const handleApiError = (error) => {
-    console.error('API Error:', error);
+    console.error("API Error:", error);
     if (error.response) {
       switch (error.response.status) {
         case 401:
-          message.error('Session expired. Please login again.');
-          navigate('/login');
+          message.error("Session expired. Please login again.");
+          navigate("/login");
           break;
         case 403:
-          message.error('You do not have permission to access this resource.');
+          message.error("You do not have permission to access this resource.");
           break;
         case 500:
-          message.error('Server error occurred. Please try again later.');
+          message.error("Server error occurred. Please try again later.");
           break;
         default:
-          message.error(error.response.data?.message || 'An error occurred. Please try again.');
+          message.error(
+            error.response.data?.message ||
+              "An error occurred. Please try again."
+          );
       }
     } else if (error.request) {
-      message.error('Network error. Please check your connection.');
+      message.error("Network error. Please check your connection.");
     } else {
-      message.error('An unexpected error occurred.');
+      message.error("An unexpected error occurred.");
     }
   };
 
   useEffect(() => {
-    const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
-    
+    const token =
+      localStorage.getItem("token") || authState?.access_token?.accessToken;
+
     if (!token) {
-      console.error('No authentication token found');
-      message.error('Please login again to continue');
-      navigate('/login');
+      console.error("No authentication token found");
+      message.error("Please login again to continue");
+      navigate("/login");
       return;
     }
-    
+
     fetchJobs();
   }, [filters, currentPage, pageSize]);
 
   const fetchJobs = async () => {
-    console.log('filtered jobs', filters);
-    const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
-    
+    console.log("filtered jobs", filters);
+    const token =
+      localStorage.getItem("token") || authState?.access_token?.accessToken;
+
     if (!token) {
-      console.error('Attempted to fetch jobs without auth token');
-      message.error('Authentication required');
-      navigate('/login');
+      console.error("Attempted to fetch jobs without auth token");
+      message.error("Authentication required");
+      navigate("/login");
       return;
     }
 
@@ -107,55 +146,60 @@ const Jobs = () => {
       };
 
       // Remove undefined or empty values
-      Object.keys(queryParams).forEach(key => 
-        !queryParams[key] && delete queryParams[key]
+      Object.keys(queryParams).forEach(
+        (key) => !queryParams[key] && delete queryParams[key]
       );
 
-      console.log('Fetching jobs with params:', queryParams);
+      console.log("Fetching jobs with params:", queryParams);
 
       const response = await apiServices(
-        "GET", 
-        `job/list?${new URLSearchParams(queryParams).toString()}`, 
-        null, 
+        "GET",
+        `job/list?${new URLSearchParams(queryParams).toString()}`,
+        null,
         {
           access_token: {
-            accessToken: token
-          }
+            accessToken: token,
+          },
         }
       );
-      
+
       if (response?.data?.status) {
-        console.log('Jobs fetched successfully:', {
+        console.log("Jobs fetched successfully:", {
           totalJobs: response.data.data.total,
-          jobsReceived: response.data.data.docs.length
+          jobsReceived: response.data.data.docs.length,
         });
         setJobs(response.data.data.docs || []);
-        setPagination(prev => ({
+        setPagination((prev) => ({
           ...prev,
-          total: response.data.data.totalDocs || 0
+          total: response.data.data.totalDocs || 0,
         }));
         setPaginationDetail(response.data.data.totalDocs || 0);
       } else {
-        console.error('Failed to fetch jobs:', response?.data);
-        message.error(response?.data?.message || 'Unable to load jobs at this time. Please try again later.');
+        console.error("Failed to fetch jobs:", response?.data);
+        message.error(
+          response?.data?.message ||
+            "Unable to load jobs at this time. Please try again later."
+        );
       }
     } catch (error) {
-      console.error('Error details:', {
+      console.error("Error details:", {
         message: error.message,
         response: error.response?.data,
-        status: error.response?.status
+        status: error.response?.status,
       });
-      
+
       if (error.response?.status === 500) {
-        message.error('The system is currently unavailable. Our team has been notified and is working on it.');
+        message.error(
+          "The system is currently unavailable. Our team has been notified and is working on it."
+        );
       } else {
         handleApiError(error);
       }
-      
+
       setJobs([]);
-      setPagination(prev => ({
+      setPagination((prev) => ({
         ...prev,
-        total: 0
+        total: 0,
       }));
       setPaginationDetail(0);
     } finally {
@@ -167,15 +211,15 @@ const Jobs = () => {
     setPagination({
       ...pagination,
       current: newPagination.current,
-      pageSize: newPagination.pageSize
+      pageSize: newPagination.pageSize,
     });
   };
 
   const handleSearch = (values) => {
-    console.log('Searched Values' , values)
+    console.log("Searched Values", values);
     setPagination({
       ...pagination,
-      current: 1
+      current: 1,
     });
     setFilters(values);
   };
@@ -190,27 +234,23 @@ const Jobs = () => {
   // };
 
   const handleDeleteJob = async (jobId) => {
-    const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
+    const token =
+      localStorage.getItem("token") || authState?.access_token?.accessToken;
     try {
       setLoading(true);
-      const response = await apiServices(
-        "DELETE", 
-        `job/${jobId}`,
-        null, 
-        {
-          access_token: {
-            accessToken: token
-          }
-        }
-      );
+      const response = await apiServices("DELETE", `job/${jobId}`, null, {
+        access_token: {
+          accessToken: token,
+        },
+      });
       if (response?.data?.status) {
-        message.success('Job deleted successfully');
+        message.success("Job deleted successfully");
         fetchJobs();
       } else {
-        message.error(response?.data?.message || 'Failed to delete job');
+        message.error(response?.data?.message || "Failed to delete job");
       }
     } catch (error) {
-      console.error('Delete job error:', error.response?.data || error.message);
+      console.error("Delete job error:", error.response?.data || error.message);
       handleApiError(error);
     } finally {
       setLoading(false);
@@ -230,17 +270,18 @@ const Jobs = () => {
     modalForm.resetFields();
   };
   const handleModalSubmit = async (values) => {
-    const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
-    
+    const token =
+      localStorage.getItem("token") || authState?.access_token?.accessToken;
+
     if (!token) {
-      message.error('Authentication required');
-      navigate('/login');
+      message.error("Authentication required");
+      navigate("/login");
       return;
     }
 
     try {
       setSubmitting(true);
-      
+
       const jobData = {
         title: values.title,
         department: values.department,
@@ -249,36 +290,34 @@ const Jobs = () => {
         salaryRange: values.salaryRange,
         positions: values.positions,
         description: values.description,
-        status: 'ACTIVE',
-        postingPlatforms: values.postingPlatforms || ['WEBSITE'],
-        company: authState?.user?.companyId
+        status: "ACTIVE",
+        postingPlatforms: values.postingPlatforms || ["WEBSITE"],
+        company: authState?.user?.companyId,
       };
 
-      console.log('Creating job with data:', jobData);
+      console.log("Creating job with data:", jobData);
 
-      const response = await apiServices(
-        "POST",
-        'job/create',
-        jobData,
-        {
-          access_token: {
-            accessToken: token
-          }
-        }
-      );
+      const response = await apiServices("POST", "job/create", jobData, {
+        access_token: {
+          accessToken: token,
+        },
+      });
 
       if (response?.data?.status) {
-        message.success('Job created successfully');
+        message.success("Job created successfully");
         modalForm.resetFields();
         setIsModalVisible(false);
         setTimeout(() => {
           window.location.reload();
         }, 1000);
       } else {
-        message.error(response?.data?.message || 'Failed to create job');
+        message.error(response?.data?.message || "Failed to create job");
       }
     } catch (error) {
-      console.error('Job creation error:', error.response?.data || error.message);
+      console.error(
+        "Job creation error:",
+        error.response?.data || error.message
+      );
       handleApiError(error);
     } finally {
       setSubmitting(false);
@@ -286,41 +325,53 @@ const Jobs = () => {
   };
   const columns = [
     {
-      title: 'Position',
-      dataIndex: 'title',
-      key: 'title',
+      title: "Position",
+      dataIndex: "title",
+      key: "title",
       render: (text, record) => (
-        <Link to={`/recruitment/jobs/${record._id}`} style={{color: '#212529'}}>
-          {text.split(' ').map(word=>word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
+        <Link
+          to={`/recruitment/jobs/${record._id}`}
+          style={{ color: "#212529" }}
+        >
+          {text
+            .split(" ")
+            .map(
+              (word) =>
+                word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+            )
+            .join(" ")}
         </Link>
       ),
       // sorter: true,
     },
     {
-      title: 'Position Open',
-      dataIndex: 'positions',
-      key: 'positions',
+      title: "Position Open",
+      dataIndex: "positions",
+      key: "positions",
     },
     {
-      title: 'Department',
-      dataIndex: 'department',
-      key: 'department',
+      title: "Department",
+      dataIndex: "department",
+      key: "department",
       // sorter: true,
     },
     {
-      title: 'Resume',
-      dataIndex: 'applicationCount',
-      key: 'applicationCount',
+      title: "Resume",
+      dataIndex: "applicationCount",
+      key: "applicationCount",
       render: (count, record) => (
-        <Link to={`/recruitment/jobs/${record._id}/applications`} style={{color: '#212529'}}>
+        <Link
+          to={`/recruitment/jobs/${record._id}/applications`}
+          style={{ color: "#212529" }}
+        >
           {count || 0}
         </Link>
       ),
     },
     {
-      title: 'Post Date',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
+      title: "Post Date",
+      dataIndex: "createdAt",
+      key: "createdAt",
       render: (date) => new Date(date).toLocaleDateString(),
       // sorter: true,
     },
@@ -377,60 +428,67 @@ const Jobs = () => {
     //   sorter: true,
     // },
     {
-      title: 'Posted On',
-      key: 'postedOn',
+      title: "Posted On",
+      key: "postedOn",
       render: (text, record) => {
         const platforms = record.postingPlatforms || [];
         return (
-          <div className='social-icons'>
-            {platforms.includes('WEBSITE') && (
-              <Link to="#" className="social-icon-one">
-                <img src={website}></img>
-              </Link>
+          <div className="social-icons">
+            {platforms.includes("WEBSITE") && (
+              <img className="social-icon-one" src={website}></img>
             )}
-            {platforms.includes('LINKEDIN') && (
-              <Link to="#" className="social-icon-two">
-                <img src={linkdin}></img>
-              </Link>
+            {platforms.includes("LINKEDIN") && (
+              <img className="social-icon-two" src={linkdin}></img>
             )}
-            {platforms.includes('FACEBOOK') && (
-              <Link to="#" className="social-icon-three">
-                <img src={facebook}></img>
-              </Link>
+            {platforms.includes("FACEBOOK") && (
+              <img className="social-icon-three" src={facebook}></img>
             )}
-            {platforms.includes('INDEED') && (
-              <Link to="#" className="social-icon-four">
-                <img src={indeed}></img>
-              </Link>
+            {platforms.includes("INDEED") && (
+              <img className="social-icon-four" src={indeed}></img>
             )}
           </div>
         );
-      }
+      },
     },
 
     {
-      title: 'Actions',
-      key: 'actions',
+      title: "Actions",
+      key: "actions",
       width: 80,
       render: (_, record) => (
         <Dropdown
-        overlay={<Menu>
-        <Menu.Item key="edit" icon={<EditOutlined />}onClick={() => navigate(`/recruitment/jobs/${record._id}/edit`)}>Edit</Menu.Item>
-        <Menu.Item key="delete" icon={<DeleteOutlined />} danger onClick={() => {
-          Modal.confirm({
-            title: 'Delete Job',
-            content: 'Are you sure you want to delete this job?',
-            okText: 'Yes, Delete',
-            okType: 'danger',
-            cancelText: 'No',
-            onOk: () => handleDeleteJob(record._id)
-          });
-          }}>Delete
-        </Menu.Item>
-        </Menu>}
-        trigger={['click']}
-        placement="bottomRight">
-          <div style={{ cursor: 'pointer',height:'25px' }}>
+          overlay={
+            <Menu>
+              <Menu.Item
+                key="edit"
+                icon={<EditOutlined />}
+                onClick={() => navigate(`/recruitment/jobs/${record._id}/edit`)}
+              >
+                Edit
+              </Menu.Item>
+              <Menu.Item
+                key="delete"
+                icon={<DeleteOutlined />}
+                danger
+                onClick={() => {
+                  Modal.confirm({
+                    title: "Delete Job",
+                    content: "Are you sure you want to delete this job?",
+                    okText: "Yes, Delete",
+                    okType: "danger",
+                    cancelText: "No",
+                    onOk: () => handleDeleteJob(record._id),
+                  });
+                }}
+              >
+                Delete
+              </Menu.Item>
+            </Menu>
+          }
+          trigger={["click"]}
+          placement="bottomRight"
+        >
+          <div style={{ cursor: "pointer", height: "25px" }}>
             <img src={more} alt="More Options" />
           </div>
         </Dropdown>
@@ -440,46 +498,82 @@ const Jobs = () => {
 
   const renderGridView = () => {
     return (
-      <Row gutter={[24, 24]} justify='start'>
-        {jobs.map(job => (
+      <Row gutter={[24, 24]} justify="start">
+        {jobs.map((job) => (
           <Col xs={24} sm={12} md={8} key={job._id}>
-            <Card
-              className="job-card"
-            >
+            <Card className="job-card">
               <div className="job-card-content">
-                <div style={{display:'flex', justifyContent:'space-between', width:"98%"}}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    width: "98%",
+                  }}
+                >
                   <div>
                     <h3 className="job-title">
-                      <Link to={`/recruitment/jobs/${job._id}`}>{job.title.split(' ').map(word=>word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}</Link>
+                      <Link to={`/recruitment/jobs/${job._id}`}>
+                        {job.title
+                          .split(" ")
+                          .map(
+                            (word) =>
+                              word.charAt(0).toUpperCase() +
+                              word.slice(1).toLowerCase()
+                          )
+                          .join(" ")}
+                      </Link>
                     </h3>
-                    <p className="positions-count">{job.positions} open positions</p>
+                    <p className="positions-count">
+                      {job.positions} open positions
+                    </p>
                   </div>
                   <Dropdown
-                  overlay={<Menu>
-                  <Menu.Item key="edit" icon={<EditOutlined />}onClick={() => navigate(`/recruitment/jobs/${job._id}/edit`)}>Edit</Menu.Item>
-                  <Menu.Item key="delete" icon={<DeleteOutlined />} danger onClick={() => {
-                    Modal.confirm({
-                      title: 'Delete Job',
-                      content: 'Are you sure you want to delete this job?',
-                      okText: 'Yes, Delete',
-                      okType: 'danger',
-                      cancelText: 'No',
-                      onOk: () => handleDeleteJob(job._id)
-                    });
-                  }}>Delete</Menu.Item>
-                  </Menu>}
-                  trigger={['click']}
-                  placement="bottomRight">
-                  <div style={{ cursor: 'pointer',height:'25px' }}>
-                    <img src={more} alt="More Options" />
-                  </div>
+                    overlay={
+                      <Menu>
+                        <Menu.Item
+                          key="edit"
+                          icon={<EditOutlined />}
+                          onClick={() =>
+                            navigate(`/recruitment/jobs/${job._id}/edit`)
+                          }
+                        >
+                          Edit
+                        </Menu.Item>
+                        <Menu.Item
+                          key="delete"
+                          icon={<DeleteOutlined />}
+                          danger
+                          onClick={() => {
+                            Modal.confirm({
+                              title: "Delete Job",
+                              content:
+                                "Are you sure you want to delete this job?",
+                              okText: "Yes, Delete",
+                              okType: "danger",
+                              cancelText: "No",
+                              onOk: () => handleDeleteJob(job._id),
+                            });
+                          }}
+                        >
+                          Delete
+                        </Menu.Item>
+                      </Menu>
+                    }
+                    trigger={["click"]}
+                    placement="bottomRight"
+                  >
+                    <div style={{ cursor: "pointer", height: "25px" }}>
+                      <img src={more} alt="More Options" />
+                    </div>
                   </Dropdown>
                 </div>
-                               
+
                 <div className="job-details">
                   <div className="detail-item">
-                    <div className = 'icons'><img src={department}></img></div>
-                    <div className = 'detail-text'>{job.department}</div>
+                    <div className="icons">
+                      <img src={department}></img>
+                    </div>
+                    <div className="detail-text">{job.department}</div>
                     {/* <span className="icon">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M12 12C14.7614 12 17 9.76142 17 7C17 4.23858 14.7614 2 12 2C9.23858 2 7 4.23858 7 7C7 9.76142 9.23858 12 12 12Z" fill="#4A5568"/>
@@ -489,8 +583,12 @@ const Jobs = () => {
                     <span className="detail-text"></span> */}
                   </div>
                   <div className="detail-items">
-                   <div className = 'icons'><img src={calander}></img></div>
-                   <div className = 'detail-text'>{new Date(job.createdAt).toLocaleDateString()}</div>
+                    <div className="icons">
+                      <img src={calander}></img>
+                    </div>
+                    <div className="detail-text">
+                      {new Date(job.createdAt).toLocaleDateString()}
+                    </div>
                     {/* <span className="icon">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M19 4H5C3.89543 4 3 4.89543 3 6V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V6C21 4.89543 20.1046 4 19 4Z" fill="#4A5568"/>
@@ -502,37 +600,42 @@ const Jobs = () => {
                 </div>
 
                 <div className="card-foot">
-                  <div style={{width:'60%'}}>
-                    <div className='post-on'><span>Posted on:</span></div>
-                    <div className='social-icons'>
-                      {Array.isArray(job.postingPlatforms) && job.postingPlatforms.includes('WEBSITE') && (
-                        <Link to="#" className="social-icon-one">
-                          <img src={website}></img>
-                        </Link>
-                      )}
-                      {Array.isArray(job.postingPlatforms) && job.postingPlatforms.includes('LINKEDIN') && (
-                        <Link to="#" className="social-icon-two">
-                          <img src={linkdin}></img>
-                        </Link>
-                      )}
-                      {Array.isArray(job.postingPlatforms) && job.postingPlatforms.includes('FACEBOOK') && (
-                        <Link to="#" className="social-icon-three">
-                          <img src={facebook}></img>
-                        </Link>
-                      )}
-                      {Array.isArray(job.postingPlatforms) && job.postingPlatforms.includes('INDEED') && (
-                        <Link to="#" className="social-icon-four">
-                          <img src={indeed}></img>
-                        </Link>
-                      )}
+                  <div style={{ width: "60%" }}>
+                    <div className="post-on">
+                      <span>Posted on:</span>
+                    </div>
+                    <div className="social-icons">
+                      {Array.isArray(job.postingPlatforms) &&
+                        job.postingPlatforms.includes("WEBSITE") && (
+                          <img className="social-icon-one" src={website}></img>
+                        )}
+                      {Array.isArray(job.postingPlatforms) &&
+                        job.postingPlatforms.includes("LINKEDIN") && (
+                          <img className="social-icon-two" src={linkdin}></img>
+                        )}
+                      {Array.isArray(job.postingPlatforms) &&
+                        job.postingPlatforms.includes("FACEBOOK") && (
+                          <img
+                            className="social-icon-three"
+                            src={facebook}
+                          ></img>
+                        )}
+                      {Array.isArray(job.postingPlatforms) &&
+                        job.postingPlatforms.includes("INDEED") && (
+                          <img className="social-icon-four" src={indeed}></img>
+                        )}
                     </div>
                   </div>
                   <div className="applications-count">
                     <Link to={`/recruitment/jobs/${job._id}/applications`}>
-                      <div className= 'applications-count-number'>{job.applicationCount || 0}</div>
-                      <div className='applications-count-text'>Applications</div>
+                      <div className="applications-count-number">
+                        {job.applicationCount || 0}
+                      </div>
+                      <div className="applications-count-text">
+                        Applications
+                      </div>
                     </Link>
-                  </div> 
+                  </div>
                 </div>
               </div>
             </Card>
@@ -550,7 +653,9 @@ const Jobs = () => {
           <div className="col">
             <h3 className="page-title">Jobs</h3>
             <ul className="breadcrumb">
-              <li className="breadcrumb-item"><Link to="/recruitment/dashboard">Dashboard</Link></li>
+              <li className="breadcrumb-item">
+                <Link to="/recruitment/dashboard">Dashboard</Link>
+              </li>
               <li className="breadcrumb-item active">Jobs</li>
             </ul>
           </div>
@@ -562,10 +667,30 @@ const Jobs = () => {
                 icon= {<img src={grid} style={{display:'flex', justifyContent:"center", width:'25px', height:'25px'}}></img>}
                 onClick={() => setViewType('grid')}
               /> */}
-              <button type={viewType === 'list' ? 'primary' : 'default'}   onClick={() => setViewType('list')} style={{height:"40px", width:'40px', border:'1.5px solid #EEf0f1', borderRadius:'4px', background:'white'}} >
+              <button
+                type={viewType === "list" ? "primary" : "default"}
+                onClick={() => setViewType("list")}
+                style={{
+                  height: "40px",
+                  width: "40px",
+                  border: "1.5px solid #EEf0f1",
+                  borderRadius: "4px",
+                  background: "white",
+                }}
+              >
                 <img src={list}></img>
               </button>
-              <button  type={viewType === 'grid' ? 'primary' : 'default'} onClick={() => setViewType('grid')} style={{height:"40px", width:'40px', border:'1.5px solid #EEf0f1', borderRadius:'4px', background:'white'}}>
+              <button
+                type={viewType === "grid" ? "primary" : "default"}
+                onClick={() => setViewType("grid")}
+                style={{
+                  height: "40px",
+                  width: "40px",
+                  border: "1.5px solid #EEf0f1",
+                  borderRadius: "4px",
+                  background: "white",
+                }}
+              >
                 <img src={grid}></img>
               </button>
               {/* <Button
@@ -576,13 +701,13 @@ const Jobs = () => {
                 className="me-1"
               /> */}
             </div>
-            <Button
-              className="add-candidate-btn"
-              onClick={handleAddJob}
-            >
-              <div className='btn-content'>
-                <img src={circle} style={{marginRight:'8px', marginBottom:'20px'}}></img>
-                <p>Add New Job</p>  
+            <Button className="add-candidate-btn" onClick={handleAddJob}>
+              <div className="btn-content">
+                <img
+                  src={circle}
+                  style={{ marginRight: "8px", marginBottom: "20px" }}
+                ></img>
+                <p>Add New Job</p>
               </div>
             </Button>
           </div>
@@ -590,15 +715,16 @@ const Jobs = () => {
       </div>
 
       {/* Search Filters */}
-      <Form 
+      <Form
         form={form}
-        onFinish={handleSearch} 
+        onFinish={handleSearch}
         onValuesChange={(changedValues, allValues) => {
           const clearedField = Object.keys(changedValues).find(
-            key => changedValues[key] === '' || changedValues[key] === undefined
+            (key) =>
+              changedValues[key] === "" || changedValues[key] === undefined
           );
           if (clearedField) {
-            handleSearch(allValues);        
+            handleSearch(allValues);
           }
         }}
         className="search-form"
@@ -607,7 +733,11 @@ const Jobs = () => {
         <Row gutter={[12, 12]} align="middle">
           <Col xs={24} sm={12} md={5}>
             <Form.Item name="title" className="mb-0">
-              <Input style={{borderRadius:"8px", height:"40px"}} placeholder="Job Name" allowClear />
+              <Input
+                style={{ borderRadius: "8px", height: "40px" }}
+                placeholder="Job Name"
+                allowClear
+              />
             </Form.Item>
           </Col>
           <Col xs={24} sm={12} md={5}>
@@ -615,49 +745,58 @@ const Jobs = () => {
               <Select
                 placeholder="Department"
                 allowClear
-                className='custom'
+                className="custom"
                 options={[
-                  { value: 'Engineering', label: 'Engineering' },
-                  { value: 'Marketing', label: 'Marketing' },
-                  { value: 'Sales', label: 'Sales' },
-                  { value: 'HR', label: 'HR' },
-                  { value: 'Finance', label: 'Finance' },
-                  { value: 'Operations', label: 'Operations' },
-                  { value: 'Design', label: 'Design' },
-                  { value: 'Product', label: 'Product' }
+                  { value: "Engineering", label: "Engineering" },
+                  { value: "Marketing", label: "Marketing" },
+                  { value: "Sales", label: "Sales" },
+                  { value: "HR", label: "HR" },
+                  { value: "Finance", label: "Finance" },
+                  { value: "Operations", label: "Operations" },
+                  { value: "Design", label: "Design" },
+                  { value: "Product", label: "Product" },
                 ]}
               />
             </Form.Item>
           </Col>
           <Col xs={24} sm={12} md={5}>
             <Form.Item name="jobType" className="mb-0">
-              <Select placeholder="Job Type" allowClear
-              className='custom'
+              <Select
+                placeholder="Job Type"
+                allowClear
+                className="custom"
                 options={[
-                  { value: 'FULL_TIME', label: 'Full Time' },
-                  { value: 'PART_TIME', label: 'Part Time' },
-                  { value: 'CONTRACT', label: 'Contract' },
-                  { value: 'INTERNSHIP', label: 'Internship' },
-                  { value: 'FREELANCE', label: 'Freelance' }
+                  { value: "FULL_TIME", label: "Full Time" },
+                  { value: "PART_TIME", label: "Part Time" },
+                  { value: "CONTRACT", label: "Contract" },
+                  { value: "INTERNSHIP", label: "Internship" },
+                  { value: "FREELANCE", label: "Freelance" },
                 ]}
               />
             </Form.Item>
           </Col>
           <Col xs={24} sm={12} md={5}>
             <Form.Item name="workSetup" className="mb-0">
-              <Select placeholder="Work Setup" allowClear
-              className='custom'
+              <Select
+                placeholder="Work Setup"
+                allowClear
+                className="custom"
                 options={[
-                  { text: 'On-Site', value: 'ONSITE' },
-                  { text: 'Remote', value: 'REMOTE' },
-                  { text: 'Hybrid', value: 'HYBRID' },
+                  { text: "On-Site", value: "ONSITE" },
+                  { text: "Remote", value: "REMOTE" },
+                  { text: "Hybrid", value: "HYBRID" },
                 ]}
               />
             </Form.Item>
           </Col>
           <Col xs={24} sm={12} md={4}>
             <Form.Item className="mb-0">
-              <Button type="primary" htmlType="submit" className="search-btn" block>
+              <Button
+                type="primary"
+                htmlType="submit"
+                className="search-btn"
+                block
+              >
                 Search
               </Button>
             </Form.Item>
@@ -674,7 +813,7 @@ const Jobs = () => {
         width={800}
         className="custom-modal"
         style={{ zIndex: 2000 }}
-        maskStyle={{ zIndex: 1999, background: 'rgba(0, 0, 0, 0.5)' }}
+        maskStyle={{ zIndex: 1999, background: "rgba(0, 0, 0, 0.5)" }}
       >
         <Form
           form={modalForm}
@@ -682,27 +821,34 @@ const Jobs = () => {
           onFinish={handleModalSubmit}
           initialValues={{
             positions: 1,
-            postingPlatforms: ['WEBSITE'],
-            status: 'ACTIVE'
+            postingPlatforms: ["WEBSITE"],
+            status: "ACTIVE",
           }}
         >
           <div className="row">
-            <div style={{height:"20px", width:"100%", display:"flex", justifyContent:"center", borderTop:"1px solid #E2E8F0"}}></div>
+            <div
+              style={{
+                height: "20px",
+                width: "100%",
+                display: "flex",
+                justifyContent: "center",
+                borderTop: "1px solid #E2E8F0",
+              }}
+            ></div>
             <div className="col-md-6">
               <Form.Item
                 name="department"
                 label={<>Department</>}
-                rules={[{ required: true, message: 'Please select department' }]}
+                rules={[
+                  { required: true, message: "Please select department" },
+                ]}
               >
-                <Select placeholder="Enter Department" className= 'customized'>
-                  <Select.Option value="Engineering">Engineering</Select.Option>
-                  <Select.Option value="Marketing">Marketing</Select.Option>
-                  <Select.Option value="Sales">Sales</Select.Option>
-                  <Select.Option value="HR">HR</Select.Option>
-                  <Select.Option value="Finance">Finance</Select.Option>
-                  <Select.Option value="Operations">Operations</Select.Option>
-                  <Select.Option value="Design">Design</Select.Option>
-                  <Select.Option value="Product">Product</Select.Option>
+                <Select placeholder="Enter Department" className="customized">
+                  {departments.map((dept) => (
+                    <Select.Option key={dept._id} value={dept.teamName}>
+                      {dept.teamName}
+                    </Select.Option>
+                  ))}
                 </Select>
               </Form.Item>
             </div>
@@ -710,9 +856,9 @@ const Jobs = () => {
               <Form.Item
                 name="title"
                 label={<>Job Title</>}
-                rules={[{ required: true, message: 'Please enter job title' }]}
+                rules={[{ required: true, message: "Please enter job title" }]}
               >
-                <Input placeholder="Enter Job" maxLength={30}/>
+                <Input placeholder="Enter Job" maxLength={30} />
               </Form.Item>
             </div>
           </div>
@@ -722,9 +868,9 @@ const Jobs = () => {
               <Form.Item
                 name="jobType"
                 label={<>Job Type</>}
-                rules={[{ required: true, message: 'Please select job type' }]}
+                rules={[{ required: true, message: "Please select job type" }]}
               >
-                <Select placeholder="Full Time" className= 'customized'>
+                <Select placeholder="Full Time" className="customized">
                   <Select.Option value="FULL_TIME">Full Time</Select.Option>
                   <Select.Option value="PART_TIME">Part Time</Select.Option>
                   <Select.Option value="CONTRACT">Contract</Select.Option>
@@ -737,9 +883,11 @@ const Jobs = () => {
               <Form.Item
                 name="workSetup"
                 label={<>Work Setup</>}
-                rules={[{ required: true, message: 'Please select work setup' }]}
+                rules={[
+                  { required: true, message: "Please select work setup" },
+                ]}
               >
-                <Select placeholder="Work Setup" className= 'customized'>
+                <Select placeholder="Work Setup" className="customized">
                   <Select.Option value="ONSITE">On-site</Select.Option>
                   <Select.Option value="REMOTE">Remote</Select.Option>
                   <Select.Option value="HYBRID">Hybrid</Select.Option>
@@ -750,54 +898,77 @@ const Jobs = () => {
 
           <div className="row">
             <div className="col-md-6">
-            <Form.Item
-              name="salaryRange"
-              label={<>Salary Range <span className="text-danger">*</span></>}
-              rules={[
-                {
-                  required: true,
-                  message: 'Please enter salary range'
-                },
-                {
-                  pattern: /^\d+\s*-\s*\d+$/,
-                  message: 'Enter valid format: e.g. 1000 - 5000'
-                },
-                {
-                  validator: (_, value) => {
-                    if (!value) return Promise.resolve();
-
-                    const [min, max] = value.split('-').map(s => parseInt(s.trim(), 10));
-                    if (isNaN(min) || isNaN(max) || min >= max) {
-                      return Promise.reject('Minimum must be less than maximum salary');
-                    }
-
-                    return Promise.resolve();
-                  }
+              <Form.Item
+                name="salaryRange"
+                label={
+                  <>
+                    Salary Range <span className="text-danger">*</span>
+                  </>
                 }
-              ]}
-            >
-              <Input
-                placeholder="1000 - 5000"
-                maxLength={17}
-                onKeyPress={(e) => {
-                  const allowedChars = /[0-9-]/;
-                  if (!allowedChars.test(e.key)) {
-                    e.preventDefault();
-                  }
-                }}
-              />
-            </Form.Item>
+                rules={[
+                  {
+                    required: true,
+                    message: "Please enter salary range",
+                  },
+                  {
+                    pattern: /^\d+\s*-\s*\d+$/,
+                    message: "Enter valid format: e.g. 1000 - 5000",
+                  },
+                  {
+                    validator: (_, value) => {
+                      if (!value) return Promise.resolve();
+
+                      const [min, max] = value
+                        .split("-")
+                        .map((s) => parseInt(s.trim(), 10));
+                      if (isNaN(min) || isNaN(max) || min >= max) {
+                        return Promise.reject(
+                          "Minimum must be less than maximum salary"
+                        );
+                      }
+
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
+              >
+                <Input
+                  placeholder="1000 - 5000"
+                  maxLength={17}
+                  onKeyPress={(e) => {
+                    const allowedChars = /[0-9-]/;
+                    if (!allowedChars.test(e.key)) {
+                      e.preventDefault();
+                    }
+                  }}
+                />
+              </Form.Item>
             </div>
             <div className="col-md-6">
               <Form.Item
                 name="positions"
                 label={<>No of. Positions</>}
                 rules={[
-                  { required: true, message: 'Please enter number of positions' },
-                  { type: 'number', min: 1, message: 'Must be at least 1 position' }
+                  {
+                    required: true,
+                    message: "Please enter number of positions",
+                  },
+                  {
+                    type: "number",
+                    min: 1,
+                    message: "Must be at least 1 position",
+                  },
                 ]}
               >
-                <InputNumber min={1} style={{ width: '100%', display:"flex", alignItems:"center" }} placeholder="1" />
+                <InputNumber
+                  min={1}
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                  placeholder="1"
+                />
               </Form.Item>
             </div>
           </div>
@@ -805,18 +976,20 @@ const Jobs = () => {
           <Form.Item
             name="description"
             label={<>Job Description</>}
-            rules={[{ required: true, message: 'Please enter job description' }]}
+            rules={[
+              { required: true, message: "Please enter job description" },
+            ]}
           >
-            <TextArea rows={3} placeholder="Add Description"  maxLength={1100}/>
+            <TextArea rows={3} placeholder="Add Description" maxLength={1100} />
           </Form.Item>
 
           <Form.Item
             name="postingPlatforms"
             label="Post this Job on"
-            initialValue={['WEBSITE']}
+            initialValue={["WEBSITE"]}
           >
             <Checkbox.Group>
-              <div className= 'checkbox-style'>
+              <div className="checkbox-style">
                 <Checkbox value="FACEBOOK">Facebook</Checkbox>
                 <Checkbox value="LINKEDIN">LinkedIn</Checkbox>
                 <Checkbox value="WEBSITE">Website</Checkbox>
@@ -825,31 +998,34 @@ const Jobs = () => {
             </Checkbox.Group>
           </Form.Item>
 
-          <Form.Item className="text-end mt-3" style={{backgroundColor:'transparent', height:"70px"}}>
-            <Button 
-              onClick={handleModalReset} 
-              style={{ 
+          <Form.Item
+            className="text-end mt-3"
+            style={{ backgroundColor: "transparent", height: "70px" }}
+          >
+            <Button
+              onClick={handleModalReset}
+              style={{
                 marginRight: 12,
-                padding: '6px 24px',
-                height: '40px',
-                borderRadius: '40px',
-                background: '#F8F9FA',
-                border: 'none'
+                padding: "6px 24px",
+                height: "40px",
+                borderRadius: "40px",
+                background: "#F8F9FA",
+                border: "none",
               }}
             >
               Reset
             </Button>
-            <Button 
-              type="primary" 
-              htmlType="submit" 
+            <Button
+              type="primary"
+              htmlType="submit"
               loading={submitting}
-              style={{ 
-                padding: '6px 24px',
-                height: '40px',
-                borderRadius: '40px',
-                background: '#ff9244',
-                border: 'none',
-                color:"white"
+              style={{
+                padding: "6px 24px",
+                height: "40px",
+                borderRadius: "40px",
+                background: "#ff9244",
+                border: "none",
+                color: "white",
               }}
             >
               Create Job
@@ -862,56 +1038,69 @@ const Jobs = () => {
       <div className="row">
         <div className="col-md-12">
           <Spin spinning={loading}>
-            {viewType === 'list' ? (
+            {viewType === "list" ? (
               <>
                 {jobs?.length > 0 && (
                   <Row justify="space-between" style={{ marginBottom: 16 }}>
                     <Col>
-                      <div style={{display:'flex', alignItems:'center', gap:'5px'}}>
-                      <div style={{fontSize:'14px'}}>Show</div>
-                      <Select
-                        className='new'
-                        value={pageSize}
-                        onChange={(size) => {
-                          setPageSize(size);
-                          setCurrentPage(1);
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "5px",
                         }}
-                        style={{width:60}}
                       >
-                        {['20', '30', '40', '50'].map((size) => (
-                          <Option key={size} value={parseInt(size, 10)}>
-                            {size}
-                          </Option>
-                        ))}
-                      </Select>
-                      <div style={{fontSize:'14px'}}>entries</div>
+                        <div style={{ fontSize: "14px" }}>Show</div>
+                        <Select
+                          className="new"
+                          value={pageSize}
+                          onChange={(size) => {
+                            setPageSize(size);
+                            setCurrentPage(1);
+                          }}
+                          style={{ width: 60 }}
+                        >
+                          {["20", "30", "40", "50"].map((size) => (
+                            <Option key={size} value={parseInt(size, 10)}>
+                              {size}
+                            </Option>
+                          ))}
+                        </Select>
+                        <div style={{ fontSize: "14px" }}>entries</div>
                       </div>
                     </Col>
                   </Row>
                 )}
                 <div className="table-responsive">
-                  <Table 
-                  className="table-striped"
-                  columns={columns}
-                  dataSource={jobs}
-                  rowKey="_id"
-                  // pagination={{
-                  //   ...pagination,
-                  //   showSizeChanger: true,
-                  //   showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                  //   pageSizeOptions: ['10', '20', '50']
-                  // }}
-                  // onChange={handleTableChange}
-                  pagination = {false}
-                />
-              </div>
-              {jobs?.length > 0 && (
-                  <Row justify="space-between" align="middle" style={{ marginTop: 16 }}>
+                  <Table
+                    className="table-striped"
+                    columns={columns}
+                    dataSource={jobs}
+                    rowKey="_id"
+                    // pagination={{
+                    //   ...pagination,
+                    //   showSizeChanger: true,
+                    //   showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+                    //   pageSizeOptions: ['10', '20', '50']
+                    // }}
+                    // onChange={handleTableChange}
+                    pagination={false}
+                  />
+                </div>
+                {jobs?.length > 0 && (
+                  <Row
+                    justify="space-between"
+                    align="middle"
+                    style={{ marginTop: 16 }}
+                  >
                     <Col>
-                      <span style={{fontSize:'14px'}}>
-                        {t('paginationShow', {
+                      <span style={{ fontSize: "14px" }}>
+                        {t("paginationShow", {
                           range1: (currentPage - 1) * pageSize + 1,
-                          range2: Math.min(currentPage * pageSize, paginationDetail),
+                          range2: Math.min(
+                            currentPage * pageSize,
+                            paginationDetail
+                          ),
                           total: paginationDetail,
                         })}
                       </span>
@@ -926,16 +1115,26 @@ const Jobs = () => {
                           setPageSize(size);
                           setCurrentPage(page);
                         }}
-                        pageSizeOptions={['20', '30', '40', '50']}
-                        itemRender={(current, type, originalElement) =>{
-                            if (type === 'prev') {
-                              return <img src={leftPageIcon} style={{height:"24px" , width:"24px"}} />;
-                            }
-                            if (type === 'next') {
-                              return <img src={rightPageIcon} style={{height:"24px" , width:"24px"}} />;
-                            }
-                            return originalElement;
-                          }}
+                        pageSizeOptions={["20", "30", "40", "50"]}
+                        itemRender={(current, type, originalElement) => {
+                          if (type === "prev") {
+                            return (
+                              <img
+                                src={leftPageIcon}
+                                style={{ height: "24px", width: "24px" }}
+                              />
+                            );
+                          }
+                          if (type === "next") {
+                            return (
+                              <img
+                                src={rightPageIcon}
+                                style={{ height: "24px", width: "24px" }}
+                              />
+                            );
+                          }
+                          return originalElement;
+                        }}
                       />
                     </Col>
                   </Row>
@@ -1300,11 +1499,8 @@ const Jobs = () => {
           overflow: hidden;
         }
       `}</style>
-      
-
-
     </div>
   );
 };
 
-export default Jobs; 
+export default Jobs;

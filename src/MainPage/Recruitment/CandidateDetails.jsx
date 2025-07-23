@@ -22,6 +22,7 @@ import {
   FilePdfOutlined,
   FileWordOutlined,
   DownloadOutlined,
+  ArrowLeftOutlined,
 } from "@ant-design/icons";
 import { apiServices } from "../../Services/apiServices";
 import { useSelector } from "react-redux";
@@ -50,6 +51,12 @@ import newCalanderIcon from "../../assets/iconsRecruitment/newCalanderIcon.svg";
 import blacklistIcon from "../../assets/iconsRecruitment/BlacklistIcon.svg";
 import taskIcon from "../../assets/iconsRecruitment/taskIcon.svg";
 import fileCheck from "../../assets/iconsRecruitment/RightArrow.svg";
+import {
+  DeleteFiles,
+  uploadFunction,
+} from "../Employees/Projects/UploadAndDeleteFunc";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowLeft, faDownload } from "@fortawesome/free-solid-svg-icons"; // or free-regular-svg-icons if you want the regular style
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_FILE_TYPES = [
@@ -62,6 +69,15 @@ const ALLOWED_FILE_TYPES = [
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
 const { Panel } = Collapse;
+
+function splitFileName(fileName) {
+  const lastDot = fileName.lastIndexOf(".");
+  if (lastDot === -1) return { base: fileName, ext: "" };
+  return {
+    base: fileName.substring(0, lastDot),
+    ext: fileName.substring(lastDot),
+  };
+}
 
 const CandidateDetails = () => {
   const { id } = useParams();
@@ -93,6 +109,8 @@ const CandidateDetails = () => {
   const fileInputRef = useRef(null);
   const [viewMore, setViewMore] = useState(false);
   const [viewMobile, setViewMobile] = useState(window.innerWidth < 768);
+  const [previewFile, setPreviewFile] = useState(null);
+  const dropdownRef = useRef(null); // Add this line for dropdown ref
 
   useEffect(() => {
     console.log("isOfferModalVisible changed:", isOfferModalVisible);
@@ -134,6 +152,24 @@ const CandidateDetails = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setOpenModalIndex(null);
+      }
+    }
+
+    if (openModalIndex !== null) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [openModalIndex]);
+
   const fetchCandidateDetails = async () => {
     const token =
       localStorage.getItem("token") || authState?.access_token?.accessToken;
@@ -159,6 +195,7 @@ const CandidateDetails = () => {
         console.log("Candidate Details Response:", response.data.data);
         console.log("Resume URL:", response.data.data.resume);
         setCandidate(response.data.data);
+        setResume(response?.data?.data?.resume);
         setOfferStatus(response.data.data.status);
       } else {
         if (response?.data?.message === "Invalid token") {
@@ -206,12 +243,7 @@ const CandidateDetails = () => {
     return true;
   };
 
-  const handleUpload = async () => {
-    if (!file) {
-      message.error("No file selected");
-      return;
-    }
-
+  const handleUpload = async (resumeData) => {
     const token = localStorage.getItem("token");
 
     if (!token) {
@@ -219,18 +251,17 @@ const CandidateDetails = () => {
       return;
     }
 
-    const formData = new FormData();
-    formData.append("resume", file);
-
     try {
       const response = await apiServices(
-        "POST",
-        `candidate/${id}/uploadResume`,
-        formData,
+        "PUT",
+        `candidate/${id}`,
+        { resume: resumeData },
         {
+          access_token: {
+            accessToken: token,
+          },
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
           },
         }
       );
@@ -247,70 +278,6 @@ const CandidateDetails = () => {
     }
   };
 
-  const handleDrop = async (event) => {
-    event.preventDefault();
-    setDragging(false);
-    const droppedFiles = Array.from(event.dataTransfer.files);
-    if (droppedFiles.length > 0) {
-      // Upload each file to S3 and store the secure_url(s)
-      const uploadedFiles = await Promise.all(
-        droppedFiles.map(async (file) => {
-          try {
-            const uploadResponse = await apiUploadToS3(file);
-            if (uploadResponse?.data?.result?.secure_url) {
-              return {
-                name: file.name,
-                url: uploadResponse.data.result.secure_url,
-              };
-            }
-          } catch (error) {
-            console.error("Error uploading file:", error);
-          }
-          return null;
-        })
-      );
-      const validFiles = uploadedFiles.filter((f) => f !== null);
-      setResume((prevFiles) => [...prevFiles, ...validFiles]);
-      console.log("Files dropped and uploaded:", validFiles);
-    }
-  };
-
-  const handleDragOver = (event) => {
-    event.preventDefault();
-    setDragging(true);
-  };
-
-  const handleDragLeave = () => {
-    setDragging(false);
-  };
-
-  const handleFileChange = async (event) => {
-    const selectedFiles = Array.from(event.target.files);
-    if (selectedFiles.length > 0) {
-      // Upload each file to S3 and store the secure_url(s)
-      const uploadedFiles = await Promise.all(
-        selectedFiles.map(async (file) => {
-          try {
-            const uploadResponse = await apiUploadToS3(file);
-            if (uploadResponse?.data?.result?.secure_url) {
-              return {
-                name: file.name,
-                url: uploadResponse.data.result.secure_url,
-              };
-            }
-          } catch (error) {
-            console.error("Error uploading file:", error);
-          }
-          return null;
-        })
-      );
-      const validFiles = uploadedFiles.filter((f) => f !== null);
-      setResume((prevFiles) => [...prevFiles, ...validFiles]);
-      console.log("Files selected and uploaded:", validFiles);
-    }
-    event.target.value = "";
-  };
-
   const handlePreviewResume = () => {
     if (!candidate?.resume) {
       message.error("No resume available for preview");
@@ -320,38 +287,69 @@ const CandidateDetails = () => {
     window.open(candidate.resume, "_blank");
   };
 
-  const handleDownloadResume = async () => {
-    if (!candidate?.resume) {
-      message.error("No resume available for download");
-      return;
-    }
+  // const handleDownloadResume = async () => {
+  //   if (!candidate?.resume) {
+  //     message.error("No resume available for download");
+  //     return;
+  //   }
 
-    try {
-      const response = await fetch(candidate.resume);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = candidate.resume.split("/").pop();
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      message.error("Failed to download resume");
-    }
-  };
+  //   try {
+  //     const response = await fetch(candidate.resume);
+  //     const blob = await response.blob();
+  //     const url = window.URL.createObjectURL(blob);
+  //     const link = document.createElement("a");
+  //     link.href = url;
+  //     link.download = candidate.resume.split("/").pop();
+  //     document.body.appendChild(link);
+  //     link.click();
+  //     document.body.removeChild(link);
+  //     window.URL.revokeObjectURL(url);
+  //   } catch (error) {
+  //     message.error("Failed to download resume");
+  //   }
+  // };
 
-  const startEditing = (index, name) => {
+  const startEditing = (index, fileName) => {
+    const { base } = splitFileName(fileName);
     setEditingIndex(index);
-    setTempName(name);
+    setTempName(base);
   };
 
-  const saveRename = (index) => {
-    setResume((prev) =>
-      prev.map((file, i) => (i === index ? { ...file, name: tempName } : file))
+  const saveRename = async (index) => {
+    const { ext } = splitFileName(resume[index].fileName);
+    const newFileName = tempName + ext;
+    const updatedResume = resume.map((file, i) =>
+      i === index ? { ...file, fileName: newFileName } : file
     );
+    setResume(updatedResume);
     setEditingIndex(null);
+
+    // Call backend to update resume array
+    try {
+      const token =
+        localStorage.getItem("token") || authState?.access_token?.accessToken;
+      if (!token) {
+        message.error("Authentication required");
+        return;
+      }
+
+      const response = await apiServices(
+        "PUT",
+        `candidate/${id}`,
+        { resume: updatedResume },
+        {
+          access_token: { accessToken: token },
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (response?.data?.status) {
+        message.success("File name updated successfully");
+      } else {
+        message.error(response?.data?.message || "Failed to update file name");
+      }
+    } catch (error) {
+      message.error("Error updating file name");
+    }
   };
 
   const handleViewMore = (id) => {
@@ -1701,8 +1699,14 @@ const CandidateDetails = () => {
     return (totalRatings / feedbackArray.length).toFixed(1);
   };
 
-  const deleteResume = (index) => {
-    setResume((prevResume) => prevResume.filter((_, i) => i !== index));
+  const deleteResume = async (index) => {
+    const fileToDelete = resume[index];
+    // Call DeleteFiles with the file to delete
+    await DeleteFiles([fileToDelete], authState); // Pass user state if required
+
+    // Remove from local state
+    const updatedResume = resume.filter((_, i) => i !== index);
+    setResume(updatedResume);
     if (editingIndex === index) {
       setEditingIndex(null);
       setTempName("");
@@ -1710,10 +1714,77 @@ const CandidateDetails = () => {
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+
+    console.log("U P D A T E D D E L E T E D # ", updatedResume);
+
+    // Update backend
+    try {
+      const token =
+        localStorage.getItem("token") || authState?.access_token?.accessToken;
+      if (!token) {
+        message.error("Authentication required");
+        return;
+      }
+      const response = await apiServices(
+        "PUT",
+        `candidate/${id}`,
+        { resume: updatedResume },
+        {
+          access_token: { accessToken: token },
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (response?.data?.status) {
+        message.success("File deleted successfully");
+      } else {
+        message.error(response?.data?.message || "Failed to update resume");
+      }
+    } catch (error) {
+      message.error("Error updating resume");
+    }
   };
 
   const toggleModal = (index) => {
     setOpenModalIndex(openModalIndex === index ? null : index);
+  };
+
+  const getPreviewIframe = (file) => {
+    if (!file) return null;
+    if (file.url.endsWith(".pdf")) {
+      return (
+        <iframe
+          src={file.url}
+          title={file.fileName}
+          width="100%"
+          height="100%"
+          style={{ border: "none" }}
+        />
+      );
+    } else if (
+      file.fileName.endsWith(".doc") ||
+      file.fileName.endsWith(".docx")
+    ) {
+      return (
+        <iframe
+          src={`https://docs.google.com/gview?url=${encodeURIComponent(
+            file.url
+          )}&embedded=true`}
+          title={file.fileName}
+          width="100%"
+          height="100%"
+          style={{ border: "none" }}
+        />
+      );
+    } else {
+      return (
+        <div>
+          <p>Preview not available for this file type.</p>
+          <a href={file.url} target="_blank" rel="noopener noreferrer">
+            Open in new tab
+          </a>
+        </div>
+      );
+    }
   };
 
   return (
@@ -1963,7 +2034,10 @@ const CandidateDetails = () => {
                         style={{ height: "20px", width: "20px" }}
                       ></img>
                     }
-                    onClick={() => setIsReasonModalVisible(true)}
+                    onClick={() => {
+                      setSelectedStatus("BLACKLISTED");
+                      setIsReasonModalVisible(true);
+                    }}
                   >
                     Add to Blacklist
                   </Menu.Item>
@@ -2505,37 +2579,62 @@ const CandidateDetails = () => {
               >
                 <Upload
                   className="full-width-upload"
-                  multiple
+                  maxCount={1}
                   showUploadList={false}
                   beforeUpload={() => {
-                    // const isValid = validateFile(file);
-                    // if (!isValid) {
-                    //   return false;
-                    // }
                     return false; // Prevent AntD's default upload, handle in onChange
                   }}
                   onChange={async (info) => {
                     const file = info.file;
-                    console.log("F I L E s:", file);
+                    let resumeData = null;
                     const isValid = validateFile(file);
                     if (!isValid) {
                       return;
                     }
-                    // Only handle added files
-                    console.log("F I L E :", file);
-
                     try {
-                      const uploadResponse = await apiUploadToS3(file);
-                      if (uploadResponse?.data?.result?.secure_url) {
-                        setResume((prevFiles) => [
-                          ...prevFiles,
+                      const uploadResult = await uploadFunction([file]);
+                      console.log("Upload result:", uploadResult);
+
+                      if (
+                        Array.isArray(uploadResult) &&
+                        uploadResult.length > 0 &&
+                        uploadResult[0].imageUrl
+                      ) {
+                        resumeData = [
                           {
-                            name: file.name,
-                            url: uploadResponse.data.result.secure_url,
+                            url: uploadResult[0].imageUrl,
+                            fileName: uploadResult[0].fileName,
+                            asset_id: uploadResult[0].asset_id,
+                            public_id: uploadResult[0].public_id,
+                            resource_type: uploadResult[0].resource_type,
+                            uploadedAt: new Date().toISOString(),
                           },
-                        ]);
+                        ];
+                        console.log(
+                          "Resume uploaded successfully:",
+                          resumeData
+                        );
+                        const newResumeList = [
+                          ...(Array.isArray(resume) ? resume : []),
+                          {
+                            url: uploadResult[0].imageUrl,
+                            fileName: uploadResult[0].fileName,
+                            asset_id: uploadResult[0].asset_id,
+                            public_id: uploadResult[0].public_id,
+                            resource_type: uploadResult[0].resource_type,
+                            uploadedAt: new Date().toISOString(),
+                          },
+                        ];
+                        setResume(newResumeList);
+                        await handleUpload(newResumeList);
+                      } else {
+                        console.error("Invalid upload result:", uploadResult);
+                        message.error("Failed to upload resume");
+                        setSubmitting(false);
+                        return;
                       }
                     } catch (error) {
+                      console.log("E R R O R : ", error);
                       message.error("Error uploading file");
                     }
                   }}
@@ -2592,7 +2691,7 @@ const CandidateDetails = () => {
                 {activeTab === "timeline"
                   ? "Timeline"
                   : activeTab === "files"
-                  ? `Files (${resume ? resume.length : ""})`
+                  ? `Files (${Array.isArray(resume) ? resume.length : 0})`
                   : activeTab === "interview"
                   ? "Interview"
                   : activeTab === "tasks"
@@ -3185,34 +3284,103 @@ const CandidateDetails = () => {
             {/* Timeline Tab Content */}
             {activeTab === "timeline" && (
               <div className="mt-2">
-                <div
-                  className="p-3"
-                  style={{
-                    background: "#f7f7f8",
-                    display: "flex",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: "14px",
-                      fontWeight: "500",
-                      color: "#000000",
-                    }}
-                  >{`${candidate.firstName} is ${candidate.status}`}</div>
-                  <div
-                    style={{
-                      fontSize: "12px",
-                      fontWeight: "450",
-                      color: "#495057",
-                    }}
-                  >
-                    {moment(candidate.appliedDate).format("DD MMM") +
-                      " at " +
-                      moment(candidate.appliedTime).format("HH:mm A")}
+                {/* Map over candidate.timeline here */}
+                {candidate?.timeline && candidate.timeline.length > 0 ? (
+                  <div style={{ display: "flex", flexDirection: "column" }}>
+                    {candidate.timeline.map((event, idx) => {
+                      // Status event
+                      if (event.status && event.updatedAt) {
+                        return (
+                          <div
+                            key={event._id || idx}
+                            style={{
+                              background: "#f5f5f5",
+                              borderRadius: "10px",
+                              padding: "16px 20px",
+                              marginBottom: "16px",
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  fontSize: "15px",
+                                  fontWeight: 500,
+                                  color: "#222",
+                                }}
+                              >
+                                {`${candidate.firstName} is ${
+                                  event.status.charAt(0) +
+                                  event.status.slice(1).toLowerCase()
+                                }`}
+                              </div>
+                              <div style={{ fontSize: "14px", color: "#666" }}>
+                                {moment(event.updatedAt).format(
+                                  "Do MMM [at] h:mm a"
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+                      // Interview event
+                      if (event.InterviewCreator && event.createdAt) {
+                        return (
+                          <div
+                            key={event._id || idx}
+                            style={{
+                              background: "#f5f5f5",
+                              borderRadius: "10px",
+                              padding: "16px 20px",
+                              marginBottom: "16px",
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                              }}
+                            >
+                              <div
+                                style={{ fontSize: "15px", fontWeight: 500 }}
+                              >
+                                <span
+                                  style={{
+                                    color: "#1890ff",
+                                    textDecoration: "underline",
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  Interview
+                                </span>
+                                <span
+                                  style={{ color: "#222", fontWeight: 400 }}
+                                >
+                                  {" "}
+                                  scheduled by {event.InterviewCreator}
+                                </span>
+                              </div>
+                              <div style={{ fontSize: "14px", color: "#666" }}>
+                                {moment(event.createdAt).format(
+                                  "Do MMM [at] h:mm a"
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+                      // Unknown event type (optional: skip or show fallback)
+                      return null;
+                    })}
                   </div>
-                </div>
-                {filteredInterviews.length > 0
+                ) : null}
+                {/* {filteredInterviews.length > 0
                   ? filteredInterviews.map((interview) => (
                       <div
                         className="p-3 mt-3"
@@ -3246,166 +3414,256 @@ const CandidateDetails = () => {
                         </div>
                       </div>
                     ))
-                  : ""}
+                  : ""} */}
               </div>
             )}
             {activeTab === "files" && (
               <div className="mt-2">
-                {resume.map((file, index) => (
-                  <div
-                    className="p-3"
-                    style={{
-                      background: "#f7f7f8",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      marginTop: "8px",
-                    }}
-                    key={index}
-                  >
-                    {editingIndex === index ? (
-                      <div
-                        style={{
-                          fontSize: "14px",
-                          fontWeight: "500",
-                          color: "#000000",
-                        }}
-                      >
-                        <input
-                          style={{
-                            border: "1px solid #a5adb6",
-                            borderRadius: "8px",
-                            height: "28px",
-                            paddingLeft: "8px",
-                          }}
-                          type="text"
-                          value={tempName}
-                          onChange={(e) => setTempName(e.target.value)}
-                          onBlur={() => saveRename(index)}
-                          onKeyDown={(e) =>
-                            e.key === "Enter" && saveRename(index)
-                          }
-                        ></input>
-                      </div>
-                    ) : (
-                      <div
-                        style={{
-                          fontSize: "14px",
-                          fontWeight: "500",
-                          color: "#000000",
-                          cursor: "pointer",
-                        }}
-                        onClick={() => {
-                          handlePreviewResume();
-                        }}
-                      >
-                        {file.name}
-                      </div>
-                    )}
-
-                    <div style={{ display: "flex", gap: "15px" }}>
-                      <div
-                        style={{
-                          fontSize: "12px",
-                          fontWeight: "450",
-                          color: "#495057",
-                          paddingTop: "5px",
-                        }}
-                      >
-                        {moment().format("DD MMM YYYY") +
-                          " at " +
-                          moment().format("HH:mm A")}
-                      </div>
-                      <div
-                        style={{
-                          marginRight: "10px",
-                          cursor: "pointer",
-                          position: "relative",
-                        }}
-                        onClick={() => {
-                          toggleModal(index);
-                        }}
-                      >
-                        <img src={more}></img>
-                        {openModalIndex === index && (
-                          <div
+                {!previewFile ? (
+                  Array.isArray(resume) &&
+                  resume.map((file, index) => (
+                    <div
+                      className="p-3"
+                      style={{
+                        background: "#f7f7f8",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        marginTop: "8px",
+                      }}
+                      key={index}
+                    >
+                      {editingIndex === index ? (
+                        <div style={{ display: "flex", alignItems: "center" }}>
+                          <input
                             style={{
-                              position: "absolute",
-                              top: "100%",
-                              right: "10%",
-                              background: "white",
-                              border: "1px solid #ddd",
-                              borderRadius: "5px",
-                              boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-                              padding: "5px",
-                              display: "flex",
-                              flexDirection: "column",
-                              marginTop: "10px",
-                              width: "120px",
+                              border: "1px solid #a5adb6",
+                              borderRadius: "8px",
+                              height: "28px",
+                              paddingLeft: "8px",
+                              width: "auto",
                             }}
-                          >
+                            type="text"
+                            value={tempName}
+                            onChange={(e) => setTempName(e.target.value)}
+                            onBlur={() => saveRename(index)}
+                            onKeyDown={(e) =>
+                              e.key === "Enter" && saveRename(index)
+                            }
+                          />
+                          <span style={{ marginLeft: 4, color: "#888" }}>
+                            {splitFileName(file.fileName).ext}
+                          </span>
+                        </div>
+                      ) : (
+                        <div
+                          style={{
+                            fontSize: "14px",
+                            fontWeight: "500",
+                            color: "#000000",
+                            cursor: "pointer",
+                          }}
+                          onClick={() => setPreviewFile(file)}
+                        >
+                          {file.fileName}
+                        </div>
+                      )}
+
+                      <div style={{ display: "flex", gap: "15px" }}>
+                        <div
+                          style={{
+                            fontSize: "12px",
+                            fontWeight: "450",
+                            color: "#495057",
+                            paddingTop: "5px",
+                          }}
+                        >
+                          {moment(file?.uploadedAt).format("DD MMM YYYY") +
+                            " at " +
+                            moment(file?.uploadedAt).format("HH:mm A")}
+                        </div>
+                        <div
+                          style={{
+                            marginRight: "10px",
+                            cursor: "pointer",
+                            position: "relative",
+                          }}
+                          onClick={() => {
+                            toggleModal(index);
+                          }}
+                        >
+                          <img src={more}></img>
+                          {openModalIndex === index && (
                             <div
+                              ref={dropdownRef}
                               style={{
-                                background: "none",
-                                border: "none",
-                                marginTop: "7px",
-                                marginBottom: "7px",
-                                cursor: "pointer",
-                                width: "100%",
+                                position: "absolute",
+                                top: "100%",
+                                right: "10%",
+                                background: "white",
+                                border: "1px solid #ddd",
+                                borderRadius: "5px",
+                                boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+                                padding: "5px",
                                 display: "flex",
-                              }}
-                              onClick={() => {
-                                startEditing(index, file.name);
-                              }}
-                            >
-                              <div style={{ width: "30%", paddingLeft: "7px" }}>
-                                <img src={EditIcon}></img>
-                              </div>
-                              <div style={{ width: "70%", paddingTop: "3px" }}>
-                                <span
-                                  style={{
-                                    fontSize: "14px",
-                                    fontWeight: "500",
-                                    color: "#56616b",
-                                  }}
-                                >
-                                  Edit
-                                </span>
-                              </div>
-                            </div>
-                            <div
-                              style={{
-                                background: "none",
-                                border: "none",
+                                flexDirection: "column",
                                 marginTop: "10px",
-                                cursor: "pointer",
-                                width: "100%",
-                                display: "flex",
-                              }}
-                              onClick={() => {
-                                deleteResume(index);
+                                width: "120px",
+                                zIndex: 1,
                               }}
                             >
-                              <div style={{ width: "30%", paddingLeft: "7px" }}>
-                                <img src={DeleteIcon}></img>
-                              </div>
-                              <div style={{ width: "70%", paddingTop: "3px" }}>
-                                <span
-                                  style={{
-                                    fontSize: "14px",
-                                    fontWeight: "500",
-                                    color: "#56616b",
-                                  }}
+                              <div
+                                style={{
+                                  background: "none",
+                                  border: "none",
+                                  marginTop: "7px",
+                                  marginBottom: "7px",
+                                  cursor: "pointer",
+                                  width: "100%",
+                                  display: "flex",
+                                }}
+                                onClick={() => {
+                                  startEditing(index, file.fileName);
+                                }}
+                              >
+                                <div
+                                  style={{ width: "30%", paddingLeft: "7px" }}
                                 >
-                                  Delete
-                                </span>
+                                  <img src={EditIcon}></img>
+                                </div>
+                                <div
+                                  style={{ width: "70%", paddingTop: "3px" }}
+                                >
+                                  <span
+                                    style={{
+                                      fontSize: "14px",
+                                      fontWeight: "500",
+                                      color: "#56616b",
+                                    }}
+                                  >
+                                    Rename
+                                  </span>
+                                </div>
+                              </div>
+                              <div
+                                style={{
+                                  background: "none",
+                                  border: "none",
+                                  marginTop: "10px",
+                                  cursor: "pointer",
+                                  width: "100%",
+                                  display: "flex",
+                                }}
+                                onClick={() => {
+                                  Modal.confirm({
+                                    title: "Delete File",
+                                    content:
+                                      "Are you sure you want to delete this file?",
+                                    okText: "Yes, Delete",
+                                    okType: "danger",
+                                    cancelText: "No",
+                                    onOk: () => deleteResume(index),
+                                  });
+                                }}
+                              >
+                                <div
+                                  style={{ width: "30%", paddingLeft: "7px" }}
+                                >
+                                  <img src={DeleteIcon}></img>
+                                </div>
+                                <div
+                                  style={{ width: "70%", paddingTop: "3px" }}
+                                >
+                                  <span
+                                    style={{
+                                      fontSize: "14px",
+                                      fontWeight: "500",
+                                      color: "#56616b",
+                                    }}
+                                  >
+                                    Delete
+                                  </span>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
                     </div>
+                  ))
+                ) : (
+                  <div>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        position: "relative",
+                        width: "100%",
+                        minHeight: 40,
+                      }}
+                    >
+                      <Button
+                        icon={<FontAwesomeIcon icon={faArrowLeft} />}
+                        onClick={() => setPreviewFile(null)}
+                        type="text"
+                        style={{
+                          boxShadow: "none",
+                          background: "none",
+                          border: "none",
+                          marginRight: 16,
+                        }}
+                      />
+                      <span
+                        style={{
+                          fontWeight: 500,
+                          position: "absolute",
+                          left: "50%",
+                          transform: "translateX(-50%)",
+                          whiteSpace: "nowrap",
+                          pointerEvents: "none", // so clicks go through to buttons if overlapped
+                        }}
+                      >
+                        {previewFile.fileName}
+                      </span>
+                      <Button
+                        icon={<FontAwesomeIcon icon={faDownload} />}
+                        type="text"
+                        style={{
+                          boxShadow: "none",
+                          background: "none",
+                          border: "none",
+                          marginLeft: "auto",
+                        }}
+                        onClick={async () => {
+                          try {
+                            const response = await fetch(previewFile.url, {
+                              mode: "cors",
+                            });
+                            const blob = await response.blob();
+                            const url = window.URL.createObjectURL(blob);
+                            const link = document.createElement("a");
+                            link.href = url;
+                            link.download = previewFile.fileName;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            window.URL.revokeObjectURL(url);
+                          } catch (e) {
+                            window.open(previewFile.url, "_blank");
+                          }
+                        }}
+                      />
+                    </div>
+                    <div
+                      style={{
+                        width: "100%",
+                        height: "70vh",
+                        background: "#fff",
+                      }}
+                    >
+                      {getPreviewIframe(previewFile)}
+                    </div>
                   </div>
-                ))}
+                )}
               </div>
             )}
           </div>
@@ -4254,16 +4512,6 @@ const CandidateDetails = () => {
           margin-right: 5px !important; 
         }
       }
-
-
-
-
-
-       
-        
-
-
-
       `}</style>
     </div>
   );

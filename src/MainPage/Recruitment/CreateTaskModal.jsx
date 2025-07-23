@@ -177,7 +177,7 @@ const CreateTaskModal = ({ isVisible, onCancel, onSubmit, candidate, authState }
                   <input
                   type="text"
                   value={fileList[0]?.name || ""}
-                  placeholder="No file chosen"
+                  placeholder="No file choosen"
                   readOnly
                   className="file-input"
                   />
