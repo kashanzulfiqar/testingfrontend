@@ -10,7 +10,6 @@ import {
   Upload,
   message,
 } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
 import { apiServices } from "../../Services/apiServices";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
@@ -24,23 +23,15 @@ const CreateCandidateModal = ({
   activeJobs = [],
 }) => {
   const [form] = Form.useForm();
-  const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
-  const [resumeFile, setResumeFile] = useState(null);
   const [fileList, setFileList] = useState([]);
-  const [skillError, setSkillError] = useState("");
+  const [uploadResult, setUploadResult] = useState(null);
   const authState = useSelector((state) => state.user.loginvalue);
-
-  // Debug log when activeJobs changes
-  useEffect(() => {
-    console.log("CreateCandidateModal - activeJobs prop:", activeJobs);
-  }, [activeJobs]);
 
   // Reset form when modal becomes visible
   useEffect(() => {
     if (visible) {
       form.resetFields();
-      setResumeFile(null);
       setFileList([]);
     }
   }, [visible, form]);
@@ -48,38 +39,28 @@ const CreateCandidateModal = ({
   const handleSubmit = async (values) => {
     try {
       setSubmitting(true);
-
-      // Step 1: Upload resume if exists
       let resumeData = null;
-      if (resumeFile) {
-        console.log("Step 1: Uploading resume file:", resumeFile);
-        const uploadResult = await uploadFunction([resumeFile]);
-        console.log("Upload result:", uploadResult);
-
-        if (
-          Array.isArray(uploadResult) &&
-          uploadResult.length > 0 &&
-          uploadResult[0].imageUrl
-        ) {
-          resumeData = [{
+      if (
+        Array.isArray(uploadResult) &&
+        uploadResult.length > 0 &&
+        uploadResult[0].imageUrl
+      ) {
+        resumeData = [
+          {
             url: uploadResult[0].imageUrl,
             fileName: uploadResult[0].fileName,
             asset_id: uploadResult[0].asset_id,
             public_id: uploadResult[0].public_id,
             resource_type: uploadResult[0].resource_type,
             uploadedAt: new Date().toISOString(),
-          }];
-          console.log("Resume uploaded successfully:", resumeData);
-        } else {
-          console.error("Invalid upload result:", uploadResult);
-          message.error("Failed to upload resume");
-          setSubmitting(false);
-          return;
-        }
+          },
+        ];
+      } else {
+        console.error("Invalid upload result:", uploadResult);
+        message.error("Failed to upload resume");
+        setSubmitting(false);
+        return;
       }
-
-      // Step 2: Create candidate with resume data
-      console.log("Step 2: Creating candidate with resume data:", resumeData);
       const formattedValues = {
         firstName: values.firstName,
         lastName: values.lastName,
@@ -95,9 +76,6 @@ const CreateCandidateModal = ({
         resume: resumeData,
         skillSet: values.skillSet,
       };
-
-      console.log("Creating candidate with payload:", formattedValues);
-
       const token =
         localStorage.getItem("token") || authState?.access_token?.accessToken;
       const response = await apiServices(
@@ -118,7 +96,6 @@ const CreateCandidateModal = ({
         message.success("Candidate created successfully");
         form.resetFields();
         setFileList([]);
-        setResumeFile(null);
         onSuccess();
       } else {
         throw new Error(
@@ -135,12 +112,10 @@ const CreateCandidateModal = ({
 
   const handleReset = () => {
     form.resetFields();
-    setResumeFile(null);
     setFileList([]);
   };
   const handleCancel = () => {
     form.resetFields();
-    setResumeFile(null);
     setFileList([]);
     onCancel();
   };
@@ -172,7 +147,7 @@ const CreateCandidateModal = ({
           <Upload
             name="resume"
             maxCount={1}
-            beforeUpload={(file) => {
+            beforeUpload={async (file) => {
               // Validate file size (5MB)
               if (file.size > 5 * 1024 * 1024) {
                 message.error("Resume file size should not exceed 5MB");
@@ -180,27 +155,42 @@ const CreateCandidateModal = ({
               }
 
               // Validate file type
-              const allowedTypes = [
-                "application/pdf",
-                "application/msword",
-                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-              ];
+              const allowedTypes = ["application/pdf"];
               if (!allowedTypes.includes(file.type)) {
-                message.error("Only PDF, DOC, and DOCX files are allowed");
+                message.error("Only PDF files are allowed");
                 return Upload.LIST_IGNORE;
               }
 
-              setResumeFile(file);
+              const result = await uploadFunction([file]);
+              setUploadResult(result);
+              if (result && result[0]) {
+                const { candidateName, candidateEmail, candidateContact } =
+                  result[0];
+
+                // Split candidateName into first and last name (if possible)
+                let firstName = "";
+                let lastName = "";
+                if (candidateName) {
+                  const nameParts = candidateName.split(" ");
+                  firstName = nameParts[0] || "";
+                  lastName = nameParts.slice(1).join(" ") || "";
+                }
+
+                form.setFieldsValue({
+                  firstName,
+                  lastName,
+                  email: candidateEmail || "",
+                  phoneNumber: candidateContact || "",
+                });
+              }
               return false;
             }}
             onRemove={() => {
-              setResumeFile(null);
               setFileList([]);
               return true;
             }}
             fileList={fileList}
             onChange={({ fileList: newFileList }) => {
-              console.log("file", newFileList);
               setFileList(newFileList.slice(-1));
             }}
           >
@@ -494,7 +484,7 @@ const CreateCandidateModal = ({
                 getPopupContainer={() => document.getElementById("area22")}
                 onChange={(value) => {
                   // Filter out tags longer than 20 characters
-                  const filtered = value.filter(tag => tag.length <= 20);
+                  const filtered = value.filter((tag) => tag.length <= 20);
                   if (filtered.length < value.length) {
                     message.error("Each skill can be at most 20 characters.");
                   }
