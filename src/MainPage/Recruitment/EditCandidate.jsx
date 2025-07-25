@@ -26,8 +26,7 @@ const EditCandidate = () => {
   const [activeJobs, setActiveJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [resumeFile, setResumeFile] = useState(null);
-  const [initialValues, setInitialValues] = useState(null);
+  const [uploadResult, setUploadResult] = useState(null);
   const authState = useSelector((state) => state.user.loginvalue);
   const [fileList, setFileList] = useState([]);
 
@@ -64,7 +63,6 @@ const EditCandidate = () => {
           appliedFor: candidate.appliedFor?._id || candidate.appliedFor,
           appliedDate: moment(candidate.appliedDate),
         };
-        setInitialValues(formattedCandidate);
         form.setFieldsValue(formattedCandidate);
       } else {
         if (response?.data?.message === "Invalid token") {
@@ -149,33 +147,28 @@ const EditCandidate = () => {
       setSubmitting(true);
 
       let resumeData = null;
-      if (resumeFile) {
-        console.log("Step 1: Uploading resume file:", resumeFile);
-        const uploadResult = await uploadFunction([resumeFile]);
-        console.log("Upload result:", uploadResult);
 
-        if (
-          Array.isArray(uploadResult) &&
-          uploadResult.length > 0 &&
-          uploadResult[0].imageUrl
-        ) {
-          resumeData = [
-            {
-              url: uploadResult[0].imageUrl,
-              fileName: uploadResult[0].fileName,
-              asset_id: uploadResult[0].asset_id,
-              public_id: uploadResult[0].public_id,
-              resource_type: uploadResult[0].resource_type,
-              uploadedAt: new Date().toISOString(),
-            },
-          ];
-          console.log("Resume uploaded successfully:", resumeData);
-        } else {
-          console.error("Invalid upload result:", uploadResult);
-          message.error("Failed to upload resume");
-          setSubmitting(false);
-          return;
-        }
+      if (
+        Array.isArray(uploadResult) &&
+        uploadResult.length > 0 &&
+        uploadResult[0].imageUrl
+      ) {
+        resumeData = [
+          {
+            url: uploadResult[0].imageUrl,
+            fileName: uploadResult[0].fileName,
+            asset_id: uploadResult[0].asset_id,
+            public_id: uploadResult[0].public_id,
+            resource_type: uploadResult[0].resource_type,
+            uploadedAt: new Date().toISOString(),
+          },
+        ];
+        console.log("Resume uploaded successfully:", resumeData);
+      } else {
+        console.error("Invalid upload result:", uploadResult);
+        message.error("Failed to upload resume");
+        setSubmitting(false);
+        return;
       }
       // Step 2: Create candidate with resume data
       console.log("Step 2: Creating candidate with resume data:", resumeData);
@@ -188,8 +181,8 @@ const EditCandidate = () => {
         appliedDate: values.appliedDate.format("YYYY-MM-DD"),
         status: values.status,
         experience: values.experience,
-        currentSalary: Number(values.currentSalary.replace(/,/g, '')),
-        expectedSalary: Number(values.expectedSalary.replace(/,/g, '')),
+        currentSalary: Number(values.currentSalary.replace(/,/g, "")),
+        expectedSalary: Number(values.expectedSalary.replace(/,/g, "")),
         noticePeriod: values.noticePeriod,
         source: values.source,
         resume: resumeData,
@@ -302,12 +295,7 @@ const EditCandidate = () => {
       <div className="row">
         <div className="col-md-12">
           <Card>
-            <Form
-              form={form}
-              layout="vertical"
-              onFinish={handleSubmit}
-              initialValues={initialValues}
-            >
+            <Form form={form} layout="vertical" onFinish={handleSubmit}>
               <div className="upload-resume mb-4">
                 <p>
                   If you have a resume, upload the resume first. We will
@@ -316,68 +304,66 @@ const EditCandidate = () => {
                 <Upload
                   name="resume"
                   maxCount={1}
-                  beforeUpload={(file) => {
+                  beforeUpload={async (file) => {
                     // Validate file size (5MB)
                     if (file.size > 5 * 1024 * 1024) {
                       message.error("Resume file size should not exceed 5MB");
-                      return false;
+                      return Upload.LIST_IGNORE;
                     }
 
                     // Validate file type
-                    const allowedTypes = [
-                      "application/pdf",
-                      "application/msword",
-                      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                    ];
+                    const allowedTypes = ["application/pdf"];
                     if (!allowedTypes.includes(file.type)) {
-                      message.error(
-                        "Only PDF, DOC, and DOCX files are allowed"
-                      );
-                      return false;
+                      message.error("Only PDF files are allowed");
+                      return Upload.LIST_IGNORE;
                     }
 
-                    setResumeFile(file);
+                    const result = await uploadFunction([file]);
+                    setUploadResult(result);
+                    if (result && result[0]) {
+                      console.log("::RESULTS::", result);
+                      const {
+                        candidateName,
+                        candidateEmail,
+                        candidateContact,
+                      } = result[0];
+
+                      // Split candidateName into first and last name (if possible)
+                      let firstName = "";
+                      let lastName = "";
+                      if (candidateName) {
+                        const nameParts = candidateName.split(" ");
+                        firstName = nameParts[0] || "";
+                        lastName = nameParts.slice(1).join(" ") || "";
+                      }
+                      console.log(
+                        "::TS::",
+                        firstName,
+                        lastName,
+                        candidateEmail,
+                        candidateContact
+                      );
+                      form.setFieldsValue({
+                        firstName,
+                        lastName,
+                        email: candidateEmail || "",
+                        phoneNumber: candidateContact || "",
+                      });
+                    }
                     return false;
                   }}
                   onRemove={() => {
-                    setResumeFile(null);
                     setFileList([]);
                     return true;
                   }}
+                  fileList={fileList}
+                  onChange={({ fileList: newFileList }) => {
+                    setFileList(newFileList.slice(-1));
+                  }}
                 >
-                  <Button
-                    className="resume-upload-btn"
-                    disabled={fileList.length > 0}
-                  >
-                    Upload Resume
-                  </Button>
+                  <Button className="resume-upload-btn">Upload Resume</Button>
                 </Upload>
               </div>
-              {/* <div className="upload-resume mb-4">
-                <p>Current Resume: {initialValues?.resume ? <a href={initialValues.resume} target="_blank" rel="noopener noreferrer">View Resume</a> : 'No resume uploaded'}</p>
-                <Upload
-                  beforeUpload={(file) => {
-                    // Validate file size (5MB)
-                    if (file.size > 5 * 1024 * 1024) {
-                      message.error('Resume file size should not exceed 5MB');
-                      return false;
-                    }
-                    
-                    // Validate file type
-                    const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-                    if (!allowedTypes.includes(file.type)) {
-                      message.error('Only PDF, DOC, and DOCX files are allowed');
-                      return false;
-                    }
-                    
-                    setResumeFile(file);
-                    return false;
-                  }}
-                  maxCount={1}
-                >
-                  <Button icon={<UploadOutlined />}>Upload New Resume</Button>
-                </Upload>
-              </div> */}
 
               <div className="row">
                 <div className="col-md-6">
