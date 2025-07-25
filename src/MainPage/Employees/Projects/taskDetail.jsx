@@ -66,6 +66,11 @@ const TaskDetails = () => {
   const [attachmentsLoading, setAttachmentsLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [reporter, setReporter] = useState(taskData?.reporter || null);
+  const [reporterLoading, setReporterLoading] = useState(false);
+  const [reporterSelectOpen, setReporterSelectOpen] = useState(false);
+  // Add a loading state for the initial fetch
+  const [initialLoading, setInitialLoading] = useState(true);
 
   // Add refs for dropdowns
   const statusDropdownRef = React.useRef(null);
@@ -79,7 +84,8 @@ const TaskDetails = () => {
 
   useEffect(() => {
     if (taskData?._id) {
-      fetchTaskDetails();
+      setInitialLoading(true);
+      fetchTaskDetails().finally(() => setInitialLoading(false));
     }
   }, []);
 
@@ -103,6 +109,10 @@ const TaskDetails = () => {
         if (res?.data?.success) setAllEmployees(res.data.User || []);
       });
   }, []);
+
+  useEffect(() => {
+    setReporter(taskData?.reporter || null);
+  }, [taskData]);
 
   // Function to close all dropdowns
   const closeAllDropdowns = () => {
@@ -451,6 +461,8 @@ const TaskDetails = () => {
       if (res?.data?.success) {
         setComment("");
         fetchComments(taskData._id);
+        // Refresh activity feed
+        fetchHistory(taskData._id);
       }
     } catch (err) {}
     setPostingComment(false);
@@ -494,6 +506,8 @@ const TaskDetails = () => {
         setAssignee(user_state.user);
         fetchTaskDetails();
         message.success("Assigned to you");
+        // Refresh activity feed
+        fetchHistory(taskData._id);
       }
     } catch (err) {
       message.error("Failed to assign");
@@ -508,6 +522,8 @@ const TaskDetails = () => {
         setPriority(value);
         fetchTaskDetails();
         message.success("Priority updated");
+        // Refresh activity feed
+        fetchHistory(taskData._id);
       }
     } catch (err) {
       message.error("Failed to update priority");
@@ -530,6 +546,8 @@ const TaskDetails = () => {
         setAssignee(allEmployees.find(u => u._id === userId) || null);
         fetchTaskDetails();
         message.success("Assignee updated");
+        // Refresh activity feed
+        fetchHistory(taskData._id);
       }
     } catch (err) {
       message.error("Failed to assign");
@@ -544,6 +562,8 @@ const TaskDetails = () => {
         setAssignee(null);
         fetchTaskDetails();
         message.success("Unassigned");
+        // Refresh activity feed
+        fetchHistory(taskData._id);
       }
     } catch (err) {
       message.error("Failed to unassign");
@@ -557,6 +577,8 @@ const TaskDetails = () => {
       message.success('Due date updated');
       setEditingDueDate(false);
       fetchTaskDetails();
+      // Refresh activity feed
+      fetchHistory(taskData._id);
     } catch (err) {
       message.error('Failed to update due date');
     }
@@ -667,6 +689,38 @@ const TaskDetails = () => {
     // Implement hide logic or just stub for now
     message.info('Hide on card clicked (not implemented)');
   };
+
+  const handleReporterChange = async (userId) => {
+    setReporterLoading(true);
+    try {
+      const reporterValue = userId === 'unassigned' ? null : userId;
+      const res = await apiServices("PUT", "tasks", { _id: taskData._id, reporter: reporterValue }, user_state);
+      if (res?.data?.success) {
+        setReporter(allEmployees.find(u => u._id === userId) || null);
+        fetchTaskDetails();
+        message.success("Reporter updated");
+        fetchHistory(taskData._id);
+      }
+    } catch (err) {
+      message.error("Failed to update reporter");
+    }
+    setReporterLoading(false);
+  };
+
+  useEffect(() => {
+    // Always use the populated object from backend fetch
+    if (taskData?.assignee && typeof taskData.assignee === 'object') {
+      setAssignee(taskData.assignee);
+    } else if (taskData?.assignee && typeof taskData.assignee === 'string') {
+      const found = allEmployees.find(u => u._id === taskData.assignee);
+      setAssignee(found || null);
+    } else {
+      setAssignee(null);
+    }
+  }, [taskData, allEmployees]);
+
+  // In the return, show a spinner if initialLoading is true
+  if (initialLoading) return <Spin size="large" style={{margin: '100px auto', display: 'block'}} />;
 
   return (
     <div className="page-wrapper">
@@ -886,6 +940,47 @@ const TaskDetails = () => {
                         </span>
                       )}
                     </div>
+                  </div>
+                  {/* Reporter */}
+                  <div style={{marginBottom: 20}}>
+                    <div style={{fontWeight: 500}}>Reporter <span><i className="fa fa-thumb-tack" style={{fontSize: 13}} /></span></div>
+                    <Select
+                      showSearch
+                      style={{width: '100%', marginTop: 4}}
+                      placeholder="Reporter"
+                      value={reporter?._id || 'unassigned'}
+                      onChange={val => handleReporterChange(val)}
+                      loading={reporterLoading}
+                      optionFilterProp="children"
+                      filterOption={(input, option) =>
+                        option.props.children[1]?.props?.children?.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                      }
+                      dropdownMatchSelectWidth={false}
+                      open={reporterSelectOpen}
+                      onDropdownVisibleChange={setReporterSelectOpen}
+                      dropdownRender={menu => (
+                        <div>
+                          {menu}
+                        </div>
+                      )}
+                    >
+                      <Select.Option key="unassigned" value="unassigned">
+                        <span style={{display: 'flex', alignItems: 'center', gap: 8}}>
+                          <UserOutlined style={{fontSize: 18}} />
+                          <span>Unassigned</span>
+                        </span>
+                      </Select.Option>
+                      {allEmployees.map(user => (
+                        <Select.Option key={user._id} value={user._id}>
+                          <span style={{display: 'flex', alignItems: 'center', gap: 8}}>
+                            <Avatar size={24} src={user.imageUrl} style={{background: '#2d3e50', fontWeight: 600}}>
+                              {user.fullName?.split(' ').map(n => n[0]).join('').toUpperCase()}
+                            </Avatar>
+                            <span>{user.fullName}</span>
+                          </span>
+                        </Select.Option>
+                      ))}
+                    </Select>
                   </div>
                 <div className="d-flex align-items-center justify-content-between flex-wrap">
                   <h5>

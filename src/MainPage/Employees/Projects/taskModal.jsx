@@ -86,6 +86,9 @@ function TaskModal({
   const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = React.useRef();
   const API_URL = process.env.REACT_APP_API_BASE_URL || '';
+  const [reporter, setReporter] = useState(taskData?.reporter || null);
+  const [reporterLoading, setReporterLoading] = useState(false);
+  const [reporterSelectOpen, setReporterSelectOpen] = useState(false);
 
   // Add this function to fetch the latest task data
   const fetchTaskDetails = async (id) => {
@@ -99,6 +102,7 @@ function TaskModal({
         setPriority(updatedTask.priority || null);
         setDueDateValue(updatedTask.dueDate ? moment(updatedTask.dueDate) : null);
         setLabelsValue(updatedTask.labels || []);
+        setReporter(updatedTask.reporter || null);
       }
     } catch (err) {
       // Optionally handle error
@@ -129,6 +133,7 @@ function TaskModal({
     setPriority(taskData?.priority || null);
     setDueDateValue(taskData?.dueDate ? moment(taskData.dueDate) : null);
     setLabelsValue(taskData?.labels || []);
+    setReporter(taskData?.reporter || null);
   }, [taskData]);
 
   const fetchComments = async (taskId) => {
@@ -171,6 +176,8 @@ function TaskModal({
       if (res?.data?.success) {
         setComment("");
         fetchComments(taskData._id);
+        // Refresh activity feed
+        fetchHistory(taskData._id);
       } else {
         message.error("Failed to post comment");
       }
@@ -351,6 +358,8 @@ function TaskModal({
       if (res?.data?.success) {
         setAssignee(user_state.user);
         message.success("Assigned to you");
+        // Refresh activity feed
+        fetchHistory(taskData._id);
       }
     } catch (err) {
       message.error("Failed to assign");
@@ -364,6 +373,8 @@ function TaskModal({
       if (res?.data?.success) {
         setPriority(value);
         message.success("Priority updated");
+        // Refresh activity feed
+        fetchHistory(taskData._id);
       }
     } catch (err) {
       message.error("Failed to update priority");
@@ -377,6 +388,8 @@ function TaskModal({
       if (res?.data?.success) {
         setAssignee(allEmployees.find(u => u._id === userId) || null);
         message.success("Assignee updated");
+        // Refresh activity feed
+        fetchHistory(taskData._id);
       }
     } catch (err) {
       message.error("Failed to assign");
@@ -390,6 +403,8 @@ function TaskModal({
       if (res?.data?.success) {
         setAssignee(null);
         message.success("Unassigned");
+        // Refresh activity feed
+        fetchHistory(taskData._id);
       }
     } catch (err) {
       message.error("Failed to unassign");
@@ -401,6 +416,8 @@ function TaskModal({
       await apiServices('PUT', 'tasks', { _id: taskData._id, dueDate: dueDateValue ? dueDateValue.toISOString() : null }, user_state);
       message.success('Due date updated');
       setEditingDueDate(false);
+      // Refresh activity feed
+      fetchHistory(taskData._id);
     } catch (err) {
       message.error('Failed to update due date');
     }
@@ -504,6 +521,22 @@ function TaskModal({
       message.error('Failed to delete attachment');
     }
     setAttachmentsLoading(false);
+  };
+
+  const handleReporterChange = async (userId) => {
+    setReporterLoading(true);
+    try {
+      const reporterValue = userId === 'unassigned' ? null : userId;
+      const res = await apiServices("PUT", "tasks", { _id: taskData._id, reporter: reporterValue }, user_state);
+      if (res?.data?.success) {
+        setReporter(allEmployees.find(u => u._id === userId) || null);
+        message.success("Reporter updated");
+        fetchHistory(taskData._id);
+      }
+    } catch (err) {
+      message.error("Failed to update reporter");
+    }
+    setReporterLoading(false);
   };
 
   return (
@@ -1122,6 +1155,47 @@ function TaskModal({
                                   </span>
                                 )}
                               </div>
+                            </div>
+                            {/* Reporter */}
+                            <div style={{marginBottom: 20}}>
+                              <div style={{fontWeight: 500}}>Reporter <span><i className="fa fa-thumb-tack" style={{fontSize: 13}} /></span></div>
+                              <Select
+                                showSearch
+                                style={{width: '100%', marginTop: 4}}
+                                placeholder="Reporter"
+                                value={reporter?._id || 'unassigned'}
+                                onChange={val => handleReporterChange(val)}
+                                loading={reporterLoading}
+                                optionFilterProp="children"
+                                filterOption={(input, option) =>
+                                  option.props.children[1]?.props?.children?.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                }
+                                dropdownMatchSelectWidth={false}
+                                open={reporterSelectOpen}
+                                onDropdownVisibleChange={setReporterSelectOpen}
+                                dropdownRender={menu => (
+                                  <div>
+                                    {menu}
+                                  </div>
+                                )}
+                              >
+                                <Select.Option key="unassigned" value="unassigned">
+                                  <span style={{display: 'flex', alignItems: 'center', gap: 8}}>
+                                    <UserOutlined style={{fontSize: 18}} />
+                                    <span>Unassigned</span>
+                                  </span>
+                                </Select.Option>
+                                {allEmployees.map(user => (
+                                  <Select.Option key={user._id} value={user._id}>
+                                    <span style={{display: 'flex', alignItems: 'center', gap: 8}}>
+                                      <Avatar size={24} src={user.imageUrl} style={{background: '#2d3e50', fontWeight: 600}}>
+                                        {user.fullName?.split(' ').map(n => n[0]).join('').toUpperCase()}
+                                      </Avatar>
+                                      <span>{user.fullName}</span>
+                                    </span>
+                                  </Select.Option>
+                                ))}
+                              </Select>
                             </div>
                           </div>
                           <div>
