@@ -99,9 +99,8 @@ const CandidateDetails = () => {
   const [offerStatus, setOfferStatus] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [isReasonModalVisible, setIsReasonModalVisible] = useState(false);
-  const [filter, setfilter] = useState("history");
-  const [file, setFile] = useState(null);
-  const [dragging, setDragging] = useState(false);
+  const [filter, setfilter] = useState("present");
+  const [historyId, setHistoryId] = useState(null);
   const [resume, setResume] = useState([]);
   const [openModalIndex, setOpenModalIndex] = useState(null);
   const [editingIndex, setEditingIndex] = useState(null);
@@ -113,35 +112,22 @@ const CandidateDetails = () => {
   const dropdownRef = useRef(null); // Add this line for dropdown ref
 
   useEffect(() => {
-    console.log("isOfferModalVisible changed:", isOfferModalVisible);
-  }, [isOfferModalVisible]);
-
-  useEffect(() => {
-    fetchCandidateDetails();
+    if (filter === "history" && historyId) {
+      fetchCandidateDetails(historyId);
+      fetchCandidateInterviews(historyId);
+      fetchCandidateTasks(historyId);
+      fetchOfferDetails(historyId);
+    } else if (filter === "present") {
+      fetchCandidateDetails(id);
+      fetchCandidateInterviews(id);
+      fetchCandidateTasks(id);
+      fetchOfferDetails(id);
+    }
     // Initialize Bootstrap dropdowns
     if (typeof window !== "undefined") {
       require("bootstrap/js/dist/dropdown");
     }
-  }, [id]);
-
-  useEffect(() => {
-    if (id && activeTab === "interview") {
-      console.log("Hello");
-      fetchCandidateInterviews();
-    }
-  }, [id, activeTab]);
-
-  useEffect(() => {
-    if (id && activeTab === "tasks") {
-      fetchCandidateTasks();
-    }
-  }, [id, activeTab]);
-
-  useEffect(() => {
-    if (id) {
-      fetchOfferDetails();
-    }
-  }, [id]);
+  }, [id,filter]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -170,7 +156,7 @@ const CandidateDetails = () => {
     };
   }, [openModalIndex]);
 
-  const fetchCandidateDetails = async () => {
+  const fetchCandidateDetails = async (id) => {
     const token =
       localStorage.getItem("token") || authState?.access_token?.accessToken;
 
@@ -195,6 +181,7 @@ const CandidateDetails = () => {
         console.log("Candidate Details Response:", response.data.data);
         console.log("Resume URL:", response.data.data.resume);
         setCandidate(response.data.data);
+        setHistoryId(response.data.data.history);
         setResume(response?.data?.data?.resume);
         setOfferStatus(response.data.data.status);
       } else {
@@ -392,7 +379,6 @@ const CandidateDetails = () => {
 
       if (response?.data?.status) {
         message.success("Status updated successfully");
-        // await fetchCandidateDetails();
         setCandidate(response.data.data);
         setOfferStatus(response.data.data.status);
       } else {
@@ -446,7 +432,6 @@ const CandidateDetails = () => {
       if (response?.data?.status) {
         message.success("Status updated successfully");
         setIsReasonModalVisible(false);
-        // await fetchCandidateDetails();
         setCandidate(response.data.data);
         setOfferStatus(response.data.data.status);
       } else {
@@ -461,7 +446,7 @@ const CandidateDetails = () => {
     }
   };
 
-  const fetchOfferDetails = async () => {
+  const fetchOfferDetails = async (id) => {
     try {
       const token =
         authState?.access_token?.accessToken || localStorage.getItem("token");
@@ -549,10 +534,10 @@ const CandidateDetails = () => {
         await handleStatusChange("OFFERED");
 
         // Fetch updated offer details
-        await fetchOfferDetails();
+        await fetchOfferDetails(id);
 
         // Fetch updated candidate details to refresh the page
-        await fetchCandidateDetails();
+        await fetchCandidateDetails(id);
 
         // Redirect to offered candidates list
         navigate("/recruitment/candidates/offered");
@@ -593,7 +578,7 @@ const CandidateDetails = () => {
 
       if (response?.data?.success) {
         message.success("Offer status updated successfully");
-        await fetchOfferDetails();
+        await fetchOfferDetails(id);
       } else {
         throw new Error(
           response?.data?.message || "Failed to update offer status"
@@ -722,7 +707,7 @@ const CandidateDetails = () => {
 
       if (response?.data?.success) {
         message.success("Interview scheduled successfully");
-        fetchCandidateInterviews();
+        fetchCandidateInterviews(id);
         handleInterviewModalCancel(); // Close the modal on success
       } else {
         throw new Error(
@@ -773,7 +758,7 @@ const CandidateDetails = () => {
 
       if (response?.data?.success) {
         message.success("Interview status updated successfully");
-        fetchCandidateInterviews(); // Refresh the interviews list
+        fetchCandidateInterviews(id); // Refresh the interviews list
       } else {
         message.error(
           response?.data?.message || "Failed to update interview status"
@@ -789,7 +774,7 @@ const CandidateDetails = () => {
     }
   };
 
-  const fetchCandidateInterviews = async () => {
+  const fetchCandidateInterviews = async (id) => {
     setLoadingInterviews(true);
     try {
       const token =
@@ -905,7 +890,7 @@ const CandidateDetails = () => {
         setIsTaskModalVisible(false);
         // Optionally fetch updated task list
         if (activeTab === "tasks") {
-          fetchCandidateTasks();
+          fetchCandidateTasks(id);
         }
       } else {
         throw new Error(response?.data?.message || "Failed to create task");
@@ -925,7 +910,7 @@ const CandidateDetails = () => {
     }
   };
 
-  const fetchCandidateTasks = async () => {
+  const fetchCandidateTasks = async (id) => {
     setLoadingTasks(true);
     try {
       const token =
@@ -959,406 +944,6 @@ const CandidateDetails = () => {
     }
   };
 
-  // const renderInterviewContent = () => {
-  //   if (loadingInterviews) {
-  //     return (
-  //       <div style={{ textAlign: "center", padding: "20px" }}>
-  //         <Spin />
-  //       </div>
-  //     );
-  //   }
-
-  //   return (
-  //     <div className="interview-content">
-  //       <div style={{ position: "absolute", top: "16px", right: "24px" }}>
-  //         <Button
-  //           type="text"
-  //           style={{ color: "#ff9b44" }}
-  //           icon={<CalendarOutlined />}
-  //           onClick={handleCreateInterview}
-  //         >
-  //           Create Interview
-  //         </Button>
-  //       </div>
-
-  //       <div style={{ marginTop: "60px" }}>
-  //         {interviews.length > 0 ? (
-  //           <div>
-  //             {interviews.map((interview) => (
-  //               <Card
-  //                 key={interview._id}
-  //                 style={{ marginBottom: "16px" }}
-  //                 className="interview-card"
-  //               >
-  //                 <Row gutter={16}>
-  //                   <Col span={16}>
-  //                     <h4 className="interview-title">
-  //                       {interview.interviewTitle || "Untitled Interview"}
-  //                     </h4>
-  //                     <Space
-  //                       direction="vertical"
-  //                       size="small"
-  //                       style={{ width: "100%" }}
-  //                     >
-  //                       <div>
-  //                         <Text type="secondary">Interview With:</Text>{" "}
-  //                         <Text strong>
-  //                           {interview.interviewerId?.fullName}
-  //                         </Text>
-  //                       </div>
-  //                       <div>
-  //                         <Text type="secondary">Date & Time:</Text>{" "}
-  //                         <Text>
-  //                           {moment(interview.interviewDate).format(
-  //                             "DD MMM YYYY"
-  //                           )}{" "}
-  //                           at {interview.interviewTime}
-  //                         </Text>
-  //                       </div>
-  //                       <div>
-  //                         <Text type="secondary">Type:</Text>{" "}
-  //                         <Text>
-  //                           {interview.interviewType === "ONLINE"
-  //                             ? "Online"
-  //                             : "In Person"}
-  //                         </Text>
-  //                       </div>
-  //                       {interview.interviewType === "ONLINE" &&
-  //                         interview.interviewLink && (
-  //                           <div>
-  //                             <Text type="secondary">Meeting Link:</Text>{" "}
-  //                             <Button
-  //                               type="link"
-  //                               href={interview.interviewLink}
-  //                               target="_blank"
-  //                               style={{ padding: 0 }}
-  //                             >
-  //                               Join Meeting
-  //                             </Button>
-  //                           </div>
-  //                         )}
-  //                     </Space>
-  //                   </Col>
-  //                   <Col span={8} style={{ textAlign: "right" }}>
-  //                     <Select
-  //                       value={interview.status}
-  //                       style={{ width: 120 }}
-  //                       onChange={(value) =>
-  //                         updateInterviewStatus(interview._id, value)
-  //                       }
-  //                       className={`status-${interview.status?.toLowerCase()}`}
-  //                     >
-  //                       <Select.Option value="scheduled">
-  //                         Scheduled
-  //                       </Select.Option>
-  //                       <Select.Option value="completed">
-  //                         Completed
-  //                       </Select.Option>
-  //                       <Select.Option value="cancelled">
-  //                         Cancelled
-  //                       </Select.Option>
-  //                       <Select.Option value="rescheduled">
-  //                         Rescheduled
-  //                       </Select.Option>
-  //                     </Select>
-  //                   </Col>
-  //                 </Row>
-
-  //                 {/* Additional Interviewers */}
-  //                 {interview.assignedTo?.length > 0 && (
-  //                   <div style={{ marginTop: "16px" }}>
-  //                     <Text type="secondary">Additional Interviewers:</Text>
-  //                     <div style={{ marginTop: "8px" }}>
-  //                       <Avatar.Group maxCount={3}>
-  //                         {interview.assignedTo?.map((interviewer) => (
-  //                           <Tooltip
-  //                             key={interviewer._id}
-  //                             title={interviewer.fullName}
-  //                           >
-  //                             <Avatar src={interviewer.imageUrl}>
-  //                               {interviewer.fullName
-  //                                 ?.split(" ")
-  //                                 .map((n) => n[0])
-  //                                 .join("")}
-  //                             </Avatar>
-  //                           </Tooltip>
-  //                         ))}
-  //                       </Avatar.Group>
-  //                     </div>
-  //                   </div>
-  //                 )}
-
-  //                 {/* Latest Feedback Section */}
-  //                 {interview.latestFeedback && (
-  //                   <div
-  //                     style={{
-  //                       marginTop: "16px",
-  //                       borderTop: "1px solid #f0f0f0",
-  //                       paddingTop: "16px",
-  //                     }}
-  //                   >
-  //                     <div className="d-flex justify-content-between align-items-center mb-3">
-  //                       <Text strong>Latest Feedback</Text>
-  //                       <Tag
-  //                         color={
-  //                           interview.latestFeedback.recommendation ===
-  //                           "Strong Yes"
-  //                             ? "green"
-  //                             : interview.latestFeedback.recommendation ===
-  //                               "Yes"
-  //                             ? "cyan"
-  //                             : interview.latestFeedback.recommendation === "No"
-  //                             ? "orange"
-  //                             : "red"
-  //                         }
-  //                       >
-  //                         {interview.latestFeedback.recommendation}
-  //                       </Tag>
-  //                     </div>
-  //                     <Card size="small">
-  //                       <div
-  //                         style={{
-  //                           display: "flex",
-  //                           alignItems: "center",
-  //                           marginBottom: "12px",
-  //                         }}
-  //                       >
-  //                         <Avatar
-  //                           src={interview.latestFeedback.submittedBy?.imageUrl}
-  //                           style={{ marginRight: "8px" }}
-  //                         >
-  //                           {interview.latestFeedback.submittedBy?.fullName
-  //                             ?.split(" ")
-  //                             .map((n) => n[0])
-  //                             .join("")}
-  //                         </Avatar>
-  //                         <div>
-  //                           <Text strong>
-  //                             {interview.latestFeedback.submittedBy?.fullName}
-  //                           </Text>
-  //                           <br />
-  //                           <Text type="secondary">
-  //                             {moment(
-  //                               interview.latestFeedback.createdAt
-  //                             ).format("DD MMM YYYY")}
-  //                           </Text>
-  //                         </div>
-  //                       </div>
-  //                       <Row gutter={[16, 16]}>
-  //                         <Col span={8}>
-  //                           <Text type="secondary">
-  //                             Technical Skills (Programming):
-  //                           </Text>
-  //                           <div>
-  //                             <Rate
-  //                               disabled
-  //                               defaultValue={
-  //                                 interview.latestFeedback.ratings
-  //                                   .technicalSkills1
-  //                               }
-  //                             />
-  //                           </div>
-  //                         </Col>
-  //                         <Col span={8}>
-  //                           <Text type="secondary">
-  //                             Technical Skills (System Design):
-  //                           </Text>
-  //                           <div>
-  //                             <Rate
-  //                               disabled
-  //                               defaultValue={
-  //                                 interview.latestFeedback.ratings
-  //                                   .technicalSkills2
-  //                               }
-  //                             />
-  //                           </div>
-  //                         </Col>
-  //                         <Col span={8}>
-  //                           <Text type="secondary">
-  //                             Technical Skills (Problem Solving):
-  //                           </Text>
-  //                           <div>
-  //                             <Rate
-  //                               disabled
-  //                               defaultValue={
-  //                                 interview.latestFeedback.ratings
-  //                                   .technicalSkills3
-  //                               }
-  //                             />
-  //                           </div>
-  //                         </Col>
-  //                       </Row>
-  //                       <Row gutter={[16, 16]} style={{ marginTop: "8px" }}>
-  //                         <Col span={8}>
-  //                           <Text type="secondary">Behavior:</Text>
-  //                           <div>
-  //                             <Rate
-  //                               disabled
-  //                               defaultValue={
-  //                                 interview.latestFeedback.ratings.behavior
-  //                               }
-  //                             />
-  //                           </div>
-  //                         </Col>
-  //                         <Col span={8}>
-  //                           <Text type="secondary">Soft Skills:</Text>
-  //                           <div>
-  //                             <Rate
-  //                               disabled
-  //                               defaultValue={
-  //                                 interview.latestFeedback.ratings.softSkills
-  //                               }
-  //                             />
-  //                           </div>
-  //                         </Col>
-  //                       </Row>
-  //                     </Card>
-  //                   </div>
-  //                 )}
-
-  //                 {/* All Feedback Section */}
-  //                 {interview.feedback && interview.feedback.length > 1 && (
-  //                   <div style={{ marginTop: "16px" }}>
-  //                     <Collapse ghost>
-  //                       <Collapse.Panel
-  //                         header={`View All Feedback (${interview.feedback.length})`}
-  //                         key="1"
-  //                       >
-  //                         {interview.feedback
-  //                           .slice(1)
-  //                           .map((feedback, index) => (
-  //                             <Card
-  //                               key={index}
-  //                               size="small"
-  //                               style={{ marginTop: "8px" }}
-  //                             >
-  //                               <div
-  //                                 style={{
-  //                                   display: "flex",
-  //                                   alignItems: "center",
-  //                                   marginBottom: "8px",
-  //                                 }}
-  //                               >
-  //                                 <Avatar
-  //                                   src={feedback.submittedBy?.imageUrl}
-  //                                   style={{ marginRight: "8px" }}
-  //                                 >
-  //                                   {feedback.submittedBy?.fullName
-  //                                     ?.split(" ")
-  //                                     .map((n) => n[0])
-  //                                     .join("")}
-  //                                 </Avatar>
-  //                                 <div>
-  //                                   <Text strong>
-  //                                     {feedback.submittedBy?.fullName}
-  //                                   </Text>
-  //                                   <br />
-  //                                   <Text type="secondary">
-  //                                     {moment(feedback.createdAt).format(
-  //                                       "DD MMM YYYY"
-  //                                     )}
-  //                                   </Text>
-  //                                 </div>
-  //                                 <Tag
-  //                                   color={
-  //                                     feedback.recommendation === "Strong Yes"
-  //                                       ? "green"
-  //                                       : feedback.recommendation === "Yes"
-  //                                       ? "cyan"
-  //                                       : feedback.recommendation === "No"
-  //                                       ? "orange"
-  //                                       : "red"
-  //                                   }
-  //                                   style={{ marginLeft: "auto" }}
-  //                                 >
-  //                                   {feedback.recommendation}
-  //                                 </Tag>
-  //                               </div>
-  //                               <Row gutter={[16, 16]}>
-  //                                 <Col span={8}>
-  //                                   <Text type="secondary">
-  //                                     Technical Skills (Programming):
-  //                                   </Text>
-  //                                   <div>
-  //                                     <Rate
-  //                                       disabled
-  //                                       defaultValue={
-  //                                         feedback.ratings.technicalSkills1
-  //                                       }
-  //                                     />
-  //                                   </div>
-  //                                 </Col>
-  //                                 <Col span={8}>
-  //                                   <Text type="secondary">
-  //                                     Technical Skills (System Design):
-  //                                   </Text>
-  //                                   <div>
-  //                                     <Rate
-  //                                       disabled
-  //                                       defaultValue={
-  //                                         feedback.ratings.technicalSkills2
-  //                                       }
-  //                                     />
-  //                                   </div>
-  //                                 </Col>
-  //                                 <Col span={8}>
-  //                                   <Text type="secondary">
-  //                                     Technical Skills (Problem Solving):
-  //                                   </Text>
-  //                                   <div>
-  //                                     <Rate
-  //                                       disabled
-  //                                       defaultValue={
-  //                                         feedback.ratings.technicalSkills3
-  //                                       }
-  //                                     />
-  //                                   </div>
-  //                                 </Col>
-  //                               </Row>
-  //                               <Row
-  //                                 gutter={[16, 16]}
-  //                                 style={{ marginTop: "8px" }}
-  //                               >
-  //                                 <Col span={8}>
-  //                                   <Text type="secondary">Behavior:</Text>
-  //                                   <div>
-  //                                     <Rate
-  //                                       disabled
-  //                                       defaultValue={feedback.ratings.behavior}
-  //                                     />
-  //                                   </div>
-  //                                 </Col>
-  //                                 <Col span={8}>
-  //                                   <Text type="secondary">Soft Skills:</Text>
-  //                                   <div>
-  //                                     <Rate
-  //                                       disabled
-  //                                       defaultValue={
-  //                                         feedback.ratings.softSkills
-  //                                       }
-  //                                     />
-  //                                   </div>
-  //                                 </Col>
-  //                               </Row>
-  //                             </Card>
-  //                           ))}
-  //                       </Collapse.Panel>
-  //                     </Collapse>
-  //                   </div>
-  //                 )}
-  //               </Card>
-  //             ))}
-  //           </div>
-  //         ) : (
-  //           <div style={{ textAlign: "center" }}>
-  //             <Text type="secondary">No interviews scheduled</Text>
-  //           </div>
-  //         )}
-  //       </div>
-  //     </div>
-  //   );
-  // };
-
   const updateTaskStatus = async (taskId, newStatus) => {
     try {
       const token =
@@ -1387,7 +972,7 @@ const CandidateDetails = () => {
 
       if (response?.data?.success) {
         message.success("Task status updated successfully");
-        fetchCandidateTasks(); // Refresh the tasks list
+        fetchCandidateTasks(id); // Refresh the tasks list
       } else {
         console.error("Failed to update task status:", response?.data);
         message.error(
@@ -1413,16 +998,8 @@ const CandidateDetails = () => {
     }
   };
 
-  const today = moment().format("DD MM");
-  const filteredInterviews = interviews.filter((interview) => {
-    const interviewDate = moment(interview.interviewDate).format("DD MMM");
-    return filter === "present"
-      ? interviewDate === today
-      : interviewDate < today;
-  });
   const handleFilterChange = (changer) => {
     setfilter(changer);
-    console.log(filteredInterviews);
   };
 
   const handleActiveTab = (key) => {
@@ -1460,211 +1037,6 @@ const CandidateDetails = () => {
       setLoading(false);
     }
   };
-
-  // const renderTaskContent = () => {
-  //   if (loadingTasks) {
-  //     return (
-  //       <div style={{ textAlign: "center", padding: "20px" }}>
-  //         <Spin />
-  //       </div>
-  //     );
-  //   }
-
-  //   return (
-  //     <div className="task-content">
-  //       <div style={{ position: "absolute", top: "16px", right: "24px" }}>
-  //         <Button
-  //           type="text"
-  //           style={{ color: "#ff9b44" }}
-  //           icon={<PlusOutlined />}
-  //           onClick={handleCreateTask}
-  //         >
-  //           Create Task
-  //         </Button>
-  //       </div>
-
-  //       <div style={{ marginTop: "60px" }}>
-  //         {tasks.length > 0 ? (
-  //           tasks.map((task) => (
-  //             <Card
-  //               key={task._id}
-  //               style={{ marginBottom: "16px" }}
-  //               className="task-card"
-  //               onClick={() => navigate(`/recruitment/tasks/${task._id}`)}
-  //             >
-  //               <Row gutter={16}>
-  //                 <Col span={16}>
-  //                   <h4 className="task-title">{task.taskName}</h4>
-  //                   <Space direction="vertical" size="small" style={{ width: "100%" }}>
-  //                     <div>
-  //                       <Text type="secondary">Task Reviewers:</Text>{" "}
-  //                       <Avatar.Group maxCount={3}>
-  //                         {task.taskReviewers?.map((reviewer) => (
-  //                           <Tooltip key={reviewer._id} title={reviewer.fullName}>
-  //                             <Avatar src={reviewer.imageUrl}>
-  //                               {reviewer.fullName?.split(" ").map((n) => n[0]).join("")}
-  //                             </Avatar>
-  //                           </Tooltip>
-  //                         ))}
-  //                       </Avatar.Group>
-  //                     </div>
-  //                     <div>
-  //                       <Text type="secondary">Due Date:</Text>{" "}
-  //                       <Text>{moment(task.lastDateOfSubmission).format("DD MMM YYYY")}</Text>
-  //                     </div>
-  //                     <div>
-  //                       <Text type="secondary">Duration:</Text>{" "}
-  //                       <Text>{task.taskDuration} days</Text>
-  //                     </div>
-  //                     {task.feedback && task.feedback.length > 0 && (
-  //                       <div>
-  //                         <Text type="secondary">Latest Feedback:</Text>{" "}
-  //                         <Rate disabled defaultValue={task.feedback[0].rating} style={{ fontSize: 12 }} />
-  //                         <Tag color={task.feedback[0].decision === "PASS" ? "success" : "error"} style={{ marginLeft: 8 }}>
-  //                           {task.feedback[0].decision}
-  //                         </Tag>
-  //                       </div>
-  //                     )}
-  //                   </Space>
-  //                 </Col>
-  //                 <Col span={8} style={{ textAlign: "right" }}>
-  //                   <Select
-  //                     value={task.status}
-  //                     style={{ width: 120 }}
-  //                     onChange={(value) => {
-  //                       event.stopPropagation();
-  //                       updateTaskStatus(task._id, value);
-  //                     }}
-  //                     onClick={(event) => event.stopPropagation()}
-  //                     className={`status-${task.status?.toLowerCase()}`}
-  //                   >
-  //                     <Select.Option value="PENDING">Pending</Select.Option>
-  //                     <Select.Option value="SUBMITTED">Submitted</Select.Option>
-  //                     <Select.Option value="COMPLETED">Completed</Select.Option>
-  //                     <Select.Option value="CANCELLED">Cancelled</Select.Option>
-  //                   </Select>
-  //                 </Col>
-  //               </Row>
-  //               {task.feedback && task.feedback.length > 0 && (
-  //                 <div style={{ marginTop: "16px", borderTop: "1px solid #f0f0f0", paddingTop: "16px" }}>
-  //                   <Card size="small">
-  //                     <div style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
-  //                       <Avatar src={task.feedback[0].reviewerId?.imageUrl} style={{ marginRight: "8px" }}>
-  //                         {task.feedback[0].reviewerId?.fullName?.split(" ").map((n) => n[0]).join("")}
-  //                       </Avatar>
-  //                       <div>
-  //                         <Text strong>{task.feedback[0].reviewerId?.fullName}</Text>
-  //                         <br />
-  //                         <Text type="secondary">{moment(task.feedback[0].evaluationDate).format("DD MMM YYYY")}</Text>
-  //                       </div>
-  //                     </div>
-  //                     <div style={{ marginTop: "8px" }}>
-  //                       <Text>{task.feedback[0].comment}</Text>
-  //                     </div>
-  //                   </Card>
-  //                 </div>
-  //               )}
-  //               {task.feedback && task.feedback.length > 1 && (
-  //                 <div style={{ marginTop: "8px" }}>
-  //                   <Collapse ghost>
-  //                     <Collapse.Panel header={`View All Feedback (${task.feedback.length})`} key="1">
-  //                       {task.feedback.slice(1).map((feedback, index) => (
-  //                         <Card key={index} size="small" style={{ marginTop: "8px" }}>
-  //                           <div style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
-  //                             <Avatar src={feedback.reviewerId?.imageUrl} style={{ marginRight: "8px" }}>
-  //                               {feedback.reviewerId?.fullName?.split(" ").map((n) => n[0]).join("")}
-  //                             </Avatar>
-  //                             <div>
-  //                               <Text strong>{feedback.reviewerId?.fullName}</Text>
-  //                               <br />
-  //                               <Text type="secondary">{moment(feedback.evaluationDate).format("DD MMM YYYY")}</Text>
-  //                             </div>
-  //                             <Tag color={feedback.decision === "PASS" ? "success" : "error"} style={{ marginLeft: "auto" }}>
-  //                               {feedback.decision}
-  //                             </Tag>
-  //                           </div>
-  //                           <div>
-  //                             <Rate disabled defaultValue={feedback.rating} style={{ fontSize: 12 }} />
-  //                             <Text style={{ marginLeft: 8 }}>({feedback.rating}/5)</Text>
-  //                           </div>
-  //                           <div style={{ marginTop: "8px" }}>
-  //                             <Text>{feedback.comment}</Text>
-  //                           </div>
-  //                         </Card>
-  //                       ))}
-  //                     </Collapse.Panel>
-  //                   </Collapse>
-  //                 </div>
-  //               )}
-  //             </Card>
-  //           ))
-  //         ) : (
-  //           <Empty
-  //             description="No tasks found"
-  //             image={Empty.PRESENTED_IMAGE_SIMPLE}
-  //           />
-  //         )}
-  //       </div>
-  //     </div>
-  //   );
-  // };
-
-  // const renderFilesContent = () => {
-  //   if (!candidate?.resume) {
-  //     return (
-  //       <div
-  //         className="no-files-message"
-  //         style={{ textAlign: "center", padding: "40px 0" }}
-  //       >
-  //         <FilePdfOutlined style={{ fontSize: "48px", color: "#d9d9d9" }} />
-  //         <Typography.Text
-  //           type="secondary"
-  //           style={{ display: "block", marginTop: "16px" }}
-  //         >
-  //           No resume uploaded
-  //         </Typography.Text>
-  //       </div>
-  //     );
-  //   }
-
-  //   return (
-  //     <div className="files-content">
-  //       <Card className="file-card">
-  //         <div className="file-item">
-  //           <div className="file-info">
-  //             {getFileIcon(candidate.resume)}
-  //             <div className="file-details">
-  //               <Typography.Text strong style={{ fontSize: "16px" }}>
-  //                 {getFileName(candidate.resume)}
-  //               </Typography.Text>
-  //               <Typography.Text type="secondary" style={{ fontSize: "12px" }}>
-  //                 Uploaded on:{" "}
-  //                 {moment(candidate.updatedAt).format("DD MMM YYYY")}
-  //               </Typography.Text>
-  //             </div>
-  //           </div>
-  //           <div className="file-actions">
-  //             <Button
-  //               type="text"
-  //               icon={<EyeOutlined />}
-  //               onClick={handlePreviewResume}
-  //               style={{ marginRight: "8px" }}
-  //             >
-  //               Preview
-  //             </Button>
-  //             <Button
-  //               type="primary"
-  //               icon={<DownloadOutlined />}
-  //               onClick={handleDownloadResume}
-  //             >
-  //               Download
-  //             </Button>
-  //           </div>
-  //         </div>
-  //       </Card>
-  //     </div>
-  //   );
-  // };
 
   if (loading) {
     return (
@@ -1870,7 +1242,6 @@ const CandidateDetails = () => {
             </ul>
           </div>
         </div>
-        <div></div>
       </div>
 
       <div className="initial-section">
@@ -1900,6 +1271,7 @@ const CandidateDetails = () => {
             </Tag>
           </div>
         </div>
+        {filter === "present" && (
         <div className=" initial-section-sec-child">
           {/* <Space> */}
           <Select
@@ -2068,6 +1440,7 @@ const CandidateDetails = () => {
           </div>
           {/* </Space> */}
         </div>
+        )}
       </div>
 
       <div className="row">
@@ -2414,7 +1787,7 @@ const CandidateDetails = () => {
                         marginLeft: "15px",
                       }}
                     >
-                      PKR {candidate.currentSalary?.toLocaleString()}
+                      {candidate.currentSalary?.toLocaleString()}
                     </Text>
                   </div>
                 </div>
@@ -2443,7 +1816,7 @@ const CandidateDetails = () => {
                         marginLeft: "15px",
                       }}
                     >
-                      PKR {candidate.expectedSalary?.toLocaleString()}
+                      {candidate.expectedSalary?.toLocaleString()}
                     </Text>
                   </div>
                 </div>
@@ -2561,7 +1934,7 @@ const CandidateDetails = () => {
             </div>
           </div>
           {/* Files Tab Upload File Section */}
-          {activeTab === "files" && (
+          {activeTab === "files" && filter === "present" && (
             <div className="col-md-12 custom-col-two mb-4">
               <div
                 style={{
@@ -2698,7 +2071,7 @@ const CandidateDetails = () => {
                   ? "Tasks"
                   : "null"}
               </h3>
-              {activeTab === "interview" && (
+              {activeTab === "interview" && filter === "present" && (
                 <div>
                   <div>
                     <button
@@ -2725,7 +2098,7 @@ const CandidateDetails = () => {
                   </div>
                 </div>
               )}
-              {activeTab === "tasks" && (
+              {activeTab === "tasks" && filter === "present" && (
                 <div>
                   <div>
                     <button
@@ -3034,7 +2407,7 @@ const CandidateDetails = () => {
             {/* tasks module  */}
             {activeTab === "tasks" && (
               <div>
-                {tasks.length > 0 && (
+                {tasks.length > 0 ? (
                   <div>
                     {tasks.map((task) => (
                       <div
@@ -3277,6 +2650,27 @@ const CandidateDetails = () => {
                         )}
                       </div>
                     ))}
+                  </div>
+                ) : (
+                  <div
+                    style={{
+                      height: "400px",
+                      width: "100%",
+                      border: "2px solid #cfd4d8",
+                      borderRadius: "4px",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      marginTop: "20px",
+                    }}
+                  >
+                    <div>
+                      <img
+                        src={NoInterview}
+                        style={{ display: "flex", justifySelf: "center" }}
+                      ></img>
+                      <p>No Task Created</p>
+                    </div>
                   </div>
                 )}
               </div>

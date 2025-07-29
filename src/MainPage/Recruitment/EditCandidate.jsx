@@ -148,27 +148,31 @@ const EditCandidate = () => {
 
       let resumeData = null;
 
-      if (
-        Array.isArray(uploadResult) &&
-        uploadResult.length > 0 &&
-        uploadResult[0].imageUrl
-      ) {
-        resumeData = [
-          {
-            url: uploadResult[0].imageUrl,
-            fileName: uploadResult[0].fileName,
-            asset_id: uploadResult[0].asset_id,
-            public_id: uploadResult[0].public_id,
-            resource_type: uploadResult[0].resource_type,
-            uploadedAt: new Date().toISOString(),
-          },
-        ];
-        console.log("Resume uploaded successfully:", resumeData);
-      } else {
-        console.error("Invalid upload result:", uploadResult);
-        message.error("Failed to upload resume");
-        setSubmitting(false);
-        return;
+      if (uploadResult !== null) {
+        console.log("N O T  N U L L  R E S U M E");
+
+        if (
+          Array.isArray(uploadResult) &&
+          uploadResult.length > 0 &&
+          uploadResult[0].imageUrl
+        ) {
+          resumeData = [
+            {
+              url: uploadResult[0].imageUrl,
+              fileName: uploadResult[0].fileName,
+              asset_id: uploadResult[0].asset_id,
+              public_id: uploadResult[0].public_id,
+              resource_type: uploadResult[0].resource_type,
+              uploadedAt: new Date().toISOString(),
+            },
+          ];
+          console.log("Resume uploaded successfully:", resumeData);
+        } else {
+          console.error("Invalid upload result:", uploadResult);
+          message.error("Failed to upload resume");
+          setSubmitting(false);
+          return;
+        }
       }
       // Step 2: Create candidate with resume data
       console.log("Step 2: Creating candidate with resume data:", resumeData);
@@ -181,8 +185,14 @@ const EditCandidate = () => {
         appliedDate: values.appliedDate.format("YYYY-MM-DD"),
         status: values.status,
         experience: values.experience,
-        currentSalary: Number(values.currentSalary.replace(/,/g, "")),
-        expectedSalary: Number(values.expectedSalary.replace(/,/g, "")),
+        currentSalary:
+          typeof values.currentSalary === "string"
+            ? Number(values.currentSalary.replace(/,/g, ""))
+            : values.currentSalary,
+        expectedSalary:
+          typeof values.expectedSalary === "string"
+            ? Number(values.expectedSalary.replace(/,/g, ""))
+            : values.expectedSalary,
         noticePeriod: values.noticePeriod,
         source: values.source,
         resume: resumeData,
