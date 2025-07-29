@@ -40,26 +40,31 @@ const CreateCandidateModal = ({
     try {
       setSubmitting(true);
       let resumeData = null;
-      if (
-        Array.isArray(uploadResult) &&
-        uploadResult.length > 0 &&
-        uploadResult[0].imageUrl
-      ) {
-        resumeData = [
-          {
-            url: uploadResult[0].imageUrl,
-            fileName: uploadResult[0].fileName,
-            asset_id: uploadResult[0].asset_id,
-            public_id: uploadResult[0].public_id,
-            resource_type: uploadResult[0].resource_type,
-            uploadedAt: new Date().toISOString(),
-          },
-        ];
-      } else {
-        console.error("Invalid upload result:", uploadResult);
-        message.error("Failed to upload resume");
-        setSubmitting(false);
-        return;
+
+      if (uploadResult !== null) {
+        console.log("N O T  N U L L  R E S U M E");
+
+        if (
+          Array.isArray(uploadResult) &&
+          uploadResult.length > 0 &&
+          uploadResult[0].imageUrl
+        ) {
+          resumeData = [
+            {
+              url: uploadResult[0].imageUrl,
+              fileName: uploadResult[0].fileName,
+              asset_id: uploadResult[0].asset_id,
+              public_id: uploadResult[0].public_id,
+              resource_type: uploadResult[0].resource_type,
+              uploadedAt: new Date().toISOString(),
+            },
+          ];
+        } else {
+          console.error("Invalid upload result:", uploadResult);
+          message.error("Failed to upload resume");
+          setSubmitting(false);
+          return;
+        }
       }
       const formattedValues = {
         firstName: values.firstName,
