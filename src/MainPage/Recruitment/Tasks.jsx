@@ -16,6 +16,7 @@ import calander from '../../assets/iconsRecruitment/calander.svg';
 import { useTranslation } from "react-i18next";
 import leftPageIcon from '../../assets/iconsRecruitment/fi_chevrons-left.svg';
 import rightPageIcon from '../../assets/iconsRecruitment/fi_chevrons-right.svg';
+import { user_icon } from '../../Entryfile/imagepath';
 
 
 const Tasks = () => {
@@ -35,6 +36,7 @@ const Tasks = () => {
   const [paginationDetail, setPaginationDetail] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
+  const [openTeamDropdownId, setOpenTeamDropdownId] = useState(null);
   const {t} = useTranslation();
 
   useEffect(() => {
@@ -112,6 +114,10 @@ const Tasks = () => {
   //     pageSize: newPagination.pageSize
   //   });
   // };
+  const handleTeamDropdownClick = (e, id) => {
+    e.stopPropagation();
+    setOpenTeamDropdownId(openTeamDropdownId === id ? null : id);
+  };
 
   const handleSearch = (values) => {
     setPagination({
@@ -289,13 +295,55 @@ const Tasks = () => {
         const Reviewers = record.taskReviewers;
         return(
           <div className='social-icons'>
-            {Reviewers.map((reviewer, index) => (
+            {Reviewers?.slice(0, 2).map((reviewer, index) => (
               <li key={index}>
               <Tooltip title={reviewer?.fullName}>
                 <Avatar style={{cursor: 'pointer'}} src={reviewer?.imageUrl || user_icon} />
               </Tooltip>
             </li>
             ))}
+            {Reviewers?.length > 2 && (
+              <li className="dropdown avatar-dropdown">
+                <Link
+                  className="all-users dropdown-toggle projectTeamMember"
+                  style={{
+                    display: "inline-flex",
+                    height: "33px",
+                    width: "33px",
+                  }}
+                  data-bs-toggle="dropdown"
+                  aria-expanded={openTeamDropdownId === record._id}
+                  onClick={(e) => handleTeamDropdownClick(e, record._id)}
+                >
+                  +{Reviewers?.length - 2}
+                </Link>
+                {/* Dropdown menu for additional team members */}
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className={`dropdown-menu dropdown-menu-right ${
+                    openTeamDropdownId === record._id ? "show" : ""
+                  }`}
+                >
+                  <div className="avatar-group">
+                    {Reviewers?.slice(2).map((reviewer, index) => (
+                      <a
+                        className="avatar avatar-xs projectTeamMember"
+                        key={index}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Tooltip title={reviewer?.fullName}>
+                          <Avatar
+                            src={reviewer?.imageUrl || user_icon}
+                            style={{ cursor: "pointer" }}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </Tooltip>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </li>
+            )}
           </div>
         )
       },
