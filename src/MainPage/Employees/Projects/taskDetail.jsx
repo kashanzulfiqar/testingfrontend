@@ -102,7 +102,6 @@ const TaskDetails = () => {
     };
   }, []);
 
-  // Modify status dropdown click handler
   const handleStatusDropdownClick = (e) => {
     e.stopPropagation();
     closeAllDropdowns();
