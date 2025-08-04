@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import RichTextEditor from "../../../components/RichTextEditor";
+import RichTextEditor from "../../../Components/RichTextEditor";
 import {
   Avatar,
   Input,
