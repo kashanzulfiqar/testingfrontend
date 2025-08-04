@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 
 import { Modal } from "@mui/material";
 import { useSelector } from "react-redux";
-import TaskContent from "./TaskContent";
+import TaskContent from "./taskContents";
 
 
 function TaskModal({

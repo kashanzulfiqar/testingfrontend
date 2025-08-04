@@ -1,7 +1,7 @@
 import { t } from "i18next";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import TaskContent from "./TaskContent";
+import TaskContent from "./taskContents";
 const TaskDetails = () => {
   return (
     <div className="page-wrapper">
