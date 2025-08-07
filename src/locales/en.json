@@ -952,6 +952,12 @@
     "getClientInvoicesError": "Error fetching client invoices"
   },
   "Tasks": {
+    "rewriteWithAI": "Rewrite with AI",
+    "failedToRewrite": "Failed to rewrite description",
+    "failedToSaveRewrite": "Failed to save rewritten description",
+    "descriptionRewritten": "Description rewritten successfully",
+    "pleaseenterdescription": "Please enter some description first",
+    "descriptionLength": "Description must be longer than 4 characters",
     "tasks": "Tasks",
     "dashboard": "Dashboard",
     "addtask": "Add Task",

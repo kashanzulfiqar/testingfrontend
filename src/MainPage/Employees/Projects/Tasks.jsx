@@ -495,8 +495,17 @@ const onFinishEdit = (values) => {
       title: t('finance.Invoices.description'),
       dataIndex: 'description',
       render: (text, record) => (
-        <label className='taskLongDesc'>{text}</label>
-          ),
+        <div 
+          className='taskLongDesc'
+          dangerouslySetInnerHTML={{ __html: text || '' }}
+          style={{
+            maxHeight: '100px',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            wordBreak: 'break-word'
+          }}
+        />
+      ),
     }, 
     {
       title: "Status",
