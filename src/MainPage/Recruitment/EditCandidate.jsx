@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import {
   Card,
@@ -27,7 +27,9 @@ const EditCandidate = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [uploadResult, setUploadResult] = useState(null);
+  const [uploadingResume, setUploadingResume] = useState(false); // Add uploadingResume state
   const authState = useSelector((state) => state.user.loginvalue);
+  const skillsSelectRef = useRef(null);
   const [fileList, setFileList] = useState([]);
 
   useEffect(() => {
@@ -60,7 +62,7 @@ const EditCandidate = () => {
         const candidate = response.data.data;
         const formattedCandidate = {
           ...candidate,
-          appliedFor: candidate.appliedFor?._id || candidate.appliedFor,
+          appliedFor: candidate.appliedFor?.title || candidate.appliedFor,
           appliedDate: moment(candidate.appliedDate),
         };
         form.setFieldsValue(formattedCandidate);
@@ -251,6 +253,32 @@ const EditCandidate = () => {
     }
   };
 
+  const handleSkillsFocus = () => {
+    // Use setTimeout to ensure the input is fully rendered
+    setTimeout(() => {
+      const searchInput = skillsSelectRef.current?.querySelector(
+        ".ant-select-selection-search-input"
+      );
+      if (searchInput) {
+        searchInput.setSelectionRange(0, 0);
+        searchInput.focus();
+      }
+    }, 0);
+  };
+
+  const handleSkillsClick = () => {
+    // Handle click events to ensure cursor positioning
+    setTimeout(() => {
+      const searchInput = skillsSelectRef.current?.querySelector(
+        ".ant-select-selection-search-input"
+      );
+      if (searchInput) {
+        searchInput.setSelectionRange(0, 0);
+        searchInput.focus();
+      }
+    }, 10);
+  };
+
   if (loading) {
     return (
       <div className="content container-fluid">
@@ -315,52 +343,57 @@ const EditCandidate = () => {
                   name="resume"
                   maxCount={1}
                   beforeUpload={async (file) => {
-                    // Validate file size (5MB)
-                    if (file.size > 5 * 1024 * 1024) {
-                      message.error("Resume file size should not exceed 5MB");
-                      return Upload.LIST_IGNORE;
-                    }
-
-                    // Validate file type
-                    const allowedTypes = ["application/pdf"];
-                    if (!allowedTypes.includes(file.type)) {
-                      message.error("Only PDF files are allowed");
-                      return Upload.LIST_IGNORE;
-                    }
-
-                    const result = await uploadFunction([file]);
-                    setUploadResult(result);
-                    if (result && result[0]) {
-                      console.log("::RESULTS::", result);
-                      const {
-                        candidateName,
-                        candidateEmail,
-                        candidateContact,
-                      } = result[0];
-
-                      // Split candidateName into first and last name (if possible)
-                      let firstName = "";
-                      let lastName = "";
-                      if (candidateName) {
-                        const nameParts = candidateName.split(" ");
-                        firstName = nameParts[0] || "";
-                        lastName = nameParts.slice(1).join(" ") || "";
+                    setUploadingResume(true); // Set to true at start
+                    try {
+                      // Validate file size (5MB)
+                      if (file.size > 5 * 1024 * 1024) {
+                        message.error("Resume file size should not exceed 5MB");
+                        return Upload.LIST_IGNORE;
                       }
-                      console.log(
-                        "::TS::",
-                        firstName,
-                        lastName,
-                        candidateEmail,
-                        candidateContact
-                      );
-                      form.setFieldsValue({
-                        firstName,
-                        lastName,
-                        email: candidateEmail || "",
-                        phoneNumber: candidateContact || "",
-                      });
+
+                      // Validate file type
+                      const allowedTypes = ["application/pdf"];
+                      if (!allowedTypes.includes(file.type)) {
+                        message.error("Only PDF files are allowed");
+                        return Upload.LIST_IGNORE;
+                      }
+
+                      const result = await uploadFunction([file]);
+                      setUploadResult(result);
+                      if (result && result[0]) {
+                        console.log("::RESULTS::", result);
+                        const {
+                          candidateName,
+                          candidateEmail,
+                          candidateContact,
+                        } = result[0];
+
+                        // Split candidateName into first and last name (if possible)
+                        let firstName = "";
+                        let lastName = "";
+                        if (candidateName) {
+                          const nameParts = candidateName.split(" ");
+                          firstName = nameParts[0] || "";
+                          lastName = nameParts.slice(1).join(" ") || "";
+                        }
+                        console.log(
+                          "::TS::",
+                          firstName,
+                          lastName,
+                          candidateEmail,
+                          candidateContact
+                        );
+                        form.setFieldsValue({
+                          firstName,
+                          lastName,
+                          email: candidateEmail || "",
+                          phoneNumber: candidateContact || "",
+                        });
+                      }
+                      return false;
+                    } finally {
+                      setUploadingResume(false); // Set to false at end
                     }
-                    return false;
                   }}
                   onRemove={() => {
                     setFileList([]);
@@ -371,7 +404,16 @@ const EditCandidate = () => {
                     setFileList(newFileList.slice(-1));
                   }}
                 >
-                  <Button className="resume-upload-btn">Upload Resume</Button>
+                  <Button
+                    className="resume-upload-btn"
+                    disabled={uploadingResume}
+                  >
+                    {uploadingResume ? (
+                      <Spin size="small" style={{ marginRight: 8 }} />
+                    ) : (
+                      "Upload Resume"
+                    )}
+                  </Button>
                 </Upload>
               </div>
 
@@ -470,12 +512,35 @@ const EditCandidate = () => {
                         message: "Phone number cannot exceed 15 digits",
                       },
                       {
-                        pattern: /^[0-9+\-\s()]+$/,
-                        message: "Please enter a valid phone number",
+                        pattern: /^[0-9-]+$/,
+                        message:
+                          "Please enter a valid phone number e.g: 0321-234-5678 / 03212345678",
                       },
                     ]}
                   >
-                    <Input placeholder="Enter Number" />
+                    <Input
+                      placeholder="Enter Number"
+                      onKeyDown={(e) => {
+                        // Allow: backspace, delete, tab, escape, enter, and navigation keys
+                        if (
+                          [8, 9, 27, 13, 46, 37, 39].indexOf(e.keyCode) !==
+                            -1 ||
+                          // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+                          (e.keyCode === 65 && e.ctrlKey === true) ||
+                          (e.keyCode === 67 && e.ctrlKey === true) ||
+                          (e.keyCode === 86 && e.ctrlKey === true) ||
+                          (e.keyCode === 88 && e.ctrlKey === true)
+                        ) {
+                          return;
+                        }
+
+                        // Allow only numbers and specific characters
+                        const allowedChars = /[0-9-]/;
+                        if (!allowedChars.test(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
+                    />
                   </Form.Item>
                 </div>
               </div>
@@ -496,13 +561,13 @@ const EditCandidate = () => {
                     <Select
                       className="customized"
                       placeholder="Select Job Position"
-                      showSearch
+                      // showSearch
                       optionFilterProp="children"
-                      filterOption={(input, option) =>
-                        option.children
-                          .toLowerCase()
-                          .indexOf(input.toLowerCase()) >= 0
-                      }
+                      // filterOption={(input, option) =>
+                      //   option.children
+                      //     .toLowerCase()
+                      //     .indexOf(input.toLowerCase()) >= 0
+                      // }
                       notFoundContent={
                         activeJobs.length === 0
                           ? "No active jobs available"
@@ -609,13 +674,28 @@ const EditCandidate = () => {
                       },
                     ]}
                   >
-                    <InputNumber
-                      style={{ width: "100%" }}
-                      placeholder="Enter years of experience"
-                      step={0.5}
-                      min={0}
-                      max={50}
-                      precision={1}
+                    <Input
+                      placeholder="Enter Experience"
+                      onKeyDown={(e) => {
+                        // Allow: backspace, delete, tab, escape, enter, and navigation keys
+                        if (
+                          [8, 9, 27, 13, 46, 37, 39].indexOf(e.keyCode) !==
+                            -1 ||
+                          // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+                          (e.keyCode === 65 && e.ctrlKey === true) ||
+                          (e.keyCode === 67 && e.ctrlKey === true) ||
+                          (e.keyCode === 86 && e.ctrlKey === true) ||
+                          (e.keyCode === 88 && e.ctrlKey === true)
+                        ) {
+                          return;
+                        }
+
+                        // Allow only numbers and specific characters
+                        const allowedChars = /[0-9+]/;
+                        if (!allowedChars.test(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
                     />
                   </Form.Item>
                 </div>
@@ -662,14 +742,28 @@ const EditCandidate = () => {
                       },
                     ]}
                   >
-                    <InputNumber
-                      style={{ width: "100%" }}
-                      placeholder="e.g. 20000"
-                      min={0}
-                      formatter={(value) =>
-                        `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                      }
-                      parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                    <Input
+                      placeholder="Enter Current Salary"
+                      onKeyDown={(e) => {
+                        // Allow: backspace, delete, tab, escape, enter, and navigation keys
+                        if (
+                          [8, 9, 27, 13, 46, 37, 39].indexOf(e.keyCode) !==
+                            -1 ||
+                          // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+                          (e.keyCode === 65 && e.ctrlKey === true) ||
+                          (e.keyCode === 67 && e.ctrlKey === true) ||
+                          (e.keyCode === 86 && e.ctrlKey === true) ||
+                          (e.keyCode === 88 && e.ctrlKey === true)
+                        ) {
+                          return;
+                        }
+
+                        // Allow only numbers and specific characters
+                        const allowedChars = /[0-9+]/;
+                        if (!allowedChars.test(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
                     />
                   </Form.Item>
                 </div>
@@ -726,14 +820,28 @@ const EditCandidate = () => {
                       },
                     ]}
                   >
-                    <InputNumber
-                      style={{ width: "100%" }}
-                      placeholder="e.g. 30000"
-                      min={0}
-                      formatter={(value) =>
-                        `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                      }
-                      parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                    <Input
+                      placeholder="Enter Expected Salary"
+                      onKeyDown={(e) => {
+                        // Allow: backspace, delete, tab, escape, enter, and navigation keys
+                        if (
+                          [8, 9, 27, 13, 46, 37, 39].indexOf(e.keyCode) !==
+                            -1 ||
+                          // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+                          (e.keyCode === 65 && e.ctrlKey === true) ||
+                          (e.keyCode === 67 && e.ctrlKey === true) ||
+                          (e.keyCode === 86 && e.ctrlKey === true) ||
+                          (e.keyCode === 88 && e.ctrlKey === true)
+                        ) {
+                          return;
+                        }
+
+                        // Allow only numbers and specific characters
+                        const allowedChars = /[0-9+]/;
+                        if (!allowedChars.test(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
                     />
                   </Form.Item>
                 </div>
@@ -785,6 +893,33 @@ const EditCandidate = () => {
                       <Select.Option value="REFERRAL">Referral</Select.Option>
                       <Select.Option value="OTHER">Other</Select.Option>
                     </Select>
+                  </Form.Item>
+                </div>
+              </div>
+
+              <div className="row">
+                <div className="col-md-6">
+                  <Form.Item
+                    name="skillSet"
+                    label={"Skill Set"}
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please enter atleast one skill",
+                      },
+                    ]}
+                  >
+                    <div ref={skillsSelectRef} onClick={handleSkillsClick}>
+                      <Select
+                        mode="tags"
+                        className="custom-select customselect-height"
+                        placeholder="Enter Your Skills"
+                        getPopupContainer={() =>
+                          document.getElementById("area22")
+                        }
+                        onFocus={handleSkillsFocus}
+                      />
+                    </div>
                   </Form.Item>
                 </div>
               </div>

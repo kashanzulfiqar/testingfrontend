@@ -75,19 +75,25 @@ const ScreenedCandidates = () => {
 
     try {
       setLoading(true);
-      const queryParams = {
-        status: "SCREENING",
-        page: currentPage,
-        limit: pageSize,
-        ...(filters.fullName && { fullName: filters.fullName }),
-        ...(filters.email && { email: filters.email }),
-        ...(filters.appliedFor && { appliedFor: filters.appliedFor }),
-        includeInterviews: true,
-        includeTasks: true,
-      };
+      const queryParams = new URLSearchParams();
+
+      queryParams.append("page", currentPage);
+      queryParams.append("limit", pageSize);
+      queryParams.append("includeInterviews", true);
+      queryParams.append("includeTasks", true);
+
+      if (filters.fullName) queryParams.append("fullName", filters.fullName);
+      if (filters.email) queryParams.append("email", filters.email);
+      if (filters.appliedFor)
+        queryParams.append("appliedFor", filters.appliedFor);
+
+      // 👇 Append each status separately
+      ["SCREENING", "SHORTLISTED"].forEach((status) => {
+        queryParams.append("status", status);
+      });
       const response = await apiServices(
         "GET",
-        `candidate/list?${new URLSearchParams(queryParams).toString()}`,
+        `candidate/list?${(queryParams).toString()}`,
         null,
         {
           access_token: {
@@ -909,7 +915,6 @@ const ScreenedCandidates = () => {
 
       {/* Add some global styles */}
       <style jsx>{`
-
         .customized .ant-select-selector {
           height: 21px !important;
           display: flex;

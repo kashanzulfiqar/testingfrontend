@@ -5,15 +5,51 @@ import moment from 'moment';
 import onCloseIcon from '../../assets/iconsRecruitment/x.svg';
 import { CloseOutlined } from '@ant-design/icons';
 
-const CreateInterviewModal = ({ isVisible, onCancel, candidate, authState, interview }) => {
+const CreateInterviewModal = ({ isVisible, onCancel, onSubmit, candidate, authState, editingInterview}) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [employees, setEmployees] = useState([]);
   const [sendEmail, setSendEmail] = useState(true);
+  const [interviewDate, setInterviewDate] = useState(null);
+  const [selectedInterviewers, setSelectedInterviewers] = useState([]);
 
   useEffect(() => {
     if (isVisible) {
       fetchEmployees();
+      if (editingInterview) {
+        console.log("E D I T I N G I N T E R V I E W", editingInterview);
+        
+        // Prefill form with existing interview data
+        const interviewDate = moment(editingInterview.interviewDate);
+        const interviewTime = moment(editingInterview.interviewTime, "HH:mm");
+        
+        form.setFieldsValue({
+          candidateName: editingInterview.candidateName || candidate?.fullName,
+          candidateEmail: editingInterview.candidateEmail || candidate?.email,
+          interviewType: editingInterview.interviewType,
+          assignTo: editingInterview.assignedTo?.map(emp => emp._id) || [editingInterview.interviewerId?._id],
+          interviewTitle: editingInterview.interviewTitle,
+          interviewDate: interviewDate,
+          interviewTime: interviewTime,
+          sendEmail: editingInterview.sendEmail !== undefined ? editingInterview.sendEmail : true,
+          interviewNotes: editingInterview.interviewNotes,
+          meetingLink: editingInterview.interviewLink || ""
+        });
+        
+        setInterviewDate(interviewDate);
+        setSelectedInterviewers(editingInterview.assignedTo?.map(emp => emp._id) || [editingInterview.interviewerId?._id]);
+      } else {
+        // Reset form for new interview
+        form.resetFields();
+        setSelectedInterviewers([]);
+        setInterviewDate(null);
+      }
+    }
+  }, [isVisible, editingInterview]);
+
+  useEffect(() => {
+    if (!isVisible) {
+      setSelectedInterviewers([]);
     }
   }, [isVisible]);
 
@@ -50,67 +86,39 @@ const CreateInterviewModal = ({ isVisible, onCancel, candidate, authState, inter
     form.resetFields();
   }; 
 
-  const handleSubmit = async (values) => {
+  const handleFormSubmit = async (values) => {
     try {
       setLoading(true);
-
-      // Format date and time for backend
-      const formattedDate = moment(values.interviewDate).format('YYYY-MM-DD');
-      const formattedTime = moment(values.interviewTime).format('HH:mm');
-
-      // Prepare interview data
-      const interviewData = {
-        candidateId: candidate._id,
-        candidateName: values?.candidateName,
-        // interviewerId: values?.assignedTo,
-        interviewTitle: values?.interviewTitle,
-        interviewType: values?.interviewType,
-        assignTo: values.assignTo,
-        interviewDate: formattedDate,
-        interviewTime: formattedTime,
-        meetingLink: values.meetingLink || '',
-        shouldSendEmail: sendEmail // Flag for backend to handle email sending
-      };
-
-      console.log('interview' , interviewData);
-      // Create interview
-      const response = await apiServices(
-        'POST',
-        'interview/create',
-        interviewData,
-        {
-          access_token: { accessToken: authState?.access_token?.accessToken },
-          headers: { Authorization: `Bearer ${authState?.access_token?.accessToken}` }
-        }
-      );
-
-      if (response?.data?.success) {
-        message.success(
-          sendEmail 
-            ? 'Interview scheduled and email notification sent'
-            : 'Interview scheduled successfully'
-        );
-        form.resetFields();
-        onCancel();
-      }
+      
+      // Call the parent's onSubmit function (handleInterviewSubmit)
+      await onSubmit(values);
+      
+      // If we reach here, the submission was successful
+      form.resetFields();
+      onCancel();
     } catch (error) {
-      console.error('Error:', error);
-      if (error.response?.status === 401) {
-        message.error('Session expired. Please login again.');
-      } else if (error.response?.data?.message) {
-        message.error(error.response.data.message);
-      } else {
-        message.error('Failed to schedule interview');
-      }
+      // Error handling is done in the parent component (handleInterviewSubmit)
+      console.error('Error in modal form submission:', error);
+      // Don't close modal on error - let user see the error message and try again
     } finally {
       setLoading(false);
     }
   };
 
+  const getDisabledHours = () => {
+    if (!interviewDate) return [];
+    const today = moment();
+    if (interviewDate.isSame(today, 'day')) {
+      // Disable all hours up to and including the current hour
+      const currentHour = today.hour();
+      return Array.from({ length: currentHour + 1 }, (_, i) => i);
+    }
+    return [];
+  };
 
   return (
     <Modal
-      title="Add New Interview"
+      title={editingInterview ? "Reschedule Interview" : "Add New Interview"}
       visible={isVisible}
       onCancel={onCancel}
       footer={null}
@@ -122,10 +130,8 @@ const CreateInterviewModal = ({ isVisible, onCancel, candidate, authState, inter
       <Form
         form={form}
         layout="vertical"
-        onFinish={handleSubmit}
+        onFinish={handleFormSubmit}
         initialValues={{
-          interviewDate: moment(),
-          interviewTime: moment(),
           sendEmail: true,
           candidateName: `${candidate?.firstName} ${candidate?.lastName}`,
           candidateEmail: candidate.email,
@@ -177,14 +183,25 @@ const CreateInterviewModal = ({ isVisible, onCancel, candidate, authState, inter
         >
           <Select
             className='customselect-height'
-            mode= 'multiple'
+            mode='multiple'
             placeholder="Select interviewer"
             showSearch
             optionFilterProp="children"
             getPopupContainer={() => document.getElementById('area')}
+            value={selectedInterviewers}
+            onChange={(value) => {
+              if (value.length <= 5) {
+                setSelectedInterviewers(value);
+                form.setFieldsValue({ assignTo: value });
+              }
+            }}
           >
             {employees.map((emp) => (
-              <Select.Option key={emp._id} value={emp._id}>
+              <Select.Option
+                key={emp._id}
+                value={emp._id}
+                disabled={selectedInterviewers.length >= 5 && !selectedInterviewers.includes(emp._id)}
+              >
                 {emp.fullName}
               </Select.Option>
             ))}
@@ -221,6 +238,7 @@ const CreateInterviewModal = ({ isVisible, onCancel, candidate, authState, inter
               style={{ width: '100%' }}
               disabledDate={(current) => current && current < moment().startOf('day')}
               className='custom-datepicker'
+              onChange={(date) => setInterviewDate(date)}
               />
             </Form.Item>
           </div>
@@ -236,8 +254,9 @@ const CreateInterviewModal = ({ isVisible, onCancel, candidate, authState, inter
               <TimePicker
                 style={{ width: '100%' }}
                 format="HH:mm"
-                minuteStep={15}
+                minuteStep={5}
                 className='custom-timepicker'
+                disabledHours={getDisabledHours}
               />
             </Form.Item>
           </div>

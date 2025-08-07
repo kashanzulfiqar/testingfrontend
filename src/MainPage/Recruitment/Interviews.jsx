@@ -240,21 +240,45 @@ const [pagination, setPagination] = useState({
       title: 'Interviewers',
       key: 'interviewers',
       render:(_,record)=>{
-        const MainInterviewer = record.interviewerId?.imageUrl;
-        const OptionalInterviewer = record?.assignedTo;
-        console.log("record of interviwers",record);
+        const MainInterviewer = record.interviewerId;
+        const OptionalInterviewer = record?.assignedTo || [];
+        const allInterviewers = [MainInterviewer, ...OptionalInterviewer].filter(Boolean);
+        console.log("record of interviewers",record);
         return(
-          <div className='social-icons'>
-            <Tooltip title={record?.interviewerId?.fullName}>
-                <Avatar style={{cursor: 'pointer'}} src={MainInterviewer || user_icon} />
-              </Tooltip>
-            {OptionalInterviewer.map((interviewer, index) => (
-              <li key={index}>
-              <Tooltip title={interviewer?.fullName}>
-                <Avatar style={{cursor: 'pointer'}} src={interviewer?.imageUrl || user_icon} />
-              </Tooltip>
-            </li>
-            ))}
+          <div className="project-members" style={{margin: '4px auto'}}>
+            <ul className="team-members" style={{minWidth: 'max-content'}}>
+              {allInterviewers?.slice(0, 3).map((interviewer, index) => (
+                <li key={index}>
+                  <Tooltip title={interviewer?.fullName}>
+                    <Avatar style={{cursor: 'pointer'}} src={interviewer?.imageUrl || user_icon} />
+                  </Tooltip>
+                </li>
+              ))}
+              {allInterviewers?.length > 3 && (
+                <li className="dropdown avatar-dropdown">
+                  <Link
+                    className="all-users dropdown-toggle projectTeamMember"
+                    style={{display:'inline-flex', height: '33px', width: '33px', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f0f0f0', borderRadius: '50%', textDecoration: 'none', color: '#333', fontSize: '12px', fontWeight: 'bold'}}
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    +{allInterviewers?.length - 3}
+                  </Link>
+                  {/* Dropdown menu for additional interviewers */}
+                  <div className="dropdown-menu dropdown-menu-right">
+                    <div className="avatar-group">
+                      {allInterviewers?.slice(3).map((interviewer, index) => (
+                        <li key={index}>
+                        <Tooltip title={interviewer?.fullName}>
+                          <Avatar style={{cursor: 'pointer'}} src={interviewer?.imageUrl || user_icon} />
+                        </Tooltip>
+                      </li>
+                      ))}
+                    </div>
+                  </div>
+                </li>
+              )}
+            </ul>
           </div>
         )
       },
