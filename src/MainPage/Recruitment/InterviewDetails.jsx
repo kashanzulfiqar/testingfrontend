@@ -1,10 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
-import { Card, Avatar, Tag, Button, Input, Form, message, Spin, Row, Col, Tooltip, Dropdown, Select, Menu } from 'antd';
-import { 
-  ArrowLeftOutlined, 
-  VideoCameraOutlined, 
-  StarFilled, 
+import React, { useState, useEffect } from "react";
+import { Link, useParams, useNavigate } from "react-router-dom";
+import {
+  Card,
+  Avatar,
+  Tag,
+  Button,
+  Input,
+  Form,
+  message,
+  Spin,
+  Row,
+  Col,
+  Tooltip,
+  Dropdown,
+  Select,
+  Menu,
+} from "antd";
+import {
+  ArrowLeftOutlined,
+  VideoCameraOutlined,
+  StarFilled,
   FileTextOutlined,
   EyeOutlined,
   DownloadOutlined,
@@ -14,104 +29,100 @@ import {
   PaperClipOutlined,
   SmileOutlined,
   PlusOutlined,
-  CopyOutlined
-} from '@ant-design/icons';
-import { useSelector } from 'react-redux';
-import { apiServices } from '../../Services/apiServices';
-import moment from 'moment';
-import InterviewFeedback from './InterviewFeedback';
-import InterviewFeedbackDisplay from './InterviewFeedbackDisplay';
-import backBtn from '../../assets/iconsRecruitment/arrow-left.svg';
-import starIcon from '../../assets/iconsRecruitment/star.svg';
-import camera from '../../assets/iconsRecruitment/camera.svg';
-import interviewIcon from '../../assets/iconsRecruitment/interview.svg';
-import colored from '../../assets/iconsRecruitment/Colored.svg';
-import description from '../../assets/iconsRecruitment/description.svg';
-import list from '../../assets/iconsRecruitment/vertical.svg';
-import previewIcon from '../../assets/iconsRecruitment/previewIcon.svg';
-import downloadIcon from '../../assets/iconsRecruitment/downloadIcon.svg';
-
-
-
-
+  CopyOutlined,
+} from "@ant-design/icons";
+import { useSelector } from "react-redux";
+import { apiServices } from "../../Services/apiServices";
+import moment from "moment";
+import InterviewFeedback from "./InterviewFeedback";
+import InterviewFeedbackDisplay from "./InterviewFeedbackDisplay";
+import backBtn from "../../assets/iconsRecruitment/arrow-left.svg";
+import starIcon from "../../assets/iconsRecruitment/star.svg";
+import camera from "../../assets/iconsRecruitment/camera.svg";
+import interviewIcon from "../../assets/iconsRecruitment/interview.svg";
+import colored from "../../assets/iconsRecruitment/Colored.svg";
+import description from "../../assets/iconsRecruitment/description.svg";
+import list from "../../assets/iconsRecruitment/vertical.svg";
+import previewIcon from "../../assets/iconsRecruitment/previewIcon.svg";
+import downloadIcon from "../../assets/iconsRecruitment/downloadIcon.svg";
+import { user_icon } from "../../Entryfile/imagepath";
 
 const { TextArea } = Input;
 
-const InterviewDetails = ({visible , onCancel , onSubmit}) => {
+const InterviewDetails = ({ visible, onCancel, onSubmit }) => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [interview, setInterview] = useState(null);
-  const [comment, setComment] = useState('');
+  const [comment, setComment] = useState("");
   const authState = useSelector((state) => state.user.loginvalue);
   const loggedInUser = useSelector((state) => state.user.loginvalue?.user);
   const [feedbackForm] = Form.useForm();
-  const [isFeedbackModalVisible , setIsFeedbackModalVisible] = useState(false);
+  const [isFeedbackModalVisible, setIsFeedbackModalVisible] = useState(false);
 
   useEffect(() => {
     fetchInterviewDetails();
   }, [id]);
 
   const fetchInterviewDetails = async () => {
-    const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
-    
+    const token =
+      localStorage.getItem("token") || authState?.access_token?.accessToken;
+
     if (!token) {
-      message.error('Please login again to continue');
-      navigate('/login');
+      message.error("Please login again to continue");
+      navigate("/login");
       return;
     }
 
     try {
       setLoading(true);
-      const response = await apiServices(
-        "GET",
-        `interview/${id}`,
-        null,
-        {
-          access_token: {
-            accessToken: token
-          }
-        }
-      );
+      const response = await apiServices("GET", `interview/${id}`, null, {
+        access_token: {
+          accessToken: token,
+        },
+      });
 
       if (response?.data?.success) {
-        console.log('Interview details:', response.data.data);
+        console.log("Interview details:", response.data.data);
         setInterview(response.data.data);
       } else {
-        message.error(response?.data?.message || 'Failed to fetch interview details');
+        message.error(
+          response?.data?.message || "Failed to fetch interview details"
+        );
       }
     } catch (error) {
-      console.error('Error fetching interview details:', error);
-      message.error('Error fetching interview details');
+      console.error("Error fetching interview details:", error);
+      message.error("Error fetching interview details");
     } finally {
       setLoading(false);
     }
   };
 
-
   const handleFeedbackSubmit = async (values) => {
-    const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
-    
+    const token =
+      localStorage.getItem("token") || authState?.access_token?.accessToken;
+
     try {
       // First submit the feedback
+      console.log("values in interview details", values);
       const response = await apiServices(
         "POST",
         `interview/${id}/feedback`,
         {
           description: values.description,
           ratings: {
-            technicalSkills1: values.technicalSkills1,
-            behavior: values.behavior,
-            softSkills: values.softSkills,
-            technicalSkills2: values.technicalSkills2,
-            technicalSkills3: values.technicalSkills3
+            technicalRating: values.ratings.technicalRating,
+            behaviorRating: values.ratings.behaviorRating,
+            softSkillRating: values.ratings.softSkillRating,
+            leadershipRating: values.ratings.leadershipRating,
+            teamworkRating: values.ratings.teamworkRating,
           },
-          recommendation: values.recommendation
+          recommendation: values.recommendation,
         },
         {
           access_token: {
-            accessToken: token
-          }
+            accessToken: token,
+          },
         }
       );
 
@@ -124,32 +135,36 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
             { status: "completed" },
             {
               access_token: {
-                accessToken: token
-              }
+                accessToken: token,
+              },
             }
           );
 
           if (statusResponse?.data?.success) {
-            message.success('Feedback submitted and interview marked as completed');
+            message.success(
+              "Feedback submitted and interview marked as completed"
+            );
           } else {
-            console.error('Status update failed:', statusResponse?.data);
-            message.success('Feedback submitted successfully');
+            console.error("Status update failed:", statusResponse?.data);
+            message.success("Feedback submitted successfully");
           }
         } catch (statusError) {
-          console.error('Error updating status:', statusError);
-          message.success('Feedback submitted successfully');
+          console.error("Error updating status:", statusError);
+          message.success("Feedback submitted successfully");
         }
-        
+
         fetchInterviewDetails(); // Refresh interview details to show new feedback and updated status
       } else {
-        throw new Error(response?.data?.message || 'Failed to submit feedback');
+        throw new Error(response?.data?.message || "Failed to submit feedback");
       }
     } catch (error) {
-      console.error('Error submitting feedback:', error);
+      console.error("Error submitting feedback:", error);
       if (error.response?.data?.errors) {
-        message.error(error.response.data.errors[0].message || 'Error submitting feedback');
+        message.error(
+          error.response.data.errors[0].message || "Error submitting feedback"
+        );
       } else {
-        message.error(error.message || 'Error submitting feedback');
+        message.error(error.message || "Error submitting feedback");
       }
     }
   };
@@ -161,14 +176,13 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
 
     const totalRatings = interview.feedback.reduce((sum, feedback) => {
       const ratings = feedback.ratings;
-      const ratingSum = (
+      const ratingSum =
         ratings.technicalSkills1 +
         ratings.behavior +
         ratings.softSkills +
         ratings.technicalSkills2 +
-        ratings.technicalSkills3
-      );
-      return sum + (ratingSum / 5);
+        ratings.technicalSkills3;
+      return sum + ratingSum / 5;
     }, 0);
 
     return (totalRatings / interview.feedback.length).toFixed(1);
@@ -177,14 +191,35 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
   // Add new function to check if user has already submitted feedback
   const hasUserSubmittedFeedback = () => {
     if (!interview?.feedback || !loggedInUser?._id) return false;
-    return interview.feedback.some(feedback => 
-      feedback.submittedBy?._id === loggedInUser._id
+    return interview.feedback.some(
+      (feedback) => feedback.submittedBy?._id === loggedInUser._id
     );
+  };
+
+  // Add this function before the component or inside it
+  const extractMeetingDomain = (url) => {
+    if (!url) return "";
+
+    try {
+      const urlObj = new URL(url);
+      return urlObj.hostname;
+    } catch (error) {
+      // If URL parsing fails, try to extract domain manually
+      const domainMatch = url.match(/https?:\/\/([^\/]+)/);
+      return domainMatch ? domainMatch[1] : url;
+    }
   };
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
         <Spin size="large" />
       </div>
     );
@@ -192,23 +227,23 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
 
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
-      case 'scheduled':
-        return 'blue';
-      case 'completed':
-        return 'green';
-      case 'cancelled':
-        return 'red';
-      case 'ongoing':
-        return 'orange';
+      case "scheduled":
+        return "blue";
+      case "completed":
+        return "green";
+      case "cancelled":
+        return "red";
+      case "ongoing":
+        return "orange";
       default:
-        return 'default';
+        return "default";
     }
   };
 
-
   const handleStatusChange = async (newStatus) => {
-    const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
-    
+    const token =
+      localStorage.getItem("token") || authState?.access_token?.accessToken;
+
     try {
       const response = await apiServices(
         "PATCH",
@@ -216,45 +251,57 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
         { status: newStatus },
         {
           access_token: {
-            accessToken: token
-          }
+            accessToken: token,
+          },
         }
       );
 
       if (response?.data?.success) {
-        message.success('Interview status updated successfully');
+        message.success("Interview status updated successfully");
         fetchInterviewDetails(); // Refresh the interview details
       } else {
-        message.error(response?.data?.message || 'Failed to update interview status');
+        message.error(
+          response?.data?.message || "Failed to update interview status"
+        );
       }
     } catch (error) {
-      console.error('Error updating interview status:', error);
-      message.error('Failed to update interview status');
+      console.error("Error updating interview status:", error);
+      message.error("Failed to update interview status");
     }
   };
 
   const handlePreviewResume = () => {
-    if (!interview?.candidateId?.resume) {
+    if (
+      !interview?.candidateId?.resume ||
+      !Array.isArray(interview?.candidateId?.resume) ||
+      interview?.candidateId?.resume.length === 0
+    ) {
       message.error("No resume available for preview");
       return;
     }
 
-    window.open(interview?.candidateId?.resume, "_blank");
+    const firstResume = interview.candidateId.resume[0];
+    window.open(firstResume.url, "_blank");
   };
 
   const handleDownloadResume = async () => {
-    if (!interview?.candidateId?.resume) {
+    if (
+      !interview?.candidateId?.resume ||
+      !Array.isArray(interview?.candidateId?.resume) ||
+      interview?.candidateId?.resume.length === 0
+    ) {
       message.error("No resume available for download");
       return;
     }
 
     try {
-      const response = await fetch(interview?.candidateId?.resume);
+      const firstResume = interview.candidateId.resume[0];
+      const response = await fetch(firstResume.url);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = interview?.candidateId?.resume.split("/").pop();
+      link.download = firstResume.fileName || "resume.pdf";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -264,10 +311,12 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
     }
   };
 
-
-  const MainInterviewer = interview?.interviewerId?.imageUrl;
+  const MainInterviewer = interview.interviewerId;
   const OptionalInterviewer = interview?.assignedTo || [];
-
+  const allInterviewers = [MainInterviewer, ...OptionalInterviewer].filter(
+    Boolean
+  );
+  console.log("record of interviewers", allInterviewers);
   return (
     <div className="content container-fluid">
       {/* Header */}
@@ -276,9 +325,7 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
           <div className="col">
             <div className="d-flex align-items-center">
               <div>
-                <h3 className="page-title mb-0">
-                  Interviews
-                </h3>
+                <h3 className="page-title mb-0">Interviews</h3>
                 <ul className="breadcrumb">
                   <li className="breadcrumb-item">
                     <Link to="/recruitment/dashboard">Dashboard</Link>
@@ -290,142 +337,413 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
               </div>
             </div>
           </div>
-
         </div>
       </div>
-      <div style={{width:'100%',borderTop:'1px solid #CFD4D8', display:'flex', justifySelf:'center', height:'50px', alignItems:'flex-end', marginBottom:'15px'}}>
-        <div style={{display:'flex', marginBottom:'6px'}}>
+      <div
+        style={{
+          width: "100%",
+          borderTop: "1px solid #CFD4D8",
+          display: "flex",
+          justifySelf: "center",
+          height: "50px",
+          alignItems: "flex-end",
+          marginBottom: "15px",
+        }}
+      >
+        <div style={{ display: "flex", marginBottom: "6px" }}>
           <div>
-            <button onClick={()=>navigate("/recruitment/interviews")} style={{marginRight: '16px' ,padding:'0', border:'none', background:'transparent'}}>
+            <button
+              onClick={() => navigate("/recruitment/interviews")}
+              style={{
+                marginRight: "16px",
+                padding: "0",
+                border: "none",
+                background: "transparent",
+              }}
+            >
               <img src={backBtn}></img>
             </button>
           </div>
           <div>
             <ul className="breadcrumb">
-              <li className="breadcrumb-item"><Link to="/recruitment/interviews">Interviews</Link></li>
-              <li className="breadcrumb-item active">{interview?.candidateName.split(' ').map(word=>word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}</li>
+              <li className="breadcrumb-item">
+                <Link to="/recruitment/interviews">Interviews</Link>
+              </li>
+              <li className="breadcrumb-item active">
+                {interview?.candidateName
+                  .split(" ")
+                  .map(
+                    (word) =>
+                      word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                  )
+                  .join(" ")}
+              </li>
             </ul>
           </div>
         </div>
         <div></div>
       </div>
 
-      <div className='initials-div'>
-        <div style={{display:"flex", alignItems:'center'}}>
-          <div className='initials-details'>{interview?.candidateId?.firstName?.[0].toUpperCase()}{interview?.candidateId?.lastName?.[0].toUpperCase()}</div>
-          <div>
-            <h3 className="ms-3 mt-2 mb-0" style={{fontSize:'20px', fontweight:'500', color:"#000000"}}>{interview?.candidateName.split(' ').map(word=>word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}</h3>
-            <h5 className='ms-3' style={{fontSize:'14px', fontweight:'450', color:"#444444"}} >Hello</h5> 
-            <div style={{paddingLeft:"10px"}}>
-              <img src={starIcon}></img>
-              <span style={{ marginLeft:'10px'}}>{calculateAverageRating()}</span>
-            </div>   
+      <div className="initials-div">
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <div className="initials-details">
+            {interview?.candidateId?.firstName?.[0].toUpperCase()}
+            {interview?.candidateId?.lastName?.[0].toUpperCase()}
           </div>
-          <Tag color={getStatusColor(interview?.status)} className='tag-style'>{interview?.status}</Tag>
+          <div>
+            <h3
+              className="ms-3 mt-2 mb-0"
+              style={{ fontSize: "20px", fontweight: "500", color: "#000000" }}
+            >
+              {interview?.candidateName
+                .split(" ")
+                .map(
+                  (word) =>
+                    word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                )
+                .join(" ")}
+            </h3>
+            <h5
+              className="ms-3"
+              style={{ fontSize: "14px", fontweight: "450", color: "#444444" }}
+            >
+              {interview?.candidateId?.appliedFor}
+            </h5>
+            <div style={{ paddingLeft: "10px" }}>
+              <img src={starIcon}></img>
+              <span style={{ marginLeft: "10px" }}>
+                {calculateAverageRating()}
+              </span>
+            </div>
+          </div>
+          <Tag color={getStatusColor(interview?.status)} className="tag-style">
+            {interview?.status}
+          </Tag>
         </div>
         <div className="custom">
           <div
-            onClick={() => window.open(interview?.interviewLink, '_blank')}
-            className= 'select-btn'
+            onClick={() => window.open(interview?.interviewLink, "_blank")}
+            className="select-btn"
           >
-            <div className='joinImg'><img src={camera} style={{height:"20px", width:'20px'}}></img></div>
-            <h3 style={{fontSize:"16px" , fontWeight: '500', marginTop:"8px"}}>Join Interview</h3>
+            <div className="joinImg">
+              <img src={camera} style={{ height: "20px", width: "20px" }}></img>
+            </div>
+            <h3
+              style={{ fontSize: "16px", fontWeight: "500", marginTop: "8px" }}
+            >
+              Join Interview
+            </h3>
           </div>
         </div>
       </div>
 
-      <div className='AddFeedback-screen'>
-        <div className='AddFeedback-innerScreen'>
-          <div style={{display:'flex', gap:"10px" }}>
-            <div style={{height:"40px" ,width:"40px" ,borderRadius:'50%' ,background:"#f7f7f8", display:"flex" ,justifyContent:"center" ,alignItems:"center"}}><img style={{ maxWidth: "80%", maxHeight: "80%" }} src={interviewIcon}></img></div>
-            <div style={{marginTop:"7px" ,fontSize:"18px" ,fontWeight:"500" ,color:"#000000", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{interview?.interviewTitle}</div> 
-            <div style={{marginTop:"7px" }}><Tag color={getStatusColor(interview?.status)} style={{borderRadius:"60px"}}>{interview?.status}</Tag></div>
+      <div className="AddFeedback-screen">
+        <div className="AddFeedback-innerScreen">
+          <div style={{ display: "flex", gap: "10px" }}>
+            <div
+              style={{
+                height: "40px",
+                width: "40px",
+                borderRadius: "50%",
+                background: "#f7f7f8",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <img
+                style={{ maxWidth: "80%", maxHeight: "80%" }}
+                src={interviewIcon}
+              ></img>
+            </div>
+            <div
+              style={{
+                marginTop: "7px",
+                fontSize: "18px",
+                fontWeight: "500",
+                color: "#000000",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {interview?.interviewTitle}
+            </div>
+            <div style={{ marginTop: "7px" }}>
+              <Tag
+                color={getStatusColor(interview?.status)}
+                style={{ borderRadius: "60px" }}
+              >
+                {interview?.status}
+              </Tag>
+            </div>
           </div>
-          {interview?.status !== 'In-Review' && (
-            <div style={{paddingTop:'12px'}}>
+          {interview?.status !== "In-Review" && (
+            <div style={{ paddingTop: "12px" }}>
               <button
-                className='feedback-btn' 
-                onClick={() =>{setIsFeedbackModalVisible(true);}}
+                className="feedback-btn"
+                onClick={() => {
+                  setIsFeedbackModalVisible(true);
+                }}
                 // disabled={hasUserSubmittedFeedback()}
                 // title={hasUserSubmittedFeedback() ? "You have already submitted feedback for this interview" : ""}
               >
-                <img src={colored} style={{ height: "16px", width: "16px" }} ></img>
+                <img
+                  src={colored}
+                  style={{ height: "16px", width: "16px" }}
+                ></img>
                 Add Feedback
               </button>
             </div>
           )}
         </div>
-        <Row gutter={[24, 16]}  wrap={true} style={{ marginTop: "10px", display: 'flex', flexWrap: 'wrap' }}>
-          <Col xs={12} sm={12} md={8} lg={6}  style={{paddingTop:"10px"}}>
-            <p className="text-muted mb-1" style={{fontSize:"14px" ,fontWeight:"450",color:'#212529'}}>Interview Type</p>
-            <p  style={{fontSize:"16px" ,fontWeight:"500" ,color:'#3b4249'}}>{interview?.interviewType[0] + interview?.interviewType.slice(1).toLowerCase()}</p>
+        <Row
+          gutter={[24, 16]}
+          wrap={true}
+          style={{ marginTop: "10px", display: "flex", flexWrap: "wrap" }}
+        >
+          <Col xs={12} sm={12} md={8} lg={6} style={{ paddingTop: "10px" }}>
+            <p
+              className="text-muted mb-1"
+              style={{ fontSize: "14px", fontWeight: "450", color: "#212529" }}
+            >
+              Interview Type
+            </p>
+            <p
+              style={{ fontSize: "16px", fontWeight: "500", color: "#3b4249" }}
+            >
+              {interview?.interviewType[0] +
+                interview?.interviewType.slice(1).toLowerCase()}
+            </p>
           </Col>
-          <Col  xs={12} sm={12} md={8} lg={6} style={{paddingTop:"10px"}}>
-            <p className="text-muted mb-1" style={{fontSize:"14px" ,fontWeight:"450",color:'#212529'}}>Interview Date</p>
-            <p style={{fontSize:"16px" ,fontWeight:"500" ,color:'#3b4249'}}>{moment(interview?.interviewDate).format('DD-MMM-YYYY')}</p>
+          <Col xs={12} sm={12} md={8} lg={6} style={{ paddingTop: "10px" }}>
+            <p
+              className="text-muted mb-1"
+              style={{ fontSize: "14px", fontWeight: "450", color: "#212529" }}
+            >
+              Interview Date
+            </p>
+            <p
+              style={{ fontSize: "16px", fontWeight: "500", color: "#3b4249" }}
+            >
+              {moment(interview?.interviewDate).format("DD-MMM-YYYY")}
+            </p>
           </Col>
-          <Col  xs={12} sm={12} md={8} lg={6}  style={{paddingTop:"10px"}}>
-            <p className="text-muted mb-1"style={{fontSize:"14px" ,fontWeight:"450",color:'#212529'}}>Interview Time</p>
-            <p style={{fontSize:"16px" ,fontWeight:"500" ,color:'#3b4249'}}>{interview?.interviewTime}</p>
+          <Col xs={12} sm={12} md={8} lg={6} style={{ paddingTop: "10px" }}>
+            <p
+              className="text-muted mb-1"
+              style={{ fontSize: "14px", fontWeight: "450", color: "#212529" }}
+            >
+              Interview Time
+            </p>
+            <p
+              style={{ fontSize: "16px", fontWeight: "500", color: "#3b4249" }}
+            >
+              {interview?.interviewTime}
+            </p>
           </Col>
-          <Col  xs={12} sm={12} md={8} lg={6}  style={{paddingTop:"10px"}}>
-            <p className="text-muted mb-1"style={{fontSize:"14px" ,fontWeight:"450",color:'#212529'}}>Assign To</p>
-            <div>
-              <Link to="#" className="social-icon-one"><img src={MainInterviewer} style={{height:"30px" ,width:"30px" ,borderRadius:"50%", border:'2px solid white'}}></img></Link>
-              {OptionalInterviewer.map((interviewer, index) => (
-                <Link key={index} to="#" className="social-icon-two" style={{ marginLeft: "-10px" }}>
-                  <img src={interviewer?.imageUrl} style={{ height: "30px", width: "30px", borderRadius: "50%", border:'2px solid white'}}/>
-                </Link>
-              ))}
-          </div>
+          <Col xs={12} sm={12} md={8} lg={6} style={{ paddingTop: "10px" }}>
+            <p
+              className="text-muted mb-1"
+              style={{ fontSize: "14px", fontWeight: "450", color: "#212529" }}
+            >
+              Assign To
+            </p>
+            <div className="project-members" style={{ margin: "4px auto" }}>
+              <ul className="team-members" style={{ minWidth: "max-content" }}>
+                {allInterviewers?.slice(0, 3).map((interviewer, index) => (
+                  <li key={index}>
+                    <Tooltip title={interviewer?.fullName}>
+                      <Avatar
+                        style={{ cursor: "pointer" }}
+                        src={interviewer?.imageUrl || user_icon}
+                      />
+                    </Tooltip>
+                  </li>
+                ))}
+                {allInterviewers?.length > 3 && (
+                  <li className="dropdown avatar-dropdown">
+                    <Link
+                      className="all-users dropdown-toggle projectTeamMember"
+                      style={{
+                        display: "inline-flex",
+                        height: "33px",
+                        width: "33px",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        backgroundColor: "#f0f0f0",
+                        borderRadius: "50%",
+                        textDecoration: "none",
+                        color: "#333",
+                        fontSize: "12px",
+                        fontWeight: "bold",
+                      }}
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
+                    >
+                      +{allInterviewers?.length - 3}
+                    </Link>
+                    {/* Dropdown menu for additional interviewers */}
+                    <div className="dropdown-menu dropdown-menu-right">
+                      <div className="avatar-group">
+                        {allInterviewers?.slice(3).map((interviewer, index) => (
+                          <li key={index}>
+                            <Tooltip title={interviewer?.fullName}>
+                              <Avatar
+                                style={{ cursor: "pointer" }}
+                                src={interviewer?.imageUrl || user_icon}
+                              />
+                            </Tooltip>
+                          </li>
+                        ))}
+                      </div>
+                    </div>
+                  </li>
+                )}
+              </ul>
+            </div>
           </Col>
-          <Col  xs={12} sm={12} md={8} lg={6} style={{paddingTop:"10px"}}>
-            <p className="text-muted mb-1" style={{fontSize:"14px" ,fontWeight:"450",color:'#212529'}}>Created By</p>
-            <p  style={{fontSize:"16px" ,fontWeight:"500" ,color:'#3b4249'}}>{interview?.createdBy?.fullName}</p>
+          <Col xs={12} sm={12} md={8} lg={6} style={{ paddingTop: "10px" }}>
+            <p
+              className="text-muted mb-1"
+              style={{ fontSize: "14px", fontWeight: "450", color: "#212529" }}
+            >
+              Created By
+            </p>
+            <p
+              style={{ fontSize: "16px", fontWeight: "500", color: "#3b4249" }}
+            >
+              {interview?.createdBy?.fullName}
+            </p>
           </Col>
-          {interview?.status !== 'in-review' && (
-            <Col  xs={12} sm={12} md={8} lg={6}  style={{paddingTop:"10px"}}>
-              <p className="text-muted mb-1" style={{fontSize:"14px" ,fontWeight:"450",color:'#212529'}}>Medium</p>
-              <p onClick={() => window.open(interview?.interviewLink, '_blank')} style={{cursor:"pointer" ,textDecoration:"underLine" ,color:"#009efb"}}>www.zoom.com</p>
-            </Col>
-          )}
+          {interview?.status !== "in-review" &&
+            interview?.interviewType === "ONLINE" && (
+              <Col xs={12} sm={12} md={8} lg={6} style={{ paddingTop: "10px" }}>
+                <p
+                  className="text-muted mb-1"
+                  style={{
+                    fontSize: "14px",
+                    fontWeight: "450",
+                    color: "#212529",
+                  }}
+                >
+                  Medium
+                </p>
+                <p
+                  onClick={() =>
+                    window.open(interview?.interviewLink, "_blank")
+                  }
+                  style={{
+                    cursor: "pointer",
+                    textDecoration: "underLine",
+                    color: "#009efb",
+                  }}
+                >
+                  {extractMeetingDomain(interview?.interviewLink)}
+                </p>
+              </Col>
+            )}
         </Row>
         {/* {interview?.candidateId?.resume && ( */}
-          <div style={{marginTop:"10px", border:"1px solid #cfd4d8" , borderRadius:"8px", display:'flex', alignItems:'center', justifyContent:"space-between", padding:"10px" ,height:"90px" ,width:"230px"}}>
-            <div style={{display:"flex"}}>
-              <div style={{height:"50px" ,width:"50px" ,borderRadius:"50%" ,background:'lightgrey', display:"flex", justifyContent:'center' ,alignItems:"center", alignSelf:"center"}}><img src={description}></img></div>
-              <div style={{padding:"10px 0px 10px 10px"}}>
-                <p style={{marginBottom:'0px' ,fontSize:"14px" ,fontWeight:"500"}}>{interview?.candidateId?.resume ? interview?.candidateId?.resume : 'undefined'}</p>
-                <p style={{marginBottom:'0px',fontSize:"12px" ,fontWeight:"450"}}>{interview?.candidateId?.resume ? interview?.candidateId?.resume : 'undefined'}</p>
-              </div>
-              </div>
-              <div>
-                <Dropdown
-                  overlay={<Menu>
-                    <Menu.Item key="edit" onClick={() =>{handlePreviewResume()}}>
-                      <div style={{display:"flex", gap:'6px'}}>
-                        <img src={previewIcon}></img>
-                        <p style={{marginBottom:"0px"}}>Preview</p>
-                      </div>
-                    </Menu.Item>
-                    <Menu.Item key="downlaod" onClick={() => {handleDownloadResume()}}>
-                    <div style={{display:'flex', gap:'6px'}}>
-                        <img src={downloadIcon}></img>
-                        <p style={{marginBottom:"0px"}}>Download</p>
-                      </div>
-                    </Menu.Item>
-                  </Menu>}
-                  trigger={['click']}
-                  placement="topRight">
-                  <div style={{ cursor: 'pointer',height:'25px' }}>
-                    <img src={list} alt="More Options" />
-                  </div>
-                </Dropdown>
-              </div >
+        <div
+          style={{
+            marginTop: "10px",
+            border: "1px solid #cfd4d8",
+            borderRadius: "8px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "10px",
+            height: "90px",
+            width: "230px",
+          }}
+        >
+          <div style={{ display: "flex" }}>
+            <div
+              style={{
+                height: "50px",
+                width: "50px",
+                borderRadius: "50%",
+                background: "lightgrey",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                alignSelf: "center",
+              }}
+            >
+              <img src={description}></img>
             </div>
+            <div style={{ padding: "10px 0px 10px 10px" }}>
+              <p
+                style={{
+                  marginBottom: "0px",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                }}
+              >
+                {interview?.candidateId?.resume &&
+                Array.isArray(interview?.candidateId?.resume) &&
+                interview?.candidateId?.resume.length > 0
+                  ? interview.candidateId.resume[0].fileName
+                  : "No resume available"}
+              </p>
+              <p
+                style={{
+                  marginBottom: "0px",
+                  fontSize: "12px",
+                  fontWeight: "450",
+                }}
+              >
+                {interview?.candidateId?.resume &&
+                Array.isArray(interview?.candidateId?.resume) &&
+                interview?.candidateId?.resume.length > 0
+                  ? moment(interview.candidateId.resume[0].uploadedAt).format(
+                      "DD MMM YYYY"
+                    )
+                  : ""}
+              </p>
+            </div>
+          </div>
+          <div>
+            <Dropdown
+              overlay={
+                <Menu>
+                  <Menu.Item
+                    key="edit"
+                    onClick={() => {
+                      handlePreviewResume();
+                    }}
+                  >
+                    <div style={{ display: "flex", gap: "6px" }}>
+                      <img src={previewIcon}></img>
+                      <p style={{ marginBottom: "0px" }}>Preview</p>
+                    </div>
+                  </Menu.Item>
+                  <Menu.Item
+                    key="downlaod"
+                    onClick={() => {
+                      handleDownloadResume();
+                    }}
+                  >
+                    <div style={{ display: "flex", gap: "6px" }}>
+                      <img src={downloadIcon}></img>
+                      <p style={{ marginBottom: "0px" }}>Download</p>
+                    </div>
+                  </Menu.Item>
+                </Menu>
+              }
+              trigger={["click"]}
+              placement="topRight"
+            >
+              <div style={{ cursor: "pointer", height: "25px" }}>
+                <img src={list} alt="More Options" />
+              </div>
+            </Dropdown>
+          </div>
+        </div>
         {/* )} */}
-        
-        {interview?.status === 'completed' && (
+
+        {interview?.status === "completed" && (
           <div>
             {interview?.feedback?.map((feedback, index) => (
               <InterviewFeedbackDisplay key={index} feedback={feedback} />
@@ -434,22 +752,18 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
         )}
       </div>
 
-
-     <InterviewFeedback 
+      <InterviewFeedback
         visible={isFeedbackModalVisible}
         onCancel={() => setIsFeedbackModalVisible(false)}
         onSubmit={handleFeedbackSubmit}
-     />
-  
-
-    
+      />
 
       <style jsx>{`
-        .btn-style{
-          width:50%;
-          font-size:14px; 
+        .btn-style {
+          width: 50%;
+          font-size: 14px;
           font-weight: 500;
-          color: #A5ADB6 ;
+          color: #a5adb6;
           border: 1px solid transparent;
         }
         .info-card {
@@ -461,6 +775,10 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
           display: flex;
           justify-content: center;
           margin-bottom: 16px;
+        }
+        .social-icons {
+          display: flex;
+          position: relative;
         }
         .profile-avatar {
           width: 80px;
@@ -492,7 +810,7 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
           margin-top: 0;
         }
 
-        .feedback-btn{
+        .feedback-btn {
           background: transparent;
           border: none;
           font-size: 16px;
@@ -640,21 +958,19 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
           padding: 4px 8px;
         }
 
-
         .ant-select-dropdown {
           z-index: 1050;
         }
 
-
         .status-scheduled .ant-select-selector,
-        .status-scheduled  {
+        .status-scheduled {
           background-color: #e6f7ff !important;
           border-color: #91d5ff !important;
           color: #1890ff !important;
         }
 
         .status-completed .ant-select-selector,
-        .status-completed{
+        .status-completed {
           background-color: #f6ffed !important;
           border-color: #b7eb8f !important;
           color: #52c41a !important;
@@ -712,7 +1028,6 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
           font-size: 14px !important;
           padding-top: 5px !important;
         }
-        
 
         .status-shortlisted .ant-select-selector,
         .status-shortlisted {
@@ -753,7 +1068,6 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
           padding-top: 5px !important;
         }
 
-
         .task-card {
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
           border-radius: 8px;
@@ -790,9 +1104,6 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
           color: #f5222d !important;
         }
 
-
-
-
         /* Offer Modal Styles */
         :global(.offer-modal .ant-modal-content) {
           border-radius: 8px;
@@ -821,14 +1132,12 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
           border-color: #e3e3e3;
         }
 
-
         :global(.offer-modal .ant-upload-drag) {
           border: 2px dashed #e3e3e3;
           border-radius: 4px;
           background: #fafafa;
           transition: all 0.3s;
         }
-
 
         :global(.offer-modal .ant-upload-drag-icon) {
           color: #ff9b44;
@@ -851,7 +1160,7 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
           border-color: #ff9b44;
         }
 
-        .select-btn{
+        .select-btn {
           display: flex;
           justify-content: center;
           align-items: center;
@@ -867,13 +1176,13 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
           cursor: pointer;
         }
 
-        .tag-style{
+        .tag-style {
           border-radius: 70px;
           margin-left: 9px;
           margin-top: -35px;
         }
 
-        .initials-div{
+        .initials-div {
           height: 130px;
           background: #ffffff;
           border: 1px solid transparent;
@@ -884,7 +1193,7 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
           justify-content: space-between;
         }
 
-        .initials-details{
+        .initials-details {
           height: 80px;
           width: 80px;
           border: 1px solid transparent;
@@ -899,21 +1208,21 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
           fontweight: 500;
         }
 
-        .custom{
+        .custom {
           display: flex;
-          float : end;
-          margin-right: 12px 
+          float: end;
+          margin-right: 12px;
         }
 
-        .AddFeedback-screen{
-          background: #ffffff ;
+        .AddFeedback-screen {
+          background: #ffffff;
           border: 1px solid transparent;
           border-radius: 8px;
           margin-bottom: 20px;
           padding: 25px;
         }
 
-        .AddFeedback-innerScreen{
+        .AddFeedback-innerScreen {
           display: flex;
           justify-content: space-between;
           align-items: center;
@@ -921,54 +1230,49 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
           flex-wrap: wrap;
         }
 
-        @media (max-width: 630px){
-          .tag-style{
+        @media (max-width: 630px) {
+          .tag-style {
             display: none !important;
           }
         }
 
-        @media (max-width: 500px){
-          .select-btn{
+        @media (max-width: 500px) {
+          .select-btn {
             width: 130px !important;
             gap: 4px !important;
           }
         }
 
-        @media (max-width: 500px){
-          .joinImg{
-            display : none !important;
+        @media (max-width: 500px) {
+          .joinImg {
+            display: none !important;
           }
         }
 
-        @media(min-width: 415px) and (max-width: 450px){
-          .select-btn{
+        @media (min-width: 415px) and (max-width: 450px) {
+          .select-btn {
             margin-left: 30px !important;
           }
         }
 
-        @media (max-width: 410px){
-          .select-btn{
+        @media (max-width: 410px) {
+          .select-btn {
             width: 110px !important;
           }
         }
 
-        @media (max-width: 410px){
-          .select-btn{
+        @media (max-width: 410px) {
+          .select-btn {
             text-align: center;
             padding: 10px;
           }
         }
 
-        @media (max-width: 500px){
-          .initials-details{
-            margin-left: 7px !important; 
+        @media (max-width: 500px) {
+          .initials-details {
+            margin-left: 7px !important;
           }
         }
-
-        
-
-
-
       `}</style>
     </div>
   );
@@ -977,9 +1281,9 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
   //   <div className="content container-fluid">
   //     {/* Breadcrumb Navigation */}
   //     <div className="mb-4 d-flex align-items-center">
-  //       <Button 
-  //         icon={<ArrowLeftOutlined />} 
-  //         type="link" 
+  //       <Button
+  //         icon={<ArrowLeftOutlined />}
+  //         type="link"
   //         onClick={() => navigate('/recruitment/interviews')}
   //         style={{ marginRight: '16px', padding: 0 }}
   //       />
@@ -998,8 +1302,8 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
   //         <Card className="mb-4">
   //           <div className="d-flex justify-content-between align-items-start">
   //             <div className="d-flex gap-3">
-  //               <Avatar 
-  //                 size={64} 
+  //               <Avatar
+  //                 size={64}
   //                 style={{ backgroundColor: '#f56a00' }}
   //               >
   //                 {`${interview?.candidateId?.firstName?.charAt(0)}${interview?.candidateId?.lastName?.charAt(0)}`}
@@ -1017,8 +1321,8 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
   //             </div>
   //             {interview?.interviewType === 'ONLINE' && interview?.interviewLink && (
   //               <Dropdown menu={joinInterviewMenu} trigger={['contextMenu']}>
-  //                 <Button 
-  //                   type="primary" 
+  //                 <Button
+  //                   type="primary"
   //                   icon={<VideoCameraOutlined />}
   //                   onClick={() => window.open(interview.interviewLink, '_blank')}
   //                 >
@@ -1057,8 +1361,8 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
   //                   </Button>
   //                 </Dropdown>
   //               )}
-  //               <Button 
-  //                 type="primary" 
+  //               <Button
+  //                 type="primary"
   //                 icon={<PlusOutlined />}
   //                 style={{ background: '#FF9B44', borderColor: '#FF9B44' }}
   //                 onClick={() => setIsFeedbackModalVisible(true)}
@@ -1069,7 +1373,7 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
   //               </Button>
   //             </div>
   //           </div>
-            
+
   //           <Row gutter={[24, 16]}>
   //             <Col span={8}>
   //               <p className="text-muted mb-1">Interview Type</p>
@@ -1113,10 +1417,10 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
   //           </div>
   //         </Card>
 
-          // {/* Feedback Display Section */}
-          // {interview?.feedback?.map((feedback, index) => (
-          //   <InterviewFeedbackDisplay key={index} feedback={feedback} />
-          // ))}
+  // {/* Feedback Display Section */}
+  // {interview?.feedback?.map((feedback, index) => (
+  //   <InterviewFeedbackDisplay key={index} feedback={feedback} />
+  // ))}
 
   //         {/* Comments Section */}
   //         <Card>
@@ -1148,7 +1452,7 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
   //             {interview?.comments?.map((comment, index) => (
   //               <div key={index} className="comment-item mb-3 pb-3" style={{ borderBottom: '1px solid #f0f0f0' }}>
   //                 <div className="d-flex gap-3">
-  //                   <Avatar 
+  //                   <Avatar
   //                     src={comment.user?.imageUrl}
   //                     style={{ backgroundColor: comment.user?.imageUrl ? 'transparent' : '#f56a00' }}
   //                   >
@@ -1175,7 +1479,7 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
   //     </Row>
 
   //     {/* Replace the Modal with InterviewFeedback component */}
-  //     <InterviewFeedback 
+  //     <InterviewFeedback
   //       visible={isFeedbackModalVisible}
   //       onCancel={() => setIsFeedbackModalVisible(false)}
   //       onSubmit={handleFeedbackSubmit}
@@ -1192,4 +1496,4 @@ const InterviewDetails = ({visible , onCancel , onSubmit}) => {
   // );
 };
 
-export default InterviewDetails; 
+export default InterviewDetails;

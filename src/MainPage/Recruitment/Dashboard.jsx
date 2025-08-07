@@ -48,7 +48,7 @@ import grid from "../../assets/iconsRecruitment/grid.svg";
 import indeed from "../../assets/iconsRecruitment/indeed.svg";
 import linkedin from "../../assets/iconsRecruitment/linkedin-icon.svg";
 import website from "../../assets/iconsRecruitment/websiteGlobe.svg";
-import instagram from "../../assets/iconsRecruitment/insta.svg";
+import jobsIcon from '../../assets/iconsRecruitment/jobsIconOrange.svg';
 import facebook from "../../assets/iconsRecruitment/Facebook.svg";
 import more from "../../assets/iconsRecruitment/vertical.svg";
 import departmentIcon from "../../assets/iconsRecruitment/department.svg";
@@ -439,6 +439,18 @@ const Dashboard = () => {
             <div className="info-direction">
               <p className="info-numbers">{stats?.rejected}</p>
               <p className="info-detail">Rejected</p>
+            </div>
+          </div>
+
+          <div className="information-card">
+            <div className="image-direction">
+              <div className="card-image">
+                <img src={jobsIcon}></img>
+              </div>
+            </div>
+            <div className="info-direction">
+              <p className="info-numbers">{stats?.activeJobs}</p>
+              <p className="info-detail">Active Jobs</p>
             </div>
           </div>
         </div>

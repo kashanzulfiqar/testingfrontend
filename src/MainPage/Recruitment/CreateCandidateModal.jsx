@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Modal,
   Form,
@@ -9,6 +9,7 @@ import {
   InputNumber,
   Upload,
   message,
+  Spin, // Add Spin import
 } from "antd";
 import { apiServices } from "../../Services/apiServices";
 import moment from "moment";
@@ -26,7 +27,9 @@ const CreateCandidateModal = ({
   const [submitting, setSubmitting] = useState(false);
   const [fileList, setFileList] = useState([]);
   const [uploadResult, setUploadResult] = useState(null);
+  const [uploadingResume, setUploadingResume] = useState(false); // Add uploadingResume state
   const authState = useSelector((state) => state.user.loginvalue);
+  const skillsSelectRef = useRef(null);
 
   // Reset form when modal becomes visible
   useEffect(() => {
@@ -125,6 +128,28 @@ const CreateCandidateModal = ({
     onCancel();
   };
 
+  const handleSkillsFocus = () => {
+    // Use setTimeout to ensure the input is fully rendered
+    setTimeout(() => {
+      const searchInput = skillsSelectRef.current?.querySelector('.ant-select-selection-search-input');
+      if (searchInput) {
+        searchInput.setSelectionRange(0, 0);
+        searchInput.focus();
+      }
+    }, 0);
+  };
+
+  const handleSkillsClick = () => {
+    // Handle click events to ensure cursor positioning
+    setTimeout(() => {
+      const searchInput = skillsSelectRef.current?.querySelector('.ant-select-selection-search-input');
+      if (searchInput) {
+        searchInput.setSelectionRange(0, 0);
+        searchInput.focus();
+      }
+    }, 10);
+  };
+
   return (
     <Modal
       title="Add New Candidate"
@@ -153,42 +178,47 @@ const CreateCandidateModal = ({
             name="resume"
             maxCount={1}
             beforeUpload={async (file) => {
-              // Validate file size (5MB)
-              if (file.size > 5 * 1024 * 1024) {
-                message.error("Resume file size should not exceed 5MB");
-                return Upload.LIST_IGNORE;
-              }
-
-              // Validate file type
-              const allowedTypes = ["application/pdf"];
-              if (!allowedTypes.includes(file.type)) {
-                message.error("Only PDF files are allowed");
-                return Upload.LIST_IGNORE;
-              }
-
-              const result = await uploadFunction([file]);
-              setUploadResult(result);
-              if (result && result[0]) {
-                const { candidateName, candidateEmail, candidateContact } =
-                  result[0];
-
-                // Split candidateName into first and last name (if possible)
-                let firstName = "";
-                let lastName = "";
-                if (candidateName) {
-                  const nameParts = candidateName.split(" ");
-                  firstName = nameParts[0] || "";
-                  lastName = nameParts.slice(1).join(" ") || "";
+              setUploadingResume(true); // Set to true at start
+              try {
+                // Validate file size (5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                  message.error("Resume file size should not exceed 5MB");
+                  return Upload.LIST_IGNORE;
                 }
 
-                form.setFieldsValue({
-                  firstName,
-                  lastName,
-                  email: candidateEmail || "",
-                  phoneNumber: candidateContact || "",
-                });
+                // Validate file type
+                const allowedTypes = ["application/pdf"];
+                if (!allowedTypes.includes(file.type)) {
+                  message.error("Only PDF files are allowed");
+                  return Upload.LIST_IGNORE;
+                }
+
+                const result = await uploadFunction([file]);
+                setUploadResult(result);
+                if (result && result[0]) {
+                  const { candidateName, candidateEmail, candidateContact } =
+                    result[0];
+
+                  // Split candidateName into first and last name (if possible)
+                  let firstName = "";
+                  let lastName = "";
+                  if (candidateName) {
+                    const nameParts = candidateName.split(" ");
+                    firstName = nameParts[0] || "";
+                    lastName = nameParts.slice(1).join(" ") || "";
+                  }
+
+                  form.setFieldsValue({
+                    firstName,
+                    lastName,
+                    email: candidateEmail || "",
+                    phoneNumber: candidateContact || "",
+                  });
+                }
+                return false;
+              } finally {
+                setUploadingResume(false); // Set to false at end
               }
-              return false;
             }}
             onRemove={() => {
               setFileList([]);
@@ -199,7 +229,13 @@ const CreateCandidateModal = ({
               setFileList(newFileList.slice(-1));
             }}
           >
-            <Button className="resume-upload-btn">Upload Resume</Button>
+            <Button className="resume-upload-btn" disabled={uploadingResume}>
+              {uploadingResume ? (
+                <Spin size="small" style={{ marginRight: 8 }} />
+              ) : (
+                "Upload Resume"
+              )}
+            </Button>
           </Upload>
         </div>
 
@@ -264,12 +300,33 @@ const CreateCandidateModal = ({
                 { min: 10, message: "Phone number must be at least 10 digits" },
                 { max: 15, message: "Phone number cannot exceed 15 digits" },
                 {
-                  pattern: /^[0-9+\-\s()]+$/,
-                  message: "Please enter a valid phone number",
+                  pattern: /^[0-9-]+$/,
+                  message: "Please enter a valid phone number e.g: 0321-234-5678 / 03212345678",
                 },
               ]}
             >
-              <Input placeholder="Enter Number" />
+              <Input
+                placeholder="Enter Number"
+                onKeyDown={(e) => {
+                  // Allow: backspace, delete, tab, escape, enter, and navigation keys
+                  if (
+                    [8, 9, 27, 13, 46, 37, 39].indexOf(e.keyCode) !== -1 ||
+                    // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+                    (e.keyCode === 65 && e.ctrlKey === true) ||
+                    (e.keyCode === 67 && e.ctrlKey === true) ||
+                    (e.keyCode === 86 && e.ctrlKey === true) ||
+                    (e.keyCode === 88 && e.ctrlKey === true)
+                  ) {
+                    return;
+                  }
+
+                  // Allow only numbers and specific characters
+                  const allowedChars = /[0-9-]/;
+                  if (!allowedChars.test(e.key)) {
+                    e.preventDefault();
+                  }
+                }}
+              />
             </Form.Item>
           </div>
         </div>
@@ -286,12 +343,12 @@ const CreateCandidateModal = ({
               <Select
                 className="customized"
                 placeholder="Select Job Position"
-                showSearch
+                // showSearch
                 optionFilterProp="children"
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
-                  0
-                }
+                // filterOption={(input, option) =>
+                //   option.children.toLowerCase().indexOf(input.toLowerCase()) >=
+                //   0
+                // }
                 notFoundContent={
                   activeJobs.length === 0 ? "No active jobs available" : null
                 }
@@ -356,17 +413,44 @@ const CreateCandidateModal = ({
               rules={[
                 { required: true, message: "Please enter experience" },
                 {
-                  type: "number",
-                  min: 0,
-                  message: "Experience cannot be negative",
+                  validator: (_, value) => {
+                    if (value === undefined || value === '') {
+                      return Promise.resolve();
+                    }
+                    const numValue = parseFloat(value);
+                    if (isNaN(numValue)) {
+                      return Promise.reject(new Error('Please enter a valid number'));
+                    }
+                    if (numValue < 0) {
+                      return Promise.reject(new Error('Experience cannot be negative'));
+                    }
+                    return Promise.resolve();
+                  },
                 },
               ]}
             >
-              <InputNumber
-                style={{ width: "100%" }}
+              <Input
                 placeholder="Enter Experience"
                 min={0}
-                precision={1}
+                onKeyDown={(e) => {
+                  // Allow: backspace, delete, tab, escape, enter, and navigation keys
+                  if (
+                    [8, 9, 27, 13, 46, 37, 39].indexOf(e.keyCode) !== -1 ||
+                    // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+                    (e.keyCode === 65 && e.ctrlKey === true) ||
+                    (e.keyCode === 67 && e.ctrlKey === true) ||
+                    (e.keyCode === 86 && e.ctrlKey === true) ||
+                    (e.keyCode === 88 && e.ctrlKey === true)
+                  ) {
+                    return;
+                  }
+
+                  // Allow only numbers and specific characters
+                  const allowedChars = /[0-9+]/;
+                  if (!allowedChars.test(e.key)) {
+                    e.preventDefault();
+                  }
+                }}
               />
             </Form.Item>
           </div>
@@ -404,16 +488,43 @@ const CreateCandidateModal = ({
               rules={[
                 { required: true, message: "Please enter current salary" },
                 {
-                  type: "number",
-                  min: 0,
-                  message: "Salary cannot be negative",
+                  validator: (_, value) => {
+                    if (value === undefined || value === '') {
+                      return Promise.resolve();
+                    }
+                    const numValue = parseFloat(value);
+                    if (isNaN(numValue)) {
+                      return Promise.reject(new Error('Please enter a valid number'));
+                    }
+                    if (numValue < 0) {
+                      return Promise.reject(new Error('Salary cannot be negative'));
+                    }
+                    return Promise.resolve();
+                  },
                 },
               ]}
             >
-              <InputNumber
-                style={{ width: "100%" }}
+              <Input
                 placeholder="Enter Current Salary"
-                min={0}
+                onKeyDown={(e) => {
+                  // Allow: backspace, delete, tab, escape, enter, and navigation keys
+                  if (
+                    [8, 9, 27, 13, 46, 37, 39].indexOf(e.keyCode) !== -1 ||
+                    // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+                    (e.keyCode === 65 && e.ctrlKey === true) ||
+                    (e.keyCode === 67 && e.ctrlKey === true) ||
+                    (e.keyCode === 86 && e.ctrlKey === true) ||
+                    (e.keyCode === 88 && e.ctrlKey === true)
+                  ) {
+                    return;
+                  }
+
+                  // Allow only numbers and specific characters
+                  const allowedChars = /[0-9+]/;
+                  if (!allowedChars.test(e.key)) {
+                    e.preventDefault();
+                  }
+                }}
               />
             </Form.Item>
           </div>
@@ -424,16 +535,43 @@ const CreateCandidateModal = ({
               rules={[
                 { required: true, message: "Please enter expected salary" },
                 {
-                  type: "number",
-                  min: 0,
-                  message: "Salary cannot be negative",
+                  validator: (_, value) => {
+                    if (value === undefined || value === '') {
+                      return Promise.resolve();
+                    }
+                    const numValue = parseFloat(value);
+                    if (isNaN(numValue)) {
+                      return Promise.reject(new Error('Please enter a valid number'));
+                    }
+                    if (numValue < 0) {
+                      return Promise.reject(new Error('Salary cannot be negative'));
+                    }
+                    return Promise.resolve();
+                  },
                 },
               ]}
             >
-              <InputNumber
-                style={{ width: "100%" }}
+              <Input
                 placeholder="Enter Expected Salary"
-                min={0}
+                onKeyDown={(e) => {
+                  // Allow: backspace, delete, tab, escape, enter, and navigation keys
+                  if (
+                    [8, 9, 27, 13, 46, 37, 39].indexOf(e.keyCode) !== -1 ||
+                    // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+                    (e.keyCode === 65 && e.ctrlKey === true) ||
+                    (e.keyCode === 67 && e.ctrlKey === true) ||
+                    (e.keyCode === 86 && e.ctrlKey === true) ||
+                    (e.keyCode === 88 && e.ctrlKey === true)
+                  ) {
+                    return;
+                  }
+
+                  // Allow only numbers and specific characters
+                  const allowedChars = /[0-9+]/;
+                  if (!allowedChars.test(e.key)) {
+                    e.preventDefault();
+                  }
+                }}
               />
             </Form.Item>
           </div>
@@ -482,21 +620,15 @@ const CreateCandidateModal = ({
                 { required: true, message: "Please enter atleast one skill" },
               ]}
             >
-              <Select
-                mode="tags"
-                className="custom-select customselect-height"
-                placeholder="Enter Your Skills"
-                getPopupContainer={() => document.getElementById("area22")}
-                onChange={(value) => {
-                  // Filter out tags longer than 20 characters
-                  const filtered = value.filter((tag) => tag.length <= 20);
-                  if (filtered.length < value.length) {
-                    message.error("Each skill can be at most 20 characters.");
-                  }
-                  // Set only valid tags in the form
-                  form.setFieldsValue({ skillSet: filtered });
-                }}
-              />
+              <div ref={skillsSelectRef} onClick={handleSkillsClick}>
+                <Select
+                  mode="tags"
+                  className="custom-select customselect-height"
+                  placeholder="Enter Your Skills"
+                  getPopupContainer={() => document.getElementById("area22")}
+                  onFocus={handleSkillsFocus}
+                />
+              </div>
             </Form.Item>
           </div>
         </div>
@@ -629,6 +761,66 @@ const CreateCandidateModal = ({
         /* Additional styles to prevent scrolling when modal is open */
         body.modal-open {
           overflow: hidden;
+        }
+
+        /* Fix cursor position in Select search input */
+        .custom-select .ant-select-selection-search {
+          width: 100% !important;
+          position: relative !important;
+        }
+        
+        .custom-select .ant-select-selection-search-input {
+          text-indent: 0 !important;
+          padding-left: 0 !important;
+          margin-left: 0 !important;
+          border: none !important;
+          outline: none !important;
+          background: transparent !important;
+          caret-color: inherit !important;
+        }
+        
+        .custom-select .ant-select-selection-search-mirror {
+          text-indent: 0 !important;
+          padding-left: 0 !important;
+          margin-left: 0 !important;
+          position: absolute !important;
+          left: 0 !important;
+          top: 0 !important;
+          width: 100% !important;
+          visibility: hidden !important;
+        }
+
+        /* Additional fixes for multi-select cursor positioning */
+        .custom-select.ant-select-multiple .ant-select-selection-overflow {
+          padding-left: 0 !important;
+        }
+
+        .custom-select.ant-select-multiple .ant-select-selection-overflow-item {
+          margin-left: 0 !important;
+        }
+
+        .custom-select.ant-select-multiple .ant-select-selection-search {
+          margin-left: 0 !important;
+          padding-left: 0 !important;
+        }
+
+        /* Ensure proper alignment */
+        .custom-select .ant-select-selector {
+          display: flex !important;
+          align-items: center !important;
+          flex-wrap: wrap !important;
+        }
+
+        /* Force cursor to start position */
+        .custom-select .ant-select-selection-search-input:focus {
+          text-align: left !important;
+          text-indent: 0 !important;
+        }
+
+        /* Override any Ant Design default positioning */
+        .custom-select .ant-select-selection-overflow-item-suffix {
+          margin-left: 0 !important;
+          padding-left: 0 !important;
         }
       `}</style>
     </Modal>

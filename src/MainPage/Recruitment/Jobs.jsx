@@ -143,11 +143,14 @@ const Jobs = () => {
         jobType: filters.jobType,
         workSetup: filters.workSetup,
         department: filters.department,
+        jobStatus: filters.jobStatus,
       };
 
       // Remove undefined or empty values
       Object.keys(queryParams).forEach(
-        (key) => !queryParams[key] && delete queryParams[key]
+        (key) =>
+          (queryParams[key] === undefined || queryParams[key] === "") &&
+          delete queryParams[key]
       );
 
       console.log("Fetching jobs with params:", queryParams);
@@ -731,7 +734,7 @@ const Jobs = () => {
         initialValues={filters}
       >
         <Row gutter={[12, 12]} align="middle">
-          <Col xs={24} sm={12} md={5}>
+          <Col xs={24} sm={12} md={4}>
             <Form.Item name="title" className="mb-0">
               <Input
                 style={{ borderRadius: "8px", height: "40px" }}
@@ -740,7 +743,7 @@ const Jobs = () => {
               />
             </Form.Item>
           </Col>
-          <Col xs={24} sm={12} md={5}>
+          <Col xs={24} sm={12} md={4}>
             <Form.Item name="department" className="mb-0">
               <Select
                 placeholder="Department"
@@ -759,7 +762,7 @@ const Jobs = () => {
               />
             </Form.Item>
           </Col>
-          <Col xs={24} sm={12} md={5}>
+          <Col xs={24} sm={12} md={4}>
             <Form.Item name="jobType" className="mb-0">
               <Select
                 placeholder="Job Type"
@@ -775,7 +778,7 @@ const Jobs = () => {
               />
             </Form.Item>
           </Col>
-          <Col xs={24} sm={12} md={5}>
+          <Col xs={24} sm={12} md={4}>
             <Form.Item name="workSetup" className="mb-0">
               <Select
                 placeholder="Work Setup"
@@ -785,6 +788,20 @@ const Jobs = () => {
                   { text: "On-Site", value: "ONSITE" },
                   { text: "Remote", value: "REMOTE" },
                   { text: "Hybrid", value: "HYBRID" },
+                ]}
+              />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={12} md={4}>
+            <Form.Item name="jobStatus" className="mb-0">
+              <Select
+                placeholder="Job Status"
+                allowClear
+                className="custom"
+                options={[
+                  { text: "Active", value: "ACTIVE" },
+                  { text: "Closed", value: "CLOSED" },
+                  { text: "Draft", value: "DRAFT" },
                 ]}
               />
             </Form.Item>

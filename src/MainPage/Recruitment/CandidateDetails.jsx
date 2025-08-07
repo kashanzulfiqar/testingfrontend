@@ -57,6 +57,7 @@ import {
 } from "../Employees/Projects/UploadAndDeleteFunc";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faDownload } from "@fortawesome/free-solid-svg-icons"; // or free-regular-svg-icons if you want the regular style
+import { user_icon } from "../../Entryfile/imagepath";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_FILE_TYPES = [
@@ -87,6 +88,7 @@ const CandidateDetails = () => {
   const [activeTab, setActiveTab] = useState("timeline");
   const authState = useSelector((state) => state.user.loginvalue);
   const [isInterviewModalVisible, setIsInterviewModalVisible] = useState(false);
+  const [editingInterview, setEditingInterview] = useState(null);
   const [interviews, setInterviews] = useState([]);
   const [loadingInterviews, setLoadingInterviews] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
@@ -660,43 +662,67 @@ const CandidateDetails = () => {
     setIsInterviewModalVisible(true);
   };
 
+  const getScheduledOrRescheduledInterview = () => {
+    return interviews.find(interview => 
+      interview.status === "scheduled" || interview.status === "rescheduled"
+    );
+  };
+
+  const handleInterviewAction = () => {
+    const existingInterview = getScheduledOrRescheduledInterview();
+    if (existingInterview) {
+      // Reschedule existing interview
+      setEditingInterview(existingInterview);
+      setIsInterviewModalVisible(true);
+    } else {
+      // Create new interview
+      setEditingInterview(null);
+      setIsInterviewModalVisible(true);
+    }
+  };
+
   const handleInterviewModalCancel = () => {
     setIsInterviewModalVisible(false);
+    setEditingInterview(null); // Reset editing state when modal is closed
   };
 
   const handleInterviewSubmit = async (values) => {
-    try {
-      const token =
-        localStorage.getItem("token") || authState?.access_token?.accessToken;
+    const token =
+      localStorage.getItem("token") || authState?.access_token?.accessToken;
 
-      if (!token) {
-        message.error("Authentication required");
-        return;
-      }
+    if (!token) {
+      message.error("Authentication required");
+      throw new Error("Authentication required");
+    }
 
-      // Validate meeting link for online interviews
-      if (values.interviewType === "ONLINE" && !values.meetingLink) {
-        message.error("Meeting link is required for online interviews");
-        return;
-      }
+    // Validate meeting link for online interviews
+    if (values.interviewType === "ONLINE" && !values.meetingLink) {
+      message.error("Meeting link is required for online interviews");
+      throw new Error("Meeting link is required for online interviews");
+    }
 
-      const formattedDate = moment(values.interviewDate).format("YYYY-MM-DD");
-      const formattedTime = moment(values.interviewTime).format("HH:mm");
+    const formattedDate = moment(values.interviewDate).format("YYYY-MM-DD");
+    const formattedTime = moment(values.interviewTime).format("HH:mm");
 
-      const payload = {
-        candidateId: candidate._id,
-        // interviewerId: values.assignedTo, // ID of the employee selected in interviewer dropdown
-        // interviewTitle: values.interviewTitle, // Value from interview title dropdown (Initial Interview, etc)
-        interviewType: values.interviewType, // "ONLINE" or "IN_PERSON"
-        assignTo: values.assignTo, // Array of additional interviewer IDs
-        interviewDate: formattedDate, // YYYY-MM-DD
-        interviewTime: formattedTime, // HH:mm
-        meetingLink: values.meetingLink || "", // Required for ONLINE interviews
-      };
+    const payload = {
+      candidateId: candidate._id,
+      candidateName: values?.candidateName,
+      // interviewerId: values?.assignedTo,
+      interviewTitle: values?.interviewTitle,
+      interviewType: values?.interviewType,
+      assignTo: values.assignTo,
+      interviewDate: formattedDate,
+      interviewTime: formattedTime,
+      meetingLink: values.meetingLink || "",
+      shouldSendEmail: true, // Flag for backend to handle email sending
+    };
 
-      console.log("Interview payload:", payload); // For debugging
+    console.log("Interview payload:", payload); // For debugging
 
-      const response = await apiServices("POST", "interview/create", payload, {
+    let response;
+    if (editingInterview) {
+      // Update existing interview
+      response = await apiServices("PUT", `interview/${editingInterview._id}`, payload, {
         access_token: {
           accessToken: token,
         },
@@ -704,31 +730,27 @@ const CandidateDetails = () => {
           Authorization: `Bearer ${token}`,
         },
       });
+    } else {
+      // Create new interview
+      response = await apiServices("POST", "interview/create", payload, {
+        access_token: {
+          accessToken: token,
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    }
 
-      if (response?.data?.success) {
-        message.success("Interview scheduled successfully");
-        fetchCandidateInterviews(id);
-        handleInterviewModalCancel(); // Close the modal on success
-      } else {
-        throw new Error(
-          response?.data?.message || "Failed to schedule interview"
-        );
-      }
-    } catch (error) {
-      console.error("Error scheduling interview:", error);
-      // Handle validation errors specifically
-      if (error.response?.data?.errors) {
-        const errorMessages = error.response.data.errors
-          .map((err) => `${err.field}: ${err.message}`)
-          .join("\n");
-        message.error(errorMessages);
-      } else {
-        message.error(
-          error?.response?.data?.message ||
-            error?.message ||
-            "Error scheduling interview"
-        );
-      }
+    if (response?.data?.success) {
+      message.success(editingInterview ? "Interview rescheduled successfully" : "Interview scheduled successfully");
+      fetchCandidateInterviews(id);
+      setEditingInterview(null); // Reset editing state
+      // Don't close modal here - let the modal handle it
+    } else {
+      throw new Error(
+        response?.data?.message || (editingInterview ? "Failed to reschedule interview" : "Failed to schedule interview")
+      );
     }
   };
 
@@ -1394,9 +1416,9 @@ const CandidateDetails = () => {
                         style={{ height: "20px", width: "20px" }}
                       ></img>
                     }
-                    onClick={() => setIsInterviewModalVisible(true)}
+                    onClick={handleInterviewAction}
                   >
-                    Schedule Interview
+                    {getScheduledOrRescheduledInterview() ? "Reschedule Interview" : "Schedule Interview"}
                   </Menu.Item>
                   <Menu.Item
                     key="blacklisted"
@@ -1446,7 +1468,7 @@ const CandidateDetails = () => {
       <div className="row">
         {/* Left Panel - Basic Information */}
         <div className="col-md-3 custom-col">
-          {activeTab === "timeline" && (
+          {activeTab === "timeline" && historyId !== null && (
             <div
               className="p-3"
               style={{
@@ -2071,7 +2093,7 @@ const CandidateDetails = () => {
                   ? "Tasks"
                   : "null"}
               </h3>
-              {activeTab === "interview" && filter === "present" && (
+              {activeTab === "interview" && filter === "present" && !interviews.some(interview => interview.status === "scheduled" || interview.status === "rescheduled") && (
                 <div>
                   <div>
                     <button
@@ -2180,10 +2202,7 @@ const CandidateDetails = () => {
                                   "DD MMM YYYY"
                                 ) +
                                   " at " +
-                                  moment(
-                                    interview.interviewTime,
-                                    "Hh:mm"
-                                  ).format("hh:mm A")}
+                                  moment(interview.interviewTime, "HH:mm").format("hh:mm A")}
                               </div>
                             </div>
                             <div
@@ -2213,7 +2232,7 @@ const CandidateDetails = () => {
                                 background: "transparent",
                               }}
                             >
-                              {viewMore ? "View Less" : "View Details"}
+                              {viewMore === interview._id ? "View Less" : "View Details"}
                             </button>
                           </div>
                         </div>
@@ -2245,8 +2264,19 @@ const CandidateDetails = () => {
                                   >
                                     Assigners
                                   </h2>
-                                  <div style={{ display: "flex", gap: "20px" }}>
-                                    <div style={{ display: "flex" }}>
+                                  <div style={{ 
+                                    display: "flex", 
+                                    gap: "20px",
+                                    flexWrap: "wrap",
+                                    overflowX: "auto",
+                                    maxWidth: "100%",
+                                    paddingBottom: "10px"
+                                  }}>
+                                    <div style={{ 
+                                      display: "flex",
+                                      minWidth: "fit-content",
+                                      flexShrink: 0
+                                    }}>
                                       <div
                                         style={{
                                           height: "32px",
@@ -2255,7 +2285,7 @@ const CandidateDetails = () => {
                                       >
                                         <img
                                           src={
-                                            interview?.interviewerId?.imageUrl
+                                            interview?.interviewerId?.imageUrl || user_icon
                                           }
                                           style={{
                                             height: "100%",
@@ -2281,13 +2311,17 @@ const CandidateDetails = () => {
                                             color: "#56616b",
                                           }}
                                         >
-                                          Hello
+                                          {interview.interviewerId?.designationName}
                                         </p>
                                       </div>
                                     </div>
                                     {interview.assignedTo?.map(
                                       (interviewer) => (
-                                        <div style={{ display: "flex" }}>
+                                        <div style={{ 
+                                          display: "flex",
+                                          minWidth: "fit-content",
+                                          flexShrink: 0
+                                        }}>
                                           <div
                                             style={{
                                               height: "32px",
@@ -2295,7 +2329,7 @@ const CandidateDetails = () => {
                                             }}
                                           >
                                             <img
-                                              src={interviewer.imageUrl}
+                                              src={interviewer.imageUrl || user_icon}
                                               style={{
                                                 height: "100%",
                                                 width: "100%",
@@ -2320,7 +2354,7 @@ const CandidateDetails = () => {
                                                 color: "#56616b",
                                               }}
                                             >
-                                              Hello
+                                              {interviewer.designationName}
                                             </p>
                                           </div>
                                         </div>
@@ -2342,7 +2376,7 @@ const CandidateDetails = () => {
                                       style={{ height: "32px", width: "32px" }}
                                     >
                                       <img
-                                        src={interview?.createdBy?.imageUrl}
+                                        src={interview?.createdBy?.imageUrl || user_icon}
                                         style={{
                                           height: "100%",
                                           width: "100%",
@@ -2367,7 +2401,7 @@ const CandidateDetails = () => {
                                           color: "#56616b",
                                         }}
                                       >
-                                        Hello
+                                        {interview?.createdBy?.designationName}
                                       </p>
                                     </div>
                                   </div>
@@ -2485,7 +2519,7 @@ const CandidateDetails = () => {
                                 background: "transparent",
                               }}
                             >
-                              {viewMore ? "View Less" : "View Details"}
+                              {viewMore === task._id ? "View Less" : "View Details"}
                             </button>
                           </div>
                         </div>
@@ -3148,6 +3182,7 @@ const CandidateDetails = () => {
         onSubmit={handleInterviewSubmit}
         candidate={candidate}
         authState={authState}
+        editingInterview={editingInterview}
       />
 
       {/* Add CreateTaskModal */}
