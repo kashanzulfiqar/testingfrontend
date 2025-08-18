@@ -633,10 +633,16 @@ const AllEmployees = () => {
                       <i className="fa fa-plus" /> {t("allEmp.addEmployee")}
                     </a>
                   )}
-                  {/* {
-                (role === 'admin' || permissions?.addUser) &&
-                  <a href="javascript:void(0)" className="btn add-btn" onClick={() => setUpload(true)}><i className="la la-file-excel" />Import Data</a>
-              } */}
+                  {(role === "admin" || permissions?.addUser) && (
+                    <a
+                      href="javascript:void(0)"
+                      className="btn add-btn"
+                      onClick={() => setUpload(true)}
+                    >
+                      <i className="la la-file-excel" />
+                      Import Data
+                    </a>
+                  )}
                   <div className="view-icons">
                     <Link
                       to="/employee/allemployees"
@@ -1315,10 +1321,14 @@ const AllEmployees = () => {
                         }}
                       >
                         <span style={{ display: "flex", alignItems: "center" }}>
-                          {/* <i
-                        className="la la-file-excel" // Ensure this icon class is correct
-                        style={{ marginRight: "8px", color: "#28a745", fontSize: "1.2rem" }}
-                      /> */}
+                          <i
+                            className="la la-file-excel" // Ensure this icon class is correct
+                            style={{
+                              marginRight: "8px",
+                              color: "#28a745",
+                              fontSize: "1.2rem",
+                            }}
+                          />
                           <FileExcelOutlined
                             style={{
                               marginRight: "8px",
