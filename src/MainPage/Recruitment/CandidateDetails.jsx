@@ -1046,8 +1046,8 @@ const CandidateDetails = () => {
       );
       if (response?.data?.status) {
         message.success("Candidate deleted successfully");
+        navigate("/recruitment/candidates/processing");
         return Promise.resolve();
-        fetchJobs();
       } else {
         message.error(response?.data?.message || "Failed to delete job");
         return Promise.reject();
@@ -1326,6 +1326,11 @@ const CandidateDetails = () => {
             <Select.Option value="BLACKLISTED">Blacklisted</Select.Option>
           </Select>
           {!viewMobile && (
+            (candidate?.status === "OFFERED" ||
+              candidate?.status === "REJECTED" ||
+              candidate?.status === "HIRED" ||
+              candidate?.status === "BLACKLISTED" ||
+              candidate?.status === "SHORTLISTED") && (
             <button
               // onClick={handleSendOfferClick}
               onClick={() => {
@@ -1365,9 +1370,11 @@ const CandidateDetails = () => {
                 ? "View Hired"
                 : candidate?.status === "BLACKLISTED"
                 ? "Blacklisted"
-                : "Send Offer"}
+                : candidate?.status === "SHORTLISTED"
+                ? "Send Offer"
+                : null}
             </button>
-          )}
+          ))}
           <div className="dropdown-style">
             <Dropdown
               overlay={

@@ -28,6 +28,8 @@ const EditCandidate = () => {
   const [submitting, setSubmitting] = useState(false);
   const [uploadResult, setUploadResult] = useState(null);
   const [uploadingResume, setUploadingResume] = useState(false); // Add uploadingResume state
+  const [candidateAppliedJob, setCandidateAppliedJob] = useState(null);
+  const skillSetValue = Form.useWatch("skillSet", form) || [];
   const authState = useSelector((state) => state.user.loginvalue);
   const skillsSelectRef = useRef(null);
   const [fileList, setFileList] = useState([]);
@@ -60,10 +62,33 @@ const EditCandidate = () => {
 
       if (response?.data?.status) {
         const candidate = response.data.data;
+        const appliedForFromCandidate =
+          typeof candidate.appliedFor === "object" && candidate.appliedFor
+            ? candidate.appliedFor._id
+            : candidate.appliedFor;
+
+        // keep original applied job details for display even if inactive
+        if (
+          candidate.appliedFor &&
+          typeof candidate.appliedFor === "object" &&
+          candidate.appliedFor._id
+        ) {
+          const { _id, title, department } = candidate.appliedFor;
+          setCandidateAppliedJob({ _id, title, department });
+        } else {
+          setCandidateAppliedJob(null);
+        }
+
         const formattedCandidate = {
           ...candidate,
-          appliedFor: candidate.appliedFor?.title || candidate.appliedFor,
+          appliedFor: appliedForFromCandidate,
           appliedDate: moment(candidate.appliedDate),
+          // Ensure skillSet is an array for the form field
+          skillSet: Array.isArray(candidate.skillSet)
+            ? candidate.skillSet
+            : candidate.skillSet
+            ? [candidate.skillSet]
+            : [],
         };
         form.setFieldsValue(formattedCandidate);
       } else {
@@ -94,6 +119,21 @@ const EditCandidate = () => {
       setLoading(false);
     }
   };
+
+  // When jobs load, if form has a title string instead of an ObjectId, map it to the matching job id
+  useEffect(() => {
+    const currentAppliedFor = form.getFieldValue("appliedFor");
+    if (
+      currentAppliedFor &&
+      typeof currentAppliedFor === "string" &&
+      !/^[a-fA-F0-9]{24}$/.test(currentAppliedFor)
+    ) {
+      const match = activeJobs.find((j) => j.title === currentAppliedFor);
+      if (match) {
+        form.setFieldsValue({ appliedFor: match._id });
+      }
+    }
+  }, [activeJobs]);
 
   const fetchActiveJobs = async () => {
     const token =
@@ -178,12 +218,35 @@ const EditCandidate = () => {
       }
       // Step 2: Create candidate with resume data
       console.log("Step 2: Creating candidate with resume data:", resumeData);
+      // Ensure appliedFor is a valid Job ObjectId
+      const appliedForInput = values.appliedFor;
+      let appliedForId = appliedForInput;
+      if (
+        appliedForInput &&
+        typeof appliedForInput === "object" &&
+        appliedForInput._id
+      ) {
+        appliedForId = appliedForInput._id;
+      } else if (
+        typeof appliedForInput === "string" &&
+        !/^[a-fA-F0-9]{24}$/.test(appliedForInput)
+      ) {
+        const match = activeJobs.find((j) => j.title === appliedForInput);
+        if (match) {
+          appliedForId = match._id;
+        } else {
+          message.error("Please select a valid job position");
+          setSubmitting(false);
+          return;
+        }
+      }
+
       const formattedValues = {
         firstName: values.firstName,
         lastName: values.lastName,
         email: values.email,
         phoneNumber: values.phoneNumber,
-        appliedFor: values.appliedFor,
+        appliedFor: appliedForId,
         appliedDate: values.appliedDate.format("YYYY-MM-DD"),
         status: values.status,
         experience: values.experience,
@@ -198,7 +261,12 @@ const EditCandidate = () => {
         noticePeriod: values.noticePeriod,
         source: values.source,
         resume: resumeData,
-        skillSet: values.skillSet,
+        // Use form-managed value to avoid desync with validation
+        skillSet: Array.isArray(values.skillSet)
+          ? values.skillSet
+          : values.skillSet
+          ? [values.skillSet]
+          : [],
       };
 
       console.log("Creating candidate with payload:", formattedValues);
@@ -574,6 +642,18 @@ const EditCandidate = () => {
                           : null
                       }
                     >
+                      {candidateAppliedJob &&
+                        !activeJobs.some((job) => job._id === candidateAppliedJob._id) && (
+                          <Select.Option
+                            key={candidateAppliedJob._id}
+                            value={candidateAppliedJob._id}
+                          >
+                            {candidateAppliedJob.title}
+                            {candidateAppliedJob.department
+                              ? ` - ${candidateAppliedJob.department}`
+                              : ""} (Inactive)
+                          </Select.Option>
+                        )}
                       {Array.isArray(activeJobs) &&
                         activeJobs.map((job) => (
                           <Select.Option key={job._id} value={job._id}>
@@ -909,17 +989,19 @@ const EditCandidate = () => {
                       },
                     ]}
                   >
-                    <div ref={skillsSelectRef} onClick={handleSkillsClick}>
-                      <Select
-                        mode="tags"
-                        className="custom-select customselect-height"
-                        placeholder="Enter Your Skills"
-                        getPopupContainer={() =>
-                          document.getElementById("area22")
-                        }
-                        onFocus={handleSkillsFocus}
-                      />
-                    </div>
+                    <Select
+                      mode="tags"
+                      className="custom-select customselect-height"
+                      placeholder="Enter Your Skills"
+                      getPopupContainer={() =>
+                        document.getElementById("area22")
+                      }
+                      value={skillSetValue}
+                      onChange={(vals) =>
+                        form.setFieldsValue({ skillSet: Array.isArray(vals) ? vals : [] })
+                      }
+                      tokenSeparators={[",", " "]}
+                    />
                   </Form.Item>
                 </div>
               </div>
