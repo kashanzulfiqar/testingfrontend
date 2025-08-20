@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Modal, Form, Input, DatePicker, Upload, Button, Select, Empty, message, InputNumber } from 'antd';
 import { UploadOutlined, CloseOutlined } from '@ant-design/icons';
 import { apiServices } from '../../Services/apiServices';
@@ -16,6 +16,7 @@ const CreateTaskModal = ({ isVisible, onCancel, onSubmit, candidate, authState }
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState([]);
   const [employees, setEmployees] = useState([]);
+  const reviewersSelectRef = useRef(null);
 
   useEffect(() => {
     if (isVisible) {
@@ -98,6 +99,26 @@ const CreateTaskModal = ({ isVisible, onCancel, onSubmit, candidate, authState }
     form.resetFields();
     setFileList([]);
     onCancel();
+  };
+
+  const handleReviewersFocus = () => {
+    setTimeout(() => {
+      const searchInput = reviewersSelectRef.current?.querySelector('.ant-select-selection-search-input');
+      if (searchInput) {
+        searchInput.setSelectionRange(0, 0);
+        searchInput.focus();
+      }
+    }, 0);
+  };
+
+  const handleReviewersClick = () => {
+    setTimeout(() => {
+      const searchInput = reviewersSelectRef.current?.querySelector('.ant-select-selection-search-input');
+      if (searchInput) {
+        searchInput.setSelectionRange(0, 0);
+        searchInput.focus();
+      }
+    }, 10);
   };
 
   return (
@@ -189,7 +210,7 @@ const CreateTaskModal = ({ isVisible, onCancel, onSubmit, candidate, authState }
 
         <div className="row">
           <div className="col-md-6">
-          <div style={{ position: 'relative' }} id='area'>
+          <div style={{ position: 'relative' }} id='area' ref={reviewersSelectRef} onClick={handleReviewersClick}>
             <Form.Item
               name="taskReviewers"
               label={<>Task Reviewer</>}
@@ -206,6 +227,7 @@ const CreateTaskModal = ({ isVisible, onCancel, onSubmit, candidate, authState }
                 notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
                 placeholder="Select Reviewer"
                 className="customselect-height custom-select"
+                onFocus={handleReviewersFocus}
               >
                 {employees?.map((employee) => (
                   <Select.Option
@@ -242,23 +264,48 @@ const CreateTaskModal = ({ isVisible, onCancel, onSubmit, candidate, authState }
               label={<>Task Duration</>}
               rules={[
                 { required: true, message: 'Please enter task duration' },
-                { 
-                  validator: async (_, value) => {
-                    if (value && value < 1) {
-                      return Promise.reject('Duration must be at least 1 day');
+                {
+                  validator: (_, value) => {
+                    if (value === undefined || value === '') {
+                      return Promise.resolve();
+                    }
+                    const numValue = parseFloat(value);
+                    if (isNaN(numValue)) {
+                      return Promise.reject(new Error('Please enter a valid number'));
+                    }
+                    if (!Number.isInteger(Number(value))) {
+                      return Promise.reject(new Error('Duration must be a whole number'));
+                    }
+                    if (numValue < 1) {
+                      return Promise.reject(new Error('Duration must be at least 1 day'));
                     }
                     return Promise.resolve();
-                  }
-                }
+                  },
+                },
               ]}
             >
-              <InputNumber 
+              <Input
                 placeholder="Number of Days"
-                style={{ width: '100%' }}
                 min={1}
-                precision={0}
-                parser={value => parseInt(value || '0', 10)}
-                formatter={value => `${value}`}
+                onKeyDown={(e) => {
+                  // Allow: backspace, delete, tab, escape, enter, and navigation keys
+                  if (
+                    [8, 9, 27, 13, 46, 37, 39].indexOf(e.keyCode) !== -1 ||
+                    // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+                    (e.keyCode === 65 && e.ctrlKey === true) ||
+                    (e.keyCode === 67 && e.ctrlKey === true) ||
+                    (e.keyCode === 86 && e.ctrlKey === true) ||
+                    (e.keyCode === 88 && e.ctrlKey === true)
+                  ) {
+                    return;
+                  }
+
+                  // Allow only numbers
+                  const allowedChars = /[0-9]/;
+                  if (!allowedChars.test(e.key)) {
+                    e.preventDefault();
+                  }
+                }}
               />
             </Form.Item>
           </div>
@@ -411,6 +458,53 @@ const CreateTaskModal = ({ isVisible, onCancel, onSubmit, candidate, authState }
         
         body.modal-open {
           overflow: hidden;
+        }
+
+        /* Caret-at-start normalization for Task Reviewer select */
+        .custom-select .ant-select-selection-search {
+          width: 100% !important;
+          position: relative !important;
+        }
+        .custom-select .ant-select-selection-search-input {
+          text-indent: 0 !important;
+          padding-left: 0 !important;
+          margin-left: 0 !important;
+          min-width: 1px !important;
+          border: none !important;
+          outline: none !important;
+          background: transparent !important;
+          caret-color: inherit !important;
+        }
+        .custom-select .ant-select-selection-search-mirror {
+          text-indent: 0 !important;
+          padding-left: 0 !important;
+          margin-left: 0 !important;
+          position: absolute !important;
+          left: 0 !important;
+          top: 0 !important;
+          width: 100% !important;
+          visibility: hidden !important;
+        }
+        .custom-select .ant-select-selector {
+          display: flex !important;
+          align-items: center !important;
+          flex-wrap: wrap !important;
+        }
+        .custom-select.ant-select-multiple .ant-select-selection-overflow {
+          padding-left: 0 !important;
+        }
+        .custom-select.ant-select-multiple .ant-select-selection-overflow-item,
+        .custom-select .ant-select-selection-overflow-item-suffix {
+          margin-left: 0 !important;
+          padding-left: 0 !important;
+        }
+        .custom-select.ant-select-multiple .ant-select-selection-search {
+          margin-left: 0 !important;
+          padding-left: 0 !important;
+        }
+        .custom-select .ant-select-selection-search-input:focus {
+          text-align: left !important;
+          text-indent: 0 !important;
         }
 
       `}</style>

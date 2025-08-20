@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Modal, Form, Input, Button, Select, DatePicker, TimePicker, message, Switch, Empty } from 'antd';
 import { apiServices } from '../../Services/apiServices';
 import moment from 'moment';
@@ -12,6 +12,7 @@ const CreateInterviewModal = ({ isVisible, onCancel, onSubmit, candidate, authSt
   const [sendEmail, setSendEmail] = useState(true);
   const [interviewDate, setInterviewDate] = useState(null);
   const [selectedInterviewers, setSelectedInterviewers] = useState([]);
+  const assignSelectRef = useRef(null);
 
   useEffect(() => {
     if (isVisible) {
@@ -52,6 +53,26 @@ const CreateInterviewModal = ({ isVisible, onCancel, onSubmit, candidate, authSt
       setSelectedInterviewers([]);
     }
   }, [isVisible]);
+
+  const handleAssignFocus = () => {
+    setTimeout(() => {
+      const searchInput = assignSelectRef.current?.querySelector('.ant-select-selection-search-input');
+      if (searchInput) {
+        searchInput.setSelectionRange(0, 0);
+        searchInput.focus();
+      }
+    }, 0);
+  };
+
+  const handleAssignClick = () => {
+    setTimeout(() => {
+      const searchInput = assignSelectRef.current?.querySelector('.ant-select-selection-search-input');
+      if (searchInput) {
+        searchInput.setSelectionRange(0, 0);
+        searchInput.focus();
+      }
+    }, 10);
+  };
 
 
   const fetchEmployees = async () => {
@@ -175,20 +196,21 @@ const CreateInterviewModal = ({ isVisible, onCancel, onSubmit, candidate, authSt
             </div>
           </div>
           <div className="col-md-6">
-          <div style={{ position: 'relative' }} id='area'>
+          <div style={{ position: 'relative' }} id='area' ref={assignSelectRef} onClick={handleAssignClick}>
         <Form.Item
           name="assignTo"
           label="Primary Interviewer"
           rules={[{ required: true, message: 'Please select an interviewer' }]}
         >
           <Select
-            className='customselect-height'
+            className='custom-select customselect-height'
             mode='multiple'
             placeholder="Select interviewer"
             showSearch
             optionFilterProp="children"
             getPopupContainer={() => document.getElementById('area')}
             value={selectedInterviewers}
+            onFocus={handleAssignFocus}
             onChange={(value) => {
               if (value.length <= 5) {
                 setSelectedInterviewers(value);
@@ -521,6 +543,66 @@ const CreateInterviewModal = ({ isVisible, onCancel, onSubmit, candidate, authSt
         
         body.modal-open {
           overflow: hidden;
+        }
+
+        /* Ensure caret starts at beginning for assignTo select (mirror/input normalization) */
+        .custom-select .ant-select-selection-search {
+          width: 100% !important;
+          position: relative !important;
+        }
+        .custom-select .ant-select-selection-search-input {
+          text-indent: 0 !important;
+          padding-left: 0 !important;
+          margin-left: 0 !important;
+          min-width: 1px !important;
+          border: none !important;
+          outline: none !important;
+          background: transparent !important;
+          caret-color: inherit !important;
+        }
+        .custom-select .ant-select-selection-search-mirror {
+          text-indent: 0 !important;
+          padding-left: 0 !important;
+          margin-left: 0 !important;
+          position: absolute !important;
+          left: 0 !important;
+          top: 0 !important;
+          width: 100% !important;
+          visibility: hidden !important;
+        }
+        .custom-select .ant-select-selection-placeholder {
+          letter-spacing: normal !important;
+          padding-left: 0 !important;
+          margin-left: 0 !important;
+        }
+        /* Keep default AntD behavior for placeholder on focus */
+        /* Align selector layout similar to skills field */
+        .custom-select .ant-select-selector {
+          display: flex !important;
+          align-items: center !important;
+          flex-wrap: wrap !important;
+        }
+
+        /* Additional fixes mirroring skillSet field */
+        .custom-select.ant-select-multiple .ant-select-selection-overflow {
+          padding-left: 0 !important;
+        }
+        .custom-select.ant-select-multiple .ant-select-selection-overflow-item {
+          margin-left: 0 !important;
+        }
+        .custom-select.ant-select-multiple .ant-select-selection-search {
+          margin-left: 0 !important;
+          padding-left: 0 !important;
+        }
+        .custom-select .ant-select-selection-overflow-item-suffix {
+          margin-left: 0 !important;
+          padding-left: 0 !important;
+        }
+
+        /* Match skillSet: ensure focus keeps caret at start */
+        .custom-select .ant-select-selection-search-input:focus {
+          text-align: left !important;
+          text-indent: 0 !important;
         }
 
 

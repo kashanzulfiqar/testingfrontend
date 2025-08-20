@@ -30,12 +30,14 @@ const CreateCandidateModal = ({
   const [uploadingResume, setUploadingResume] = useState(false); // Add uploadingResume state
   const authState = useSelector((state) => state.user.loginvalue);
   const skillsSelectRef = useRef(null);
+  const [skills, setSkills] = useState([]);
 
   // Reset form when modal becomes visible
   useEffect(() => {
     if (visible) {
       form.resetFields();
       setFileList([]);
+      setSkills([]);
     }
   }, [visible, form]);
 
@@ -82,7 +84,8 @@ const CreateCandidateModal = ({
         noticePeriod: values.noticePeriod,
         source: values.source,
         resume: resumeData,
-        skillSet: values.skillSet,
+        // Use controlled skills state to ensure all tags are sent
+        skillSet: Array.isArray(skills) ? skills : skills ? [skills] : [],
       };
       const token =
         localStorage.getItem("token") || authState?.access_token?.accessToken;
@@ -121,10 +124,12 @@ const CreateCandidateModal = ({
   const handleReset = () => {
     form.resetFields();
     setFileList([]);
+    setSkills([]);
   };
   const handleCancel = () => {
     form.resetFields();
     setFileList([]);
+    setSkills([]);
     onCancel();
   };
 
@@ -167,6 +172,7 @@ const CreateCandidateModal = ({
         onFinish={handleSubmit}
         initialValues={{
           appliedDate: moment(),
+          skillSet: [],
         }}
       >
         <div className="upload-resume mb-4">
@@ -520,7 +526,7 @@ const CreateCandidateModal = ({
                   }
 
                   // Allow only numbers and specific characters
-                  const allowedChars = /[0-9+]/;
+                  const allowedChars = /[0-9]/;
                   if (!allowedChars.test(e.key)) {
                     e.preventDefault();
                   }
@@ -567,7 +573,7 @@ const CreateCandidateModal = ({
                   }
 
                   // Allow only numbers and specific characters
-                  const allowedChars = /[0-9+]/;
+                  const allowedChars = /[0-9]/;
                   if (!allowedChars.test(e.key)) {
                     e.preventDefault();
                   }
@@ -627,6 +633,9 @@ const CreateCandidateModal = ({
                   placeholder="Enter Your Skills"
                   getPopupContainer={() => document.getElementById("area22")}
                   onFocus={handleSkillsFocus}
+                  value={skills}
+                  onChange={(vals) => setSkills(Array.isArray(vals) ? vals : [])}
+                  tokenSeparators={[',', ' ']}
                 />
               </div>
             </Form.Item>
