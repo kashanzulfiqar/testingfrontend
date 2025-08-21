@@ -2923,11 +2923,7 @@ const TaskBoard = () => {
                       )}
                     </Form.Item>
                   </div>
-                  <div className="col-12">
-                    <Form.Item name="labels" label="Labels" className="custom-border">
-                      <Select mode="tags" style={{ width: '100%' }} placeholder="Add labels" />
-                    </Form.Item>
-                  </div>
+
                 </div>
                 <div className="submit-section">
                   <button type="submit" className="btn btn-primary submit-btn" disabled={loader}>
