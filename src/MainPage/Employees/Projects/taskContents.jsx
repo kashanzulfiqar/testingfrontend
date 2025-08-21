@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import RichTextEditor from "../../../Components/RichTextEditor";
@@ -25,49 +25,12 @@ import moment from 'moment';
 import LikeIcon from "../../../assets/Icons/Like.svg";
 import EmojiIcon from "../../../assets/Icons/emoji.svg";
 import EditIcon from "../../../assets/Icons/Edit.svg";
-import { BASE_URL } from '../../../config/apiConfig';
-
-const getPriorityIcon = (priority) => {
-  switch (priority?.toLowerCase()) {
-    case 'highest':
-      return <ArrowUpOutlined style={{ color: '#FF0000' }} />;
-    case 'high':
-      return <ArrowUpOutlined style={{ color: '#FF4D4F' }} />;
-    case 'medium':
-      return <MinusOutlined style={{ color: '#FAAD14' }} />;
-    case 'low':
-      return <ArrowDownOutlined style={{ color: '#52C41A' }} />;
-    case 'lowest':
-      return <ArrowDownOutlined style={{ color: '#1890FF' }} />;
-    default:
-      return <MinusOutlined style={{ color: '#FAAD14' }} />;
-  }
-};
 
 const TaskContent = ({taskDatas={}}) => {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
-  const initialLoad = useRef(false);
-  
-  // Task type options
-  const taskTypes = [
-    { value: 'Task', label: 'Task', icon: <CheckOutlined /> },
-    { value: 'Story', label: 'Story', icon: <FileTextOutlined /> },
-    { value: 'Bug', label: 'Bug', icon: <CloseCircleOutlined style={{ color: '#f5222d' }} /> },
-    { value: 'Epic', label: 'Epic', icon: <PlusCircleOutlined style={{ color: '#722ed1' }} /> },
-  ];
-  const [taskData, setTaskData] = useState(taskDatas);
-  const [taskType, setTaskType] = useState(taskDatas?.type || 'Task');
-
-  // Update taskType when taskData changes
-  useEffect(() => {
-    if (taskData?.type) {
-      setTaskType(taskData.type);
-    }
-  }, [taskData]);
-  const [editingType, setEditingType] = useState(false);
-  const [typeLoading, setTypeLoading] = useState(false);
+  const [taskData, setTaskData] = useState(location.state.taskData || taskDatas);
   const [inputVisible, setInputVisible] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [openStatusDropdown, setOpenStatusDropdown] = useState(false);
@@ -98,41 +61,6 @@ const TaskContent = ({taskDatas={}}) => {
   const [activityTab, setActivityTab] = useState("comments");
   const [assignee, setAssignee] = useState(taskData?.assignee || null);
   const [priority, setPriority] = useState(taskData?.priority || null);
-  
-  // Helper: format history values (e.g., map team member IDs to names)
-  const formatHistoryValue = (field, value) => {
-    try {
-      if (!value) return 'None';
-      const teamFields = [
-        'teamMembers',
-        'members',
-        'team',
-        'assignedDevelopers',
-        'developers'
-      ];
-      if (teamFields.includes(field)) {
-        let ids = [];
-        if (Array.isArray(value)) ids = value;
-        else if (typeof value === 'string') ids = value.split(',').map(s => s.trim()).filter(Boolean);
-        else if (typeof value === 'object' && value?._id) ids = [value._id];
-        if (ids.length === 0) return 'None';
-        const names = ids.map(id => allEmployees.find(u => u._id === id)?.fullName || id);
-        return names.length ? names.join(', ') : 'None';
-      }
-      // Generic formatting
-      if (typeof value === 'object') {
-        if (value.fullName) return value.fullName;
-        if (value.name) return value.name;
-        if (value.title) return value.title;
-        if (value.label) return value.label;
-        if (value._id) return String(value._id);
-        return JSON.stringify(value);
-      }
-      return String(value);
-    } catch (e) {
-      return String(value ?? 'None');
-    }
-  };
   const [priorityLoading, setPriorityLoading] = useState(false);
   const [assigneeLoading, setAssigneeLoading] = useState(false);
   const [allEmployees, setAllEmployees] = useState([]);
@@ -178,20 +106,6 @@ const TaskContent = ({taskDatas={}}) => {
       fetchTaskDetails().finally(() => setInitialLoading(false));
     }
   }, []);
-
-  useEffect(() => {
-    // Initial setup of task data
-    if (Object.keys(taskDatas).length !== 0) {
-      setTaskData(taskDatas);
-    } else if (location.state?.taskData) {
-      setTaskData(location.state.taskData);
-      // Only fetch details on initial load if we have taskData in location state
-      if (!initialLoad.current) {
-        initialLoad.current = true;
-        fetchTaskDetails().finally(() => setInitialLoading(false));
-      }
-    }
-  }, [taskDatas]);
 
   // Update useEffect to get developers from projectId
   useEffect(() => {
@@ -456,10 +370,6 @@ const TaskContent = ({taskDatas={}}) => {
         .then((res) => {
           if (res?.data?.success === true) {
             fetchTaskDetails();
-            // Immediately refresh activity history so changes appear on the spot
-            if (taskData?._id) {
-              fetchHistory(taskData._id);
-            }
             message.success(t("Team members updated successfully"));
           } else {
             message.error(t("Failed to update team members"));
@@ -833,23 +743,6 @@ const TaskContent = ({taskDatas={}}) => {
     }
     setAssigneeLoading(false);
   };
-  const handleTypeChange = async (value) => {
-    setTypeLoading(true);
-    try {
-      const res = await apiServices("PUT", "tasks", { _id: taskData._id, type: value }, user_state);
-      if (res?.data?.success) {
-        setTaskType(value);
-        setTaskData(prev => ({ ...prev, type: value })); // Update local taskData state
-        message.success("Task type updated");
-        await fetchTaskDetails(); // Refresh all task details
-      }
-    } catch (err) {
-      message.error("Failed to update task type");
-    }
-    setTypeLoading(false);
-    setEditingType(false);
-  };
-
   const handlePriorityChange = async (value) => {
     setPriorityLoading(true);
     try {
@@ -866,20 +759,12 @@ const TaskContent = ({taskDatas={}}) => {
     }
     setPriorityLoading(false);
   };
-  const priorityColors = {
-    Highest: '#FF0000',  // Red
-    High: '#FF4D4F',     // Light Red
-    Medium: '#FAAD14',   // Yellow
-    Low: '#52C41A',      // Green
-    Lowest: '#1890FF'    // Blue
-  };
-
   const priorityOptions = [
-    { value: 'Highest', label: (<><ArrowUpOutlined style={{color: priorityColors.Highest}} /> Highest</>) },
-    { value: 'High', label: (<><ArrowUpOutlined style={{color: priorityColors.High}} /> High</>) },
-    { value: 'Medium', label: (<><MinusOutlined style={{color: priorityColors.Medium}} /> Medium</>) },
-    { value: 'Low', label: (<><ArrowDownOutlined style={{color: priorityColors.Low}} /> Low</>) },
-    { value: 'Lowest', label: (<><ArrowDownOutlined style={{color: priorityColors.Lowest}} /> Lowest</>) },
+    { value: 'Highest', label: (<><ArrowUpOutlined style={{color: '#e74c3c'}} /> Highest</>) },
+    { value: 'High', label: (<><ArrowUpOutlined style={{color: '#e67e22'}} /> High</>) },
+    { value: 'Medium', label: (<><MinusOutlined style={{color: '#f1c40f'}} /> Medium</>) },
+    { value: 'Low', label: (<><ArrowDownOutlined style={{color: '#3498db'}} /> Low</>) },
+    { value: 'Lowest', label: (<><ArrowDownOutlined style={{color: '#2980b9'}} /> Lowest</>) },
   ];
 
   const handleAssignToUser = async (userId) => {
@@ -961,7 +846,7 @@ const TaskContent = ({taskDatas={}}) => {
     fetchAttachments();
   }, [taskData?._id]);
 
-
+  const API_URL = process.env.REACT_APP_API_BASE_URL || '';
   // Upload handler
   const handleAttachmentUpload = async (e) => {
     const file = e.target.files[0];
@@ -976,7 +861,7 @@ const TaskContent = ({taskDatas={}}) => {
       const token = user_state?.access_token?.accessToken || localStorage.getItem('token');
       console.log('Uploading with token:', token);
       // Use environment variable for backend API URL
-      xhr.open('POST', `${BASE_URL}/tasks/${taskData._id}/attachments`);
+      xhr.open('POST', `${API_URL}/tasks/${taskData._id}/attachments`);
       xhr.setRequestHeader('Authorization', token ? `Bearer ${token}` : '');
       xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) {
@@ -2018,9 +1903,9 @@ const TaskContent = ({taskDatas={}}) => {
                                           )}
                                           {h.field !== "status" && (
                                             <>
-                                              <span style={{color: '#888', margin: '0 4px'}}>{formatHistoryValue(h.field, h.from)}</span>
+                                              <span style={{color: '#888', margin: '0 4px'}}>{h.from || "None"}</span>
                                               <span style={{margin: '0 4px'}}>→</span>
-                                              <span style={{color: '#888', margin: '0 4px'}}>{formatHistoryValue(h.field, h.to)}</span>
+                                              <span style={{color: '#888', margin: '0 4px'}}>{h.to || "None"}</span>
                                             </>
                                           )}
                                         </span>
@@ -2160,40 +2045,6 @@ const TaskContent = ({taskDatas={}}) => {
                     )}
                       </div>
                   </div>
-                  {/* Task Type */}
-                  <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 32 }}>
-                    <div style={{ color: '#888', fontSize: 13, minWidth: 90 }}>Type</div>
-                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
-                      {editingType ? (
-                        <Select
-                          style={{ width: 180 }}
-                          value={taskType}
-                          onChange={handleTypeChange}
-                          loading={typeLoading}
-                          onBlur={() => setEditingType(false)}
-                          autoFocus
-                        >
-                          {taskTypes.map(type => (
-                            <Select.Option key={type.value} value={type.value}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                {type.icon}
-                                {type.label}
-                              </div>
-                            </Select.Option>
-                          ))}
-                        </Select>
-                      ) : (
-                        <div
-                          style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 32, cursor: 'pointer' }}
-                          onClick={() => setEditingType(true)}
-                        >
-                          {taskTypes.find(t => t.value === taskType)?.icon || taskTypes[0].icon}
-                          <span>{taskType || 'Task'}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
                   {/* Priority */}
                     <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 32 }}>
                       <div style={{ color: '#888', fontSize: 13, minWidth: 90 }}>Priority</div>
@@ -2220,20 +2071,9 @@ const TaskContent = ({taskDatas={}}) => {
                       ))}
                     </Select>
                         ) : (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 32, cursor: 'pointer', fontWeight: 500 }} onClick={() => setEditingPriority(true)}>
-                            {priority && (
-                              <>
-                                {priority === 'Highest' || priority === 'High' ? (
-                                  <ArrowUpOutlined style={{ color: priorityColors[priority] }} />
-                                ) : priority === 'Medium' ? (
-                                  <MinusOutlined style={{ color: priorityColors[priority] }} />
-                                ) : (
-                                  <ArrowDownOutlined style={{ color: priorityColors[priority] }} />
-                                )}
-                                <span style={{ color: priorityColors[priority] }}>{priority}</span>
-                              </>
-                            )}
-                            {!priority && <span style={{ color: '#bbb' }}>None</span>}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 32, cursor: 'pointer', color: priority ? '#e67e22' : '#bbb', fontWeight: 500 }} onClick={() => setEditingPriority(true)}>
+                            {priority ? <ArrowUpOutlined style={{ color: '#e67e22' }} /> : null}
+                            <span>{priority || 'None'}</span>
                           </div>
                         )}
                       </div>
@@ -2336,15 +2176,6 @@ const TaskContent = ({taskDatas={}}) => {
                             }}
                             autoFocus
                             dropdownStyle={{ minWidth: 180 }}
-                            tagRender={(props) => {
-                              // Only render tags in dropdown, not in the input field
-                              return props.closable ? null : (
-                                <Tag closable={props.closable} onClose={props.onClose}>
-                                  {props.label}
-                                </Tag>
-                              );
-                            }}
-                            maxTagCount={0}
                           />
                         ) : (
                           <div style={{ marginTop: 0, display: 'flex', gap: 8, flexWrap: 'wrap', minHeight: 32, cursor: 'pointer' }} onClick={() => { setLabelsValue(taskData.labels || []); setEditingTags(true); }}>
