@@ -29,6 +29,7 @@ import calander from "../../assets/iconsRecruitment/calander.svg";
 import { useTranslation } from "react-i18next";
 import leftPageIcon from "../../assets/iconsRecruitment/fi_chevrons-left.svg";
 import rightPageIcon from "../../assets/iconsRecruitment/fi_chevrons-right.svg";
+import { Helmet } from "react-helmet";
 
 // const { TextArea } = Input;
 
@@ -93,7 +94,7 @@ const ScreenedCandidates = () => {
       });
       const response = await apiServices(
         "GET",
-        `candidate/list?${(queryParams).toString()}`,
+        `candidate/list?${queryParams.toString()}`,
         null,
         {
           access_token: {
@@ -695,483 +696,489 @@ const ScreenedCandidates = () => {
     );
   };
   return (
-    <div className="content container-fluid">
-      {/* Page Header */}
-      <div className="page-header">
-        <div className="row align-items-center">
-          <div className="col">
-            <h3 className="page-title">ScreenedCandidates</h3>
-            <ul className="breadcrumb">
-              <li className="breadcrumb-item">
-                <Link to="/recruitment/dashboard">Dashboard</Link>
-              </li>
-              <li className="breadcrumb-item active">ScreenedCandidates</li>
-            </ul>
-          </div>
-          <div className="col-auto float-end ms-auto d-flex align-items-center">
-            <div className="view-icons me-3">
-              <button
-                type={viewType === "list" ? "primary" : "default"}
-                onClick={() => setViewType("list")}
-                style={{
-                  height: "40px",
-                  width: "40px",
-                  border: "1.5px solid #EEf0f1",
-                  borderRadius: "4px",
-                  background: "white",
-                }}
-              >
-                <img src={list}></img>
-              </button>
-              <button
-                type={viewType === "grid" ? "primary" : "default"}
-                onClick={() => setViewType("grid")}
-                style={{
-                  height: "40px",
-                  width: "40px",
-                  border: "1.5px solid #EEf0f1",
-                  borderRadius: "4px",
-                  background: "white",
-                }}
-              >
-                <img src={grid}></img>
-              </button>
+    <>
+      <Helmet>
+        <title>Screened Candidates</title>
+        <meta name="description" content="Login page" />
+      </Helmet>
+      <div className="content container-fluid">
+        {/* Page Header */}
+        <div className="page-header">
+          <div className="row align-items-center">
+            <div className="col">
+              <h3 className="page-title">ScreenedCandidates</h3>
+              <ul className="breadcrumb">
+                <li className="breadcrumb-item">
+                  <Link to="/recruitment/dashboard">Dashboard</Link>
+                </li>
+                <li className="breadcrumb-item active">ScreenedCandidates</li>
+              </ul>
+            </div>
+            <div className="col-auto float-end ms-auto d-flex align-items-center">
+              <div className="view-icons me-3">
+                <button
+                  type={viewType === "list" ? "primary" : "default"}
+                  onClick={() => setViewType("list")}
+                  style={{
+                    height: "40px",
+                    width: "40px",
+                    border: "1.5px solid #EEf0f1",
+                    borderRadius: "4px",
+                    background: "white",
+                  }}
+                >
+                  <img src={list}></img>
+                </button>
+                <button
+                  type={viewType === "grid" ? "primary" : "default"}
+                  onClick={() => setViewType("grid")}
+                  style={{
+                    height: "40px",
+                    width: "40px",
+                    border: "1.5px solid #EEf0f1",
+                    borderRadius: "4px",
+                    background: "white",
+                  }}
+                >
+                  <img src={grid}></img>
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Search Filters */}
-      <Form
-        form={form}
-        onFinish={handleSearch}
-        onValuesChange={(changedValues, allValues) => {
-          const clearedField = Object.keys(changedValues).find(
-            (key) =>
-              changedValues[key] === "" || changedValues[key] === undefined
-          );
-          if (clearedField) {
-            handleSearch(allValues);
-          }
-        }}
-        className="search-form"
-        initialValues={filters}
-      >
-        <Row gutter={[12, 12]} align="middle">
-          <Col xs={24} sm={12} md={4}>
-            <Form.Item name="fullName" className="mb-0">
-              <Input
-                style={{ borderRadius: "8px", height: "40px" }}
-                placeholder="Candidate Name"
-                allowClear
-              />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={12} md={4}>
-            <Form.Item name="email" className="mb-0">
-              <Input
-                style={{ borderRadius: "8px", height: "40px" }}
-                placeholder="Email"
-                allowClear
-              />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={12} md={4}>
-            <Form.Item name="appliedFor" className="mb-0">
-              <Input
-                style={{ borderRadius: "8px", height: "40px" }}
-                placeholder="Position"
-                allowClear
-              />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={12} md={4}>
-            <Form.Item className="mb-0">
-              <Button
-                type="primary"
-                htmlType="submit"
-                className="search-btn"
-                block
-              >
-                Search
-              </Button>
-            </Form.Item>
-          </Col>
-        </Row>
-      </Form>
+        {/* Search Filters */}
+        <Form
+          form={form}
+          onFinish={handleSearch}
+          onValuesChange={(changedValues, allValues) => {
+            const clearedField = Object.keys(changedValues).find(
+              (key) =>
+                changedValues[key] === "" || changedValues[key] === undefined
+            );
+            if (clearedField) {
+              handleSearch(allValues);
+            }
+          }}
+          className="search-form"
+          initialValues={filters}
+        >
+          <Row gutter={[12, 12]} align="middle">
+            <Col xs={24} sm={12} md={4}>
+              <Form.Item name="fullName" className="mb-0">
+                <Input
+                  style={{ borderRadius: "8px", height: "40px" }}
+                  placeholder="Candidate Name"
+                  allowClear
+                />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12} md={4}>
+              <Form.Item name="email" className="mb-0">
+                <Input
+                  style={{ borderRadius: "8px", height: "40px" }}
+                  placeholder="Email"
+                  allowClear
+                />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12} md={4}>
+              <Form.Item name="appliedFor" className="mb-0">
+                <Input
+                  style={{ borderRadius: "8px", height: "40px" }}
+                  placeholder="Position"
+                  allowClear
+                />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12} md={4}>
+              <Form.Item className="mb-0">
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  className="search-btn"
+                  block
+                >
+                  Search
+                </Button>
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
 
-      <div className="row">
-        <div className="col-md-12">
-          <Spin spinning={loading}>
-            {viewType === "list" ? (
-              <>
-                {candidates?.length > 0 && (
-                  <Row justify="space-between" style={{ marginBottom: 16 }}>
-                    <Col>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "5px",
-                        }}
-                      >
-                        <div style={{ fontSize: "14px" }}>Show</div>
-                        <Select
-                          className="customized"
-                          value={pageSize}
-                          onChange={(size) => {
-                            setPageSize(size);
-                            setCurrentPage(1);
+        <div className="row">
+          <div className="col-md-12">
+            <Spin spinning={loading}>
+              {viewType === "list" ? (
+                <>
+                  {candidates?.length > 0 && (
+                    <Row justify="space-between" style={{ marginBottom: 16 }}>
+                      <Col>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "5px",
                           }}
-                          style={{ width: 60 }}
                         >
-                          {["20", "30", "40", "50"].map((size) => (
-                            <Option key={size} value={parseInt(size, 10)}>
-                              {size}
-                            </Option>
-                          ))}
-                        </Select>
-                        <div style={{ fontSize: "14px" }}>entries</div>
-                      </div>
-                    </Col>
-                  </Row>
-                )}
-                <div className="table-responsive">
-                  <Table
-                    className="table-striped"
-                    columns={columns}
-                    dataSource={candidates}
-                    rowKey="_id"
-                    // scroll={{ x: 1350 }}
-                    // pagination={{
-                    //   ...pagination,
-                    //   showSizeChanger: true,
-                    //   showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                    //   pageSizeOptions: ['10', '20', '50']
-                    // }}
-                    pagination={false}
-                    // onChange={handleTableChange}
-                  />
-                </div>
-                {candidates?.length > 0 && (
-                  <Row
-                    justify="space-between"
-                    align="middle"
-                    style={{ marginTop: 16 }}
-                  >
-                    <Col>
-                      <span style={{ fontSize: "14px" }}>
-                        {t("paginationShow", {
-                          range1: (currentPage - 1) * pageSize + 1,
-                          range2: Math.min(
-                            currentPage * pageSize,
-                            paginationDetail
-                          ),
-                          total: paginationDetail,
-                        })}
-                      </span>
-                    </Col>
-                    <Col>
-                      <Pagination
-                        total={paginationDetail}
-                        pageSize={pageSize}
-                        current={currentPage}
-                        showSizeChanger={false}
-                        onChange={(page, size) => {
-                          setPageSize(size);
-                          setCurrentPage(page);
-                        }}
-                        pageSizeOptions={["20", "30", "40", "50"]}
-                        itemRender={(current, type, originalElement) => {
-                          if (type === "prev") {
-                            return (
-                              <img
-                                src={leftPageIcon}
-                                style={{ height: "24px", width: "24px" }}
-                              />
-                            );
-                          }
-                          if (type === "next") {
-                            return (
-                              <img
-                                src={rightPageIcon}
-                                style={{ height: "24px", width: "24px" }}
-                              />
-                            );
-                          }
-                          return originalElement;
-                        }}
-                      />
-                    </Col>
-                  </Row>
-                )}
-              </>
-            ) : (
-              renderGridView()
-            )}
-          </Spin>
+                          <div style={{ fontSize: "14px" }}>Show</div>
+                          <Select
+                            className="customized"
+                            value={pageSize}
+                            onChange={(size) => {
+                              setPageSize(size);
+                              setCurrentPage(1);
+                            }}
+                            style={{ width: 60 }}
+                          >
+                            {["20", "30", "40", "50"].map((size) => (
+                              <Option key={size} value={parseInt(size, 10)}>
+                                {size}
+                              </Option>
+                            ))}
+                          </Select>
+                          <div style={{ fontSize: "14px" }}>entries</div>
+                        </div>
+                      </Col>
+                    </Row>
+                  )}
+                  <div className="table-responsive">
+                    <Table
+                      className="table-striped"
+                      columns={columns}
+                      dataSource={candidates}
+                      rowKey="_id"
+                      // scroll={{ x: 1350 }}
+                      // pagination={{
+                      //   ...pagination,
+                      //   showSizeChanger: true,
+                      //   showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+                      //   pageSizeOptions: ['10', '20', '50']
+                      // }}
+                      pagination={false}
+                      // onChange={handleTableChange}
+                    />
+                  </div>
+                  {candidates?.length > 0 && (
+                    <Row
+                      justify="space-between"
+                      align="middle"
+                      style={{ marginTop: 16 }}
+                    >
+                      <Col>
+                        <span style={{ fontSize: "14px" }}>
+                          {t("paginationShow", {
+                            range1: (currentPage - 1) * pageSize + 1,
+                            range2: Math.min(
+                              currentPage * pageSize,
+                              paginationDetail
+                            ),
+                            total: paginationDetail,
+                          })}
+                        </span>
+                      </Col>
+                      <Col>
+                        <Pagination
+                          total={paginationDetail}
+                          pageSize={pageSize}
+                          current={currentPage}
+                          showSizeChanger={false}
+                          onChange={(page, size) => {
+                            setPageSize(size);
+                            setCurrentPage(page);
+                          }}
+                          pageSizeOptions={["20", "30", "40", "50"]}
+                          itemRender={(current, type, originalElement) => {
+                            if (type === "prev") {
+                              return (
+                                <img
+                                  src={leftPageIcon}
+                                  style={{ height: "24px", width: "24px" }}
+                                />
+                              );
+                            }
+                            if (type === "next") {
+                              return (
+                                <img
+                                  src={rightPageIcon}
+                                  style={{ height: "24px", width: "24px" }}
+                                />
+                              );
+                            }
+                            return originalElement;
+                          }}
+                        />
+                      </Col>
+                    </Row>
+                  )}
+                </>
+              ) : (
+                renderGridView()
+              )}
+            </Spin>
+          </div>
         </div>
-      </div>
 
-      {/* Add some global styles */}
-      <style jsx>{`
-        .customized .ant-select-selector {
-          height: 21px !important;
-          display: flex;
-          align-items: center;
-          padding: 7px !important;
-        }
-        .ant-pagination {
-          margin-top: 0px !important;
-          display: flex;
-          align-items: center;
-        }
+        {/* Add some global styles */}
+        <style jsx>{`
+          .customized .ant-select-selector {
+            height: 21px !important;
+            display: flex;
+            align-items: center;
+            padding: 7px !important;
+          }
+          .ant-pagination {
+            margin-top: 0px !important;
+            display: flex;
+            align-items: center;
+          }
 
-        .customized .ant-select-selection-item {
-          padding: 0 !important;
-          margin: 0;
-        }
+          .customized .ant-select-selection-item {
+            padding: 0 !important;
+            margin: 0;
+          }
 
-        .customized .ant-select-arrow {
-          transform: translateX(50%);
-          transform: translateY(20%);
-        }
-        .custom-modal .ant-input,
-        .custom-modal .ant-select-selector,
-        .custom-modal .ant-input-number {
-          border-radius: 8px;
-          padding: 8px 12px;
-          height: 56px;
-          font-size: 16px;
-          font-weight: 450;
-        }
-        .custom-modal .ant-input-number-input {
-          height: 24px;
-          font-size: 16px;
-          font-weight: 450;
-        }
-        .custom-modal .ant-select-selection-placeholder,
-        .custom-modal .ant-input::placeholder {
-          color: #6c757d;
-        }
-        .custom-modal textarea.ant-input {
-          height: auto;
-          min-height: 120px;
-          height: 80px;
-          border-radius: 8px;
-        }
-        .view-icons {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-        .view-icons .ant-btn {
-          padding: 4px 8px;
-          height: 32px;
-          background: #f4a261;
-          border: none;
-          color: white;
-        }
-        .view-icons .ant-btn:hover {
-          background: #e76f51;
-          color: white;
-        }
-        .view-icons .ant-btn.ant-btn-default {
-          background: #f8f9fa;
-          color: #4a5568;
-        }
-        .view-icons .ant-btn.ant-btn-default:hover {
-          background: #e2e8f0;
-          color: #2d3748;
-        }
-        .search-form {
-          background: transparent;
-          margin-bottom: 16px;
-        }
+          .customized .ant-select-arrow {
+            transform: translateX(50%);
+            transform: translateY(20%);
+          }
+          .custom-modal .ant-input,
+          .custom-modal .ant-select-selector,
+          .custom-modal .ant-input-number {
+            border-radius: 8px;
+            padding: 8px 12px;
+            height: 56px;
+            font-size: 16px;
+            font-weight: 450;
+          }
+          .custom-modal .ant-input-number-input {
+            height: 24px;
+            font-size: 16px;
+            font-weight: 450;
+          }
+          .custom-modal .ant-select-selection-placeholder,
+          .custom-modal .ant-input::placeholder {
+            color: #6c757d;
+          }
+          .custom-modal textarea.ant-input {
+            height: auto;
+            min-height: 120px;
+            height: 80px;
+            border-radius: 8px;
+          }
+          .view-icons {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+          }
+          .view-icons .ant-btn {
+            padding: 4px 8px;
+            height: 32px;
+            background: #f4a261;
+            border: none;
+            color: white;
+          }
+          .view-icons .ant-btn:hover {
+            background: #e76f51;
+            color: white;
+          }
+          .view-icons .ant-btn.ant-btn-default {
+            background: #f8f9fa;
+            color: #4a5568;
+          }
+          .view-icons .ant-btn.ant-btn-default:hover {
+            background: #e2e8f0;
+            color: #2d3748;
+          }
+          .search-form {
+            background: transparent;
+            margin-bottom: 16px;
+          }
 
-        .search-btn {
-          background: #1f1f1f;
-          border: 1px solid #1f1f1f;
-          height: 40px;
-          border-radius: 8px;
-          width: 80% !important;
-          font-weight: 500;
-          font-size: 16px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          justify-self: end;
-        }
-        .search-btn:hover {
-          background: #333 !important;
-          border: none;
-        }
-        .job-card {
-          background: white;
-          border-radius: 8px;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-          border: 1px solid #e0e3e6;
-          box-sizing: border-box;
-          height: 100%;
-        }
-
-        .job-card .ant-card-body {
-          padding: 16px;
-        }
-        .job-card-content {
-          padding: 0;
-          min-height: 320ppx;
-        }
-        .job-details {
-          width: 98%;
-          padding-top: 14px;
-          padding-bottom: 14px;
-        }
-        .detail-item {
-          display: flex;
-          align-items: center;
-          margin-bottom: 6px;
-          color: #4a5568;
-          font-size: 13px;
-          line-height: 1;
-          height: 50%;
-        }
-        .detail-items {
-          display: flex;
-          align-items: flex-start;
-          margin-bottom: 6px;
-          color: #4a5568;
-          font-size: 13px;
-          line-height: 1;
-          height: 40%;
-        }
-        .detail-item:last-child {
-          margin-bottom: 0;
-        }
-        .detail-item .icons,
-        .detail-items .icons {
-          width: 20px;
-          margin-right: 8px;
-          display: flex;
-          justify-content: center;
-          flex-shrink: 0;
-          height: 20px;
-          margin-left: 3px;
-        }
-        .detail-item .icon svg {
-          display: block;
-        }
-        .detail-item .detail-text,
-        .detail-items .detail-text {
-          line-height: 17px;
-          font-size: 14px;
-          font-weight: 450px;
-          color: #56616b;
-          display: flex;
-          align-items: flex-end;
-          margin-top: 5px;
-        }
-
-        .card-foot {
-          width: 98%;
-        }
-        .ant-row {
-          margin-right: -12px !important;
-          margin-left: -12px !important;
-        }
-        .ant-col {
-          padding-right: 12px !important;
-          padding-left: 12px !important;
-        }
-        .custom .ant-select-selector {
-          height: 40px !important;
-          border-radius: 8px !important;
-          display: flex;
-          align-items: center;
-          padding-left: 10px;
-        }
-
-        .custom .ant-select-placeholder {
-          color: white !important;
-        }
-
-        .add-candidate-btn {
-          border-radius: 40px !important;
-          height: 44px !important;
-          background-color: #ff9244 !important;
-          color: white !important;
-          font-weight: 500 !important;
-          font-size: 16px !important;
-          border: 2px solid #ff9244 !important;
-          width: 185px !important;
-        }
-
-        .btn-content {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-
-        .checkbox-style {
-          display: "flex";
-          gap: "24px";
-        }
-
-        .custom-table {
-          width: 100%;
-          border-collapse: collapse;
-          table-layout: fixed;
-        }
-
-        .custom-table th {
-          width: 300px !important;
-          background-color: #ffffff;
-          color: #212529;
-          font-size: 14px;
-          font-weight: 500;
-          padding: 12px 15px;
-          text-align: center !important;
-        }
-
-        .custom-table td {
-          width: 300px !;
-          padding: 12px 15px;
-          background-color: #f7f7f8;
-        }
-
-        .custom-table tr:nth-child(even) {
-          background-color: #eef0f1;
-        }
-
-        .custom-table tr:hover {
-          background-color: #f1f1f1;
-        }
-
-        @media (max-width: 768px) {
           .search-btn {
-            justify-self: center;
+            background: #1f1f1f;
+            border: 1px solid #1f1f1f;
+            height: 40px;
+            border-radius: 8px;
             width: 80% !important;
+            font-weight: 500;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            justify-self: end;
           }
-        }
+          .search-btn:hover {
+            background: #333 !important;
+            border: none;
+          }
+          .job-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e0e3e6;
+            box-sizing: border-box;
+            height: 100%;
+          }
 
-        @media (min-width: 350px) and (max-width: 390px) {
+          .job-card .ant-card-body {
+            padding: 16px;
+          }
+          .job-card-content {
+            padding: 0;
+            min-height: 320ppx;
+          }
+          .job-details {
+            width: 98%;
+            padding-top: 14px;
+            padding-bottom: 14px;
+          }
+          .detail-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+            color: #4a5568;
+            font-size: 13px;
+            line-height: 1;
+            height: 50%;
+          }
+          .detail-items {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 6px;
+            color: #4a5568;
+            font-size: 13px;
+            line-height: 1;
+            height: 40%;
+          }
+          .detail-item:last-child {
+            margin-bottom: 0;
+          }
+          .detail-item .icons,
+          .detail-items .icons {
+            width: 20px;
+            margin-right: 8px;
+            display: flex;
+            justify-content: center;
+            flex-shrink: 0;
+            height: 20px;
+            margin-left: 3px;
+          }
+          .detail-item .icon svg {
+            display: block;
+          }
+          .detail-item .detail-text,
+          .detail-items .detail-text {
+            line-height: 17px;
+            font-size: 14px;
+            font-weight: 450px;
+            color: #56616b;
+            display: flex;
+            align-items: flex-end;
+            margin-top: 5px;
+          }
+
+          .card-foot {
+            width: 98%;
+          }
+          .ant-row {
+            margin-right: -12px !important;
+            margin-left: -12px !important;
+          }
+          .ant-col {
+            padding-right: 12px !important;
+            padding-left: 12px !important;
+          }
+          .custom .ant-select-selector {
+            height: 40px !important;
+            border-radius: 8px !important;
+            display: flex;
+            align-items: center;
+            padding-left: 10px;
+          }
+
+          .custom .ant-select-placeholder {
+            color: white !important;
+          }
+
+          .add-candidate-btn {
+            border-radius: 40px !important;
+            height: 44px !important;
+            background-color: #ff9244 !important;
+            color: white !important;
+            font-weight: 500 !important;
+            font-size: 16px !important;
+            border: 2px solid #ff9244 !important;
+            width: 185px !important;
+          }
+
+          .btn-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+
           .checkbox-style {
-            gap: 10px;
+            display: "flex";
+            gap: "24px";
           }
-        }
 
-        @media (min-width: 990px) and (max-width: 1200px) {
-          .applications-count {
-            margin-right: 0;
+          .custom-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
           }
-        }
-        @media (min-width: 767px) and (max-width: 830px) {
-          .applications-count {
-            margin-right: 0;
+
+          .custom-table th {
+            width: 300px !important;
+            background-color: #ffffff;
+            color: #212529;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 12px 15px;
+            text-align: center !important;
           }
-        }
-      `}</style>
-    </div>
+
+          .custom-table td {
+            width: 300px !;
+            padding: 12px 15px;
+            background-color: #f7f7f8;
+          }
+
+          .custom-table tr:nth-child(even) {
+            background-color: #eef0f1;
+          }
+
+          .custom-table tr:hover {
+            background-color: #f1f1f1;
+          }
+
+          @media (max-width: 768px) {
+            .search-btn {
+              justify-self: center;
+              width: 80% !important;
+            }
+          }
+
+          @media (min-width: 350px) and (max-width: 390px) {
+            .checkbox-style {
+              gap: 10px;
+            }
+          }
+
+          @media (min-width: 990px) and (max-width: 1200px) {
+            .applications-count {
+              margin-right: 0;
+            }
+          }
+          @media (min-width: 767px) and (max-width: 830px) {
+            .applications-count {
+              margin-right: 0;
+            }
+          }
+        `}</style>
+      </div>
+    </>
   );
 };
 

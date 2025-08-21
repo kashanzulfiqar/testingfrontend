@@ -1,28 +1,49 @@
-import React, { useState, useEffect } from 'react';
-import { Table, Input, Card, Tag, Empty, message, Button, Select, Modal, Form, Tooltip, Row, Col, Statistic, Pagination} from 'antd';
-import { Link, useNavigate } from 'react-router-dom';
-import { SearchOutlined, DownloadOutlined, InfoCircleOutlined, StarFilled } from '@ant-design/icons';
-import moment from 'moment';
-import { apiServices } from '../../Services/apiServices';
-import { useSelector } from 'react-redux';
-import list from '../../assets/iconsRecruitment/list.svg';
-import grid from '../../assets/iconsRecruitment/grid.svg';
-import calander from '../../assets/iconsRecruitment/calander.svg';
-import phone from '../../assets/iconsRecruitment/phone.svg';
-import email from '../../assets/iconsRecruitment/mail.svg';
-import starIcon from '../../assets/iconsRecruitment/starIcon.svg';
+import React, { useState, useEffect } from "react";
+import {
+  Table,
+  Input,
+  Card,
+  Tag,
+  Empty,
+  message,
+  Button,
+  Select,
+  Modal,
+  Form,
+  Tooltip,
+  Row,
+  Col,
+  Statistic,
+  Pagination,
+} from "antd";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  SearchOutlined,
+  DownloadOutlined,
+  InfoCircleOutlined,
+  StarFilled,
+} from "@ant-design/icons";
+import moment from "moment";
+import { apiServices } from "../../Services/apiServices";
+import { useSelector } from "react-redux";
+import list from "../../assets/iconsRecruitment/list.svg";
+import grid from "../../assets/iconsRecruitment/grid.svg";
+import calander from "../../assets/iconsRecruitment/calander.svg";
+import phone from "../../assets/iconsRecruitment/phone.svg";
+import email from "../../assets/iconsRecruitment/mail.svg";
+import starIcon from "../../assets/iconsRecruitment/starIcon.svg";
 import { useTranslation } from "react-i18next";
-import leftPageIcon from '../../assets/iconsRecruitment/fi_chevrons-left.svg';
-import rightPageIcon from '../../assets/iconsRecruitment/fi_chevrons-right.svg';
-
+import leftPageIcon from "../../assets/iconsRecruitment/fi_chevrons-left.svg";
+import rightPageIcon from "../../assets/iconsRecruitment/fi_chevrons-right.svg";
+import { Helmet } from "react-helmet";
 
 const { Option } = Select;
 
 const OfferedCandidates = () => {
-  const {t} = useTranslation();
-  const [filters ,setFilters] = useState({});
+  const { t } = useTranslation();
+  const [filters, setFilters] = useState({});
   const [candidates, setCandidates] = useState([]);
-  const [viewType, setViewType] =useState('list')
+  const [viewType, setViewType] = useState("list");
   const [loading, setLoading] = useState(false);
   const [isRejectionModalVisible, setIsRejectionModalVisible] = useState(false);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
@@ -32,21 +53,21 @@ const OfferedCandidates = () => {
   const [stats, setStats] = useState({
     totalOffers: 0,
     activeOffers: 0,
-    rejectedOffers: 0
+    rejectedOffers: 0,
   });
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
-    total: 0
+    total: 0,
   });
   const navigate = useNavigate();
   const loginState = useSelector((state) => state.user.loginvalue);
-  const [paginationDetail , setPaginationDetail] = useState();
-  const [pageSize , setPageSize] =useState(20);
-  const [currentPage,setCurrentPage] =useState(1);
+  const [paginationDetail, setPaginationDetail] = useState();
+  const [pageSize, setPageSize] = useState(20);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const handleStatusChange = async (candidateId, newStatus) => {
-    if (newStatus === 'OFFER_REJECTED') {
+    if (newStatus === "OFFER_REJECTED") {
       setSelectedCandidate(candidateId);
       setIsRejectionModalVisible(true);
       return;
@@ -55,11 +76,16 @@ const OfferedCandidates = () => {
     await updateCandidateStatus(candidateId, newStatus);
   };
 
-  const updateCandidateStatus = async (candidateId, newStatus, rejectionReason = null) => {
+  const updateCandidateStatus = async (
+    candidateId,
+    newStatus,
+    rejectionReason = null
+  ) => {
     try {
       setUpdatingStatus(true);
-      const token = loginState?.access_token?.accessToken || localStorage.getItem("token");
-      
+      const token =
+        loginState?.access_token?.accessToken || localStorage.getItem("token");
+
       if (!token) {
         message.error("Authentication required");
         return;
@@ -67,11 +93,11 @@ const OfferedCandidates = () => {
 
       const payload = {
         status: newStatus,
-        ...(rejectionReason && { reason: rejectionReason })
+        ...(rejectionReason && { reason: rejectionReason }),
       };
 
       const response = await apiServices(
-        'PATCH',
+        "PATCH",
         `candidate/${candidateId}/status`,
         payload,
         {
@@ -85,14 +111,14 @@ const OfferedCandidates = () => {
       );
 
       if (response?.data?.status) {
-        message.success('Status updated successfully');
-        fetchOfferedCandidates(currentPage,pageSize);
+        message.success("Status updated successfully");
+        fetchOfferedCandidates(currentPage, pageSize);
       } else {
-        throw new Error(response?.data?.message || 'Failed to update status');
+        throw new Error(response?.data?.message || "Failed to update status");
       }
     } catch (error) {
-      console.error('Error updating status:', error);
-      message.error(error.message || 'Error updating status');
+      console.error("Error updating status:", error);
+      message.error(error.message || "Error updating status");
     } finally {
       setUpdatingStatus(false);
       setIsRejectionModalVisible(false);
@@ -101,31 +127,36 @@ const OfferedCandidates = () => {
   };
 
   const handleRejectionSubmit = async (values) => {
-    await updateCandidateStatus(selectedCandidate, 'OFFER_REJECTED', values.rejectionReason);
+    await updateCandidateStatus(
+      selectedCandidate,
+      "OFFER_REJECTED",
+      values.rejectionReason
+    );
   };
 
   const fetchOfferedCandidates = async (page = 1, limit = 10, filters = {}) => {
     try {
       setLoading(true);
-      const token = loginState?.access_token?.accessToken || localStorage.getItem("token");
-      
+      const token =
+        loginState?.access_token?.accessToken || localStorage.getItem("token");
+
       if (!token) {
         message.error("Authentication required");
-        navigate('/login');
+        navigate("/login");
         return;
       }
 
       const queryParams = {
-        status: 'OFFERED',
+        status: "OFFERED",
         page: currentPage,
         limit: pageSize,
-        ...(filters.fullName && {fullName: filters.fullName}),
-        ...(filters.email && {email : filters.email}),
-        ...(filters.appliedFor && { appliedFor: filters.appliedFor}),
+        ...(filters.fullName && { fullName: filters.fullName }),
+        ...(filters.email && { email: filters.email }),
+        ...(filters.appliedFor && { appliedFor: filters.appliedFor }),
       };
 
       const response = await apiServices(
-        'GET',
+        "GET",
         `candidate/list?${new URLSearchParams(queryParams).toString()}`,
         null,
         {
@@ -141,28 +172,32 @@ const OfferedCandidates = () => {
       if (response?.data?.status) {
         const candidatesList = response.data.data.docs || [];
         setCandidates(candidatesList);
-        
+
         // Update statistics
-        const activeOffers = candidatesList.filter(c => c.status === 'OFFERED').length;
-        const rejectedOffers = candidatesList.filter(c => c.status === 'OFFER_REJECTED').length;
-        
+        const activeOffers = candidatesList.filter(
+          (c) => c.status === "OFFERED"
+        ).length;
+        const rejectedOffers = candidatesList.filter(
+          (c) => c.status === "OFFER_REJECTED"
+        ).length;
+
         setStats({
           totalOffers: candidatesList.length,
           activeOffers,
-          rejectedOffers
+          rejectedOffers,
         });
 
         setPagination({
           ...pagination,
           current: page,
-          total: response.data.data.totalDocs || 0
+          total: response.data.data.totalDocs || 0,
         });
 
         setPaginationDetail(response.data.data.totalDocs || 0);
       }
     } catch (error) {
-      console.error('Error fetching offered candidates:', error);
-      message.error('Failed to fetch offered candidates');
+      console.error("Error fetching offered candidates:", error);
+      message.error("Failed to fetch offered candidates");
       setCandidates([]);
       setPaginationDetail(0);
     } finally {
@@ -171,14 +206,15 @@ const OfferedCandidates = () => {
   };
 
   useEffect(() => {
-    const token = loginState?.access_token?.accessToken || localStorage.getItem("token");
-    
+    const token =
+      loginState?.access_token?.accessToken || localStorage.getItem("token");
+
     if (!token) {
       message.error("Please login again to continue");
-      navigate('/login');
+      navigate("/login");
       return;
     }
-    
+
     fetchOfferedCandidates();
   }, [currentPage, pageSize]);
 
@@ -187,19 +223,19 @@ const OfferedCandidates = () => {
   // };
 
   const handleSearch = (values) => {
-    console.log('Search Values:', values);
+    console.log("Search Values:", values);
     setPagination({
       ...pagination,
-      currentPage: 1
+      currentPage: 1,
     });
-    fetchOfferedCandidates(1,pageSize, values);
+    fetchOfferedCandidates(1, pageSize, values);
     setFilters(values);
   };
 
   const getStatusTag = (status) => {
-    if (status === 'OFFERED') {
+    if (status === "OFFERED") {
       return <Tag color="blue">OFFERED</Tag>;
-    } else if (status === 'OFFER_REJECTED') {
+    } else if (status === "OFFER_REJECTED") {
       return <Tag color="red">OFFER_REJECTED</Tag>;
     }
     return <Tag>{status}</Tag>;
@@ -207,32 +243,63 @@ const OfferedCandidates = () => {
 
   const columns = [
     {
-      title: 'Name',
-      key: 'name',
-      fixed: 'left',
+      title: "Name",
+      key: "name",
+      fixed: "left",
       width: 200,
       render: (_, record) => (
-        <div style={{display:"flex", alignItems:'center', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', maxWidth:'190px'}}>
-          <div style={{minHeight:'40px' ,minWidth:"40px", border:"1px solid transparent" , borderRadius:"50%", background:'#f5f1fd', color:'#9368e9', display:"flex", justifyContent:"center", alignItems:'center', marginLeft:"10px", marginRight:"10px"}}>{`${record.firstName.charAt(0).toUpperCase()}${record.lastName.charAt(0).toUpperCase()}`}</div>
-          <Link to={`/recruitment/candidates/${record._id}`} style={{fontSize:"14px", color:"#212529"}}>
-            {record.firstName.charAt(0).toUpperCase() + record.firstName.slice(1).toLowerCase()} {record.lastName.charAt(0).toUpperCase() + record.lastName.slice(1).toLowerCase()}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            maxWidth: "190px",
+          }}
+        >
+          <div
+            style={{
+              minHeight: "40px",
+              minWidth: "40px",
+              border: "1px solid transparent",
+              borderRadius: "50%",
+              background: "#f5f1fd",
+              color: "#9368e9",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              marginLeft: "10px",
+              marginRight: "10px",
+            }}
+          >{`${record.firstName.charAt(0).toUpperCase()}${record.lastName
+            .charAt(0)
+            .toUpperCase()}`}</div>
+          <Link
+            to={`/recruitment/candidates/${record._id}`}
+            style={{ fontSize: "14px", color: "#212529" }}
+          >
+            {record.firstName.charAt(0).toUpperCase() +
+              record.firstName.slice(1).toLowerCase()}{" "}
+            {record.lastName.charAt(0).toUpperCase() +
+              record.lastName.slice(1).toLowerCase()}
           </Link>
         </div>
       ),
     },
     {
-      title: 'Applied Position',
-      key: 'position',
+      title: "Applied Position",
+      key: "position",
       width: 200,
-      render: (_, record) => record.appliedFor?.title || 'N/A',
+      render: (_, record) => record.appliedFor?.title || "N/A",
     },
     {
-      title: 'Email',
-      key: 'email',
+      title: "Email",
+      key: "email",
       width: 200,
-      render: (_, record) => record.email || 'N/A',
+      render: (_, record) => record.email || "N/A",
     },
-    
+
     // {
     //   title: 'Applied Date',
     //   dataIndex: 'appliedDate',
@@ -266,25 +333,25 @@ const OfferedCandidates = () => {
     //   },
     // },
     {
-      title: 'Rating',
-      key: 'rating',
+      title: "Rating",
+      key: "rating",
       width: 200,
       render: (_, record) => {
-        const rating = (record?.rating)/5 || 'N/A'; 
-        return(
+        const rating = record?.rating / 5 || "N/A";
+        return (
           <div className="d-flex align-items-center">
-            <StarFilled style={{ color: '#FFD700', marginRight: 4 }}/>
+            <StarFilled style={{ color: "#FFD700", marginRight: 4 }} />
             <span>{rating}</span>
           </div>
-        )
-      }
+        );
+      },
     },
 
     {
-      title: 'Status',
-      key: 'status',
+      title: "Status",
+      key: "status",
       width: 200,
-      render: (_,record) => (
+      render: (_, record) => (
         // <div>
         //   {getStatusTag(record.status)}
         //   {record.status === 'OFFERED' && (
@@ -300,21 +367,28 @@ const OfferedCandidates = () => {
         //     </Select>
         //   )}
         // </div>
-        <Tag color={
-          record?.status.toLowerCase() === 'offered' ? 'blue' :
-          record?.status.toLowerCase() === 'hired' ? 'green' :
-          record?.status.toLowerCase() === 'offer_rejected' ? 'red' :
-          'default'
-        } style={{borderRadius:"70px"}}>
-          {record?.status.charAt(0).toUpperCase() + record?.status.slice(1).toLowerCase()}
+        <Tag
+          color={
+            record?.status.toLowerCase() === "offered"
+              ? "blue"
+              : record?.status.toLowerCase() === "hired"
+              ? "green"
+              : record?.status.toLowerCase() === "offer_rejected"
+              ? "red"
+              : "default"
+          }
+          style={{ borderRadius: "70px" }}
+        >
+          {record?.status.charAt(0).toUpperCase() +
+            record?.status.slice(1).toLowerCase()}
         </Tag>
       ),
     },
     {
-      title: 'Contact',
-      key: 'contact',
+      title: "Contact",
+      key: "contact",
       width: 200,
-      render: (_, record) => record.phoneNumber || 'N/A',
+      render: (_, record) => record.phoneNumber || "N/A",
     },
     // {
     //   title: 'Rejection Reason',
@@ -332,25 +406,67 @@ const OfferedCandidates = () => {
   const renderGridView = () => {
     return (
       <Row gutter={[24, 24]}>
-        {candidates.map(selected => {
+        {candidates.map((selected) => {
           const initials = selected?.firstName[0] + selected?.lastName[0];
-          return(
-          <Col xs={24} sm={12} md={8}>
-            <Card className="job-card">
-              <div>
-                <div style={{display:'flex', justifyContent:'space-between', width:"98%"}} >
-                  <div style={{display:"flex"}}>
-                    <div style={{height:'50px' ,width:'50px', border:'1px solid transparent', borderRadius:'50%', background:"#f3eaff", color:'#8326ff', display:"flex", justifyContent:"center", alignItems:'center'}}>{initials.toUpperCase()}</div>
-                    <div style={{marginLeft:"12px"}}>
-                      <div className='job-title' style={{fontSize:"18px" ,fontWeight:"500", color:'#212529', paddingTop:"3px"}}>
-                      <Link to={`/recruitment/candidates/${selected._id}`}>
-                        {`${selected?.firstName.charAt(0).toUpperCase() + selected?.firstName.slice(1).toLowerCase()} ${selected?.lastName.charAt(0).toUpperCase() + selected?.lastName.slice(1).toLowerCase()}`}
-                      </Link>
+          return (
+            <Col xs={24} sm={12} md={8}>
+              <Card className="job-card">
+                <div>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      width: "98%",
+                    }}
+                  >
+                    <div style={{ display: "flex" }}>
+                      <div
+                        style={{
+                          height: "50px",
+                          width: "50px",
+                          border: "1px solid transparent",
+                          borderRadius: "50%",
+                          background: "#f3eaff",
+                          color: "#8326ff",
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                        }}
+                      >
+                        {initials.toUpperCase()}
                       </div>
-                      <div  style={{color:'#56616b', fontSize:'12px', fontWeight:"450"}}>{selected?.appliedFor?.title}</div>
+                      <div style={{ marginLeft: "12px" }}>
+                        <div
+                          className="job-title"
+                          style={{
+                            fontSize: "18px",
+                            fontWeight: "500",
+                            color: "#212529",
+                            paddingTop: "3px",
+                          }}
+                        >
+                          <Link to={`/recruitment/candidates/${selected._id}`}>
+                            {`${
+                              selected?.firstName.charAt(0).toUpperCase() +
+                              selected?.firstName.slice(1).toLowerCase()
+                            } ${
+                              selected?.lastName.charAt(0).toUpperCase() +
+                              selected?.lastName.slice(1).toLowerCase()
+                            }`}
+                          </Link>
+                        </div>
+                        <div
+                          style={{
+                            color: "#56616b",
+                            fontSize: "12px",
+                            fontWeight: "450",
+                          }}
+                        >
+                          {selected?.appliedFor?.title}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  {/* <Dropdown 
+                    {/* <Dropdown 
                     overlay={<Menu>
                       <Menu.Item key="edit" icon={<EditOutlined />}onClick={() => navigate(`/recruitment/interviews/${candidate._id}/edit`)}>Edit</Menu.Item>
                       <Menu.Item key="delete" icon={<DeleteOutlined />} danger onClick={() => {
@@ -370,41 +486,118 @@ const OfferedCandidates = () => {
                       <img src={more} alt="More Options" />
                     </div>
                   </Dropdown> */}
-                </div>
-                <div style={{marginTop:"12px"}}>
-                  <div style={{display:"flex", marginTop:'7px'}}>
-                    <div style={{display:"flex" ,justifyContent:"center" ,alignItems:"center", height:"20px" ,width:"20px"}}><img src={email}></img></div>
-                    <div style={{paddingTop:"3px", marginLeft:"12px" ,color:"#56616b"}}>
-                    {/* <Link to={`/recruitment/interviews/${interviewer._id}`}>  */}
-                      {selected?.email}
-                    {/* </Link> */}
+                  </div>
+                  <div style={{ marginTop: "12px" }}>
+                    <div style={{ display: "flex", marginTop: "7px" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          height: "20px",
+                          width: "20px",
+                        }}
+                      >
+                        <img src={email}></img>
+                      </div>
+                      <div
+                        style={{
+                          paddingTop: "3px",
+                          marginLeft: "12px",
+                          color: "#56616b",
+                        }}
+                      >
+                        {/* <Link to={`/recruitment/interviews/${interviewer._id}`}>  */}
+                        {selected?.email}
+                        {/* </Link> */}
+                      </div>
                     </div>
-                  </div>
-                  <div style={{display:"flex", marginTop:'7px'}}>
-                    <div  style={{display:"flex" ,justifyContent:"center" ,alignItems:"center", height:"20px" ,width:"20px"}}><img src={phone}></img></div>
-                    <div  style={{paddingTop:"3px", marginLeft:"12px", color:"#56616b"}}>{selected?.phoneNumber}</div>
-                  </div>
-                  <div  style={{display:"flex" , marginTop:"7px"}}>
-                    <div  style={{display:"flex" ,justifyContent:"center" ,alignItems:"center", height:"20px" ,width:"20px"}}><img src={calander}></img></div>
-                    <div  style={{paddingTop:"3px", marginLeft:"12px",color:"#56616b"}}>{moment(selected?.createdAt).format('DD MMM YYYY')}</div>
-                  </div>
-                  <div  style={{display:"flex" , marginTop:"7px"}}>
-                    <div  style={{display:"flex" ,justifyContent:"center" ,alignItems:"center", height:"20px" ,width:"20px"}}><img src={starIcon}></img></div>
-                    <div  style={{paddingTop:"3px", marginLeft:"12px",color:"#56616b"}}>{selected?.rating || 'N/A'}</div>
-                  </div>
-                  <Tag color={
-                        selected?.status.toLowerCase() === 'offered' ?  'blue' :
-                        selected?.status.toLowerCase() === 'hired' ? 'green' :
-                        selected?.status.toLowerCase() === 'offer_rejected' ? 'red' : ' '
-                      } style={{borderRadius:'70px', marginTop:"13px"}}
+                    <div style={{ display: "flex", marginTop: "7px" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          height: "20px",
+                          width: "20px",
+                        }}
+                      >
+                        <img src={phone}></img>
+                      </div>
+                      <div
+                        style={{
+                          paddingTop: "3px",
+                          marginLeft: "12px",
+                          color: "#56616b",
+                        }}
+                      >
+                        {selected?.phoneNumber}
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", marginTop: "7px" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          height: "20px",
+                          width: "20px",
+                        }}
+                      >
+                        <img src={calander}></img>
+                      </div>
+                      <div
+                        style={{
+                          paddingTop: "3px",
+                          marginLeft: "12px",
+                          color: "#56616b",
+                        }}
+                      >
+                        {moment(selected?.createdAt).format("DD MMM YYYY")}
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", marginTop: "7px" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          height: "20px",
+                          width: "20px",
+                        }}
+                      >
+                        <img src={starIcon}></img>
+                      </div>
+                      <div
+                        style={{
+                          paddingTop: "3px",
+                          marginLeft: "12px",
+                          color: "#56616b",
+                        }}
+                      >
+                        {selected?.rating || "N/A"}
+                      </div>
+                    </div>
+                    <Tag
+                      color={
+                        selected?.status.toLowerCase() === "offered"
+                          ? "blue"
+                          : selected?.status.toLowerCase() === "hired"
+                          ? "green"
+                          : selected?.status.toLowerCase() === "offer_rejected"
+                          ? "red"
+                          : " "
+                      }
+                      style={{ borderRadius: "70px", marginTop: "13px" }}
                     >
-                      {selected?.status.charAt(0).toUpperCase() + selected?.status.slice(1).toLowerCase()}
+                      {selected?.status.charAt(0).toUpperCase() +
+                        selected?.status.slice(1).toLowerCase()}
                     </Tag>
+                  </div>
                 </div>
-              </div>
-            </Card>
-          </Col>
-          )
+              </Card>
+            </Col>
+          );
         })}
       </Row>
     );
@@ -424,73 +617,121 @@ const OfferedCandidates = () => {
     //     </div>
     //   </div>
 
-    <div className="content container-fluid">
-    {/* Page Header */}
-    <div className="page-header">
-      <div className="row align-items-center">
-        <div className="col">
-          <h3 className="page-title">Offered</h3>
-          <ul className="breadcrumb">
-            <li className="breadcrumb-item"><Link to="/recruitment/dashboard">Dashboard</Link></li>
-            <li className="breadcrumb-item"><Link to="/recruitment/candidates/processing">Candidates</Link></li>
-            <li className="breadcrumb-item active">Offered</li>
-          </ul>
-        </div>
-        <div className="col-auto float-end ms-auto d-flex align-items-center">
-          <div className="view-icons me-3">
-            <button type={viewType === 'list' ? 'primary' : 'default'}   onClick={() => setViewType('list')} style={{height:"40px", width:'40px', border:'1.5px solid #EEf0f1', borderRadius:'4px', background:'white'}} >
-              <img src={list}></img>
-            </button>
-            <button  type={viewType === 'grid' ? 'primary' : 'default'} onClick={() => setViewType('grid')} style={{height:"40px", width:'40px', border:'1.5px solid #EEf0f1', borderRadius:'4px', background:'white'}}>
-              <img src={grid}></img>
-            </button>
+    <>
+      <Helmet>
+        <title>Offered Candidates</title>
+        <meta name="description" content="Login page" />
+      </Helmet>
+      <div className="content container-fluid">
+        {/* Page Header */}
+        <div className="page-header">
+          <div className="row align-items-center">
+            <div className="col">
+              <h3 className="page-title">Offered</h3>
+              <ul className="breadcrumb">
+                <li className="breadcrumb-item">
+                  <Link to="/recruitment/dashboard">Dashboard</Link>
+                </li>
+                <li className="breadcrumb-item">
+                  <Link to="/recruitment/candidates/processing">
+                    Candidates
+                  </Link>
+                </li>
+                <li className="breadcrumb-item active">Offered</li>
+              </ul>
+            </div>
+            <div className="col-auto float-end ms-auto d-flex align-items-center">
+              <div className="view-icons me-3">
+                <button
+                  type={viewType === "list" ? "primary" : "default"}
+                  onClick={() => setViewType("list")}
+                  style={{
+                    height: "40px",
+                    width: "40px",
+                    border: "1.5px solid #EEf0f1",
+                    borderRadius: "4px",
+                    background: "white",
+                  }}
+                >
+                  <img src={list}></img>
+                </button>
+                <button
+                  type={viewType === "grid" ? "primary" : "default"}
+                  onClick={() => setViewType("grid")}
+                  style={{
+                    height: "40px",
+                    width: "40px",
+                    border: "1.5px solid #EEf0f1",
+                    borderRadius: "4px",
+                    background: "white",
+                  }}
+                >
+                  <img src={grid}></img>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
 
+        <Form
+          form={form}
+          onFinish={handleSearch}
+          onValuesChange={(changedValues, allValues) => {
+            const clearedField = Object.keys(changedValues).find(
+              (key) =>
+                changedValues[key] === "" || changedValues[key] === undefined
+            );
+            if (clearedField) {
+              handleSearch(allValues);
+            }
+          }}
+          className="search-form"
+          initialValues={filters}
+        >
+          <Row gutter={[12, 12]} align="middle">
+            <Col xs={24} sm={12} md={7}>
+              <Form.Item name="fullName" className="mb-0">
+                <Input
+                  style={{ borderRadius: "8px", height: "40px" }}
+                  placeholder="Candidate Name"
+                  allowClear
+                />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12} md={7}>
+              <Form.Item name="email" className="mb-0">
+                <Input
+                  style={{ borderRadius: "8px", height: "40px" }}
+                  placeholder="Email"
+                  allowClear
+                />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12} md={6}>
+              <Form.Item name="appliedFor" className="mb-0">
+                <Input
+                  style={{ borderRadius: "8px", height: "40px" }}
+                  placeholder="Applied Position"
+                  allowClear
+                />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12} md={4}>
+              <Form.Item className="mb-0">
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  className="search-btn"
+                  block
+                >
+                  Search
+                </Button>
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
 
-    <Form 
-      form={form}
-      onFinish={handleSearch} 
-      onValuesChange={(changedValues, allValues) => {
-        const clearedField = Object.keys(changedValues).find(
-          key => changedValues[key] === '' || changedValues[key] === undefined
-        );
-        if (clearedField) {
-          handleSearch(allValues);        
-        }
-      }}
-      className="search-form"
-      initialValues={filters}
-    >
-      <Row gutter={[12, 12]} align="middle">
-        <Col xs={24} sm={12} md={7}>
-          <Form.Item name="fullName" className="mb-0">
-            <Input style={{borderRadius:"8px", height:"40px"}} placeholder="Candidate Name" allowClear />
-          </Form.Item>
-        </Col>
-        <Col xs={24} sm={12} md={7}>
-          <Form.Item name="email" className="mb-0">
-            <Input style={{borderRadius:"8px", height:"40px"}} placeholder="Email" allowClear />
-          </Form.Item>
-        </Col>
-        <Col xs={24} sm={12} md={6}>
-          <Form.Item name="appliedFor" className="mb-0">
-            <Input style={{borderRadius:"8px", height:"40px"}} placeholder="Applied Position" allowClear />
-          </Form.Item>
-        </Col>
-        <Col xs={24} sm={12} md={4}>
-          <Form.Item className="mb-0">
-            <Button type="primary" htmlType="submit" className="search-btn" block>
-              Search
-            </Button>
-          </Form.Item>
-        </Col>
-      </Row>
-    </Form>
-
-      {/* <Row gutter={16} className="mb-4">
+        {/* <Row gutter={16} className="mb-4">
         <Col span={8}>
           <Card>
             <Statistic
@@ -519,90 +760,115 @@ const OfferedCandidates = () => {
           </Card>
         </Col>
       </Row> */}
-      {viewType === 'list' ? (
-        <>
-                {candidates?.length > 0 && (
-                  <Row justify="space-between" style={{ marginTop:16}}>
-                    <Col>
-                      <div style={{display:'flex', alignItems:'center', gap:'5px'}}>
-                      <div style={{fontSize:'14px'}}>Show</div>
-                      <Select
-                        className='customized'
-                        value={pageSize}
-                        onChange={(size) => {
-                          setPageSize(size);
-                          setCurrentPage(1);
-                        }}
-                        style={{width:60}}
-                      >
-                        {['20', '30', '40', '50'].map((size) => (
-                          <Option key={size} value={parseInt(size, 10)}>
-                            {size}
-                          </Option>
-                        ))}
-                      </Select>
-                      <div style={{fontSize:'14px'}}>entries</div>
-                      </div>
-                    </Col>
-                  </Row>
-                )}
-        <Table
-        className="mt-2"
-        columns={columns}
-        dataSource={candidates}
-        rowKey={(record) => record._id}
-        loading={loading}
-        // scroll={{ x: 1350 }}
-        // pagination={{
-        //   ...pagination,
-        //   showSizeChanger: true,
-        //   showTotal: (total, range) =>
-        //     `${range[0]}-${range[1]} of ${total} candidates`,
-        // }}
-        // onChange={handleTableChange}
-        pagination={false}
-        locale={{
-          emptyText: <Empty description="No offered candidates found" />
-        }}
-      />
-                      {candidates?.length > 0 && (
-                  <Row justify="space-between" align="middle" style={{ marginTop: 16 }}>
-                    <Col>
-                      <span style={{fontSize:'14px'}}>
-                        {t('paginationShow', {
-                          range1: (currentPage - 1) * pageSize + 1,
-                          range2: Math.min(currentPage * pageSize, paginationDetail),
-                          total: paginationDetail,
-                        })}
-                      </span>
-                    </Col>
-                    <Col>
-                      <Pagination
-                        total={paginationDetail}
-                        pageSize={pageSize}
-                        current={currentPage}
-                        showSizeChanger={false}
-                        onChange={(page, size) => {
-                          setPageSize(size);
-                          setCurrentPage(page);
-                        }}
-                        pageSizeOptions={['20', '30', '40', '50']}
-                        itemRender={(current, type, originalElement) =>{
-                            if (type === 'prev') {
-                              return <img src={leftPageIcon} style={{height:"24px" , width:"24px"}} />;
-                            }
-                            if (type === 'next') {
-                              return <img src={rightPageIcon} style={{height:"24px" , width:"24px"}} />;
-                            }
-                            return originalElement;
-                          }}
-                      />
-                    </Col>
-                  </Row>
-                )}
-        </>
-      ) : renderGridView()}
-          {/* <div className="row filter-row">
+        {viewType === "list" ? (
+          <>
+            {candidates?.length > 0 && (
+              <Row justify="space-between" style={{ marginTop: 16 }}>
+                <Col>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "5px",
+                    }}
+                  >
+                    <div style={{ fontSize: "14px" }}>Show</div>
+                    <Select
+                      className="customized"
+                      value={pageSize}
+                      onChange={(size) => {
+                        setPageSize(size);
+                        setCurrentPage(1);
+                      }}
+                      style={{ width: 60 }}
+                    >
+                      {["20", "30", "40", "50"].map((size) => (
+                        <Option key={size} value={parseInt(size, 10)}>
+                          {size}
+                        </Option>
+                      ))}
+                    </Select>
+                    <div style={{ fontSize: "14px" }}>entries</div>
+                  </div>
+                </Col>
+              </Row>
+            )}
+            <Table
+              className="mt-2"
+              columns={columns}
+              dataSource={candidates}
+              rowKey={(record) => record._id}
+              loading={loading}
+              // scroll={{ x: 1350 }}
+              // pagination={{
+              //   ...pagination,
+              //   showSizeChanger: true,
+              //   showTotal: (total, range) =>
+              //     `${range[0]}-${range[1]} of ${total} candidates`,
+              // }}
+              // onChange={handleTableChange}
+              pagination={false}
+              locale={{
+                emptyText: <Empty description="No offered candidates found" />,
+              }}
+            />
+            {candidates?.length > 0 && (
+              <Row
+                justify="space-between"
+                align="middle"
+                style={{ marginTop: 16 }}
+              >
+                <Col>
+                  <span style={{ fontSize: "14px" }}>
+                    {t("paginationShow", {
+                      range1: (currentPage - 1) * pageSize + 1,
+                      range2: Math.min(
+                        currentPage * pageSize,
+                        paginationDetail
+                      ),
+                      total: paginationDetail,
+                    })}
+                  </span>
+                </Col>
+                <Col>
+                  <Pagination
+                    total={paginationDetail}
+                    pageSize={pageSize}
+                    current={currentPage}
+                    showSizeChanger={false}
+                    onChange={(page, size) => {
+                      setPageSize(size);
+                      setCurrentPage(page);
+                    }}
+                    pageSizeOptions={["20", "30", "40", "50"]}
+                    itemRender={(current, type, originalElement) => {
+                      if (type === "prev") {
+                        return (
+                          <img
+                            src={leftPageIcon}
+                            style={{ height: "24px", width: "24px" }}
+                          />
+                        );
+                      }
+                      if (type === "next") {
+                        return (
+                          <img
+                            src={rightPageIcon}
+                            style={{ height: "24px", width: "24px" }}
+                          />
+                        );
+                      }
+                      return originalElement;
+                    }}
+                  />
+                </Col>
+              </Row>
+            )}
+          </>
+        ) : (
+          renderGridView()
+        )}
+        {/* <div className="row filter-row">
           <div className="col-sm-6 col-md-3">
             <Input
               placeholder="Search Candidates"
@@ -612,56 +878,56 @@ const OfferedCandidates = () => {
           </div>
         </div> */}
 
-      <Modal
-        title="Rejection Reason"
-        visible={isRejectionModalVisible}
-        onCancel={() => {
-          setIsRejectionModalVisible(false);
-          rejectionForm.resetFields();
-        }}
-        footer={null}
-      >
-        <Form
-          form={rejectionForm}
-          onFinish={handleRejectionSubmit}
-          layout="vertical"
+        <Modal
+          title="Rejection Reason"
+          visible={isRejectionModalVisible}
+          onCancel={() => {
+            setIsRejectionModalVisible(false);
+            rejectionForm.resetFields();
+          }}
+          footer={null}
         >
-          <Form.Item
-            name="rejectionReason"
-            label="Reason for Rejection"
-            rules={[
-              {
-                required: true,
-                message: 'Please provide a reason for rejecting the offer',
-              },
-            ]}
+          <Form
+            form={rejectionForm}
+            onFinish={handleRejectionSubmit}
+            layout="vertical"
           >
-            <Input.TextArea
-              rows={4}
-              placeholder="Enter the reason for rejecting the offer"
-              maxLength={500}
-              showCount
-            />
-          </Form.Item>
-          <Form.Item className="mb-0 text-right">
-            <Button
-              type="default"
-              style={{ marginRight: 8 }}
-              onClick={() => {
-                setIsRejectionModalVisible(false);
-                rejectionForm.resetFields();
-              }}
+            <Form.Item
+              name="rejectionReason"
+              label="Reason for Rejection"
+              rules={[
+                {
+                  required: true,
+                  message: "Please provide a reason for rejecting the offer",
+                },
+              ]}
             >
-              Cancel
-            </Button>
-            <Button type="primary" htmlType="submit" loading={updatingStatus}>
-              Submit
-            </Button>
-          </Form.Item>
-        </Form>
-      </Modal>
+              <Input.TextArea
+                rows={4}
+                placeholder="Enter the reason for rejecting the offer"
+                maxLength={500}
+                showCount
+              />
+            </Form.Item>
+            <Form.Item className="mb-0 text-right">
+              <Button
+                type="default"
+                style={{ marginRight: 8 }}
+                onClick={() => {
+                  setIsRejectionModalVisible(false);
+                  rejectionForm.resetFields();
+                }}
+              >
+                Cancel
+              </Button>
+              <Button type="primary" htmlType="submit" loading={updatingStatus}>
+                Submit
+              </Button>
+            </Form.Item>
+          </Form>
+        </Modal>
 
-      <style>{`
+        <style>{`
         .customized .ant-select-selector{
           height: 21px !important;
           display: flex;
@@ -734,8 +1000,9 @@ const OfferedCandidates = () => {
         color: #212529;
       }
       `}</style>
-    </div>
+      </div>
+    </>
   );
 };
 
-export default OfferedCandidates; 
+export default OfferedCandidates;
