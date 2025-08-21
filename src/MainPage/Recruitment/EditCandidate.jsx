@@ -18,6 +18,7 @@ import { useSelector } from "react-redux";
 import moment from "moment";
 import backBtn from "../../assets/iconsRecruitment/arrow-left.svg";
 import { uploadFunction } from "../Employees/Projects/UploadAndDeleteFunc";
+import { Helmet } from "react-helmet";
 
 const EditCandidate = () => {
   const { id } = useParams();
@@ -377,6 +378,11 @@ const EditCandidate = () => {
   }
 
   return (
+    <>
+      <Helmet>
+        <title>Edit Candidate</title>
+        <meta name="description" content="Login page" />
+      </Helmet>
     <div className="content container-fluid">
       <div className="page-header">
         <div className="row align-items-center">
@@ -1088,6 +1094,7 @@ const EditCandidate = () => {
         }
       `}</style>
     </div>
+    </>
   );
 };
 

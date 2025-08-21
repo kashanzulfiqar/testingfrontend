@@ -195,9 +195,7 @@ const App = () => {
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/reset/:token" element={<AdminResetPassword />} />
         <Route path="/register" element={<RegistrationPage />} />
-        <Route path="/change-password" element={<ChangePassword />} />
-        {/* Public Interview Page - No authentication required */}
-        <Route path="/interview/public/:token" element={<PublicInterviewPage />} />
+        <Route path={`/change-password`} element={<ChangePassword />} />
         {/* <Route path="/app/*" element={<DefaultLayout />} /> */}
 
         {/* Protected Routes */}

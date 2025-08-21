@@ -58,6 +58,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faDownload } from "@fortawesome/free-solid-svg-icons"; // or free-regular-svg-icons if you want the regular style
 import { user_icon } from "../../Entryfile/imagepath";
+import { Helmet } from "react-helmet";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_FILE_TYPES = [
@@ -129,7 +130,7 @@ const CandidateDetails = () => {
     if (typeof window !== "undefined") {
       require("bootstrap/js/dist/dropdown");
     }
-  }, [id,filter]);
+  }, [id, filter]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -663,8 +664,9 @@ const CandidateDetails = () => {
   };
 
   const getScheduledOrRescheduledInterview = () => {
-    return interviews.find(interview => 
-      interview.status === "scheduled" || interview.status === "rescheduled"
+    return interviews.find(
+      (interview) =>
+        interview.status === "scheduled" || interview.status === "rescheduled"
     );
   };
 
@@ -722,14 +724,19 @@ const CandidateDetails = () => {
     let response;
     if (editingInterview) {
       // Update existing interview
-      response = await apiServices("PUT", `interview/${editingInterview._id}`, payload, {
-        access_token: {
-          accessToken: token,
-        },
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      response = await apiServices(
+        "PUT",
+        `interview/${editingInterview._id}`,
+        payload,
+        {
+          access_token: {
+            accessToken: token,
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
     } else {
       // Create new interview
       response = await apiServices("POST", "interview/create", payload, {
@@ -743,13 +750,20 @@ const CandidateDetails = () => {
     }
 
     if (response?.data?.success) {
-      message.success(editingInterview ? "Interview rescheduled successfully" : "Interview scheduled successfully");
+      message.success(
+        editingInterview
+          ? "Interview rescheduled successfully"
+          : "Interview scheduled successfully"
+      );
       fetchCandidateInterviews(id);
       setEditingInterview(null); // Reset editing state
       // Don't close modal here - let the modal handle it
     } else {
       throw new Error(
-        response?.data?.message || (editingInterview ? "Failed to reschedule interview" : "Failed to schedule interview")
+        response?.data?.message ||
+          (editingInterview
+            ? "Failed to reschedule interview"
+            : "Failed to schedule interview")
       );
     }
   };
@@ -1182,1108 +1196,1254 @@ const CandidateDetails = () => {
   };
 
   return (
-    <div className="content container-fluid">
-      {/* Header */}
-      <div className="page-header">
-        <div className="row align-items-center">
-          <div className="col">
-            <div className="d-flex align-items-center">
-              <div>
-                <h3 className="page-title mb-0">Candidates</h3>
-                <ul className="breadcrumb">
-                  <li className="breadcrumb-item">
-                    <Link to="/recruitment/dashboard">Dashboard</Link>
-                  </li>
-                  <li className="breadcrumb-item">
-                    <Link to="/recruitment/candidates/processing">
-                      Candidates
-                    </Link>
-                  </li>
-                </ul>
+    <>
+      <Helmet>
+        <title>Candidate Details</title>
+        <meta name="description" content="Login page" />
+      </Helmet>
+      <div className="content container-fluid">
+        {/* Header */}
+        <div className="page-header">
+          <div className="row align-items-center">
+            <div className="col">
+              <div className="d-flex align-items-center">
+                <div>
+                  <h3 className="page-title mb-0">Candidates</h3>
+                  <ul className="breadcrumb">
+                    <li className="breadcrumb-item">
+                      <Link to="/recruitment/dashboard">Dashboard</Link>
+                    </li>
+                    <li className="breadcrumb-item">
+                      <Link to="/recruitment/candidates/processing">
+                        Candidates
+                      </Link>
+                    </li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      <div
-        style={{
-          width: "100%",
-          borderTop: "1px solid #CFD4D8",
-          display: "flex",
-          justifySelf: "center",
-          height: "50px",
-          alignItems: "flex-end",
-          marginBottom: "15px",
-        }}
-      >
-        <div style={{ display: "flex", marginBottom: "6px" }}>
-          <div>
-            <button
-              onClick={() =>
-                navigate(
-                  candidate?.status === "BLACKLISTED"
-                    ? "/recruitment/candidates/blacklist"
-                    : ["OFFERED", "HIRED"].includes(candidate?.status)
-                    ? `/recruitment/candidates/${candidate.status.toLowerCase()}`
-                    : "/recruitment/candidates/processing"
-                )
-              }
-              style={{
-                marginRight: "16px",
-                padding: "0",
-                border: "none",
-                background: "transparent",
-              }}
-            >
-              <img src={backBtn}></img>
-            </button>
-          </div>
-          <div>
-            <ul className="breadcrumb">
-              <li className="breadcrumb-item">
-                <Link
-                  to={
+        <div
+          style={{
+            width: "100%",
+            borderTop: "1px solid #CFD4D8",
+            display: "flex",
+            justifySelf: "center",
+            height: "50px",
+            alignItems: "flex-end",
+            marginBottom: "15px",
+          }}
+        >
+          <div style={{ display: "flex", marginBottom: "6px" }}>
+            <div>
+              <button
+                onClick={() =>
+                  navigate(
                     candidate?.status === "BLACKLISTED"
                       ? "/recruitment/candidates/blacklist"
                       : ["OFFERED", "HIRED"].includes(candidate?.status)
                       ? `/recruitment/candidates/${candidate.status.toLowerCase()}`
                       : "/recruitment/candidates/processing"
-                  }
-                >
-                  {["OFFERED", "HIRED", "BLACKLISTED"].includes(
-                    candidate?.status
                   )
-                    ? candidate.status.charAt(0) +
-                      candidate.status.slice(1).toLowerCase()
-                    : "Candidates"}
-                </Link>
-              </li>
-              <li className="breadcrumb-item active">
-                {candidate?.firstName} {candidate?.lastName}
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <div className="initial-section">
-        <div className="initial-section-first-child">
-          <div className="candidate-initials">
-            {candidate.firstName?.[0].toUpperCase()}
-            {candidate.lastName?.[0].toUpperCase()}
-          </div>
-          <div>
-            <h3 className="ms-3 mt-2 mb-0 candidate-title">
-              {candidate.firstName} {candidate.lastName}
-            </h3>
-            <h5 className="ms-3 candidate-job">
-              {candidate?.appliedFor.title}
-            </h5>
-            <div style={{ paddingLeft: "10px" }}>
-              <img src={star}></img>
-              <span style={{ marginLeft: "10px" }}>
-                {calculateAverageRating()}
-              </span>
+                }
+                style={{
+                  marginRight: "16px",
+                  padding: "0",
+                  border: "none",
+                  background: "transparent",
+                }}
+              >
+                <img src={backBtn}></img>
+              </button>
+            </div>
+            <div>
+              <ul className="breadcrumb">
+                <li className="breadcrumb-item">
+                  <Link
+                    to={
+                      candidate?.status === "BLACKLISTED"
+                        ? "/recruitment/candidates/blacklist"
+                        : ["OFFERED", "HIRED"].includes(candidate?.status)
+                        ? `/recruitment/candidates/${candidate.status.toLowerCase()}`
+                        : "/recruitment/candidates/processing"
+                    }
+                  >
+                    {["OFFERED", "HIRED", "BLACKLISTED"].includes(
+                      candidate?.status
+                    )
+                      ? candidate.status.charAt(0) +
+                        candidate.status.slice(1).toLowerCase()
+                      : "Candidates"}
+                  </Link>
+                </li>
+                <li className="breadcrumb-item active">
+                  {candidate?.firstName} {candidate?.lastName}
+                </li>
+              </ul>
             </div>
           </div>
-          <div>
-            <Tag className="tag-styles">
-              {candidate.status?.charAt(0) +
-                candidate.status?.slice(1).toLowerCase()}
-            </Tag>
-          </div>
         </div>
-        {filter === "present" && (
-        <div className=" initial-section-sec-child">
-          {/* <Space> */}
-          <Select
-            value={candidate?.status}
-            onChange={handleStatusChange}
-            loading={updatingStatus}
-            style={{
-              background:
-                candidate?.status?.toLowerCase() === "SHORTLISTED"
-                  ? "#FFF7E6"
-                  : "transparent",
-              zIndex: 1000,
-              position: "relative",
-              marginRight: viewMobile ? "3px" : "10px",
-            }}
-            className={`status-${candidate?.status?.toLowerCase()} customized`}
-            dropdownStyle={{
-              minWidth: "120px",
-              borderRadius: "8px",
-            }}
-            dropdownMatchSelectWidth={false}
-            popupClassName="status-dropdown"
-          >
-            <Select.Option value="NEW">New</Select.Option>
-            <Select.Option value="SCREENING">Screening</Select.Option>
-            <Select.Option value="SHORTLISTED">Shortlisted</Select.Option>
-            <Select.Option value="OFFERED">Offer Sent</Select.Option>
-            <Select.Option value="HIRED">Hired</Select.Option>
-            <Select.Option value="REJECTED">Rejected</Select.Option>
-            <Select.Option value="BLACKLISTED">Blacklisted</Select.Option>
-          </Select>
-          {!viewMobile && (
-            (candidate?.status === "OFFERED" ||
-              candidate?.status === "REJECTED" ||
-              candidate?.status === "HIRED" ||
-              candidate?.status === "BLACKLISTED" ||
-              candidate?.status === "SHORTLISTED") && (
-            <button
-              // onClick={handleSendOfferClick}
-              onClick={() => {
-                if (candidate?.status === "SHORTLISTED") {
-                  handleSendOfferClick();
-                }
-                if (candidate?.status === "OFFERED") {
-                  handleSendOfferClick();
-                }
-                if (candidate?.status === "HIRED") {
-                  navigate(`/recruitment/candidates/hired`);
-                }
-                if (candidate?.status === "BLACKLISTED") {
-                  navigate(`/recruitment/candidates/blacklist`);
-                }
-              }}
-              style={{
-                background: "#ff9244",
-                border: "1px solid #ff9244",
-                borderRadius: "8px",
-                height: "45px",
-                width: "120px",
-                fontSize: "16px",
-                fontWeight: "500",
-                color: "#ffffff",
-                cursor:
-                  candidate?.status === "REJECTED" ? "not-allowed" : "pointer",
-              }}
-              className="select-btn"
-              disabled={candidate?.status === "REJECTED"}
-            >
-              {candidate?.status === "OFFERED"
-                ? "Update Offer"
-                : candidate?.status === "REJECTED"
-                ? "Rejected"
-                : candidate?.status === "HIRED"
-                ? "View Hired"
-                : candidate?.status === "BLACKLISTED"
-                ? "Blacklisted"
-                : candidate?.status === "SHORTLISTED"
-                ? "Send Offer"
-                : null}
-            </button>
-          ))}
-          <div className="dropdown-style">
-            <Dropdown
-              overlay={
-                <Menu>
-                  <Menu.Item
-                    key="edit"
-                    icon={
-                      <img
-                        src={newEditIcon}
-                        style={{ height: "20px", width: "20px" }}
-                      ></img>
-                    }
-                    onClick={() =>
-                      navigate(`/recruitment/candidates/${candidate._id}/edit`)
-                    }
-                  >
-                    Edit
-                  </Menu.Item>
-                  <Menu.Item
-                    key="delete"
-                    icon={
-                      <img
-                        src={DeleteIcon}
-                        style={{ height: "15px", width: "20px" }}
-                      ></img>
-                    }
+
+        <div className="initial-section">
+          <div className="initial-section-first-child">
+            <div className="candidate-initials">
+              {candidate.firstName?.[0].toUpperCase()}
+              {candidate.lastName?.[0].toUpperCase()}
+            </div>
+            <div>
+              <h3 className="ms-3 mt-2 mb-0 candidate-title">
+                {candidate.firstName} {candidate.lastName}
+              </h3>
+              <h5 className="ms-3 candidate-job">
+                {candidate?.appliedFor.title}
+              </h5>
+              <div style={{ paddingLeft: "10px" }}>
+                <img src={star}></img>
+                <span style={{ marginLeft: "10px" }}>
+                  {calculateAverageRating()}
+                </span>
+              </div>
+            </div>
+            <div>
+              <Tag className="tag-styles">
+                {candidate.status?.charAt(0) +
+                  candidate.status?.slice(1).toLowerCase()}
+              </Tag>
+            </div>
+          </div>
+          {filter === "present" && (
+            <div className=" initial-section-sec-child">
+              {/* <Space> */}
+              <Select
+                value={candidate?.status}
+                onChange={handleStatusChange}
+                loading={updatingStatus}
+                style={{
+                  background:
+                    candidate?.status?.toLowerCase() === "SHORTLISTED"
+                      ? "#FFF7E6"
+                      : "transparent",
+                  zIndex: 1000,
+                  position: "relative",
+                  marginRight: viewMobile ? "3px" : "10px",
+                }}
+                className={`status-${candidate?.status?.toLowerCase()} customized`}
+                dropdownStyle={{
+                  minWidth: "120px",
+                  borderRadius: "8px",
+                }}
+                dropdownMatchSelectWidth={false}
+                popupClassName="status-dropdown"
+              >
+                <Select.Option value="NEW">New</Select.Option>
+                <Select.Option value="SCREENING">Screening</Select.Option>
+                <Select.Option value="SHORTLISTED">Shortlisted</Select.Option>
+                <Select.Option value="OFFERED">Offer Sent</Select.Option>
+                <Select.Option value="HIRED">Hired</Select.Option>
+                <Select.Option value="REJECTED">Rejected</Select.Option>
+                <Select.Option value="BLACKLISTED">Blacklisted</Select.Option>
+              </Select>
+              {!viewMobile &&
+                (candidate?.status === "OFFERED" ||
+                  candidate?.status === "REJECTED" ||
+                  candidate?.status === "HIRED" ||
+                  candidate?.status === "BLACKLISTED" ||
+                  candidate?.status === "SHORTLISTED") && (
+                  <button
+                    // onClick={handleSendOfferClick}
                     onClick={() => {
-                      Modal.confirm({
-                        title: "Delete Candidate",
-                        content:
-                          "Are you sure you want to delete this candidate?",
-                        okText: "Yes, Delete",
-                        okType: "danger",
-                        cancelText: "No",
-                        onOk: () => handleDeleteCandidate(candidate._id),
-                      });
-                    }}
-                  >
-                    Delete
-                  </Menu.Item>
-                  <Menu.Item
-                    key="scheduled"
-                    icon={
-                      <img
-                        src={newCalanderIcon}
-                        style={{ height: "20px", width: "20px" }}
-                      ></img>
-                    }
-                    onClick={handleInterviewAction}
-                  >
-                    {getScheduledOrRescheduledInterview() ? "Reschedule Interview" : "Schedule Interview"}
-                  </Menu.Item>
-                  <Menu.Item
-                    key="blacklisted"
-                    icon={
-                      <img
-                        src={blacklistIcon}
-                        style={{ height: "20px", width: "20px" }}
-                      ></img>
-                    }
-                    onClick={() => {
-                      setSelectedStatus("BLACKLISTED");
-                      setIsReasonModalVisible(true);
-                    }}
-                  >
-                    Add to Blacklist
-                  </Menu.Item>
-                  {viewMobile && (
-                    <Menu.Item
-                      key="send"
-                      icon={
-                        <img
-                          src={fileCheck}
-                          style={{ height: "20px", width: "20px" }}
-                        ></img>
+                      if (candidate?.status === "SHORTLISTED") {
+                        handleSendOfferClick();
                       }
-                      onClick={handleSendOfferClick}
-                    >
-                      Send Offer
-                    </Menu.Item>
-                  )}
-                </Menu>
-              }
-              overlayStyle={{ paddingTop: "15px" }}
-              trigger={["click"]}
-              placement="bottomRight"
-            >
-              <div style={{ cursor: "pointer", height: "25px", width: "25px" }}>
-                <img src={more} alt="More Options" />
-              </div>
-            </Dropdown>
-          </div>
-          {/* </Space> */}
-        </div>
-        )}
-      </div>
-
-      <div className="row">
-        {/* Left Panel - Basic Information */}
-        <div className="col-md-3 custom-col">
-          {activeTab === "timeline" && historyId !== null && (
-            <div
-              className="p-3"
-              style={{
-                display: "flex",
-                height: "90px",
-                marginBottom: "30px",
-                borderRadius: "8px",
-                boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
-              }}
-            >
-              <button
-                className="btn-style"
-                onClick={() => {
-                  handleFilterChange("present");
-                }}
-                style={{
-                  color: filter === "present" ? "#ff9244" : "#a5adb6",
-                  boxShadow:
-                    filter === "present"
-                      ? "0px 4px 10px rgba(0, 0, 0, 0.2)"
-                      : "none",
-                }}
-              >
-                Present
-              </button>
-              <button
-                className="btn-style"
-                onClick={() => {
-                  handleFilterChange("history");
-                }}
-                style={{
-                  color: filter === "history" ? "#ff9244" : "#a5adb6",
-                  boxShadow:
-                    filter === "history"
-                      ? "0px 4px 10px rgba(0, 0, 0, 0.2)"
-                      : "none",
-                }}
-              >
-                Old History
-              </button>
-            </div>
-          )}
-          <Card style={{ borderRadius: "8px" }}>
-            <div className="info-section">
-              <Title level={5} className="section-title">
-                Basic Information
-              </Title>
-              <div className="info-item">
-                <div className="info-items-children">
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      border: "1px solid transparent",
-                      borderRadius: "50%",
-                      background: "#f7f7f8",
-                      height: "32px",
-                      width: "32px",
+                      if (candidate?.status === "OFFERED") {
+                        handleSendOfferClick();
+                      }
+                      if (candidate?.status === "HIRED") {
+                        navigate(`/recruitment/candidates/hired`);
+                      }
+                      if (candidate?.status === "BLACKLISTED") {
+                        navigate(`/recruitment/candidates/blacklist`);
+                      }
                     }}
-                  >
-                    <img src={mail}></img>
-                  </div>
-                  <Text
-                    strong
                     style={{
-                      color: "#56616b",
-                      marginLeft: "7px",
-                      display: "flex",
-                      alignSelf: "center",
-                    }}
-                  >
-                    {candidate.email}
-                  </Text>
-                </div>
-              </div>
-              <div className="info-item">
-                <div style={{ display: "flex" }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      border: "1px solid transparent",
-                      borderRadius: "50%",
-                      background: "#f7f7f8",
-                      height: "32px",
-                      width: "32px",
-                    }}
-                  >
-                    <img src={phone}></img>
-                  </div>
-                  <Text
-                    strong
-                    style={{
-                      color: "#56616b",
-                      marginLeft: "7px",
-                      display: "flex",
-                      alignSelf: "center",
-                    }}
-                  >
-                    {candidate.phoneNumber}
-                  </Text>
-                </div>
-              </div>
-              <div className="info-item">
-                <div style={{ display: "flex" }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      border: "1px solid transparent",
-                      borderRadius: "50%",
-                      background: "#f7f7f8",
-                      height: "32px",
-                      width: "32px",
-                    }}
-                  >
-                    <img src={location}></img>
-                  </div>
-                  <Text
-                    strong
-                    style={{
-                      color: "#56616b",
-                      marginLeft: "7px",
-                      display: "flex",
-                      alignSelf: "center",
-                    }}
-                  >
-                    {" "}
-                    Not Specified
-                  </Text>
-                </div>
-              </div>
-            </div>
-
-            <div className="info-section">
-              <Title level={5} className="section-title">
-                Other Information
-              </Title>
-              <div className="info-list">
-                <div className="info-item">
-                  <div className="info-content">
-                    <Text
-                      type="secondary"
-                      style={{
-                        marginBottom: "6px",
-                        fontSize: "14px",
-                        fontWeight: "450",
-                        color: "#212529",
-                        width: "45%",
-                      }}
-                    >
-                      Applied Position
-                    </Text>
-                    <Text
-                      style={{
-                        marginBottom: "6px",
-                        fontSize: "14px",
-                        fontWeight: "450",
-                        color: "#56616b",
-                        width: "45%",
-                        marginLeft: "15px",
-                      }}
-                    >
-                      {candidate.appliedFor?.title}
-                    </Text>
-                  </div>
-                </div>
-                <div className="info-item">
-                  <div className="info-content">
-                    <Text
-                      type="secondary"
-                      style={{
-                        marginBottom: "6px",
-                        fontSize: "14px",
-                        fontWeight: "450",
-                        color: "#212529",
-                        width: "45%",
-                      }}
-                    >
-                      Applied On
-                    </Text>
-                    <Text
-                      style={{
-                        marginBottom: "6px",
-                        fontSize: "14px",
-                        fontWeight: "450",
-                        color: "#56616b",
-                        width: "45%",
-                        marginLeft: "15px",
-                      }}
-                    >
-                      {moment(candidate.appliedDate).format("DD MMM YYYY")}
-                    </Text>
-                  </div>
-                </div>
-                <div className="info-item">
-                  <div className="info-content">
-                    <Text
-                      type="secondary"
-                      style={{
-                        marginBottom: "6px",
-                        fontSize: "14px",
-                        fontWeight: "450",
-                        color: "#212529",
-                        width: "45%",
-                      }}
-                    >
-                      Department
-                    </Text>
-                    <Text
-                      strong
-                      style={{
-                        marginBottom: "6px",
-                        fontSize: "14px",
-                        fontWeight: "450",
-                        color: "#56616b",
-                        width: "45%",
-                        marginLeft: "15px",
-                      }}
-                    >
-                      {candidate.appliedFor?.department || "Not specified"}
-                    </Text>
-                  </div>
-                </div>
-                <div className="info-item">
-                  <div className="info-content">
-                    <Text
-                      type="secondary"
-                      style={{
-                        marginBottom: "6px",
-                        fontSize: "14px",
-                        fontWeight: "450",
-                        color: "#212529",
-                        width: "45%",
-                      }}
-                    >
-                      Job Type
-                    </Text>
-                    <Text
-                      strong
-                      style={{
-                        marginBottom: "6px",
-                        fontSize: "14px",
-                        fontWeight: "450",
-                        color: "#56616b",
-                        width: "45%",
-                        marginLeft: "15px",
-                      }}
-                    >
-                      {candidate.appliedFor?.jobType.replace("_", " ") ||
-                        "Not specified"}
-                    </Text>
-                  </div>
-                </div>
-                <div className="info-item">
-                  <div className="info-content">
-                    <Text
-                      type="secondary"
-                      style={{
-                        marginBottom: "6px",
-                        fontSize: "14px",
-                        fontWeight: "450",
-                        color: "#212529",
-                        width: "45%",
-                      }}
-                    >
-                      Experience
-                    </Text>
-                    <Text
-                      strong
-                      style={{
-                        marginBottom: "6px",
-                        fontSize: "14px",
-                        fontWeight: "450",
-                        color: "#56616b",
-                        width: "45%",
-                        marginLeft: "15px",
-                      }}
-                    >
-                      {candidate.experience} Years
-                    </Text>
-                  </div>
-                </div>
-                <div className="info-item">
-                  <div className="info-content">
-                    <Text
-                      type="secondary"
-                      style={{
-                        marginBottom: "6px",
-                        fontSize: "14px",
-                        fontWeight: "450",
-                        color: "#212529",
-                        width: "45%",
-                      }}
-                    >
-                      Notice Period
-                    </Text>
-                    <Text
-                      strong
-                      style={{
-                        marginBottom: "6px",
-                        fontSize: "14px",
-                        fontWeight: "450",
-                        color: "#56616b",
-                        width: "45%",
-                        marginLeft: "15px",
-                      }}
-                    >
-                      {candidate.noticePeriod?.replace("_", " ").toLowerCase()}
-                    </Text>
-                  </div>
-                </div>
-                <div className="info-item">
-                  <div className="info-content">
-                    <Text
-                      type="secondary"
-                      style={{
-                        marginBottom: "6px",
-                        fontSize: "14px",
-                        fontWeight: "450",
-                        color: "#212529",
-                        width: "45%",
-                      }}
-                    >
-                      Current Salary
-                    </Text>
-                    <Text
-                      strong
-                      style={{
-                        marginBottom: "6px",
-                        fontSize: "14px",
-                        fontWeight: "450",
-                        color: "#56616b",
-                        width: "45%",
-                        marginLeft: "15px",
-                      }}
-                    >
-                      {candidate.currentSalary?.toLocaleString()}
-                    </Text>
-                  </div>
-                </div>
-                <div className="info-item">
-                  <div className="info-content">
-                    <Text
-                      type="secondary"
-                      style={{
-                        marginBottom: "6px",
-                        fontSize: "14px",
-                        fontWeight: "450",
-                        color: "#212529",
-                        width: "45%",
-                      }}
-                    >
-                      Expected Salary
-                    </Text>
-                    <Text
-                      strong
-                      style={{
-                        marginBottom: "6px",
-                        fontSize: "14px",
-                        fontWeight: "450",
-                        color: "#56616b",
-                        width: "45%",
-                        marginLeft: "15px",
-                      }}
-                    >
-                      {candidate.expectedSalary?.toLocaleString()}
-                    </Text>
-                  </div>
-                </div>
-                <div style={{ borderTop: "1px solid #e8e8e8" }}>
-                  <h3
-                    style={{
+                      background: "#ff9244",
+                      border: "1px solid #ff9244",
+                      borderRadius: "8px",
+                      height: "45px",
+                      width: "120px",
                       fontSize: "16px",
-                      color: "#000",
-                      marginTop: "15px",
+                      fontWeight: "500",
+                      color: "#ffffff",
+                      cursor:
+                        candidate?.status === "REJECTED"
+                          ? "not-allowed"
+                          : "pointer",
                     }}
+                    className="select-btn"
+                    disabled={candidate?.status === "REJECTED"}
                   >
-                    SkillSet:
-                  </h3>
-                  <div style={{ margin: "10px 0px 10px 0px" }}>
-                    {candidate?.skillSet.map((skill) => (
-                      <Tag
-                        style={{
-                          borderRadius: "8px",
-                          fontSize: "14px",
-                          padding: "5px",
+                    {candidate?.status === "OFFERED"
+                      ? "Update Offer"
+                      : candidate?.status === "REJECTED"
+                      ? "Rejected"
+                      : candidate?.status === "HIRED"
+                      ? "View Hired"
+                      : candidate?.status === "BLACKLISTED"
+                      ? "Blacklisted"
+                      : candidate?.status === "SHORTLISTED"
+                      ? "Send Offer"
+                      : null}
+                  </button>
+                )}
+              <div className="dropdown-style">
+                <Dropdown
+                  overlay={
+                    <Menu>
+                      <Menu.Item
+                        key="edit"
+                        icon={
+                          <img
+                            src={newEditIcon}
+                            style={{ height: "20px", width: "20px" }}
+                          ></img>
+                        }
+                        onClick={() =>
+                          navigate(
+                            `/recruitment/candidates/${candidate._id}/edit`
+                          )
+                        }
+                      >
+                        Edit
+                      </Menu.Item>
+                      <Menu.Item
+                        key="delete"
+                        icon={
+                          <img
+                            src={DeleteIcon}
+                            style={{ height: "15px", width: "20px" }}
+                          ></img>
+                        }
+                        onClick={() => {
+                          Modal.confirm({
+                            title: "Delete Candidate",
+                            content:
+                              "Are you sure you want to delete this candidate?",
+                            okText: "Yes, Delete",
+                            okType: "danger",
+                            cancelText: "No",
+                            onOk: () => handleDeleteCandidate(candidate._id),
+                          });
                         }}
                       >
-                        {skill}
-                      </Tag>
-                    ))}
+                        Delete
+                      </Menu.Item>
+                      <Menu.Item
+                        key="scheduled"
+                        icon={
+                          <img
+                            src={newCalanderIcon}
+                            style={{ height: "20px", width: "20px" }}
+                          ></img>
+                        }
+                        onClick={handleInterviewAction}
+                      >
+                        {getScheduledOrRescheduledInterview()
+                          ? "Reschedule Interview"
+                          : "Schedule Interview"}
+                      </Menu.Item>
+                      <Menu.Item
+                        key="blacklisted"
+                        icon={
+                          <img
+                            src={blacklistIcon}
+                            style={{ height: "20px", width: "20px" }}
+                          ></img>
+                        }
+                        onClick={() => {
+                          setSelectedStatus("BLACKLISTED");
+                          setIsReasonModalVisible(true);
+                        }}
+                      >
+                        Add to Blacklist
+                      </Menu.Item>
+                      {viewMobile && (
+                        <Menu.Item
+                          key="send"
+                          icon={
+                            <img
+                              src={fileCheck}
+                              style={{ height: "20px", width: "20px" }}
+                            ></img>
+                          }
+                          onClick={handleSendOfferClick}
+                        >
+                          Send Offer
+                        </Menu.Item>
+                      )}
+                    </Menu>
+                  }
+                  overlayStyle={{ paddingTop: "15px" }}
+                  trigger={["click"]}
+                  placement="bottomRight"
+                >
+                  <div
+                    style={{ cursor: "pointer", height: "25px", width: "25px" }}
+                  >
+                    <img src={more} alt="More Options" />
+                  </div>
+                </Dropdown>
+              </div>
+              {/* </Space> */}
+            </div>
+          )}
+        </div>
+
+        <div className="row">
+          {/* Left Panel - Basic Information */}
+          <div className="col-md-3 custom-col">
+            {activeTab === "timeline" && historyId !== null && (
+              <div
+                className="p-3"
+                style={{
+                  display: "flex",
+                  height: "90px",
+                  marginBottom: "30px",
+                  borderRadius: "8px",
+                  boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
+                }}
+              >
+                <button
+                  className="btn-style"
+                  onClick={() => {
+                    handleFilterChange("present");
+                  }}
+                  style={{
+                    color: filter === "present" ? "#ff9244" : "#a5adb6",
+                    boxShadow:
+                      filter === "present"
+                        ? "0px 4px 10px rgba(0, 0, 0, 0.2)"
+                        : "none",
+                  }}
+                >
+                  Present
+                </button>
+                <button
+                  className="btn-style"
+                  onClick={() => {
+                    handleFilterChange("history");
+                  }}
+                  style={{
+                    color: filter === "history" ? "#ff9244" : "#a5adb6",
+                    boxShadow:
+                      filter === "history"
+                        ? "0px 4px 10px rgba(0, 0, 0, 0.2)"
+                        : "none",
+                  }}
+                >
+                  Old History
+                </button>
+              </div>
+            )}
+            <Card style={{ borderRadius: "8px" }}>
+              <div className="info-section">
+                <Title level={5} className="section-title">
+                  Basic Information
+                </Title>
+                <div className="info-item">
+                  <div className="info-items-children">
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        border: "1px solid transparent",
+                        borderRadius: "50%",
+                        background: "#f7f7f8",
+                        height: "32px",
+                        width: "32px",
+                      }}
+                    >
+                      <img src={mail}></img>
+                    </div>
+                    <Text
+                      strong
+                      style={{
+                        color: "#56616b",
+                        marginLeft: "7px",
+                        display: "flex",
+                        alignSelf: "center",
+                      }}
+                    >
+                      {candidate.email}
+                    </Text>
+                  </div>
+                </div>
+                <div className="info-item">
+                  <div style={{ display: "flex" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        border: "1px solid transparent",
+                        borderRadius: "50%",
+                        background: "#f7f7f8",
+                        height: "32px",
+                        width: "32px",
+                      }}
+                    >
+                      <img src={phone}></img>
+                    </div>
+                    <Text
+                      strong
+                      style={{
+                        color: "#56616b",
+                        marginLeft: "7px",
+                        display: "flex",
+                        alignSelf: "center",
+                      }}
+                    >
+                      {candidate.phoneNumber}
+                    </Text>
+                  </div>
+                </div>
+                <div className="info-item">
+                  <div style={{ display: "flex" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        border: "1px solid transparent",
+                        borderRadius: "50%",
+                        background: "#f7f7f8",
+                        height: "32px",
+                        width: "32px",
+                      }}
+                    >
+                      <img src={location}></img>
+                    </div>
+                    <Text
+                      strong
+                      style={{
+                        color: "#56616b",
+                        marginLeft: "7px",
+                        display: "flex",
+                        alignSelf: "center",
+                      }}
+                    >
+                      {" "}
+                      Not Specified
+                    </Text>
                   </div>
                 </div>
               </div>
-            </div>
-          </Card>
-        </div>
 
-        <div className="col-md-9 custom-col-two">
-          <div
-            className="card p-4"
-            style={{
-              border: "1px solid transparent",
-              borderRadius: "8px",
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "space-between",
-            }}
-          >
-            <div className="tab-container">
-              <div
-                className="active-tab-timeline"
-                style={{
-                  color: activeTab === "timeline" ? "#ff9244" : "#a5adb6",
-                  cursor: "pointer",
-                  borderBottom:
-                    activeTab === "timeline" ? "2px solid #ff9244" : "none",
-                }}
-                key="timeline"
-                onClick={() => {
-                  handleActiveTab("timeline");
-                }}
-              >
-                <span className="span-timeline">
-                  <img src={timeline} style={{ marginRight: "8px" }}></img>
-                  Timeline
-                </span>
+              <div className="info-section">
+                <Title level={5} className="section-title">
+                  Other Information
+                </Title>
+                <div className="info-list">
+                  <div className="info-item">
+                    <div className="info-content">
+                      <Text
+                        type="secondary"
+                        style={{
+                          marginBottom: "6px",
+                          fontSize: "14px",
+                          fontWeight: "450",
+                          color: "#212529",
+                          width: "45%",
+                        }}
+                      >
+                        Applied Position
+                      </Text>
+                      <Text
+                        style={{
+                          marginBottom: "6px",
+                          fontSize: "14px",
+                          fontWeight: "450",
+                          color: "#56616b",
+                          width: "45%",
+                          marginLeft: "15px",
+                        }}
+                      >
+                        {candidate.appliedFor?.title}
+                      </Text>
+                    </div>
+                  </div>
+                  <div className="info-item">
+                    <div className="info-content">
+                      <Text
+                        type="secondary"
+                        style={{
+                          marginBottom: "6px",
+                          fontSize: "14px",
+                          fontWeight: "450",
+                          color: "#212529",
+                          width: "45%",
+                        }}
+                      >
+                        Applied On
+                      </Text>
+                      <Text
+                        style={{
+                          marginBottom: "6px",
+                          fontSize: "14px",
+                          fontWeight: "450",
+                          color: "#56616b",
+                          width: "45%",
+                          marginLeft: "15px",
+                        }}
+                      >
+                        {moment(candidate.appliedDate).format("DD MMM YYYY")}
+                      </Text>
+                    </div>
+                  </div>
+                  <div className="info-item">
+                    <div className="info-content">
+                      <Text
+                        type="secondary"
+                        style={{
+                          marginBottom: "6px",
+                          fontSize: "14px",
+                          fontWeight: "450",
+                          color: "#212529",
+                          width: "45%",
+                        }}
+                      >
+                        Department
+                      </Text>
+                      <Text
+                        strong
+                        style={{
+                          marginBottom: "6px",
+                          fontSize: "14px",
+                          fontWeight: "450",
+                          color: "#56616b",
+                          width: "45%",
+                          marginLeft: "15px",
+                        }}
+                      >
+                        {candidate.appliedFor?.department || "Not specified"}
+                      </Text>
+                    </div>
+                  </div>
+                  <div className="info-item">
+                    <div className="info-content">
+                      <Text
+                        type="secondary"
+                        style={{
+                          marginBottom: "6px",
+                          fontSize: "14px",
+                          fontWeight: "450",
+                          color: "#212529",
+                          width: "45%",
+                        }}
+                      >
+                        Job Type
+                      </Text>
+                      <Text
+                        strong
+                        style={{
+                          marginBottom: "6px",
+                          fontSize: "14px",
+                          fontWeight: "450",
+                          color: "#56616b",
+                          width: "45%",
+                          marginLeft: "15px",
+                        }}
+                      >
+                        {candidate.appliedFor?.jobType.replace("_", " ") ||
+                          "Not specified"}
+                      </Text>
+                    </div>
+                  </div>
+                  <div className="info-item">
+                    <div className="info-content">
+                      <Text
+                        type="secondary"
+                        style={{
+                          marginBottom: "6px",
+                          fontSize: "14px",
+                          fontWeight: "450",
+                          color: "#212529",
+                          width: "45%",
+                        }}
+                      >
+                        Experience
+                      </Text>
+                      <Text
+                        strong
+                        style={{
+                          marginBottom: "6px",
+                          fontSize: "14px",
+                          fontWeight: "450",
+                          color: "#56616b",
+                          width: "45%",
+                          marginLeft: "15px",
+                        }}
+                      >
+                        {candidate.experience} Years
+                      </Text>
+                    </div>
+                  </div>
+                  <div className="info-item">
+                    <div className="info-content">
+                      <Text
+                        type="secondary"
+                        style={{
+                          marginBottom: "6px",
+                          fontSize: "14px",
+                          fontWeight: "450",
+                          color: "#212529",
+                          width: "45%",
+                        }}
+                      >
+                        Notice Period
+                      </Text>
+                      <Text
+                        strong
+                        style={{
+                          marginBottom: "6px",
+                          fontSize: "14px",
+                          fontWeight: "450",
+                          color: "#56616b",
+                          width: "45%",
+                          marginLeft: "15px",
+                        }}
+                      >
+                        {candidate.noticePeriod
+                          ?.replace("_", " ")
+                          .toLowerCase()}
+                      </Text>
+                    </div>
+                  </div>
+                  <div className="info-item">
+                    <div className="info-content">
+                      <Text
+                        type="secondary"
+                        style={{
+                          marginBottom: "6px",
+                          fontSize: "14px",
+                          fontWeight: "450",
+                          color: "#212529",
+                          width: "45%",
+                        }}
+                      >
+                        Current Salary
+                      </Text>
+                      <Text
+                        strong
+                        style={{
+                          marginBottom: "6px",
+                          fontSize: "14px",
+                          fontWeight: "450",
+                          color: "#56616b",
+                          width: "45%",
+                          marginLeft: "15px",
+                        }}
+                      >
+                        {candidate.currentSalary?.toLocaleString()}
+                      </Text>
+                    </div>
+                  </div>
+                  <div className="info-item">
+                    <div className="info-content">
+                      <Text
+                        type="secondary"
+                        style={{
+                          marginBottom: "6px",
+                          fontSize: "14px",
+                          fontWeight: "450",
+                          color: "#212529",
+                          width: "45%",
+                        }}
+                      >
+                        Expected Salary
+                      </Text>
+                      <Text
+                        strong
+                        style={{
+                          marginBottom: "6px",
+                          fontSize: "14px",
+                          fontWeight: "450",
+                          color: "#56616b",
+                          width: "45%",
+                          marginLeft: "15px",
+                        }}
+                      >
+                        {candidate.expectedSalary?.toLocaleString()}
+                      </Text>
+                    </div>
+                  </div>
+                  <div style={{ borderTop: "1px solid #e8e8e8" }}>
+                    <h3
+                      style={{
+                        fontSize: "16px",
+                        color: "#000",
+                        marginTop: "15px",
+                      }}
+                    >
+                      SkillSet:
+                    </h3>
+                    <div style={{ margin: "10px 0px 10px 0px" }}>
+                      {candidate?.skillSet.map((skill) => (
+                        <Tag
+                          style={{
+                            borderRadius: "8px",
+                            fontSize: "14px",
+                            padding: "5px",
+                          }}
+                        >
+                          {skill}
+                        </Tag>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div
-                className="active-tab-files"
-                style={{
-                  color: activeTab === "files" ? "#ff9244" : "#a5adb6",
-                  cursor: "pointer",
-                  borderBottom:
-                    activeTab === "files" ? "2px solid #ff9244" : "none",
-                }}
-                key="files"
-                onClick={() => {
-                  handleActiveTab("files");
-                }}
-              >
-                <span className="span-files">
-                  <img src={files} style={{ marginRight: "8px" }}></img>Files
-                </span>
-              </div>
-              <div
-                className="active-tab-interview"
-                style={{
-                  color: activeTab === "interview" ? "#ff9244" : "#a5adb6",
-                  cursor: "pointer",
-                  borderBottom:
-                    activeTab === "interview" ? "2px solid #ff9244" : "none",
-                }}
-                key="interview"
-                onClick={() => {
-                  handleActiveTab("interview");
-                }}
-              >
-                <span className="span-interview">
-                  <img src={interviewIcon} style={{ marginRight: "8px" }}></img>
-                  Interview
-                </span>
-              </div>
-              <div
-                className="active-tab-tasks"
-                style={{
-                  color: activeTab === "tasks" ? "#ff9244" : "#a5adb6",
-                  cursor: "pointer",
-                  borderBottom:
-                    activeTab === "tasks" ? "2px solid #ff9244" : "none",
-                }}
-                key="tasks"
-                onClick={() => {
-                  handleActiveTab("tasks");
-                }}
-              >
-                <span className="span-tasks">
-                  <img src={taskIcon} style={{ marginRight: "8px" }}></img>Tasks
-                </span>
-              </div>
-            </div>
+            </Card>
           </div>
-          {/* Files Tab Upload File Section */}
-          {activeTab === "files" && filter === "present" && (
-            <div className="col-md-12 custom-col-two mb-4">
-              <div
-                style={{
-                  border: "1px dashed #a5adb6",
-                  borderRadius: "8px",
-                  width: "100%",
-                  minHeight: "60px",
-                  background: "transparent",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                  position: "relative",
-                }}
-              >
-                <Upload
-                  className="full-width-upload"
-                  maxCount={1}
-                  showUploadList={false}
-                  beforeUpload={() => {
-                    return false; // Prevent AntD's default upload, handle in onChange
-                  }}
-                  onChange={async (info) => {
-                    const file = info.file;
-                    let resumeData = null;
-                    const isValid = validateFile(file);
-                    if (!isValid) {
-                      return;
-                    }
-                    try {
-                      const uploadResult = await uploadFunction([file]);
-                      console.log("Upload result:", uploadResult);
 
-                      if (
-                        Array.isArray(uploadResult) &&
-                        uploadResult.length > 0 &&
-                        uploadResult[0].imageUrl
-                      ) {
-                        resumeData = [
-                          {
-                            url: uploadResult[0].imageUrl,
-                            fileName: uploadResult[0].fileName,
-                            asset_id: uploadResult[0].asset_id,
-                            public_id: uploadResult[0].public_id,
-                            resource_type: uploadResult[0].resource_type,
-                            uploadedAt: new Date().toISOString(),
-                          },
-                        ];
-                        console.log(
-                          "Resume uploaded successfully:",
-                          resumeData
-                        );
-                        const newResumeList = [
-                          ...(Array.isArray(resume) ? resume : []),
-                          {
-                            url: uploadResult[0].imageUrl,
-                            fileName: uploadResult[0].fileName,
-                            asset_id: uploadResult[0].asset_id,
-                            public_id: uploadResult[0].public_id,
-                            resource_type: uploadResult[0].resource_type,
-                            uploadedAt: new Date().toISOString(),
-                          },
-                        ];
-                        setResume(newResumeList);
-                        await handleUpload(newResumeList);
-                      } else {
-                        console.error("Invalid upload result:", uploadResult);
-                        message.error("Failed to upload resume");
-                        setSubmitting(false);
+          <div className="col-md-9 custom-col-two">
+            <div
+              className="card p-4"
+              style={{
+                border: "1px solid transparent",
+                borderRadius: "8px",
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "space-between",
+              }}
+            >
+              <div className="tab-container">
+                <div
+                  className="active-tab-timeline"
+                  style={{
+                    color: activeTab === "timeline" ? "#ff9244" : "#a5adb6",
+                    cursor: "pointer",
+                    borderBottom:
+                      activeTab === "timeline" ? "2px solid #ff9244" : "none",
+                  }}
+                  key="timeline"
+                  onClick={() => {
+                    handleActiveTab("timeline");
+                  }}
+                >
+                  <span className="span-timeline">
+                    <img src={timeline} style={{ marginRight: "8px" }}></img>
+                    Timeline
+                  </span>
+                </div>
+                <div
+                  className="active-tab-files"
+                  style={{
+                    color: activeTab === "files" ? "#ff9244" : "#a5adb6",
+                    cursor: "pointer",
+                    borderBottom:
+                      activeTab === "files" ? "2px solid #ff9244" : "none",
+                  }}
+                  key="files"
+                  onClick={() => {
+                    handleActiveTab("files");
+                  }}
+                >
+                  <span className="span-files">
+                    <img src={files} style={{ marginRight: "8px" }}></img>Files
+                  </span>
+                </div>
+                <div
+                  className="active-tab-interview"
+                  style={{
+                    color: activeTab === "interview" ? "#ff9244" : "#a5adb6",
+                    cursor: "pointer",
+                    borderBottom:
+                      activeTab === "interview" ? "2px solid #ff9244" : "none",
+                  }}
+                  key="interview"
+                  onClick={() => {
+                    handleActiveTab("interview");
+                  }}
+                >
+                  <span className="span-interview">
+                    <img
+                      src={interviewIcon}
+                      style={{ marginRight: "8px" }}
+                    ></img>
+                    Interview
+                  </span>
+                </div>
+                <div
+                  className="active-tab-tasks"
+                  style={{
+                    color: activeTab === "tasks" ? "#ff9244" : "#a5adb6",
+                    cursor: "pointer",
+                    borderBottom:
+                      activeTab === "tasks" ? "2px solid #ff9244" : "none",
+                  }}
+                  key="tasks"
+                  onClick={() => {
+                    handleActiveTab("tasks");
+                  }}
+                >
+                  <span className="span-tasks">
+                    <img src={taskIcon} style={{ marginRight: "8px" }}></img>
+                    Tasks
+                  </span>
+                </div>
+              </div>
+            </div>
+            {/* Files Tab Upload File Section */}
+            {activeTab === "files" && filter === "present" && (
+              <div className="col-md-12 custom-col-two mb-4">
+                <div
+                  style={{
+                    border: "1px dashed #a5adb6",
+                    borderRadius: "8px",
+                    width: "100%",
+                    minHeight: "60px",
+                    background: "transparent",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                    position: "relative",
+                  }}
+                >
+                  <Upload
+                    className="full-width-upload"
+                    maxCount={1}
+                    showUploadList={false}
+                    beforeUpload={() => {
+                      return false; // Prevent AntD's default upload, handle in onChange
+                    }}
+                    onChange={async (info) => {
+                      const file = info.file;
+                      let resumeData = null;
+                      const isValid = validateFile(file);
+                      if (!isValid) {
                         return;
                       }
-                    } catch (error) {
-                      console.log("E R R O R : ", error);
-                      message.error("Error uploading file");
-                    }
-                  }}
-                >
-                  <div
-                    style={{
-                      width: "100%",
-                      minHeight: "60px",
-                      background: "transparent",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      cursor: "pointer",
+                      try {
+                        const uploadResult = await uploadFunction([file]);
+                        console.log("Upload result:", uploadResult);
+
+                        if (
+                          Array.isArray(uploadResult) &&
+                          uploadResult.length > 0 &&
+                          uploadResult[0].imageUrl
+                        ) {
+                          resumeData = [
+                            {
+                              url: uploadResult[0].imageUrl,
+                              fileName: uploadResult[0].fileName,
+                              asset_id: uploadResult[0].asset_id,
+                              public_id: uploadResult[0].public_id,
+                              resource_type: uploadResult[0].resource_type,
+                              uploadedAt: new Date().toISOString(),
+                            },
+                          ];
+                          console.log(
+                            "Resume uploaded successfully:",
+                            resumeData
+                          );
+                          const newResumeList = [
+                            ...(Array.isArray(resume) ? resume : []),
+                            {
+                              url: uploadResult[0].imageUrl,
+                              fileName: uploadResult[0].fileName,
+                              asset_id: uploadResult[0].asset_id,
+                              public_id: uploadResult[0].public_id,
+                              resource_type: uploadResult[0].resource_type,
+                              uploadedAt: new Date().toISOString(),
+                            },
+                          ];
+                          setResume(newResumeList);
+                          await handleUpload(newResumeList);
+                        } else {
+                          console.error("Invalid upload result:", uploadResult);
+                          message.error("Failed to upload resume");
+                          setSubmitting(false);
+                          return;
+                        }
+                      } catch (error) {
+                        console.log("E R R O R : ", error);
+                        message.error("Error uploading file");
+                      }
                     }}
                   >
-                    <span
+                    <div
                       style={{
-                        color: "#aaa",
+                        width: "100%",
+                        minHeight: "60px",
+                        background: "transparent",
                         display: "flex",
                         alignItems: "center",
-                        pointerEvents: "none",
+                        justifyContent: "center",
+                        cursor: "pointer",
                       }}
                     >
-                      <img
-                        src={cloudUpload}
-                        alt=""
-                        style={{ height: 16, marginRight: 8 }}
-                      />
-                      {"Drop file here or click to upload file"}
-                    </span>
-                  </div>
-                </Upload>
-              </div>
-            </div>
-          )}
-          <div
-            className="card p-4"
-            style={{
-              border: "1px solid transparent",
-              borderRadius: "8px",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            {/* Interview Tab Content */}
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <h3>
-                {activeTab === "timeline"
-                  ? "Timeline"
-                  : activeTab === "files"
-                  ? `Files (${Array.isArray(resume) ? resume.length : 0})`
-                  : activeTab === "interview"
-                  ? "Interview"
-                  : activeTab === "tasks"
-                  ? "Tasks"
-                  : "null"}
-              </h3>
-              {activeTab === "interview" && filter === "present" && !interviews.some(interview => interview.status === "scheduled" || interview.status === "rescheduled") && (
-                <div>
-                  <div>
-                    <button
-                      style={{
-                        background: "transparent",
-                        border: "none",
-                        fontSize: "14px",
-                        fontWeight: "450",
-                        color: "#ff9244",
-                      }}
-                      onClick={handleCreateInterview}
-                    >
-                      <img
-                        src={colored}
+                      <span
                         style={{
-                          height: "16px",
-                          width: "16px",
-                          marginRight: "4px",
-                          marginBottom: "3px",
-                        }}
-                      ></img>
-                      Create Interview
-                    </button>
-                  </div>
-                </div>
-              )}
-              {activeTab === "tasks" && filter === "present" && (
-                <div>
-                  <div>
-                    <button
-                      style={{
-                        background: "transparent",
-                        border: "none",
-                        fontSize: "14px",
-                        fontWeight: "450",
-                        color: "#ff9244",
-                      }}
-                      onClick={handleCreateTask}
-                    >
-                      <img
-                        src={colored}
-                        style={{
-                          height: "16px",
-                          width: "16px",
-                          marginRight: "4px",
-                          marginBottom: "3px",
-                        }}
-                      ></img>
-                      Create Task
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {activeTab === "interview" && (
-              <div
-                style={{ borderTop: "2px solid #e0e3e6", marginTop: "20px" }}
-              >
-                {interviews.length > 0 ? (
-                  <div>
-                    {interviews.map((interview) => (
-                      <div
-                        key={interview._id}
-                        style={{
-                          border: "2px solid #cfd4d8",
-                          borderRadius: "8px",
-                          marginTop: "20px",
-                          padding: "15px",
+                          color: "#aaa",
+                          display: "flex",
+                          alignItems: "center",
+                          pointerEvents: "none",
                         }}
                       >
-                        <div
+                        <img
+                          src={cloudUpload}
+                          alt=""
+                          style={{ height: 16, marginRight: 8 }}
+                        />
+                        {"Drop file here or click to upload file"}
+                      </span>
+                    </div>
+                  </Upload>
+                </div>
+              </div>
+            )}
+            <div
+              className="card p-4"
+              style={{
+                border: "1px solid transparent",
+                borderRadius: "8px",
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
+              {/* Interview Tab Content */}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <h3>
+                  {activeTab === "timeline"
+                    ? "Timeline"
+                    : activeTab === "files"
+                    ? `Files (${Array.isArray(resume) ? resume.length : 0})`
+                    : activeTab === "interview"
+                    ? "Interview"
+                    : activeTab === "tasks"
+                    ? "Tasks"
+                    : "null"}
+                </h3>
+                {activeTab === "interview" &&
+                  filter === "present" &&
+                  !interviews.some(
+                    (interview) =>
+                      interview.status === "scheduled" ||
+                      interview.status === "rescheduled"
+                  ) && (
+                    <div>
+                      <div>
+                        <button
                           style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
+                            background: "transparent",
+                            border: "none",
+                            fontSize: "14px",
+                            fontWeight: "450",
+                            color: "#ff9244",
+                          }}
+                          onClick={handleCreateInterview}
+                        >
+                          <img
+                            src={colored}
+                            style={{
+                              height: "16px",
+                              width: "16px",
+                              marginRight: "4px",
+                              marginBottom: "3px",
+                            }}
+                          ></img>
+                          Create Interview
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                {activeTab === "tasks" && filter === "present" && (
+                  <div>
+                    <div>
+                      <button
+                        style={{
+                          background: "transparent",
+                          border: "none",
+                          fontSize: "14px",
+                          fontWeight: "450",
+                          color: "#ff9244",
+                        }}
+                        onClick={handleCreateTask}
+                      >
+                        <img
+                          src={colored}
+                          style={{
+                            height: "16px",
+                            width: "16px",
+                            marginRight: "4px",
+                            marginBottom: "3px",
+                          }}
+                        ></img>
+                        Create Task
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {activeTab === "interview" && (
+                <div
+                  style={{ borderTop: "2px solid #e0e3e6", marginTop: "20px" }}
+                >
+                  {interviews.length > 0 ? (
+                    <div>
+                      {interviews.map((interview) => (
+                        <div
+                          key={interview._id}
+                          style={{
+                            border: "2px solid #cfd4d8",
+                            borderRadius: "8px",
+                            marginTop: "20px",
+                            padding: "15px",
                           }}
                         >
                           <div
-                            style={{ display: "flex", alignItems: "center" }}
-                          >
-                            <div
-                              style={{
-                                height: "40px",
-                                width: "40px",
-                                background: "#f7f7f8",
-                                borderRadius: "50%",
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-                              }}
-                            >
-                              <img src={interviewIcon}></img>
-                            </div>
-                            <div style={{ marginLeft: "15px" }}>
-                              <div
-                                style={{ fontSize: "14px", fontWeight: "500" }}
-                              >
-                                {interview.interviewTitle ||
-                                  "Untitled Interview"}
-                              </div>
-                              <div
-                                style={{ fontSize: "12px", fontWeight: "450" }}
-                              >
-                                {moment(interview.interviewDate).format(
-                                  "DD MMM YYYY"
-                                ) +
-                                  " at " +
-                                  moment(interview.interviewTime, "HH:mm").format("hh:mm A")}
-                              </div>
-                            </div>
-                            <div
-                              className={`status-${interview.status?.toLowerCase()}`}
-                              style={{
-                                borderRadius: "70px",
-                                height: "26px",
-                                width: "90px",
-                                marginLeft: "15px",
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-                              }}
-                            >
-                              {interview.status}
-                            </div>
-                          </div>
-                          <div
-                            onClick={() => {
-                              handleViewMore(interview._id);
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
                             }}
-                            style={{ display: "flex", alignItems: "center" }}
                           >
-                            <button
-                              style={{
-                                border: "none",
-                                background: "transparent",
-                              }}
+                            <div
+                              style={{ display: "flex", alignItems: "center" }}
                             >
-                              {viewMore === interview._id ? "View Less" : "View Details"}
-                            </button>
-                          </div>
-                        </div>
-                        {viewMore === interview._id && (
-                          <div>
-                            {interview.status === "completed" ? (
-                              <div>
-                                {interview?.feedback?.map((feedback, index) => (
-                                  <InterviewFeedbackDisplay
-                                    key={index}
-                                    feedback={feedback}
-                                  />
-                                ))}
-                              </div>
-                            ) : (
                               <div
                                 style={{
-                                  borderTop: "1px solid #eef0f1",
-                                  padding: "10px",
-                                  marginTop: "10px",
+                                  height: "40px",
+                                  width: "40px",
+                                  background: "#f7f7f8",
+                                  borderRadius: "50%",
+                                  display: "flex",
+                                  justifyContent: "center",
+                                  alignItems: "center",
                                 }}
                               >
+                                <img src={interviewIcon}></img>
+                              </div>
+                              <div style={{ marginLeft: "15px" }}>
+                                <div
+                                  style={{
+                                    fontSize: "14px",
+                                    fontWeight: "500",
+                                  }}
+                                >
+                                  {interview.interviewTitle ||
+                                    "Untitled Interview"}
+                                </div>
+                                <div
+                                  style={{
+                                    fontSize: "12px",
+                                    fontWeight: "450",
+                                  }}
+                                >
+                                  {moment(interview.interviewDate).format(
+                                    "DD MMM YYYY"
+                                  ) +
+                                    " at " +
+                                    moment(
+                                      interview.interviewTime,
+                                      "HH:mm"
+                                    ).format("hh:mm A")}
+                                </div>
+                              </div>
+                              <div
+                                className={`status-${interview.status?.toLowerCase()}`}
+                                style={{
+                                  borderRadius: "70px",
+                                  height: "26px",
+                                  width: "90px",
+                                  marginLeft: "15px",
+                                  display: "flex",
+                                  justifyContent: "center",
+                                  alignItems: "center",
+                                }}
+                              >
+                                {interview.status}
+                              </div>
+                            </div>
+                            <div
+                              onClick={() => {
+                                handleViewMore(interview._id);
+                              }}
+                              style={{ display: "flex", alignItems: "center" }}
+                            >
+                              <button
+                                style={{
+                                  border: "none",
+                                  background: "transparent",
+                                }}
+                              >
+                                {viewMore === interview._id
+                                  ? "View Less"
+                                  : "View Details"}
+                              </button>
+                            </div>
+                          </div>
+                          {viewMore === interview._id && (
+                            <div>
+                              {interview.status === "completed" ? (
                                 <div>
-                                  <h2
-                                    style={{
-                                      fontSize: "14px",
-                                      fontWeight: "500",
-                                    }}
-                                  >
-                                    Assigners
-                                  </h2>
-                                  <div style={{ 
-                                    display: "flex", 
-                                    gap: "20px",
-                                    flexWrap: "wrap",
-                                    overflowX: "auto",
-                                    maxWidth: "100%",
-                                    paddingBottom: "10px"
-                                  }}>
-                                    <div style={{ 
-                                      display: "flex",
-                                      minWidth: "fit-content",
-                                      flexShrink: 0
-                                    }}>
+                                  {interview?.feedback?.map(
+                                    (feedback, index) => (
+                                      <InterviewFeedbackDisplay
+                                        key={index}
+                                        feedback={feedback}
+                                      />
+                                    )
+                                  )}
+                                </div>
+                              ) : (
+                                <div
+                                  style={{
+                                    borderTop: "1px solid #eef0f1",
+                                    padding: "10px",
+                                    marginTop: "10px",
+                                  }}
+                                >
+                                  <div>
+                                    <h2
+                                      style={{
+                                        fontSize: "14px",
+                                        fontWeight: "500",
+                                      }}
+                                    >
+                                      Assigners
+                                    </h2>
+                                    <div
+                                      style={{
+                                        display: "flex",
+                                        gap: "20px",
+                                        flexWrap: "wrap",
+                                        overflowX: "auto",
+                                        maxWidth: "100%",
+                                        paddingBottom: "10px",
+                                      }}
+                                    >
+                                      <div
+                                        style={{
+                                          display: "flex",
+                                          minWidth: "fit-content",
+                                          flexShrink: 0,
+                                        }}
+                                      >
+                                        <div
+                                          style={{
+                                            height: "32px",
+                                            width: "32px",
+                                          }}
+                                        >
+                                          <img
+                                            src={
+                                              interview?.interviewerId
+                                                ?.imageUrl || user_icon
+                                            }
+                                            style={{
+                                              height: "100%",
+                                              width: "100%",
+                                              borderRadius: "50%",
+                                            }}
+                                          ></img>
+                                        </div>
+                                        <div style={{ marginLeft: "10px" }}>
+                                          <h3
+                                            style={{
+                                              fontSize: "14px",
+                                              fontWeight: "500",
+                                              marginBottom: "0",
+                                            }}
+                                          >
+                                            {interview.interviewerId?.fullName}
+                                          </h3>
+                                          <p
+                                            style={{
+                                              fontSize: "12px",
+                                              fontWeight: "450",
+                                              color: "#56616b",
+                                            }}
+                                          >
+                                            {
+                                              interview.interviewerId
+                                                ?.designationName
+                                            }
+                                          </p>
+                                        </div>
+                                      </div>
+                                      {interview.assignedTo?.map(
+                                        (interviewer) => (
+                                          <div
+                                            style={{
+                                              display: "flex",
+                                              minWidth: "fit-content",
+                                              flexShrink: 0,
+                                            }}
+                                          >
+                                            <div
+                                              style={{
+                                                height: "32px",
+                                                width: "32px",
+                                              }}
+                                            >
+                                              <img
+                                                src={
+                                                  interviewer.imageUrl ||
+                                                  user_icon
+                                                }
+                                                style={{
+                                                  height: "100%",
+                                                  width: "100%",
+                                                  borderRadius: "50%",
+                                                }}
+                                              ></img>
+                                            </div>
+                                            <div style={{ marginLeft: "10px" }}>
+                                              <h3
+                                                style={{
+                                                  fontSize: "14px",
+                                                  fontWeight: "500",
+                                                  marginBottom: "0",
+                                                }}
+                                              >
+                                                {interviewer.fullName}
+                                              </h3>
+                                              <p
+                                                style={{
+                                                  fontSize: "12px",
+                                                  fontWeight: "450",
+                                                  color: "#56616b",
+                                                }}
+                                              >
+                                                {interviewer.designationName}
+                                              </p>
+                                            </div>
+                                          </div>
+                                        )
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <h2
+                                      style={{
+                                        fontSize: "14px",
+                                        fontWeight: "500",
+                                      }}
+                                    >
+                                      Created By
+                                    </h2>
+                                    <div style={{ display: "flex" }}>
                                       <div
                                         style={{
                                           height: "32px",
@@ -2292,7 +2452,8 @@ const CandidateDetails = () => {
                                       >
                                         <img
                                           src={
-                                            interview?.interviewerId?.imageUrl || user_icon
+                                            interview?.createdBy?.imageUrl ||
+                                            user_icon
                                           }
                                           style={{
                                             height: "100%",
@@ -2309,7 +2470,7 @@ const CandidateDetails = () => {
                                             marginBottom: "0",
                                           }}
                                         >
-                                          {interview.interviewerId?.fullName}
+                                          {interview?.createdBy?.fullName}
                                         </h3>
                                         <p
                                           style={{
@@ -2318,289 +2479,175 @@ const CandidateDetails = () => {
                                             color: "#56616b",
                                           }}
                                         >
-                                          {interview.interviewerId?.designationName}
+                                          {
+                                            interview?.createdBy
+                                              ?.designationName
+                                          }
                                         </p>
                                       </div>
                                     </div>
-                                    {interview.assignedTo?.map(
-                                      (interviewer) => (
-                                        <div style={{ 
-                                          display: "flex",
-                                          minWidth: "fit-content",
-                                          flexShrink: 0
-                                        }}>
-                                          <div
-                                            style={{
-                                              height: "32px",
-                                              width: "32px",
-                                            }}
-                                          >
-                                            <img
-                                              src={interviewer.imageUrl || user_icon}
-                                              style={{
-                                                height: "100%",
-                                                width: "100%",
-                                                borderRadius: "50%",
-                                              }}
-                                            ></img>
-                                          </div>
-                                          <div style={{ marginLeft: "10px" }}>
-                                            <h3
-                                              style={{
-                                                fontSize: "14px",
-                                                fontWeight: "500",
-                                                marginBottom: "0",
-                                              }}
-                                            >
-                                              {interviewer.fullName}
-                                            </h3>
-                                            <p
-                                              style={{
-                                                fontSize: "12px",
-                                                fontWeight: "450",
-                                                color: "#56616b",
-                                              }}
-                                            >
-                                              {interviewer.designationName}
-                                            </p>
-                                          </div>
-                                        </div>
-                                      )
-                                    )}
                                   </div>
                                 </div>
-                                <div>
-                                  <h2
-                                    style={{
-                                      fontSize: "14px",
-                                      fontWeight: "500",
-                                    }}
-                                  >
-                                    Created By
-                                  </h2>
-                                  <div style={{ display: "flex" }}>
-                                    <div
-                                      style={{ height: "32px", width: "32px" }}
-                                    >
-                                      <img
-                                        src={interview?.createdBy?.imageUrl || user_icon}
-                                        style={{
-                                          height: "100%",
-                                          width: "100%",
-                                          borderRadius: "50%",
-                                        }}
-                                      ></img>
-                                    </div>
-                                    <div style={{ marginLeft: "10px" }}>
-                                      <h3
-                                        style={{
-                                          fontSize: "14px",
-                                          fontWeight: "500",
-                                          marginBottom: "0",
-                                        }}
-                                      >
-                                        {interview?.createdBy?.fullName}
-                                      </h3>
-                                      <p
-                                        style={{
-                                          fontSize: "12px",
-                                          fontWeight: "450",
-                                          color: "#56616b",
-                                        }}
-                                      >
-                                        {interview?.createdBy?.designationName}
-                                      </p>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div
-                    style={{
-                      height: "400px",
-                      width: "100%",
-                      border: "2px solid #cfd4d8",
-                      borderRadius: "4px",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      marginTop: "20px",
-                    }}
-                  >
-                    <div>
-                      <img
-                        src={NoInterview}
-                        style={{ display: "flex", justifySelf: "center" }}
-                      ></img>
-                      <p>No Interview Created</p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                  </div>
-                )}
-              </div>
-            )}
+                  ) : (
+                    <div
+                      style={{
+                        height: "400px",
+                        width: "100%",
+                        border: "2px solid #cfd4d8",
+                        borderRadius: "4px",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        marginTop: "20px",
+                      }}
+                    >
+                      <div>
+                        <img
+                          src={NoInterview}
+                          style={{ display: "flex", justifySelf: "center" }}
+                        ></img>
+                        <p>No Interview Created</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
-            {/* tasks module  */}
-            {activeTab === "tasks" && (
-              <div>
-                {tasks.length > 0 ? (
-                  <div>
-                    {tasks.map((task) => (
-                      <div
-                        key={task._id}
-                        style={{
-                          border: "2px solid #cfd4d8",
-                          borderRadius: "8px",
-                          marginTop: "20px",
-                          padding: "15px",
-                        }}
-                      >
+              {/* tasks module  */}
+              {activeTab === "tasks" && (
+                <div>
+                  {tasks.length > 0 ? (
+                    <div>
+                      {tasks.map((task) => (
                         <div
+                          key={task._id}
                           style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
+                            border: "2px solid #cfd4d8",
+                            borderRadius: "8px",
+                            marginTop: "20px",
+                            padding: "15px",
                           }}
                         >
                           <div
-                            style={{ display: "flex", alignItems: "center" }}
-                          >
-                            <div
-                              style={{
-                                height: "40px",
-                                width: "40px",
-                                background: "#f7f7f8",
-                                borderRadius: "50%",
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-                              }}
-                            >
-                              <img src={files}></img>
-                            </div>
-                            <div style={{ marginLeft: "15px" }}>
-                              <div
-                                style={{ fontSize: "14px", fontWeight: "500" }}
-                              >
-                                {task.taskName || "Untitled Task"}
-                              </div>
-                              <div
-                                style={{ fontSize: "12px", fontWeight: "450" }}
-                              >
-                                {moment(task.createdAt).format("DD MMM YYYY") +
-                                  " at " +
-                                  moment(task.createdAt, "Hh:mm").format(
-                                    "hh:mm A"
-                                  )}
-                              </div>
-                            </div>
-                            <div
-                              className={`status-${task.status?.toLowerCase()}`}
-                              style={{
-                                borderRadius: "70px",
-                                height: "26px",
-                                width: "90px",
-                                marginLeft: "15px",
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-                              }}
-                            >
-                              {task.status.toLowerCase()}
-                            </div>
-                          </div>
-                          <div
-                            onClick={() => {
-                              handleViewMore(task._id);
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
                             }}
-                            style={{ display: "flex", alignItems: "center" }}
                           >
-                            <button
-                              style={{
-                                border: "none",
-                                background: "transparent",
-                              }}
+                            <div
+                              style={{ display: "flex", alignItems: "center" }}
                             >
-                              {viewMore === task._id ? "View Less" : "View Details"}
-                            </button>
-                          </div>
-                        </div>
-                        {viewMore === task._id && (
-                          <div>
-                            {task.status === "COMPLETED" ? (
-                              <div>
-                                {interviews.feedback?.map((feedback, index) => (
-                                  <InterviewFeedbackDisplay
-                                    key={index}
-                                    feedback={feedback}
-                                  />
-                                ))}
-                              </div>
-                            ) : (
                               <div
                                 style={{
-                                  borderTop: "1px solid #eef0f1",
-                                  padding: "10px",
-                                  marginTop: "10px",
+                                  height: "40px",
+                                  width: "40px",
+                                  background: "#f7f7f8",
+                                  borderRadius: "50%",
+                                  display: "flex",
+                                  justifyContent: "center",
+                                  alignItems: "center",
                                 }}
                               >
+                                <img src={files}></img>
+                              </div>
+                              <div style={{ marginLeft: "15px" }}>
+                                <div
+                                  style={{
+                                    fontSize: "14px",
+                                    fontWeight: "500",
+                                  }}
+                                >
+                                  {task.taskName || "Untitled Task"}
+                                </div>
+                                <div
+                                  style={{
+                                    fontSize: "12px",
+                                    fontWeight: "450",
+                                  }}
+                                >
+                                  {moment(task.createdAt).format(
+                                    "DD MMM YYYY"
+                                  ) +
+                                    " at " +
+                                    moment(task.createdAt, "Hh:mm").format(
+                                      "hh:mm A"
+                                    )}
+                                </div>
+                              </div>
+                              <div
+                                className={`status-${task.status?.toLowerCase()}`}
+                                style={{
+                                  borderRadius: "70px",
+                                  height: "26px",
+                                  width: "90px",
+                                  marginLeft: "15px",
+                                  display: "flex",
+                                  justifyContent: "center",
+                                  alignItems: "center",
+                                }}
+                              >
+                                {task.status.toLowerCase()}
+                              </div>
+                            </div>
+                            <div
+                              onClick={() => {
+                                handleViewMore(task._id);
+                              }}
+                              style={{ display: "flex", alignItems: "center" }}
+                            >
+                              <button
+                                style={{
+                                  border: "none",
+                                  background: "transparent",
+                                }}
+                              >
+                                {viewMore === task._id
+                                  ? "View Less"
+                                  : "View Details"}
+                              </button>
+                            </div>
+                          </div>
+                          {viewMore === task._id && (
+                            <div>
+                              {task.status === "COMPLETED" ? (
                                 <div>
-                                  <h2
-                                    style={{
-                                      fontSize: "14px",
-                                      fontWeight: "500",
-                                    }}
-                                  >
-                                    Reviewers
-                                  </h2>
-                                  <div style={{ display: "flex", gap: "20px" }}>
-                                    <div style={{ display: "flex" }}>
-                                      <div
-                                        style={{
-                                          height: "32px",
-                                          width: "32px",
-                                        }}
-                                      >
-                                        <img
-                                          src={task?.taskReviewers?.imageUrl}
-                                          style={{
-                                            height: "100%",
-                                            width: "100%",
-                                            borderRadius: "50%",
-                                          }}
-                                        ></img>
-                                      </div>
-                                      <div style={{ marginLeft: "10px" }}>
-                                        <h3
-                                          style={{
-                                            fontSize: "14px",
-                                            fontWeight: "500",
-                                            marginBottom: "0",
-                                          }}
-                                        >
-                                          {task.taskReviewers?.fullName}
-                                        </h3>
-                                        <p
-                                          style={{
-                                            fontSize: "12px",
-                                            fontWeight: "450",
-                                            color: "#56616b",
-                                          }}
-                                        >
-                                          Hello
-                                        </p>
-                                      </div>
-                                    </div>
-                                    {task.Reviewers?.map((taskReviewer) => (
-                                      <div
-                                        style={{ display: "flex" }}
-                                        key={taskReviewer._id}
-                                      >
+                                  {interviews.feedback?.map(
+                                    (feedback, index) => (
+                                      <InterviewFeedbackDisplay
+                                        key={index}
+                                        feedback={feedback}
+                                      />
+                                    )
+                                  )}
+                                </div>
+                              ) : (
+                                <div
+                                  style={{
+                                    borderTop: "1px solid #eef0f1",
+                                    padding: "10px",
+                                    marginTop: "10px",
+                                  }}
+                                >
+                                  <div>
+                                    <h2
+                                      style={{
+                                        fontSize: "14px",
+                                        fontWeight: "500",
+                                      }}
+                                    >
+                                      Reviewers
+                                    </h2>
+                                    <div
+                                      style={{ display: "flex", gap: "20px" }}
+                                    >
+                                      <div style={{ display: "flex" }}>
                                         <div
                                           style={{
                                             height: "32px",
@@ -2608,7 +2655,7 @@ const CandidateDetails = () => {
                                           }}
                                         >
                                           <img
-                                            src={taskReviewer.imageUrl}
+                                            src={task?.taskReviewers?.imageUrl}
                                             style={{
                                               height: "100%",
                                               width: "100%",
@@ -2624,7 +2671,7 @@ const CandidateDetails = () => {
                                               marginBottom: "0",
                                             }}
                                           >
-                                            {taskReviewer.fullName}
+                                            {task.taskReviewers?.fullName}
                                           </h3>
                                           <p
                                             style={{
@@ -2637,185 +2684,233 @@ const CandidateDetails = () => {
                                           </p>
                                         </div>
                                       </div>
-                                    ))}
+                                      {task.Reviewers?.map((taskReviewer) => (
+                                        <div
+                                          style={{ display: "flex" }}
+                                          key={taskReviewer._id}
+                                        >
+                                          <div
+                                            style={{
+                                              height: "32px",
+                                              width: "32px",
+                                            }}
+                                          >
+                                            <img
+                                              src={taskReviewer.imageUrl}
+                                              style={{
+                                                height: "100%",
+                                                width: "100%",
+                                                borderRadius: "50%",
+                                              }}
+                                            ></img>
+                                          </div>
+                                          <div style={{ marginLeft: "10px" }}>
+                                            <h3
+                                              style={{
+                                                fontSize: "14px",
+                                                fontWeight: "500",
+                                                marginBottom: "0",
+                                              }}
+                                            >
+                                              {taskReviewer.fullName}
+                                            </h3>
+                                            <p
+                                              style={{
+                                                fontSize: "12px",
+                                                fontWeight: "450",
+                                                color: "#56616b",
+                                              }}
+                                            >
+                                              Hello
+                                            </p>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
                                   </div>
-                                </div>
-                                <div>
-                                  <h2
-                                    style={{
-                                      fontSize: "14px",
-                                      fontWeight: "500",
-                                      marginTop: "10px",
-                                    }}
-                                  >
-                                    Created By
-                                  </h2>
-                                  <div style={{ display: "flex" }}>
-                                    <div
-                                      style={{ height: "32px", width: "32px" }}
+                                  <div>
+                                    <h2
+                                      style={{
+                                        fontSize: "14px",
+                                        fontWeight: "500",
+                                        marginTop: "10px",
+                                      }}
                                     >
-                                      <img
-                                        src={task?.createdBy?.imageUrl}
+                                      Created By
+                                    </h2>
+                                    <div style={{ display: "flex" }}>
+                                      <div
                                         style={{
-                                          height: "100%",
-                                          width: "100%",
-                                          borderRadius: "50%",
-                                        }}
-                                      ></img>
-                                    </div>
-                                    <div style={{ marginLeft: "10px" }}>
-                                      <h3
-                                        style={{
-                                          fontSize: "14px",
-                                          fontWeight: "500",
-                                          marginBottom: "0",
+                                          height: "32px",
+                                          width: "32px",
                                         }}
                                       >
-                                        {task?.createdBy?.fullName}
-                                      </h3>
-                                      <p
-                                        style={{
-                                          fontSize: "12px",
-                                          fontWeight: "450",
-                                          color: "#56616b",
-                                        }}
-                                      >
-                                        Hello
-                                      </p>
+                                        <img
+                                          src={task?.createdBy?.imageUrl}
+                                          style={{
+                                            height: "100%",
+                                            width: "100%",
+                                            borderRadius: "50%",
+                                          }}
+                                        ></img>
+                                      </div>
+                                      <div style={{ marginLeft: "10px" }}>
+                                        <h3
+                                          style={{
+                                            fontSize: "14px",
+                                            fontWeight: "500",
+                                            marginBottom: "0",
+                                          }}
+                                        >
+                                          {task?.createdBy?.fullName}
+                                        </h3>
+                                        <p
+                                          style={{
+                                            fontSize: "12px",
+                                            fontWeight: "450",
+                                            color: "#56616b",
+                                          }}
+                                        >
+                                          Hello
+                                        </p>
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div
-                    style={{
-                      height: "400px",
-                      width: "100%",
-                      border: "2px solid #cfd4d8",
-                      borderRadius: "4px",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      marginTop: "20px",
-                    }}
-                  >
-                    <div>
-                      <img
-                        src={NoInterview}
-                        style={{ display: "flex", justifySelf: "center" }}
-                      ></img>
-                      <p>No Task Created</p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                  </div>
-                )}
-              </div>
-            )}
-            {/* Timeline Tab Content */}
-            {activeTab === "timeline" && (
-              <div className="mt-2">
-                {/* Map over candidate.timeline here */}
-                {candidate?.timeline && candidate.timeline.length > 0 ? (
-                  <div style={{ display: "flex", flexDirection: "column" }}>
-                    {candidate.timeline.map((event, idx) => {
-                      // Status event
-                      if (event.status && event.updatedAt) {
-                        return (
-                          <div
-                            key={event._id || idx}
-                            style={{
-                              background: "#f5f5f5",
-                              borderRadius: "10px",
-                              padding: "16px 20px",
-                              marginBottom: "16px",
-                            }}
-                          >
+                  ) : (
+                    <div
+                      style={{
+                        height: "400px",
+                        width: "100%",
+                        border: "2px solid #cfd4d8",
+                        borderRadius: "4px",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        marginTop: "20px",
+                      }}
+                    >
+                      <div>
+                        <img
+                          src={NoInterview}
+                          style={{ display: "flex", justifySelf: "center" }}
+                        ></img>
+                        <p>No Task Created</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+              {/* Timeline Tab Content */}
+              {activeTab === "timeline" && (
+                <div className="mt-2">
+                  {/* Map over candidate.timeline here */}
+                  {candidate?.timeline && candidate.timeline.length > 0 ? (
+                    <div style={{ display: "flex", flexDirection: "column" }}>
+                      {candidate.timeline.map((event, idx) => {
+                        // Status event
+                        if (event.status && event.updatedAt) {
+                          return (
                             <div
+                              key={event._id || idx}
                               style={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
+                                background: "#f5f5f5",
+                                borderRadius: "10px",
+                                padding: "16px 20px",
+                                marginBottom: "16px",
                               }}
                             >
                               <div
                                 style={{
-                                  fontSize: "15px",
-                                  fontWeight: 500,
-                                  color: "#222",
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  alignItems: "center",
                                 }}
                               >
-                                {`${candidate.firstName} is ${
-                                  event.status.charAt(0) +
-                                  event.status.slice(1).toLowerCase()
-                                }`}
-                              </div>
-                              <div style={{ fontSize: "14px", color: "#666" }}>
-                                {moment(event.updatedAt).format(
-                                  "Do MMM [at] h:mm a"
-                                )}
+                                <div
+                                  style={{
+                                    fontSize: "15px",
+                                    fontWeight: 500,
+                                    color: "#222",
+                                  }}
+                                >
+                                  {`${candidate.firstName} is ${
+                                    event.status.charAt(0) +
+                                    event.status.slice(1).toLowerCase()
+                                  }`}
+                                </div>
+                                <div
+                                  style={{ fontSize: "14px", color: "#666" }}
+                                >
+                                  {moment(event.updatedAt).format(
+                                    "Do MMM [at] h:mm a"
+                                  )}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        );
-                      }
-                      // Interview event
-                      if (event.InterviewCreator && event.createdAt) {
-                        return (
-                          <div
-                            key={event._id || idx}
-                            style={{
-                              background: "#f5f5f5",
-                              borderRadius: "10px",
-                              padding: "16px 20px",
-                              marginBottom: "16px",
-                            }}
-                          >
+                          );
+                        }
+                        // Interview event
+                        if (event.InterviewCreator && event.createdAt) {
+                          return (
                             <div
+                              key={event._id || idx}
                               style={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
+                                background: "#f5f5f5",
+                                borderRadius: "10px",
+                                padding: "16px 20px",
+                                marginBottom: "16px",
                               }}
                             >
                               <div
-                                style={{ fontSize: "15px", fontWeight: 500 }}
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  alignItems: "center",
+                                }}
                               >
-                                <span
-                                  style={{
-                                    color: "#1890ff",
-                                    textDecoration: "underline",
-                                    cursor: "pointer",
-                                  }}
+                                <div
+                                  style={{ fontSize: "15px", fontWeight: 500 }}
                                 >
-                                  Interview
-                                </span>
-                                <span
-                                  style={{ color: "#222", fontWeight: 400 }}
+                                  <span
+                                    style={{
+                                      color: "#1890ff",
+                                      textDecoration: "underline",
+                                      cursor: "pointer",
+                                    }}
+                                  >
+                                    Interview
+                                  </span>
+                                  <span
+                                    style={{ color: "#222", fontWeight: 400 }}
+                                  >
+                                    {" "}
+                                    scheduled by {event.InterviewCreator}
+                                  </span>
+                                </div>
+                                <div
+                                  style={{ fontSize: "14px", color: "#666" }}
                                 >
-                                  {" "}
-                                  scheduled by {event.InterviewCreator}
-                                </span>
-                              </div>
-                              <div style={{ fontSize: "14px", color: "#666" }}>
-                                {moment(event.createdAt).format(
-                                  "Do MMM [at] h:mm a"
-                                )}
+                                  {moment(event.createdAt).format(
+                                    "Do MMM [at] h:mm a"
+                                  )}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        );
-                      }
-                      // Unknown event type (optional: skip or show fallback)
-                      return null;
-                    })}
-                  </div>
-                ) : null}
-                {/* {filteredInterviews.length > 0
+                          );
+                        }
+                        // Unknown event type (optional: skip or show fallback)
+                        return null;
+                      })}
+                    </div>
+                  ) : null}
+                  {/* {filteredInterviews.length > 0
                   ? filteredInterviews.map((interview) => (
                       <div
                         className="p-3 mt-3"
@@ -2850,261 +2945,263 @@ const CandidateDetails = () => {
                       </div>
                     ))
                   : ""} */}
-              </div>
-            )}
-            {activeTab === "files" && (
-              <div className="mt-2">
-                {!previewFile ? (
-                  Array.isArray(resume) &&
-                  resume.map((file, index) => (
-                    <div
-                      className="p-3"
-                      style={{
-                        background: "#f7f7f8",
-                        display: "flex",
-                        justifyContent: "space-between",
-                        marginTop: "8px",
-                      }}
-                      key={index}
-                    >
-                      {editingIndex === index ? (
-                        <div style={{ display: "flex", alignItems: "center" }}>
-                          <input
-                            style={{
-                              border: "1px solid #a5adb6",
-                              borderRadius: "8px",
-                              height: "28px",
-                              paddingLeft: "8px",
-                              width: "auto",
-                            }}
-                            type="text"
-                            value={tempName}
-                            onChange={(e) => setTempName(e.target.value)}
-                            onBlur={() => saveRename(index)}
-                            onKeyDown={(e) =>
-                              e.key === "Enter" && saveRename(index)
-                            }
-                          />
-                          <span style={{ marginLeft: 4, color: "#888" }}>
-                            {splitFileName(file.fileName).ext}
-                          </span>
-                        </div>
-                      ) : (
-                        <div
-                          style={{
-                            fontSize: "14px",
-                            fontWeight: "500",
-                            color: "#000000",
-                            cursor: "pointer",
-                          }}
-                          onClick={() => setPreviewFile(file)}
-                        >
-                          {file.fileName}
-                        </div>
-                      )}
-
-                      <div style={{ display: "flex", gap: "15px" }}>
-                        <div
-                          style={{
-                            fontSize: "12px",
-                            fontWeight: "450",
-                            color: "#495057",
-                            paddingTop: "5px",
-                          }}
-                        >
-                          {moment(file?.uploadedAt).format("DD MMM YYYY") +
-                            " at " +
-                            moment(file?.uploadedAt).format("HH:mm A")}
-                        </div>
-                        <div
-                          style={{
-                            marginRight: "10px",
-                            cursor: "pointer",
-                            position: "relative",
-                          }}
-                          onClick={() => {
-                            toggleModal(index);
-                          }}
-                        >
-                          <img src={more}></img>
-                          {openModalIndex === index && (
-                            <div
-                              ref={dropdownRef}
+                </div>
+              )}
+              {activeTab === "files" && (
+                <div className="mt-2">
+                  {!previewFile ? (
+                    Array.isArray(resume) &&
+                    resume.map((file, index) => (
+                      <div
+                        className="p-3"
+                        style={{
+                          background: "#f7f7f8",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          marginTop: "8px",
+                        }}
+                        key={index}
+                      >
+                        {editingIndex === index ? (
+                          <div
+                            style={{ display: "flex", alignItems: "center" }}
+                          >
+                            <input
                               style={{
-                                position: "absolute",
-                                top: "100%",
-                                right: "10%",
-                                background: "white",
-                                border: "1px solid #ddd",
-                                borderRadius: "5px",
-                                boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-                                padding: "5px",
-                                display: "flex",
-                                flexDirection: "column",
-                                marginTop: "10px",
-                                width: "120px",
-                                zIndex: 1,
+                                border: "1px solid #a5adb6",
+                                borderRadius: "8px",
+                                height: "28px",
+                                paddingLeft: "8px",
+                                width: "auto",
                               }}
-                            >
+                              type="text"
+                              value={tempName}
+                              onChange={(e) => setTempName(e.target.value)}
+                              onBlur={() => saveRename(index)}
+                              onKeyDown={(e) =>
+                                e.key === "Enter" && saveRename(index)
+                              }
+                            />
+                            <span style={{ marginLeft: 4, color: "#888" }}>
+                              {splitFileName(file.fileName).ext}
+                            </span>
+                          </div>
+                        ) : (
+                          <div
+                            style={{
+                              fontSize: "14px",
+                              fontWeight: "500",
+                              color: "#000000",
+                              cursor: "pointer",
+                            }}
+                            onClick={() => setPreviewFile(file)}
+                          >
+                            {file.fileName}
+                          </div>
+                        )}
+
+                        <div style={{ display: "flex", gap: "15px" }}>
+                          <div
+                            style={{
+                              fontSize: "12px",
+                              fontWeight: "450",
+                              color: "#495057",
+                              paddingTop: "5px",
+                            }}
+                          >
+                            {moment(file?.uploadedAt).format("DD MMM YYYY") +
+                              " at " +
+                              moment(file?.uploadedAt).format("HH:mm A")}
+                          </div>
+                          <div
+                            style={{
+                              marginRight: "10px",
+                              cursor: "pointer",
+                              position: "relative",
+                            }}
+                            onClick={() => {
+                              toggleModal(index);
+                            }}
+                          >
+                            <img src={more}></img>
+                            {openModalIndex === index && (
                               <div
+                                ref={dropdownRef}
                                 style={{
-                                  background: "none",
-                                  border: "none",
-                                  marginTop: "7px",
-                                  marginBottom: "7px",
-                                  cursor: "pointer",
-                                  width: "100%",
+                                  position: "absolute",
+                                  top: "100%",
+                                  right: "10%",
+                                  background: "white",
+                                  border: "1px solid #ddd",
+                                  borderRadius: "5px",
+                                  boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+                                  padding: "5px",
                                   display: "flex",
-                                }}
-                                onClick={() => {
-                                  startEditing(index, file.fileName);
-                                }}
-                              >
-                                <div
-                                  style={{ width: "30%", paddingLeft: "7px" }}
-                                >
-                                  <img src={EditIcon}></img>
-                                </div>
-                                <div
-                                  style={{ width: "70%", paddingTop: "3px" }}
-                                >
-                                  <span
-                                    style={{
-                                      fontSize: "14px",
-                                      fontWeight: "500",
-                                      color: "#56616b",
-                                    }}
-                                  >
-                                    Rename
-                                  </span>
-                                </div>
-                              </div>
-                              <div
-                                style={{
-                                  background: "none",
-                                  border: "none",
+                                  flexDirection: "column",
                                   marginTop: "10px",
-                                  cursor: "pointer",
-                                  width: "100%",
-                                  display: "flex",
-                                }}
-                                onClick={() => {
-                                  Modal.confirm({
-                                    title: "Delete File",
-                                    content:
-                                      "Are you sure you want to delete this file?",
-                                    okText: "Yes, Delete",
-                                    okType: "danger",
-                                    cancelText: "No",
-                                    onOk: () => deleteResume(index),
-                                  });
+                                  width: "120px",
+                                  zIndex: 1,
                                 }}
                               >
                                 <div
-                                  style={{ width: "30%", paddingLeft: "7px" }}
+                                  style={{
+                                    background: "none",
+                                    border: "none",
+                                    marginTop: "7px",
+                                    marginBottom: "7px",
+                                    cursor: "pointer",
+                                    width: "100%",
+                                    display: "flex",
+                                  }}
+                                  onClick={() => {
+                                    startEditing(index, file.fileName);
+                                  }}
                                 >
-                                  <img src={DeleteIcon}></img>
+                                  <div
+                                    style={{ width: "30%", paddingLeft: "7px" }}
+                                  >
+                                    <img src={EditIcon}></img>
+                                  </div>
+                                  <div
+                                    style={{ width: "70%", paddingTop: "3px" }}
+                                  >
+                                    <span
+                                      style={{
+                                        fontSize: "14px",
+                                        fontWeight: "500",
+                                        color: "#56616b",
+                                      }}
+                                    >
+                                      Rename
+                                    </span>
+                                  </div>
                                 </div>
                                 <div
-                                  style={{ width: "70%", paddingTop: "3px" }}
+                                  style={{
+                                    background: "none",
+                                    border: "none",
+                                    marginTop: "10px",
+                                    cursor: "pointer",
+                                    width: "100%",
+                                    display: "flex",
+                                  }}
+                                  onClick={() => {
+                                    Modal.confirm({
+                                      title: "Delete File",
+                                      content:
+                                        "Are you sure you want to delete this file?",
+                                      okText: "Yes, Delete",
+                                      okType: "danger",
+                                      cancelText: "No",
+                                      onOk: () => deleteResume(index),
+                                    });
+                                  }}
                                 >
-                                  <span
-                                    style={{
-                                      fontSize: "14px",
-                                      fontWeight: "500",
-                                      color: "#56616b",
-                                    }}
+                                  <div
+                                    style={{ width: "30%", paddingLeft: "7px" }}
                                   >
-                                    Delete
-                                  </span>
+                                    <img src={DeleteIcon}></img>
+                                  </div>
+                                  <div
+                                    style={{ width: "70%", paddingTop: "3px" }}
+                                  >
+                                    <span
+                                      style={{
+                                        fontSize: "14px",
+                                        fontWeight: "500",
+                                        color: "#56616b",
+                                      }}
+                                    >
+                                      Delete
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          )}
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))
-                ) : (
-                  <div>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        position: "relative",
-                        width: "100%",
-                        minHeight: 40,
-                      }}
-                    >
-                      <Button
-                        icon={<FontAwesomeIcon icon={faArrowLeft} />}
-                        onClick={() => setPreviewFile(null)}
-                        type="text"
+                    ))
+                  ) : (
+                    <div>
+                      <div
                         style={{
-                          boxShadow: "none",
-                          background: "none",
-                          border: "none",
-                          marginRight: 16,
-                        }}
-                      />
-                      <span
-                        style={{
-                          fontWeight: 500,
-                          position: "absolute",
-                          left: "50%",
-                          transform: "translateX(-50%)",
-                          whiteSpace: "nowrap",
-                          pointerEvents: "none", // so clicks go through to buttons if overlapped
+                          display: "flex",
+                          alignItems: "center",
+                          position: "relative",
+                          width: "100%",
+                          minHeight: 40,
                         }}
                       >
-                        {previewFile.fileName}
-                      </span>
-                      <Button
-                        icon={<FontAwesomeIcon icon={faDownload} />}
-                        type="text"
+                        <Button
+                          icon={<FontAwesomeIcon icon={faArrowLeft} />}
+                          onClick={() => setPreviewFile(null)}
+                          type="text"
+                          style={{
+                            boxShadow: "none",
+                            background: "none",
+                            border: "none",
+                            marginRight: 16,
+                          }}
+                        />
+                        <span
+                          style={{
+                            fontWeight: 500,
+                            position: "absolute",
+                            left: "50%",
+                            transform: "translateX(-50%)",
+                            whiteSpace: "nowrap",
+                            pointerEvents: "none", // so clicks go through to buttons if overlapped
+                          }}
+                        >
+                          {previewFile.fileName}
+                        </span>
+                        <Button
+                          icon={<FontAwesomeIcon icon={faDownload} />}
+                          type="text"
+                          style={{
+                            boxShadow: "none",
+                            background: "none",
+                            border: "none",
+                            marginLeft: "auto",
+                          }}
+                          onClick={async () => {
+                            try {
+                              const response = await fetch(previewFile.url, {
+                                mode: "cors",
+                              });
+                              const blob = await response.blob();
+                              const url = window.URL.createObjectURL(blob);
+                              const link = document.createElement("a");
+                              link.href = url;
+                              link.download = previewFile.fileName;
+                              document.body.appendChild(link);
+                              link.click();
+                              document.body.removeChild(link);
+                              window.URL.revokeObjectURL(url);
+                            } catch (e) {
+                              window.open(previewFile.url, "_blank");
+                            }
+                          }}
+                        />
+                      </div>
+                      <div
                         style={{
-                          boxShadow: "none",
-                          background: "none",
-                          border: "none",
-                          marginLeft: "auto",
+                          width: "100%",
+                          height: "70vh",
+                          background: "#fff",
                         }}
-                        onClick={async () => {
-                          try {
-                            const response = await fetch(previewFile.url, {
-                              mode: "cors",
-                            });
-                            const blob = await response.blob();
-                            const url = window.URL.createObjectURL(blob);
-                            const link = document.createElement("a");
-                            link.href = url;
-                            link.download = previewFile.fileName;
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                            window.URL.revokeObjectURL(url);
-                          } catch (e) {
-                            window.open(previewFile.url, "_blank");
-                          }
-                        }}
-                      />
+                      >
+                        {getPreviewIframe(previewFile)}
+                      </div>
                     </div>
-                    <div
-                      style={{
-                        width: "100%",
-                        height: "70vh",
-                        background: "#fff",
-                      }}
-                    >
-                      {getPreviewIframe(previewFile)}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
+                  )}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
 
-        {/* <div className="col-md-9 custom-col-two">
+          {/* <div className="col-md-9 custom-col-two">
           <Card>
             <Tabs
               activeKey={activeTab}
@@ -3180,105 +3277,105 @@ const CandidateDetails = () => {
             </Tabs>
           </Card>
         </div> */}
-      </div>
+        </div>
 
-      {/* Replace the old Modal with the new CreateInterviewModal component */}
-      <CreateInterviewModal
-        isVisible={isInterviewModalVisible}
-        onCancel={handleInterviewModalCancel}
-        onSubmit={handleInterviewSubmit}
-        candidate={candidate}
-        authState={authState}
-        editingInterview={editingInterview}
-      />
+        {/* Replace the old Modal with the new CreateInterviewModal component */}
+        <CreateInterviewModal
+          isVisible={isInterviewModalVisible}
+          onCancel={handleInterviewModalCancel}
+          onSubmit={handleInterviewSubmit}
+          candidate={candidate}
+          authState={authState}
+          editingInterview={editingInterview}
+        />
 
-      {/* Add CreateTaskModal */}
-      <CreateTaskModal
-        isVisible={isTaskModalVisible}
-        onCancel={handleTaskModalCancel}
-        onSubmit={handleTaskSubmit}
-        candidate={candidate}
-        authState={authState}
-      />
+        {/* Add CreateTaskModal */}
+        <CreateTaskModal
+          isVisible={isTaskModalVisible}
+          onCancel={handleTaskModalCancel}
+          onSubmit={handleTaskSubmit}
+          candidate={candidate}
+          authState={authState}
+        />
 
-      {/* Send Offer Modal */}
-      <SendOfferModal
-        visible={isOfferModalVisible}
-        onCancel={() => setIsOfferModalVisible(false)}
-        onSubmit={handleSendOffer}
-        loading={submittingOffer}
-        candidate={candidate}
-        offerStatus={offerStatus}
-        existingOffer={offer} // Pass the offer data here
-      />
+        {/* Send Offer Modal */}
+        <SendOfferModal
+          visible={isOfferModalVisible}
+          onCancel={() => setIsOfferModalVisible(false)}
+          onSubmit={handleSendOffer}
+          loading={submittingOffer}
+          candidate={candidate}
+          offerStatus={offerStatus}
+          existingOffer={offer} // Pass the offer data here
+        />
 
-      {/* Status Change Reason Modal */}
-      <Modal
-        title="Blacklist Reason"
-        visible={isReasonModalVisible}
-        onCancel={() => {
-          setIsReasonModalVisible(false);
-          setSelectedStatus(null);
-        }}
-        footer={null}
-        className="custom-modal"
-      >
-        <Form onFinish={handleReasonSubmit} layout="vertical">
-          <Form.Item
-            name="blacklistReason"
-            label="Reason for Blacklisting"
-            rules={[
-              {
-                required: true,
-                message:
-                  "Please provide a reason for blacklisting the candidate",
-              },
-            ]}
-          >
-            <Input.TextArea
-              rows={6}
-              placeholder="Enter the reason for blacklisting the candidate"
-              maxLength={500}
-              showCount
-            />
-          </Form.Item>
-
-          <Form.Item className="text-end pb-3 mt-2">
-            <Button
-              style={{
-                marginRight: 12,
-                padding: "6px 24px",
-                height: "40px",
-                borderRadius: "20px",
-                background: "#F8F9FA",
-                border: "none",
-              }}
-              onClick={() => {
-                setIsReasonModalVisible(false);
-                setSelectedStatus(null);
-              }}
+        {/* Status Change Reason Modal */}
+        <Modal
+          title="Blacklist Reason"
+          visible={isReasonModalVisible}
+          onCancel={() => {
+            setIsReasonModalVisible(false);
+            setSelectedStatus(null);
+          }}
+          footer={null}
+          className="custom-modal"
+        >
+          <Form onFinish={handleReasonSubmit} layout="vertical">
+            <Form.Item
+              name="blacklistReason"
+              label="Reason for Blacklisting"
+              rules={[
+                {
+                  required: true,
+                  message:
+                    "Please provide a reason for blacklisting the candidate",
+                },
+              ]}
             >
-              Cancel
-            </Button>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={updatingStatus}
-              style={{
-                padding: "6px 24px",
-                height: "40px",
-                borderRadius: "20px",
-                background: "#F4A261",
-                border: "none",
-              }}
-            >
-              Submit
-            </Button>
-          </Form.Item>
-        </Form>
-      </Modal>
+              <Input.TextArea
+                rows={6}
+                placeholder="Enter the reason for blacklisting the candidate"
+                maxLength={500}
+                showCount
+              />
+            </Form.Item>
 
-      <style jsx>{`
+            <Form.Item className="text-end pb-3 mt-2">
+              <Button
+                style={{
+                  marginRight: 12,
+                  padding: "6px 24px",
+                  height: "40px",
+                  borderRadius: "20px",
+                  background: "#F8F9FA",
+                  border: "none",
+                }}
+                onClick={() => {
+                  setIsReasonModalVisible(false);
+                  setSelectedStatus(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={updatingStatus}
+                style={{
+                  padding: "6px 24px",
+                  height: "40px",
+                  borderRadius: "20px",
+                  background: "#F4A261",
+                  border: "none",
+                }}
+              >
+                Submit
+              </Button>
+            </Form.Item>
+          </Form>
+        </Modal>
+
+        <style jsx>{`
         .btn-style{
           width:50%;
           font-size:14px; 
@@ -3949,7 +4046,8 @@ const CandidateDetails = () => {
         }
       }
       `}</style>
-    </div>
+      </div>
+    </>
   );
 };
 

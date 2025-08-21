@@ -45,6 +45,7 @@ import { render } from "@fullcalendar/core/preact.js";
 import { useTranslation } from "react-i18next";
 import leftPageIcon from "../../assets/iconsRecruitment/fi_chevrons-left.svg";
 import rightPageIcon from "../../assets/iconsRecruitment/fi_chevrons-right.svg";
+import { Helmet } from "react-helmet";
 
 // import { FaFacebook, FaLinkedin, FaInstagram } from 'react-icons/fa';
 
@@ -649,523 +650,536 @@ const Jobs = () => {
   };
 
   return (
-    <div className="content container-fluid">
-      {/* Page Header */}
-      <div className="page-header">
-        <div className="row align-items-center">
-          <div className="col">
-            <h3 className="page-title">Jobs</h3>
-            <ul className="breadcrumb">
-              <li className="breadcrumb-item">
-                <Link to="/recruitment/dashboard">Dashboard</Link>
-              </li>
-              <li className="breadcrumb-item active">Jobs</li>
-            </ul>
-          </div>
-          <div className="col-auto float-end ms-auto d-flex align-items-center">
-            <div className="view-icons me-3">
-              {/* <Button
+    <>
+      <Helmet>
+        <title>Jobs</title>
+        <meta name="description" content="Login page" />
+      </Helmet>
+      <div className="content container-fluid">
+        {/* Page Header */}
+        <div className="page-header">
+          <div className="row align-items-center">
+            <div className="col">
+              <h3 className="page-title">Jobs</h3>
+              <ul className="breadcrumb">
+                <li className="breadcrumb-item">
+                  <Link to="/recruitment/dashboard">Dashboard</Link>
+                </li>
+                <li className="breadcrumb-item active">Jobs</li>
+              </ul>
+            </div>
+            <div className="col-auto float-end ms-auto d-flex align-items-center">
+              <div className="view-icons me-3">
+                {/* <Button
                 type={viewType === 'grid' ? 'primary' : 'default'}
                 // icon={<div style={{display: 'flex',  justifyContent: 'center'}}><i className="fa fa-th"/></div>}
                 icon= {<img src={grid} style={{display:'flex', justifyContent:"center", width:'25px', height:'25px'}}></img>}
                 onClick={() => setViewType('grid')}
               /> */}
-              <button
-                type={viewType === "list" ? "primary" : "default"}
-                onClick={() => setViewType("list")}
-                style={{
-                  height: "40px",
-                  width: "40px",
-                  border: "1.5px solid #EEf0f1",
-                  borderRadius: "4px",
-                  background: "white",
-                }}
-              >
-                <img src={list}></img>
-              </button>
-              <button
-                type={viewType === "grid" ? "primary" : "default"}
-                onClick={() => setViewType("grid")}
-                style={{
-                  height: "40px",
-                  width: "40px",
-                  border: "1.5px solid #EEf0f1",
-                  borderRadius: "4px",
-                  background: "white",
-                }}
-              >
-                <img src={grid}></img>
-              </button>
-              {/* <Button
+                <button
+                  type={viewType === "list" ? "primary" : "default"}
+                  onClick={() => setViewType("list")}
+                  style={{
+                    height: "40px",
+                    width: "40px",
+                    border: "1.5px solid #EEf0f1",
+                    borderRadius: "4px",
+                    background: "white",
+                  }}
+                >
+                  <img src={list}></img>
+                </button>
+                <button
+                  type={viewType === "grid" ? "primary" : "default"}
+                  onClick={() => setViewType("grid")}
+                  style={{
+                    height: "40px",
+                    width: "40px",
+                    border: "1.5px solid #EEf0f1",
+                    borderRadius: "4px",
+                    background: "white",
+                  }}
+                >
+                  <img src={grid}></img>
+                </button>
+                {/* <Button
                 type={viewType === 'list' ? 'primary' : 'default'}
                 // icon={<div style={{display:'flex', justifyContent:'center'}}><img src={list}></img></div>}
                 icon={<img src={list}></img>}
                 onClick={() => setViewType('list')}
                 className="me-1"
               /> */}
-            </div>
-            <Button className="add-candidate-btn" onClick={handleAddJob}>
-              <div className="btn-content">
-                <img
-                  src={circle}
-                  style={{ marginRight: "8px", marginBottom: "20px" }}
-                ></img>
-                <p>Add New Job</p>
               </div>
-            </Button>
+              <Button className="add-candidate-btn" onClick={handleAddJob}>
+                <div className="btn-content">
+                  <img
+                    src={circle}
+                    style={{ marginRight: "8px", marginBottom: "20px" }}
+                  ></img>
+                  <p>Add New Job</p>
+                </div>
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Search Filters */}
-      <Form
-        form={form}
-        onFinish={handleSearch}
-        onValuesChange={(changedValues, allValues) => {
-          const clearedField = Object.keys(changedValues).find(
-            (key) =>
-              changedValues[key] === "" || changedValues[key] === undefined
-          );
-          if (clearedField) {
-            handleSearch(allValues);
-          }
-        }}
-        className="search-form"
-        initialValues={filters}
-      >
-        <Row gutter={[12, 12]} align="middle">
-          <Col xs={24} sm={12} md={4}>
-            <Form.Item name="title" className="mb-0">
-              <Input
-                style={{ borderRadius: "8px", height: "40px" }}
-                placeholder="Job Name"
-                allowClear
+        {/* Search Filters */}
+        <Form
+          form={form}
+          onFinish={handleSearch}
+          onValuesChange={(changedValues, allValues) => {
+            const clearedField = Object.keys(changedValues).find(
+              (key) =>
+                changedValues[key] === "" || changedValues[key] === undefined
+            );
+            if (clearedField) {
+              handleSearch(allValues);
+            }
+          }}
+          className="search-form"
+          initialValues={filters}
+        >
+          <Row gutter={[12, 12]} align="middle">
+            <Col xs={24} sm={12} md={4}>
+              <Form.Item name="title" className="mb-0">
+                <Input
+                  style={{ borderRadius: "8px", height: "40px" }}
+                  placeholder="Job Name"
+                  allowClear
+                />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12} md={4}>
+              <Form.Item name="department" className="mb-0">
+                <Select
+                  placeholder="Department"
+                  allowClear
+                  className="custom"
+                  options={[
+                    { value: "Engineering", label: "Engineering" },
+                    { value: "Marketing", label: "Marketing" },
+                    { value: "Sales", label: "Sales" },
+                    { value: "HR", label: "HR" },
+                    { value: "Finance", label: "Finance" },
+                    { value: "Operations", label: "Operations" },
+                    { value: "Design", label: "Design" },
+                    { value: "Product", label: "Product" },
+                  ]}
+                />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12} md={4}>
+              <Form.Item name="jobType" className="mb-0">
+                <Select
+                  placeholder="Job Type"
+                  allowClear
+                  className="custom"
+                  options={[
+                    { value: "FULL_TIME", label: "Full Time" },
+                    { value: "PART_TIME", label: "Part Time" },
+                    { value: "CONTRACT", label: "Contract" },
+                    { value: "INTERNSHIP", label: "Internship" },
+                    { value: "FREELANCE", label: "Freelance" },
+                  ]}
+                />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12} md={4}>
+              <Form.Item name="workSetup" className="mb-0">
+                <Select
+                  placeholder="Work Setup"
+                  allowClear
+                  className="custom"
+                  options={[
+                    { text: "On-Site", value: "ONSITE" },
+                    { text: "Remote", value: "REMOTE" },
+                    { text: "Hybrid", value: "HYBRID" },
+                  ]}
+                />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12} md={4}>
+              <Form.Item name="jobStatus" className="mb-0">
+                <Select
+                  placeholder="Job Status"
+                  allowClear
+                  className="custom"
+                  options={[
+                    { text: "Active", value: "ACTIVE" },
+                    { text: "Closed", value: "CLOSED" },
+                    { text: "Draft", value: "DRAFT" },
+                  ]}
+                />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12} md={4}>
+              <Form.Item className="mb-0">
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  className="search-btn"
+                  block
+                >
+                  Search
+                </Button>
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
+
+        {/* Add Job Modal */}
+        <Modal
+          title="Add New Job"
+          visible={isModalVisible}
+          onCancel={handleModalCancel}
+          footer={null}
+          width={800}
+          className="custom-modal"
+          style={{ zIndex: 2000 }}
+          maskStyle={{ zIndex: 1999, background: "rgba(0, 0, 0, 0.5)" }}
+        >
+          <Form
+            form={modalForm}
+            layout="vertical"
+            onFinish={handleModalSubmit}
+            initialValues={{
+              positions: 1,
+              postingPlatforms: ["WEBSITE"],
+              status: "ACTIVE",
+            }}
+          >
+            <div className="row">
+              <div
+                style={{
+                  height: "20px",
+                  width: "100%",
+                  display: "flex",
+                  justifyContent: "center",
+                  borderTop: "1px solid #E2E8F0",
+                }}
+              ></div>
+              <div className="col-md-6">
+                <Form.Item
+                  name="department"
+                  label={<>Department</>}
+                  rules={[
+                    { required: true, message: "Please select department" },
+                  ]}
+                >
+                  <Select placeholder="Enter Department" className="customized">
+                    {departments.map((dept) => (
+                      <Select.Option key={dept._id} value={dept.teamName}>
+                        {dept.teamName}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </div>
+              <div className="col-md-6">
+                <Form.Item
+                  name="title"
+                  label={<>Job Title</>}
+                  rules={[
+                    { required: true, message: "Please enter job title" },
+                  ]}
+                >
+                  <Input placeholder="Enter Job" maxLength={30} />
+                </Form.Item>
+              </div>
+            </div>
+
+            <div className="row">
+              <div className="col-md-6">
+                <Form.Item
+                  name="jobType"
+                  label={<>Job Type</>}
+                  rules={[
+                    { required: true, message: "Please select job type" },
+                  ]}
+                >
+                  <Select placeholder="Full Time" className="customized">
+                    <Select.Option value="FULL_TIME">Full Time</Select.Option>
+                    <Select.Option value="PART_TIME">Part Time</Select.Option>
+                    <Select.Option value="CONTRACT">Contract</Select.Option>
+                    <Select.Option value="INTERNSHIP">Internship</Select.Option>
+                    <Select.Option value="FREELANCE">Freelance</Select.Option>
+                  </Select>
+                </Form.Item>
+              </div>
+              <div className="col-md-6">
+                <Form.Item
+                  name="workSetup"
+                  label={<>Work Setup</>}
+                  rules={[
+                    { required: true, message: "Please select work setup" },
+                  ]}
+                >
+                  <Select placeholder="Work Setup" className="customized">
+                    <Select.Option value="ONSITE">On-site</Select.Option>
+                    <Select.Option value="REMOTE">Remote</Select.Option>
+                    <Select.Option value="HYBRID">Hybrid</Select.Option>
+                  </Select>
+                </Form.Item>
+              </div>
+            </div>
+
+            <div className="row">
+              <div className="col-md-6">
+                <Form.Item
+                  name="salaryRange"
+                  label={
+                    <>
+                      Salary Range <span className="text-danger">*</span>
+                    </>
+                  }
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter salary range",
+                    },
+                    {
+                      pattern: /^\d+\s*-\s*\d+$/,
+                      message: "Enter valid format: e.g. 1000 - 5000",
+                    },
+                    {
+                      validator: (_, value) => {
+                        if (!value) return Promise.resolve();
+
+                        const [min, max] = value
+                          .split("-")
+                          .map((s) => parseInt(s.trim(), 10));
+                        if (isNaN(min) || isNaN(max) || min >= max) {
+                          return Promise.reject(
+                            "Minimum must be less than maximum salary"
+                          );
+                        }
+
+                        return Promise.resolve();
+                      },
+                    },
+                  ]}
+                >
+                  <Input
+                    placeholder="1000 - 5000"
+                    maxLength={17}
+                    onKeyPress={(e) => {
+                      const allowedChars = /[0-9-]/;
+                      if (!allowedChars.test(e.key)) {
+                        e.preventDefault();
+                      }
+                    }}
+                  />
+                </Form.Item>
+              </div>
+              <div className="col-md-6">
+                <Form.Item
+                  name="positions"
+                  label={<>No of. Positions</>}
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter number of positions",
+                    },
+                    {
+                      type: "number",
+                      min: 1,
+                      message: "Must be at least 1 position",
+                    },
+                  ]}
+                >
+                  <InputNumber
+                    min={1}
+                    style={{
+                      width: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                    placeholder="1"
+                  />
+                </Form.Item>
+              </div>
+            </div>
+
+            <Form.Item
+              name="description"
+              label={<>Job Description</>}
+              rules={[
+                { required: true, message: "Please enter job description" },
+              ]}
+            >
+              <TextArea
+                rows={3}
+                placeholder="Add Description"
+                maxLength={1100}
               />
             </Form.Item>
-          </Col>
-          <Col xs={24} sm={12} md={4}>
-            <Form.Item name="department" className="mb-0">
-              <Select
-                placeholder="Department"
-                allowClear
-                className="custom"
-                options={[
-                  { value: "Engineering", label: "Engineering" },
-                  { value: "Marketing", label: "Marketing" },
-                  { value: "Sales", label: "Sales" },
-                  { value: "HR", label: "HR" },
-                  { value: "Finance", label: "Finance" },
-                  { value: "Operations", label: "Operations" },
-                  { value: "Design", label: "Design" },
-                  { value: "Product", label: "Product" },
-                ]}
-              />
+
+            <Form.Item
+              name="postingPlatforms"
+              label="Post this Job on"
+              initialValue={["WEBSITE"]}
+            >
+              <Checkbox.Group>
+                <div className="checkbox-style">
+                  <Checkbox value="FACEBOOK">Facebook</Checkbox>
+                  <Checkbox value="LINKEDIN">LinkedIn</Checkbox>
+                  <Checkbox value="WEBSITE">Website</Checkbox>
+                  <Checkbox value="INDEED">Indeed</Checkbox>
+                </div>
+              </Checkbox.Group>
             </Form.Item>
-          </Col>
-          <Col xs={24} sm={12} md={4}>
-            <Form.Item name="jobType" className="mb-0">
-              <Select
-                placeholder="Job Type"
-                allowClear
-                className="custom"
-                options={[
-                  { value: "FULL_TIME", label: "Full Time" },
-                  { value: "PART_TIME", label: "Part Time" },
-                  { value: "CONTRACT", label: "Contract" },
-                  { value: "INTERNSHIP", label: "Internship" },
-                  { value: "FREELANCE", label: "Freelance" },
-                ]}
-              />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={12} md={4}>
-            <Form.Item name="workSetup" className="mb-0">
-              <Select
-                placeholder="Work Setup"
-                allowClear
-                className="custom"
-                options={[
-                  { text: "On-Site", value: "ONSITE" },
-                  { text: "Remote", value: "REMOTE" },
-                  { text: "Hybrid", value: "HYBRID" },
-                ]}
-              />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={12} md={4}>
-            <Form.Item name="jobStatus" className="mb-0">
-              <Select
-                placeholder="Job Status"
-                allowClear
-                className="custom"
-                options={[
-                  { text: "Active", value: "ACTIVE" },
-                  { text: "Closed", value: "CLOSED" },
-                  { text: "Draft", value: "DRAFT" },
-                ]}
-              />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={12} md={4}>
-            <Form.Item className="mb-0">
+
+            <Form.Item
+              className="text-end mt-3"
+              style={{ backgroundColor: "transparent", height: "70px" }}
+            >
+              <Button
+                onClick={handleModalReset}
+                style={{
+                  marginRight: 12,
+                  padding: "6px 24px",
+                  height: "40px",
+                  borderRadius: "40px",
+                  background: "#F8F9FA",
+                  border: "none",
+                }}
+              >
+                Reset
+              </Button>
               <Button
                 type="primary"
                 htmlType="submit"
-                className="search-btn"
-                block
+                loading={submitting}
+                style={{
+                  padding: "6px 24px",
+                  height: "40px",
+                  borderRadius: "40px",
+                  background: "#ff9244",
+                  border: "none",
+                  color: "white",
+                }}
               >
-                Search
+                Create Job
               </Button>
             </Form.Item>
-          </Col>
-        </Row>
-      </Form>
+          </Form>
+        </Modal>
 
-      {/* Add Job Modal */}
-      <Modal
-        title="Add New Job"
-        visible={isModalVisible}
-        onCancel={handleModalCancel}
-        footer={null}
-        width={800}
-        className="custom-modal"
-        style={{ zIndex: 2000 }}
-        maskStyle={{ zIndex: 1999, background: "rgba(0, 0, 0, 0.5)" }}
-      >
-        <Form
-          form={modalForm}
-          layout="vertical"
-          onFinish={handleModalSubmit}
-          initialValues={{
-            positions: 1,
-            postingPlatforms: ["WEBSITE"],
-            status: "ACTIVE",
-          }}
-        >
-          <div className="row">
-            <div
-              style={{
-                height: "20px",
-                width: "100%",
-                display: "flex",
-                justifyContent: "center",
-                borderTop: "1px solid #E2E8F0",
-              }}
-            ></div>
-            <div className="col-md-6">
-              <Form.Item
-                name="department"
-                label={<>Department</>}
-                rules={[
-                  { required: true, message: "Please select department" },
-                ]}
-              >
-                <Select placeholder="Enter Department" className="customized">
-                  {departments.map((dept) => (
-                    <Select.Option key={dept._id} value={dept.teamName}>
-                      {dept.teamName}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </div>
-            <div className="col-md-6">
-              <Form.Item
-                name="title"
-                label={<>Job Title</>}
-                rules={[{ required: true, message: "Please enter job title" }]}
-              >
-                <Input placeholder="Enter Job" maxLength={30} />
-              </Form.Item>
-            </div>
-          </div>
-
-          <div className="row">
-            <div className="col-md-6">
-              <Form.Item
-                name="jobType"
-                label={<>Job Type</>}
-                rules={[{ required: true, message: "Please select job type" }]}
-              >
-                <Select placeholder="Full Time" className="customized">
-                  <Select.Option value="FULL_TIME">Full Time</Select.Option>
-                  <Select.Option value="PART_TIME">Part Time</Select.Option>
-                  <Select.Option value="CONTRACT">Contract</Select.Option>
-                  <Select.Option value="INTERNSHIP">Internship</Select.Option>
-                  <Select.Option value="FREELANCE">Freelance</Select.Option>
-                </Select>
-              </Form.Item>
-            </div>
-            <div className="col-md-6">
-              <Form.Item
-                name="workSetup"
-                label={<>Work Setup</>}
-                rules={[
-                  { required: true, message: "Please select work setup" },
-                ]}
-              >
-                <Select placeholder="Work Setup" className="customized">
-                  <Select.Option value="ONSITE">On-site</Select.Option>
-                  <Select.Option value="REMOTE">Remote</Select.Option>
-                  <Select.Option value="HYBRID">Hybrid</Select.Option>
-                </Select>
-              </Form.Item>
-            </div>
-          </div>
-
-          <div className="row">
-            <div className="col-md-6">
-              <Form.Item
-                name="salaryRange"
-                label={
-                  <>
-                    Salary Range <span className="text-danger">*</span>
-                  </>
-                }
-                rules={[
-                  {
-                    required: true,
-                    message: "Please enter salary range",
-                  },
-                  {
-                    pattern: /^\d+\s*-\s*\d+$/,
-                    message: "Enter valid format: e.g. 1000 - 5000",
-                  },
-                  {
-                    validator: (_, value) => {
-                      if (!value) return Promise.resolve();
-
-                      const [min, max] = value
-                        .split("-")
-                        .map((s) => parseInt(s.trim(), 10));
-                      if (isNaN(min) || isNaN(max) || min >= max) {
-                        return Promise.reject(
-                          "Minimum must be less than maximum salary"
-                        );
-                      }
-
-                      return Promise.resolve();
-                    },
-                  },
-                ]}
-              >
-                <Input
-                  placeholder="1000 - 5000"
-                  maxLength={17}
-                  onKeyPress={(e) => {
-                    const allowedChars = /[0-9-]/;
-                    if (!allowedChars.test(e.key)) {
-                      e.preventDefault();
-                    }
-                  }}
-                />
-              </Form.Item>
-            </div>
-            <div className="col-md-6">
-              <Form.Item
-                name="positions"
-                label={<>No of. Positions</>}
-                rules={[
-                  {
-                    required: true,
-                    message: "Please enter number of positions",
-                  },
-                  {
-                    type: "number",
-                    min: 1,
-                    message: "Must be at least 1 position",
-                  },
-                ]}
-              >
-                <InputNumber
-                  min={1}
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    alignItems: "center",
-                  }}
-                  placeholder="1"
-                />
-              </Form.Item>
-            </div>
-          </div>
-
-          <Form.Item
-            name="description"
-            label={<>Job Description</>}
-            rules={[
-              { required: true, message: "Please enter job description" },
-            ]}
-          >
-            <TextArea rows={3} placeholder="Add Description" maxLength={1100} />
-          </Form.Item>
-
-          <Form.Item
-            name="postingPlatforms"
-            label="Post this Job on"
-            initialValue={["WEBSITE"]}
-          >
-            <Checkbox.Group>
-              <div className="checkbox-style">
-                <Checkbox value="FACEBOOK">Facebook</Checkbox>
-                <Checkbox value="LINKEDIN">LinkedIn</Checkbox>
-                <Checkbox value="WEBSITE">Website</Checkbox>
-                <Checkbox value="INDEED">Indeed</Checkbox>
-              </div>
-            </Checkbox.Group>
-          </Form.Item>
-
-          <Form.Item
-            className="text-end mt-3"
-            style={{ backgroundColor: "transparent", height: "70px" }}
-          >
-            <Button
-              onClick={handleModalReset}
-              style={{
-                marginRight: 12,
-                padding: "6px 24px",
-                height: "40px",
-                borderRadius: "40px",
-                background: "#F8F9FA",
-                border: "none",
-              }}
-            >
-              Reset
-            </Button>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={submitting}
-              style={{
-                padding: "6px 24px",
-                height: "40px",
-                borderRadius: "40px",
-                background: "#ff9244",
-                border: "none",
-                color: "white",
-              }}
-            >
-              Create Job
-            </Button>
-          </Form.Item>
-        </Form>
-      </Modal>
-
-      {/* Jobs View */}
-      <div className="row">
-        <div className="col-md-12">
-          <Spin spinning={loading}>
-            {viewType === "list" ? (
-              <>
-                {jobs?.length > 0 && (
-                  <Row justify="space-between" style={{ marginBottom: 16 }}>
-                    <Col>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "5px",
-                        }}
-                      >
-                        <div style={{ fontSize: "14px" }}>Show</div>
-                        <Select
-                          className="new"
-                          value={pageSize}
-                          onChange={(size) => {
-                            setPageSize(size);
-                            setCurrentPage(1);
+        {/* Jobs View */}
+        <div className="row">
+          <div className="col-md-12">
+            <Spin spinning={loading}>
+              {viewType === "list" ? (
+                <>
+                  {jobs?.length > 0 && (
+                    <Row justify="space-between" style={{ marginBottom: 16 }}>
+                      <Col>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "5px",
                           }}
-                          style={{ width: 60 }}
                         >
-                          {["20", "30", "40", "50"].map((size) => (
-                            <Option key={size} value={parseInt(size, 10)}>
-                              {size}
-                            </Option>
-                          ))}
-                        </Select>
-                        <div style={{ fontSize: "14px" }}>entries</div>
-                      </div>
-                    </Col>
-                  </Row>
-                )}
-                <div className="table-responsive">
-                  <Table
-                    className="table-striped"
-                    columns={columns}
-                    dataSource={jobs}
-                    rowKey="_id"
-                    // pagination={{
-                    //   ...pagination,
-                    //   showSizeChanger: true,
-                    //   showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                    //   pageSizeOptions: ['10', '20', '50']
-                    // }}
-                    // onChange={handleTableChange}
-                    pagination={false}
-                  />
-                </div>
-                {jobs?.length > 0 && (
-                  <Row
-                    justify="space-between"
-                    align="middle"
-                    style={{ marginTop: 16 }}
-                  >
-                    <Col>
-                      <span style={{ fontSize: "14px" }}>
-                        {t("paginationShow", {
-                          range1: (currentPage - 1) * pageSize + 1,
-                          range2: Math.min(
-                            currentPage * pageSize,
-                            paginationDetail
-                          ),
-                          total: paginationDetail,
-                        })}
-                      </span>
-                    </Col>
-                    <Col>
-                      <Pagination
-                        total={paginationDetail}
-                        pageSize={pageSize}
-                        current={currentPage}
-                        showSizeChanger={false}
-                        onChange={(page, size) => {
-                          setPageSize(size);
-                          setCurrentPage(page);
-                        }}
-                        pageSizeOptions={["20", "30", "40", "50"]}
-                        itemRender={(current, type, originalElement) => {
-                          if (type === "prev") {
-                            return (
-                              <img
-                                src={leftPageIcon}
-                                style={{ height: "24px", width: "24px" }}
-                              />
-                            );
-                          }
-                          if (type === "next") {
-                            return (
-                              <img
-                                src={rightPageIcon}
-                                style={{ height: "24px", width: "24px" }}
-                              />
-                            );
-                          }
-                          return originalElement;
-                        }}
-                      />
-                    </Col>
-                  </Row>
-                )}
-              </>
-            ) : (
-              renderGridView()
-            )}
-          </Spin>
+                          <div style={{ fontSize: "14px" }}>Show</div>
+                          <Select
+                            className="new"
+                            value={pageSize}
+                            onChange={(size) => {
+                              setPageSize(size);
+                              setCurrentPage(1);
+                            }}
+                            style={{ width: 60 }}
+                          >
+                            {["20", "30", "40", "50"].map((size) => (
+                              <Option key={size} value={parseInt(size, 10)}>
+                                {size}
+                              </Option>
+                            ))}
+                          </Select>
+                          <div style={{ fontSize: "14px" }}>entries</div>
+                        </div>
+                      </Col>
+                    </Row>
+                  )}
+                  <div className="table-responsive">
+                    <Table
+                      className="table-striped"
+                      columns={columns}
+                      dataSource={jobs}
+                      rowKey="_id"
+                      // pagination={{
+                      //   ...pagination,
+                      //   showSizeChanger: true,
+                      //   showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+                      //   pageSizeOptions: ['10', '20', '50']
+                      // }}
+                      // onChange={handleTableChange}
+                      pagination={false}
+                    />
+                  </div>
+                  {jobs?.length > 0 && (
+                    <Row
+                      justify="space-between"
+                      align="middle"
+                      style={{ marginTop: 16 }}
+                    >
+                      <Col>
+                        <span style={{ fontSize: "14px" }}>
+                          {t("paginationShow", {
+                            range1: (currentPage - 1) * pageSize + 1,
+                            range2: Math.min(
+                              currentPage * pageSize,
+                              paginationDetail
+                            ),
+                            total: paginationDetail,
+                          })}
+                        </span>
+                      </Col>
+                      <Col>
+                        <Pagination
+                          total={paginationDetail}
+                          pageSize={pageSize}
+                          current={currentPage}
+                          showSizeChanger={false}
+                          onChange={(page, size) => {
+                            setPageSize(size);
+                            setCurrentPage(page);
+                          }}
+                          pageSizeOptions={["20", "30", "40", "50"]}
+                          itemRender={(current, type, originalElement) => {
+                            if (type === "prev") {
+                              return (
+                                <img
+                                  src={leftPageIcon}
+                                  style={{ height: "24px", width: "24px" }}
+                                />
+                              );
+                            }
+                            if (type === "next") {
+                              return (
+                                <img
+                                  src={rightPageIcon}
+                                  style={{ height: "24px", width: "24px" }}
+                                />
+                              );
+                            }
+                            return originalElement;
+                          }}
+                        />
+                      </Col>
+                    </Row>
+                  )}
+                </>
+              ) : (
+                renderGridView()
+              )}
+            </Spin>
+          </div>
         </div>
-      </div>
 
-      {/* Add some global styles */}
-      <style jsx>{`
+        {/* Add some global styles */}
+        <style jsx>{`
         .custom-modal .ant-modal-header {
           border-bottom: none;
           padding: 24px 24px 0;
@@ -1516,7 +1530,8 @@ const Jobs = () => {
           overflow: hidden;
         }
       `}</style>
-    </div>
+      </div>
+    </>
   );
 };
 
