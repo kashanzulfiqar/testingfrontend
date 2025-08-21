@@ -48,9 +48,14 @@ const RequireAuth = ({Role}) => {
       }
     }, [value, role, companyDetails, location]);
 
-    // Fetch subscription status for admin users first
+    // Fetch subscription status for admin users first (skip on super-admin routes)
     useEffect(() => {
       const fetchSubscriptionStatus = async () => {
+        // Skip subscription check entirely on super-admin routes
+        if (location.pathname.startsWith('/super-admin')) {
+          hasCheckedSubscriptionRef.current = true;
+          return;
+        }
         // Only fetch for admin users and if we haven't checked yet
         if (!isCheckingSubscription && !hasCheckedSubscriptionRef.current) {
           try {
@@ -116,7 +121,7 @@ const RequireAuth = ({Role}) => {
       };
 
       fetchSubscriptionStatus();
-    }, [role, isCheckingSubscription]);
+    }, [role, isCheckingSubscription, location.pathname]);
 
     const toggleMobileMenu = () => {
       setMenu(!menu);
