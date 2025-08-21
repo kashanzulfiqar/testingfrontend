@@ -2,7 +2,6 @@ import React from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { MentionExtension } from './MentionExtension';
-import './RichTextEditor.css';
 
 const RichTextEditor = ({ content, onChange, teamMembers = [] }) => {
   const editor = useEditor({
@@ -25,28 +24,6 @@ const RichTextEditor = ({ content, onChange, teamMembers = [] }) => {
     }
   }, [content, editor]);
 
-  const handleBulletList = () => {
-    try {
-      console.log('Toggling bullet list...');
-      const result = editor.chain().focus().toggleBulletList().run();
-      console.log('Bullet list toggle result:', result);
-      console.log('Editor HTML after toggle:', editor.getHTML());
-    } catch (error) {
-      console.error('Error toggling bullet list:', error);
-    }
-  };
-
-  const handleOrderedList = () => {
-    try {
-      console.log('Toggling ordered list...');
-      const result = editor.chain().focus().toggleOrderedList().run();
-      console.log('Ordered list toggle result:', result);
-      console.log('Editor HTML after toggle:', editor.getHTML());
-    } catch (error) {
-      console.error('Error toggling ordered list:', error);
-    }
-  };
-
   if (!editor) {
     return null;
   }
@@ -57,40 +34,114 @@ const RichTextEditor = ({ content, onChange, teamMembers = [] }) => {
         <button
           onClick={() => editor.chain().focus().toggleBold().run()}
           className={editor.isActive('bold') ? 'is-active' : ''}
-          title="Bold"
         >
           <i className="fa fa-bold"></i>
         </button>
         <button
           onClick={() => editor.chain().focus().toggleItalic().run()}
           className={editor.isActive('italic') ? 'is-active' : ''}
-          title="Italic"
         >
           <i className="fa fa-italic"></i>
         </button>
         <button
-          onClick={handleBulletList}
+          onClick={() => editor.chain().focus().toggleBulletList().run()}
           className={editor.isActive('bulletList') ? 'is-active' : ''}
-          title="Bullet List"
         >
           <i className="fa fa-list-ul"></i>
         </button>
         <button
-          onClick={handleOrderedList}
+          onClick={() => editor.chain().focus().toggleOrderedList().run()}
           className={editor.isActive('orderedList') ? 'is-active' : ''}
-          title="Numbered List"
         >
           <i className="fa fa-list-ol"></i>
         </button>
         <button
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
           className={editor.isActive('heading', { level: 2 }) ? 'is-active' : ''}
-          title="Heading"
         >
           <i className="fa fa-header"></i>
         </button>
       </div>
       <EditorContent editor={editor} />
+      <style jsx="true">{`
+        .rich-text-editor {
+          border: 1px solid #e0e0e0;
+          border-radius: 4px;
+        }
+        .editor-toolbar {
+          border-bottom: 1px solid #e0e0e0;
+          padding: 8px;
+          display: flex;
+          gap: 8px;
+        }
+        .editor-toolbar button {
+          border: none;
+          background: none;
+          padding: 4px 8px;
+          cursor: pointer;
+          border-radius: 4px;
+        }
+        .editor-toolbar button:hover {
+          background-color: #f0f0f0;
+        }
+        .editor-toolbar button.is-active {
+          background-color: #e6f7ff;
+          color: #1890ff;
+        }
+        .ProseMirror {
+          padding: 12px;
+          min-height: 150px;
+          outline: none;
+        }
+        .ProseMirror p {
+          margin: 0 0 0.5em 0;
+        }
+        .mention {
+          background-color: #e6f7ff;
+          color: #1890ff;
+          padding: 2px 4px;
+          border-radius: 4px;
+          font-weight: 500;
+          cursor: pointer;
+        }
+        .mention:hover {
+          background-color: #bae7ff;
+        }
+        .mention-highlight {
+          background-color: #e6f7ff;
+          color: #1890ff;
+          padding: 2px 4px;
+          border-radius: 4px;
+          font-weight: 500;
+        }
+        .mention-suggestions {
+          position: absolute;
+          z-index: 1000;
+        }
+        .mention-list {
+          background: white;
+          border: 1px solid #e0e0e0;
+          border-radius: 4px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+          max-height: 200px;
+          overflow-y: auto;
+          min-width: 150px;
+        }
+        .mention-item {
+          padding: 8px 12px;
+          cursor: pointer;
+          border-bottom: 1px solid #f0f0f0;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .mention-item:hover {
+          background-color: #f0f0f0;
+        }
+        .mention-item:last-child {
+          border-bottom: none;
+        }
+      `}</style>
     </div>
   );
 };

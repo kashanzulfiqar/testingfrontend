@@ -20,16 +20,9 @@ function TaskModal({
    
  
   const [taskData, setTaskData] = useState(data);
+    
 
-  useEffect(() => {
-    setTaskData(data);
-  }, [data]);
 
-  useEffect(() => {
-    if (!viewModal) {
-      setTaskData(null);
-    }
-  }, [viewModal]);
 
   // Sync description with form and data
  

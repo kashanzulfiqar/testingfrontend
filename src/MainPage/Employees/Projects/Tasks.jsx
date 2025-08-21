@@ -491,7 +491,22 @@ const onFinishEdit = (values) => {
         );
       },
     },     
-    
+    {
+      title: t('finance.Invoices.description'),
+      dataIndex: 'description',
+      render: (text, record) => (
+        <div 
+          className='taskLongDesc'
+          dangerouslySetInnerHTML={{ __html: text || '' }}
+          style={{
+            maxHeight: '100px',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            wordBreak: 'break-word'
+          }}
+        />
+      ),
+    }, 
     {
       title: "Status",
       dataIndex: 'lane',
