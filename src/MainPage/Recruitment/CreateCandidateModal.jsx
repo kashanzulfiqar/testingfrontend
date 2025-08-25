@@ -358,6 +358,8 @@ const CreateCandidateModal = ({
                 notFoundContent={
                   activeJobs.length === 0 ? "No active jobs available" : null
                 }
+                getPopupContainer={(triggerNode) => triggerNode.parentNode}
+                dropdownStyle={{ zIndex: 2001 }}
               >
                 {Array.isArray(activeJobs) &&
                   activeJobs.map((job) => (
@@ -390,6 +392,8 @@ const CreateCandidateModal = ({
                 style={{ width: "100%" }}
                 placeholder="Select Date"
                 disabledDate={(date) => date.isAfter(moment())}
+                getPopupContainer={(triggerNode) => triggerNode.parentNode}
+                popupStyle={{ zIndex: 2001 }}
               />
             </Form.Item>
           </div>
@@ -403,7 +407,12 @@ const CreateCandidateModal = ({
               label={<>Application Status</>}
               rules={[{ required: true, message: "Select Status" }]}
             >
-              <Select className="customized" placeholder="Select Status">
+              <Select 
+                className="customized" 
+                placeholder="Select Status"
+                getPopupContainer={(triggerNode) => triggerNode.parentNode}
+                dropdownStyle={{ zIndex: 2001 }}
+              >
                 <Select.Option value="OPEN">Open</Select.Option>
                 <Select.Option value="ON_HOLD">On-Hold</Select.Option>
                 <Select.Option value="FILLED">Filled</Select.Option>
@@ -592,7 +601,12 @@ const CreateCandidateModal = ({
                 { required: true, message: "Please select notice period" },
               ]}
             >
-              <Select className="customized" placeholder="Select Notice Period">
+              <Select 
+                className="customized" 
+                placeholder="Select Notice Period"
+                getPopupContainer={(triggerNode) => triggerNode.parentNode}
+                dropdownStyle={{ zIndex: 2001 }}
+              >
                 <Select.Option value="IMMEDIATE">Immediate</Select.Option>
                 <Select.Option value="15_DAYS">15 Days</Select.Option>
                 <Select.Option value="30_DAYS">30 Days</Select.Option>
@@ -607,7 +621,12 @@ const CreateCandidateModal = ({
               label={<>Source</>}
               rules={[{ required: true, message: "Please select source" }]}
             >
-              <Select className="customized" placeholder="Select source">
+              <Select 
+                className="customized" 
+                placeholder="Select source"
+                getPopupContainer={(triggerNode) => triggerNode.parentNode}
+                dropdownStyle={{ zIndex: 2001 }}
+              >
                 <Select.Option value="LINKEDIN">LinkedIn</Select.Option>
                 <Select.Option value="WEBSITE">Website</Select.Option>
                 <Select.Option value="REFERRAL">Referral</Select.Option>
@@ -678,6 +697,10 @@ const CreateCandidateModal = ({
         .custom-modal .ant-modal-content {
           border: 1px solid transparent;
           border-radius: 10px;
+          overflow: visible;
+        }
+        .custom-modal .ant-modal-body {
+          overflow: visible;
         }
         .customselect-height > div {
           height: auto !important;
@@ -720,7 +743,7 @@ const CreateCandidateModal = ({
           color: #6c757d;
         }
 
-        .customized .ant-select-selector {
+        .custom-modal .customized .ant-select-selector {
           height: 56px !important;
           border-radius: 8px !important;
           display: flex;
@@ -728,7 +751,7 @@ const CreateCandidateModal = ({
           padding-left: 10px;
         }
 
-        .custom .ant-select-selector {
+        .custom-modal .custom .ant-select-selector {
           border-radius: 8px !important;
           display: flex;
           align-items: flex-start !important;
@@ -738,7 +761,7 @@ const CreateCandidateModal = ({
           overflow: hidden !important;
         }
 
-        .custom .ant-select-selection-item {
+        .custom-modal .custom .ant-select-selection-item {
           max-width: 100% !important;
           white-space: normal !important;
           word-break: break-word !important;
@@ -773,12 +796,12 @@ const CreateCandidateModal = ({
         }
 
         /* Fix cursor position in Select search input */
-        .custom-select .ant-select-selection-search {
+        .custom-modal .custom-select .ant-select-selection-search {
           width: 100% !important;
           position: relative !important;
         }
         
-        .custom-select .ant-select-selection-search-input {
+        .custom-modal .custom-select .ant-select-selection-search-input {
           text-indent: 0 !important;
           padding-left: 0 !important;
           margin-left: 0 !important;
@@ -788,7 +811,7 @@ const CreateCandidateModal = ({
           caret-color: inherit !important;
         }
         
-        .custom-select .ant-select-selection-search-mirror {
+        .custom-modal .custom-select .ant-select-selection-search-mirror {
           text-indent: 0 !important;
           padding-left: 0 !important;
           margin-left: 0 !important;
@@ -800,34 +823,34 @@ const CreateCandidateModal = ({
         }
 
         /* Additional fixes for multi-select cursor positioning */
-        .custom-select.ant-select-multiple .ant-select-selection-overflow {
+        .custom-modal .custom-select.ant-select-multiple .ant-select-selection-overflow {
           padding-left: 0 !important;
         }
 
-        .custom-select.ant-select-multiple .ant-select-selection-overflow-item {
+        .custom-modal .custom-select.ant-select-multiple .ant-select-selection-overflow-item {
           margin-left: 0 !important;
         }
 
-        .custom-select.ant-select-multiple .ant-select-selection-search {
+        .custom-modal .custom-select.ant-select-multiple .ant-select-selection-search {
           margin-left: 0 !important;
           padding-left: 0 !important;
         }
 
         /* Ensure proper alignment */
-        .custom-select .ant-select-selector {
+        .custom-modal .custom-select .ant-select-selector {
           display: flex !important;
           align-items: center !important;
           flex-wrap: wrap !important;
         }
 
         /* Force cursor to start position */
-        .custom-select .ant-select-selection-search-input:focus {
+        .custom-modal .custom-select .ant-select-selection-search-input:focus {
           text-align: left !important;
           text-indent: 0 !important;
         }
 
         /* Override any Ant Design default positioning */
-        .custom-select .ant-select-selection-overflow-item-suffix {
+        .custom-modal .custom-select .ant-select-selection-overflow-item-suffix {
           margin-left: 0 !important;
           padding-left: 0 !important;
         }

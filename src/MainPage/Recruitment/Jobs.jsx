@@ -866,7 +866,10 @@ const Jobs = () => {
                     { required: true, message: "Please select department" },
                   ]}
                 >
-                  <Select placeholder="Enter Department" className="customized">
+                  <Select placeholder="Enter Department" className="customized"
+                    getPopupContainer={(triggerNode) => triggerNode.parentNode}
+                    dropdownStyle={{ zIndex: 2001 }}
+                  >
                     {departments.map((dept) => (
                       <Select.Option key={dept._id} value={dept.teamName}>
                         {dept.teamName}
@@ -897,7 +900,10 @@ const Jobs = () => {
                     { required: true, message: "Please select job type" },
                   ]}
                 >
-                  <Select placeholder="Full Time" className="customized">
+                  <Select placeholder="Full Time" className="customized"
+                    getPopupContainer={(triggerNode) => triggerNode.parentNode}
+                    dropdownStyle={{ zIndex: 2001 }}
+                  >
                     <Select.Option value="FULL_TIME">Full Time</Select.Option>
                     <Select.Option value="PART_TIME">Part Time</Select.Option>
                     <Select.Option value="CONTRACT">Contract</Select.Option>
@@ -914,7 +920,10 @@ const Jobs = () => {
                     { required: true, message: "Please select work setup" },
                   ]}
                 >
-                  <Select placeholder="Work Setup" className="customized">
+                  <Select placeholder="Work Setup" className="customized"
+                    getPopupContainer={(triggerNode) => triggerNode.parentNode}
+                    dropdownStyle={{ zIndex: 2001 }}
+                  >
                     <Select.Option value="ONSITE">On-site</Select.Option>
                     <Select.Option value="REMOTE">Remote</Select.Option>
                     <Select.Option value="HYBRID">Hybrid</Select.Option>
@@ -1180,6 +1189,12 @@ const Jobs = () => {
 
         {/* Add some global styles */}
         <style jsx>{`
+        .custom-modal .ant-modal-content {
+          overflow: visible;
+        }
+        .custom-modal .ant-modal-body {
+          overflow: visible;
+        }
         .custom-modal .ant-modal-header {
           border-bottom: none;
           padding: 24px 24px 0;
@@ -1448,7 +1463,7 @@ const Jobs = () => {
           transform: translateY(20%);
         }
 
-        .customized .ant-select-selector{
+        .custom-modal .customized .ant-select-selector{
         height: 56px !important;
         border-radius: 8px !important;
         display: flex;

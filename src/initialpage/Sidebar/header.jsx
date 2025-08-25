@@ -86,10 +86,14 @@ const Header = (props) => {
 
   const handlesidebar = () => {
     document.body.classList.toggle('mini-sidebar');
-    props.onBarToggle()
+    if (typeof props.onBarToggle === 'function') {
+      props.onBarToggle();
+    }
   }
   const onMenuClik = () => {
-    props.onMenuClick()
+    if (typeof props.onMenuClick === 'function') {
+      props.onMenuClick();
+    }
   }
   useEffect(() => {
     // Update direction when language changes
