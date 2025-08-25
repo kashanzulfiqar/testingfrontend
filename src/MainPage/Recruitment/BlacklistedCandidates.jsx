@@ -620,6 +620,8 @@ const BlacklistedCandidates = () => {
                   setCandidatePositions([]);
                   modalForm.setFieldsValue({ position: undefined });
                 }}
+                getPopupContainer={(triggerNode) => triggerNode.parentNode}
+                dropdownStyle={{ zIndex: 2001 }}
               >
                 {allCandidates.map((candidate) => (
                   <Select.Option key={candidate._id} value={candidate._id}>
@@ -638,7 +640,11 @@ const BlacklistedCandidates = () => {
                 { required: true, message: "Please Enter Applied Postion" },
               ]}
             >
-              <Select placeholder="Select a position">
+              <Select 
+                placeholder="Select a position"
+                getPopupContainer={(triggerNode) => triggerNode.parentNode}
+                dropdownStyle={{ zIndex: 2001 }}
+              >
                 {candidatePositions.map((position) => (
                   <Select.Option key={position._id} value={position._id}>
                     {position.title}
@@ -715,6 +721,12 @@ const BlacklistedCandidates = () => {
         </Modal>
 
         <style jsx>{`
+          .custom-modal .ant-modal-content {
+            overflow: visible;
+          }
+          .custom-modal .ant-modal-body {
+            overflow: visible;
+          }
           .add-candidate-btn {
             border-radius: 40px !important;
             height: 44px !important;

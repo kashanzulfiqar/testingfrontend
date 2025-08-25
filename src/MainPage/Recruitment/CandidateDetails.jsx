@@ -355,6 +355,11 @@ const CandidateDetails = () => {
       return;
     }
 
+    if (newStatus === "OFFERED") {
+      setIsOfferModalVisible(true);
+      return;
+    }
+
     try {
       setUpdatingStatus(true);
       setLoading(true);
@@ -543,7 +548,7 @@ const CandidateDetails = () => {
         await fetchCandidateDetails(id);
 
         // Redirect to offered candidates list
-        navigate("/recruitment/candidates/offered");
+        // navigate("/recruitment/candidates/offered");
       } else {
         throw new Error(response?.data?.message || "Failed to send offer");
       }

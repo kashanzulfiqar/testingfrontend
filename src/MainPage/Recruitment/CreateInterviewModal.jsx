@@ -188,7 +188,12 @@ const CreateInterviewModal = ({ isVisible, onCancel, onSubmit, candidate, authSt
             label="Interview Type"
             rules={[{ required: true, message: 'Please select interview type' }]}
             >
-            <Select placeholder="Select interview type" getPopupContainer={() => document.getElementById('area')} className='customized'>
+            <Select 
+              placeholder="Select interview type" 
+              getPopupContainer={(triggerNode) => triggerNode.parentNode} 
+              className='customized'
+              dropdownStyle={{ zIndex: 2001 }}
+            >
               <Select.Option value="ONLINE">Online</Select.Option>
               <Select.Option value="IN_PERSON">In Person</Select.Option>
             </Select>
@@ -208,7 +213,8 @@ const CreateInterviewModal = ({ isVisible, onCancel, onSubmit, candidate, authSt
             placeholder="Select interviewer"
             showSearch
             optionFilterProp="children"
-            getPopupContainer={() => document.getElementById('area')}
+            getPopupContainer={(triggerNode) => triggerNode.parentNode}
+            dropdownStyle={{ zIndex: 2001 }}
             value={selectedInterviewers}
             onFocus={handleAssignFocus}
             onChange={(value) => {
@@ -241,7 +247,12 @@ const CreateInterviewModal = ({ isVisible, onCancel, onSubmit, candidate, authSt
             label="Interview Title"
             rules={[{ required: true, message: 'Please select interview title' }]}
             >
-              <Select placeholder="Select interview title" getPopupContainer={() => document.getElementById('area')} className='customized'>
+              <Select 
+                placeholder="Select interview title" 
+                getPopupContainer={(triggerNode) => triggerNode.parentNode} 
+                className='customized'
+                dropdownStyle={{ zIndex: 2001 }}
+              >
                 <Select.Option value="Initial Interview">Initial Interview</Select.Option>
                 <Select.Option value="Technical Interview">Technical Interview</Select.Option>
                 <Select.Option value="HR Interview">HR Interview</Select.Option>
@@ -260,6 +271,8 @@ const CreateInterviewModal = ({ isVisible, onCancel, onSubmit, candidate, authSt
               style={{ width: '100%' }}
               disabledDate={(current) => current && current < moment().startOf('day')}
               className='custom-datepicker'
+              getPopupContainer={(triggerNode) => triggerNode.parentNode}
+              popupStyle={{ zIndex: 2001 }}
               onChange={(date) => setInterviewDate(date)}
               />
             </Form.Item>
@@ -277,6 +290,8 @@ const CreateInterviewModal = ({ isVisible, onCancel, onSubmit, candidate, authSt
                 style={{ width: '100%' }}
                 format="HH:mm"
                 minuteStep={5}
+                getPopupContainer={(triggerNode) => triggerNode.parentNode}
+                popupStyle={{ zIndex: 2001 }}
                 className='custom-timepicker'
                 disabledHours={getDisabledHours}
               />
@@ -386,6 +401,8 @@ const CreateInterviewModal = ({ isVisible, onCancel, onSubmit, candidate, authSt
             placeholder="Select interviewer"
             showSearch
             optionFilterProp="children"
+            getPopupContainer={(triggerNode) => triggerNode.parentNode}
+            dropdownStyle={{ zIndex: 2001 }}
           >
             {employees.map((emp) => (
               <Select.Option key={emp._id} value={emp._id}>
@@ -404,6 +421,8 @@ const CreateInterviewModal = ({ isVisible, onCancel, onSubmit, candidate, authSt
             placeholder="Select additional interviewers"
             showSearch
             optionFilterProp="children"
+            getPopupContainer={(triggerNode) => triggerNode.parentNode}
+            dropdownStyle={{ zIndex: 2001 }}
           >
             {employees.map((emp) => (
               <Select.Option key={emp._id} value={emp._id}>
@@ -421,6 +440,8 @@ const CreateInterviewModal = ({ isVisible, onCancel, onSubmit, candidate, authSt
           <DatePicker
             style={{ width: '100%' }}
             disabledDate={(current) => current && current < moment().startOf('day')}
+            getPopupContainer={(triggerNode) => triggerNode.parentNode}
+            popupStyle={{ zIndex: 2001 }}
           />
         </Form.Item>
 
@@ -433,6 +454,8 @@ const CreateInterviewModal = ({ isVisible, onCancel, onSubmit, candidate, authSt
             style={{ width: '100%' }}
             format="HH:mm"
             minuteStep={15}
+            getPopupContainer={(triggerNode) => triggerNode.parentNode}
+            popupStyle={{ zIndex: 2001 }}
           />
         </Form.Item>
 
@@ -449,6 +472,12 @@ const CreateInterviewModal = ({ isVisible, onCancel, onSubmit, candidate, authSt
         </Form.Item>*/}
       </Form>
       <style jsx>{`
+        .custom-modal .ant-modal-content {
+          overflow: visible;
+        }
+        .custom-modal .ant-modal-body {
+          overflow: visible;
+        }
         .custom-modal .ant-modal-header {
           border-bottom: none;
           padding: 24px 24px 0;
@@ -509,7 +538,7 @@ const CreateInterviewModal = ({ isVisible, onCancel, onSubmit, candidate, authSt
         //   border: none
         // }
 
-        .customized .ant-select-selector{
+        .custom-modal .customized .ant-select-selector{
         height: 56px !important;
         border-radius: 8px !important;
         display: flex;
@@ -546,11 +575,11 @@ const CreateInterviewModal = ({ isVisible, onCancel, onSubmit, candidate, authSt
         }
 
         /* Ensure caret starts at beginning for assignTo select (mirror/input normalization) */
-        .custom-select .ant-select-selection-search {
+        .custom-modal .custom-select .ant-select-selection-search {
           width: 100% !important;
           position: relative !important;
         }
-        .custom-select .ant-select-selection-search-input {
+        .custom-modal .custom-select .ant-select-selection-search-input {
           text-indent: 0 !important;
           padding-left: 0 !important;
           margin-left: 0 !important;
@@ -560,7 +589,7 @@ const CreateInterviewModal = ({ isVisible, onCancel, onSubmit, candidate, authSt
           background: transparent !important;
           caret-color: inherit !important;
         }
-        .custom-select .ant-select-selection-search-mirror {
+        .custom-modal .custom-select .ant-select-selection-search-mirror {
           text-indent: 0 !important;
           padding-left: 0 !important;
           margin-left: 0 !important;
@@ -570,37 +599,37 @@ const CreateInterviewModal = ({ isVisible, onCancel, onSubmit, candidate, authSt
           width: 100% !important;
           visibility: hidden !important;
         }
-        .custom-select .ant-select-selection-placeholder {
+        .custom-modal .custom-select .ant-select-selection-placeholder {
           letter-spacing: normal !important;
           padding-left: 0 !important;
           margin-left: 0 !important;
         }
         /* Keep default AntD behavior for placeholder on focus */
         /* Align selector layout similar to skills field */
-        .custom-select .ant-select-selector {
+        .custom-modal .custom-select .ant-select-selector {
           display: flex !important;
           align-items: center !important;
           flex-wrap: wrap !important;
         }
 
         /* Additional fixes mirroring skillSet field */
-        .custom-select.ant-select-multiple .ant-select-selection-overflow {
+        .custom-modal .custom-select.ant-select-multiple .ant-select-selection-overflow {
           padding-left: 0 !important;
         }
-        .custom-select.ant-select-multiple .ant-select-selection-overflow-item {
+        .custom-modal .custom-select.ant-select-multiple .ant-select-selection-overflow-item {
           margin-left: 0 !important;
         }
-        .custom-select.ant-select-multiple .ant-select-selection-search {
+        .custom-modal .custom-select.ant-select-multiple .ant-select-selection-search {
           margin-left: 0 !important;
           padding-left: 0 !important;
         }
-        .custom-select .ant-select-selection-overflow-item-suffix {
+        .custom-modal .custom-select .ant-select-selection-overflow-item-suffix {
           margin-left: 0 !important;
           padding-left: 0 !important;
         }
 
         /* Match skillSet: ensure focus keeps caret at start */
-        .custom-select .ant-select-selection-search-input:focus {
+        .custom-modal .custom-select .ant-select-selection-search-input:focus {
           text-align: left !important;
           text-indent: 0 !important;
         }
