@@ -420,6 +420,11 @@ const TaskBoard = () => {
     return task ? task.description : "";
   };
 
+  const getTaskPriority = (taskId) => {
+    const task = allTasks.find((task) => task._id === taskId);
+    return task ? task.priority : "";
+  };
+
   const getAllTasks = (id) => {
     apiServices(
       "GET",
@@ -1949,7 +1954,7 @@ const TaskBoard = () => {
                                                         </span>
                                                       </div>
                                                       <div className="task-board-body">
-                                                        <div className="kanban-footer">
+                                                        <div className="kanban-footer" style={{ position: "relative" }}>
                                                           <span
                                                             className="task-info-cont"
                                                             style={{
@@ -1981,6 +1986,30 @@ const TaskBoard = () => {
                                                               ))}
                                                             </span>
                                                           </span>
+                                                          {getTaskPriority(task.taskId) && (
+                                                            <div
+                                                              style={{
+                                                                position: "absolute",
+                                                                bottom: "8px",
+                                                                right: "8px",
+                                                                fontSize: "10px",
+                                                                fontWeight: "500",
+                                                                padding: "2px 6px",
+                                                                borderRadius: "4px",
+                                                                backgroundColor: 
+                                                                  getTaskPriority(task.taskId) === "Highest" ? "#ff4d4f" :
+                                                                  getTaskPriority(task.taskId) === "High" ? "#ff7a45" :
+                                                                  getTaskPriority(task.taskId) === "Medium" ? "#faad14" :
+                                                                  getTaskPriority(task.taskId) === "Low" ? "#52c41a" :
+                                                                  getTaskPriority(task.taskId) === "Lowest" ? "#1890ff" : "#d9d9d9",
+                                                                color: "#fff",
+                                                                textTransform: "uppercase",
+                                                                letterSpacing: "0.5px"
+                                                              }}
+                                                            >
+                                                              {getTaskPriority(task.taskId)}
+                                                            </div>
+                                                          )}
                                                         </div>
                                                       </div>
                                                     </div>
