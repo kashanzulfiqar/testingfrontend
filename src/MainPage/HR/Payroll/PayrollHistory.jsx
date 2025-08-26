@@ -289,7 +289,6 @@ const PayrollHistory = () => {
                               payrollCreationDate: moment(record?.createdAt, 'YYYY-MM-DD'),
                             }
                             Detailform.setFieldsValue(d);
-                            console.log(record);
                           }}><i className="fa fa-eye m-r-5" /> {t('view')}</a>
                         {/* <a className="dropdown-item" href="javascript:void(0)" onClick={()=> downloadPDF(record)}><i className="fa fa-download m-r-5" /> Export to PDF</a> */}
                         <a className="dropdown-item" href="javascript:void(0)" onClick={()=> GenerateSalaryPDF(record, false, 'history', false)}><i className="fa fa-download m-r-5" /> {t('payroll.currentPayroll.exportPayslip')}</a>

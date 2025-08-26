@@ -49,7 +49,6 @@ const AttendanceReport = () => {
   const { t, i18n } = useTranslation();
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
   const user_name = useSelector((state) => state?.user?.loginvalue?.user?.fullName);
-  console.log("permissions", permissions)
   const navigate = useNavigate();
   const csvLinkEl = useRef();
 

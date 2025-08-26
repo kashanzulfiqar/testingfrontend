@@ -37,16 +37,7 @@ const RequireAuth = ({Role}) => {
       nav("/login", { replace: true });
     };
 
-    // Enhanced Debug logs
-    useEffect(() => {
-      if (value?.user) {
-        console.log('Full User State:', value);
-        console.log('User Role:', role);
-        console.log('Company Details:', companyDetails);
-        console.log('Current Path:', location.pathname);
-        console.log('Subscription Status:', companyDetails?.subscriptionStatus);
-      }
-    }, [value, role, companyDetails, location]);
+
 
     // Fetch subscription status for admin users first (skip on super-admin routes)
     useEffect(() => {
@@ -60,8 +51,6 @@ const RequireAuth = ({Role}) => {
         if (!isCheckingSubscription && !hasCheckedSubscriptionRef.current) {
           try {
             setIsCheckingSubscription(true);
-            console.log('Fetching subscription status for admin...');
-            
             const response = await apiServices(
               'GET',
               'company/subscription-status',

@@ -45,8 +45,6 @@ axiosInstance.interceptors.response.use(
       error?.response?.data?.error?.message === "jwt expired" || 
       error?.response?.data?.err?.message === "jwt expired"
     ) {
-      console.log('Authentication failed - clearing session');
-      
       // Clear all auth data
       localStorage.removeItem('token');
       localStorage.removeItem('languagePreference');

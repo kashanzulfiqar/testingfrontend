@@ -413,7 +413,6 @@ function EditProjects({
       return apiServices("DELETE", `user/deletefile`, data, user_state)
         .then((res) => {
           if (res.data.success) {
-            console.log(`Deleted: ${file.public_id}`);
             return { success: true, public_id: file.public_id };
           } else {
             throw new Error(`Failed to delete: ${file.public_id}`);

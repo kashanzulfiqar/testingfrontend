@@ -47,7 +47,6 @@ const ClientProfile = () => {
 
       // If no state data and user is client, get their data
       if(role === 'client'){
-        console.log('User is client, fetching their data');
         getSingleClient();
         return true;
       }

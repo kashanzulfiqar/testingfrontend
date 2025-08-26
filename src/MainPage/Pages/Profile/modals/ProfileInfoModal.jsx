@@ -148,7 +148,6 @@ const [addRoleOpen, setAddRoleOpen] = useState(false)
         if (res?.data?.success === true) {
           setPermissions(res?.data?.permissions?.permissions);
           setRolePermLoader(false);
-          console.log(res?.data?.permissions?.permissions);
         }
       })
       .catch((err) => {
@@ -299,7 +298,6 @@ const getTaxSlab = () => {
   const onImageUpload = (imagedata) => {
     setImageLoader(true)
     apiUploadToS3(imagedata).then((res) => {
-        console.log(res?.data?.result?.secure_url);
         form.setFieldsValue({imageUrl: res?.data?.result?.secure_url})
         setImage(res?.data?.result?.secure_url)
         setImageLoader(false)
@@ -373,7 +371,6 @@ const getTaxSlab = () => {
                     }
                   }}
                 onFinishFailed={({errorFields}) => {
-                    console.log(errorFields);
                     const phoneErrorExists = errorFields.find(field => field.errors.toString().includes('please enter phone number'));
                     if(phoneErrorExists){
                     setPhoneLengthError({emp: true})

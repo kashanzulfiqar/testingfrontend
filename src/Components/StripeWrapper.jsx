@@ -3,13 +3,7 @@ import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 
 // Initialize Stripe with your publishable key
-console.log('Environment check:');
-console.log('All env vars:', process.env);
-console.log('Direct access to REACT_APP_STRIPE_PUBLISHABLE_KEY:', process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
-console.log('Type of STRIPE_KEY:', typeof process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
-
 const STRIPE_KEY = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY;
-console.log('STRIPE_KEY after assignment:', STRIPE_KEY);
 
 if (!STRIPE_KEY) {
   console.error('Stripe publishable key is missing. Please check your .env file.');
