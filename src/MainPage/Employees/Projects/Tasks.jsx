@@ -1172,15 +1172,9 @@ const onFinishEdit = (values) => {
                         <span style={{cursor: 'pointer'}} onClick={() => setEditingDueDate(true)}>
                           {dueDateValue ? dueDateValue.format('YYYY-MM-DD') : 'None'}
                         </span>
-                      )}
-                    </Form.Item>
-                    <Form.Item
-                      name="labels"
-                      label="Labels"
-                      className="custom-border"
-                    >
-                      <Select mode="tags" style={{ width: '100%' }} placeholder="Add labels" />
-                    </Form.Item>
+                      )
+                    }
+                  </Form.Item>
                 </div>
                 <div className="submit-section">
                     <button type='submit' className="btn btn-primary submit-btn" disabled={loader}>

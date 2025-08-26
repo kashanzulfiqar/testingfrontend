@@ -1090,7 +1090,10 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                       cursor: 'pointer', 
                       width: '100%',
                       color: taskData?.title ? '#333' : '#999',
-                      fontStyle: taskData?.title ? 'normal' : 'italic'
+                      fontStyle: taskData?.title ? 'normal' : 'italic',
+                      wordWrap: 'break-word',
+                      overflowWrap: 'break-word',
+                      wordBreak: 'break-word'
                     }}
                     onClick={() => {
                       setTaskNameValue(taskData?.title || "");
@@ -2315,6 +2318,10 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                                     marginBottom: 2,
                                     textAlign: 'center',
                                     boxSizing: 'border-box',
+                                    maxWidth: '150px',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap'
                                   }}
                                 >
                                   {label}
