@@ -1581,6 +1581,11 @@ const TaskBoard = () => {
                                                             style={{
                                                               wordBreak:
                                                                 "break-word",
+                                                              display: "block",
+                                                              overflow: "hidden",
+                                                              textOverflow: "ellipsis",
+                                                              whiteSpace: "nowrap",
+                                                              maxWidth: "100%"
                                                             }}
                                                             // onClick={() => {
                                                             //   const title =
@@ -1979,6 +1984,11 @@ const TaskBoard = () => {
                                                                   style={{
                                                                     marginBottom:
                                                                       "4px",
+                                                                    maxWidth: "100px",
+                                                                    overflow: "hidden",
+                                                                    textOverflow: "ellipsis",
+                                                                    whiteSpace: "nowrap",
+                                                                    display: "inline-block"
                                                                   }}
                                                                 >
                                                                   {tag}
