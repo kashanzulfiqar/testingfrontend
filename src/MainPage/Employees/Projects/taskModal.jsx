@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 
 import { Modal } from "@mui/material";
 import { useSelector } from "react-redux";
+import { CloseOutlined } from '@ant-design/icons';
 import TaskContent from "./taskContents";
 
 
@@ -20,9 +21,16 @@ function TaskModal({
    
  
   const [taskData, setTaskData] = useState(data);
-    
 
+  useEffect(() => {
+    setTaskData(data);
+  }, [data]);
 
+  useEffect(() => {
+    if (!viewModal) {
+      setTaskData(null);
+    }
+  }, [viewModal]);
 
   // Sync description with form and data
  
@@ -51,11 +59,23 @@ function TaskModal({
 
   // Sync local states with taskData when it changes
  
+  const handleCloseModal = () => {
+    // Refresh taskboard data when modal closes
+    if (getAllTasks && getTaskBoard) {
+      // Get the board/project ID from the task data
+      const boardId = data?.projectId?._id || data?.boardId?._id || data?.ProjectData?._id;
+      if (boardId) {
+        getAllTasks(boardId);
+        getTaskBoard(boardId);
+      }
+    }
+    closeViewModal();
+  };
 
   return (
     <Modal
       open={viewModal}
-      onClose={closeViewModal}
+      onClose={handleCloseModal}
       aria-labelledby="modal-modal-title"
       className="modalScroll"
       aria-describedby="modal-modal-description"
@@ -75,10 +95,32 @@ function TaskModal({
         }}
         role="document"
       >
-        <div className="modal-content" style={{padding:"20px", background:"#F7F7F7"}}>
-       <TaskContent taskDatas={taskData}/>
+        <div className="modal-content" style={{padding:"20px", background:"#F7F7F7", position: "relative"}}>
+          <button
+            onClick={handleCloseModal}
+            style={{
+              position: "absolute",
+              top: "5px",
+              right: "5px",
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              padding: "8px",
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              transition: "background-color 0.2s",
+              zIndex: 1000
+            }}
+            onMouseEnter={(e) => e.target.style.backgroundColor = "#f0f0f0"}
+            onMouseLeave={(e) => e.target.style.backgroundColor = "#F7F7F7"}
+          >
+            <CloseOutlined style={{ fontSize: "18px", color: "#666" }} />
+          </button>
+          <TaskContent taskDatas={taskData} />
         </div>
-      </div>
+      </div>  
     </Modal>
   );
 }

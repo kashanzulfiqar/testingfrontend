@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import RichTextEditor from "../../../Components/RichTextEditor";
@@ -25,21 +25,53 @@ import moment from 'moment';
 import LikeIcon from "../../../assets/Icons/Like.svg";
 import EmojiIcon from "../../../assets/Icons/emoji.svg";
 import EditIcon from "../../../assets/Icons/Edit.svg";
+import { BASE_URL } from '../../../config/apiConfig';
 
-const TaskContent = ({taskDatas={}}) => {
+const getPriorityIcon = (priority) => {
+  switch (priority?.toLowerCase()) {
+    case 'highest':
+      return <ArrowUpOutlined style={{ color: '#FF0000' }} />;
+    case 'high':
+      return <ArrowUpOutlined style={{ color: '#FF4D4F' }} />;
+    case 'medium':
+      return <MinusOutlined style={{ color: '#FAAD14' }} />;
+    case 'low':
+      return <ArrowDownOutlined style={{ color: '#52C41A' }} />;
+    case 'lowest':
+      return <ArrowDownOutlined style={{ color: '#1890FF' }} />;
+    default:
+      return <MinusOutlined style={{ color: '#FAAD14' }} />;
+  }
+};
+
+const TaskContent = ({taskDatas={}, closeModal}) => {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
-  const [taskData, setTaskData] = useState(location.state.taskData || taskDatas);
+  const initialLoad = useRef(false);
+  
+  // Task type options
+  const taskTypes = [
+    { value: 'Task', label: 'Task', icon: <CheckOutlined /> },
+    { value: 'Story', label: 'Story', icon: <FileTextOutlined /> },
+    { value: 'Bug', label: 'Bug', icon: <CloseCircleOutlined style={{ color: '#f5222d' }} /> },
+    { value: 'Epic', label: 'Epic', icon: <PlusCircleOutlined style={{ color: '#722ed1' }} /> },
+  ];
+  const [taskData, setTaskData] = useState(taskDatas);
+  const [taskType, setTaskType] = useState(taskDatas?.type || 'Task');
+
+  // Update taskType when taskData changes
+  useEffect(() => {
+    if (taskData?.type) {
+      setTaskType(taskData.type);
+    }
+  }, [taskData]);
+  const [editingType, setEditingType] = useState(false);
+  const [typeLoading, setTypeLoading] = useState(false);
   const [inputVisible, setInputVisible] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [openStatusDropdown, setOpenStatusDropdown] = useState(false);
   const [tagLoading, setTagLoading] = useState(true);
-  const [selectedMembers, setSelectedMembers] = useState([]);
-  const [memberLoading, setMemberLoading] = useState(true);
-  const [isEditingMembers, setIsEditingMembers] = useState(false);
-  const [availableMembers, setAvailableMembers] = useState([]);
-  const [memberDropdownOpen, setMemberDropdownOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("attachments");
   const [isEditing, setIsEditing] = useState(false);
   const [descriptionValue, setDescriptionValue] = useState("");
@@ -61,9 +93,29 @@ const TaskContent = ({taskDatas={}}) => {
   const [activityTab, setActivityTab] = useState("comments");
   const [assignee, setAssignee] = useState(taskData?.assignee || null);
   const [priority, setPriority] = useState(taskData?.priority || null);
+  
+  // Helper: format history values
+  const formatHistoryValue = (field, value) => {
+    try {
+      if (!value) return 'None';
+      // Generic formatting
+      if (typeof value === 'object') {
+        if (value.fullName) return value.fullName;
+        if (value.name) return value.name;
+        if (value.title) return value.title;
+        if (value.label) return value.label;
+        if (value._id) return String(value._id);
+        return JSON.stringify(value);
+      }
+      return String(value);
+    } catch (e) {
+      return String(value ?? 'None');
+    }
+  };
   const [priorityLoading, setPriorityLoading] = useState(false);
   const [assigneeLoading, setAssigneeLoading] = useState(false);
   const [allEmployees, setAllEmployees] = useState([]);
+  const [boardAssociatedUsers, setBoardAssociatedUsers] = useState([]);
   const [assigneeSelectOpen, setAssigneeSelectOpen] = useState(false);
   const [editingDueDate, setEditingDueDate] = useState(false);
   const [editingLabels, setEditingLabels] = useState(false);
@@ -80,10 +132,57 @@ const TaskContent = ({taskDatas={}}) => {
   // Add a loading state for the initial fetch
   const [initialLoading, setInitialLoading] = useState(true);
 
+  // Update reporter when taskData changes - same pattern as assignee
+  useEffect(() => {
+    // Always use the populated object from backend fetch
+    if (taskData?.reporter && typeof taskData.reporter === 'object') {
+      setReporter(taskData.reporter);
+    } else if (taskData?.reporter && typeof taskData.reporter === 'string') {
+      const found = allEmployees.find(u => u._id === taskData.reporter);
+      setReporter(found || null);
+    } else {
+      setReporter(null);
+    }
+  }, [taskData, allEmployees]);
+
+  // Update board associated users when taskData changes
+  useEffect(() => {
+    if (allEmployees.length > 0) {
+      if (taskData?._id) {
+        // Check if we have board information in taskData
+        const hasBoardInfo = taskData?.boardId || taskData?.projectId?.associatedBoard;
+        
+        if (hasBoardInfo) {
+          // Get associated users from board/project data
+          const associatedUsers = 
+            taskData?.projectId?.associatedBoard?.assignedDevelopers ||
+            taskData?.boardId?.assignedDevelopers ||
+            taskData?.assignedDevelopers ||
+            [];
+          
+          // Filter users based on board associations
+          if (associatedUsers.length > 0) {
+            const filteredUsers = allEmployees.filter(employee => 
+              associatedUsers.some(dev => dev._id === employee._id || dev === employee._id)
+            );
+            setBoardAssociatedUsers(filteredUsers);
+          } else {
+            // Board exists but no assigned developers, show all employees
+            setBoardAssociatedUsers(allEmployees);
+          }
+        } else {
+          // No board information found, show all employees
+          setBoardAssociatedUsers(allEmployees);
+        }
+      } else {
+        // No taskData yet, show all employees as fallback
+        setBoardAssociatedUsers(allEmployees);
+      }
+    }
+  }, [taskData, allEmployees]);
+
   // Add refs for dropdowns
   const statusDropdownRef = React.useRef(null);
-  const membersDropdownRef = React.useRef(null);
-  const addMembersRef = React.useRef(null);
   const descriptionDropdownRef = React.useRef(null);
   const fileInputRef = React.useRef();
 
@@ -95,7 +194,6 @@ const TaskContent = ({taskDatas={}}) => {
   const [editingPriority, setEditingPriority] = useState(false);
   const [editingReporter, setEditingReporter] = useState(false);
   const [editingTags, setEditingTags] = useState(false);
-  const [editingTeam, setEditingTeam] = useState(false);
   const [editingTaskName, setEditingTaskName] = useState(false);
   const [taskNameValue, setTaskNameValue] = useState(taskData?.title || "");
   const [taskNameLoading, setTaskNameLoading] = useState(false);
@@ -107,18 +205,20 @@ const TaskContent = ({taskDatas={}}) => {
     }
   }, []);
 
-  // Update useEffect to get developers from projectId
   useEffect(() => {
-    if (taskData?._id) {
-      setSelectedMembers(taskData?.assignedDevelopers || []);
-      setAvailableMembers(
-        taskData?.projectId?.associatedBoard?.assignedDevelopers ||
-          taskData?.boardId?.assignedDevelopers ||
-          []
-      );
-      setMemberLoading(false);
+    // Initial setup of task data
+    if (Object.keys(taskDatas).length !== 0) {
+      setTaskData(taskDatas);
+    } else if (location.state?.taskData) {
+      setTaskData(location.state.taskData);
+      // Only fetch details on initial load if we have taskData in location state
+      if (!initialLoad.current) {
+        initialLoad.current = true;
+        fetchTaskDetails().finally(() => setInitialLoading(false));
+      }
     }
-  }, [taskData]);
+  }, [taskDatas]);
+
 
   // Fetch all employees for assignee dropdown
   useEffect(() => {
@@ -128,26 +228,11 @@ const TaskContent = ({taskDatas={}}) => {
       });
   }, []);
 
-  useEffect(() => {
-    setReporter(taskData?.reporter || null);
-  }, [taskData]);
 
   // Function to close all dropdowns
   const closeAllDropdowns = () => {
     setOpenStatusDropdown(false);
-    setMemberDropdownOpen(false);
     setDescriptionDropdownOpen(false);
-    const membersDropdown =
-      membersDropdownRef.current?.querySelector(".dropdown-menu");
-    if (membersDropdown) {
-      membersDropdown.classList.remove("show");
-    }
-    // Only close member editing if we're not in the Select component area
-    const selectContainer = document.getElementById("area");
-    const activeElement = document.activeElement;
-    if (!selectContainer?.contains(activeElement)) {
-      setIsEditingMembers(false);
-    }
   };
 
   // Handle clicks outside dropdowns
@@ -155,8 +240,6 @@ const TaskContent = ({taskDatas={}}) => {
     const handleClickOutside = (event) => {
       if (
         !statusDropdownRef.current?.contains(event.target) &&
-        !membersDropdownRef.current?.contains(event.target) &&
-        !addMembersRef.current?.contains(event.target) &&
         !descriptionDropdownRef.current?.contains(event.target)
       ) {
         closeAllDropdowns();
@@ -336,70 +419,16 @@ const TaskContent = ({taskDatas={}}) => {
     }, 0);
   };
 
-  const handleMemberChange = (values) => {
-    // Update state first
-    const selectedDevelopers = values
-      .map((value) => availableMembers.find((member) => member._id === value))
-      .filter(Boolean);
 
-    setSelectedMembers(selectedDevelopers);
-
-    // // Close dropdown and remove focus
-    // setTimeout(() => {
-    //   setIsEditingMembers(false);
-
-    //   // Remove focus from the select component
-    //   document.activeElement?.blur();
-    //   const selectInput = document.querySelector("#area .ant-select-selector");
-    //   if (selectInput) {
-    //     selectInput.blur();
-    //   }
-    // }, 50);
-
-    // Only close after successful update
-    setIsEditingMembers(false);
-    // Debounce API call to avoid multiple calls at once
-    clearTimeout(window.teamUpdateTimeout);
-    window.teamUpdateTimeout = setTimeout(() => {
-      const data = {
-        _id: taskData._id,
-        assignedDevelopers: values,
-      };
-
-      apiServices("PUT", "tasks", data, user_state)
-        .then((res) => {
-          if (res?.data?.success === true) {
-            fetchTaskDetails();
-            message.success(t("Team members updated successfully"));
-          } else {
-            message.error(t("Failed to update team members"));
-          }
-        })
-        .catch((err) => {
-          message.error(
-            err?.response?.data?.msg ||
-              err?.response?.data?.validation?.body?.message ||
-              t("Error updating team members")
-          );
-        });
-    }, 100);
-  };
-
-  // Add a new function to handle dropdown visibility
-  const handleDropdownVisibility = (open) => {
-    if (!open) {
-      // Only close if clicking outside the dropdown
-      const activeElement = document.activeElement;
-      const selectContainer = document.getElementById("area");
-      if (!selectContainer?.contains(activeElement)) {
-        setIsEditingMembers(false);
-      }
-    }
-  };
 
   // Add this useEffect to initialize descriptionValue when taskData changes
   useEffect(() => {
     setDescriptionValue(taskData?.description || "");
+  }, [taskData]);
+
+  // Sync priority state with taskData
+  useEffect(() => {
+    setPriority(taskData?.priority || null);
   }, [taskData]);
 
   const handleRewriteDescription = async () => {
@@ -549,7 +578,7 @@ const TaskContent = ({taskDatas={}}) => {
           const mentionedNames = mentions.map(id => 
             allEmployees.find(u => u._id === id)?.fullName
           ).filter(Boolean);
-          message.success(`Comment posted and ${mentionedNames.length} team member${mentionedNames.length > 1 ? 's' : ''} notified`);
+          message.success(`Comment posted and ${mentionedNames.length} user${mentionedNames.length > 1 ? 's' : ''} notified`);
         } else {
           message.success("Comment posted successfully");
         }
@@ -610,7 +639,7 @@ const TaskContent = ({taskDatas={}}) => {
           const mentionedNames = mentions.map(id => 
             allEmployees.find(u => u._id === id)?.fullName
           ).filter(Boolean);
-          message.success(`Comment updated and ${mentionedNames.length} team member${mentionedNames.length > 1 ? 's' : ''} notified`);
+          message.success(`Comment updated and ${mentionedNames.length} user${mentionedNames.length > 1 ? 's' : ''} notified`);
         } else {
           message.success("Comment updated successfully");
         }
@@ -743,6 +772,23 @@ const TaskContent = ({taskDatas={}}) => {
     }
     setAssigneeLoading(false);
   };
+  const handleTypeChange = async (value) => {
+    setTypeLoading(true);
+    try {
+      const res = await apiServices("PUT", "tasks", { _id: taskData._id, type: value }, user_state);
+      if (res?.data?.success) {
+        setTaskType(value);
+        setTaskData(prev => ({ ...prev, type: value })); // Update local taskData state
+        message.success("Task type updated");
+        await fetchTaskDetails(); // Refresh all task details
+      }
+    } catch (err) {
+      message.error("Failed to update task type");
+    }
+    setTypeLoading(false);
+    setEditingType(false);
+  };
+
   const handlePriorityChange = async (value) => {
     setPriorityLoading(true);
     try {
@@ -759,12 +805,20 @@ const TaskContent = ({taskDatas={}}) => {
     }
     setPriorityLoading(false);
   };
+  const priorityColors = {
+    Highest: '#FF0000',  // Red
+    High: '#FF4D4F',     // Light Red
+    Medium: '#FAAD14',   // Yellow
+    Low: '#52C41A',      // Green
+    Lowest: '#1890FF'    // Blue
+  };
+
   const priorityOptions = [
-    { value: 'Highest', label: (<><ArrowUpOutlined style={{color: '#e74c3c'}} /> Highest</>) },
-    { value: 'High', label: (<><ArrowUpOutlined style={{color: '#e67e22'}} /> High</>) },
-    { value: 'Medium', label: (<><MinusOutlined style={{color: '#f1c40f'}} /> Medium</>) },
-    { value: 'Low', label: (<><ArrowDownOutlined style={{color: '#3498db'}} /> Low</>) },
-    { value: 'Lowest', label: (<><ArrowDownOutlined style={{color: '#2980b9'}} /> Lowest</>) },
+    { value: 'Highest', label: (<><ArrowUpOutlined style={{color: priorityColors.Highest}} /> Highest</>) },
+    { value: 'High', label: (<><ArrowUpOutlined style={{color: priorityColors.High}} /> High</>) },
+    { value: 'Medium', label: (<><MinusOutlined style={{color: priorityColors.Medium}} /> Medium</>) },
+    { value: 'Low', label: (<><ArrowDownOutlined style={{color: priorityColors.Low}} /> Low</>) },
+    { value: 'Lowest', label: (<><ArrowDownOutlined style={{color: priorityColors.Lowest}} /> Lowest</>) },
   ];
 
   const handleAssignToUser = async (userId) => {
@@ -816,12 +870,12 @@ const TaskContent = ({taskDatas={}}) => {
   };
   const handleLabelsSave = async () => {
     try {
-      await apiServices('PUT', 'tasks', { _id: taskData._id, labels: labelsValue }, user_state);
-      message.success('Labels updated');
+      await apiServices('PUT', 'tasks', { _id: taskData._id, tags: labelsValue }, user_state);
+      message.success('Tags updated');
       setEditingLabels(false);
       fetchTaskDetails();
     } catch (err) {
-      message.error('Failed to update labels');
+      message.error('Failed to update tags');
     }
   };
 
@@ -846,7 +900,7 @@ const TaskContent = ({taskDatas={}}) => {
     fetchAttachments();
   }, [taskData?._id]);
 
-  const API_URL = process.env.REACT_APP_API_BASE_URL || '';
+
   // Upload handler
   const handleAttachmentUpload = async (e) => {
     const file = e.target.files[0];
@@ -861,7 +915,7 @@ const TaskContent = ({taskDatas={}}) => {
       const token = user_state?.access_token?.accessToken || localStorage.getItem('token');
       console.log('Uploading with token:', token);
       // Use environment variable for backend API URL
-      xhr.open('POST', `${API_URL}/tasks/${taskData._id}/attachments`);
+      xhr.open('POST', `${BASE_URL}/tasks/${taskData._id}/attachments`);
       xhr.setRequestHeader('Authorization', token ? `Bearer ${token}` : '');
       xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) {
@@ -1036,7 +1090,10 @@ const TaskContent = ({taskDatas={}}) => {
                       cursor: 'pointer', 
                       width: '100%',
                       color: taskData?.title ? '#333' : '#999',
-                      fontStyle: taskData?.title ? 'normal' : 'italic'
+                      fontStyle: taskData?.title ? 'normal' : 'italic',
+                      wordWrap: 'break-word',
+                      overflowWrap: 'break-word',
+                      wordBreak: 'break-word'
                     }}
                     onClick={() => {
                       setTaskNameValue(taskData?.title || "");
@@ -1584,7 +1641,7 @@ const TaskContent = ({taskDatas={}}) => {
                                           <RichTextEditor
                                             content={editingCommentText}
                                             onChange={setEditingCommentText}
-                                            teamMembers={allEmployees}
+                                            users={allEmployees}
                                           />
                                           <div style={{
                                             fontSize: '12px',
@@ -1592,7 +1649,7 @@ const TaskContent = ({taskDatas={}}) => {
                                             marginTop: '8px',
                                             fontStyle: 'italic'
                                           }}>
-                                            💡 Tip: Type @ to mention team members
+                                            💡 Tip: Type @ to mention users
                                           </div>
                                         </div>
                                         
@@ -1830,7 +1887,7 @@ const TaskContent = ({taskDatas={}}) => {
                                       <RichTextEditor
                                         content={commentRichText}
                                         onChange={setCommentRichText}
-                                        teamMembers={allEmployees}
+                                        users={allEmployees}
                                       />
                                       <div style={{
                                         fontSize: '12px',
@@ -1838,7 +1895,7 @@ const TaskContent = ({taskDatas={}}) => {
                                         marginTop: '8px',
                                         fontStyle: 'italic'
                                       }}>
-                                        💡 Tip: Type @ to mention team members
+                                        💡 Tip: Type @ to mention users
                                       </div>
                                     </div>
                                     
@@ -1903,9 +1960,9 @@ const TaskContent = ({taskDatas={}}) => {
                                           )}
                                           {h.field !== "status" && (
                                             <>
-                                              <span style={{color: '#888', margin: '0 4px'}}>{h.from || "None"}</span>
+                                              <span style={{color: '#888', margin: '0 4px'}}>{formatHistoryValue(h.field, h.from)}</span>
                                               <span style={{margin: '0 4px'}}>→</span>
-                                              <span style={{color: '#888', margin: '0 4px'}}>{h.to || "None"}</span>
+                                              <span style={{color: '#888', margin: '0 4px'}}>{formatHistoryValue(h.field, h.to)}</span>
                                             </>
                                           )}
                                         </span>
@@ -1982,8 +2039,8 @@ const TaskContent = ({taskDatas={}}) => {
                   <div>
                     <div style={{ fontWeight: 600, marginBottom: 16 }}>Details</div>
                     {/* Assignee */}
-                    <div style={{ marginBottom: 16, display: 'flex', alignItems: 'flex-start', gap: 32 }}>
-                      <div style={{ color: '#888', fontSize: 13, minWidth: 90, paddingTop: 2 }}>Assignee</div>
+                    <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 32 }}>
+                      <div style={{ color: '#888', fontSize: 13, minWidth: 90 }}>Assignee</div>
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 32 }}>
                           {editingAssignee ? (
@@ -2012,11 +2069,11 @@ const TaskContent = ({taskDatas={}}) => {
                                   <span>Not Assigned</span>
                         </span>
                       </Select.Option>
-                      {allEmployees.map(user => (
+                      {boardAssociatedUsers.map(user => (
                         <Select.Option key={user._id} value={user._id}>
                                   <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                     <Avatar size={24} src={user.imageUrl} style={{ background: '#2d3e50', fontWeight: 600 }}>
-                              {user.fullName?.split(' ').map(n => n[0]).join('').toUpperCase()}
+                              {getInitials(user.fullName)}
                             </Avatar>
                             <span>{user.fullName}</span>
                           </span>
@@ -2045,6 +2102,40 @@ const TaskContent = ({taskDatas={}}) => {
                     )}
                       </div>
                   </div>
+                  {/* Task Type */}
+                  <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 32 }}>
+                    <div style={{ color: '#888', fontSize: 13, minWidth: 90 }}>Type</div>
+                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {editingType ? (
+                        <Select
+                          style={{ width: 180 }}
+                          value={taskType}
+                          onChange={handleTypeChange}
+                          loading={typeLoading}
+                          onBlur={() => setEditingType(false)}
+                          autoFocus
+                        >
+                          {taskTypes.map(type => (
+                            <Select.Option key={type.value} value={type.value}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                {type.icon}
+                                {type.label}
+                              </div>
+                            </Select.Option>
+                          ))}
+                        </Select>
+                      ) : (
+                        <div
+                          style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 32, cursor: 'pointer' }}
+                          onClick={() => setEditingType(true)}
+                        >
+                          {taskTypes.find(t => t.value === taskType)?.icon || taskTypes[0].icon}
+                          <span>{taskType || 'Task'}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
                   {/* Priority */}
                     <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 32 }}>
                       <div style={{ color: '#888', fontSize: 13, minWidth: 90 }}>Priority</div>
@@ -2071,13 +2162,34 @@ const TaskContent = ({taskDatas={}}) => {
                       ))}
                     </Select>
                         ) : (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 32, cursor: 'pointer', color: priority ? '#e67e22' : '#bbb', fontWeight: 500 }} onClick={() => setEditingPriority(true)}>
-                            {priority ? <ArrowUpOutlined style={{ color: '#e67e22' }} /> : null}
-                            <span>{priority || 'None'}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 32, cursor: 'pointer', fontWeight: 500 }} onClick={() => setEditingPriority(true)}>
+                            {priority && (
+                              <>
+                                {priority === 'Highest' || priority === 'High' ? (
+                                  <ArrowUpOutlined style={{ color: priorityColors[priority] }} />
+                                ) : priority === 'Medium' ? (
+                                  <MinusOutlined style={{ color: priorityColors[priority] }} />
+                                ) : (
+                                  <ArrowDownOutlined style={{ color: priorityColors[priority] }} />
+                                )}
+                                <span style={{ color: priorityColors[priority] }}>{priority}</span>
+                              </>
+                            )}
+                            {!priority && <span style={{ color: '#bbb' }}>None</span>}
                           </div>
                         )}
                       </div>
                   </div>
+                  {/* Project */}
+                  <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 32 }}>
+                    <div style={{ color: '#888', fontSize: 13, minWidth: 90 }}>Project</div>
+                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontWeight: 500, color: '#222' }}>
+                        {taskData?.projectId?.projectName || taskData?.boardId?.boardTitle || '--'}
+                      </span>
+                    </div>
+                  </div>
+
                   {/* Due Date */}
                     <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 32 }}>
                       <div style={{ color: '#888', fontSize: 13, minWidth: 90 }}>Due Date</div>
@@ -2129,7 +2241,7 @@ const TaskContent = ({taskDatas={}}) => {
                           <span>Unassigned</span>
                         </span>
                       </Select.Option>
-                      {allEmployees.map(user => (
+                      {boardAssociatedUsers.map(user => (
                         <Select.Option key={user._id} value={user._id}>
                                 <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                   <Avatar size={24} src={user.imageUrl} style={{ background: '#2d3e50', fontWeight: 600 }}>
@@ -2176,11 +2288,20 @@ const TaskContent = ({taskDatas={}}) => {
                             }}
                             autoFocus
                             dropdownStyle={{ minWidth: 180 }}
+                            tagRender={(props) => {
+                              // Only render tags in dropdown, not in the input field
+                              return props.closable ? null : (
+                                <Tag closable={props.closable} onClose={props.onClose}>
+                                  {props.label}
+                                </Tag>
+                              );
+                            }}
+                            maxTagCount={0}
                           />
                         ) : (
-                          <div style={{ marginTop: 0, display: 'flex', gap: 8, flexWrap: 'wrap', minHeight: 32, cursor: 'pointer' }} onClick={() => { setLabelsValue(taskData.labels || []); setEditingTags(true); }}>
-                            {taskData.labels && taskData.labels.length > 0 ? (
-                              taskData.labels.map((label, idx) => (
+                          <div style={{ marginTop: 0, display: 'flex', gap: 8, flexWrap: 'wrap', minHeight: 32, cursor: 'pointer' }} onClick={() => { setLabelsValue(taskData.tags || []); setEditingTags(true); }}>
+                            {taskData.tags && taskData.tags.length > 0 ? (
+                              taskData.tags.map((label, idx) => (
                                 <span
                                   key={idx}
                             style={{
@@ -2197,6 +2318,10 @@ const TaskContent = ({taskDatas={}}) => {
                                     marginBottom: 2,
                                     textAlign: 'center',
                                     boxSizing: 'border-box',
+                                    maxWidth: '150px',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap'
                                   }}
                                 >
                                   {label}
@@ -2208,60 +2333,6 @@ const TaskContent = ({taskDatas={}}) => {
                           </div>
                       )}
                     </div>
-                    </div>
-                    {/* Team Members */}
-                    <div style={{ marginBottom: 0, display: 'flex', alignItems: 'center', gap: 32 }}>
-                      <div style={{ color: '#888', fontSize: 13, minWidth: 90 }}>Team Members</div>
-                      <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
-                        {editingTeam ? (
-                        <Select
-                          mode="multiple"
-                            style={{ width: 180, marginTop: 0 }}
-                            placeholder="Select team members"
-                            onChange={handleMemberChange}
-                            value={selectedMembers.map(m => m._id)}
-                            open={editingTeam}
-                            onBlur={() => setEditingTeam(false)}
-                            showSearch
-                          optionFilterProp="children"
-                          filterOption={(input, option) =>
-                            option.children.props.children[1].props.children
-                              .toLowerCase()
-                              .indexOf(input.toLowerCase()) >= 0
-                          }
-                          dropdownMatchSelectWidth={false}
-                            autoFocus
-                          >
-                            {availableMembers.map(developer => (
-                              <Select.Option key={developer._id} value={developer._id}>
-                                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                  <Avatar size={24} src={developer?.imageUrl || user_icon} />
-                                  <span>{developer.fullName}</span>
-                                </span>
-                              </Select.Option>
-                            ))}
-                        </Select>
-                      ) : (
-                          <div style={{ marginTop: 0, display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center', minHeight: 32, cursor: 'pointer' }} onClick={() => setEditingTeam(true)}>
-                            {selectedMembers && selectedMembers.length > 0 ? (
-                              selectedMembers.slice(0, 4).map((member, idx) => (
-                                <Tooltip title={member.fullName} key={idx}>
-                                  <Avatar size={28} src={member?.imageUrl || user_icon} style={{ border: '2px solid #fff', marginLeft: idx === 0 ? 0 : -8 }} />
-                                          </Tooltip>
-                              ))
-                            ) : (
-                              <span style={{ color: '#bbb' }}>None</span>
-                            )}
-                            {selectedMembers && selectedMembers.length > 4 && (
-                              <Tooltip title={selectedMembers.slice(4).map(m => m.fullName).join(', ')}>
-                                <Avatar size={28} style={{ background: '#eee', color: '#888', marginLeft: -8 }}>
-                                  +{selectedMembers.length - 4}
-                                </Avatar>
-                              </Tooltip>
-                            )}
-                        </div>
-                      )}
-                      </div>
                     </div>
                   </div>
                 </div>

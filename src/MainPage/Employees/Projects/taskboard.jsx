@@ -420,6 +420,11 @@ const TaskBoard = () => {
     return task ? task.description : "";
   };
 
+  const getTaskPriority = (taskId) => {
+    const task = allTasks.find((task) => task._id === taskId);
+    return task ? task.priority : "";
+  };
+
   const getAllTasks = (id) => {
     apiServices(
       "GET",
@@ -1576,6 +1581,11 @@ const TaskBoard = () => {
                                                             style={{
                                                               wordBreak:
                                                                 "break-word",
+                                                              display: "block",
+                                                              overflow: "hidden",
+                                                              textOverflow: "ellipsis",
+                                                              whiteSpace: "nowrap",
+                                                              maxWidth: "100%"
                                                             }}
                                                             // onClick={() => {
                                                             //   const title =
@@ -1949,7 +1959,7 @@ const TaskBoard = () => {
                                                         </span>
                                                       </div>
                                                       <div className="task-board-body">
-                                                        <div className="kanban-footer">
+                                                        <div className="kanban-footer" style={{ position: "relative" }}>
                                                           <span
                                                             className="task-info-cont"
                                                             style={{
@@ -1974,6 +1984,11 @@ const TaskBoard = () => {
                                                                   style={{
                                                                     marginBottom:
                                                                       "4px",
+                                                                    maxWidth: "100px",
+                                                                    overflow: "hidden",
+                                                                    textOverflow: "ellipsis",
+                                                                    whiteSpace: "nowrap",
+                                                                    display: "inline-block"
                                                                   }}
                                                                 >
                                                                   {tag}
@@ -1981,6 +1996,30 @@ const TaskBoard = () => {
                                                               ))}
                                                             </span>
                                                           </span>
+                                                          {getTaskPriority(task.taskId) && (
+                                                            <div
+                                                              style={{
+                                                                position: "absolute",
+                                                                bottom: "8px",
+                                                                right: "8px",
+                                                                fontSize: "10px",
+                                                                fontWeight: "500",
+                                                                padding: "2px 6px",
+                                                                borderRadius: "4px",
+                                                                backgroundColor: 
+                                                                  getTaskPriority(task.taskId) === "Highest" ? "#ff4d4f" :
+                                                                  getTaskPriority(task.taskId) === "High" ? "#ff7a45" :
+                                                                  getTaskPriority(task.taskId) === "Medium" ? "#faad14" :
+                                                                  getTaskPriority(task.taskId) === "Low" ? "#52c41a" :
+                                                                  getTaskPriority(task.taskId) === "Lowest" ? "#1890ff" : "#d9d9d9",
+                                                                color: "#fff",
+                                                                textTransform: "uppercase",
+                                                                letterSpacing: "0.5px"
+                                                              }}
+                                                            >
+                                                              {getTaskPriority(task.taskId)}
+                                                            </div>
+                                                          )}
                                                         </div>
                                                       </div>
                                                     </div>
@@ -2923,11 +2962,7 @@ const TaskBoard = () => {
                       )}
                     </Form.Item>
                   </div>
-                  <div className="col-12">
-                    <Form.Item name="labels" label="Labels" className="custom-border">
-                      <Select mode="tags" style={{ width: '100%' }} placeholder="Add labels" />
-                    </Form.Item>
-                  </div>
+
                 </div>
                 <div className="submit-section">
                   <button type="submit" className="btn btn-primary submit-btn" disabled={loader}>

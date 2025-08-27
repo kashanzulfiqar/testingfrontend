@@ -491,22 +491,7 @@ const onFinishEdit = (values) => {
         );
       },
     },     
-    {
-      title: t('finance.Invoices.description'),
-      dataIndex: 'description',
-      render: (text, record) => (
-        <div 
-          className='taskLongDesc'
-          dangerouslySetInnerHTML={{ __html: text || '' }}
-          style={{
-            maxHeight: '100px',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            wordBreak: 'break-word'
-          }}
-        />
-      ),
-    }, 
+    
     {
       title: "Status",
       dataIndex: 'lane',
@@ -1187,15 +1172,9 @@ const onFinishEdit = (values) => {
                         <span style={{cursor: 'pointer'}} onClick={() => setEditingDueDate(true)}>
                           {dueDateValue ? dueDateValue.format('YYYY-MM-DD') : 'None'}
                         </span>
-                      )}
-                    </Form.Item>
-                    <Form.Item
-                      name="labels"
-                      label="Labels"
-                      className="custom-border"
-                    >
-                      <Select mode="tags" style={{ width: '100%' }} placeholder="Add labels" />
-                    </Form.Item>
+                      )
+                    }
+                  </Form.Item>
                 </div>
                 <div className="submit-section">
                     <button type='submit' className="btn btn-primary submit-btn" disabled={loader}>
