@@ -21,6 +21,7 @@ import {
   Tooltip,
   Dropdown,
   Menu,
+  Avatar,
 } from "antd";
 import { apiServices } from "../../Services/apiServices";
 import { useSelector } from "react-redux";
@@ -187,9 +188,8 @@ const TaskDetails = () => {
     }
 
     try {
-      const evaluationDateStr = (values?.evaluationDate
-        ? moment(values.evaluationDate)
-        : moment()
+      const evaluationDateStr = (
+        values?.evaluationDate ? moment(values.evaluationDate) : moment()
       ).format("YYYY-MM-DD");
 
       // First submit task feedback
@@ -523,6 +523,9 @@ const TaskDetails = () => {
                   fontSize: "16px",
                   fontWeight: "500",
                   color: "#3b4249",
+                  overflowWrap: "anywhere",
+                  wordBreak: "break-word",
+                  maxWidth: "100%",
                 }}
               >
                 {task?.taskName
@@ -587,25 +590,63 @@ const TaskDetails = () => {
               >
                 Task Reviewers
               </p>
-              <div>
-                {task?.taskReviewers.map((reviewer, index) => (
-                  <Link
-                    key={index}
-                    to="#"
-                    className="social-icon-two"
-                    style={{ marginLeft: "-10px" }}
-                  >
-                    <img
-                      src={reviewer?.imageUrl || user_icon}
-                      style={{
-                        height: "30px",
-                        width: "30px",
-                        borderRadius: "50%",
-                        border: "2px solid white",
-                      }}
-                    />
-                  </Link>
-                ))}
+              <div className="project-members" style={{ margin: "4px auto" }}>
+                <ul
+                  className="team-members"
+                  style={{ minWidth: "max-content" }}
+                >
+                  {task?.taskReviewers?.slice(0, 4).map((reviewer, index) => (
+                    <li key={index}>
+                      <Tooltip title={reviewer?.fullName}>
+                        <Avatar
+                          style={{ cursor: "pointer" }}
+                          src={reviewer?.imageUrl || user_icon}
+                        />
+                      </Tooltip>
+                    </li>
+                  ))}
+                  {task?.taskReviewers?.length > 4 && (
+                    <li className="dropdown avatar-dropdown">
+                      <Link
+                        className="all-users dropdown-toggle projectTeamMember"
+                        style={{
+                          display: "inline-flex",
+                          height: "33px",
+                          width: "33px",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          backgroundColor: "#f0f0f0",
+                          borderRadius: "50%",
+                          textDecoration: "none",
+                          color: "#333",
+                          fontSize: "12px",
+                          fontWeight: "bold",
+                        }}
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false"
+                      >
+                        +{task?.taskReviewers?.length - 4}
+                      </Link>
+                      {/* Dropdown menu for additional interviewers */}
+                      <div className="dropdown-menu dropdown-menu-right">
+                        <div className="avatar-group">
+                          {task?.taskReviewers
+                            ?.slice(4)
+                            .map((reviewer, index) => (
+                              <li key={index}>
+                                <Tooltip title={reviewer?.fullName}>
+                                  <Avatar
+                                    style={{ cursor: "pointer" }}
+                                    src={reviewer?.imageUrl || user_icon}
+                                  />
+                                </Tooltip>
+                              </li>
+                            ))}
+                        </div>
+                      </div>
+                    </li>
+                  )}
+                </ul>
               </div>
             </Col>
             <Col xs={24} sm={12} md={8} lg={6} style={{ paddingTop: "10px" }}>
@@ -697,7 +738,10 @@ const TaskDetails = () => {
                           <p style={{ marginBottom: "0px" }}>Preview</p>
                         </div>
                       </Menu.Item>
-                      <Menu.Item key="download" onClick={handleDownloadTaskFile}>
+                      <Menu.Item
+                        key="download"
+                        onClick={handleDownloadTaskFile}
+                      >
                         <div style={{ display: "flex", gap: "6px" }}>
                           <img src={downloadIcon}></img>
                           <p style={{ marginBottom: "0px" }}>Download</p>
@@ -716,7 +760,9 @@ const TaskDetails = () => {
             </div>
           )}
 
-          {(task.status === "REVIEWED" || task.status === "COMPLETED" || task.status === "REJECTED") && (
+          {(task.status === "REVIEWED" ||
+            task.status === "COMPLETED" ||
+            task.status === "REJECTED") && (
             <div>
               {task?.feedback.map((feedback, index) => (
                 <InterviewFeedbackDisplay key={index} feedback={feedback} />

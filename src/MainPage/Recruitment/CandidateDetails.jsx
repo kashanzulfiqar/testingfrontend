@@ -957,7 +957,7 @@ const CandidateDetails = () => {
       } else if (error.response?.status === 413) {
         message.error("File size too large. Maximum size is 5MB");
       } else if (error.response?.status === 400) {
-        message.error(error.response?.data?.message || "Invalid input data");
+        message.error(error.response?.data?.errors[0]?.message || "Invalid input data");
       } else {
         message.error("Error creating task. Please try again");
       }
