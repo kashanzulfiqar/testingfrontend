@@ -11,6 +11,7 @@ import {
   Typography,
   Tabs,
   Select,
+  Tooltip,
   Space,
   Collapse,
   Modal,
@@ -113,6 +114,7 @@ const CandidateDetails = () => {
   const [viewMobile, setViewMobile] = useState(window.innerWidth < 768);
   const [previewFile, setPreviewFile] = useState(null);
   const dropdownRef = useRef(null); // Add this line for dropdown ref
+  const [uploadingResume, setUploadingResume] = useState(false);
 
   useEffect(() => {
     if (filter === "history" && historyId) {
@@ -125,10 +127,6 @@ const CandidateDetails = () => {
       fetchCandidateInterviews(id);
       fetchCandidateTasks(id);
       fetchOfferDetails(id);
-    }
-    // Initialize Bootstrap dropdowns
-    if (typeof window !== "undefined") {
-      require("bootstrap/js/dist/dropdown");
     }
   }, [id, filter]);
 
@@ -883,12 +881,16 @@ const CandidateDetails = () => {
     }
 
     try {
-      // Create FormData for file upload
+      // Create FormData for task creation
       const formData = new FormData();
 
-      // Upload task file to S3 if exists
+      // Task file is already uploaded in the modal. If a URL string is provided, use it directly.
+      // If a raw File is accidentally provided, fall back to uploading it.
       let fileUrl = null;
       if (values.taskFile) {
+        if (typeof values.taskFile === "string") {
+          fileUrl = values.taskFile;
+        } else {
         try {
           const uploadResponse = await apiUploadToS3(values.taskFile);
           if (uploadResponse?.data?.result?.secure_url) {
@@ -897,12 +899,23 @@ const CandidateDetails = () => {
         } catch (error) {
           message.error("Failed to upload task file");
           return;
+          }
         }
       }
 
       // Add file URL if uploaded
       if (fileUrl) {
         formData.append("file", fileUrl);
+      }
+      // Forward original upload metadata if provided
+      if (values.asset_id) {
+        formData.append("asset_id", values.asset_id);
+      }
+      if (values.public_id) {
+        formData.append("public_id", values.public_id);
+      }
+      if (values.fileName) {
+        formData.append("fileName", values.fileName);
       }
       // Add all non-file fields
       formData.append("candidateId", id);
@@ -2024,7 +2037,9 @@ const CandidateDetails = () => {
                     beforeUpload={() => {
                       return false; // Prevent AntD's default upload, handle in onChange
                     }}
+                    disabled={uploadingResume}
                     onChange={async (info) => {
+                      setUploadingResume(true);
                       const file = info.file;
                       let resumeData = null;
                       const isValid = validateFile(file);
@@ -2067,15 +2082,17 @@ const CandidateDetails = () => {
                           ];
                           setResume(newResumeList);
                           await handleUpload(newResumeList);
+                          setUploadingResume(false);
                         } else {
                           console.error("Invalid upload result:", uploadResult);
                           message.error("Failed to upload resume");
-                          setSubmitting(false);
+                          setUploadingResume(false);
                           return;
                         }
                       } catch (error) {
                         console.log("E R R O R : ", error);
                         message.error("Error uploading file");
+                        setUploadingResume(false);
                       }
                     }}
                   >
@@ -2090,6 +2107,19 @@ const CandidateDetails = () => {
                         cursor: "pointer",
                       }}
                     >
+                      {uploadingResume ? (
+                        <span
+                          style={{
+                            color: "#aaa",
+                            display: "flex",
+                            alignItems: "center",
+                            pointerEvents: "none",
+                          }}
+                        >
+                          <Spin size="small" />
+                          <span style={{ marginLeft: 8 }}>Uploading...</span>
+                        </span>
+                      ) : (
                       <span
                         style={{
                           color: "#aaa",
@@ -2105,6 +2135,7 @@ const CandidateDetails = () => {
                         />
                         {"Drop file here or click to upload file"}
                       </span>
+                      )}
                     </div>
                   </Upload>
                 </div>
@@ -2578,11 +2609,7 @@ const CandidateDetails = () => {
                                   }}
                                 >
                                   {moment(task.createdAt).format(
-                                    "DD MMM YYYY"
-                                  ) +
-                                    " at " +
-                                    moment(task.createdAt, "Hh:mm").format(
-                                      "hh:mm A"
+                                    "DD MMM YYYY [at] hh:mm A"
                                     )}
                                 </div>
                               </div>
@@ -2621,9 +2648,9 @@ const CandidateDetails = () => {
                           </div>
                           {viewMore === task._id && (
                             <div>
-                              {task.status === "COMPLETED" ? (
+                              {(task.status === "REVIEWED" || task.status === "COMPLETED" || task.status === "REJECTED") ? (
                                 <div>
-                                  {interviews.feedback?.map(
+                                  {task.feedback?.map(
                                     (feedback, index) => (
                                       <InterviewFeedbackDisplay
                                         key={index}
@@ -2649,10 +2676,9 @@ const CandidateDetails = () => {
                                     >
                                       Reviewers
                                     </h2>
-                                    <div
-                                      style={{ display: "flex", gap: "20px" }}
-                                    >
-                                      <div style={{ display: "flex" }}>
+                                    <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
+                                      {task.taskReviewers?.map((taskReviewer) => (
+                                        <div style={{ display: "flex", minWidth: "fit-content", flexShrink: 0 }} key={taskReviewer._id}>
                                         <div
                                           style={{
                                             height: "32px",
@@ -2660,48 +2686,7 @@ const CandidateDetails = () => {
                                           }}
                                         >
                                           <img
-                                            src={task?.taskReviewers?.imageUrl}
-                                            style={{
-                                              height: "100%",
-                                              width: "100%",
-                                              borderRadius: "50%",
-                                            }}
-                                          ></img>
-                                        </div>
-                                        <div style={{ marginLeft: "10px" }}>
-                                          <h3
-                                            style={{
-                                              fontSize: "14px",
-                                              fontWeight: "500",
-                                              marginBottom: "0",
-                                            }}
-                                          >
-                                            {task.taskReviewers?.fullName}
-                                          </h3>
-                                          <p
-                                            style={{
-                                              fontSize: "12px",
-                                              fontWeight: "450",
-                                              color: "#56616b",
-                                            }}
-                                          >
-                                            Hello
-                                          </p>
-                                        </div>
-                                      </div>
-                                      {task.Reviewers?.map((taskReviewer) => (
-                                        <div
-                                          style={{ display: "flex" }}
-                                          key={taskReviewer._id}
-                                        >
-                                          <div
-                                            style={{
-                                              height: "32px",
-                                              width: "32px",
-                                            }}
-                                          >
-                                            <img
-                                              src={taskReviewer.imageUrl}
+                                              src={taskReviewer.imageUrl || user_icon}
                                               style={{
                                                 height: "100%",
                                                 width: "100%",
@@ -2726,7 +2711,7 @@ const CandidateDetails = () => {
                                                 color: "#56616b",
                                               }}
                                             >
-                                              Hello
+                                              {taskReviewer.designationId?.designationName}
                                             </p>
                                           </div>
                                         </div>
@@ -2751,7 +2736,7 @@ const CandidateDetails = () => {
                                         }}
                                       >
                                         <img
-                                          src={task?.createdBy?.imageUrl}
+                                          src={task?.createdBy?.imageUrl || user_icon}
                                           style={{
                                             height: "100%",
                                             width: "100%",
@@ -2776,7 +2761,7 @@ const CandidateDetails = () => {
                                             color: "#56616b",
                                           }}
                                         >
-                                          Hello
+                                          {task?.createdBy?.designationId?.designationName}
                                         </p>
                                       </div>
                                     </div>
@@ -3697,9 +3682,22 @@ const CandidateDetails = () => {
           color: #fa8c16 !important;
         }
 
+        /* Ensure non-Select badges also get styled */
+        .status-pending {
+          background-color: #fff7e6 !important;
+          border: 1px solid #ffd591 !important;
+          color: #fa8c16 !important;
+        }
+
         .status-submitted .ant-select-selector {
           background-color: #e6f7ff !important;
           border-color: #91d5ff !important;
+          color: #1890ff !important;
+        }
+
+        .status-submitted {
+          background-color: #e6f7ff !important;
+          border: 1px solid #91d5ff !important;
           color: #1890ff !important;
         }
 
@@ -3709,9 +3707,21 @@ const CandidateDetails = () => {
           color: #52c41a !important;
         }
 
+        .status-completed {
+          background-color: #f6ffed !important;
+          border: 1px solid #b7eb8f !important;
+          color: #52c41a !important;
+        }
+
         .status-cancelled .ant-select-selector {
           background-color: #fff1f0 !important;
           border-color: #ffa39e !important;
+          color: #f5222d !important;
+        }
+
+        .status-cancelled {
+          background-color: #fff1f0 !important;
+          border: 1px solid #ffa39e !important;
           color: #f5222d !important;
         }
 

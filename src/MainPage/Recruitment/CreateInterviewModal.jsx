@@ -1,11 +1,29 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Modal, Form, Input, Button, Select, DatePicker, TimePicker, message, Switch, Empty } from 'antd';
-import { apiServices } from '../../Services/apiServices';
-import moment from 'moment';
-import onCloseIcon from '../../assets/iconsRecruitment/x.svg';
-import { CloseOutlined } from '@ant-design/icons';
+import React, { useState, useEffect, useRef } from "react";
+import {
+  Modal,
+  Form,
+  Input,
+  Button,
+  Select,
+  DatePicker,
+  TimePicker,
+  message,
+  Switch,
+  Empty,
+} from "antd";
+import { apiServices } from "../../Services/apiServices";
+import moment from "moment";
+import onCloseIcon from "../../assets/iconsRecruitment/x.svg";
+import { CloseOutlined } from "@ant-design/icons";
 
-const CreateInterviewModal = ({ isVisible, onCancel, onSubmit, candidate, authState, editingInterview}) => {
+const CreateInterviewModal = ({
+  isVisible,
+  onCancel,
+  onSubmit,
+  candidate,
+  authState,
+  editingInterview,
+}) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [employees, setEmployees] = useState([]);
@@ -19,26 +37,35 @@ const CreateInterviewModal = ({ isVisible, onCancel, onSubmit, candidate, authSt
       fetchEmployees();
       if (editingInterview) {
         console.log("E D I T I N G I N T E R V I E W", editingInterview);
-        
+
         // Prefill form with existing interview data
         const interviewDate = moment(editingInterview.interviewDate);
         const interviewTime = moment(editingInterview.interviewTime, "HH:mm");
-        
+
         form.setFieldsValue({
           candidateName: editingInterview.candidateName || candidate?.fullName,
           candidateEmail: editingInterview.candidateEmail || candidate?.email,
           interviewType: editingInterview.interviewType,
-          assignTo: editingInterview.assignedTo?.map(emp => emp._id) || [editingInterview.interviewerId?._id],
+          assignTo: editingInterview.assignedTo?.map((emp) => emp._id) || [
+            editingInterview.interviewerId?._id,
+          ],
           interviewTitle: editingInterview.interviewTitle,
           interviewDate: interviewDate,
           interviewTime: interviewTime,
-          sendEmail: editingInterview.sendEmail !== undefined ? editingInterview.sendEmail : true,
+          sendEmail:
+            editingInterview.sendEmail !== undefined
+              ? editingInterview.sendEmail
+              : true,
           interviewNotes: editingInterview.interviewNotes,
-          meetingLink: editingInterview.interviewLink || ""
+          meetingLink: editingInterview.interviewLink || "",
         });
-        
+
         setInterviewDate(interviewDate);
-        setSelectedInterviewers(editingInterview.assignedTo?.map(emp => emp._id) || [editingInterview.interviewerId?._id]);
+        setSelectedInterviewers(
+          editingInterview.assignedTo?.map((emp) => emp._id) || [
+            editingInterview.interviewerId?._id,
+          ]
+        );
       } else {
         // Reset form for new interview
         form.resetFields();
@@ -56,7 +83,9 @@ const CreateInterviewModal = ({ isVisible, onCancel, onSubmit, candidate, authSt
 
   const handleAssignFocus = () => {
     setTimeout(() => {
-      const searchInput = assignSelectRef.current?.querySelector('.ant-select-selection-search-input');
+      const searchInput = assignSelectRef.current?.querySelector(
+        ".ant-select-selection-search-input"
+      );
       if (searchInput) {
         searchInput.setSelectionRange(0, 0);
         searchInput.focus();
@@ -66,7 +95,9 @@ const CreateInterviewModal = ({ isVisible, onCancel, onSubmit, candidate, authSt
 
   const handleAssignClick = () => {
     setTimeout(() => {
-      const searchInput = assignSelectRef.current?.querySelector('.ant-select-selection-search-input');
+      const searchInput = assignSelectRef.current?.querySelector(
+        ".ant-select-selection-search-input"
+      );
       if (searchInput) {
         searchInput.setSelectionRange(0, 0);
         searchInput.focus();
@@ -74,52 +105,52 @@ const CreateInterviewModal = ({ isVisible, onCancel, onSubmit, candidate, authSt
     }, 10);
   };
 
-
   const fetchEmployees = async () => {
     try {
-      const token = localStorage.getItem('token') || authState?.access_token?.accessToken;
-      const roles = ['employee', 'interviewer', 'admin'];
+      const token =
+        localStorage.getItem("token") || authState?.access_token?.accessToken;
+      const roles = ["employee", "interviewer", "admin"];
 
       const response = await apiServices(
-        'GET',
+        "GET",
         `user/all-employees?roles=${JSON.stringify(roles)}`,
         null,
         {
           access_token: { accessToken: token },
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
       if (response?.data?.success) {
-        const sortedData = response.data.User
-          .slice()
-          .sort((a, b) => a.fullName.localeCompare(b.fullName));
+        const sortedData = response.data.User.slice().sort((a, b) =>
+          a.fullName.localeCompare(b.fullName)
+        );
         setEmployees(sortedData);
-        console.log("sorted data od all employees", employees)
+        console.log("sorted data od all employees", employees);
       }
     } catch (error) {
-      console.error('Error fetching employees:', error);
-      message.error('Failed to fetch employees');
+      console.error("Error fetching employees:", error);
+      message.error("Failed to fetch employees");
     }
   };
 
   const onReset = () => {
     form.resetFields();
-  }; 
+  };
 
   const handleFormSubmit = async (values) => {
     try {
       setLoading(true);
-      
+
       // Call the parent's onSubmit function (handleInterviewSubmit)
       await onSubmit(values);
-      
+
       // If we reach here, the submission was successful
       form.resetFields();
       onCancel();
     } catch (error) {
       // Error handling is done in the parent component (handleInterviewSubmit)
-      console.error('Error in modal form submission:', error);
+      console.error("Error in modal form submission:", error);
       // Don't close modal on error - let user see the error message and try again
     } finally {
       setLoading(false);
@@ -129,7 +160,7 @@ const CreateInterviewModal = ({ isVisible, onCancel, onSubmit, candidate, authSt
   const getDisabledHours = () => {
     if (!interviewDate) return [];
     const today = moment();
-    if (interviewDate.isSame(today, 'day')) {
+    if (interviewDate.isSame(today, "day")) {
       // Disable all hours up to and including the current hour
       const currentHour = today.hour();
       return Array.from({ length: currentHour + 1 }, (_, i) => i);
@@ -146,7 +177,7 @@ const CreateInterviewModal = ({ isVisible, onCancel, onSubmit, candidate, authSt
       width={800}
       className="custom-modal"
       style={{ zIndex: 2000 }}
-      maskStyle={{ zIndex: 1999, background: 'rgba(0, 0, 0, 0.5)' }}
+      maskStyle={{ zIndex: 1999, background: "rgba(0, 0, 0, 0.5)" }}
     >
       <Form
         form={form}
@@ -159,158 +190,208 @@ const CreateInterviewModal = ({ isVisible, onCancel, onSubmit, candidate, authSt
         }}
       >
         <div className="row">
-        <div style={{height:"20px", width:"100%", display:"flex", justifyContent:"center", borderTop:"1px solid #E2E8F0"}}></div>
+          <div
+            style={{
+              height: "20px",
+              width: "100%",
+              display: "flex",
+              justifyContent: "center",
+              borderTop: "1px solid #E2E8F0",
+            }}
+          ></div>
           <div className="col-md-6">
-          <Form.Item
+            <Form.Item
               name="candidateName"
               label={<>Candidate Name</>}
-              rules={[{ required: true, message: 'Please enter candidate name' }]}
+              rules={[
+                { required: true, message: "Please enter candidate name" },
+              ]}
             >
-              <Input placeholder="Enter Name"  />
+              <Input placeholder="Enter Name" />
             </Form.Item>
           </div>
           <div className="col-md-6">
-          <Form.Item
+            <Form.Item
               name="candidateEmail"
               label={<>Candidate Email</>}
-              rules={[{ required: true, message: 'Please enter candidate email' }]}
+              rules={[
+                { required: true, message: "Please enter candidate email" },
+              ]}
             >
-              <Input placeholder="Enter Email"/>
+              <Input placeholder="Enter Email" />
             </Form.Item>
           </div>
         </div>
 
-        <div className='row'>
-          <div className='col-md-6'>
-          <div style={{ position: 'relative' }} id='area'>
-            <Form.Item
-            name="interviewType"
-            label="Interview Type"
-            rules={[{ required: true, message: 'Please select interview type' }]}
-            >
-            <Select 
-              placeholder="Select interview type" 
-              getPopupContainer={(triggerNode) => triggerNode.parentNode} 
-              className='customized'
-              dropdownStyle={{ zIndex: 2001 }}
-            >
-              <Select.Option value="ONLINE">Online</Select.Option>
-              <Select.Option value="IN_PERSON">In Person</Select.Option>
-            </Select>
-            </Form.Item>
+        <div className="row">
+          <div className="col-md-6">
+            <div style={{ position: "relative" }} id="area">
+              <Form.Item
+                name="interviewType"
+                label="Interview Type"
+                rules={[
+                  { required: true, message: "Please select interview type" },
+                ]}
+              >
+                <Select
+                  placeholder="Select interview type"
+                  getPopupContainer={(triggerNode) => triggerNode.parentNode}
+                  className="customized"
+                  dropdownStyle={{ zIndex: 2001 }}
+                >
+                  <Select.Option value="ONLINE">Online</Select.Option>
+                  <Select.Option value="IN_PERSON">In Person</Select.Option>
+                </Select>
+              </Form.Item>
             </div>
           </div>
           <div className="col-md-6">
-          <div style={{ position: 'relative' }} id='area' ref={assignSelectRef} onClick={handleAssignClick}>
-        <Form.Item
-          name="assignTo"
-          label="Primary Interviewer"
-          rules={[{ required: true, message: 'Please select an interviewer' }]}
-        >
-          <Select
-            className='custom-select customselect-height'
-            mode='multiple'
-            placeholder="Select interviewer"
-            showSearch
-            optionFilterProp="children"
-            getPopupContainer={(triggerNode) => triggerNode.parentNode}
-            dropdownStyle={{ zIndex: 2001 }}
-            value={selectedInterviewers}
-            onFocus={handleAssignFocus}
-            onChange={(value) => {
-              if (value.length <= 5) {
-                setSelectedInterviewers(value);
-                form.setFieldsValue({ assignTo: value });
-              }
-            }}
-          >
-            {employees.map((emp) => (
-              <Select.Option
-                key={emp._id}
-                value={emp._id}
-                disabled={selectedInterviewers.length >= 5 && !selectedInterviewers.includes(emp._id)}
+            <div
+              style={{ position: "relative" }}
+              id="assignArea"
+              ref={assignSelectRef}
+              onClick={handleAssignClick}
+            >
+              <Form.Item
+                name="assignTo"
+                label="Primary Interviewer"
+                rules={[
+                  { required: true, message: "Please select an interviewer" },
+                ]}
               >
-                {emp.fullName}
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
-        </div>
+                <Select
+                  getPopupContainer={() =>
+                    document.getElementById("assignArea")
+                  }
+                  mode="multiple"
+                  showSearch
+                  filterOption={(input, option) =>
+                    option.children
+                      .toLowerCase()
+                      .indexOf(input.toLowerCase()) >= 0
+                  }
+                  optionFilterProp="children"
+                  placeholder="Select interviewer"
+                  className="customselect-height custom-select"
+                  value={selectedInterviewers}
+                  onFocus={handleAssignFocus}
+                  onChange={(value) => {
+                    const limited = value.slice(0, 5);
+                    setSelectedInterviewers(limited);
+                    form.setFieldsValue({ assignTo: limited });
+                  }}
+                  onDeselect={(val) => {
+                    const current = form.getFieldValue("assignTo") || [];
+                    const updated = current.filter((v) => v !== val);
+                    setSelectedInterviewers(updated);
+                    form.setFieldsValue({ assignTo: updated });
+                  }}
+                  // allowClear
+                >
+                  {employees.map((emp) => (
+                    <Select.Option
+                      key={emp._id}
+                      value={emp._id}
+                      disabled={
+                        selectedInterviewers.length >= 5 &&
+                        !selectedInterviewers.includes(emp._id)
+                      }
+                    >
+                      {emp.fullName}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </div>
           </div>
         </div>
 
-        <div className='row'>
-          <div class='col-md-6'>
-          <div style={{ position: 'relative' }} id='area'>
-            <Form.Item
-            name="interviewTitle"
-            label="Interview Title"
-            rules={[{ required: true, message: 'Please select interview title' }]}
-            >
-              <Select 
-                placeholder="Select interview title" 
-                getPopupContainer={(triggerNode) => triggerNode.parentNode} 
-                className='customized'
-                dropdownStyle={{ zIndex: 2001 }}
+        <div className="row">
+          <div class="col-md-6">
+            <div style={{ position: "relative" }} id="area">
+              <Form.Item
+                name="interviewTitle"
+                label="Interview Title"
+                rules={[
+                  { required: true, message: "Please select interview title" },
+                ]}
               >
-                <Select.Option value="Initial Interview">Initial Interview</Select.Option>
-                <Select.Option value="Technical Interview">Technical Interview</Select.Option>
-                <Select.Option value="HR Interview">HR Interview</Select.Option>
-                <Select.Option value="Final Interview">Final Interview</Select.Option>
-              </Select>
-            </Form.Item>
-            </div>  
-          </div> 
-          <div className='col-md-6'>
+                <Select
+                  placeholder="Select interview title"
+                  getPopupContainer={(triggerNode) => triggerNode.parentNode}
+                  className="customized"
+                  dropdownStyle={{ zIndex: 2001 }}
+                >
+                  <Select.Option value="Initial Interview">
+                    Initial Interview
+                  </Select.Option>
+                  <Select.Option value="Technical Interview">
+                    Technical Interview
+                  </Select.Option>
+                  <Select.Option value="HR Interview">
+                    HR Interview
+                  </Select.Option>
+                  <Select.Option value="Final Interview">
+                    Final Interview
+                  </Select.Option>
+                </Select>
+              </Form.Item>
+            </div>
+          </div>
+          <div className="col-md-6">
             <Form.Item
-            name="interviewDate"
-            label="Interview Date"
-            rules={[{ required: true, message: 'Please select date' }]}
+              name="interviewDate"
+              label="Interview Date"
+              rules={[{ required: true, message: "Please select date" }]}
             >
               <DatePicker
-              style={{ width: '100%' }}
-              disabledDate={(current) => current && current < moment().startOf('day')}
-              className='custom-datepicker'
-              getPopupContainer={(triggerNode) => triggerNode.parentNode}
-              popupStyle={{ zIndex: 2001 }}
-              onChange={(date) => setInterviewDate(date)}
+                style={{ width: "100%" }}
+                disabledDate={(current) =>
+                  current && current < moment().startOf("day")
+                }
+                className="custom-datepicker"
+                getPopupContainer={(triggerNode) => triggerNode.parentNode}
+                popupStyle={{ zIndex: 2001 }}
+                onChange={(date) => setInterviewDate(date)}
               />
             </Form.Item>
           </div>
         </div>
 
-        <div className='row'>
-          <div className='col-md-6'>
+        <div className="row">
+          <div className="col-md-6">
             <Form.Item
               name="interviewTime"
               label="Interview Time"
-              rules={[{ required: true, message: 'Please select time' }]}
+              rules={[{ required: true, message: "Please select time" }]}
             >
               <TimePicker
-                style={{ width: '100%' }}
+                style={{ width: "100%" }}
                 format="HH:mm"
                 minuteStep={5}
                 getPopupContainer={(triggerNode) => triggerNode.parentNode}
                 popupStyle={{ zIndex: 2001 }}
-                className='custom-timepicker'
+                className="custom-timepicker"
                 disabledHours={getDisabledHours}
               />
             </Form.Item>
           </div>
-          <div className='col-md-6'>
+          <div className="col-md-6">
             <Form.Item
-            noStyle
-            shouldUpdate={(prevValues, currentValues) => prevValues.interviewType !== currentValues.interviewType}
+              noStyle
+              shouldUpdate={(prevValues, currentValues) =>
+                prevValues.interviewType !== currentValues.interviewType
+              }
             >
               {({ getFieldValue }) =>
-                getFieldValue('interviewType') === 'ONLINE' && (
+                getFieldValue("interviewType") === "ONLINE" && (
                   <Form.Item
-                  name="meetingLink"
-                  label="Meeting Link"
-                  rules={[
-                    { required: true, message: 'Please enter meeting link' },
-                    { type: 'url', message: 'Please enter a valid URL' }
-                  ]}
+                    name="meetingLink"
+                    label="Meeting Link"
+                    rules={[
+                      { required: true, message: "Please enter meeting link" },
+                      { type: "url", message: "Please enter a valid URL" },
+                    ]}
                   >
                     <Input placeholder="Enter meeting link" />
                   </Form.Item>
@@ -328,36 +409,39 @@ const CreateInterviewModal = ({ isVisible, onCancel, onSubmit, candidate, authSt
             Schedule Interview
           </Button>
         </Form.Item>  */}
-        <Form.Item className="text-end mt-3" style={{backgroundColor:'transparent', height:"70px"}}>
-            <Button 
-              onClick={onReset} 
-              style={{ 
-                marginRight: '12px',
-                padding: '6px 24px',
-                height: '40px',
-                borderRadius: '40px',
-                background: '#F8F9FA',
-                border: 'none'
-              }}
-            >
-              Reset
-            </Button>
-            <Button 
-              type="primary" 
-              htmlType="submit" 
-              loading={loading}
-              style={{ 
-                padding: '6px 24px',
-                height: '40px',
-                borderRadius: '40px',
-                background: '#ff9244',
-                border: 'none',
-                color:"white"
-              }}
-            >
-              Schedule Interview
-            </Button>
-          </Form.Item>
+        <Form.Item
+          className="text-end mt-3"
+          style={{ backgroundColor: "transparent", height: "70px" }}
+        >
+          <Button
+            onClick={onReset}
+            style={{
+              marginRight: "12px",
+              padding: "6px 24px",
+              height: "40px",
+              borderRadius: "40px",
+              background: "#F8F9FA",
+              border: "none",
+            }}
+          >
+            Reset
+          </Button>
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={loading}
+            style={{
+              padding: "6px 24px",
+              height: "40px",
+              borderRadius: "40px",
+              background: "#ff9244",
+              border: "none",
+              color: "white",
+            }}
+          >
+            Schedule Interview
+          </Button>
+        </Form.Item>
         {/* <Form.Item
           name="interviewTitle"
           label="Interview Title"
@@ -487,10 +571,10 @@ const CreateInterviewModal = ({ isVisible, onCancel, onSubmit, candidate, authSt
           font-weight: 600;
         }
         .custom-modal .ant-modal-close {
-          background-color: #F8F9FA;
+          background-color: #f8f9fa;
           border-radius: 50%;
-          border:"1px solid #F8F9FA";
-          margin:16px 16px 0 0;
+          border: "1px solid #F8F9FA";
+          margin: 16px 16px 0 0;
           width: 32px;
           height: 32px;
           display: flex;
@@ -507,7 +591,8 @@ const CreateInterviewModal = ({ isVisible, onCancel, onSubmit, candidate, authSt
           font-size: 16px;
           font-weight: 450;
         }
-        .custom-timepicker, .custom-datepicker{
+        .custom-timepicker,
+        .custom-datepicker {
           border-radius: 8px;
           padding: 8px 12px;
           height: 56px;
@@ -538,15 +623,15 @@ const CreateInterviewModal = ({ isVisible, onCancel, onSubmit, candidate, authSt
         //   border: none
         // }
 
-        .custom-modal .customized .ant-select-selector{
-        height: 56px !important;
-        border-radius: 8px !important;
-        display: flex;
-        align-items: center;
-        padding-left: 10px;
+        .custom-modal .customized .ant-select-selector {
+          height: 56px !important;
+          border-radius: 8px !important;
+          display: flex;
+          align-items: center;
+          padding-left: 10px;
         }
 
-        .add-candidate-btn{
+        .add-candidate-btn {
           border-radius: 40px !important;
           height: 44px !important;
           background-color: #ff9244 !important;
@@ -556,20 +641,19 @@ const CreateInterviewModal = ({ isVisible, onCancel, onSubmit, candidate, authSt
           border: 2px solid #ff9244 !important;
           width: 185px !important;
         }
-        
-        .btn-content{
+
+        .btn-content {
           display: flex;
           justify-content: center;
           align-items: center;
         }
 
-        
-        .ant-modal, 
+        .ant-modal,
         .ant-modal-wrap,
         .ant-modal-mask {
           z-index: 2000 !important;
         }
-        
+
         body.modal-open {
           overflow: hidden;
         }
@@ -613,17 +697,25 @@ const CreateInterviewModal = ({ isVisible, onCancel, onSubmit, candidate, authSt
         }
 
         /* Additional fixes mirroring skillSet field */
-        .custom-modal .custom-select.ant-select-multiple .ant-select-selection-overflow {
+        .custom-modal
+          .custom-select.ant-select-multiple
+          .ant-select-selection-overflow {
           padding-left: 0 !important;
         }
-        .custom-modal .custom-select.ant-select-multiple .ant-select-selection-overflow-item {
+        .custom-modal
+          .custom-select.ant-select-multiple
+          .ant-select-selection-overflow-item {
           margin-left: 0 !important;
         }
-        .custom-modal .custom-select.ant-select-multiple .ant-select-selection-search {
+        .custom-modal
+          .custom-select.ant-select-multiple
+          .ant-select-selection-search {
           margin-left: 0 !important;
           padding-left: 0 !important;
         }
-        .custom-modal .custom-select .ant-select-selection-overflow-item-suffix {
+        .custom-modal
+          .custom-select
+          .ant-select-selection-overflow-item-suffix {
           margin-left: 0 !important;
           padding-left: 0 !important;
         }
@@ -633,13 +725,9 @@ const CreateInterviewModal = ({ isVisible, onCancel, onSubmit, candidate, authSt
           text-align: left !important;
           text-indent: 0 !important;
         }
-
-
-        
-  
       `}</style>
     </Modal>
   );
 };
 
-export default CreateInterviewModal; 
+export default CreateInterviewModal;
