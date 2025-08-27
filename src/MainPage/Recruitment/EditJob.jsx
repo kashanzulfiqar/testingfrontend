@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Card, Form, message, Spin } from "antd";
 import { apiServices } from "../../Services/apiServices";
+import backBtn from "../../assets/iconsRecruitment/arrow-left.svg";
 import { useSelector } from "react-redux";
 import { handleApiError } from "../../utils/errorHandler";
 import JobForm from "./JobForm";
@@ -121,9 +122,17 @@ const EditJob = () => {
               <h3 className="page-title">Edit Job</h3>
               <ul className="breadcrumb">
                 <li className="breadcrumb-item">
-                  <Link to="/recruitment/dashboard">Dashboard</Link>
-                </li>
-                <li className="breadcrumb-item">
+                  <button
+                    onClick={() => navigate("/recruitment/jobs")}
+                    style={{
+                      marginRight: "16px",
+                      padding: "0",
+                      border: "none",
+                      background: "transparent",
+                    }}
+                  >
+                    <img src={backBtn}></img>
+                  </button>
                   <Link to="/recruitment/jobs">Jobs</Link>
                 </li>
                 <li className="breadcrumb-item active">Edit Job</li>

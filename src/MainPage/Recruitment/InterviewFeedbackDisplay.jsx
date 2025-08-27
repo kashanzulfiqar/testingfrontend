@@ -14,7 +14,11 @@ const InterviewFeedbackDisplay = ({ feedback }) => {
           {feedback.submittedBy?.imageUrl && (
             <img src={feedback.submittedBy.imageUrl} className="feedback-avatar" alt="Reviewer" />
           )}
+          {feedback?.reviewerId?.imageUrl && (
+            <img src={feedback.reviewerId.imageUrl} className="feedback-avatar" alt="Reviewer" />
+          )}
           <span className="feedback-reviewer-name">{feedback.submittedBy?.fullName}</span>
+          <span className="feedback-reviewer-name">{feedback.reviewerId?.fullName}</span>
         </div>
         <div className="feedback-date">
           {moment(feedback.createdAt).format("ddd, MMM DD @ hh:mm a")}
@@ -23,7 +27,7 @@ const InterviewFeedbackDisplay = ({ feedback }) => {
       {/* Decision Row */}
       <div className="feedback-decision-row">
         <span className="feedback-decision-label">Decision :</span>
-        <span className="feedback-decision-value">{feedback.recommendation}</span>
+        <span className="feedback-decision-value">{feedback.recommendation} {feedback.decision}</span>
       </div>
       {/* Description */}
       <div className="feedback-description">
@@ -31,21 +35,46 @@ const InterviewFeedbackDisplay = ({ feedback }) => {
       </div>
       {/* Ratings Grid */}
       <div className="feedback-ratings-row">
-        {[
-          { label: "Soft Skills", value: feedback.ratings.softSkillRating },
-          { label: "Technical Skills", value: feedback.ratings.technicalRating },
-          { label: "Behaviour", value: feedback.ratings.behaviorRating },
-          { label: "Leadership Skills", value: feedback.ratings.leadershipRating },
-          { label: "Teamwork Skills", value: feedback.ratings.teamworkRating },
-        ].map((rating, index) => (
-          <div className="feedback-rating-card" key={index}>
-            <div className="feedback-rating-label">{rating.label}</div>
-            <div className="feedback-rating-value-row">
-              <img src={star} style={{ height: "14px", width: "14px" }} alt="Star" />
-              <span className="feedback-rating-value">{Number(rating.value).toFixed(1)}</span>
+        {(() => {
+          const r = feedback?.ratings || {};
+          const hasLegacy =
+            r?.softSkillRating !== undefined ||
+            r?.technicalRating !== undefined ||
+            r?.behaviorRating !== undefined ||
+            r?.leadershipRating !== undefined ||
+            r?.teamworkRating !== undefined;
+
+          const hasTask =
+            r?.EfficientWorkingSkills !== undefined ||
+            r?.ProblemSolvingSkills !== undefined ||
+            r?.PresentationSkills !== undefined;
+
+          const data = hasLegacy
+            ? [
+                { label: "Soft Skills", value: r.softSkillRating },
+                { label: "Technical Skills", value: r.technicalRating },
+                { label: "Behaviour", value: r.behaviorRating },
+                { label: "Leadership Skills", value: r.leadershipRating },
+                { label: "Teamwork Skills", value: r.teamworkRating },
+              ]
+            : hasTask
+            ? [
+                { label: "Efficient Working Skills", value: r.EfficientWorkingSkills },
+                { label: "Problem Solving Skills", value: r.ProblemSolvingSkills },
+                { label: "Presentation Skills", value: r.PresentationSkills },
+              ]
+            : [];
+
+          return data.map((rating, index) => (
+            <div className="feedback-rating-card" key={index}>
+              <div className="feedback-rating-label">{rating.label}</div>
+              <div className="feedback-rating-value-row">
+                <img src={star} style={{ height: "14px", width: "14px" }} alt="Star" />
+                <span className="feedback-rating-value">{Number(rating.value || 0).toFixed(1)}</span>
+              </div>
             </div>
-          </div>
-        ))}
+          ));
+        })()}
       </div>
       <style>{`
 .feedback-card-outer {

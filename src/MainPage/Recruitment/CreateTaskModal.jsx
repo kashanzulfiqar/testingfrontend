@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Modal, Form, Input, DatePicker, Upload, Button, Select, Empty, message, InputNumber } from 'antd';
+import { Modal, Form, Input, DatePicker, Upload, Button, Select, Empty, message, InputNumber, Spin } from 'antd';
 import { UploadOutlined, CloseOutlined } from '@ant-design/icons';
 import { apiServices } from '../../Services/apiServices';
+import { uploadFunction } from "../Employees/Projects/UploadAndDeleteFunc";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_FILE_TYPES = [
@@ -15,6 +16,8 @@ const ALLOWED_FILE_TYPES = [
 const CreateTaskModal = ({ isVisible, onCancel, onSubmit, candidate, authState }) => {
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState([]);
+  const [uploadingTaskFile, setUploadingTaskFile] = useState(false);
+  const [uploadedTaskResult, setUploadedTaskResult] = useState(null);
   const [employees, setEmployees] = useState([]);
   const reviewersSelectRef = useRef(null);
 
@@ -89,9 +92,18 @@ const CreateTaskModal = ({ isVisible, onCancel, onSubmit, candidate, authState }
   };
 
   const handleFinish = (values) => {
-    // Append the selected file (if any) to values as 'taskFile'
-    const fileObj = fileList && fileList.length > 0 ? fileList[0].originFileObj : null;
-    const submitValues = { ...values, taskFile: fileObj };
+    // Use uploaded URL if available; else fall back to raw file (shouldn't happen if upload succeeded)
+    const uploaded = Array.isArray(uploadedTaskResult) ? uploadedTaskResult[0] : null;
+    const uploadedUrl = uploaded?.imageUrl || null;
+    const rawFile = fileList && fileList.length > 0 ? fileList[0].originFileObj : null;
+    const submitValues = {
+      ...values,
+      taskFile: uploadedUrl || rawFile,
+      // also pass through metadata so backend can store/display original info
+      asset_id: uploaded?.asset_id,
+      public_id: uploaded?.public_id,
+      fileName: uploaded?.fileName,
+    };
     onSubmit(submitValues); // Call the onSubmit function passed as a prop
   };
 
@@ -168,9 +180,30 @@ const CreateTaskModal = ({ isVisible, onCancel, onSubmit, candidate, authState }
             <Form.Item
               name="taskName"
               label={<>Task Name</>}
-              rules={[{ required: true, message: 'Please enter task name' }]}
+              rules={[
+                { required: true, message: 'Please enter task name' },
+                { max: 25, message: 'Task name cannot exceed 25 characters' },
+              ]}
+              normalize={(value) => (typeof value === 'string' ? value.slice(0, 25) : value)}
             >
-              <Input placeholder="Enter Task Name" />
+              <Input
+                placeholder="Enter Task Name"
+                maxLength={25}
+                showCount
+                onPaste={(e) => {
+                  const pasted = (e.clipboardData || window.clipboardData).getData('text');
+                  if (pasted && pasted.length > 25) {
+                    e.preventDefault();
+                    const truncated = pasted.slice(0, 25);
+                    const current = (e.target.value || '').toString();
+                    const selectionStart = e.target.selectionStart || current.length;
+                    const selectionEnd = e.target.selectionEnd || current.length;
+                    const nextValue = current.slice(0, selectionStart) + truncated + current.slice(selectionEnd);
+                    // Use form to update field value with truncated paste
+                    form.setFieldsValue({ taskName: nextValue.slice(0, 25) });
+                  }
+                }}
+              />
             </Form.Item>
           </div>
 
@@ -182,25 +215,44 @@ const CreateTaskModal = ({ isVisible, onCancel, onSubmit, candidate, authState }
             getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList || [])}
             >
               <Upload
-              maxCount={1}
-              fileList={fileList}
-              onChange={({ fileList }) => setFileList(fileList)}
-              beforeUpload={(file) => {
-                if (!validateFile(file)) {
-                  return false;
-                }
-                return false; // Prevent auto upload
-              }}
-              showUploadList={false} // Hide default Ant Design file list
+                maxCount={1}
+                fileList={fileList}
+                beforeUpload={async (file) => {
+                  if (!validateFile(file)) {
+                    return Upload.LIST_IGNORE;
+                  }
+                  setUploadingTaskFile(true);
+                  try {
+                    const result = await uploadFunction([file]);
+                    setUploadedTaskResult(result);
+                    // Replace any previous file with the new one visually
+                    setFileList([{ uid: file.uid, name: file.name, status: 'done', originFileObj: file }]);
+                    return false; // prevent AntD auto upload
+                  } catch (err) {
+                    message.error('Failed to upload file');
+                    return Upload.LIST_IGNORE;
+                  } finally {
+                    setUploadingTaskFile(false);
+                  }
+                }}
+                onChange={({ fileList: newList }) => {
+                  // Always keep only the latest single file
+                  const latest = newList.slice(-1);
+                  setFileList(latest);
+                }}
+                showUploadList={false}
               >
                 <div className="custom-upload">
-                  <button type="button" className="upload-button">Choose File</button>
+                  <button type="button" className="upload-button" disabled={uploadingTaskFile}>
+                    {uploadingTaskFile ? <Spin size="small" style={{ marginRight: 8 }} /> : null}
+                    {uploadingTaskFile ? 'Uploading...' : 'Choose File'}
+                  </button>
                   <input
-                  type="text"
-                  value={fileList[0]?.name || ""}
-                  placeholder="No file choosen"
-                  readOnly
-                  className="file-input"
+                    type="text"
+                    value={fileList[0]?.name || ""}
+                    placeholder="No file choosen"
+                    readOnly
+                    className="file-input"
                   />
                 </div>
               </Upload>

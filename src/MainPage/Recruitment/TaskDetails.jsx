@@ -18,6 +18,9 @@ import {
   Radio,
   Upload,
   Select,
+  Tooltip,
+  Dropdown,
+  Menu,
 } from "antd";
 import { apiServices } from "../../Services/apiServices";
 import { useSelector } from "react-redux";
@@ -38,6 +41,11 @@ import description from "../../assets/iconsRecruitment/description.svg";
 import colored from "../../assets/iconsRecruitment/Colored.svg";
 import starIcon from "../../assets/iconsRecruitment/star.svg";
 import { Helmet } from "react-helmet";
+import list from "../../assets/iconsRecruitment/vertical.svg";
+import previewIcon from "../../assets/iconsRecruitment/previewIcon.svg";
+import downloadIcon from "../../assets/iconsRecruitment/downloadIcon.svg";
+import { user_icon } from "../../Entryfile/imagepath";
+import InterviewFeedbackDisplay from "./InterviewFeedbackDisplay";
 
 const { TextArea } = Input;
 
@@ -135,6 +143,37 @@ const TaskDetails = () => {
     });
   };
 
+  const handlePreviewTaskFile = () => {
+    const file = task?.taskFile;
+    if (!file?.imageUrl) {
+      message.error("No file available for preview");
+      return;
+    }
+    window.open(file.imageUrl, "_blank");
+  };
+
+  const handleDownloadTaskFile = async () => {
+    const file = task?.taskFile;
+    if (!file?.imageUrl) {
+      message.error("No file available for download");
+      return;
+    }
+    try {
+      const response = await fetch(file.imageUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = file.fileName || "file";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      message.error("Failed to download file");
+    }
+  };
+
   const handleFeedbackSubmit = async (values) => {
     setSubmitting(true);
     const token =
@@ -148,14 +187,24 @@ const TaskDetails = () => {
     }
 
     try {
+      const evaluationDateStr = (values?.evaluationDate
+        ? moment(values.evaluationDate)
+        : moment()
+      ).format("YYYY-MM-DD");
+
+      // First submit task feedback
       const response = await apiServices(
         "POST",
         `task/${id}/feedback`,
         {
-          rating: Number(values.rating),
-          comment: values.comments,
+          description: values.description,
+          ratings: {
+            ProblemSolvingSkills: values.ProblemSolvingSkills,
+            PresentationSkills: values.PresentationSkills,
+            EfficientWorkingSkills: values.EfficientWorkingSkills,
+          },
           decision: values.decision,
-          evaluationDate: values.evaluationDate.format("YYYY-MM-DD"),
+          evaluationDate: evaluationDateStr,
         },
         {
           access_token: {
@@ -168,7 +217,7 @@ const TaskDetails = () => {
         message.success("Feedback submitted successfully");
         setFeedbackModalVisible(false);
         feedbackForm.resetFields();
-        fetchTaskDetails(); // Refresh task details to show new feedback
+        fetchTaskDetails();
       } else {
         throw new Error(response?.data?.message || "Failed to submit feedback");
       }
@@ -440,7 +489,7 @@ const TaskDetails = () => {
                 </Tag>
               </div>
             </div>
-            {task?.status !== "PENDING" && (
+            {task?.status === "PENDING" && (
               <div className="btn-div">
                 <button onClick={handleAddFeedback} className="feedback-btn">
                   <img
@@ -547,7 +596,7 @@ const TaskDetails = () => {
                     style={{ marginLeft: "-10px" }}
                   >
                     <img
-                      src={reviewer?.imageUrl}
+                      src={reviewer?.imageUrl || user_icon}
                       style={{
                         height: "30px",
                         width: "30px",
@@ -582,174 +631,95 @@ const TaskDetails = () => {
             </Col>
           </Row>
 
-          {task.status === "task-reviewed" && (
-            <div>
-              {task?.feedback.map((feedback, index) => (
-                <Card
-                  className="mb-4"
+          {task?.taskFile?.imageUrl && (
+            <div
+              style={{
+                marginTop: "10px",
+                border: "1px solid #cfd4d8",
+                borderRadius: "8px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "10px",
+                height: "90px",
+                width: "230px",
+              }}
+            >
+              <div style={{ display: "flex" }}>
+                <div
                   style={{
-                    background: "#f7f7f8",
-                    marginTop: "20px",
-                    borderRadius: "4px",
-                    padding: "15px 10px 15px 10px",
+                    height: "50px",
+                    width: "50px",
+                    borderRadius: "50%",
+                    background: "lightgrey",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    alignSelf: "center",
                   }}
                 >
-                  <div
-                    style={{ display: "flex", justifyContent: "space-between" }}
-                  >
-                    <div style={{ display: "flex", gap: "15px" }}>
-                      <h3
-                        style={{
-                          fontSize: "16px",
-                          fontWeight: "500",
-                          color: "#212529",
-                          marginTop: "3px",
-                        }}
-                      >
-                        Task Feedback By
-                      </h3>
-                      <img
-                        src={feedback.reviewerId?.imageUrl}
-                        style={{
-                          height: "30px",
-                          width: "30px",
-                          borderRadius: "50%",
-                        }}
-                      ></img>
-                      <p
-                        style={{
-                          fontSize: "12px",
-                          fontWeight: "500",
-                          color: "#ff9244",
-                          marginBottom: "0px",
-                          marginTop: "5px",
-                        }}
-                      >
-                        {feedback?.reviewerId.fullName}
-                      </p>
-                    </div>
+                  <img src={description}></img>
+                </div>
+                <div style={{ padding: "10px 0px 10px 10px", minWidth: 0 }}>
+                  <Tooltip title={task?.taskFile?.fileName}>
                     <p
                       style={{
-                        fontSize: "12px",
-                        fontWeight: "500",
-                        color: "#67748e",
                         marginBottom: "0px",
-                        marginTop: "5px",
-                      }}
-                    >
-                      {moment(feedback.createdAt).format(
-                        "ddd, MMM DD @ hh:mm a"
-                      )}
-                    </p>
-                  </div>
-                  <div
-                    style={{ display: "flex", gap: "15px", marginTop: "15px" }}
-                  >
-                    <p
-                      style={{
-                        fontSize: "12px",
-                        fontWeight: "500",
-                        color: "#212529",
-                        marginBottom: "0px",
-                        marginTop: "5px",
-                      }}
-                    >
-                      Decision:
-                    </p>
-                    <h3
-                      style={{
-                        fontSize: "16px",
-                        fontWeight: "500",
-                        color: "#47ac52",
-                        marginTop: "3px",
-                      }}
-                    >
-                      {feedback.decision}
-                    </h3>
-                  </div>
-                  <div
-                    style={{ display: "flex", gap: "15px", marginTop: "15px" }}
-                  >
-                    <p
-                      style={{
                         fontSize: "14px",
-                        fontWeight: "450",
-                        color: "#6f7d8a",
-                        marginBottom: "0px",
-                        marginTop: "5px",
+                        fontWeight: "500",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        maxWidth: "140px",
                       }}
                     >
-                      {feedback.comment}
+                      {task?.taskFile?.fileName}
                     </p>
-                  </div>
-                  <div
-                    style={{ display: "flex", gap: "15px", marginTop: "20px" }}
+                  </Tooltip>
+                  <p
+                    style={{
+                      marginBottom: "0px",
+                      fontSize: "12px",
+                      fontWeight: "450",
+                    }}
                   >
-                    <div>
-                      <div
-                        style={{
-                          background: "#e0e3e6",
-                          padding: "3px 5px 3px 5px",
-                        }}
-                      >
-                        Soft Skills
-                      </div>
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: "5px",
-                          marginTop: "5px",
-                        }}
-                      >
-                        <img
-                          src={star}
-                          style={{ height: "14px", width: "14px" }}
-                        ></img>
-                        <h3
-                          style={{
-                            fontSize: "15px",
-                            fontWeight: "500",
-                            paddingBottom: "2px",
-                          }}
-                        >
-                          {feedback.ratings.softSkills}
-                        </h3>
-                      </div>
-                    </div>
-
-                    {/* <div>
-                      <div style={{background:"#e0e3e6" , padding:'3px 5px 3px 5px'}}>Technical Skills</div>
-                      <div style={{display:'flex' , gap:"5px", marginTop:"5px"}}>
-                        <img src={star} style={{height:'14px' ,width:"14px"}}></img>
-                        <h3  style={{fontSize:"15px" ,fontWeight:'500', paddingBottom:'2px'}}>{feedback.ratings.technicalSkills1}</h3>
-                      </div>
-                    </div> */}
-
-                    {/* <div>
-                      <div style={{background:"#e0e3e6" , padding:'3px 5px 3px 5px'}}>Behaviour</div>
-                      <div style={{display:'flex' , gap:"5px", marginTop:"5px"}}>
-                        <img src={star} style={{height:'14px' ,width:"14px"}}></img>
-                        <h3  style={{fontSize:"15px" ,fontWeight:'500', paddingBottom:'2px'}}>{feedback.ratings.behavior} </h3>
-                      </div>
-                    </div> */}
-
-                    {/* <div>
-                      <div style={{background:"#e0e3e6" , padding:'3px 5px 3px 5px'}}>Technical Skills</div>
-                      <div style={{display:'flex' , gap:"5px", marginTop:"5px"}}>
-                        <img src={star} style={{height:'14px' ,width:"14px"}}></img>
-                        <h3  style={{fontSize:"15px" ,fontWeight:'500', paddingBottom:'2px'}}>{feedback.ratings.technicalSkills2}</h3>
-                      </div>
-                    </div> */}
-
-                    {/* <div>
-                      <div style={{background:"#e0e3e6" , padding:'3px 5px 3px 5px'}}>Technical Skills</div>
-                      <div style={{display:'flex' , gap:"5px", marginTop:"5px"}}>
-                        <img src={star} style={{height:'14px' ,width:"14px"}}></img>
-                        <h3  style={{fontSize:"15px" ,fontWeight:'500', paddingBottom:'2px'}}>{feedback.ratings.technicalSkills3}</h3>
-                      </div>
-                    </div> */}
+                    {moment(task?.createdAt).format("DD MMM YYYY")}
+                  </p>
+                </div>
+              </div>
+              <div>
+                <Dropdown
+                  overlay={
+                    <Menu>
+                      <Menu.Item key="preview" onClick={handlePreviewTaskFile}>
+                        <div style={{ display: "flex", gap: "6px" }}>
+                          <img src={previewIcon}></img>
+                          <p style={{ marginBottom: "0px" }}>Preview</p>
+                        </div>
+                      </Menu.Item>
+                      <Menu.Item key="download" onClick={handleDownloadTaskFile}>
+                        <div style={{ display: "flex", gap: "6px" }}>
+                          <img src={downloadIcon}></img>
+                          <p style={{ marginBottom: "0px" }}>Download</p>
+                        </div>
+                      </Menu.Item>
+                    </Menu>
+                  }
+                  trigger={["click"]}
+                  placement="topRight"
+                >
+                  <div style={{ cursor: "pointer", height: "25px" }}>
+                    <img src={list} alt="More Options" />
                   </div>
-                </Card>
+                </Dropdown>
+              </div>
+            </div>
+          )}
+
+          {(task.status === "REVIEWED" || task.status === "COMPLETED" || task.status === "REJECTED") && (
+            <div>
+              {task?.feedback.map((feedback, index) => (
+                <InterviewFeedbackDisplay key={index} feedback={feedback} />
               ))}
             </div>
           )}
@@ -855,13 +825,13 @@ const TaskDetails = () => {
                     height: "45px",
                   }}
                 >
-                  <label>Technical Skill:</label>
+                  <label>Problem Solving Skills:</label>
                   <Form.Item
-                    name="technicalRating"
+                    name="ProblemSolvingSkills"
                     rules={[
                       {
                         required: true,
-                        message: "Please provide technical rating",
+                        message: "Please provide rating",
                       },
                     ]}
                     style={{ marginTop: "22px" }}
@@ -879,13 +849,13 @@ const TaskDetails = () => {
                     height: "45px",
                   }}
                 >
-                  <label>Behavior</label>
+                  <label>Presentation Skills</label>
                   <Form.Item
-                    name="behaviorRating"
+                    name="PresentationSkills"
                     rules={[
                       {
                         required: true,
-                        message: "Please provide a behavior rating",
+                        message: "Please provide a presentation rating",
                       },
                     ]}
                     style={{ marginTop: "22px" }}
@@ -903,13 +873,13 @@ const TaskDetails = () => {
                     height: "45px",
                   }}
                 >
-                  <label>Soft Skills</label>
+                  <label>Efficient Working Skills</label>
                   <Form.Item
-                    name="softSkillRating"
+                    name="EfficientWorkingSkills"
                     rules={[
                       {
                         required: true,
-                        message: "Please provide soft skill rating",
+                        message: "Please provide rating",
                       },
                     ]}
                     style={{ marginTop: "22px" }}
