@@ -359,6 +359,14 @@ const Tasks = () => {
                     display: "inline-flex",
                     height: "33px",
                     width: "33px",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: "#f0f0f0",
+                    borderRadius: "50%",
+                    textDecoration: "none",
+                    color: "#333",
+                    fontSize: "12px",
+                    fontWeight: "bold",
                   }}
                   data-bs-toggle="dropdown"
                   aria-expanded={openTeamDropdownId === record._id}
@@ -407,11 +415,11 @@ const Tasks = () => {
           color={
             status === "PENDING"
               ? "orange"
-              : status === "SUBMITTED"
+              : status === "REVIEWED"
               ? "blue"
               : status === "COMPLETED"
               ? "green"
-              : status === "OVERDUE"
+              : status === "REJECTED"
               ? "red"
               : "default"
           }
@@ -442,11 +450,18 @@ const Tasks = () => {
           return "-";
         }
         const latestFeedback = record.feedback[0];
-        return (
-          <Tag color={latestFeedback.decision === "PASS" ? "success" : "error"}>
-            {latestFeedback.decision}
-          </Tag>
-        );
+        const decision = (latestFeedback?.decision || "").toUpperCase();
+        const decisionColor =
+          decision === "STRONG YES"
+            ? "green"
+            : decision === "YES"
+            ? "blue"
+            : decision === "NO"
+            ? "orange"
+            : decision === "STRONG NO"
+            ? "red"
+            : "default";
+        return <Tag color={decisionColor}>{latestFeedback.decision}</Tag>;
       },
     },
   ];
@@ -804,9 +819,9 @@ const Tasks = () => {
                       className="custom"
                       options={[
                         { value: "PENDING", label: "Pending" },
-                        { value: "SUBMITTED", label: "Submitted" },
+                        { value: "REVIEWED", label: "Reviewed" },
                         { value: "COMPLETED", label: "Completed" },
-                        { value: "OVERDUE", label: "Overdue" },
+                        { value: "REJECTED", label: "Rejected" },
                       ]}
                     />
                   </Form.Item>

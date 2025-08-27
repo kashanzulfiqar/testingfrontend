@@ -178,11 +178,11 @@ const InterviewDetails = ({ visible, onCancel, onSubmit }) => {
     const totalRatings = interview.feedback.reduce((sum, feedback) => {
       const ratings = feedback.ratings;
       const ratingSum =
-        ratings.technicalSkills1 +
-        ratings.behavior +
-        ratings.softSkills +
-        ratings.technicalSkills2 +
-        ratings.technicalSkills3;
+        ratings.technicalRating +
+        ratings.behaviorRating +
+        ratings.softSkillRating +
+        ratings.leadershipRating +
+        ratings.teamworkRating;
       return sum + ratingSum / 5;
     }, 0);
 
@@ -438,28 +438,30 @@ const InterviewDetails = ({ visible, onCancel, onSubmit }) => {
               {interview?.status}
             </Tag>
           </div>
-          <div className="custom">
-            <div
-              onClick={() => window.open(interview?.interviewLink, "_blank")}
-              className="select-btn"
-            >
-              <div className="joinImg">
-                <img
-                  src={camera}
-                  style={{ height: "20px", width: "20px" }}
-                ></img>
-              </div>
-              <h3
-                style={{
-                  fontSize: "16px",
-                  fontWeight: "500",
-                  marginTop: "8px",
-                }}
+          {interview?.interviewType === "ONLINE" && (
+            <div className="custom">
+              <div
+                onClick={() => window.open(interview?.interviewLink, "_blank")}
+                className="select-btn"
               >
-                Join Interview
-              </h3>
+                <div className="joinImg">
+                  <img
+                    src={camera}
+                    style={{ height: "20px", width: "20px" }}
+                  ></img>
+                </div>
+                <h3
+                  style={{
+                    fontSize: "16px",
+                    fontWeight: "500",
+                    marginTop: "8px",
+                  }}
+                >
+                  Join Interview
+                </h3>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         <div className="AddFeedback-screen">
@@ -607,7 +609,7 @@ const InterviewDetails = ({ visible, onCancel, onSubmit }) => {
                   className="team-members"
                   style={{ minWidth: "max-content" }}
                 >
-                  {allInterviewers?.slice(0, 3).map((interviewer, index) => (
+                  {allInterviewers?.slice(0, 4).map((interviewer, index) => (
                     <li key={index}>
                       <Tooltip title={interviewer?.fullName}>
                         <Avatar
@@ -617,7 +619,7 @@ const InterviewDetails = ({ visible, onCancel, onSubmit }) => {
                       </Tooltip>
                     </li>
                   ))}
-                  {allInterviewers?.length > 3 && (
+                  {allInterviewers?.length > 4 && (
                     <li className="dropdown avatar-dropdown">
                       <Link
                         className="all-users dropdown-toggle projectTeamMember"
@@ -637,13 +639,13 @@ const InterviewDetails = ({ visible, onCancel, onSubmit }) => {
                         data-bs-toggle="dropdown"
                         aria-expanded="false"
                       >
-                        +{allInterviewers?.length - 3}
+                        +{allInterviewers?.length - 4}
                       </Link>
                       {/* Dropdown menu for additional interviewers */}
                       <div className="dropdown-menu dropdown-menu-right">
                         <div className="avatar-group">
                           {allInterviewers
-                            ?.slice(3)
+                            ?.slice(4)
                             .map((interviewer, index) => (
                               <li key={index}>
                                 <Tooltip title={interviewer?.fullName}>
@@ -751,6 +753,9 @@ const InterviewDetails = ({ visible, onCancel, onSubmit }) => {
                     marginBottom: "0px",
                     fontSize: "14px",
                     fontWeight: "500",
+                    whiteSpace: "normal",
+                    overflowWrap: "anywhere",
+                    wordBreak: "break-word",
                   }}
                 >
                   {interview?.candidateId?.resume &&

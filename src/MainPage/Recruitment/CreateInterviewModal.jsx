@@ -352,7 +352,10 @@ const CreateInterviewModal = ({
                 className="custom-datepicker"
                 getPopupContainer={(triggerNode) => triggerNode.parentNode}
                 popupStyle={{ zIndex: 2001 }}
-                onChange={(date) => setInterviewDate(date)}
+                onChange={(date) => {
+                  setInterviewDate(date);
+                  form.setFieldsValue({ interviewTime: null });
+                }}
               />
             </Form.Item>
           </div>
