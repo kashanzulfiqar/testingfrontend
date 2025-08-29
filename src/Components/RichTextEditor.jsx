@@ -4,20 +4,29 @@ import StarterKit from '@tiptap/starter-kit';
 import { MentionExtension } from './MentionExtension';
 import './RichTextEditor.css';
 
-const RichTextEditor = ({ content, onChange, teamMembers = [] }) => {
-  const editor = useEditor({
-    extensions: [
+const RichTextEditor = ({ content, onChange, teamMembers = [], users = [] }) => {
+  // Use users prop if provided, otherwise fall back to teamMembers
+  const membersToUse = users.length > 0 ? users : teamMembers;
+  
+  // Use useMemo to recreate extensions when membersToUse changes
+  const extensions = React.useMemo(() => {
+    console.log('Creating extensions with membersToUse:', membersToUse.length);
+    return [
       StarterKit,
       MentionExtension.configure({
-        teamMembers: teamMembers,
+        teamMembers: membersToUse,
       }),
-    ],
+    ];
+  }, [membersToUse.length]);
+  
+  const editor = useEditor({
+    extensions,
     content: content,
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
       onChange(html);
     },
-  });
+  }, [extensions]);
 
   React.useEffect(() => {
     if (editor && content !== editor.getHTML()) {
