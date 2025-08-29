@@ -42,13 +42,21 @@ const CreateInterviewModal = ({
         const interviewDate = moment(editingInterview.interviewDate);
         const interviewTime = moment(editingInterview.interviewTime, "HH:mm");
 
+        const combinedAssignIds = Array.from(
+          new Set(
+            [
+              editingInterview.interviewerId?._id,
+              ...(editingInterview.assignedTo?.map((emp) => emp._id) || []),
+              
+            ].filter(Boolean)
+          )
+        );
+
         form.setFieldsValue({
           candidateName: editingInterview.candidateName || candidate?.fullName,
           candidateEmail: editingInterview.candidateEmail || candidate?.email,
           interviewType: editingInterview.interviewType,
-          assignTo: editingInterview.assignedTo?.map((emp) => emp._id) || [
-            editingInterview.interviewerId?._id,
-          ],
+          assignTo: combinedAssignIds,
           interviewTitle: editingInterview.interviewTitle,
           interviewDate: interviewDate,
           interviewTime: interviewTime,
@@ -61,11 +69,7 @@ const CreateInterviewModal = ({
         });
 
         setInterviewDate(interviewDate);
-        setSelectedInterviewers(
-          editingInterview.assignedTo?.map((emp) => emp._id) || [
-            editingInterview.interviewerId?._id,
-          ]
-        );
+        setSelectedInterviewers(combinedAssignIds);
       } else {
         // Reset form for new interview
         form.resetFields();
