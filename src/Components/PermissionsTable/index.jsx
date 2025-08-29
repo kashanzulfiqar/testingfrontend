@@ -486,6 +486,24 @@ const PermissionsTable = ({ permissions, setPermissions, disabled }) => {
             </>
         )},
     },
+    {
+      title: 'Recruitment Management',
+      dataIndex: 'recruitmentManagement',
+      render: (text, record) => {
+        const sub = record?.subPermissions?.find(permission => permission.title === "Recruitment Management");
+        const isChecked = record?.subPermissions?.find(permission => permission.title === "Recruitment Management")?.checked;
+        return(
+            <>
+              {
+                record?.subPermissions?.find(permission => permission.title === "Recruitment Management") ?
+                  <Checkbox checked={isChecked || false} onChange={() => handleSingleCheckbox(record, sub)} disabled={disabled} style={{color: `${isChecked ? '#ff9b44' : '#B8B8B8'}`}} /> :
+                  <Tooltip title="Permission Not Available For This Module">
+                    <span><Checkbox indeterminate={true} disabled /></span>
+                  </Tooltip>
+              }
+            </>
+        )},
+    },
   ]
 
   return (

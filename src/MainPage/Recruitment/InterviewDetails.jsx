@@ -729,7 +729,7 @@ const InterviewDetails = ({ visible, onCancel, onSubmit }) => {
               justifyContent: "space-between",
               padding: "10px",
               height: "90px",
-              width: "230px",
+              width: "240px",
             }}
           >
             <div style={{ display: "flex" }}>
@@ -781,7 +781,7 @@ const InterviewDetails = ({ visible, onCancel, onSubmit }) => {
                 </p>
               </div>
             </div>
-            <div>
+            <div style={{ flex: "0 0 24px" }}>
               <Dropdown
                 overlay={
                   <Menu>
@@ -812,7 +812,17 @@ const InterviewDetails = ({ visible, onCancel, onSubmit }) => {
                 trigger={["click"]}
                 placement="topRight"
               >
-                <div style={{ cursor: "pointer", height: "25px" }}>
+                <div
+                  style={{
+                    cursor: "pointer",
+                    height: "25px",
+                    width: "24px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
                   <img src={list} alt="More Options" />
                 </div>
               </Dropdown>
