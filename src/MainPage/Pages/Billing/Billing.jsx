@@ -276,7 +276,7 @@ const Billing = () => {
   return (
     <div className="main-wrapper">
       <Helmet>
-        <title>{t("billing.title")}</title>
+        <title>{t("Subscription Details")}</title>
         <meta name="description" content="Billing page" />
       </Helmet>
 

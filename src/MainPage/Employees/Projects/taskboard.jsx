@@ -23,6 +23,8 @@ import {
   LoadingOutlined,
   MinusCircleFilled,
   PlusOutlined,
+  CheckOutlined,
+  CloseOutlined,
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { Modal } from "@mui/material";
@@ -31,6 +33,9 @@ import { useSelector } from "react-redux";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import { useForm } from "react-hook-form";
 import TaskModal from "./taskModal";
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import moment from 'moment';
 
 const TaskBoard = () => {
   const [form] = Form.useForm();
@@ -75,6 +80,10 @@ const TaskBoard = () => {
   const [employees, setEmployees] = useState([]);
   const [allEmployees, setAllEmployees] = useState([]);
   const [loadingAllEmployees, setLoadingAllEmployees] = useState(false);
+  const [descValue, setDescValue] = useState('');
+  const [editingDueDate, setEditingDueDate] = useState(false);
+  const [dueDateValue, setDueDateValue] = useState(null);
+  const [originalDueDate, setOriginalDueDate] = useState(null);
 
   const handleEditClick = () => {
     setIsEditing(true);
@@ -409,6 +418,11 @@ const TaskBoard = () => {
   const getTaskDescription = (taskId) => {
     const task = allTasks.find((task) => task._id === taskId);
     return task ? task.description : "";
+  };
+
+  const getTaskPriority = (taskId) => {
+    const task = allTasks.find((task) => task._id === taskId);
+    return task ? task.priority : "";
   };
 
   const getAllTasks = (id) => {
@@ -1125,6 +1139,21 @@ const TaskBoard = () => {
     }
   };
 
+  useEffect(() => {
+    if (addTask.isAddOpen) {
+      setDescValue(addTask.data?.description || '');
+      setDueDateValue(addTask.data?.dueDate ? moment(addTask.data.dueDate) : null);
+      setOriginalDueDate(addTask.data?.dueDate ? moment(addTask.data.dueDate) : null);
+      // Fetch employees if not already loaded
+      if (allEmployees.length === 0) {
+        apiServices("GET", `user/all-employees`, null, user_state)
+          .then(res => {
+            if (res?.data?.success) setAllEmployees(res.data.User || []);
+          });
+      }
+    }
+  }, [addTask.isAddOpen]);
+
   return (
     <>
       <div className="page-wrapper">
@@ -1552,6 +1581,11 @@ const TaskBoard = () => {
                                                             style={{
                                                               wordBreak:
                                                                 "break-word",
+                                                              display: "block",
+                                                              overflow: "hidden",
+                                                              textOverflow: "ellipsis",
+                                                              whiteSpace: "nowrap",
+                                                              maxWidth: "100%"
                                                             }}
                                                             // onClick={() => {
                                                             //   const title =
@@ -1925,7 +1959,7 @@ const TaskBoard = () => {
                                                         </span>
                                                       </div>
                                                       <div className="task-board-body">
-                                                        <div className="kanban-footer">
+                                                        <div className="kanban-footer" style={{ position: "relative" }}>
                                                           <span
                                                             className="task-info-cont"
                                                             style={{
@@ -1934,11 +1968,18 @@ const TaskBoard = () => {
                                                                 "hidden",
                                                             }}
                                                           >
-                                                            <span className="task-date">
-                                                              {" "}
+                                                            <div 
+                                                              className="task-tags" 
+                                                              style={{
+                                                                display: "flex",
+                                                                alignItems: "center",
+                                                                gap: "4px",
+                                                                flexWrap: "nowrap"
+                                                              }}
+                                                            >
                                                               {getTaskTags(
                                                                 task.taskId
-                                                              )?.map((tag) => (
+                                                              )?.slice(0, 1).map((tag) => (
                                                                 <Tag
                                                                   key={tag}
                                                                   color={
@@ -1948,15 +1989,57 @@ const TaskBoard = () => {
                                                                     ]
                                                                   }
                                                                   style={{
-                                                                    marginBottom:
-                                                                      "4px",
+                                                                    marginBottom: 0,
+                                                                    maxWidth: "100px",
+                                                                    overflow: "hidden",
+                                                                    textOverflow: "ellipsis",
+                                                                    whiteSpace: "nowrap",
+                                                                    display: "inline-block"
                                                                   }}
                                                                 >
                                                                   {tag}
                                                                 </Tag>
                                                               ))}
-                                                            </span>
+                                                              {getTaskTags(task.taskId)?.length > 1 && (
+                                                                <Tag
+                                                                  color="default"
+                                                                  style={{
+                                                                    marginBottom: 0,
+                                                                    fontSize: "11px",
+                                                                    padding: "0 4px",
+                                                                    height: "22px",
+                                                                    lineHeight: "20px"
+                                                                  }}
+                                                                >
+                                                                  +{getTaskTags(task.taskId).length - 1}
+                                                                </Tag>
+                                                              )}
+                                                            </div>
                                                           </span>
+                                                          {getTaskPriority(task.taskId) && (
+                                                            <div
+                                                              style={{
+                                                                position: "absolute",
+                                                                bottom: "0px",
+                                                                right: "8px",
+                                                                fontSize: "10px",
+                                                                fontWeight: "500",
+                                                                padding: "2px 6px",
+                                                                borderRadius: "4px",
+                                                                backgroundColor: 
+                                                                  getTaskPriority(task.taskId) === "Highest" ? "#ff4d4f" :
+                                                                  getTaskPriority(task.taskId) === "High" ? "#ff7a45" :
+                                                                  getTaskPriority(task.taskId) === "Medium" ? "#faad14" :
+                                                                  getTaskPriority(task.taskId) === "Low" ? "#52c41a" :
+                                                                  getTaskPriority(task.taskId) === "Lowest" ? "#1890ff" : "#d9d9d9",
+                                                                color: "#fff",
+                                                                textTransform: "uppercase",
+                                                                letterSpacing: "0.5px"
+                                                              }}
+                                                            >
+                                                              {getTaskPriority(task.taskId)}
+                                                            </div>
+                                                          )}
                                                         </div>
                                                       </div>
                                                     </div>
@@ -2749,7 +2832,7 @@ const TaskBoard = () => {
               <Form
                 form={form2}
                 onFinish={(values) => {
-                  onFinishAdd(values);
+                  onFinishAdd({ ...values, description: descValue, dueDate: dueDateValue });
                 }}
                 onFinishFailed={({ errorFields }) => {
                   const consecutiveSpacesError = errorFields.find((field) =>
@@ -2767,32 +2850,25 @@ const TaskBoard = () => {
                   <div className="col-12">
                     <div className="form-group">
                       <label>
-                        {t("Tasks.title")}{" "}
-                        <span className="text-danger">*</span>
+                        {t("Tasks.title")} <span className="text-danger">*</span>
                       </label>
                       <Form.Item
                         name="title"
                         className="custom-border"
-                        rules={[
-                          {
+                        rules={[{
                             whitespace: true,
                             required: true,
                             validator: (_, value) => {
                               if (!value || value.trim() === "") {
-                                return Promise.reject(
-                                  t("Tasks.pleaseentertitle")
-                                );
+                              return Promise.reject(t("Tasks.pleaseentertitle"));
                               } else if (/\s{2,}/.test(value)) {
-                                return Promise.reject(
-                                  t("allEmp.errors.removeConsecutiveSpaces2")
-                                );
+                              return Promise.reject(t("allEmp.errors.removeConsecutiveSpaces2"));
                               } else if (value.length < 3) {
                                 return Promise.reject(t("Tasks.titleLength"));
                               }
                               return Promise.resolve();
                             },
-                          },
-                        ]}
+                        }]}
                       >
                         <Input className="form-control" maxLength={50} />
                       </Form.Item>
@@ -2802,49 +2878,22 @@ const TaskBoard = () => {
                     <div className="form-group">
                       <label>
                         {t("Tasks.tags")} <span className="text-danger">*</span>
-                        <Tooltip
-                          className="custom-tooltip"
-                          placement="rightBottom"
-                          title={<label>{t("Tasks.taginstruction")}</label>}
-                        >
-                          <span
-                            style={{
-                              border: "1px solid grey",
-                              color: "grey",
-                              fontSize: "12px",
-                              borderRadius: "50%",
-                              padding: "1.5px 4px 1px",
-                              margin: "5px",
-                              cursor: "pointer",
-                            }}
-                          >
+                        <Tooltip className="custom-tooltip" placement="rightBottom" title={<label>{t("Tasks.taginstruction")}</label>}>
+                          <span style={{border: '1px solid grey', color: 'grey', fontSize: '12px', borderRadius: '50%', padding: '1.5px 4px 1px', margin: '5px', cursor: 'pointer'}}>
                             {t("Tasks.Qmark")}
                           </span>
                         </Tooltip>
                       </label>
-                      <div
-                        style={{ position: "relative" }}
-                        className="hideDropdownMenu"
-                        id="area22"
-                      >
+                      <div style={{ position: "relative" }} className="hideDropdownMenu" id="area22">
                         <Form.Item
                           name="tags"
                           className="addTeamHeight"
-                          rules={[
-                            {
-                              // whitespace: true,
-                              required: true,
-                              message: t("Tasks.pleaseentertags"),
-                            },
-                          ]}
+                          rules={[{ required: true, message: t("Tasks.pleaseentertags") }]}
                         >
                           <Select
                             mode="tags"
-                            // className="custom-select custom-normal"
                             className="custom-select customselect-height"
-                            getPopupContainer={() =>
-                              document.getElementById("area22")
-                            }
+                            getPopupContainer={() => document.getElementById("area22")}
                           />
                         </Form.Item>
                       </div>
@@ -2852,54 +2901,118 @@ const TaskBoard = () => {
                   </div>
                   <div className="col-12">
                     <div className="form-group">
-                      <label
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                        }}
-                      >
-                        <div>
-                          {t("finance.Invoices.description")}{" "}
-                          <span className="text-danger">*</span>
-                        </div>
+                      <label style={{display: 'flex', justifyContent: 'space-between'}}>
+                        <div>{t('finance.Invoices.description')} <span className="text-danger">*</span></div>
                       </label>
                       <Form.Item
                         name="description"
-                        rules={[
-                          {
-                            whitespace: true,
+                        rules={[{
                             required: true,
                             validator: (_, value) => {
-                              if (!value || value.trim() === "") {
-                                return Promise.reject(
-                                  t("Tasks.pleaseenterdescription")
-                                );
-                              } else if (/\s{2,}/.test(value)) {
-                                return Promise.reject(
-                                  t("allEmp.errors.removeConsecutiveSpaces2")
-                                );
-                              } else if (value.length <= 4) {
-                                return Promise.reject(
-                                  t("Tasks.descriptionLength")
-                                );
+                            const plain = descValue.replace(/<(.|\n)*?>/g, '');
+                            if (!plain || plain.trim() === '') {
+                              return Promise.reject(t('Tasks.pleaseenterdescription'));
+                            }
+                            if (/\s{2,}/.test(plain)) {
+                              return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
+                            }
+                            if (plain.length <= 4) {
+                              return Promise.reject(t('Tasks.descriptionLength'));
                               }
                               return Promise.resolve();
                             },
-                          },
-                        ]}
+                        }]}
                         className="custom-border"
                       >
-                        <Input.TextArea rows={3} className="form-control" />
+                        <ReactQuill value={descValue} onChange={setDescValue} theme="snow" style={{ minHeight: 100 }} />
                       </Form.Item>
                     </div>
                   </div>
+                  <div className="col-12">
+                    <div className="form-group">
+                      <label>
+                        Assignee :
+                      </label>
+                      <div style={{ position: "relative" }} id="assigneeAreaTaskboard">
+                        <Form.Item
+                          name='assignee'
+                          className='custom-border'
+                        >
+                          <Select
+                            showSearch
+                            placeholder="Select assignee"
+                            allowClear
+                            optionFilterProp="children"
+                            filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                            className="custom-select custom-normal"
+                            getPopupContainer={() =>
+                              document.getElementById("assigneeAreaTaskboard")
+                            }
+                          >
+                            <Select.Option value="">Unassigned</Select.Option>
+                            {allEmployees.map(user => (
+                              <Select.Option key={user._id} value={user._id}>{user.fullName}</Select.Option>
+                            ))}
+                          </Select>
+                        </Form.Item>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-12">
+                    <div className="form-group">
+                      <label>
+                        Priority :
+                      </label>
+                      <div style={{ position: "relative" }} id="priorityAreaTaskboard">
+                        <Form.Item
+                          name='priority'
+                          className='custom-border'
+                        >
+                          <Select
+                            placeholder="Select priority"
+                            allowClear
+                            className="custom-select custom-normal"
+                            getPopupContainer={() =>
+                              document.getElementById("priorityAreaTaskboard")
+                            }
+                          >
+                            <Select.Option value="Highest">Highest</Select.Option>
+                            <Select.Option value="High">High</Select.Option>
+                            <Select.Option value="Medium">Medium</Select.Option>
+                            <Select.Option value="Low">Low</Select.Option>
+                            <Select.Option value="Lowest">Lowest</Select.Option>
+                          </Select>
+                        </Form.Item>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-12">
+                    <div className="form-group">
+                      <label>
+                        Due date :
+                      </label>
+                      <div style={{ position: "relative" }} id="dueDateAreaTaskboard">
+                        <Form.Item
+                          name='dueDate'
+                          className='custom-border'
+                        >
+                          <DatePicker
+                            allowClear
+                            placeholder="Select due date"
+                            className="custom-select custom-normal"
+                            style={{ width: '100%' }}
+                            getPopupContainer={() =>
+                              document.getElementById("dueDateAreaTaskboard")
+                            }
+                          />
+                        </Form.Item>
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
                 <div className="submit-section">
-                  <button
-                    type="submit"
-                    className="btn btn-primary submit-btn"
-                    disabled={loader}
-                  >
+                  <button type="submit" className="btn btn-primary submit-btn" disabled={loader}>
                     {loader ? (
                       <Spin size="small" indicator={antIcon} />
                     ) : (

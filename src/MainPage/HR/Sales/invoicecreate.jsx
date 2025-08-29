@@ -1971,8 +1971,16 @@ const Invoicecreate = () => {
                                         className='form-control'
                                         onChange={(e) => calculateAmount(e, index, 'quantity')}
                                         onKeyPress={(e) => {
-                                          if ((e.which >= 65 && e.which <= 90) || (e.which >= 97 && e.which <= 122) || (e.which >= 33 &&  e.which <= 47) || (e.which >= 58 && e.which <= 64) || (e.which >= 91 && e.which <= 96) || (e.which >= 123 && e.which <= 126) ) {
-                                            e.preventDefault();
+                                          if (
+                                          e.key === '.' &&
+                                          e.target.value.includes('.')
+                                          ) {
+                                          e.preventDefault();
+                                          } else if (
+                                          e.which !== 46 &&
+                                          (e.which < 48 || e.which > 57)
+                                          ) {
+                                          e.preventDefault();
                                           }
                                         }}
                                         min={0}

@@ -1,7 +1,7 @@
 import React, { useState ,useEffect  } from 'react';
 import { Helmet } from "react-helmet";
 import { Link, useNavigate } from 'react-router-dom';
-import { Form, Table, Input, Pagination, Empty, Select, Spin, message, Button, Tag, Tooltip, Switch, Checkbox, Segmented } from 'antd';
+import { Form, Table, Input, Pagination, Empty, Select, Spin, message, Button, Tag, Tooltip, Switch, Checkbox, Segmented, DatePicker } from 'antd';
 import 'antd/dist/antd.css';
 import {itemRender,onShowSizeChange} from "../../paginationfunction"
 import "../../antdstyle.css"
@@ -11,7 +11,10 @@ import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import Modal from "@mui/material/Modal";
 import { apiServices } from '../../../Services/apiServices';
 import { useTranslation } from 'react-i18next';
-import TaskModal from './taskModal';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import moment from 'moment';
 
 const Tasks = () => {
   const { t, i18n } = useTranslation();
@@ -43,11 +46,16 @@ const Tasks = () => {
     isViewMode: false,
     data: ''
   });
-  const [isArchived, setIsArchived] = useState(false);
+
+  const [descValue, setDescValue] = useState('');
   const [openDropdownId, setOpenDropdownId] = useState(null);
   const [openStatusDropdownId, setOpenStatusDropdownId] = useState(null);
-  const [viewTaskData, setViewTaskData] = useState(null);
-  const [viewTaskModal, setViewTaskModal] = useState(false);
+  const [isArchived, setIsArchived] = useState(false);
+  const [allEmployees, setAllEmployees] = useState([]);
+  // Add state for editing due date in the modal
+  const [editingDueDate, setEditingDueDate] = useState(false);
+  const [dueDateValue, setDueDateValue] = useState(null);
+  const [originalDueDate, setOriginalDueDate] = useState(null);
 
   useEffect(() => {
     if(role !== 'client' && role !== 'focalperson') {
@@ -55,10 +63,23 @@ const Tasks = () => {
       getAllTasks();
       getAllProjects()
       getAllTaskBoards()
+      apiServices("GET", `user/all-employees`, null, user_state)
+        .then(res => {
+          if (res?.data?.success) setAllEmployees(res.data.User || []);
+        });
     }else{
       nav(`${role === 'client' ? '/client/client-profile' : role === 'focalperson' ? `/client/focal-profile` : role === 'admin' ? `/main/dashboard` : `/employee/dashboard`}`)
     }
   }, [])
+
+  // Set/reset description value when modal opens/closes
+  useEffect(() => {
+    if (open?.isAddOpen && open?.data) {
+      setDescValue(open?.data?.description || '');
+    } else if (open?.isAddOpen) {
+      setDescValue('');
+    }
+  }, [open?.isAddOpen, open?.data]);
 
   // Effect to handle modal open state changes
 useEffect(() => {
@@ -78,6 +99,17 @@ useEffect(() => {
       }
   }
 }, [open]);
+
+  // When opening the modal, set dueDateValue from the record
+  useEffect(() => {
+    if (open?.isAddOpen && open?.data) {
+      setDueDateValue(open.data.dueDate ? moment(open.data.dueDate) : null);
+      setOriginalDueDate(open.data.dueDate ? moment(open.data.dueDate) : null);
+    } else if (open?.isAddOpen) {
+      setDueDateValue(null);
+      setOriginalDueDate(null);
+    }
+  }, [open?.isAddOpen, open?.data]);
 
   const getAllTasks = (values, current_page, page_size, archivedStatus = isArchived) => {
     setTableLoader(true);
@@ -281,9 +313,12 @@ const searchHandler = (val, type) => {
 
 const onFinishAdd = (values) => {
   const { associateWith, ...payloadData } = values;
-  
   let updated_data = {
     ...payloadData,
+    assignee: values.assignee === '' ? null : values.assignee,
+    priority: values.priority || null,
+    dueDate: values.dueDate || null,
+    labels: values.labels || [],
     // Add other necessary fields
   };
     setLoader(true)
@@ -313,6 +348,10 @@ const onFinishEdit = (values) => {
   const { associateWith, ...payloadData } = values;
     const data = {
         ...payloadData,
+        assignee: values.assignee === '' ? null : values.assignee,
+        priority: values.priority || null,
+        dueDate: values.dueDate || null,
+        labels: values.labels || [],
         _id: open?.data?._id
     }
 
@@ -452,13 +491,7 @@ const onFinishEdit = (values) => {
         );
       },
     },     
-    {
-      title: t('finance.Invoices.description'),
-      dataIndex: 'description',
-      render: (text, record) => (
-        <label className='taskLongDesc'>{text}</label>
-          ),
-    }, 
+    
     {
       title: "Status",
       dataIndex: 'lane',
@@ -901,9 +934,7 @@ const onFinishEdit = (values) => {
             <div className="modal-dialog modal-dialog-centered" role="document">
             <div className="modal-content">
                 <div className="modal-header">
-                <h5 className="modal-title">
-                  {open?.data ? t('edit') : t('holiday.add')} {t('Timesheetemployee.task')}
-                </h5>
+                <h5 className="modal-title">{open?.data ? t('edit') : t('holiday.add')} {t('Timesheetemployee.task')}</h5>
                 <button type="button" className="close" onClick={handleClose}>
                     <span aria-hidden="true">×</span>
                 </button>
@@ -912,8 +943,10 @@ const onFinishEdit = (values) => {
                 <Form
                 form={form2}
                 onFinish={(values) => {
-                    open?.data ? onFinishEdit(values) : onFinishAdd(values)
-                  }}
+                    const submitValues = { ...values, description: descValue };
+                    open?.data ? onFinishEdit(submitValues) : onFinishAdd(submitValues)
+                    }
+                }
                 onFinishFailed={({errorFields}) => {
                     const phoneErrorExists = errorFields.find(field => field.errors.toString().includes('please enter phone number'));
                     if(phoneErrorExists){
@@ -954,119 +987,153 @@ const onFinishEdit = (values) => {
                             },
                             ]}
                         >
-                            <Input className='form-control' placeholder={t("Tasks.title")} maxLength={50}/>
+                            <Input className='form-control' maxLength={50} />
                         </Form.Item>
-                        </div>
-                    </div>
-                    {/* Toggle button to switch between Taskboard and Project */}
-                    
-                    <div className="col-12">
-                        <div className="form-group">
-                            <label>
-                                {t('Associate with')} <span className="text-danger">*</span>
-                            </label>
-                            <Form.Item
-                            name="associateWith"
-                            // initialValue={open?.data ? (open?.data?.projectId ? 'project' : 'taskboard') : undefined}
-                            className="custom-border"
-                            rules={[
-                                {
-                                    required: true,
-                                    message: t('please select associate with'),
-                                },
-                            ]}
-                            >
-                              <Select
-                                placeholder={t('please select associate with')}
-                                onChange={(value) => setIsProjectAssociated(value === 'project')}
-                                className="custom-select custom-normal"
-                            >
-                                <Select.Option value="project">{t('Tasks.project')}</Select.Option>
-                                <Select.Option value="taskboard">{t('sideBar.taskBoard')}</Select.Option>
-                            </Select>
-                            </Form.Item>
-                        </div>
-                    </div>
-
-                    {/* Conditionally render Taskboard or Project Selection */}
-                    <div className="col-12">
-                        <div className="form-group">
-                            {isProjectAssociated === true && (
-                                <>
-                                    <label>
-                                        {t('Tasks.project')}<span className="text-danger">*</span>
-                                    </label>
-                                    <Form.Item
-                                        name="projectId"
-                                        className="custom-border"
-                                        rules={[
-                                            {
-                                                whitespace: true,
-                                                required: true,
-                                                message: t('Tasks.pleaseselectproject'),
-                                            },
-                                        ]}
-                                    >
-                                        <Select
-                                            showSearch
-                                            onSearch={(val) => searchHandler(val, 'project')}
-                                            filterOption={(input, option) =>
-                                                (option?.props?.children || '').toLowerCase().includes(input.toLowerCase())
-                                            }
-                                            notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
-                                            className="custom-select custom-normal"
-                                            placeholder={t('Tasks.selectproject')}
-                                        >
-                                            {allProjects.map((project, index) => (
-                                                <Select.Option key={index} value={project._id}>
-                                                    {project.projectName}
-                                                </Select.Option>
-                                            ))}
-                                        </Select>
-                                    </Form.Item>
-                                </>
-                            )}
-                            {isProjectAssociated === false && (
-                                <>
-                                    <label>
-                                        {t('sideBar.taskBoard')} <span className="text-danger">*</span>
-                                    </label>
-                                    <Form.Item
-                                        name="boardId"
-                                        className="custom-border"
-                                        rules={[
-                                            {
-                                                whitespace: true,
-                                                required: true,
-                                                message: t('Tasks.pleaseselecttaskboard'),
-                                            },
-                                        ]}
-                                    >
-                                          <Select
-                                            showSearch
-                                            onSearch={(val) => searchHandler(val, 'taskboard')}
-                                            filterOption={(input, option) =>
-                                                (option?.props?.children || '').toLowerCase().includes(input.toLowerCase())
-                                            }
-                                            notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
-                                            className="custom-select custom-normal"
-                                            placeholder={t('Tasks.selecttaskboard')}
-                                        >
-                                            {allTaskboards.map((taskBoard, index) => (
-                                                <Select.Option key={index} value={taskBoard._id}>
-                                                    {taskBoard.boardTitle}
-                                                </Select.Option>
-                                            ))}
-                                        </Select>
-                                    </Form.Item>
-                                </>
-                            )}
                         </div>
                     </div>
                     <div className="col-12">
                         <div className="form-group">
                         <label>
+                        Associate with <span className="text-danger">*</span>
+                        </label>
+                        <div style={{ position: "relative" }} id="associateArea">
+                        <Form.Item
+                            name='associateWith'
+                            className='custom-border'
+                            rules={[
+                            {
+                                required: true,
+                                message: 'Please select what to associate with',
+                            },
+                            ]}
+                        >
+                                <Select
+                                    placeholder="Select association type"
+                                    className="custom-select custom-normal"
+                                    getPopupContainer={() =>
+                                        document.getElementById("associateArea")
+                                    }
+                                    onChange={(value) => {
+                                      setIsProjectAssociated(value === 'project');
+                                      // Reset the other field when switching
+                                      if (value === 'project') {
+                                        form2.setFieldsValue({ boardId: undefined });
+                                      } else {
+                                        form2.setFieldsValue({ projectId: undefined });
+                                      }
+                                    }}
+                                    >
+                                    <Select.Option value="project">Project</Select.Option>
+                                    <Select.Option value="taskboard">Task Boards</Select.Option>
+                                </Select>
+                        </Form.Item>
+                        </div>
+                        </div>
+                    </div>
+                    {isProjectAssociated === true && (
+                    <div className="col-12">
+                        <div className="form-group">
+                        <label>
+                        Project <span className="text-danger">*</span>
+                        </label>
+                        <div style={{ position: "relative" }} id="area">
+                        <Form.Item
+                            name='projectId'
+                            className='custom-border'
+                            rules={[
+                            {
+                                required: isProjectAssociated === true,
+                                message: t('Tasks.pleaseselectproject'),
+                            },
+                            ]}
+                        >
+                                <Select
+                                    showSearch
+                                    onSearch={(val) => {
+                                      searchHandler(val, 'project')
+                                    }}
+                                    filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                                    optionFilterProp="children"
+                                    notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                                    dropdownRender={(menu) => (
+                                      <>
+                                        {menu}
+                                      </>
+                                    )}
+                                    className="custom-select custom-normal"
+                                    getPopupContainer={() =>
+                                        document.getElementById("area")
+                                    }
+                                    placeholder="Select Project"
+                                    >
+                                    {
+                                        allProjects.map((project, index) => (
+                                        <Select.Option key={index} value={project._id}>
+                                            {project.projectName}
+                                        </Select.Option>
+                                        ))
+                                    }
+                                </Select>
+                        </Form.Item>
+                        </div>
+                        </div>
+                    </div>
+                    )}
+                    {isProjectAssociated === false && (
+                    <div className="col-12">
+                        <div className="form-group">
+                        <label>
+                        Task Boards <span className="text-danger">*</span>
+                        </label>
+                        <div style={{ position: "relative" }} id="taskboardArea">
+                        <Form.Item
+                            name='boardId'
+                            className='custom-border'
+                            rules={[
+                            {
+                                required: isProjectAssociated === false,
+                                message: 'Please select taskboard',
+                            },
+                            ]}
+                        >
+                                <Select
+                                    showSearch
+                                    onSearch={(val) => {
+                                      searchHandler(val, 'taskboard')
+                                    }}
+                                    filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                                    optionFilterProp="children"
+                                    notFoundContent={<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+                                    className="custom-select custom-normal"
+                                    getPopupContainer={() =>
+                                        document.getElementById("taskboardArea")
+                                    }
+                                    placeholder="Select Taskboard"
+                                    >
+                                    {
+                                        allTaskboards.map((taskboard, index) => (
+                                        <Select.Option key={index} value={taskboard._id}>
+                                            {taskboard.boardTitle}
+                                        </Select.Option>
+                                        ))
+                                    }
+                                </Select>
+                        </Form.Item>
+                        </div>
+                        </div>
+                    </div>
+                    )}
+                    <div className="col-12">
+                        <div className="form-group">
+                        <label>
                         {t('Tasks.tags')} <span className="text-danger">*</span>
+                            <Tooltip className="custom-tooltip" placement="rightBottom" title={(
+                                <label>{t('Tasks.taginstruction')}</label>
+                            )}>
+                                <span style={{border: '1px solid grey', color: 'grey', fontSize: '12px', borderRadius: '50%', padding: '1.5px 4px 1px', margin: '5px', cursor: 'pointer'}}>
+                                {t('Tasks.Qmark')}
+                                </span>
+                            </Tooltip>
                         </label>
                         <div style={{ position: "relative" }} className='hideDropdownMenu' id="area22">
                         <Form.Item
@@ -1074,6 +1141,7 @@ const onFinishEdit = (values) => {
                             className='addTeamHeight'
                             rules={[
                             {
+                                // whitespace: true,
                                 required: true,
                                 message: t('Tasks.pleaseentertags'),
                             },
@@ -1081,6 +1149,7 @@ const onFinishEdit = (values) => {
                         >
                                 <Select
                                     mode="tags"
+                                    // className="custom-select custom-normal"
                                     className="custom-select customselect-height"
                                     getPopupContainer={() =>
                                         document.getElementById("area22")
@@ -1092,56 +1161,138 @@ const onFinishEdit = (values) => {
                     </div>
                     <div className="col-12">
                         <div className="form-group">
-                        <label>
-                            {t('finance.Invoices.description')} <span className="text-danger">*</span>
+                        <label style={{display: 'flex', justifyContent: 'space-between'}}>
+                            <div>{t('finance.Invoices.description')} <span className="text-danger">*</span></div>
+                            {/* <small style={{marginTop: '5px', fontSize: '10px', color: 'rgba(0, 0, 0, 0.5)'}}>{descLength} / 150</small> */}
                         </label>
                         <Form.Item
                             name="description"
                             rules={[
                             {
-                                whitespace: true,
                                 required: true,
                                 validator: (_, value) => {
-                                if(!value || value.trim() === ''){
+                                  const plain = descValue.replace(/<(.|\n)*?>/g, '');
+                                  if (!plain || plain.trim() === '') {
                                     return Promise.reject(t('Tasks.pleaseenterdescription'));
-                                }
-                                // else if (/\s{2,}/.test(value)) {
-                                //     return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
-                                // }
-                                else if (value.length <= 4) {
+                                  }
+                                  if (/\s{2,}/.test(plain)) {
+                                    return Promise.reject(t('allEmp.errors.removeConsecutiveSpaces2'));
+                                  }
+                                  if (plain.length <= 4) {
                                     return Promise.reject(t('Tasks.descriptionLength'));
-                                }
-                                return Promise.resolve();
+                                  }
+                                  return Promise.resolve();
                                 },
                             },
                             ]}
                             className="custom-border"
                         >
-                            <Input.TextArea rows={3} className='form-control' />
+                            <ReactQuill
+                              value={descValue}
+                              onChange={setDescValue}
+                              theme="snow"
+                              style={{ minHeight: 100 }}
+                            />
                         </Form.Item>
+                        </div>
+                    </div>
+                    <div className="col-12">
+                        <div className="form-group">
+                        <label>
+                        Assignee :
+                        </label>
+                        <div style={{ position: "relative" }} id="assigneeArea">
+                        <Form.Item
+                            name='assignee'
+                            className='custom-border'
+                        >
+                                <Select
+                                    showSearch
+                                    placeholder="Select assignee"
+                                    allowClear
+                                    optionFilterProp="children"
+                                    filterOption={(input, option) =>
+                                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                    }
+                                    className="custom-select custom-normal"
+                                    getPopupContainer={() =>
+                                        document.getElementById("assigneeArea")
+                                    }
+                                    >
+                                    <Select.Option value="">Unassigned</Select.Option>
+                                    {allEmployees.map(user => (
+                                      <Select.Option key={user._id} value={user._id}>{user.fullName}</Select.Option>
+                                    ))}
+                                </Select>
+                        </Form.Item>
+                        </div>
+                        </div>
+                    </div>
+                    <div className="col-12">
+                        <div className="form-group">
+                        <label>
+                        Priority :
+                        </label>
+                        <div style={{ position: "relative" }} id="priorityArea">
+                        <Form.Item
+                            name='priority'
+                            className='custom-border'
+                        >
+                                <Select
+                                    placeholder="Select priority"
+                                    allowClear
+                                    className="custom-select custom-normal"
+                                    getPopupContainer={() =>
+                                        document.getElementById("priorityArea")
+                                    }
+                                    >
+                                    <Select.Option value="Highest">Highest</Select.Option>
+                                    <Select.Option value="High">High</Select.Option>
+                                    <Select.Option value="Medium">Medium</Select.Option>
+                                    <Select.Option value="Low">Low</Select.Option>
+                                    <Select.Option value="Lowest">Lowest</Select.Option>
+                                </Select>
+                        </Form.Item>
+                        </div>
+                        </div>
+                    </div>
+                    <div className="col-12">
+                        <div className="form-group">
+                        <label>
+                        Due date :
+                        </label>
+                        <div style={{ position: "relative" }} id="dueDateArea">
+                        <Form.Item
+                            name='dueDate'
+                            className='custom-border'
+                        >
+                                <DatePicker
+                                  allowClear
+                                  placeholder="Select due date"
+                                  className="custom-select custom-normal"
+                                  style={{ width: '100%' }}
+                                  getPopupContainer={() =>
+                                      document.getElementById("dueDateArea")
+                                  }
+                                />
+                        </Form.Item>
+                        </div>
                         </div>
                     </div>
                 </div>
                 <div className="submit-section">
-                      <button type='submit' className="btn btn-primary submit-btn" disabled={loader}>
-                        {loader ? <Spin size="small" indicator={antIcon} /> : t('submit')}
-                      </button>
+                    <button type='submit' className="btn btn-primary submit-btn" disabled={loader}>
+                    {
+                        loader ? <Spin size="small" indicator={antIcon} />
+                        : t('submit')
+                    }
+                    </button>
                 </div>
                 </Form>
                 </div>
             </div>
             </div>
         </Modal>
-        {/* Task Modal */}
-        <TaskModal
-            data={viewTaskData}
-            viewModal={viewTaskModal}
-            closeViewModal={() => setViewTaskModal(false)}
-            getAllTasks={() => getAllTasks(filterValues, currentPage, pageSize)}
-            getTaskBoard={getAllTaskBoards}
-            isFromTasksPage={true}
-        />
-
         {/* Delete Task Modal */}
         <Modal
           open={open.isDelOpen}
