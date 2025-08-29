@@ -224,7 +224,10 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
   useEffect(() => {
     apiServices("GET", `user/all-employees`, null, user_state)
       .then(res => {
-        if (res?.data?.success) setAllEmployees(res.data.User || []);
+        if (res?.data?.success) {
+          console.log('Fetched employees:', res.data.User);
+          setAllEmployees(res.data.User || []);
+        }
       });
   }, []);
 
@@ -540,7 +543,11 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
   };
   // Post a new comment
   const postComment = async () => {
-    if (!commentRichText.trim() || !taskData?._id) return;
+    // Enhanced validation for empty comments
+    const trimmedComment = commentRichText?.trim();
+    if (!trimmedComment || trimmedComment === '' || trimmedComment === '<p></p>' || trimmedComment === '<p><br></p>' || !taskData?._id) {
+      return;
+    }
     setPostingComment(true);
     try {
       // Extract mentions from the comment text
@@ -600,7 +607,11 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
   };
 
   const updateComment = async () => {
-    if (!editingCommentText.trim() || !taskData?._id) return;
+    // Enhanced validation for empty comments
+    const trimmedComment = editingCommentText?.trim();
+    if (!trimmedComment || trimmedComment === '' || trimmedComment === '<p></p>' || trimmedComment === '<p><br></p>' || !taskData?._id) {
+      return;
+    }
     setUpdatingComment(true);
     try {
       // Extract mentions from the comment text
@@ -869,8 +880,26 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
     }
   };
   const handleLabelsSave = async () => {
+    // Check if tags have actually changed
+    const currentTags = taskData.tags || [];
+    let newTags = labelsValue || [];
+    
+    // Filter out empty tags
+    newTags = newTags.filter(tag => tag && tag.trim() !== '');
+    
+    // Compare arrays - check if they have same length and same elements
+    const tagsChanged = currentTags.length !== newTags.length || 
+                       !currentTags.every(tag => newTags.includes(tag)) ||
+                       !newTags.every(tag => currentTags.includes(tag));
+    
+    if (!tagsChanged) {
+      // No changes, just exit edit mode without API call
+      setEditingLabels(false);
+      return;
+    }
+    
     try {
-      await apiServices('PUT', 'tasks', { _id: taskData._id, tags: labelsValue }, user_state);
+      await apiServices('PUT', 'tasks', { _id: taskData._id, tags: newTags }, user_state);
       message.success('Tags updated');
       setEditingLabels(false);
       fetchTaskDetails();
@@ -1169,6 +1198,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                       <RichTextEditor
                         content={descriptionValue}
                         onChange={setDescriptionValue}
+                        users={boardAssociatedUsers}
                       />
                 ) : (
                       <div
@@ -1641,7 +1671,7 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                                           <RichTextEditor
                                             content={editingCommentText}
                                             onChange={setEditingCommentText}
-                                            users={allEmployees}
+                                            users={boardAssociatedUsers}
                                           />
                                           <div style={{
                                             fontSize: '12px',
@@ -1887,8 +1917,11 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                                       <RichTextEditor
                                         content={commentRichText}
                                         onChange={setCommentRichText}
-                                        users={allEmployees}
+                                        users={boardAssociatedUsers}
                                       />
+                                      {/* Debug info */}
+                                      {console.log('Mention users (boardAssociatedUsers):', boardAssociatedUsers.map(u => u.fullName))}
+                                      {console.log('All employees:', allEmployees.map(u => u.fullName))}
                                       <div style={{
                                         fontSize: '12px',
                                         color: '#666',
@@ -1984,8 +2017,19 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
           </div>
           <div className="col-xl-3">
             <div className="stickybar">
-              <div className="card" style={{ borderRadius: 16, boxShadow: '0 2px 8px #f0f1f2' }}>
-                <div className="card-body">
+              <div className="card" style={{ 
+                borderRadius: 16, 
+                boxShadow: '0 2px 8px #f0f1f2',
+                maxWidth: '100%',
+                overflow: 'hidden'
+              }}>
+                <div className="card-body" style={{
+                  padding: '16px',
+                  wordWrap: 'break-word',
+                  overflowWrap: 'break-word',
+                  wordBreak: 'break-word',
+                  maxWidth: '100%'
+                }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                     <span style={{ fontWeight: 600, fontSize: 16 }}>Task Status</span>
                     <Dropdown
@@ -2039,9 +2083,25 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                   <div>
                     <div style={{ fontWeight: 600, marginBottom: 16 }}>Details</div>
                     {/* Assignee */}
-                    <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 32 }}>
-                      <div style={{ color: '#888', fontSize: 13, minWidth: 90 }}>Assignee</div>
-                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                    <div style={{ 
+                      marginBottom: 16, 
+                      display: 'grid',
+                      gridTemplateColumns: '110px 1fr',
+                      gap: 8,
+                     
+                    }}>
+                      <div style={{ 
+                        color: '#888', 
+                        fontSize: 13,
+                        marginTop:"8px",
+                        fontWeight: 500
+                      }}>Assignee</div>
+                      <div style={{ 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        alignItems: 'flex-start',
+                        minWidth: 0
+                      }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 32 }}>
                           {editingAssignee ? (
                     <Select
@@ -2082,14 +2142,31 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                     </Select>
                           ) : (
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 32, cursor: 'pointer' }} onClick={() => setEditingAssignee(true)}>
-                              {assignee ? (
-                                <Avatar size={24} src={assignee.imageUrl} style={{ background: '#2d3e50', fontWeight: 600 }}>
-                                  {assignee.fullName?.split(' ').map(n => n[0]).join('').toUpperCase()}
-                                </Avatar>
-                              ) : (
-                                <UserOutlined style={{ fontSize: 18, color: '#888' }} />
-                              )}
-                              <span style={{ fontWeight: 500, color: assignee ? '#222' : '#bbb' }}>{assignee ? assignee.fullName : 'None'}</span>
+                              <span style={{ 
+                                fontWeight: 500, 
+                                color: assignee ? '#222' : '#bbb',
+                                wordBreak: 'break-word',
+                                maxWidth: '100%',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 8
+                              }}>
+                                {assignee ? (
+                                  <>
+                                    <Avatar size={24} src={assignee.imageUrl} style={{ background: '#2d3e50', fontWeight: 600 }}>
+                                      {assignee.fullName?.split(' ').map(n => n[0]).join('').toUpperCase()}
+                                    </Avatar>
+                                    {assignee.fullName}
+                                  </>
+                                ) : (
+                                  <>
+                                    <UserOutlined style={{ fontSize: 18, color: '#888' }} />
+                                    None
+                                  </>
+                                )}
+                              </span>
                             </div>
                           )}
                         </div>
@@ -2103,9 +2180,19 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                       </div>
                   </div>
                   {/* Task Type */}
-                  <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 32 }}>
-                    <div style={{ color: '#888', fontSize: 13, minWidth: 90 }}>Type</div>
-                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ 
+                    marginBottom: 16, 
+                    display: 'grid',
+                    gridTemplateColumns: '100px 1fr',
+                    gap: 16,
+                    alignItems: 'start'
+                  }}>
+                    <div style={{ 
+                      color: '#888', 
+                      fontSize: 13,
+                      fontWeight: 500
+                    }}>Type</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       {editingType ? (
                         <Select
                           style={{ width: 180 }}
@@ -2137,9 +2224,19 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                   </div>
 
                   {/* Priority */}
-                    <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 32 }}>
-                      <div style={{ color: '#888', fontSize: 13, minWidth: 90 }}>Priority</div>
-                      <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ 
+                      marginBottom: 16, 
+                      display: 'grid',
+                      gridTemplateColumns: '110px 1fr',
+                      gap: 8,
+                      alignItems: 'center'
+                    }}>
+                      <div style={{ 
+                        color: '#888', 
+                        fontSize: 13,
+                        fontWeight: 500
+                      }}>Priority</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         {editingPriority ? (
                     <Select
                             style={{ width: 180 }}
@@ -2181,19 +2278,46 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                       </div>
                   </div>
                   {/* Project */}
-                  <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 32 }}>
-                    <div style={{ color: '#888', fontSize: 13, minWidth: 90 }}>Project</div>
-                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ fontWeight: 500, color: '#222' }}>
+                  <div style={{ 
+                    marginBottom: 16, 
+                    display: 'grid',
+                    gridTemplateColumns: '100px 1fr',
+                    gap: 16,
+                    alignItems: 'start'
+                  }}>
+                    <div style={{ 
+                      color: '#888', 
+                      fontSize: 13,
+                      fontWeight: 500
+                    }}>Project</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ 
+                        fontWeight: 500, 
+                        color: '#222',
+                        wordBreak: 'break-word',
+                        maxWidth: '100%',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis'
+                      }}>
                         {taskData?.projectId?.projectName || taskData?.boardId?.boardTitle || '--'}
                       </span>
                     </div>
                   </div>
 
                   {/* Due Date */}
-                    <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 32 }}>
-                      <div style={{ color: '#888', fontSize: 13, minWidth: 90 }}>Due Date</div>
-                      <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ 
+                      marginBottom: 16, 
+                      display: 'grid',
+                      gridTemplateColumns: '110px 1fr',
+                      gap: 8,
+                      alignItems: 'center'
+                    }}>
+                      <div style={{ 
+                        color: '#888', 
+                        fontSize: 13,
+                        fontWeight: 500
+                      }}>Due Date</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       {editingDueDate ? (
                           <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                           <DatePicker
@@ -2213,9 +2337,19 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                     </div>
                   </div>
                   {/* Reporter */}
-                    <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 32 }}>
-                      <div style={{ color: '#888', fontSize: 13, minWidth: 90 }}>Reported By</div>
-                      <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ 
+                      marginBottom: 16, 
+                      display: 'grid',
+                      gridTemplateColumns: '110px 1fr',
+                      gap: 8,
+                      alignItems: 'center'
+                    }}>
+                      <div style={{ 
+                        color: '#888', 
+                        fontSize: 13,
+                        fontWeight: 500
+                      }}>Reported By</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         {editingReporter ? (
                     <Select
                       showSearch
@@ -2263,15 +2397,40 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                                 SF
                               </Avatar>
                             )}
-                            <span style={{ fontWeight: 500, color: reporter ? '#222' : '#bbb' }}>{reporter ? reporter.fullName : 'None'}</span>
+                            <span style={{ 
+                              fontWeight: 500, 
+                              color: reporter ? '#222' : '#bbb',
+                              wordBreak: 'break-word',
+                              maxWidth: '100%',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis'
+                            }}>{reporter ? reporter.fullName : 'None'}</span>
                   </div>
                         )}
                 </div>
                     </div>
                     {/* Tags */}
-                    <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 32 }}>
-                      <div style={{ color: '#888', fontSize: 13, minWidth: 90 }}>Tags</div>
-                      <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    <div style={{ 
+                      marginBottom: 16, 
+                      display: 'grid',
+                      gridTemplateColumns: '110px 1fr',
+                      gap: 8,
+                      alignItems: 'center'
+                    }}>
+                      <div style={{ 
+                        color: '#888', 
+                        fontSize: 13,
+                        fontWeight: 500
+                      }}>Tags</div>
+                      <div style={{ 
+                        flex: 1, 
+                        display: 'flex', 
+                        alignItems: 'flex-start', 
+                        gap: 8, 
+                        flexWrap: 'wrap',
+                        minWidth: 0,
+                        maxWidth: '100%'
+                      }}>
                         {editingTags ? (
                           <Select
                             mode="tags"
@@ -2299,7 +2458,16 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                             maxTagCount={0}
                           />
                         ) : (
-                          <div style={{ marginTop: 0, display: 'flex', gap: 8, flexWrap: 'wrap', minHeight: 32, cursor: 'pointer' }} onClick={() => { setLabelsValue(taskData.tags || []); setEditingTags(true); }}>
+                          <div style={{ 
+                            marginTop: 0, 
+                            display: 'flex', 
+                            gap: 8, 
+                            flexWrap: 'wrap', 
+                            minHeight: 32, 
+                            cursor: 'pointer',
+                            maxWidth: '100%',
+                            width: '100%'
+                          }} onClick={() => { setLabelsValue(taskData.tags || []); setEditingTags(true); }}>
                             {taskData.tags && taskData.tags.length > 0 ? (
                               taskData.tags.map((label, idx) => (
                                 <span
@@ -2318,10 +2486,11 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                                     marginBottom: 2,
                                     textAlign: 'center',
                                     boxSizing: 'border-box',
-                                    maxWidth: '150px',
+                                    maxWidth: '120px',
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap'
+                                    whiteSpace: 'nowrap',
+                                    flexShrink: 1
                                   }}
                                 >
                                   {label}
