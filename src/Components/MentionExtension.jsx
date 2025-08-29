@@ -18,9 +18,8 @@ export const MentionExtension = Extension.create({
     let currentPopup = null;
     const extension = this;
     
-    const showMentionSuggestions = (view, pos, teamMembers) => {
-      console.log('showMentionSuggestions called with:', { pos, teamMembers });
-      
+    const showMentionSuggestions = (view, pos, teamMembers, searchQuery = '') => {
+     
       // Remove existing popup
       if (currentPopup) {
         currentPopup.remove();
@@ -28,15 +27,26 @@ export const MentionExtension = Extension.create({
       }
 
       if (!teamMembers || teamMembers.length === 0) {
-        console.log('No team members available');
+        console.log('No team members available - teamMembers:', teamMembers);
         return;
       }
+
+      // Filter team members based on search query
+      const filteredMembers = searchQuery 
+        ? teamMembers.filter(member => 
+            member.fullName?.toLowerCase().includes(searchQuery.toLowerCase())
+          )
+        : teamMembers;
+
+      // Find the closest scrollable container or use document.body
+      const editorElement = view.dom.closest('.ql-editor') || view.dom.closest('.ProseMirror') || view.dom;
+      const container = editorElement.closest('.modal-body') || editorElement.closest('.ant-modal-body') || document.body;
 
       // Create suggestion popup
       const popup = document.createElement('div');
       popup.className = 'mention-suggestions';
       popup.style.cssText = `
-        position: fixed;
+        position: absolute;
         background: white;
         border: 1px solid #e0e0e0;
         border-radius: 4px;
@@ -48,7 +58,7 @@ export const MentionExtension = Extension.create({
       `;
 
       // Filter and show suggestions
-      teamMembers.slice(0, 5).forEach((member, index) => {
+      filteredMembers.forEach((member, index) => {
         const item = document.createElement('div');
         item.className = 'mention-item';
         item.style.cssText = `
@@ -97,12 +107,26 @@ export const MentionExtension = Extension.create({
         popup.appendChild(item);
       });
 
-      // Position popup
+      // Position popup relative to the container
       const coords = view.coordsAtPos(pos);
-      popup.style.left = `${coords.left}px`;
-      popup.style.top = `${coords.bottom + 5}px`;
+      const containerRect = container.getBoundingClientRect();
       
-      document.body.appendChild(popup);
+      // Calculate position relative to container
+      const left = coords.left - containerRect.left;
+      const top = coords.bottom - containerRect.top + 5;
+      
+      popup.style.left = `${left}px`;
+      popup.style.top = `${top}px`;
+      
+      // Ensure container has relative positioning
+      if (container !== document.body) {
+        const containerStyle = window.getComputedStyle(container);
+        if (containerStyle.position === 'static') {
+          container.style.position = 'relative';
+        }
+      }
+      
+      container.appendChild(popup);
       currentPopup = popup;
       console.log('Popup created and appended:', popup);
       
@@ -156,29 +180,89 @@ export const MentionExtension = Extension.create({
         key: new PluginKey('mention'),
         props: {
           handleKeyDown: (view, event) => {
+            console.log('Key pressed:', event.key, 'Extension options:', extension.options);
+            
+            // Handle backspace/delete to update suggestions
+            if (event.key === 'Backspace' || event.key === 'Delete') {
+              setTimeout(() => {
+                const { state } = view;
+                const { selection } = state;
+                const { $from } = selection;
+                
+                const textContent = $from.parent.textContent;
+                const cursorPos = $from.parentOffset;
+                const textBeforeCursor = textContent.slice(0, cursorPos);
+                const atIndex = textBeforeCursor.lastIndexOf('@');
+                
+                if (atIndex !== -1) {
+                  const afterAt = textBeforeCursor.slice(atIndex + 1);
+                  if (!afterAt.includes(' ')) {
+                    const searchQuery = afterAt;
+                    console.log('Backspace - Search query:', searchQuery);
+                    showMentionSuggestions(view, $from.pos, extension.options.teamMembers || [], searchQuery);
+                  } else if (currentPopup) {
+                    currentPopup.remove();
+                    currentPopup = null;
+                  }
+                } else if (currentPopup) {
+                  currentPopup.remove();
+                  currentPopup = null;
+                }
+              }, 10);
+            }
+            
             // Check if user typed @
             if (event.key === '@') {
-              console.log('@ key pressed');
+              console.log('@ key pressed, teamMembers:', extension.options.teamMembers);
               const { state } = view;
               const { selection } = state;
               const { $from } = selection;
               
               // Show mention suggestions after a short delay to ensure @ is inserted
               setTimeout(() => {
-                showMentionSuggestions(view, $from.pos, extension.options.teamMembers || []);
-              }, 10);
+                console.log('About to show suggestions with pos:', $from.pos);
+                showMentionSuggestions(view, $from.pos + 1, extension.options.teamMembers || []);
+              }, 50);
               
               return false; // Don't prevent default, let @ be inserted
             }
             
             return false;
           },
-          handleInput: (view, from, to, text) => {
-            // Check for @ in input
-            if (text === '@') {
-              console.log('@ input detected');
-              showMentionSuggestions(view, from, extension.options.teamMembers || []);
-            }
+          handleTextInput: (view, from, to, text) => {
+            // Handle any text input to update suggestions
+            setTimeout(() => {
+              const { state } = view;
+              const { selection } = state;
+              const { $from } = selection;
+              
+              // Get the current text content
+              const textContent = $from.parent.textContent;
+              const cursorPos = $from.parentOffset;
+              
+              // Find the @ symbol before the cursor
+              const textBeforeCursor = textContent.slice(0, cursorPos);
+              const atIndex = textBeforeCursor.lastIndexOf('@');
+              
+              if (atIndex !== -1) {
+                // Check if there's a space after @ (which would end the mention)
+                const afterAt = textBeforeCursor.slice(atIndex + 1);
+                if (!afterAt.includes(' ')) {
+                  // Extract the search query after @
+                  const searchQuery = afterAt;
+                  console.log('Search query:', searchQuery);
+                  showMentionSuggestions(view, $from.pos, extension.options.teamMembers || [], searchQuery);
+                } else if (currentPopup) {
+                  currentPopup.remove();
+                  currentPopup = null;
+                }
+              } else if (currentPopup) {
+                // No @ found, remove popup
+                currentPopup.remove();
+                currentPopup = null;
+              }
+            }, 10);
+            
             return false;
           },
                      decorations: (state) => {

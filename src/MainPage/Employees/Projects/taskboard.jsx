@@ -1968,11 +1968,18 @@ const TaskBoard = () => {
                                                                 "hidden",
                                                             }}
                                                           >
-                                                            <span className="task-date">
-                                                              {" "}
+                                                            <div 
+                                                              className="task-tags" 
+                                                              style={{
+                                                                display: "flex",
+                                                                alignItems: "center",
+                                                                gap: "4px",
+                                                                flexWrap: "nowrap"
+                                                              }}
+                                                            >
                                                               {getTaskTags(
                                                                 task.taskId
-                                                              )?.map((tag) => (
+                                                              )?.slice(0, 1).map((tag) => (
                                                                 <Tag
                                                                   key={tag}
                                                                   color={
@@ -1982,8 +1989,7 @@ const TaskBoard = () => {
                                                                     ]
                                                                   }
                                                                   style={{
-                                                                    marginBottom:
-                                                                      "4px",
+                                                                    marginBottom: 0,
                                                                     maxWidth: "100px",
                                                                     overflow: "hidden",
                                                                     textOverflow: "ellipsis",
@@ -1994,13 +2000,27 @@ const TaskBoard = () => {
                                                                   {tag}
                                                                 </Tag>
                                                               ))}
-                                                            </span>
+                                                              {getTaskTags(task.taskId)?.length > 1 && (
+                                                                <Tag
+                                                                  color="default"
+                                                                  style={{
+                                                                    marginBottom: 0,
+                                                                    fontSize: "11px",
+                                                                    padding: "0 4px",
+                                                                    height: "22px",
+                                                                    lineHeight: "20px"
+                                                                  }}
+                                                                >
+                                                                  +{getTaskTags(task.taskId).length - 1}
+                                                                </Tag>
+                                                              )}
+                                                            </div>
                                                           </span>
                                                           {getTaskPriority(task.taskId) && (
                                                             <div
                                                               style={{
                                                                 position: "absolute",
-                                                                bottom: "8px",
+                                                                bottom: "0px",
                                                                 right: "8px",
                                                                 fontSize: "10px",
                                                                 fontWeight: "500",
@@ -2909,58 +2929,85 @@ const TaskBoard = () => {
                     </div>
                   </div>
                   <div className="col-12">
-                    <Form.Item name="assignee" label="Assignee" className="custom-border">
-                      <Select
-                        showSearch
-                        placeholder="Select assignee"
-                        allowClear
-                        optionFilterProp="children"
-                        filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                      >
-                        <Select.Option value="">Unassigned</Select.Option>
-                        {allEmployees.map(user => (
-                          <Select.Option key={user._id} value={user._id}>{user.fullName}</Select.Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
-                  </div>
-                  <div className="col-12">
-                    <Form.Item name="priority" label="Priority" className="custom-border">
-                      <Select placeholder="Select priority" allowClear>
-                        <Select.Option value="Highest">Highest</Select.Option>
-                        <Select.Option value="High">High</Select.Option>
-                        <Select.Option value="Medium">Medium</Select.Option>
-                        <Select.Option value="Low">Low</Select.Option>
-                        <Select.Option value="Lowest">Lowest</Select.Option>
-                      </Select>
-                    </Form.Item>
-                  </div>
-                  <div className="col-12">
-                    <Form.Item name="dueDate" label="Due date" className="custom-border">
-                      {editingDueDate ? (
-                        <span style={{display: 'flex', alignItems: 'center', gap: 8}}>
-                          <DatePicker
-                            value={dueDateValue}
-                            onChange={setDueDateValue}
+                    <div className="form-group">
+                      <label>
+                        Assignee :
+                      </label>
+                      <div style={{ position: "relative" }} id="assigneeAreaTaskboard">
+                        <Form.Item
+                          name='assignee'
+                          className='custom-border'
+                        >
+                          <Select
+                            showSearch
+                            placeholder="Select assignee"
                             allowClear
-                            style={{minWidth: 120}}
+                            optionFilterProp="children"
+                            filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                            className="custom-select custom-normal"
+                            getPopupContainer={() =>
+                              document.getElementById("assigneeAreaTaskboard")
+                            }
+                          >
+                            <Select.Option value="">Unassigned</Select.Option>
+                            {allEmployees.map(user => (
+                              <Select.Option key={user._id} value={user._id}>{user.fullName}</Select.Option>
+                            ))}
+                          </Select>
+                        </Form.Item>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-12">
+                    <div className="form-group">
+                      <label>
+                        Priority :
+                      </label>
+                      <div style={{ position: "relative" }} id="priorityAreaTaskboard">
+                        <Form.Item
+                          name='priority'
+                          className='custom-border'
+                        >
+                          <Select
+                            placeholder="Select priority"
+                            allowClear
+                            className="custom-select custom-normal"
+                            getPopupContainer={() =>
+                              document.getElementById("priorityAreaTaskboard")
+                            }
+                          >
+                            <Select.Option value="Highest">Highest</Select.Option>
+                            <Select.Option value="High">High</Select.Option>
+                            <Select.Option value="Medium">Medium</Select.Option>
+                            <Select.Option value="Low">Low</Select.Option>
+                            <Select.Option value="Lowest">Lowest</Select.Option>
+                          </Select>
+                        </Form.Item>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-12">
+                    <div className="form-group">
+                      <label>
+                        Due date :
+                      </label>
+                      <div style={{ position: "relative" }} id="dueDateAreaTaskboard">
+                        <Form.Item
+                          name='dueDate'
+                          className='custom-border'
+                        >
+                          <DatePicker
+                            allowClear
+                            placeholder="Select due date"
+                            className="custom-select custom-normal"
+                            style={{ width: '100%' }}
+                            getPopupContainer={() =>
+                              document.getElementById("dueDateAreaTaskboard")
+                            }
                           />
-                          <CheckOutlined style={{color: '#52c41a', cursor: 'pointer'}} onClick={() => {
-                            form2.setFieldsValue({ dueDate: dueDateValue });
-                            setEditingDueDate(false);
-                            setOriginalDueDate(dueDateValue);
-                          }} />
-                          <CloseOutlined style={{color: '#f5222d', cursor: 'pointer'}} onClick={() => {
-                            setEditingDueDate(false);
-                            setDueDateValue(originalDueDate);
-                          }} />
-                        </span>
-                      ) : (
-                        <span style={{cursor: 'pointer'}} onClick={() => setEditingDueDate(true)}>
-                          {dueDateValue ? dueDateValue.format('YYYY-MM-DD') : 'None'}
-                        </span>
-                      )}
-                    </Form.Item>
+                        </Form.Item>
+                      </div>
+                    </div>
                   </div>
 
                 </div>
