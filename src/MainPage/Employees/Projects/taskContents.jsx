@@ -1077,6 +1077,25 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
     }
   }, [taskData, allEmployees]);
 
+  const handleDownload = async (file) => {
+    try {
+      const response = await fetch(file.imageUrl, { mode: "cors" });
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = file.fileName; // ✅ keeps same filename & extension
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Download failed:", error);
+    }
+  };
+
   // In the return, show a spinner if initialLoading is true
   if (initialLoading) return <Spin size="large" style={{margin: '100px auto', display: 'block'}} />;
 
@@ -1445,36 +1464,33 @@ const TaskContent = ({taskDatas={}, closeModal}) => {
                                     zIndex: 2 
                                   }}>
                                       <Tooltip title="Download">
-                                        <a
-                                          href={file.imageUrl}
-                                          download={file.fileName}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          style={{
-                                            background: '#fff',
-                                            borderRadius: '50%',
-                                            width: 32,
-                                            height: 32,
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                          transition: 'all 0.2s',
-                                            cursor: 'pointer',
-                                          textDecoration: 'none',
-                                          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                                        }}
-                                        onMouseEnter={(e) => {
-                                          e.currentTarget.style.transform = 'scale(1.1)';
-                                          e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                          e.currentTarget.style.transform = 'scale(1)';
-                                          e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
-                                          }}
-                                        >
-                                      <DownloadOutlined style={{ fontSize: 16, color: '#1890ff' }} />
-                                        </a>
-                                      </Tooltip>
+      <div
+        onClick={() => handleDownload(file)}
+        style={{
+          background: "#fff",
+          borderRadius: "50%",
+          width: 32,
+          height: 32,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          transition: "all 0.2s",
+          cursor: "pointer",
+          textDecoration: "none",
+          boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = "scale(1.1)";
+          e.currentTarget.style.boxShadow = "0 4px 8px rgba(0,0,0,0.15)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = "scale(1)";
+          e.currentTarget.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
+        }}
+      >
+        <DownloadOutlined style={{ fontSize: 16, color: "#1890ff" }} />
+      </div>
+    </Tooltip>
                                       <Dropdown overlay={menu} trigger={['click']}>
                                       <div
                                           style={{
