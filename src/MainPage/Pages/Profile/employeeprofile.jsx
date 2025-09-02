@@ -80,6 +80,7 @@ const EmployeeProfile = () => {
   const [loader, setLoader] = useState(false);
   const [imageLoader, setImageLoader] = useState(false);
   const [dataLoading, setDataLoading] = useState(false);
+  const [verifyEmpLoader, setVerifyEmpLoader] = useState(false);
   const [image, setImage] = useState("");
   const [emergValue, setEmergValue] = useState(null);
   const [allData, setAllData] = useState();
@@ -727,6 +728,34 @@ const EmployeeProfile = () => {
     },
   ];
 
+  const verifyEmployee = () => {
+    setVerifyEmpLoader(true);
+    apiServices(
+      "PUT",
+      "user/resend-verification-mail",
+      { email: allData?.email },
+      user_state
+    )
+      .then((res) => {
+        if (res?.data?.success === true) {
+          message.success("Verification email sent successfully!");
+          setVerifyEmpLoader(false);
+        }
+      })
+      .catch((err) => {
+        setVerifyEmpLoader(false);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Failed to send verification email"
+          }!`
+        );
+      });
+  };
+
   return (
     <>
       <div className="page-wrapper">
@@ -1016,6 +1045,22 @@ const EmployeeProfile = () => {
                                   </Link> */}
                                 </div>
                               </li>
+                              {location?.pathname !== "/profile" &&
+                                (role === "admin" || permissions?.updateUser) &&
+                                allData?.verified === false && (
+                                  <a
+                                    href="javascript:void(0)"
+                                    className="btn add-btn"
+                                    // style={{ marginLeft: "5px" }}
+                                    onClick={() => verifyEmployee()}
+                                  >
+                                    {verifyEmpLoader ? (
+                                      <Spin size="small" indicator={antIcon} />
+                                    ) : (
+                                      t("Re-send Verification Code")
+                                    )}
+                                  </a>
+                                )}
                             </ul>
                           </div>
                         </div>
