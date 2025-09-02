@@ -18,7 +18,6 @@ const NavigationBar = (props) => {
   const [isContactUs, setIsContactUs] = useState(false);
 
   useEffect(() => {
-    console.log("location", location);
     if (
       location.pathname === "/terms-and-conditions" ||
       location.pathname === "/privacy-policy" ||

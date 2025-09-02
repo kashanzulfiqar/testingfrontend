@@ -51,7 +51,6 @@ const EmployeeSalary = () => {
   const user_state = useSelector((state) => state.user.loginvalue);
   const permissions = useSelector((state) => state?.permissionsSlice?.data);
   const role = user_state?.user?.role
-  console.log(permissions,user_state)
   const nav = useNavigate();
 
   const [form] = Form.useForm();
