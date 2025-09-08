@@ -23,7 +23,7 @@ import { useSelector } from "react-redux";
 import { user_icon } from "../../../Entryfile/imagepath";
 import moment from 'moment';
 import LikeIcon from "../../../assets/Icons/Like.svg";
-import EmojiIcon from "../../../assets/Icons/emoji.svg";
+import EmojiIcon from "../../../assets/Icons/emojicon.svg";
 import EditIcon from "../../../assets/Icons/Edit.svg";
 import { BASE_URL } from '../../../config/apiConfig';
 
