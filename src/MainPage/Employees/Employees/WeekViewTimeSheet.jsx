@@ -306,7 +306,6 @@ function WeekViewTimeSheet({
       submittedForApproval: false,
       status: "No-Status",
     };
-    console.log("u_data", u_data);
     setLoader(true);
     apiServices("PUT", "timesheet", u_data, user_state)
       .then((res) => {

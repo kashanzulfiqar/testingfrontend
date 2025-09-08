@@ -80,6 +80,7 @@ const EmployeeProfile = () => {
   const [loader, setLoader] = useState(false);
   const [imageLoader, setImageLoader] = useState(false);
   const [dataLoading, setDataLoading] = useState(false);
+  const [verifyEmpLoader, setVerifyEmpLoader] = useState(false);
   const [image, setImage] = useState("");
   const [emergValue, setEmergValue] = useState(null);
   const [allData, setAllData] = useState();
@@ -118,7 +119,6 @@ const EmployeeProfile = () => {
   const getEmployeeOverview = () => {
     if (location.pathname.startsWith("/profile/employee-profile")) {
       const userId = location.pathname.split("/")[3]; // extract the userId from the pathname
-      console.log("no data", allDataLocal, user_data, userId);
       setDataLoading(true);
       apiServices(
         "GET",
@@ -148,7 +148,6 @@ const EmployeeProfile = () => {
           );
         });
     } else if (location.pathname === "/profile") {
-      console.log("all data available", allDataLocal, user_data);
       setDataLoading(true);
       apiServices("GET", `user/employee-overview`, null, user_state)
         .then((res) => {
@@ -272,9 +271,7 @@ const EmployeeProfile = () => {
         delete d[key];
       }
     });
-    console.log("allData", allData, user_state);
     if (allData?._id === user_state?.user?._id) {
-      console.log("inside ===");
       localStorage.setItem(
         "updated_user",
         JSON.stringify({ imageUrl: d?.imageUrl, fullName: d?.fullName })
@@ -285,7 +282,6 @@ const EmployeeProfile = () => {
           user_data: user_data,
         },
       });
-      console.log("inside ===", user_data);
     }
     const newData = { ...allData };
     delete newData.password;
@@ -732,6 +728,34 @@ const EmployeeProfile = () => {
     },
   ];
 
+  const verifyEmployee = () => {
+    setVerifyEmpLoader(true);
+    apiServices(
+      "PUT",
+      "user/resend-verification-mail",
+      { email: allData?.email },
+      user_state
+    )
+      .then((res) => {
+        if (res?.data?.success === true) {
+          message.success("Verification email sent successfully!");
+          setVerifyEmpLoader(false);
+        }
+      })
+      .catch((err) => {
+        setVerifyEmpLoader(false);
+        message.error(
+          `${
+            err?.response?.data?.msg
+              ? err?.response?.data?.msg
+              : err?.response?.data?.validation?.body?.message
+              ? err?.response?.data?.validation?.body?.message
+              : "Failed to send verification email"
+          }!`
+        );
+      });
+  };
+
   return (
     <>
       <div className="page-wrapper">
@@ -1021,6 +1045,22 @@ const EmployeeProfile = () => {
                                   </Link> */}
                                 </div>
                               </li>
+                              {location?.pathname !== "/profile" &&
+                                (role === "admin" || permissions?.updateUser) &&
+                                allData?.verified === false && (
+                                  <a
+                                    href="javascript:void(0)"
+                                    className="btn add-btn"
+                                    // style={{ marginLeft: "5px" }}
+                                    onClick={() => verifyEmployee()}
+                                  >
+                                    {verifyEmpLoader ? (
+                                      <Spin size="small" indicator={antIcon} />
+                                    ) : (
+                                      t("Re-send Verification Code")
+                                    )}
+                                  </a>
+                                )}
                             </ul>
                           </div>
                         </div>

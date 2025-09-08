@@ -108,8 +108,6 @@ const OtpModal = ({ data, open, handleClose }) => {
             localStorage.clear();
             sessionStorage.clear()
             const userData = res?.data?.result?.user;
-            console.log('admin',userData.superAdmin)
-            console.log(res?.data?.result);
             //dispatch(getPermissionList({ roleId: res?.data?.result?.user?.roleId, athtoken: res?.data?.result?.access_token?.accessToken }))
             dispatch(loginSuccess(res?.data?.result));
             dispatch(superAdmin(res?.data?.result?.user?.superAdmin))

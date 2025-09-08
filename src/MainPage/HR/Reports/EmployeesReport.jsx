@@ -39,7 +39,6 @@ const EmployeesReport = () => {
       .then((res) => {
         // console.log(res?.data);
         if (res?.data?.success === true) {
-          console.log(res?.data);
           setAllData(res?.data);
           setLoader(false);
           setCardLoader(false);

@@ -860,7 +860,7 @@ const JobDetails = () => {
               }
             }}
           initialValues={{
-            positions: 1,
+              positions: 1,
               postingPlatforms: ["WEBSITE"],
               status: "ACTIVE",
             }}
@@ -1092,7 +1092,7 @@ const JobDetails = () => {
         </Modal>
 
         <style jsx>{`
-        /* Ensure JobDetails Add Job modal looks identical to Jobs.jsx */
+          /* Ensure JobDetails Add Job modal looks identical to Jobs.jsx */
           .custom-modal .ant-modal-content {
             overflow: visible;
           }
