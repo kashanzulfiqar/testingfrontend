@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   Card,
@@ -41,12 +41,19 @@ import RightArrow from "../../assets/iconsRecruitment/RightArrow.svg";
 import description from "../../assets/iconsRecruitment/description.svg";
 import colored from "../../assets/iconsRecruitment/Colored.svg";
 import starIcon from "../../assets/iconsRecruitment/star.svg";
+import media from "../../assets/iconsRecruitment/Media.svg";
+import gallery from "../../assets/iconsRecruitment/Gallery.svg";
+import copyLink from "../../assets/iconsRecruitment/CopyLink.svg";
+import emoji from "../../assets/iconsRecruitment/Emoji.svg";
 import { Helmet } from "react-helmet";
 import list from "../../assets/iconsRecruitment/vertical.svg";
 import previewIcon from "../../assets/iconsRecruitment/previewIcon.svg";
 import downloadIcon from "../../assets/iconsRecruitment/downloadIcon.svg";
 import { user_icon } from "../../Entryfile/imagepath";
+import DOMPurify from "dompurify";
+import RichTextEditor from "../../Components/RichTextEditor";
 import InterviewFeedbackDisplay from "./InterviewFeedbackDisplay";
+import { apiUploadToS3 } from "../../Services/uploadImage";
 
 const { TextArea } = Input;
 
@@ -60,9 +67,119 @@ const TaskDetails = () => {
   const [feedbackForm] = Form.useForm();
   const [submitting, setSubmitting] = useState(false);
   const [statusUpdateLoading, setStatusUpdateLoading] = useState(false);
+  const [comment, setComment] = useState("");
+  const [commentRichText, setCommentRichText] = useState("");
+  const [postingComment, setPostingComment] = useState(false);
+  const [comments, setComments] = useState([]);
+  const [commentsByTask, setCommentsByTask] = useState({}); // taskId -> comments array
+  const [loadingCommentsFor, setLoadingCommentsFor] = useState(null); // taskId
+  const renderTextWithLinks = (text) => {
+    if (!text) return null;
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    return text.split(urlRegex).map((chunk, idx) => {
+      if (/^https?:\/\//.test(chunk)) {
+        return (
+          <a key={`l-${idx}`} href={chunk} target="_blank" rel="noreferrer">
+            {chunk}
+          </a>
+        );
+      }
+      const parts = chunk.split("\n");
+      return parts.map((line, i) => (
+        <React.Fragment key={`t-${idx}-${i}`}>
+          {i > 0 && <br />}
+          {line}
+        </React.Fragment>
+      ));
+    });
+  };
 
+  const buildCommentHTML = (text) => {
+    if (!text) return "";
+    let html = String(text);
+    // Highlight @mentions
+    html = html.replace(
+      /@([a-zA-Z]+(?:\s+[a-zA-Z]+)?)/g,
+      '<span style="background-color: #e6f7ff; color: #1890ff; padding: 2px 4px; border-radius: 4px; font-weight: 500;">@$1</span>'
+    );
+    // Linkify plain URLs
+    html = html.replace(
+      /(https?:\/\/[^\s<]+[^\s<\.)])/g,
+      '<a href="$1" target="_blank" rel="noreferrer">$1</a>'
+    );
+    // Preserve newlines if present
+    html = html.replace(/\n/g, "<br/>");
+    // Sanitize
+    const safe = DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: [
+        "a",
+        "span",
+        "br",
+        "p",
+        "strong",
+        "em",
+        "ul",
+        "ol",
+        "li",
+        "b",
+        "i",
+        "u",
+        "div"
+      ],
+      ALLOWED_ATTR: ["href", "target", "rel", "style"]
+    });
+    return safe;
+  };
+
+  const extractMentionIdsFromText = (text) => {
+    if (!text || !Array.isArray(task?.taskReviewers)) return [];
+    const foundNames = [];
+    const mentionRegex = /@([a-zA-Z]+(?:\s+[a-zA-Z]+)?)/g;
+    let match;
+    while ((match = mentionRegex.exec(text)) !== null) {
+      foundNames.push(match[1].toLowerCase());
+    }
+    if (foundNames.length === 0) return [];
+    const reviewerList = task.taskReviewers || [];
+    const ids = reviewerList
+      .filter((rev) => {
+        const full = (rev.fullName || '').toLowerCase();
+        const parts = full.split(' ').filter(Boolean);
+        const first = parts[0] || '';
+        const firstTwo = parts.slice(0, 2).join(' ');
+        return (
+          foundNames.includes(full) ||
+          foundNames.includes(firstTwo) ||
+          foundNames.includes(first)
+        );
+      })
+      .map((rev) => rev._id)
+      .filter(Boolean);
+    // de-duplicate
+    return Array.from(new Set(ids));
+  };
+  const [attachments, setAttachments] = useState([]); // {url, fileName, type}
+  const [uploadingAttachments, setUploadingAttachments] = useState(false);
+  const mediaInputRef = useRef(null);
+  const galleryInputRef = useRef(null);
+
+  const ALLOWED_FILE_TYPES = [
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/zip",
+    "application/x-zip-compressed",
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+  ];
   useEffect(() => {
     fetchTaskDetails();
+  }, [id]);
+
+  useEffect(() => {
+    // Load comments for this task on mount/id change
+    fetchTaskComments(id);
   }, [id]);
 
   const fetchTaskDetails = async () => {
@@ -93,6 +210,10 @@ const TaskDetails = () => {
         console.log("Current user:", authState?.user);
         console.log("Task reviewers:", response.data.data.taskReviewers);
         setTask(response.data.data);
+        // If backend provides comments with task, seed local state
+        if (Array.isArray(response?.data?.data?.comments)) {
+          setComments(response.data.data.comments);
+        }
       } else {
         console.error("Failed to fetch task details:", response?.data);
         message.error(
@@ -117,6 +238,181 @@ const TaskDetails = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCommentSubmit = async (taskId) => {
+    if ((!comment || comment.trim().length === 0) && attachments.length === 0) {
+      message.warning("Please enter a comment");
+      return;
+    }
+
+    const token =
+      localStorage.getItem("token") || authState?.access_token?.accessToken;
+
+    if (!token) {
+      message.error("Authentication required");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      setPostingComment(true);
+      const linksText = attachments.length
+        ? "\n" + attachments.map((a) => a.url).join("\n")
+        : "";
+      const rawText = commentRichText && commentRichText.trim().length > 0 ? commentRichText : comment;
+      const mentionsFromText = extractMentionIdsFromText(`${(rawText || '').trim()}${linksText}`);
+      const payload = {
+        taskId: taskId,
+        userId: authState?.user?._id,
+        userName: authState?.user?.fullName || authState?.user?.email,
+        text: `${(rawText || "").trim()}${linksText}`.trim(),
+        mentions: mentionsFromText,
+      };
+
+      const response = await apiServices(
+        "POST",
+        `tasks/${taskId}/comments`,
+        payload,
+        {
+          access_token: {
+            accessToken: token,
+          },
+        }
+      );
+
+      if (response?.data?.status || response?.data?.success) {
+        message.success("Comment added");
+        const created = response?.data?.data || payload;
+        setComments((prev) => [created, ...prev]);
+        setCommentsByTask((prev) => ({
+          ...prev,
+          [taskId]: [created, ...(prev[taskId] || [])],
+        }));
+        setComment("");
+        setCommentRichText("");
+        setAttachments([]);
+      } else {
+        message.error(response?.data?.message || "Failed to add comment");
+      }
+    } catch (error) {
+      console.error("Error posting comment:", error);
+      message.error("Failed to add comment");
+    } finally {
+      setPostingComment(false);
+    }
+  };
+
+  const fetchTaskComments = async (taskId) => {
+    const token =
+      localStorage.getItem("token") || authState?.access_token?.accessToken;
+    if (!token) return;
+    try {
+      setLoadingCommentsFor(taskId);
+      const response = await apiServices(
+        "GET",
+        `tasks/${taskId}/comments`,
+        null,
+        {
+          access_token: {
+            accessToken: token,
+          },
+        }
+      );
+      if (response?.data?.success || response?.data?.status) {
+        const list = response?.data?.comments || [];
+        setCommentsByTask((prev) => ({ ...prev, [taskId]: list }));
+      }
+    } catch (err) {
+      // non-blocking
+    } finally {
+      setLoadingCommentsFor(null);
+    }
+  };
+
+  const handleGalleryClick = () => {
+    if (galleryInputRef.current) galleryInputRef.current.click();
+  };
+
+  const handleMediaClick = () => {
+    if (mediaInputRef.current) mediaInputRef.current.click();
+  };
+
+  const validateAttachmentFile = (file) => {
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    if (file.size > MAX_FILE_SIZE) {
+      message.error("File size should not exceed 10MB");
+      return false;
+    }
+    // Check file type
+    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+      message.error(
+        "Only PDF, DOC, JPG, PNG, JPEG, DOCX, and ZIP files are allowed"
+      );
+      return false;
+    }
+    return true;
+  };
+
+  const uploadFiles = async (fileList) => {
+    if (!fileList || fileList.length === 0) return;
+    setUploadingAttachments(true);
+    const uploaded = [];
+    try {
+      for (let i = 0; i < fileList.length; i++) {
+        const file = fileList[i];
+        const isValid = validateAttachmentFile(file);
+        if (!isValid) {
+          continue;
+        }
+        const res = await apiUploadToS3(file);
+        const url = res?.data?.result?.secure_url;
+        if (url) {
+          uploaded.push({ url, fileName: file.name, type: file.type });
+        }
+      }
+      if (uploaded.length > 0) {
+        setAttachments((prev) => [...uploaded, ...prev]);
+        message.success(`${uploaded.length} file(s) attached`);
+      }
+    } catch (e) {
+      console.error("Attachment upload failed", e);
+      message.error("Failed to upload attachment(s)");
+    } finally {
+      setUploadingAttachments(false);
+    }
+  };
+
+  const handleGalleryChange = async (e) => {
+    const files = e.target.files;
+    await uploadFiles(files);
+    e.target.value = ""; // reset
+  };
+
+  const handleMediaChange = async (e) => {
+    const files = e.target.files;
+    await uploadFiles(files);
+    e.target.value = ""; // reset
+  };
+
+  const handleCopyLink = async () => {
+    const url = window.prompt("Paste a link to attach");
+    if (!url) return;
+    try {
+      // basic validation
+      const parsed = new URL(url);
+      setAttachments((prev) => [
+        { url: parsed.href, fileName: parsed.href, type: "link" },
+        ...prev,
+      ]);
+      message.success("Link attached");
+    } catch (e) {
+      message.error("Please enter a valid URL");
+    }
+  };
+
+  const handleEmoji = () => {
+    setComment((prev) => `${prev} 🙂`);
   };
 
   const getStatusColor = (status) => {
@@ -770,6 +1066,36 @@ const TaskDetails = () => {
             </div>
           )}
 
+          {/* Comments - always visible if any for this task */}
+          {(commentsByTask[id] && commentsByTask[id].length > 0) && (
+            <div style={{ marginTop: "10px" }}>
+              {commentsByTask[id].map((c) => (
+                <div
+                  key={c._id || c.createdAt}
+                  style={{
+                    background: "#f5f5f5",
+                    borderRadius: "10px",
+                    padding: "12px 14px",
+                    marginTop: "10px",
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                      <img src={c.userImageUrl || user_icon} style={{ height: "40px", width: "40px", borderRadius: "50%" }} />
+                      <div style={{fontSize: 16, fontWeight: 500, color: "#222" }}>{c.userName}</div>
+                    </div>
+                    <div style={{ fontSize: 14, fontWeight: 450, color: "#666" }}>
+                      {c.createdAt ? moment(c.createdAt).format("ddd, MMM DD [at] hh:mm a") : ""}
+                    </div>
+                  </div>
+                  <div style={{ marginTop: 6, color: "#222" }}
+                    dangerouslySetInnerHTML={{ __html: buildCommentHTML(c.text) }}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+
           {(task.status === "REVIEWED" ||
             task.status === "COMPLETED" ||
             task.status === "REJECTED") && (
@@ -782,33 +1108,186 @@ const TaskDetails = () => {
         </div>
 
         {/* comments if needed! */}
-        {/* <div style={{display:'flex',gap:'15px'}}>
+        <div style={{ display: "flex", gap: "15px" }}>
         <div>
-          <img src={MainInterviewer} style={{height:'40px' ,width:"40px" ,borderRadius:'50%' ,border:"1px solid transparent"}}></img>
+            <img
+              src={task?.createdBy?.imageUrl || user_icon}
+              style={{
+                height: "40px",
+                width: "40px",
+                borderRadius: "50%",
+                border: "1px solid transparent",
+              }}
+            ></img>
         </div>
-        <div style={{background:'#ffffff' ,border:'1px solid transparent' , borderRadius:'8px',padding:'10px 20px 15px 10px' , width:'100%'}}>
-          <TextArea
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            placeholder="Enter Comment and hit enter"
-            autoSize={{ minRows: 1 }}
-            style={{border:"none", fontSize:"16px" ,fontWeight:"450"}}
-          />
-          <div style={{display:'flex' ,justifyContent:"space-between",alignItems:'center' ,marginTop:"10px"}}>
+          <div
+            style={{
+              background: "#ffffff",
+              border: "1px solid transparent",
+              borderRadius: "8px",
+              padding: "10px 20px 15px 10px",
+              width: "100%",
+            }}
+          >
+          <div style={{ border: "1px solid #e1e5e9", borderRadius: 8, overflow: "hidden", padding: "10px", background: "white" }}>
+            <RichTextEditor
+              content={commentRichText}
+              onChange={setCommentRichText}
+              users={(task?.taskReviewers || []).map((u) => ({ ...u }))}
+            />
+            <div style={{ fontSize: "12px", color: "#666", marginTop: "8px", fontStyle: "italic" }}>
+              Tip: Type @ to mention task reviewers
+            </div>
+          </div>
+            {attachments.length > 0 && (
+              <div style={{ marginTop: "8px" }}>
+                <div
+                  style={{
+                    fontSize: "12px",
+                    color: "#666",
+                    marginBottom: "6px",
+                  }}
+                >
+                  Attachments:
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                  {attachments.map((a, idx) => (
+                    <div
+                      key={`${a.url}-${idx}`}
+                      style={{
+                        background: "#f7f7f8",
+                        border: "1px solid #eef0f1",
+                        borderRadius: "6px",
+                        padding: "6px 10px",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                      }}
+                    >
+                      <a
+                        href={a.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{
+                          color: "#212529",
+                          textDecoration: "underline",
+                          maxWidth: "240px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {a.fileName || a.url}
+                      </a>
+                      <button
+                        onClick={() =>
+                          setAttachments((prev) =>
+                            prev.filter((_, i) => i !== idx)
+                          )
+                        }
+                        style={{
+                          border: "none",
+                          background: "transparent",
+                          color: "#ff4d4f",
+                          cursor: "pointer",
+                        }}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginTop: "10px",
+              }}
+            >
             <div className="d-flex gap-1 ms-3">
-              <button style={{border:"2px solid #f7f7f8" ,borderRadius:"4px" ,height:"35px" ,width:"35px"}}><img src={media}></img></button>
-              <button style={{border:"2px solid #f7f7f8" ,borderRadius:"4px" ,height:"35px" ,width:"35px"}}><img src={gallery}></img></button>
-              <button style={{border:"2px solid #f7f7f8" ,borderRadius:"4px" ,height:"35px" ,width:"35px"}}><img src={emoji}></img></button>
-              <button style={{border:"2px solid #f7f7f8" ,borderRadius:"4px" ,height:"35px" ,width:"35px"}}><img src={copyLink}></img></button>
+                <input
+                  ref={mediaInputRef}
+                  type="file"
+                  multiple
+                  style={{ display: "none" }}
+                  onChange={handleMediaChange}
+                />
+                <input
+                  ref={galleryInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  style={{ display: "none" }}
+                  onChange={handleGalleryChange}
+                />
+                <button
+                  onClick={handleMediaClick}
+                  disabled={uploadingAttachments}
+                  style={{
+                    border: "2px solid #f7f7f8",
+                    borderRadius: "4px",
+                    height: "35px",
+                    width: "35px",
+                  }}
+                >
+                  <img src={media}></img>
+                </button>
+                <button
+                  onClick={handleGalleryClick}
+                  disabled={uploadingAttachments}
+                  style={{
+                    border: "2px solid #f7f7f8",
+                    borderRadius: "4px",
+                    height: "35px",
+                    width: "35px",
+                  }}
+                >
+                  <img src={gallery}></img>
+                </button>
+                <button
+                  onClick={handleEmoji}
+                  style={{
+                    border: "2px solid #f7f7f8",
+                    borderRadius: "4px",
+                    height: "35px",
+                    width: "35px",
+                  }}
+                >
+                  <img src={emoji}></img>
+                </button>
+                <button
+                  onClick={handleCopyLink}
+                  style={{
+                    border: "2px solid #f7f7f8",
+                    borderRadius: "4px",
+                    height: "35px",
+                    width: "35px",
+                  }}
+                >
+                  <img src={copyLink}></img>
+                </button>
             </div>
             <div>
-              <Button onClick={handleCommentSubmit} style={{color:"#ff9244", border:'1px solid #ff9244', borderRadius:"8px", fontSize:"16px" ,fontWeight:"450"}}>
+                <Button
+                  onClick={() => handleCommentSubmit(id)}
+                  loading={postingComment || uploadingAttachments}
+                  style={{
+                    color: "#ff9244",
+                    border: "1px solid #ff9244",
+                    borderRadius: "8px",
+                    fontSize: "16px",
+                    fontWeight: "450",
+                  }}
+                >
                 Comment
               </Button>
             </div>
           </div>
         </div>
-      </div> */}
+      </div>
 
         <Modal
           title="Add Feedback"
