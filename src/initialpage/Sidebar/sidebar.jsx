@@ -2292,7 +2292,7 @@ const Sidebar = (props) => {
                     )}
                     {/* <Link to="/app/employees/leads"><i className="la la-user-secret" /> <span>Leads</span> </Link> */}
                   </li>
-                  {permissions?.recruitmentManagement && (
+                  {(user_state?.role === "admin" || permissions?.recruitmentManagement) && (
                     <li className="submenu">
                       <a
                         href="javascript:"
@@ -2326,7 +2326,7 @@ const Sidebar = (props) => {
                       )}
                     </li>
                   )}
-                  {permissions?.recruitmentManagement && (
+                  {(user_state?.role === "admin" || permissions?.recruitmentManagement) && (
                     <li
                       className={
                         pathname.includes("tickets")

@@ -53,10 +53,13 @@ const CreateTaskModal = ({ isVisible, onCancel, onSubmit, candidate, authState }
       );
 
       if (response?.data?.success === true) {
+        console.log("response employee");
         const emps = response?.data?.User || [];
+        console.log("emps", emps);
         const sortedData = emps
           .slice()
           .sort((a, b) => a.fullName.localeCompare(b.fullName));
+        console.log("sortedData employee", sortedData);
         setEmployees(sortedData);
       } else {
         throw new Error(response?.data?.message || 'Failed to fetch employees');
