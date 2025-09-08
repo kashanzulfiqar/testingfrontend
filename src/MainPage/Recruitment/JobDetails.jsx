@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { Tabs, Spin, message, Tag, Button, Modal, Select } from "antd";
+import { Tabs, Spin, message, Tag, Button, Modal, Select, Form, Input, InputNumber, Checkbox } from "antd";
 import { apiServices } from "../../Services/apiServices";
 import { useSelector } from "react-redux";
 import {
@@ -16,7 +16,7 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import moment from "moment";
-import CreateCandidateModal from "./CreateCandidateModal";
+// Removed Add Candidate feature; using Add New Job modal instead
 import circle from "../../assets/iconsRecruitment/circle.svg";
 import backBtn from "../../assets/iconsRecruitment/arrow-left.svg";
 import { title } from "process";
@@ -34,6 +34,8 @@ import description from "../../assets/iconsRecruitment/description.svg";
 import interview from "../../assets/iconsRecruitment/interview.svg";
 import { Helmet } from "react-helmet";
 
+const { TextArea } = Input;
+
 const JobDetails = () => {
   const { jobId } = useParams();
   const navigate = useNavigate();
@@ -42,10 +44,13 @@ const JobDetails = () => {
   const [candidates, setCandidates] = useState([]);
   const authState = useSelector((state) => state.user.loginvalue);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [modalForm] = Form.useForm();
+  const [submitting, setSubmitting] = useState(false);
   const [active, setActive] = useState("candidates");
   const [jobStatus, setJobStatus] = useState("");
   const [statusLoading, setStatusLoading] = useState(false);
   const [isOpen, setisOpen] = useState(false);
+  const [departments, setDepartments] = useState([]);
 
   console.log("JobDetails component mounted with jobId:", jobId);
 
@@ -54,6 +59,15 @@ const JobDetails = () => {
     fetchJobDetails();
     fetchJobCandidates();
   }, [jobId]);
+
+  useEffect(() => {
+    // Fetch departments for Add Job modal
+    apiServices("GET", "team/view-team", null, authState).then((res) => {
+      if (res?.data?.success === true) {
+        setDepartments(res?.data?.Team || []);
+      }
+    });
+  }, [isModalVisible]);
 
   useEffect(() => {
     // Set job status from job details when data is loaded
@@ -139,23 +153,17 @@ const JobDetails = () => {
     }
   };
 
-  const handleAddCandidate = () => {
+  const handleAddJob = () => {
     setIsModalVisible(true);
-    // Add modal-open class to body to prevent scrolling
-    document.body.classList.add("modal-open");
   };
 
   const handleModalCancel = () => {
+    modalForm.resetFields();
     setIsModalVisible(false);
-    // Remove modal-open class from body when modal is closed
-    document.body.classList.remove("modal-open");
   };
 
-  const handleModalSuccess = () => {
-    setIsModalVisible(false);
-    // Remove modal-open class from body when modal is closed after success
-    document.body.classList.remove("modal-open");
-    fetchJobCandidates();
+  const handleModalReset = () => {
+    modalForm.resetFields();
   };
 
   const items = [
@@ -384,14 +392,14 @@ const JobDetails = () => {
             <div className="col-auto">
               <Button
                 className="add-candidate-btn"
-                onClick={handleAddCandidate}
+                onClick={handleAddJob}
               >
                 <div className="btn-content">
                   <img
                     src={circle}
                     style={{ marginRight: "8px", marginBottom: "20px" }}
                   ></img>
-                  <p>Add Candidate</p>
+                  <p>Add New Job</p>
                 </div>
               </Button>
             </div>
@@ -786,18 +794,379 @@ const JobDetails = () => {
           </div>
         </div>
 
-        {/* Add Candidate Modal */}
-        <CreateCandidateModal
+        {/* Add New Job Modal */}
+        <Modal
+          title="Add New Job"
           visible={isModalVisible}
           onCancel={handleModalCancel}
-          onSuccess={handleModalSuccess}
+          footer={null}
+          width={800}
+          className="custom-modal"
+          style={{ zIndex: 9999 }}
+          maskStyle={{ zIndex: 9998, background: "rgba(0, 0, 0, 0.5)" }}
+          getContainer={() => document.body}
+        >
+          <Form
+            form={modalForm}
+            layout="vertical"
+            onFinish={async (values) => {
+              const token =
+                localStorage.getItem("token") || authState?.access_token?.accessToken;
+
+              if (!token) {
+                message.error("Authentication required");
+                navigate("/login");
+                return;
+              }
+
+              try {
+                setSubmitting(true);
+
+                const jobData = {
+                  title: values.title,
+                  department: values.department,
+                  jobType: values.jobType,
+                  workSetup: values.workSetup,
+                  salaryRange: values.salaryRange,
+                  positions: values.positions,
+                  description: values.description,
+                  status: "ACTIVE",
+                  postingPlatforms: values.postingPlatforms || ["WEBSITE"],
+                  company: authState?.user?.companyId,
+                };
+
+                const response = await apiServices("POST", "job/create", jobData, {
+                  access_token: {
+                    accessToken: token,
+                  },
+                });
+
+                if (response?.data?.status) {
+                  message.success("Job created successfully");
+                  modalForm.resetFields();
+                  setIsModalVisible(false);
+                  // refresh candidates list not required; can refresh job details if needed
+                } else {
+                  message.error(response?.data?.message || "Failed to create job");
+                }
+              } catch (error) {
+                console.error(
+                  "Job creation error:",
+                  error.response?.data || error.message
+                );
+                message.error("Failed to create job");
+              } finally {
+                setSubmitting(false);
+              }
+            }}
           initialValues={{
-            appliedFor: jobId,
-            appliedDate: moment(),
-          }}
-        />
+            positions: 1,
+              postingPlatforms: ["WEBSITE"],
+              status: "ACTIVE",
+            }}
+          >
+            <div className="row">
+              <div
+                style={{
+                  height: "20px",
+                  width: "100%",
+                  display: "flex",
+                  justifyContent: "center",
+                  borderTop: "1px solid #E2E8F0",
+                }}
+              ></div>
+              <div className="col-md-6">
+                <Form.Item
+                  name="department"
+                  label={<>Department</>}
+                  rules={[
+                    { required: true, message: "Please select department" },
+                  ]}
+                >
+                  <Select placeholder="Enter Department" className="customized"
+                    getPopupContainer={(triggerNode) => triggerNode.parentNode}
+                    dropdownStyle={{ zIndex: 2001 }}
+                  >
+                    {departments.map((dept) => (
+                      <Select.Option key={dept._id} value={dept.teamName}>
+                        {dept.teamName}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </div>
+              <div className="col-md-6">
+                <Form.Item
+                  name="title"
+                  label={<>Job Title</>}
+                  rules={[
+                    { required: true, message: "Please enter job title" },
+                  ]}
+                >
+                  <Input placeholder="Enter Job" maxLength={30} />
+                </Form.Item>
+              </div>
+            </div>
+
+            <div className="row">
+              <div className="col-md-6">
+                <Form.Item
+                  name="jobType"
+                  label={<>Job Type</>}
+                  rules={[
+                    { required: true, message: "Please select job type" },
+                  ]}
+                >
+                  <Select placeholder="Full Time" className="customized"
+                    getPopupContainer={(triggerNode) => triggerNode.parentNode}
+                    dropdownStyle={{ zIndex: 2001 }}
+                  >
+                    <Select.Option value="FULL_TIME">Full Time</Select.Option>
+                    <Select.Option value="PART_TIME">Part Time</Select.Option>
+                    <Select.Option value="CONTRACT">Contract</Select.Option>
+                    <Select.Option value="INTERNSHIP">Internship</Select.Option>
+                    <Select.Option value="FREELANCE">Freelance</Select.Option>
+                  </Select>
+                </Form.Item>
+              </div>
+              <div className="col-md-6">
+                <Form.Item
+                  name="workSetup"
+                  label={<>Work Setup</>}
+                  rules={[
+                    { required: true, message: "Please select work setup" },
+                  ]}
+                >
+                  <Select placeholder="Work Setup" className="customized"
+                    getPopupContainer={(triggerNode) => triggerNode.parentNode}
+                    dropdownStyle={{ zIndex: 2001 }}
+                  >
+                    <Select.Option value="ONSITE">On-site</Select.Option>
+                    <Select.Option value="REMOTE">Remote</Select.Option>
+                    <Select.Option value="HYBRID">Hybrid</Select.Option>
+                  </Select>
+                </Form.Item>
+              </div>
+            </div>
+
+            <div className="row">
+              <div className="col-md-6">
+                <Form.Item
+                  name="salaryRange"
+                  label={
+                    <>
+                      Salary Range <span className="text-danger">*</span>
+                    </>
+                  }
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter salary range",
+                    },
+                    {
+                      pattern: /^\d+\s*-\s*\d+$/,
+                      message: "Enter valid format: e.g. 1000 - 5000",
+                    },
+                    {
+                      validator: (_, value) => {
+                        if (!value) return Promise.resolve();
+
+                        const [min, max] = value
+                          .split("-")
+                          .map((s) => parseInt(s.trim(), 10));
+                        if (isNaN(min) || isNaN(max) || min >= max) {
+                          return Promise.reject(
+                            "Minimum must be less than maximum salary"
+                          );
+                        }
+
+                        return Promise.resolve();
+                      },
+                    },
+                  ]}
+                >
+                  <Input
+                    placeholder="1000 - 5000"
+                    maxLength={17}
+                    onKeyPress={(e) => {
+                      const allowedChars = /[0-9-]/;
+                      if (!allowedChars.test(e.key)) {
+                        e.preventDefault();
+                      }
+                    }}
+                  />
+                </Form.Item>
+              </div>
+              <div className="col-md-6">
+                <Form.Item
+                  name="positions"
+                  label={<>No of. Positions</>}
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter number of positions",
+                    },
+                    {
+                      type: "number",
+                      min: 1,
+                      message: "Must be at least 1 position",
+                    },
+                  ]}
+                >
+                  <InputNumber
+                    min={1}
+                    style={{
+                      width: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                    placeholder="1"
+                  />
+                </Form.Item>
+              </div>
+            </div>
+
+            <Form.Item
+              name="description"
+              label={<>Job Description</>}
+              rules={[
+                { required: true, message: "Please enter job description" },
+              ]}
+            >
+              <TextArea
+                rows={3}
+                placeholder="Add Description"
+                maxLength={1100}
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="postingPlatforms"
+              label="Post this Job on"
+              initialValue={["WEBSITE"]}
+            >
+              <Checkbox.Group>
+                <div className="checkbox-style">
+                  <Checkbox value="FACEBOOK">Facebook</Checkbox>
+                  <Checkbox value="LINKEDIN">LinkedIn</Checkbox>
+                  <Checkbox value="WEBSITE">Website</Checkbox>
+                  <Checkbox value="INDEED">Indeed</Checkbox>
+                </div>
+              </Checkbox.Group>
+            </Form.Item>
+
+            <Form.Item
+              className="text-end mt-3"
+              style={{ backgroundColor: "transparent", height: "70px" }}
+            >
+              <Button
+                onClick={handleModalReset}
+                style={{
+                  marginRight: 12,
+                  padding: "6px 24px",
+                  height: "40px",
+                  borderRadius: "40px",
+                  background: "#F8F9FA",
+                  border: "none",
+                }}
+              >
+                Reset
+              </Button>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={submitting}
+                style={{
+                  padding: "6px 24px",
+                  height: "40px",
+                  borderRadius: "40px",
+                  background: "#ff9244",
+                  border: "none",
+                  color: "white",
+                }}
+              >
+                Create Job
+              </Button>
+            </Form.Item>
+          </Form>
+        </Modal>
 
         <style jsx>{`
+        /* Ensure JobDetails Add Job modal looks identical to Jobs.jsx */
+          .custom-modal .ant-modal-content {
+            overflow: visible;
+          }
+          .custom-modal .ant-modal-body {
+            overflow: visible;
+          }
+          .custom-modal .ant-modal-header {
+            border-bottom: none;
+            padding: 24px 24px 0;
+          }
+          .custom-modal .ant-modal-title {
+            font-size: 24px;
+            font-weight: 600;
+          }
+          .custom-modal .ant-modal-close {
+            background-color: #F8F9FA;
+            border-radius: 50%;
+            border: 1px solid #F8F9FA;
+            margin: 16px 16px 0 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .custom-modal .ant-form-item-label > label {
+            font-weight: 500;
+          }
+          .custom-modal .ant-input,
+          .custom-modal .ant-select-selector,
+          .custom-modal .ant-input-number {
+            border-radius: 8px;
+            padding: 8px 12px;
+            height: 56px;
+            font-size: 16px;
+            font-weight: 450;
+          }
+          .custom-modal .ant-input-number-input {
+            height: 24px;
+            font-size: 16px;
+            font-weight: 450;
+          }
+          .custom-modal .ant-select-selection-placeholder,
+          .custom-modal .ant-input::placeholder {
+            color: #6C757D;
+          }
+          .custom-modal textarea.ant-input {
+            height: auto;
+            min-height: 120px;
+            height: 80px;
+            border-radius: 8px;
+          }
+          .custom-modal .customized .ant-select-selector{
+            height: 56px !important;
+            border-radius: 8px !important;
+            display: flex;
+            align-items: center;
+            padding-left: 10px;
+          }
+          .ant-modal-mask {
+            z-index: 99999 !important;
+          }
+          .ant-modal-wrap {
+            z-index: 99999 !important;
+          }
+          .ant-modal {
+            z-index: 99999 !important;
+          }
+          .custom-modal {
+            z-index: 99999 !important;
+          }
+          .custom-modal .ant-modal-content {
+            z-index: 99999 !important;
+          }
           .tab-container {
             display: flex;
             gap: 10px;
@@ -871,7 +1240,7 @@ const JobDetails = () => {
           .custom-modal .ant-input-number {
             border-radius: 8px;
             padding: 8px 12px;
-            height: 40px;
+            height: 56px;
           }
           .custom-modal .ant-select-selection-placeholder,
           .custom-modal .ant-input::placeholder {
