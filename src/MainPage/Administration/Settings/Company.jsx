@@ -569,7 +569,7 @@ const Company = () => {
             <div className="col-sm-6">
               <div className="form-group">
                 <label className="col-form-label">
-                STRN/TRN
+                STRN/TRN/NTN
                 </label>
                 <Form.Item
                   name="taxRegNo"
