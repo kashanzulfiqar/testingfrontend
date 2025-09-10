@@ -332,8 +332,8 @@ function invoicePDF(invoice_data) {
   //------------------
 
   const taxRegNo = invoice_data?.company?.taxRegNo || 'N/A'; 
-  doc.text(x + 120, yPosition, "STRN/TRN: ");
-  const widthofSTRN = doc.getTextWidth("STRN/TRN:  ");
+  doc.text(x + 120, yPosition, "STRN/TRN/NTN: ");
+  const widthofSTRN = doc.getTextWidth("STRN/TRN/NTN:  ");
   doc.text(x + widthofSTRN + 120, yPosition, taxRegNo);
   yPosition += 6;
   //------------------

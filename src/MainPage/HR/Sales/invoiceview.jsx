@@ -193,7 +193,7 @@ const calculateDiscountAmount = () => {
                               <li>A/C No: <label>{invoiceInfo?.bankDetail?.accountNo}</label></li>
                               <li>IBAN No: <label>{invoiceInfo?.bankDetail?.iban}</label></li>
                               <li>SWIFT: <label>{invoiceInfo?.bankDetail?.swiftCode}</label></li>
-                              <li>STRN/TRN: <label>{invoiceInfo?.company?.taxRegNo ? invoiceInfo?.company?.taxRegNo : 'N/A'}</label></li>
+                              <li>STRN/TRN/NTN: <label>{invoiceInfo?.company?.taxRegNo ? invoiceInfo?.company?.taxRegNo : 'N/A'}</label></li>
                               <li>Bank Address: <label>{invoiceInfo?.bankDetail?.address}</label></li>
                             </ul>
                           </div>
