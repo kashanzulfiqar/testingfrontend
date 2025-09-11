@@ -2308,6 +2308,8 @@ const Sidebar = (props) => {
                             <Link
                               className={pathname.includes("recruitment/dashboard") ? "active" : ""}
                               to="/recruitment/dashboard"
+                              target="_blank"
+                              rel="noopener noreferrer"
                             >
                               Dashboard
                             </Link>
@@ -2316,6 +2318,8 @@ const Sidebar = (props) => {
                             <Link
                               className={pathname.includes("recruitment/interviews") ? "active" : ""}
                               to="/recruitment/interviews"
+                              target="_blank"
+                              rel="noopener noreferrer"
                             >
                               Interviews
                             </Link>
@@ -2336,7 +2340,7 @@ const Sidebar = (props) => {
                           : ""
                       }
                     >
-                      <Link to="/app/employees/tickets">
+                      <Link to="/app/employees/tickets" target="_blank" rel="noopener noreferrer">
                         <i className="la la-ticket" /> <span>Tickets</span>{" "}
                       </Link>
                     </li>
