@@ -2044,6 +2044,7 @@ const CandidateDetails = () => {
                       let resumeData = null;
                       const isValid = validateFile(file);
                       if (!isValid) {
+                        setUploadingResume(false);
                         return;
                       }
                       try {

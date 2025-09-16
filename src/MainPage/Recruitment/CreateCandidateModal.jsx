@@ -439,6 +439,9 @@ const CreateCandidateModal = ({
                     if (numValue < 0) {
                       return Promise.reject(new Error('Experience cannot be negative'));
                     }
+                    if (numValue > 50) {
+                      return Promise.reject(new Error('Experience cannot exceed 50 years'));
+                    }
                     return Promise.resolve();
                   },
                 },

@@ -2292,7 +2292,7 @@ const Sidebar = (props) => {
                     )}
                     {/* <Link to="/app/employees/leads"><i className="la la-user-secret" /> <span>Leads</span> </Link> */}
                   </li>
-                  {permissions?.recruitmentManagement && (
+                  {(user_state?.role === "admin" || permissions?.recruitmentManagement) && (
                     <li className="submenu">
                       <a
                         href="javascript:"
@@ -2308,6 +2308,8 @@ const Sidebar = (props) => {
                             <Link
                               className={pathname.includes("recruitment/dashboard") ? "active" : ""}
                               to="/recruitment/dashboard"
+                              target="_blank"
+                              rel="noopener noreferrer"
                             >
                               Dashboard
                             </Link>
@@ -2316,6 +2318,8 @@ const Sidebar = (props) => {
                             <Link
                               className={pathname.includes("recruitment/interviews") ? "active" : ""}
                               to="/recruitment/interviews"
+                              target="_blank"
+                              rel="noopener noreferrer"
                             >
                               Interviews
                             </Link>
@@ -2326,7 +2330,7 @@ const Sidebar = (props) => {
                       )}
                     </li>
                   )}
-                  {permissions?.recruitmentManagement && (
+                  {(user_state?.role === "admin" || permissions?.recruitmentManagement) && (
                     <li
                       className={
                         pathname.includes("tickets")
@@ -2336,7 +2340,7 @@ const Sidebar = (props) => {
                           : ""
                       }
                     >
-                      <Link to="/app/employees/tickets">
+                      <Link to="/app/employees/tickets" target="_blank" rel="noopener noreferrer">
                         <i className="la la-ticket" /> <span>Tickets</span>{" "}
                       </Link>
                     </li>
