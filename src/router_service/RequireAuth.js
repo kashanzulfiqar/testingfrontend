@@ -220,14 +220,22 @@ const RequireAuth = ({Role}) => {
         !location.pathname.includes('/client/focal-profile') && 
         !location.pathname.includes('/change-password') && 
         !location.pathname.includes('invoices/view-invoice') && 
-        !location.pathname.includes('/projects/projects-view/')) {
+        !location.pathname.includes('/projects/projects-view/') &&
+        !location.pathname.includes('/projects/project_dashboard') &&
+        !location.pathname.includes('/projects/tasks') &&
+        !location.pathname.includes('/tasks/') &&
+        !location.pathname.includes('/task-board')) {
       return <Navigate to='/client/client-profile' replace={true} />;
     }
 
     if (role === 'focalperson' && 
         !location.pathname.includes('/client/focal-profile') && 
         !location.pathname.includes('/change-password') && 
-        !location.pathname.includes('/projects/projects-view/')) {
+        !location.pathname.includes('/projects/projects-view/') &&
+        !location.pathname.includes('/projects/project_dashboard') &&
+        !location.pathname.includes('/projects/tasks') &&
+        !location.pathname.includes('/tasks/') &&
+        !location.pathname.includes('/task-board')) {
       return <Navigate to='/client/focal-profile' replace={true} />;
     }
 
