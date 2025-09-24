@@ -218,7 +218,7 @@ const ProjectView = () => {
 
   useEffect(() => {
     // if(role === 'admin' || role === 'client' || role === 'focalperson' || permissions?.projectManagement || permissions?.clientManagement ) {
-    if ((role != "client" && role != "focalperson") && !stateProj) {
+    if (!stateProj) {
       setIsLoading(true);
       GetProjects();
       //fetchEmployees();

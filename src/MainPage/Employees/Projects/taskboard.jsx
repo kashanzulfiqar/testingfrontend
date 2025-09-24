@@ -467,7 +467,7 @@ const TaskBoard = () => {
 
     apiServices(
       "GET",
-      `tasks?id=${taskboardId}&page=${1}&limit=${99999}&isArchived=${
+      `tasks?id=${taskId}&page=${1}&limit=${99999}&isArchived=${
         BoardData?.board?.isArchived
       }`,
       null,
@@ -1777,7 +1777,7 @@ const TaskBoard = () => {
                                                               gap: "4px",
                                                             }}
                                                           >
-                                                            <div
+                                                            {/* <div
                                                               className="project-members"
                                                               style={{
                                                                 margin:
@@ -1898,7 +1898,7 @@ const TaskBoard = () => {
                                                                   </li>
                                                                 )}
                                                               </ul>
-                                                            </div>
+                                                            </div> */}
                                                             {!(role === 'client' || role === 'focalperson') && (
                                                             <div className="dropdown kanban-task-action" onClick={(e) => e.stopPropagation()}>
                                                               <a

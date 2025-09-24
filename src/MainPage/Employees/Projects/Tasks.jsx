@@ -774,7 +774,7 @@ const onFinishEdit = (values) => {
             autoComplete='off'
           >
           <div className="row filter-row">
-          <div className="col-sm-6 col-md-2">  
+          <div className={`col-sm-6 ${role === 'client' || role === 'focalperson' ? 'col-md-3' : 'col-md-2'}`}>  
               <div className=' form-groupfilterDateMonth'>
                   <Form.Item
                     name="title"
@@ -794,7 +794,7 @@ const onFinishEdit = (values) => {
                   </Form.Item>
               </div>
             </div>
-            <div className="col-sm-6 col-md-2">  
+            <div className={`col-sm-6 ${role === 'client' || role === 'focalperson' ? 'col-md-3' : 'col-md-2'}`}>  
               <div style={{ position: 'relative' }} id='area11'>
                 <Form.Item
                   name="projectId"
@@ -872,7 +872,7 @@ const onFinishEdit = (values) => {
               </div>
             </div>
             )}
-            <div className="col-sm-6 col-md-2">  
+            <div className={`col-sm-6 ${role === 'client' || role === 'focalperson' ? 'col-md-3' : 'col-md-2'}`}>  
               <div className=' form-groupfilterDateMonth'>
                   <Form.Item
                     name="tag"
@@ -892,10 +892,10 @@ const onFinishEdit = (values) => {
                   </Form.Item>
               </div>
             </div>
-            <div className="col-sm-12 col-md-4" style={{
+            <div className={`col-sm-12 ${role === 'client' || role === 'focalperson' ? 'col-md-3' : 'col-md-4'}`} style={{
                     display: "flex",
                     alignItems: "flex-start",
-                    gap: "24px",
+                    gap: "12px",
                   }}>  
               <button 
                 href="javascript:void(0)"
