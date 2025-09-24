@@ -160,6 +160,10 @@ const TaskBoard = () => {
     if (!result.destination) {
       return;
     }
+    // Prevent drag-and-drop for client and focalperson roles
+    if (role === 'client' || role === 'focalperson') {
+      return;
+    }
     setDisableDrag(true);
     const { source, destination, type } = result;
     if (type === "column") {
@@ -426,9 +430,44 @@ const TaskBoard = () => {
   };
 
   const getAllTasks = (id) => {
+    const taskId = id;
+
+    // Client/Focalperson: fetch tasks via role-specific endpoint with taskboardId
+    if (role === 'client' || role === 'focalperson') {
     apiServices(
       "GET",
-      `tasks?id=${id}&page=${1}&limit=${99999}&isArchived=${
+        `tasks/task-by-id?role=${role}&id=${user_state?.user?._id}&taskId=${taskId}&isArchived=${BoardData?.board?.isArchived}`,
+        null,
+        user_state
+      )
+        .then((res) => {
+          if (res?.data?.success === true) {
+            const docs = res?.data?.Task?.docs || res?.data?.Task || [];
+            const sortedData = docs?.slice()?.sort((a, b) => a.title.localeCompare(b.title));
+            setAllTasks(sortedData);
+            setIsLoading(false);
+            setIsTaskLoading(false);
+          }
+        })
+        .catch((err) => {
+          setIsLoading(false);
+          setIsTaskLoading(false);
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : t("Timesheetemployee.getAllTasksError")
+            }!`
+          );
+        });
+      return;
+    }
+
+    apiServices(
+      "GET",
+      `tasks?id=${taskboardId}&page=${1}&limit=${99999}&isArchived=${
         BoardData?.board?.isArchived
       }`,
       null,
@@ -492,16 +531,62 @@ const TaskBoard = () => {
   };
 
   const getTaskBoard = (id) => {
+    setIsLoading(true);
+    const taskboardId = id;
+
+    // Client/Focalperson: use role-specific endpoint with clientId and taskboardId
+    if (role === 'client' || role === 'focalperson') {
     apiServices(
       "GET",
-      `taskBoard/view-taskBoard?id=${id}&isArchived=${BoardData?.board?.isArchived}`,
+        `taskBoard/taskboard-by-id?role=${role}&id=${user_state?.user?._id}&taskboardId=${taskboardId}`,
       null,
       user_state
     )
       .then((res) => {
         if (res?.data?.success === true) {
-          //const sortedData = res?.data?.Task?.docs?.slice().sort((a, b) => a.title.localeCompare(b.title));
-          //setAllTasks(sortedData);
+            const boards = res?.data?.taskBoards?.docs || res?.data?.taskBoards || (res?.data?.taskBoard ? [res?.data?.taskBoard] : []);
+            boards?.map((board) => {
+              setBoardId(board?._id);
+              setBoardTitle(
+                board?.boardTitle
+                  ? board?.boardTitle
+                  : BoardData?.board?.boardTitle
+                  ? BoardData?.board?.boardTitle
+                  : BoardData?.board?.project?.projectName
+                  ? BoardData?.board?.project?.projectName
+                  : BoardData?.projectName
+              );
+              setEmployees(board?.assignedDevelopers);
+              setSelectedDevelopers(board?.assignedDevelopers);
+              setColumns(board?.columns);
+            });
+          }
+          setIsLoading(false);
+        })
+        .catch((err) => {
+          setIsLoading(false);
+          message.error(
+            `${
+              err?.response?.data?.msg
+                ? err?.response?.data?.msg
+                : err?.response?.data?.validation?.body?.message
+                ? err?.response?.data?.validation?.body?.message
+                : "Error getting taskboard data"
+            }!`
+          );
+        });
+      return;
+    }
+
+    // Default: existing endpoint
+    apiServices(
+      "GET",
+      `taskBoard/view-taskBoard?id=${taskboardId}&isArchived=${BoardData?.board?.isArchived}`,
+      null,
+      user_state
+    )
+      .then((res) => {
+        if (res?.data?.success === true) {
           res?.data?.taskBoards?.map((board) => {
             setBoardId(board?._id);
             setBoardTitle(
@@ -1331,14 +1416,14 @@ const TaskBoard = () => {
                         Edit Members
                       </a>
                     )}
-                  <a
+                  {!(role === 'client' || role === 'focalperson') && <a
                     className="btn add-btn"
                     onClick={() => {
                       setOpen({ isAddOpen: true, isEditOpen: true, data: "" });
                     }}
                   >
                     <i className="fa fa-plus" /> Add Column
-                  </a>
+                  </a>}
                 </div>
               </div>
             </div>
@@ -1392,7 +1477,7 @@ const TaskBoard = () => {
                                     <label className="status-title longText3">
                                       {column.title}
                                     </label>
-                                    {column.title !== "Backlog" && (
+                                    {column.title !== "Backlog" && !(role === 'client' || role === 'focalperson') && (
                                       <div className="dropdown kanban-action">
                                         <a
                                           data-bs-toggle="dropdown"
@@ -1814,6 +1899,7 @@ const TaskBoard = () => {
                                                                 )}
                                                               </ul>
                                                             </div>
+                                                            {!(role === 'client' || role === 'focalperson') && (
                                                             <div className="dropdown kanban-task-action" onClick={(e) => e.stopPropagation()}>
                                                               <a
                                                                 data-bs-toggle="dropdown"
@@ -1955,6 +2041,7 @@ const TaskBoard = () => {
                                                                 </a>
                                                               </div>
                                                             </div>
+                                                            )}
                                                           </div>
                                                         </span>
                                                       </div>
@@ -2055,6 +2142,7 @@ const TaskBoard = () => {
                                       </div>
                                     )}
                                   </Droppable>
+                                  {!(role === 'client' || role === 'focalperson') && (
                                   <div
                                     className="add-new-task"
                                     style={{
@@ -2064,28 +2152,9 @@ const TaskBoard = () => {
                                   >
                                     <a
                                       style={{ cursor: "pointer" }}
-                                      // style={{ cursor: (role === "admin" || permissions.projectManagement) ? "pointer" : "not-allowed" }}
-                                      // onClick={() => {
-                                      //   if ((role === "admin" || permissions.projectManagement)) {
-                                      //     getTasksOptions(ProjectData?._id);
-                                      //     setTaskModal(true);
-                                      //     setColumnId(column._id);
-                                      //   }
-                                      //   else {
-                                      //     return;
-                                      //   }
-                                      // }}
                                       onClick={() => {
-                                        // getTasksOptions(
-                                        //   BoardData?._id
-                                        //     ? BoardData?._id
-                                        //     : BoardData?.board?.project
-                                        //     ? BoardData?.board?.project?._id
-                                        //     : BoardData?.board?._id
-                                        // );
-                                        // setTaskModal(true);
-                                        setSelectedTeamMembers([]); // Clear selected team members
-                                        form2.resetFields(); // Reset form fields
+                                          setSelectedTeamMembers([]);
+                                          form2.resetFields();
                                         setAddTask({ isAddOpen: true, data: "" });
                                         setColumnId(column._id);
                                       }}
@@ -2093,6 +2162,7 @@ const TaskBoard = () => {
                                       Add New Task
                                     </a>
                                   </div>
+                                  )}
                                 </div>
                               </div>
                             )}
