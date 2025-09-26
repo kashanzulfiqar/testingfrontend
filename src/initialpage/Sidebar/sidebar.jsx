@@ -2629,6 +2629,17 @@ const Sidebar = (props) => {
                             Leads Report{" "}
                           </Link>
                         </li>
+                        <li>
+                          <Link
+                            className={
+                              pathname.includes("client-report") ? "active" : ""
+                            }
+                            to="/client-report"
+                          >
+                            {" "}
+                            Client Report{" "}
+                          </Link>
+                        </li>
                       </ul>
                     ) : (
                       ""

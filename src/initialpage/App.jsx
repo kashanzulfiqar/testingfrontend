@@ -85,6 +85,7 @@ import AdminForgot from "./Forgot-Admin";
 import DisabledCompanies from "../MainPage/SuperAdmin/disbaledCompanies";
 import LeadsDetails from "../MainPage/Employees/leadsDetails";
 import LeadReport from "../MainPage/HR/Reports/leadreport";
+import ClientReport from "../MainPage/HR/Reports/clientreport";
 import PrivacyPolicy from "../LandingPage/privacyPolicy";
 import RefundPolicy from "../LandingPage/refundPolicy";
 import TermsAndConditions from "../LandingPage/TermsConditions";
@@ -317,6 +318,7 @@ const App = () => {
 
           <Route path="/attendance-report" element={<AttendanceReport />} />
           <Route path="/lead-report" element={<LeadReport />} />
+          <Route path="/client-report" element={<ClientReport />} />
           <Route path="/recruitment/*" element={
             <RecruitmentLayout>
               <Routes>
