@@ -45,9 +45,9 @@ const ClientReport = () => {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
             }).format(revenue);
-            return `${amountFormatted}${currencyCode}`;
+            return `${amountFormatted} ${currencyCode}`;
           } catch (e) {
-            return `${revenue.toLocaleString()}${currencyCode}`;
+            return `${revenue.toLocaleString()} ${currencyCode}`;
           }
         },
       },
