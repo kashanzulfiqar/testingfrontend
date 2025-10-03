@@ -1727,7 +1727,7 @@ const AdminDashboard = () => {
                               <tr key={invoice?._id}>
                                 <td>
                                   <Link
-                                    to="/invoices/view-invoice"
+                                    to={{ pathname: "/invoices/view-invoice", search: `?id=${invoice?._id}` }}
                                     state={{ invoice_data: invoice }}
                                   >
                                     {invoice?.invoiceNo}
@@ -1842,7 +1842,7 @@ const AdminDashboard = () => {
                               <tr key={payment?._id}>
                                 <td>
                                   <Link
-                                    to="/invoices/view-invoice"
+                                    to={{ pathname: "/invoices/view-invoice", search: `?id=${payment?._id}` }}
                                     state={{ invoice_data: payment }}
                                   >
                                     {payment?.invoiceNo}
