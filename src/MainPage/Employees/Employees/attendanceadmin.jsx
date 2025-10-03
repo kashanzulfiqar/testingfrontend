@@ -35,7 +35,7 @@ import moment from "moment";
 import EmptyTable from "../../../files/Icons/EmptyTable.svg";
 import Modal from "@mui/material/Modal";
 import { EditOutlined } from "@mui/icons-material";
-import { LoadingOutlined } from "@ant-design/icons";
+import { LoadingOutlined, FileExcelOutlined, DownloadOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 
 const { Option } = Select;
@@ -48,6 +48,8 @@ const AttendanceAdmin = () => {
   const [menu, setMenu] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isStatLoading, setIsStatLoading] = useState(false);
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  const [reportDownloadUrl, setReportDownloadUrl] = useState(null);
   const [selectedMonthYear, setSelectedMonthYear] = useState("");
   const [statdata, setStatdata] = useState(null);
   const [specific, setSpecific] = useState(null);
@@ -280,6 +282,59 @@ const AttendanceAdmin = () => {
     });
 
     form.resetFields();
+  };
+
+  const handleGenerateReport = () => {
+    setIsGeneratingReport(true);
+    setReportDownloadUrl(null);
+    
+    apiServices("POST", "attendance/generate-report", null, user_state)
+    .then((res) => {
+      if (res.data.success === true) {
+        // Convert base64 to binary data
+        const binaryString = atob(res.data.file);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        
+        // Create a blob URL for the downloaded file
+        const blob = new Blob([bytes], { 
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+        });
+        
+        // Create download link
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = res.data.filename || 'Attendance_Report.xlsx';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }
+    })
+    .catch((error) => {
+      console.error('Error downloading report:', error);
+    })
+    .finally(() => {
+      setIsGeneratingReport(false);
+    });
+  };
+
+  const handleDownloadReport = () => {
+    if (reportDownloadUrl) {
+      const link = document.createElement('a');
+      link.href = reportDownloadUrl;
+      link.download = `attendance-report-${moment().format('YYYY-MM-DD')}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up the blob URL
+      window.URL.revokeObjectURL(reportDownloadUrl);
+      setReportDownloadUrl(null);
+    }
   };
 
   //console.log(employeeAttendanceData);
@@ -615,9 +670,31 @@ const AttendanceAdmin = () => {
             {/* Page Header */}
             <div className="page-header">
               <div className="row">
-                <div className="col-sm-12">
+                <div className="col-sm-12 d-flex justify-content-between align-items-center">
                   <h3 className="page-title">{t('attendance')}</h3>
-                  
+                  <div>
+                    {!reportDownloadUrl ? (
+                      <Button
+                        type="primary"
+                        icon={<FileExcelOutlined />}
+                        onClick={handleGenerateReport}
+                        loading={isGeneratingReport}
+                        disabled={isGeneratingReport}
+                        style={{ marginLeft: 'auto' }}
+                      >
+                        {isGeneratingReport ? t('Generating Report...') : t('Generate Report')}
+                      </Button>
+                    ) : (
+                      <Button
+                        type="primary"
+                        icon={<DownloadOutlined />}
+                        onClick={handleDownloadReport}
+                        style={{ marginLeft: 'auto', backgroundColor: '#52c41a', borderColor: '#52c41a' }}
+                      >
+                        {t('Download Report')}
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
