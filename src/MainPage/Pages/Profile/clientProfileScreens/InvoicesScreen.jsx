@@ -69,7 +69,7 @@ const InvoicesScreen = ({ clientId }) => {
         dataIndex: 'invoiceNo',
         render: (text, record) => (
           <Link
-            to="/invoices/view-invoice"
+            to={{ pathname: "/invoices/view-invoice", search: `?id=${record?._id}` }}
             style={{color: '#333333'}}
             state={{
               invoice_data: {
@@ -148,7 +148,7 @@ const InvoicesScreen = ({ clientId }) => {
                         <div className="dropdown-menu dropdown-menu-right">
                         <Link
                           className="dropdown-item"
-                          to="/invoices/view-invoice"
+                          to={{ pathname: "/invoices/view-invoice", search: `?id=${record?._id}` }}
                           state={{
                             invoice_data: {
                               ...record,
