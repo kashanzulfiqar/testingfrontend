@@ -50,18 +50,24 @@
       handleFieldChange("projects", updated);
     };
 
-    const handleUploadWithPreview = async () => {
+    const handleUpload = async () => {
       if (!file) return;
       setLoading(true);
       setError(null);
       const formData = new FormData();
       formData.append('file', file);
       try {
-        const res = await fetch('http://localhost:3001/resume/upload-with-preview', { method: 'POST', body: formData });
-        if (!res.ok) throw new Error(`Upload preview failed: ${res.status} ${res.statusText}`);
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        setPdfUrl(url);
+        const res = await fetch('http://localhost:3001/resume/upload', { method: 'POST', body: formData });
+        if (!res.ok) throw new Error(`Upload failed: ${res.status} ${res.statusText}`);
+        const data = await res.json();
+    
+        const parsed = data?.parsed ?? data; // support both shapes
+        if (parsed && typeof parsed === 'object') {
+          setParsedData(parsed);
+          setPdfUrl(null); // preview will be generated on Save via preview-from-json
+        } else {
+          setError(data?.message || 'Parsing failed. Please try another resume.');
+        }
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Unknown error');
       } finally {
@@ -70,22 +76,25 @@
     };
     
     const handleSave = async () => {
-      if (!parsedData) return;
-      setError(null);
-      try {
-        const res = await fetch('http://localhost:3001/resume/preview-from-json', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ parsed: parsedData }),
-        });
-        if (!res.ok) throw new Error(`Update failed: ${res.status} ${res.statusText}`);
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        setPdfUrl(url);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : 'Update failed');
-      }
-    };
+  if (!parsedData) return;
+  setError(null);
+  try {
+    const res = await fetch('http://localhost:3001/resume/preview-from-json', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ parsed: parsedData }),
+    });
+    if (!res.ok) throw new Error(`Update failed: ${res.status} ${res.statusText}`);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    setPdfUrl(url);
+  } catch (e) {
+    setError(e instanceof Error ? e.message : 'Update failed');
+  }
+  finally{
+    setLoading(false);
+  }
+};
 
     return (
       <div className="page-wrapper">
@@ -119,7 +128,7 @@
                         </div>
                         <div className="col-sm-4">
                           <div className="d-grid gap-2">
-                            <button className="btn btn-primary" onClick={handleUploadWithPreview} disabled={loading || !file}>
+                            <button className="btn btn-primary" onClick={handleUpload} disabled={loading || !file}>
                               {loading ? "⏳ Processing..." : "📤 Upload & Parse"}
                             </button>
                             <button className="btn btn-success" onClick={handleSave} disabled={!parsedData || loading}>
