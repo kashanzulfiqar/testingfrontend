@@ -50,42 +50,40 @@
       handleFieldChange("projects", updated);
     };
 
-    const handleUpload = async () => {
+    const handleUploadWithPreview = async () => {
       if (!file) return;
       setLoading(true);
       setError(null);
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append('file', file);
       try {
-        const res = await fetch("http://127.0.0.1:8000/upload/", { method: "POST", body: formData });
-        if (!res.ok) throw new Error(`Upload failed: ${res.status} ${res.statusText}`);
-        const data = await res.json();
-        if (data?.parsed) {
-          setParsedData(data.parsed);
-          setPdfUrl(data.pdf_url || null);
-        } else {
-          setError("Parsing failed. Please try another resume.");
-        }
+        const res = await fetch('http://localhost:3001/resume/upload-with-preview', { method: 'POST', body: formData });
+        if (!res.ok) throw new Error(`Upload preview failed: ${res.status} ${res.statusText}`);
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        setPdfUrl(url);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Unknown error");
+        setError(e instanceof Error ? e.message : 'Unknown error');
       } finally {
         setLoading(false);
       }
     };
-
+    
     const handleSave = async () => {
       if (!parsedData) return;
+      setError(null);
       try {
-        const res = await fetch("http://127.0.0.1:8000/update/", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+        const res = await fetch('http://localhost:3001/resume/preview-from-json', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ parsed: parsedData }),
         });
         if (!res.ok) throw new Error(`Update failed: ${res.status} ${res.statusText}`);
-        const data = await res.json();
-        if (data?.pdf_url) setPdfUrl(`${data.pdf_url}?t=${Date.now()}`);
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        setPdfUrl(url);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Update failed");
+        setError(e instanceof Error ? e.message : 'Update failed');
       }
     };
 
@@ -105,7 +103,7 @@
           </div>
 
           <div className="row">
-            <div className="col-xl-7 col-lg-8" style={{ paddingRight: "0.75rem" }}>
+            <div className="col-xl-7 col-lg-5" style={{ paddingRight: "0.75rem" }}>
               <div className="card">
                 <div className="card-body" style={{ padding: "1rem 1.25rem" }}>
                   <div className="card" style={{ marginBottom: 20, backgroundColor: '#f8f9fa' }}>
@@ -121,7 +119,7 @@
                         </div>
                         <div className="col-sm-4">
                           <div className="d-grid gap-2">
-                            <button className="btn btn-primary" onClick={handleUpload} disabled={loading || !file}>
+                            <button className="btn btn-primary" onClick={handleUploadWithPreview} disabled={loading || !file}>
                               {loading ? "⏳ Processing..." : "📤 Upload & Parse"}
                             </button>
                             <button className="btn btn-success" onClick={handleSave} disabled={!parsedData || loading}>
