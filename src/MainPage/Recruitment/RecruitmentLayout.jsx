@@ -22,6 +22,7 @@ import interviewIcon from '../../assets/iconsRecruitment/interview.svg';
 import candidateIcon from '../../assets/iconsRecruitment/candidate.svg';
 import jobsIcon from '../../assets/iconsRecruitment/jobsIcon.svg';
 import taskIcon from '../../assets/iconsRecruitment/taskIcon.svg';
+import ResumeConverter from './ResumeConverter';
 
 const RecruitmentLayout = () => {
   const location = useLocation();
@@ -232,6 +233,12 @@ const RecruitmentLayout = () => {
                       <img src={taskIcon} style={{ minHeight: "20px", minWidth: "20px" }} /> <span>Tasks</span>
                     </Link>
                   </li>
+
+                  <li className={pathname.includes("/recruitment/resume-converter") ? "active" : ""}>
+                    <Link to="/recruitment/resume-converter" onClick={closeSidebarOnMobile} target="_blank" rel="noopener noreferrer">
+                      <span>Resume Converter</span>
+                    </Link>
+                  </li>
                 </ul>
               </div>
             </div>
@@ -258,6 +265,7 @@ const RecruitmentLayout = () => {
           <Route path="interviews/:id" element={<InterviewDetails />} />
           <Route path="tasks" element={<Tasks />} />
           <Route path="tasks/:id" element={<TaskDetails />} />
+          <Route path="resume-converter" element={<ResumeConverter />} />
           <Route path="*" element={<Navigate to="dashboard" replace />} />
         </Routes>
       </div>
