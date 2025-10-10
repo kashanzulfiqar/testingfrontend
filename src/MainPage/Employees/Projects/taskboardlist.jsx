@@ -161,7 +161,9 @@ const TaskBoardList = () => {
   // Initial load effect
   useEffect(() => {
     setIsLoading(true);
-    fetchEmployees();
+    if(role !== 'client' && role !== 'focalperson') {
+      fetchEmployees();
+    }
     GetListTaskBoards();
   }, []); // Only run on mount
 
