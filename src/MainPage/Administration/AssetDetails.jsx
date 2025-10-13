@@ -64,8 +64,16 @@ const AssetDetails = () => {
     {
       title: "Employee",
       dataIndex: "employeeId",
-      key: "employeeId",
-      render: (val) => val?.fullName || "-",
+      render: (text, record) => (
+        record?.employeeId ? (
+          <h2 className="table-avatar">
+            <img className="avatar" alt="" src={record?.employeeId?.imageUrl || user_icon} />
+            <span>{record?.employeeId?.fullName}</span>
+          </h2>
+        ) : (
+          "-"
+        )
+      ),
     },
     {
       title: "From",
@@ -115,7 +123,7 @@ const AssetDetails = () => {
               <div className="contact-wrap">
                 <div className="contact-profile">
                   <div className="avatar company-avatar" style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                    <img src={asset?.imageUrl || user_icon} alt="asset" style={{ width: 64, height: 64, borderRadius: "50%", objectFit: "cover" }} />
+                    <img src={asset?.imageUrl || user_icon} alt="asset" style={{ width: 80, height: 80, borderRadius: "50%"}} />
                   </div>
                   <div className="name-user">
                     <h4>{asset?.name}</h4>
