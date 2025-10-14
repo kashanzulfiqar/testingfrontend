@@ -1,4 +1,4 @@
-// ✅ ResumeConverter.jsx — Final version (with AntD Dragger + uploadFunction)
+// ✅ ResumeConverter.jsx — Full refactor with Ant Design Dragger + uploadFunction + full form
 
 import React, { useState } from "react";
 import { Upload, Button, message } from "antd";
@@ -40,51 +40,50 @@ export default function ResumeConverter() {
       setPdfUrl(null);
     },
     fileList,
-    showUploadList: {
-      showRemoveIcon: true,
-    },
+    showUploadList: { showRemoveIcon: true },
   };
 
   // ----------------------------
-  // Upload & Parse Resume (using uploadFunction)
+  // Upload & Parse Resume
   // ----------------------------
   const handleUpload = async () => {
     if (!fileList || fileList.length === 0) {
       message.warning("Please select a resume file first.");
       return;
     }
-
+  
     setLoading(true);
     setError(null);
-
+  
     try {
-      // Use the centralized upload function
+      // Step 1️⃣: Upload to S3 (Cloudinary)
       const uploadedFiles = await uploadFunction(fileList, authState);
-
       if (!uploadedFiles || uploadedFiles.length === 0) {
-        throw new Error("File upload returned no data.");
+        throw new Error("Upload failed or returned no data.");
       }
-
+  
       const uploaded = uploadedFiles[0];
-      console.log("Uploaded file metadata:", uploaded);
-
-      const parsed = {
-        full_name: uploaded.candidateName || "",
-        email: uploaded.candidateEmail || "",
-        phone: uploaded.candidateContact || "",
-      };
-
-      const s3Link = uploaded.imageUrl || uploaded.secure_url;
-
-      if (s3Link) setPdfUrl(s3Link);
-      if (parsed) setParsedData(parsed);
-
+      const fileUrl = uploaded.imageUrl;
+      console.log("File uploaded to S3:", fileUrl);
+  
+      // Step 2️⃣: Send the file URL to backend for parsing
+      const res = await apiServices("POST", "resume/parse-url", { fileUrl });
+      const parsed = res?.data?.parsed;
+  
+      if (!parsed || typeof parsed !== "object") {
+        throw new Error("Parsing failed — invalid response from server.");
+      }
+  
+      // Step 3️⃣: Display parsed data + preview
+      setParsedData(parsed);
+      setPdfUrl(fileUrl);
       message.success("Resume uploaded and parsed successfully!");
     } catch (err) {
-      console.error("Upload error:", err);
+      console.error("❌ Upload or parse error:", err);
       message.error(
         err?.response?.data?.msg ||
           err?.response?.data?.validation?.body?.message ||
+          err.message ||
           "Upload failed"
       );
       setError("Upload failed. Please try again.");
@@ -92,6 +91,7 @@ export default function ResumeConverter() {
       setLoading(false);
     }
   };
+  
 
   // ----------------------------
   // JSON → PDF Preview (Save)
@@ -100,39 +100,58 @@ export default function ResumeConverter() {
     if (!parsedData) return;
     setError(null);
     setLoading(true);
-
+  
     try {
+      console.log("🚀 Saving parsed data:", parsedData);
+  
+      // 1️⃣ First call: get confirmation that backend generated PDF
       const res = await apiServices(
         "POST",
         "resume/preview-from-json",
-        parsedData,
+        { parsed: parsedData },
         {
-          access_token: { accessToken: token },
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-          responseType: "blob",
         }
       );
-
-      const blob = new Blob([res.data], { type: "application/pdf" });
+  
+      console.log("📥 Initial response headers:", res?.headers);
+  
+      // 2️⃣ Fetch the same endpoint again as binary (workaround for locked apiServices)
+      const blobRes = await fetch(`${process.env.REACT_APP_API_BASE_URL}/resume/preview-from-json`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ parsed: parsedData }),
+      });
+  
+      if (!blobRes.ok) throw new Error(`PDF fetch failed: ${blobRes.status}`);
+  
+      const blob = await blobRes.blob();
+      console.log("📏 Blob size:", blob.size);
+  
       const url = URL.createObjectURL(blob);
       setPdfUrl(url);
+      console.log("🖼️ Preview URL created:", url);
+  
       message.success("Preview updated successfully!");
     } catch (err) {
-      message.error(
-        err?.response?.data?.msg ||
-          err?.response?.data?.validation?.body?.message ||
-          "Update failed"
-      );
+      console.error("❌ Preview generation error:", err);
+      message.error("Failed to generate preview.");
     } finally {
       setLoading(false);
     }
   };
+  
+  
+  
 
   // ----------------------------
-  // Field Management Helpers
+  // Helpers
   // ----------------------------
   const handleFieldChange = (field, value) => {
     setParsedData((prev) =>
@@ -140,8 +159,20 @@ export default function ResumeConverter() {
     );
   };
 
+  const addItem = (key, newItem) => {
+    const updated = parsedData?.[key] ? [...parsedData[key]] : [];
+    updated.push(newItem);
+    handleFieldChange(key, updated);
+  };
+
+  const removeItem = (key, index) => {
+    const updated = [...(parsedData?.[key] || [])];
+    updated.splice(index, 1);
+    handleFieldChange(key, updated);
+  };
+
   // ----------------------------
-  // UI Rendering
+  // Render
   // ----------------------------
   return (
     <div className="page-wrapper">
@@ -167,39 +198,27 @@ export default function ResumeConverter() {
         </div>
 
         <div className="row">
-          {/* LEFT COLUMN: Upload + Form */}
-          <div
-            className="col-xl-7 col-lg-5"
-            style={{ paddingRight: "0.75rem" }}
-          >
+          {/* LEFT COLUMN */}
+          <div className="col-xl-7 col-lg-5" style={{ paddingRight: "0.75rem" }}>
             <div className="card">
-              <div className="card-body" style={{ padding: "1rem 1.25rem" }}>
+              <div className="card-body">
                 {/* Upload Section */}
-                <div
-                  className="card"
-                  style={{ marginBottom: 20, backgroundColor: "#f8f9fa" }}
-                >
+                <div className="card mb-4" style={{ backgroundColor: "#f8f9fa" }}>
                   <div className="card-body">
-                    <h6
-                      className="card-title mb-3"
-                      style={{ color: "#042F40" }}
-                    >
+                    <h6 className="card-title mb-3" style={{ color: "#042F40" }}>
                       📄 Resume Upload & Processing
                     </h6>
-
-                    {/* 🔶 Ant Design Dragger */}
                     <Dragger {...uploadProps}>
                       <p className="ant-upload-drag-icon">
                         <UploadOutlined style={{ color: "#042F40" }} />
                       </p>
                       <p className="ant-upload-text">
-                        Click or drag a resume file to this area to upload
+                        Click or drag resume file to this area
                       </p>
                       <p className="ant-upload-hint text-muted">
                         Supports single PDF or DOC/DOCX resume files.
                       </p>
                     </Dragger>
-
                     <div className="d-grid gap-2 mt-3">
                       <Button
                         type="primary"
@@ -222,79 +241,293 @@ export default function ResumeConverter() {
                   </div>
                 </div>
 
-                {/* Error Display */}
-                {error && (
-                  <div className="alert alert-danger" role="alert">
-                    {error}
-                  </div>
-                )}
+                {/* Error */}
+                {error && <div className="alert alert-danger">{error}</div>}
 
-                {/* Parsed Resume Data */}
+                {/* Parsed Resume Form */}
                 {parsedData ? (
                   <div
-                    className="border rounded"
+                    className="border rounded p-3"
                     style={{
                       maxHeight: "70vh",
-                      overflow: "auto",
-                      padding: 20,
+                      overflowY: "auto",
                       backgroundColor: "#f8f9fa",
                     }}
                   >
-                    <h5
-                      className="mb-3"
-                      style={{
-                        color: "#042F40",
-                        borderBottom: "2px solid #A1CA73",
-                        paddingBottom: "8px",
-                      }}
-                    >
-                      Basic Information
-                    </h5>
+                    {/* ----------------- Basic Info ----------------- */}
+                    <section>
+                      <h5 className="mb-3" style={{ color: "#042F40" }}>
+                        Candidate Details
+                      </h5>
+                      {["full_name", "title", "email", "phone", "location"].map(
+                        (field) => (
+                          <div className="form-group" key={field}>
+                            <label className="form-label text-capitalize">
+                              {field.replace("_", " ")}
+                            </label>
+                            <input
+                              className="form-control"
+                              value={parsedData[field] || ""}
+                              onChange={(e) =>
+                                handleFieldChange(field, e.target.value)
+                              }
+                            />
+                          </div>
+                        )
+                      )}
+                      <div className="form-group">
+                        <label className="form-label">Summary</label>
+                        <textarea
+                          className="form-control"
+                          rows="3"
+                          value={parsedData.summary || ""}
+                          onChange={(e) =>
+                            handleFieldChange("summary", e.target.value)
+                          }
+                        />
+                      </div>
+                    </section>
 
-                    <div className="form-group mb-3">
-                      <label className="form-label">Full Name</label>
-                      <input
-                        className="form-control"
-                        value={parsedData.full_name || ""}
-                        onChange={(e) =>
-                          handleFieldChange("full_name", e.target.value)
+                    {/* ----------------- Education ----------------- */}
+                    <section style={{ marginTop: 24 }}>
+                      <h5 style={{ color: "#042F40" }}>Education</h5>
+                      {(parsedData.education || []).map((edu, i) => (
+                        <div
+                          key={i}
+                          className="card p-3 mb-2"
+                          style={{ backgroundColor: "#fff" }}
+                        >
+                          {["degree", "institution", "start_year", "end_year"].map(
+                            (field) => (
+                              <input
+                                key={field}
+                                className="form-control mb-2"
+                                placeholder={field}
+                                value={edu[field] || ""}
+                                onChange={(e) => {
+                                  const list = [...parsedData.education];
+                                  list[i][field] = e.target.value;
+                                  handleFieldChange("education", list);
+                                }}
+                              />
+                            )
+                          )}
+                          <textarea
+                            className="form-control mb-2"
+                            placeholder="description"
+                            value={edu.description || ""}
+                            onChange={(e) => {
+                              const list = [...parsedData.education];
+                              list[i].description = e.target.value;
+                              handleFieldChange("education", list);
+                            }}
+                          />
+                          <Button
+                            danger
+                            size="small"
+                            onClick={() => removeItem("education", i)}
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      ))}
+                      <Button
+                        type="dashed"
+                        block
+                        onClick={() =>
+                          addItem("education", {
+                            degree: "",
+                            institution: "",
+                            start_year: "",
+                            end_year: "",
+                            description: "",
+                          })
                         }
-                        placeholder="Enter full name"
-                      />
-                    </div>
+                      >
+                        + Add Education
+                      </Button>
+                    </section>
 
-                    <div className="form-group mb-3">
-                      <label className="form-label">Email</label>
-                      <input
-                        className="form-control"
-                        value={parsedData.email || ""}
-                        onChange={(e) =>
-                          handleFieldChange("email", e.target.value)
+                    {/* ----------------- Experience ----------------- */}
+                    <section style={{ marginTop: 24 }}>
+                      <h5 style={{ color: "#042F40" }}>Experience</h5>
+                      {(parsedData.experience || []).map((exp, i) => (
+                        <div key={i} className="card p-3 mb-2 bg-white">
+                          {["company", "title", "start_year", "end_year"].map(
+                            (field) => (
+                              <input
+                                key={field}
+                                className="form-control mb-2"
+                                placeholder={field}
+                                value={exp[field] || ""}
+                                onChange={(e) => {
+                                  const list = [...parsedData.experience];
+                                  list[i][field] = e.target.value;
+                                  handleFieldChange("experience", list);
+                                }}
+                              />
+                            )
+                          )}
+                          <textarea
+                            className="form-control mb-2"
+                            placeholder="description"
+                            value={(exp.description || []).join("\n")}
+                            onChange={(e) => {
+                              const list = [...parsedData.experience];
+                              list[i].description = e.target.value
+                                .split("\n")
+                                .filter(Boolean);
+                              handleFieldChange("experience", list);
+                            }}
+                          />
+                          <Button
+                            danger
+                            size="small"
+                            onClick={() => removeItem("experience", i)}
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      ))}
+                      <Button
+                        type="dashed"
+                        block
+                        onClick={() =>
+                          addItem("experience", {
+                            company: "",
+                            title: "",
+                            start_year: "",
+                            end_year: "",
+                            description: [""],
+                          })
                         }
-                        placeholder="you@example.com"
-                      />
-                    </div>
+                      >
+                        + Add Experience
+                      </Button>
+                    </section>
 
-                    <div className="form-group mb-3">
-                      <label className="form-label">Phone</label>
-                      <input
-                        className="form-control"
-                        value={parsedData.phone || ""}
-                        onChange={(e) =>
-                          handleFieldChange("phone", e.target.value)
+                    {/* ----------------- Projects ----------------- */}
+                    <section style={{ marginTop: 24 }}>
+                      <h5 style={{ color: "#042F40" }}>Projects</h5>
+                      {(parsedData.projects || []).map((proj, i) => (
+                        <div key={i} className="card p-3 mb-2 bg-white">
+                          {["project_name", "start_year", "end_year"].map(
+                            (field) => (
+                              <input
+                                key={field}
+                                className="form-control mb-2"
+                                placeholder={field}
+                                value={proj[field] || ""}
+                                onChange={(e) => {
+                                  const list = [...parsedData.projects];
+                                  list[i][field] = e.target.value;
+                                  handleFieldChange("projects", list);
+                                }}
+                              />
+                            )
+                          )}
+                          <textarea
+                            className="form-control mb-2"
+                            placeholder="description"
+                            value={(proj.description || []).join("\n")}
+                            onChange={(e) => {
+                              const list = [...parsedData.projects];
+                              list[i].description = e.target.value
+                                .split("\n")
+                                .filter(Boolean);
+                              handleFieldChange("projects", list);
+                            }}
+                          />
+                          <Button
+                            danger
+                            size="small"
+                            onClick={() => removeItem("projects", i)}
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      ))}
+                      <Button
+                        type="dashed"
+                        block
+                        onClick={() =>
+                          addItem("projects", {
+                            project_name: "",
+                            start_year: "",
+                            end_year: "",
+                            description: [""],
+                          })
                         }
-                        placeholder="+1 (555) 123-4567"
+                      >
+                        + Add Project
+                      </Button>
+                    </section>
+
+                    {/* ----------------- Skills ----------------- */}
+                    <section style={{ marginTop: 24 }}>
+                      <h5 style={{ color: "#042F40" }}>Technical Skills</h5>
+                      <textarea
+                        className="form-control"
+                        rows="3"
+                        value={(parsedData.technical_skills || []).join(", ")}
+                        onChange={(e) =>
+                          handleFieldChange(
+                            "technical_skills",
+                            e.target.value
+                              .split(",")
+                              .map((s) => s.trim())
+                              .filter(Boolean)
+                          )
+                        }
                       />
-                    </div>
+                    </section>
+
+                    {/* ----------------- Certifications ----------------- */}
+                    <section style={{ marginTop: 24 }}>
+                      <h5 style={{ color: "#042F40" }}>Certifications</h5>
+                      <textarea
+                        className="form-control"
+                        rows="2"
+                        value={(parsedData.certifications || []).join(", ")}
+                        onChange={(e) =>
+                          handleFieldChange(
+                            "certifications",
+                            e.target.value
+                              .split(",")
+                              .map((s) => s.trim())
+                              .filter(Boolean)
+                          )
+                        }
+                      />
+                    </section>
+
+                    {/* ----------------- Languages ----------------- */}
+                    <section style={{ marginTop: 24 }}>
+                      <h5 style={{ color: "#042F40" }}>Languages</h5>
+                      <textarea
+                        className="form-control"
+                        rows="2"
+                        value={(parsedData.languages || []).join(", ")}
+                        onChange={(e) =>
+                          handleFieldChange(
+                            "languages",
+                            e.target.value
+                              .split(",")
+                              .map((s) => s.trim())
+                              .filter(Boolean)
+                          )
+                        }
+                      />
+                    </section>
                   </div>
                 ) : (
-                  <div className="text-muted mt-3">No resume parsed yet.</div>
+                  <div className="text-muted">No resume parsed yet.</div>
                 )}
               </div>
             </div>
           </div>
 
-          {/* RIGHT COLUMN: PDF Preview */}
+          {/* RIGHT COLUMN: Preview */}
           <div
             className="col-xl-4 col-lg-5"
             style={{ paddingLeft: "0.75rem", marginBottom: "2rem" }}
@@ -306,37 +539,31 @@ export default function ResumeConverter() {
               >
                 <h5 className="card-title mb-0">📑 Resume Preview</h5>
               </div>
-              <div className="card-body" style={{ padding: 0 }}>
-                {pdfUrl ? (
-                  <iframe
-                    title="Resume Preview"
-                    src={pdfUrl}
-                    style={{
-                      width: "100%",
-                      height: "70vh",
-                      border: "none",
-                      borderRadius: "0 0 4px 4px",
-                    }}
-                  />
-                ) : (
-                  <div
-                    className="text-muted d-flex flex-column align-items-center justify-content-center"
-                    style={{
-                      height: "70vh",
-                      backgroundColor: "#f8f9fa",
-                      borderRadius: "0 0 4px 4px",
-                    }}
-                  >
-                    <div className="text-center">
-                      <i
-                        className="fas fa-file-pdf fa-3x mb-3"
-                        style={{ color: "#6c757d" }}
-                      ></i>
-                      <p className="mb-0">No preview available</p>
-                      <small>Upload and parse a resume to see preview</small>
-                    </div>
-                  </div>
-                )}
+              <div className="card-body p-0">
+              {pdfUrl && (
+      <iframe
+        key={pdfUrl}
+        src={pdfUrl}
+        type="application/pdf"
+        width="100%"
+        height="800px"
+        title="Resume Preview"
+        style={{
+          border: "none",
+          display: "block",
+          minHeight: "80vh",
+          backgroundColor: "#f9f9f9",
+        }}
+      />
+    )}
+
+    {pdfUrl && (
+      <div style={{ marginTop: "1rem" }}>
+        <a href={pdfUrl} target="_blank" rel="noopener noreferrer">
+          Open PDF in new tab
+        </a>
+      </div>
+    )}
               </div>
             </div>
           </div>
