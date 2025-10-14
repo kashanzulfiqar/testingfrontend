@@ -135,9 +135,12 @@ const NavigationBar = (props) => {
         {!viewChange && (
           <li className="nav-item landingItem">
             <a
-              href="javascript:void(0)"
+              href="#"
               className="nav-link LandingLink"
-              onClick={() => nav("/live-demo")}
+              onClick={(e) => {
+                e.preventDefault();
+                nav("/live-demo");
+              }}
             >
               Live Demo
             </a>
@@ -175,9 +178,12 @@ const NavigationBar = (props) => {
         {viewChange && (
           <li className="nav-item landingItem">
             <a
-              href="javascript:void(0)"
+              href="#"
               className="nav-link LandingLink"
-              onClick={showDrawer}
+              onClick={(e) => {
+                e.preventDefault();
+                showDrawer();
+              }}
             >
               <MenuOutlined style={{ fontSize: 30, color: "white" }} />
             </a>
@@ -211,7 +217,7 @@ const NavigationBar = (props) => {
       <Drawer
         placement="right"
         onClose={onClose}
-        visible={drawerVisible}
+        open={drawerVisible}
         width={250}
         //closeIcon={<ArrowRightOutlined />} // Added arrow icon to close the Drawer
         bodyStyle={{ padding: "0", background: "#fff" }}
@@ -262,8 +268,9 @@ const NavigationBar = (props) => {
           </li>
           <li className="drawer-item">
             <a
-              href="javascript:void(0)"
-              onClick={() => {
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
                 onClose();
                 nav("/live-demo");
               }}
