@@ -15,7 +15,12 @@ const tagManagerArgs = {
   gtmId: 'AW-17408581772', 
 };
 
-TagManager.initialize(tagManagerArgs);
+if ('requestIdleCallback' in window) {
+  // @ts-ignore
+  requestIdleCallback(() => TagManager.initialize(tagManagerArgs));
+} else {
+  setTimeout(() => TagManager.initialize(tagManagerArgs), 1200);
+}
 
 const container = document.getElementById('app');
 if (container && !container._reactRootContainer) {
