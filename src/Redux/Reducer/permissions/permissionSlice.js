@@ -11,21 +11,20 @@ const initialState = {
 export const permissionsSlice = createSlice({
   name: 'permission',
   initialState,
-  extraReducers: (builder) => {
-    builder
-      .addCase(getPermissionList.pending, (state) => {
-        state.isLoading = true;
-      })
-      .addCase(getPermissionList.fulfilled, (state, { payload }) => {
-        state.isLoading = false;
-        state.isSuccess = true;
-        state.data = payload;
-      })
-      .addCase(getPermissionList.rejected, (state, { payload }) => {
-        state.isLoading = false;
-        state.isSuccess = false;
-        state.errorMessage = payload
-      });
+  extraReducers: {
+    [getPermissionList.pending]: (state) => {
+      state.isLoading = true;
+    },
+    [getPermissionList.fulfilled]: (state, { payload }) => {
+      state.isLoading = false;
+      state.isSuccess = true;
+      state.data = payload;
+    },
+    [getPermissionList.rejected]: (state, { payload }) => {
+      state.isLoading = false;
+      state.isSuccess = false;
+      state.errorMessage = payload
+    }
   }
 })
  

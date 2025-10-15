@@ -17,9 +17,6 @@ const tagManagerArgs = {
 
 TagManager.initialize(tagManagerArgs);
 
-const container = document.getElementById("app");
-if (container && !container._reactRootContainer) {
-  const root = createRoot(container); // createRoot(container!) if you use TypeScript
-  container._reactRootContainer = root;
-  root.render(<Main />);
-}
+const container = document.getElementById('app');
+const root = createRoot(container); // createRoot(container!) if you use TypeScript
+root.render(<Main/>);
