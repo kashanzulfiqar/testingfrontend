@@ -1,7 +1,7 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, lazy } from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import App from '../initialpage/App';
+const App = lazy(() => import('../initialpage/App'));
 import config from 'config';
 import 'bootstrap'
 import StripeWrapper from '../Components/StripeWrapper.jsx';
@@ -110,8 +110,10 @@ const MainApp = () => (
 );
 
 const root = document.getElementById('app');
-if (root) {
-  ReactDOM.createRoot(root).render(<MainApp />);
+if (root && !root._reactRootContainer) {
+  const reactRoot = ReactDOM.createRoot(root);
+  root._reactRootContainer = reactRoot;
+  reactRoot.render(<MainApp />);
 }
 
 export default MainApp;
