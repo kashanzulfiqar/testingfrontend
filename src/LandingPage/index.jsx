@@ -17,7 +17,8 @@ import Trial from "./assets/freeTrial.svg";
 import LazyImage from "../Components/LazyImage";
 
 // Lazy load components for better performance
-const ImageGallery = React.lazy(() => import("react-image-gallery"));
+import ImageGallery from "react-image-gallery";
+import "react-image-gallery/styles/css/image-gallery.css";
 const NavigationBar = React.lazy(() => import("./navigation"));
 const Features = React.lazy(() => import("./features"));
 const ModuleCards = React.lazy(() => import("./moduleCards"));
@@ -304,13 +305,15 @@ const LandingPage = () => {
             </section>
 
             <section className="gallery-section" style={{ marginTop: "4%" }}>
-            <Carousel autoplay dots accessibility={false} pauseOnHover>
-                {images.map((img) => (
-                  <div key={img.original} style={{ textAlign: 'center' }}>
-                    <img src={img.original} alt="slide" style={{ maxWidth: '100%', height: 'auto' }} />
-                  </div>
-                ))}
-              </Carousel>
+            <ImageGallery
+                items={images}
+                autoPlay={true}
+                slideInterval={3000}
+                showFullscreenButton={false}
+                showPlayButton={false}
+                showThumbnails={false}
+                showBullets={true}
+              />
             </section>
 
             <section id="features" className="features-section">
