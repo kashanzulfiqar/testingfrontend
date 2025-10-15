@@ -6,6 +6,9 @@ import { UploadOutlined } from "@ant-design/icons";
 import { apiServices } from "../../Services/apiServices";
 import { useSelector } from "react-redux";
 import { uploadFunction } from "../Employees/Projects/UploadAndDeleteFunc";
+import { BASE_URL } from '../../config/apiConfig';
+import axios from "axios";
+
 
 const { Dragger } = Upload;
 
@@ -22,6 +25,9 @@ export default function ResumeConverter() {
   const authState = useSelector((state) => state.user.loginvalue);
   const token =
     localStorage.getItem("token") || authState?.access_token?.accessToken;
+  const axiosInstance = axios.create({
+      baseURL: BASE_URL
+    });
 
   // ----------------------------
   // Upload Configuration (AntD)
@@ -104,7 +110,7 @@ export default function ResumeConverter() {
     try {
       console.log("🚀 Saving parsed data:", parsedData);
   
-      // 1️⃣ First call: get confirmation that backend generated PDF
+      // 1️⃣ Confirm backend can generate PDF (keeps existing logic)
       const res = await apiServices(
         "POST",
         "resume/preview-from-json",
@@ -119,19 +125,21 @@ export default function ResumeConverter() {
   
       console.log("📥 Initial response headers:", res?.headers);
   
-      // 2️⃣ Fetch the same endpoint again as binary (workaround for locked apiServices)
-      const blobRes = await fetch(`${process.env.REACT_APP_API_BASE_URL}/resume/preview-from-json`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ parsed: parsedData }),
-      });
+      // 2️⃣ Request the PDF as binary via axiosInstance (not fetch)
+      const blobRes = await axiosInstance.post(
+        "resume/preview-from-json",
+        { parsed: parsedData },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          responseType: "arraybuffer", // 👈 key difference
+        }
+      );
   
-      if (!blobRes.ok) throw new Error(`PDF fetch failed: ${blobRes.status}`);
-  
-      const blob = await blobRes.blob();
+      // Convert PDF binary to blob URL
+      const blob = new Blob([blobRes.data], { type: "application/pdf" });
       console.log("📏 Blob size:", blob.size);
   
       const url = URL.createObjectURL(blob);
@@ -159,11 +167,16 @@ export default function ResumeConverter() {
     );
   };
 
-  const addItem = (key, newItem) => {
+  const addItem = (key, newItem, prepend = false) => {
     const updated = parsedData?.[key] ? [...parsedData[key]] : [];
-    updated.push(newItem);
+    if (prepend) {
+      updated.unshift(newItem); // insert at top
+    } else {
+      updated.push(newItem); // default: add to bottom
+    }
     handleFieldChange(key, updated);
   };
+  
 
   const removeItem = (key, index) => {
     const updated = [...(parsedData?.[key] || [])];
@@ -390,20 +403,25 @@ export default function ResumeConverter() {
                         </div>
                       ))}
                       <Button
-                        type="dashed"
-                        block
-                        onClick={() =>
-                          addItem("experience", {
-                            company: "",
-                            title: "",
-                            start_year: "",
-                            end_year: "",
-                            description: [""],
-                          })
-                        }
-                      >
-                        + Add Experience
-                      </Button>
+  type="dashed"
+  block
+  onClick={() =>
+    addItem(
+      "experience",
+      {
+        company: "",
+        title: "",
+        start_year: "",
+        end_year: "",
+        description: [""],
+      },
+      true // 👈 add to top
+    )
+  }
+>
+  + Add Latest Experience
+</Button>
+
                     </section>
 
                     {/* ----------------- Projects ----------------- */}
