@@ -1,4 +1,4 @@
-import React, { useEffect, useState, lazy, Suspense } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Navigate,
   Route,
@@ -9,100 +9,100 @@ import {
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../Entryfile/features/users.jsx";
 
-const LoginPage = lazy(() => import("./loginpage"));
-const RegistrationPage = lazy(() => import("./RegistrationPage"));
-const ForgotPassword = lazy(() => import("./forgotpassword"));
-const OTP = lazy(() => import("./otp"));
-const LockScreen = lazy(() => import("./lockscreen"));
-const ApplyJobs = lazy(() => import("./ApplyJob"));
-const DefaultLayout = lazy(() => import("./Sidebar/DefaultLayout"));
-const Settinglayout = lazy(() => import("./Sidebar/Settinglayout"));
-const Tasklayout = lazy(() => import("./Sidebar/tasklayout"));
-const Emaillayout = lazy(() => import("./Sidebar/emaillayout"));
-const Chatlayout = lazy(() => import("./Sidebar/chatlayout"));
-const Uicomponents = lazy(() => import("../MainPage/UIinterface/components"));
-const Error404 = lazy(() => import("../MainPage/Pages/ErrorPage/error404"));
-const Error500 = lazy(() => import("../MainPage/Pages/ErrorPage/error500"));
-const AllEmployees = lazy(() => import("../MainPage/Employees/Employees/allemployees"));
+import LoginPage from "./loginpage";
+import RegistrationPage from "./RegistrationPage";
+import ForgotPassword from "./forgotpassword";
+import OTP from "./otp";
+import LockScreen from "./lockscreen";
+import ApplyJobs from "./ApplyJob";
+import DefaultLayout from "./Sidebar/DefaultLayout";
+import Settinglayout from "./Sidebar/Settinglayout";
+import Tasklayout from "./Sidebar/tasklayout";
+import Emaillayout from "./Sidebar/emaillayout";
+import Chatlayout from "./Sidebar/chatlayout";
+import Uicomponents from "../MainPage/UIinterface/components";
+import Error404 from "../MainPage/Pages/ErrorPage/error404";
+import Error500 from "../MainPage/Pages/ErrorPage/error500";
+import AllEmployees from "../MainPage/Employees/Employees/allemployees";
 import RequireAuth from "../router_service/RequireAuth";
-const LeaveAdmin = lazy(() => import("../MainPage/Employees/Employees/leave_admin"));
-const AdminDashboard = lazy(() => import("../MainPage/Main/Dashboard/admindashboard"));
-const EmployeeDashboard = lazy(() => import("../MainPage/Main/Dashboard/employeedashboard"));
-const Sidebar = lazy(() => import("./Sidebar/sidebar"));
-const Header = lazy(() => import("./Sidebar/header"));
-const Layout = lazy(() => import("../SidebarLayout/Layout"));
-const ResetPassword = lazy(() => import("./ResetPassword"));
-const Employeeslist = lazy(() => import("../MainPage/Employees/Employees/employeeslist"));
-const Settings = lazy(() => import("../MainPage/Administration/Settings/companysettings"));
-const RolePermisson = lazy(() => import("../MainPage/Administration/Settings/rolespermission"));
+import LeaveAdmin from "../MainPage/Employees/Employees/leave_admin";
+import AdminDashboard from "../MainPage/Main/Dashboard/admindashboard";
+import EmployeeDashboard from "../MainPage/Main/Dashboard/employeedashboard";
+import Sidebar from "./Sidebar/sidebar";
+import Header from "./Sidebar/header";
+import Layout from "../SidebarLayout/Layout";
+import ResetPassword from "./ResetPassword";
+import Employeeslist from "../MainPage/Employees/Employees/employeeslist";
+import Settings from "../MainPage/Administration/Settings/companysettings";
+import RolePermisson from "../MainPage/Administration/Settings/rolespermission";
 import "antd/dist/antd.css";
-const EmployeeProfile = lazy(() => import("../MainPage/Pages/Profile/employeeprofile"));
-const Holidays = lazy(() => import("../MainPage/Employees/Employees/holidays"));
-const LeaveEmployee = lazy(() => import("../MainPage/Employees/Employees/leaveemployee"));
-const Timesheet = lazy(() => import("../MainPage/Employees/Employees/timesheet"));
-const AttendanceEmployee = lazy(() => import("../MainPage/Employees/Employees/attendanceemployee"));
-const AttendanceAdmin = lazy(() => import("../MainPage/Employees/Employees/attendanceadmin"));
-const ChangePassword = lazy(() => import("../MainPage/Administration/Settings/changepassword"));
-const LandingPage = lazy(() => import("../LandingPage"));
-const SalarySlip = lazy(() => import("../MainPage/HR/Payroll/SalarySlip"));
-const PayrollHistory = lazy(() => import("../MainPage/HR/Payroll/PayrollHistory"));
-const EmployeeSalary = lazy(() => import("../MainPage/HR/Payroll/employeesalary"));
-const Projects = lazy(() => import("../MainPage/Employees/Projects/projects"));
-const ProjectView = lazy(() => import("../MainPage/Employees/Projects/projectview"));
-const ProjectList = lazy(() => import("../MainPage/Employees/Projects/projectlist"));
-const Clients = lazy(() => import("../MainPage/Employees/clients"));
-const ClientsList = lazy(() => import("../MainPage/Employees/clientslist"));
-const ClientProfile = lazy(() => import("../MainPage/Pages/Profile/clientprofile"));
-const ClientLogin = lazy(() => import("./ClientLogin"));
-const FocalProfile = lazy(() => import("../MainPage/Pages/Profile/FocalProfile"));
-const Invoices = lazy(() => import("../MainPage/HR/Sales/invoice"));
-const Invoicecreate = lazy(() => import("../MainPage/HR/Sales/invoicecreate"));
-const Invoiceview = lazy(() => import("../MainPage/HR/Sales/invoiceview"));
-const EditInvoice = lazy(() => import("../MainPage/HR/Sales/EditInvoice"));
-const Payments = lazy(() => import("../MainPage/HR/Sales/payments"));
-const Expenses = lazy(() => import("../MainPage/HR/Sales/expense"));
-const Tasks = lazy(() => import("../MainPage/Employees/Projects/Tasks"));
-const ProfitLoss = lazy(() => import("../MainPage/HR/Sales/ProfitLoss"));
-const ViewPL = lazy(() => import("../MainPage/HR/Sales/ViewProfitLoss"));
-const EmployeeTimesheet = lazy(() => import("../MainPage/Employees/Employees/EmployeeTimesheet"));
-const AdminTimeSheet = lazy(() => import("../MainPage/Employees/Employees/timesheetAdmin"));
-const ViewDetailTimesheet = lazy(() => import("../MainPage/Employees/Employees/ViewDetailTimesheet"));
-const AttendanceReport = lazy(() => import("../MainPage/HR/Reports/attendancereport"));
-const EmployeesReport = lazy(() => import("../MainPage/HR/Reports/EmployeesReport"));
-const TaskBoard = lazy(() => import("../MainPage/Employees/Projects/taskboard"));
-const TaskBoardList = lazy(() => import("../MainPage/Employees/Projects/taskboardlist"));
-const ResourceAllocation = lazy(() => import("../MainPage/Employees/Employees/resourceAllocation"));
-const ResourceAllocationDetails = lazy(() => import("../MainPage/Employees/Employees/allocationDetails"));
-const Leads = lazy(() => import("../MainPage/Employees/leades"));
-const GitBook = lazy(() => import("../MainPage/Administration/Settings/GitBook"));
-const Query = lazy(() => import("../MainPage/Administration/Settings/Query"));
-const AdminLogin = lazy(() => import("./AdminLogin"));
-const SuperAdminMain = lazy(() => import("../MainPage/Main/Dashboard/superadminMain"));
-const ContactUs = lazy(() => import("../LandingPage/contactForm"));
-const Demo = lazy(() => import("../LandingPage/demo"));
-const AdminResetPassword = lazy(() => import("./AdminReset"));
-const AdminForgot = lazy(() => import("./Forgot-Admin"));
-const DisabledCompanies = lazy(() => import("../MainPage/SuperAdmin/disbaledCompanies"));
-const LeadsDetails = lazy(() => import("../MainPage/Employees/leadsDetails"));
-const LeadReport = lazy(() => import("../MainPage/HR/Reports/leadreport"));
-const ClientReport = lazy(() => import("../MainPage/HR/Reports/clientreport"));
-const PrivacyPolicy = lazy(() => import("../LandingPage/privacyPolicy"));
-const RefundPolicy = lazy(() => import("../LandingPage/refundPolicy"));
-const TermsAndConditions = lazy(() => import("../LandingPage/TermsConditions"));
-const ClientForgotPassword = lazy(() => import("./ClientForgotPassword"));
-const ClientResetPassword = lazy(() => import("./ClientResetPassword"));
-const Recruitment = lazy(() => import("../MainPage/Recruitment"));
-const RecruitmentLayout = lazy(() => import('../MainPage/Recruitment/RecruitmentLayout'));
-const RecruitmentDashboard = lazy(() => import('../MainPage/Recruitment/Dashboard'));
-const Jobs = lazy(() => import('../MainPage/Recruitment/Jobs'));
-const JobDetails = lazy(() => import("../MainPage/Recruitment/JobDetails"));
-const EditJob = lazy(() => import("../MainPage/Recruitment/EditJob"));
-const Interviews = lazy(() => import('../MainPage/Recruitment/Interviews'));
-const PublicInterviewPage = lazy(() => import('../MainPage/Recruitment/PublicInterviewPage'));
-const TaskDetails = lazy(() => import("../MainPage/Employees/Projects/taskDetail.jsx"));
-const PaymentSetup = lazy(() => import("../MainPage/Pages/Payment/PaymentSetup"));
-const Billing = lazy(() => import("../MainPage/Pages/Billing/Billing.jsx"));
-const BillingHistory = lazy(() => import("../MainPage/Pages/Billing/BillingHistory.jsx"));
+import EmployeeProfile from "../MainPage/Pages/Profile/employeeprofile";
+import Holidays from "../MainPage/Employees/Employees/holidays";
+import LeaveEmployee from "../MainPage/Employees/Employees/leaveemployee";
+import Timesheet from "../MainPage/Employees/Employees/timesheet";
+import AttendanceEmployee from "../MainPage/Employees/Employees/attendanceemployee";
+import AttendanceAdmin from "../MainPage/Employees/Employees/attendanceadmin";
+import ChangePassword from "../MainPage/Administration/Settings/changepassword";
+import LandingPage from "../LandingPage";
+import SalarySlip from "../MainPage/HR/Payroll/SalarySlip";
+import PayrollHistory from "../MainPage/HR/Payroll/PayrollHistory";
+import EmployeeSalary from "../MainPage/HR/Payroll/employeesalary";
+import Projects from "../MainPage/Employees/Projects/projects";
+import ProjectView from "../MainPage/Employees/Projects/projectview";
+import ProjectList from "../MainPage/Employees/Projects/projectlist";
+import Clients from "../MainPage/Employees/clients";
+import ClientsList from "../MainPage/Employees/clientslist";
+import ClientProfile from "../MainPage/Pages/Profile/clientprofile";
+import ClientLogin from "./ClientLogin";
+import FocalProfile from "../MainPage/Pages/Profile/FocalProfile";
+import Invoices from "../MainPage/HR/Sales/invoice";
+import Invoicecreate from "../MainPage/HR/Sales/invoicecreate";
+import Invoiceview from "../MainPage/HR/Sales/invoiceview";
+import EditInvoice from "../MainPage/HR/Sales/EditInvoice";
+import Payments from "../MainPage/HR/Sales/payments";
+import Expenses from "../MainPage/HR/Sales/expense";
+import Tasks from "../MainPage/Employees/Projects/Tasks";
+import ProfitLoss from "../MainPage/HR/Sales/ProfitLoss";
+import ViewPL from "../MainPage/HR/Sales/ViewProfitLoss";
+import EmployeeTimesheet from "../MainPage/Employees/Employees/EmployeeTimesheet";
+import AdminTimeSheet from "../MainPage/Employees/Employees/timesheetAdmin";
+import ViewDetailTimesheet from "../MainPage/Employees/Employees/ViewDetailTimesheet";
+import AttendanceReport from "../MainPage/HR/Reports/attendancereport";
+import EmployeesReport from "../MainPage/HR/Reports/EmployeesReport";
+import TaskBoard from "../MainPage/Employees/Projects/taskboard";
+import TaskBoardList from "../MainPage/Employees/Projects/taskboardlist";
+import ResourceAllocation from "../MainPage/Employees/Employees/resourceAllocation";
+import ResourceAllocationDetails from "../MainPage/Employees/Employees/allocationDetails";
+import Leads from "../MainPage/Employees/leades";
+import GitBook from "../MainPage/Administration/Settings/GitBook";
+import Query from "../MainPage/Administration/Settings/Query";
+import AdminLogin from "./AdminLogin";
+import SuperAdminMain from "../MainPage/Main/Dashboard/superadminMain";
+import ContactUs from "../LandingPage/contactForm";
+import Demo from "../LandingPage/demo";
+import AdminResetPassword from "./AdminReset";
+import AdminForgot from "./Forgot-Admin";
+import DisabledCompanies from "../MainPage/SuperAdmin/disbaledCompanies";
+import LeadsDetails from "../MainPage/Employees/leadsDetails";
+import LeadReport from "../MainPage/HR/Reports/leadreport";
+import ClientReport from "../MainPage/HR/Reports/clientreport";
+import PrivacyPolicy from "../LandingPage/privacyPolicy";
+import RefundPolicy from "../LandingPage/refundPolicy";
+import TermsAndConditions from "../LandingPage/TermsConditions";
+import ClientForgotPassword from "./ClientForgotPassword";
+import ClientResetPassword from "./ClientResetPassword";
+import Recruitment from "../MainPage/Recruitment";
+import RecruitmentLayout from '../MainPage/Recruitment/RecruitmentLayout';
+import RecruitmentDashboard from '../MainPage/Recruitment/Dashboard';
+import Jobs from '../MainPage/Recruitment/Jobs';
+import JobDetails from "../MainPage/Recruitment/JobDetails";
+import EditJob from "../MainPage/Recruitment/EditJob";
+import Interviews from '../MainPage/Recruitment/Interviews';
+import PublicInterviewPage from '../MainPage/Recruitment/PublicInterviewPage';
+import TaskDetails from "../MainPage/Employees/Projects/taskDetail.jsx";
+import PaymentSetup from "../MainPage/Pages/Payment/PaymentSetup";
+import Billing from "../MainPage/Pages/Billing/Billing.jsx";
+import BillingHistory from "../MainPage/Pages/Billing/BillingHistory.jsx";
 
 const App = () => {
   const loginState = useSelector((state) => state.user.loginvalue);
@@ -172,7 +172,6 @@ const App = () => {
 
   return (
     <div>
-      <Suspense fallback={<div />}> 
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
@@ -364,7 +363,6 @@ const App = () => {
         <Route path="/error-404" element={<Error404 />} />
         <Route path="/error-500" element={<Error500 />} /> */}
       </Routes>
-      </Suspense>
 
       {/* {loginState &&
         !location.pathname.includes('/login') &&
