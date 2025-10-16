@@ -1,6 +1,6 @@
 // ✅ ResumeConverter.jsx — Full refactor with Ant Design Dragger + uploadFunction + full form
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Upload, Button, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { apiServices } from "../../Services/apiServices";
@@ -21,6 +21,42 @@ export default function ResumeConverter() {
   const [pdfUrl, setPdfUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showUploader, setShowUploader] = useState(false); 
+    // ----------------------------
+  // Local Backup System
+  // ----------------------------
+  const [resumeHistory, setResumeHistory] = useState(() => {
+    try {
+      const stored = localStorage.getItem("resumeHistory");
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const saveToHistory = (resume) => {
+    if (!resume?.full_name) return;
+
+    const newEntry = {
+      id: Date.now(),
+      name: resume.full_name,
+      data: resume,
+      fileUrl: pdfUrl,
+      savedAt: new Date().toISOString(),
+    };
+
+    const updated = [newEntry, ...resumeHistory].slice(0, 20);
+    setResumeHistory(updated);
+    localStorage.setItem("resumeHistory", JSON.stringify(updated));
+    message.success(`Saved ${resume.full_name} to history.`);
+  };
+
+  const deleteFromHistory = (id) => {
+    const updated = resumeHistory.filter((r) => r.id !== id);
+    setResumeHistory(updated);
+    localStorage.setItem("resumeHistory", JSON.stringify(updated));
+    message.success("Deleted resume from history.");
+  };
 
   const authState = useSelector((state) => state.user.loginvalue);
   const token =
@@ -48,7 +84,21 @@ export default function ResumeConverter() {
     fileList,
     showUploadList: { showRemoveIcon: true },
   };
+// ----------------------------
+  // Fetch resumes from Mongo
+  // ----------------------------
+  const fetchHistory = async () => {
+    try {
+      const res = await apiServices("GET", "resumes");
+      if (res?.data) setResumeHistory(res.data);
+    } catch (err) {
+      console.error("❌ Failed to fetch history:", err);
+    }
+  };
 
+  useEffect(() => {
+    fetchHistory();
+  }, []);
   // ----------------------------
   // Upload & Parse Resume
   // ----------------------------
@@ -102,16 +152,19 @@ export default function ResumeConverter() {
   // ----------------------------
   // JSON → PDF Preview (Save)
   // ----------------------------
+// ----------------------------
+// Generate PDF Preview
+// ----------------------------
   const handleSave = async () => {
     if (!parsedData) return;
     setError(null);
     setLoading(true);
-  
+
     try {
-      console.log("🚀 Saving parsed data:", parsedData);
-  
-      // 1️⃣ Confirm backend can generate PDF (keeps existing logic)
-      const res = await apiServices(
+      console.log("🚀 Generating PDF preview:", parsedData);
+
+      // 1️⃣ Confirm backend can generate PDF
+      await apiServices(
         "POST",
         "resume/preview-from-json",
         { parsed: parsedData },
@@ -122,10 +175,8 @@ export default function ResumeConverter() {
           },
         }
       );
-  
-      console.log("📥 Initial response headers:", res?.headers);
-  
-      // 2️⃣ Request the PDF as binary via axiosInstance (not fetch)
+
+      // 2️⃣ Fetch binary PDF
       const blobRes = await axiosInstance.post(
         "resume/preview-from-json",
         { parsed: parsedData },
@@ -134,24 +185,63 @@ export default function ResumeConverter() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-          responseType: "arraybuffer", // 👈 key difference
+          responseType: "arraybuffer",
         }
       );
-  
-      // Convert PDF binary to blob URL
+
       const blob = new Blob([blobRes.data], { type: "application/pdf" });
-      console.log("📏 Blob size:", blob.size);
-  
       const url = URL.createObjectURL(blob);
       setPdfUrl(url);
-      console.log("🖼️ Preview URL created:", url);
-  
       message.success("Preview updated successfully!");
     } catch (err) {
-      console.error("❌ Preview generation error:", err);
+      console.error("❌ PDF Preview generation failed:", err);
       message.error("Failed to generate preview.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // ----------------------------
+  // Save Resume Locally
+  // ----------------------------
+  const handleSaveLocal = () => {
+    if (!parsedData) {
+      message.warning("No parsed data to save.");
+      return;
+    }
+
+    saveToHistory(parsedData);
+    message.success("Resume saved locally!");
+  };
+    // ----------------------------
+  // Save Resume to MongoDB
+  // ----------------------------
+  const handleSaveMongo = async () => {
+    if (!parsedData) return message.warning("No parsed data to save.");
+    setLoading(true);
+    try {
+      await apiServices("POST", "resumes", parsedData);
+      message.success("Resume saved to MongoDB!");
+      fetchHistory();
+    } catch (err) {
+      console.error("❌ Failed to save resume:", err);
+      message.error("Failed to save resume.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ----------------------------
+  // Delete from Mongo
+  // ----------------------------
+  const deleteResume = async (id) => {
+    try {
+      await apiServices("DELETE", `resumes/${id}`);
+      message.success("Deleted resume from MongoDB.");
+      fetchHistory();
+    } catch (err) {
+      console.error("❌ Delete failed:", err);
+      message.error("Failed to delete resume.");
     }
   };
   
@@ -188,31 +278,39 @@ export default function ResumeConverter() {
   // Render
   // ----------------------------
   return (
-    <div className="page-wrapper">
-      <div className="content container-fluid">
-        <div className="page-header">
-          <div className="row align-items-center">
-            <div className="col">
-              <h3 className="page-title">Resume Converter</h3>
-              <ul className="breadcrumb">
-                <li className="breadcrumb-item">
-                  <a
-                    href="/recruitment/dashboard"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Dashboard
-                  </a>
-                </li>
-                <li className="breadcrumb-item active">Resume Converter</li>
-              </ul>
-            </div>
-          </div>
-        </div>
+    <><div className="resume-converter-page" style={{ backgroundColor: "#fff", minHeight: "100vh" }}>
+      <div className="p-4">
+      <div className="page-header mb-4 d-flex justify-content-between align-items-center">
+      <div>
+        <h3 className="page-title mb-1">Resume Converter</h3>
+        <ul className="breadcrumb">
+          <li className="breadcrumb-item">
+            <a
+              href="/recruitment/dashboard"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Dashboard
+            </a>
+          </li>
+          <li className="breadcrumb-item active">Resume Converter</li>
+        </ul>
+      </div>
 
-        <div className="row">
+      <Button
+        type="primary"
+        icon={<UploadOutlined />}
+        onClick={() => setShowUploader(true)}
+        className="upload-header-btn"
+      >
+        Upload 
+      </Button>
+    </div>
+
+  
+        <div className="row" style={{ margin: 0 }}>
           {/* LEFT COLUMN */}
-          <div className="col-xl-7 col-lg-5" style={{ paddingRight: "0.75rem" }}>
+          <div className="col-xl-7 col-lg-7" style={{ paddingRight: "1rem" }}>
             <div className="card">
               <div className="card-body">
                 {/* Upload Section */}
@@ -232,6 +330,7 @@ export default function ResumeConverter() {
                         Supports single PDF or DOC/DOCX resume files.
                       </p>
                     </Dragger>
+  
                     <div className="d-grid gap-2 mt-3">
                       <Button
                         type="primary"
@@ -242,14 +341,27 @@ export default function ResumeConverter() {
                       >
                         📤 Upload & Parse Resume
                       </Button>
-                      <Button
-                        type="default"
-                        onClick={handleSave}
-                        disabled={!parsedData || loading}
-                        block
-                      >
-                        💾 Save & Update Preview
-                      </Button>
+  
+                      <div className="d-flex gap-2 mt-2">
+                        <Button
+                          type="primary"
+                          onClick={handleSave}
+                          disabled={!parsedData || loading}
+                          loading={loading}
+                          style={{ flex: 1 }}
+                        >
+                          🖨️ Generate PDF Preview
+                        </Button>
+  
+                        <Button
+                          type="default"
+                          onClick={handleSaveMongo}
+                          disabled={!parsedData}
+                          style={{ flex: 1 }}
+                        >
+                          💾 Save Resume Locally
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -281,10 +393,7 @@ export default function ResumeConverter() {
                             <input
                               className="form-control"
                               value={parsedData[field] || ""}
-                              onChange={(e) =>
-                                handleFieldChange(field, e.target.value)
-                              }
-                            />
+                              onChange={(e) => handleFieldChange(field, e.target.value)} />
                           </div>
                         )
                       )}
@@ -294,10 +403,7 @@ export default function ResumeConverter() {
                           className="form-control"
                           rows="3"
                           value={parsedData.summary || ""}
-                          onChange={(e) =>
-                            handleFieldChange("summary", e.target.value)
-                          }
-                        />
+                          onChange={(e) => handleFieldChange("summary", e.target.value)} />
                       </div>
                     </section>
 
@@ -321,8 +427,7 @@ export default function ResumeConverter() {
                                   const list = [...parsedData.education];
                                   list[i][field] = e.target.value;
                                   handleFieldChange("education", list);
-                                }}
-                              />
+                                } } />
                             )
                           )}
                           <textarea
@@ -333,8 +438,7 @@ export default function ResumeConverter() {
                               const list = [...parsedData.education];
                               list[i].description = e.target.value;
                               handleFieldChange("education", list);
-                            }}
-                          />
+                            } } />
                           <Button
                             danger
                             size="small"
@@ -347,15 +451,13 @@ export default function ResumeConverter() {
                       <Button
                         type="dashed"
                         block
-                        onClick={() =>
-                          addItem("education", {
-                            degree: "",
-                            institution: "",
-                            start_year: "",
-                            end_year: "",
-                            description: "",
-                          })
-                        }
+                        onClick={() => addItem("education", {
+                          degree: "",
+                          institution: "",
+                          start_year: "",
+                          end_year: "",
+                          description: "",
+                        })}
                       >
                         + Add Education
                       </Button>
@@ -377,8 +479,7 @@ export default function ResumeConverter() {
                                   const list = [...parsedData.experience];
                                   list[i][field] = e.target.value;
                                   handleFieldChange("experience", list);
-                                }}
-                              />
+                                } } />
                             )
                           )}
                           <textarea
@@ -391,8 +492,7 @@ export default function ResumeConverter() {
                                 .split("\n")
                                 .filter(Boolean);
                               handleFieldChange("experience", list);
-                            }}
-                          />
+                            } } />
                           <Button
                             danger
                             size="small"
@@ -403,24 +503,22 @@ export default function ResumeConverter() {
                         </div>
                       ))}
                       <Button
-  type="dashed"
-  block
-  onClick={() =>
-    addItem(
-      "experience",
-      {
-        company: "",
-        title: "",
-        start_year: "",
-        end_year: "",
-        description: [""],
-      },
-      true // 👈 add to top
-    )
-  }
->
-  + Add Latest Experience
-</Button>
+                        type="dashed"
+                        block
+                        onClick={() => addItem(
+                          "experience",
+                          {
+                            company: "",
+                            title: "",
+                            start_year: "",
+                            end_year: "",
+                            description: [""],
+                          },
+                          true // 👈 add to top
+                        )}
+                      >
+                        + Add Latest Experience
+                      </Button>
 
                     </section>
 
@@ -440,8 +538,7 @@ export default function ResumeConverter() {
                                   const list = [...parsedData.projects];
                                   list[i][field] = e.target.value;
                                   handleFieldChange("projects", list);
-                                }}
-                              />
+                                } } />
                             )
                           )}
                           <textarea
@@ -454,8 +551,7 @@ export default function ResumeConverter() {
                                 .split("\n")
                                 .filter(Boolean);
                               handleFieldChange("projects", list);
-                            }}
-                          />
+                            } } />
                           <Button
                             danger
                             size="small"
@@ -468,14 +564,12 @@ export default function ResumeConverter() {
                       <Button
                         type="dashed"
                         block
-                        onClick={() =>
-                          addItem("projects", {
-                            project_name: "",
-                            start_year: "",
-                            end_year: "",
-                            description: [""],
-                          })
-                        }
+                        onClick={() => addItem("projects", {
+                          project_name: "",
+                          start_year: "",
+                          end_year: "",
+                          description: [""],
+                        })}
                       >
                         + Add Project
                       </Button>
@@ -488,16 +582,13 @@ export default function ResumeConverter() {
                         className="form-control"
                         rows="3"
                         value={(parsedData.technical_skills || []).join(", ")}
-                        onChange={(e) =>
-                          handleFieldChange(
-                            "technical_skills",
-                            e.target.value
-                              .split(",")
-                              .map((s) => s.trim())
-                              .filter(Boolean)
-                          )
-                        }
-                      />
+                        onChange={(e) => handleFieldChange(
+                          "technical_skills",
+                          e.target.value
+                            .split(",")
+                            .map((s) => s.trim())
+                            .filter(Boolean)
+                        )} />
                     </section>
 
                     {/* ----------------- Certifications ----------------- */}
@@ -507,16 +598,13 @@ export default function ResumeConverter() {
                         className="form-control"
                         rows="2"
                         value={(parsedData.certifications || []).join(", ")}
-                        onChange={(e) =>
-                          handleFieldChange(
-                            "certifications",
-                            e.target.value
-                              .split(",")
-                              .map((s) => s.trim())
-                              .filter(Boolean)
-                          )
-                        }
-                      />
+                        onChange={(e) => handleFieldChange(
+                          "certifications",
+                          e.target.value
+                            .split(",")
+                            .map((s) => s.trim())
+                            .filter(Boolean)
+                        )} />
                     </section>
 
                     {/* ----------------- Languages ----------------- */}
@@ -526,16 +614,13 @@ export default function ResumeConverter() {
                         className="form-control"
                         rows="2"
                         value={(parsedData.languages || []).join(", ")}
-                        onChange={(e) =>
-                          handleFieldChange(
-                            "languages",
-                            e.target.value
-                              .split(",")
-                              .map((s) => s.trim())
-                              .filter(Boolean)
-                          )
-                        }
-                      />
+                        onChange={(e) => handleFieldChange(
+                          "languages",
+                          e.target.value
+                            .split(",")
+                            .map((s) => s.trim())
+                            .filter(Boolean)
+                        )} />
                     </section>
                   </div>
                 ) : (
@@ -546,47 +631,104 @@ export default function ResumeConverter() {
           </div>
 
           {/* RIGHT COLUMN: Preview */}
-          <div
-            className="col-xl-4 col-lg-5"
-            style={{ paddingLeft: "0.75rem", marginBottom: "2rem" }}
-          >
-            <div className="card" style={{ height: "fit-content" }}>
-              <div
-                className="card-header"
-                style={{ backgroundColor: "#042F40", color: "white" }}
-              >
+          {/* RIGHT COLUMN */}
+          <div className="col-xl-4 col-lg-5" style={{ paddingLeft: "0.5rem" }}>
+            {/* PDF Preview */}
+            <div className="card mb-4">
+              <div className="card-header" style={{ backgroundColor: "#042F40", color: "white" }}>
                 <h5 className="card-title mb-0">📑 Resume Preview</h5>
               </div>
               <div className="card-body p-0">
-              {pdfUrl && (
-      <iframe
-        key={pdfUrl}
-        src={pdfUrl}
-        type="application/pdf"
-        width="100%"
-        height="800px"
-        title="Resume Preview"
-        style={{
-          border: "none",
-          display: "block",
-          minHeight: "80vh",
-          backgroundColor: "#f9f9f9",
-        }}
-      />
-    )}
+                {pdfUrl && (
+                  <>
+                    <iframe
+                      key={pdfUrl}
+                      src={pdfUrl}
+                      width="100%"
+                      height="800px"
+                      title="Resume Preview"
+                      style={{
+                        border: "none",
+                        display: "block",
+                        backgroundColor: "#f9f9f9",
+                      }}
+                    />
+                    <div className="p-2 text-center">
+                      <a href={pdfUrl} target="_blank" rel="noopener noreferrer">
+                        Open PDF in new tab
+                      </a>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
 
-    {pdfUrl && (
-      <div style={{ marginTop: "1rem" }}>
-        <a href={pdfUrl} target="_blank" rel="noopener noreferrer">
-          Open PDF in new tab
-        </a>
-      </div>
-    )}
+            {/* Resume History */}
+            <div className="card">
+              <div className="card-header" style={{ backgroundColor: "#042F40", color: "white" }}>
+                <h5 className="card-title mb-0">🕒 Resume History (Mongo)</h5>
+              </div>
+              <div className="card-body" style={{ maxHeight: "400px", overflowY: "auto" }}>
+                {resumeHistory.length === 0 ? (
+                  <p className="text-muted">No resumes saved yet.</p>
+                ) : (
+                  <ul className="list-group">
+                    {resumeHistory.map((r) => (
+                      <li
+                        key={r._id}
+                        className="list-group-item d-flex justify-content-between align-items-center"
+                        style={{ cursor: "pointer" }}
+                      >
+                        <div
+                          onClick={() => {
+                            setParsedData(r);
+                            setPdfUrl(null);
+                            message.info(`Loaded ${r.full_name}`);
+                          }}
+                          style={{ flex: 1 }}
+                        >
+                          <strong>{r.full_name}</strong>
+                          <br />
+                          <small className="text-muted">
+                            {new Date(r.createdAt).toLocaleString()}
+                          </small>
+                        </div>
+                        <Button
+                          size="small"
+                          danger
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteResume(r._id);
+                          }}
+                        >
+                          🗑
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </div>
           </div>
         </div>
-      </div>
+        </div>
     </div>
+    
+    <style jsx>{`
+      .resume-converter-page .content.container-fluid {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+      }
+
+      .resume-converter-page .page-header {
+        padding-left: 30px;
+        padding-right: 30px;
+      }
+
+      .resume-converter-page {
+        background-color: #fff;
+      }
+    `}</style>
+    </>
   );
 }

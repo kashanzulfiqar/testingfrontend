@@ -12,7 +12,7 @@ const axiosInstance = axios.create({
 });
 
 // Add request interceptor
-axiosInstance.interceptors.request.use(
+axiosInstance.interceptors.request.use( 
   (config) => {
     // Try to get token from Redux store first
     const state = store.getState();
