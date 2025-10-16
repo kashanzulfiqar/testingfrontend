@@ -73,25 +73,20 @@ const ResetPassword = () => {
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || 
                      (navigator.vendor && navigator.vendor.includes('Apple') && !navigator.userAgent.includes('CriOS') && !navigator.userAgent.includes('FxiOS'));
   
-    // if (isSafari) {
-    //   console.log("Detected Safari");
-    //   // Apply custom styles for Safari
-    //   document.documentElement.style.setProperty('--word-spacing', '0px');
-    //   document.documentElement.style.setProperty('--heading-spacing', '0px');
-    //   document.documentElement.style.setProperty('--div-spacing', '0px');
-    //   document.documentElement.style.setProperty('--a-spacing', '0px');
-    // } else {
-    //   console.log("Not Safari");
-    //   document.documentElement.style.setProperty('--word-spacing', '-3.5px');
-    //   document.documentElement.style.setProperty('--heading-spacing', '-7px');
-    //   document.documentElement.style.setProperty('--div-spacing', '-2px');
-    //   document.documentElement.style.setProperty('--a-spacing', '-4px');
-    // }
-    
-    document.documentElement.style.setProperty('--word-spacing', '0px');
-    document.documentElement.style.setProperty('--heading-spacing', '0px');
-    document.documentElement.style.setProperty('--div-spacing', '0px');
-    document.documentElement.style.setProperty('--a-spacing', '0px');
+    if (isSafari) {
+      console.log("Detected Safari");
+      // Apply custom styles for Safari
+      document.documentElement.style.setProperty('--word-spacing', '0px');
+      document.documentElement.style.setProperty('--heading-spacing', '0px');
+      document.documentElement.style.setProperty('--div-spacing', '0px');
+      document.documentElement.style.setProperty('--a-spacing', '0px');
+    } else {
+      console.log("Not Safari");
+      document.documentElement.style.setProperty('--word-spacing', '-3.5px');
+      document.documentElement.style.setProperty('--heading-spacing', '-7px');
+      document.documentElement.style.setProperty('--div-spacing', '-2px');
+      document.documentElement.style.setProperty('--a-spacing', '-4px');
+    }
   }, []);
 
   const onFinish = (values) => {

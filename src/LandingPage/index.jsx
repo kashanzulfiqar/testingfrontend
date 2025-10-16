@@ -1,8 +1,8 @@
-import React, { useEffect, useState, Suspense } from "react";
+import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet";
 import Navbar from "./Navbar";
 import "./landingstyles.css";
-import { Input, Button, Divider, message, Spin } from "antd";
+import { Input, Button, Divider, message } from "antd";
 import im1 from "./assets/im1.png";
 import im2 from "./assets/im2.png";
 import im3 from "./assets/im3.png";
@@ -12,19 +12,16 @@ import { Link as RouterLink } from "react-router-dom";
 import { RightOutlined } from "@ant-design/icons";
 import { Carousel, Modal } from "antd";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
-import Trial from "./assets/freeTrial.svg";
-import LazyImage from "../Components/LazyImage";
-
-// Lazy load components for better performance
 import ImageGallery from "react-image-gallery";
 import "react-image-gallery/styles/css/image-gallery.css";
-const NavigationBar = React.lazy(() => import("./navigation"));
-const Features = React.lazy(() => import("./features"));
-const ModuleCards = React.lazy(() => import("./moduleCards"));
-const PlanCards = React.lazy(() => import("./planCards"));
-const GetStarted = React.lazy(() => import("./getStarted"));
-const BottomPortion = React.lazy(() => import("./bottomPortion"));
+import { useSelector } from "react-redux";
+import NavigationBar from "./navigation";
+import Trial from "./assets/freeTrial.svg";
+import Features from "./features";
+import ModuleCards from "./moduleCards";
+import PlanCards from "./planCards";
+import GetStarted from "./getStarted";
+import BottomPortion from "./bottomPortion";
 
 const LandingPage = () => {
   const nav = useNavigate();
@@ -257,9 +254,7 @@ const LandingPage = () => {
         ))}
       </Helmet>
 
-      <Suspense fallback={<div style={{textAlign: 'center', padding: '50px'}}><Spin size="large" /></div>}>
-        <NavigationBar />
-      </Suspense>
+      <NavigationBar />
 
       <main className="main-wrapper">
         <div className="page-wrapper landingClass">
@@ -295,7 +290,7 @@ const LandingPage = () => {
                   >
                     Register Now
                   </RouterLink>
-                  <LazyImage
+                  <img
                     className="freeTrial"
                     src={Trial}
                     alt="Free Trial Available"
@@ -318,36 +313,26 @@ const LandingPage = () => {
 
             <section id="features" className="features-section">
               <Element name="features">
-              <Suspense fallback={<div style={{textAlign: 'center', padding: '50px'}}><Spin size="large" /></div>}>
-                <Features />
-              </Suspense>
+              <Features />
               </Element>
             </section>
 
             <section className="modules-section">
-              <Suspense fallback={<div style={{textAlign: 'center', padding: '50px'}}><Spin size="large" /></div>}>
-                <ModuleCards />
-              </Suspense>
+              <ModuleCards />
             </section>
 
             <section id="pricing" className="pricing-section">
               <Element name="pricing">
-              <Suspense fallback={<div style={{textAlign: 'center', padding: '50px'}}><Spin size="large" /></div>}>
-                <PlanCards />
-              </Suspense>
+              <PlanCards />
               </Element>
             </section>
 
             <section className="get-started-section">
-              <Suspense fallback={<div style={{textAlign: 'center', padding: '50px'}}><Spin size="large" /></div>}>
-                <GetStarted />
-              </Suspense>
+              <GetStarted />
             </section>
 
             <footer className="site-footer">
-              <Suspense fallback={<div style={{textAlign: 'center', padding: '50px'}}><Spin size="large" /></div>}>
-                <BottomPortion />
-              </Suspense>
+              <BottomPortion />
             </footer>
           </div>
         </div>

@@ -1,7 +1,7 @@
-import React, { Suspense, lazy, useEffect } from 'react';
+import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-const App = lazy(() => import('../initialpage/App'));
+import App from '../initialpage/App';
 import config from 'config';
 import 'bootstrap'
 import StripeWrapper from '../Components/StripeWrapper.jsx';
@@ -15,14 +15,22 @@ import '../assets/css/line-awesome.min.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import "../assets/css/bootstrap.min.css";
 
-// defer heavy helpers after first paint
+import "../assets/js/layout";
+import "../assets/js/greedynav"
 // import "../assets/js/theme-settings.js";
 // Custom Style File
+import '../assets/js/bootstrap.bundle.js';
 import '../assets/css/select2.min.css';
 import '../assets/css/material.css';
 
 //  import '../assets/js/popper.min.js';
-// heavy vendor scripts deferred via dynamic import in BootScripts
+import '../assets/js/app.js';
+import '../assets/js/select2.min.js';
+
+
+import "../assets/js/bootstrap-datetimepicker.min.js";
+
+import "../assets/js/multiselect.min.js";
 import "../assets/plugins/bootstrap-tagsinput/bootstrap-tagsinput.css";
 import "../assets/css/bootstrap-datetimepicker.min.css";
 import "../assets/scss/main.scss";
@@ -83,39 +91,6 @@ const persistConfig = {
  
  const persistor = persistStore(store);
 
-const BootScripts = () => {
-  useEffect(() => {
-    const load = async () => {
-      await Promise.resolve();
-      try {
-        await import('../assets/js/app.js');
-      } catch {}
-      try {
-        await import('../assets/js/select2.min.js');
-      } catch {}
-      try {
-        await import('../assets/js/bootstrap-datetimepicker.min.js');
-      } catch {}
-      try {
-        await import('../assets/js/multiselect.min.js');
-      } catch {}
-      try {
-        await import('../assets/js/greedynav');
-      } catch {}
-      try {
-        await import('../assets/js/layout');
-      } catch {}
-    };
-    if ('requestIdleCallback' in window) {
-      // @ts-ignore
-      requestIdleCallback(load);
-    } else {
-      setTimeout(load, 0);
-    }
-  }, []);
-  return null;
-};
-
 const MainApp = () => (
   <Provider store={store}>
     <PersistGate loading={null} persistor={persistor}>
@@ -128,7 +103,6 @@ const MainApp = () => (
               </Routes>
             </Suspense>
           </Router>
-          <BootScripts />
         </StripeWrapper>
       </I18nextProvider>
     </PersistGate>
