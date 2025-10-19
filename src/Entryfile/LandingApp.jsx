@@ -14,7 +14,6 @@ import "react-image-gallery/styles/css/image-gallery.css";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "antd/dist/antd.css";
-import "../assets/css/style.css";
 import "../LandingPage/landingstyles.css";
 import "../LandingPage/drawer.css";
 import "../LandingPage/BottomSection.css";
@@ -44,6 +43,19 @@ const LandingApp = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const baseUrl = window.location.origin;
+
+  // Defer heavy app stylesheet to after first paint for faster landing load
+  useEffect(() => {
+    const loadStyles = () => {
+      import('../assets/css/style.css');
+    };
+    if ('requestIdleCallback' in window) {
+      // @ts-ignore
+      window.requestIdleCallback(loadStyles);
+    } else {
+      setTimeout(loadStyles, 0);
+    }
+  }, []);
 
   useEffect(() => {
     if (isLogin) {
