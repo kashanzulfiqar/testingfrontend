@@ -1,63 +1,21 @@
 import React, { Suspense, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router } from 'react-router-dom';
 import config from 'config';
-import StripeWrapper from '../Components/StripeWrapper.jsx';
-import i18n from '../i18n.js';
-import { I18nextProvider } from 'react-i18next';
 
-import { combineReducers, configureStore } from '@reduxjs/toolkit';
-import { Provider } from 'react-redux';
-import userReducer from './features/users'
-import storage from 'redux-persist/lib/storage';
-import { PersistGate } from 'redux-persist/integration/react';
-import {  persistStore, 
-          persistReducer,
-          FLUSH,
-          REHYDRATE,
-          PAUSE,
-          PERSIST,
-          PURGE,
-          REGISTER, } from 'redux-persist';
-import permissionsSlice from '../Redux/Reducer/permissions/permissionSlice';
-import pendingCounterSlice from '../Redux/Reducer/permissions/pendingCounterSlice';
-import superAdminSlice from '../Redux/Reducer/permissions/superAdminSlice.js';
-
+// Lazy load heavy dependencies only when needed
 const LandingApp = React.lazy(() => import('./LandingApp'));
 const AppRoutes = React.lazy(() => import('./AppRoutes'));
 
+// Lazy load Redux store and providers to reduce initial bundle
+const ReduxProvider = React.lazy(() => import('./ReduxProvider'));
+const StripeWrapper = React.lazy(() => import('../Components/StripeWrapper.jsx'));
+const I18nProvider = React.lazy(() => import('./I18nProvider'));
 
-// const store =configureStore({
-//    reducer:{
-//       user:userReducer
-//    }
-// })
 
-const persistConfig = {
-   key: 'root',
-   storage
- };
-
- const rootReducer = combineReducers({
-  user: userReducer,
-  permissionsSlice: permissionsSlice,
-  counter: pendingCounterSlice,
-  superAdmin: superAdminSlice
-});
- 
- const persistedReducer = persistReducer(persistConfig, rootReducer);
- 
- export const store = configureStore({
-   reducer: persistedReducer,
-   middleware: (getDefaultMiddleware) =>
-   getDefaultMiddleware({
-     serializableCheck: {
-       ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
-     },
-   }),
- });
- 
- const persistor = persistStore(store);
+// Store setup moved to ReduxProvider.jsx for lazy loading
+// Re-export store for backward compatibility
+export { store } from './ReduxProvider';
 
 
 
@@ -74,12 +32,29 @@ function isLoggedInFast() {
   }
 }
 
-// Load minimal, non-invasive CSS needed everywhere (icons, base bootstrap, antd)
+// Defer heavy CSS until after first paint for faster landing
 function loadBaseStyles() {
-  import('../assets/css/font-awesome.min.css');
-  import('../assets/css/line-awesome.min.css');
+  // Only load critical CSS immediately
   import('bootstrap/dist/css/bootstrap.min.css');
   import('../assets/css/bootstrap.min.css');
+  
+  // Defer heavy CSS to after paint
+  if ('requestIdleCallback' in window) {
+    // @ts-ignore
+    window.requestIdleCallback(() => {
+      import('../assets/css/font-awesome.min.css');
+      import('../assets/css/line-awesome.min.css');
+    });
+  } else {
+    setTimeout(() => {
+      import('../assets/css/font-awesome.min.css');
+      import('../assets/css/line-awesome.min.css');
+    }, 100);
+  }
+}
+
+// Load Ant Design CSS only when full app is needed
+function loadAntdStyles() {
   import('antd/dist/antd.css');
 }
 
@@ -116,13 +91,15 @@ const MainApp = () => {
     const landingRoutes = ['/', '/terms-and-conditions', '/privacy-policy', '/refund-policy', '/contact-us', '/live-demo'];
     const isLandingRoute = landingRoutes.includes(currentPath);
     
-    // Always ensure base CSS is present (icons, bootstrap, antd)
+    // Load minimal CSS for landing pages
     loadBaseStyles();
 
     if (isLandingRoute && !loggedIn) {
       setShouldLoadFullApp(false);
     } else {
       setShouldLoadFullApp(true);
+      // Load Ant Design CSS for full app
+      loadAntdStyles();
       loadFullAppStyles();
       loadGlobalScripts();
     }
@@ -161,19 +138,25 @@ const MainApp = () => {
   }, []);
 
   return (
-    <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        <I18nextProvider i18n={i18n}>
-          <StripeWrapper>
-            <Router basename={`${config.publicPath}`}>
-              <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>Loading...</div>}>
-                {shouldLoadFullApp ? <AppRoutes key="full-app" /> : <LandingApp key="landing-app" />}
-              </Suspense>
-            </Router>
-          </StripeWrapper>
-        </I18nextProvider>
-      </PersistGate>
-    </Provider>
+    <Router basename={`${config.publicPath}`}>
+      <Suspense fallback={<div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>Loading...</div>}>
+        {shouldLoadFullApp ? (
+          <ReduxProvider>
+            <I18nProvider>
+              <StripeWrapper>
+                <AppRoutes key="full-app" />
+              </StripeWrapper>
+            </I18nProvider>
+          </ReduxProvider>
+        ) : (
+          <ReduxProvider>
+            <I18nProvider>
+              <LandingApp key="landing-app" />
+            </I18nProvider>
+          </ReduxProvider>
+        )}
+      </Suspense>
+    </Router>
   );
 };
 
